@@ -785,14 +785,17 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 					// suspend update?
 					if(currentRole!=null)
 						currentRole.getCurrentDiskoWpModule().suspendUpdate();
-					
-					
+										
 					// return status
 					boolean flag = MsoModelImpl.getInstance().getModelDriver().setActiveOperation(m_opID);
 					
-					// resume update?
-					if(currentRole!=null)
+					// reinitalize work processes and resume update?
+					if(currentRole!=null) {
+						// reinitialize work process modules
+						currentRole.reInitWpModules();
+						// resume update
 						currentRole.getCurrentDiskoWpModule().resumeUpdate();
+					}
 					
 					// return flag
 					return flag;
@@ -819,8 +822,9 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				super.done();	
 				// get result
 				if(get()) {
-					// choose active operation
-					doSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
+					// choose active operation?
+					if(currentRole==null)
+						doSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
 				}
 				// finished
 				return;

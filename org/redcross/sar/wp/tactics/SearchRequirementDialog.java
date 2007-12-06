@@ -447,11 +447,15 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			try {
 				personelTextField = new JTextField();
 				personelTextField.setText("0");
-				personelTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-					public void keyTyped(java.awt.event.KeyEvent e) {
+				personelTextField.getDocument().addDocumentListener(new DocumentListener() {
+					public void changedUpdate(DocumentEvent e) {
+						// no mso update allowed?
 						if (isWorking()) return;
-						setPersonelNeed(Integer.valueOf(personelTextField.getText()+e.getKeyChar()), false, true);
+						// update mso model
+						setPersonelNeed(Integer.valueOf(personelTextField.getText()),false,true);						
 					}
+					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
+					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 				personelTextField.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {

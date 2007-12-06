@@ -1,6 +1,7 @@
 package org.redcross.sar.gui;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import java.awt.Color;
@@ -8,7 +9,7 @@ import java.awt.Graphics;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
-import java.awt.Polygon;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 /**
@@ -39,6 +40,7 @@ public class DiskoCustomIcon implements Icon {
     }
 
     public DiskoCustomIcon(Icon delegate, Color color, float alpha){
+        if(delegate==null) delegate = new ImageIcon(new BufferedImage(48,48,BufferedImage.TYPE_INT_RGB));
         this.delegate = delegate;
         createColorMask(color, alpha);
         createMarkMask();

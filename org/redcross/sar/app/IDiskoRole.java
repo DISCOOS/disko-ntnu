@@ -59,6 +59,12 @@ public interface IDiskoRole {
 	public String getDescription();
 	
 	/**
+	 * Re-initialize all work processes
+	 * @return The current worksprocess
+	 */
+	public void reInitWpModules();
+	
+	/**
 	 * Get a reference to the current (active) work process module
 	 * @return The current worksprocess
 	 */

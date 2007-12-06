@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -48,7 +49,12 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	{
 		public int compare(IPersonnelIf o1, IPersonnelIf o2)
 		{
-			return o1.getFirstname().compareTo(o2.getFirstname());
+			if(o1.getFirstname()!=null)
+				return o1.getFirstname().compareTo(o2.getFirstname());
+			else if(o2.getFirstname()!=null) 
+				return o2.getFirstname().compareTo(o1.getFirstname());
+			else
+				return 0;
 		}
 	};
 
@@ -98,7 +104,7 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
                     }
                 }
             }		
-            return personnelUnit == null ? "" : personnelUnit.getTypeAndNumber();
+            return personnelUnit == null ? "" : MsoUtils.getUnitName(personnelUnit,false);
 		}
 		return null;
 	}

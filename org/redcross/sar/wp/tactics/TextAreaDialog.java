@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -171,10 +173,15 @@ public class TextAreaDialog extends DiskoDialog {
 			try {
 				textArea = new JTextArea();
 				textArea.setLineWrap(true);
-				textArea.addKeyListener(new java.awt.event.KeyAdapter() {
-					public void keyTyped(java.awt.event.KeyEvent e) {
-						setText(getText()+e.getKeyChar(),false,true);
+				textArea.getDocument().addDocumentListener(new DocumentListener() {
+					public void changedUpdate(DocumentEvent e) {
+						// no mso update allowed?
+						if (isWorking()) return;
+						// update mso model
+						setText(textArea.getText(),false,true);						
 					}
+					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
+					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

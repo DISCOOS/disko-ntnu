@@ -17,6 +17,8 @@ import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -417,11 +419,15 @@ public class HypothesisDialog extends DiskoDialog {
 				descriptionTextArea = new JTextArea();
 				descriptionTextArea.setLineWrap(true);
 				descriptionTextArea.setEnabled(false);
-				descriptionTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
-					public void keyTyped(java.awt.event.KeyEvent e) {
+				descriptionTextArea.getDocument().addDocumentListener(new DocumentListener() {
+					public void changedUpdate(DocumentEvent e) {
+						// no mso update allowed?
 						if (isWorking()) return;
-						setDescription(getDescriptionTextArea().getText()+e.getKeyChar(), false, true);
+						// update mso model
+						setDescription(descriptionTextArea.getText(),false,true);						
 					}
+					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
+					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

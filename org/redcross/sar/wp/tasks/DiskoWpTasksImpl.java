@@ -104,7 +104,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             public void handleTick(TickEvent e)
             {
             	try {
-            		DiskoWorkPool.getInstance().schedule(new TaskTickWork());
+            		//DiskoWorkPool.getInstance().schedule(new TaskTickWork());
             	}
             	catch(Exception ex) {
             		ex.printStackTrace();

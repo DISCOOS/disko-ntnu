@@ -28,6 +28,7 @@ import javax.swing.*;
 import java.lang.reflect.Method;
 import java.util.*;
 
+
 /**
  * For documentation, see {@link  IModelDriverIf}
  */
@@ -210,12 +211,15 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     boolean setActiveOperation(SarOperation soper)
     {
-        MsoModelImpl.getInstance().setRemoteUpdateMode();
+        // notify model
+    	MsoModelImpl.getInstance().setRemoteUpdateMode();
         MsoModelImpl.getInstance().suspendClientUpdate();
         //CREATE MSO operation
         createMsoOperation(soper);
+        // get copy of object
+        List<SarObject> objects = new ArrayList<SarObject>(soper.getObjectList());
         // ADD ALL CO
-        for (SarObject so : soper.getObjectList())
+        for (SarObject so : objects)
         {
             if (so.getName().equals("CmdPost"))
             {
@@ -223,7 +227,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             }
         }
         // ADD REST OF SARObjects
-        for (SarObject so : soper.getObjectList())
+        for (SarObject so : objects)
         {
             if (!so.getName().equals("CmdPost"))
             {
@@ -231,17 +235,21 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             }
         }
         //ADD RELATIONS
-        for (SarObject so : soper.getObjectList())
+        for (SarObject so : objects)
         {
-            //AddNamedrelations
-            Iterator<Map.Entry<String, SarBaseObject>> table = so.getNamedRelations().entrySet().iterator();
+            // get copy of named relations
+            Hashtable<String,SarBaseObject> namedRelations = new Hashtable<String,SarBaseObject>(so.getNamedRelations());            
+            //Add named relations
+            Iterator<Map.Entry<String, SarBaseObject>> table = namedRelations.entrySet().iterator();
             while (table.hasNext())
             {
                 Map.Entry<String, SarBaseObject> entry = table.next();
                 updateMsoReference(so, (SarObjectImpl) entry.getValue(), entry.getKey(), SarBaseObjectImpl.ADD_NAMED_REL_FIELD);
             }
+            // get copy of named relations
+            Hashtable<String,List<SarBaseObject>> relations = new Hashtable<String,List<SarBaseObject>>(so.getRelations());            
             //Add rest
-            Iterator<Map.Entry<String, List<SarBaseObject>>> rels = so.getRelations().entrySet().iterator();
+            Iterator<Map.Entry<String, List<SarBaseObject>>> rels = relations.entrySet().iterator();
             while (rels.hasNext())
             {
                 Map.Entry<String, List<SarBaseObject>> entry = rels.next();
@@ -263,6 +271,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             }
 
         }
+        // resume old modes
         MsoModelImpl.getInstance().resumeClientUpdate();
         MsoModelImpl.getInstance().restoreUpdateMode();
 
@@ -901,31 +910,31 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 		 * Notifies the model of change in worker thread (system modal)
 		 */
 		public Void doWork() {
+        	// set remote update mode
+        	MsoModelImpl.getInstance().setRemoteUpdateMode();
+        	// catch errors and log them
             try
             {
-            	// set remote update mode
-            	MsoModelImpl.getInstance().setRemoteUpdateMode();
             	// do the update
                 if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
                 {
-                    if (change.getSource() instanceof SarOperation)
-                    {
+                    if (change.getSource() instanceof SarOperation){
                         createMsoOperation((SarOperation) change.getSource());
-                    } else if (change.getSource() instanceof SarObject)
-                    {
+                    } 
+                    else if (change.getSource() instanceof SarObject){
                         addMsoObject((SarObject) change.getSource());
-                    } else
-                    {
+                    } 
+                    else{
                         Log.warning("SaraChange not handled for objectType " + change.getSource().getClass().getName());
                     }
 
                     //TODO implementer for de andre objekttypene fact og object
-                } else if (change.getChangeType() == SaraChangeEvent.TYPE_CHANGE)
-                {
+                } 
+                else if (change.getChangeType() == SaraChangeEvent.TYPE_CHANGE){
                     changeMsoFromSara(change);
 
-                } else if (change.getChangeType() == SaraChangeEvent.TYPE_REMOVE)
-                {
+                } 
+                else if (change.getChangeType() == SaraChangeEvent.TYPE_REMOVE){
                     removeInMsoFromSara(change);
                 }
             }

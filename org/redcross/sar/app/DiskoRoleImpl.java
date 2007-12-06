@@ -96,6 +96,13 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 		}
 	}
 	
+	public void reInitWpModules() {
+		for (int i = 0; i < modules.size(); i++) {
+			// forward
+			modules.get(i).reInitWP();
+		}
+	}
+	
 	public IDiskoWpModule getDiskoWpModule(String id) {
 		for (int i = 0; i < modules.size(); i++) {
 			if ((getName()+modules.get(i).getName()).equals(id)) {

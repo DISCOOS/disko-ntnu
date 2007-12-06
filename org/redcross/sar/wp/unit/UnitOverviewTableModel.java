@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
@@ -100,7 +101,7 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 		switch(column)
 		{
 		case 0:
-			return unit.getTypeText() + " " + unit.getUnitNumber();
+			return MsoUtils.getUnitName(unit, true);
 		}
 		return null;
 	}

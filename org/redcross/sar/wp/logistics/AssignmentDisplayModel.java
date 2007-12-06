@@ -134,6 +134,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
     private void setSelectableList()
     {
         Collection<IAssignmentIf> selectionList = m_assigmentSelection == IAssignmentIf.AssignmentStatus.READY ? m_priAssignments.getAssignmens() : selectAssignments(m_selectableSelector);
+        //Collection<IAssignmentIf> selectionList = selectAssignments(m_selectableSelector);
         m_selectableAssignments.setAssignmentList(selectionList);
         m_selectableAssignments.setSelectedStatus(m_selectableStatus);
     }

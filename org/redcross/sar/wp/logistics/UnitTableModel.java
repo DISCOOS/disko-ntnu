@@ -141,6 +141,11 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
         fireTableDataChanged();
     }
 
+    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
+    {
+        return myInterests.contains(aMsoObject.getMsoClassCode());
+    }
+
     public void scrollToTableCellPosition(int aRowNumber)
     {
         Rectangle rowRect = m_table.getCellRect(m_table.convertRowIndexToView(aRowNumber), 0, true);
@@ -162,11 +167,6 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
     }
 
     private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT, IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
-
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
-    {
-        return myInterests.contains(aMsoObject.getMsoClassCode());
-    }
 
     private final Selector<IUnitIf> m_unitSelector = new Selector<IUnitIf>()
     {

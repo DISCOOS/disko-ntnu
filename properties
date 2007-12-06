@@ -153,6 +153,8 @@ DiskoToolType.SCALE_COMMAND.icon=icons/48x48/scale.png
 DiskoToolType.SCALE_COMMAND.text=Skala
 DiskoToolType.POSITION_TOOL.icon=icons/48x48/position.png
 DiskoToolType.POSITION_TOOL.text=Posisjon
+DiskoToolType.DRAW_HOST_TOOL.icon=
+DiskoToolType.DRAW_HOST_TOOL.text=
 
 IconEnum.SNAP.icon=icons/32x32/snap.png
 IconEnum.SNAP.text=Snapping

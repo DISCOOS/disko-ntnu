@@ -12,6 +12,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
@@ -161,11 +163,15 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 				timeTextField = new JTextField();
 				timeTextField.setText("0");
 				timeTextField.setPreferredSize(new Dimension(100, 20));
-				timeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-					public void keyTyped(java.awt.event.KeyEvent e) {
+				timeTextField.getDocument().addDocumentListener(new DocumentListener() {
+					public void changedUpdate(DocumentEvent e) {
+						// no mso update allowed?
 						if (isWorking()) return;
-						setEstimatedTime(Integer.getInteger(timeTextField.getText()+e.getKeyChar()));
+						// update mso model
+						setEstimatedTime(Integer.getInteger(timeTextField.getText()),false,true);						
 					}
+					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
+					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 				timeTextField.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {					

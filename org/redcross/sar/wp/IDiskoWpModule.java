@@ -6,7 +6,6 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.IDiskoWorkEventListener;
 import org.redcross.sar.event.ITickEventListenerIf;
-import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf;
