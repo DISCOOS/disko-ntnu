@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000184" name="POI" objectType="test" pos="26">
+<fact comp="n" edit="y" id="00000000185" label="Position" pos1="999" pos2="999" relTo="00000000184" version="1">
+<loc_fact lat_value="" locationType="1" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000186" label="Remarks" pos1="999" pos2="999" relTo="00000000184" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000187" label="Type" pos1="999" pos2="999" relTo="00000000184" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000188" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="00000000184" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+</object>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DiskoApplikasjon>
+	<DiskoRolle name="nl" title="Nestleder">
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.logistics.DiskoWpLogisticsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.messageLog.DiskoWpMessageLogImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.tasks.DiskoWpTasksImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+	</DiskoRolle>
+	<DiskoRolle name="al" title="Aksjonsleder">
+		<DiskoModule classname="org.redcross.sar.wp.ds.DiskoWpDsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.states.DiskoWpStatesImpl"/>
+	</DiskoRolle>
+	<DiskoRolle name="sb" title="Sambandsleder">
+		<DiskoModule classname="org.redcross.sar.wp.DiskoWpMapImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.messageLog.DiskoWpMessageLogImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.logistics.DiskoWpLogisticsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.tasks.DiskoWpTasksImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+	</DiskoRolle>
+	<DiskoRolle name="adm" title="Administrator">
+		<DiskoModule classname="org.redcross.sar.wp.DiskoWpMapImpl"/>
+	</DiskoRolle>
+</DiskoApplikasjon>

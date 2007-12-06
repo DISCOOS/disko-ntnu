@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000136" name="Message" objectType="test" pos="19">
+<fact comp="n" edit="y" id="00000000137" label="TimeStamp" pos1="999" pos2="999" relTo="00000000136" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000138" label="Visible" pos1="999" pos2="999" relTo="00000000136" version="1">
+<num_fact antdec="0" max="1.0" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000139" label="Status" pos1="999" pos2="999" relTo="00000000136" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000140" label="Number" pos1="999" pos2="999" relTo="00000000136" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000141" label="Created" pos1="999" pos2="999" relTo="00000000136" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000142" label="Broadcast" pos1="999" pos2="999" relTo="00000000136" version="1">
+<num_fact antdec="0" max="1.0" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000143" label="OccuredTime" pos1="999" pos2="999" relTo="00000000136" version="1">
+<date_fact/>
+</fact>
+</object>

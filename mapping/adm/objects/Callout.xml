@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000079" name="Callout" objectType="test" pos="7">
+<fact comp="n" edit="y" id="00000000080" label="Department" pos1="999" pos2="999" relTo="00000000079" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000081" label="Organization" pos1="999" pos2="999" relTo="00000000079" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000082" label="Title" pos1="999" pos2="999" relTo="00000000079" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000083" label="Created" pos1="999" pos2="999" relTo="00000000079" version="1">
+<date_fact/>
+</fact>
+</object>

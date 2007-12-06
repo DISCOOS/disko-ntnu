@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<eclipse-userlibraries version="2">
+    <library name="JasperReports" systemlibrary="true">
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/swtgraphics2d.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/commons-beanutils-1.7.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/commons-collections-2.1.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/commons-digester-1.7.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/commons-logging-api-1.0.2.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/gnujaxp.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/itext-2.0.2.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/itext-2.0.6.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/jasperreports-1.3.4.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/jcommon-1.0.10.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/jfreechart-1.0.6.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/jfreechart-1.0.6-experimental.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/jfreechart-1.0.6-swt.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/junit.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/jxl.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/poi-3.0.1-FINAL-20070705.jar"/>
+        <archive path="C:/Documents and Settings/kennetgu/workspace/DISKO-SAR/lib/servlet.jar"/>
+    </library>
+</eclipse-userlibraries>

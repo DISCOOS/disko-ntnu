@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000110" name="Environment" objectType="test" pos="12">
+<fact comp="n" edit="y" id="00000000111" label="TimeStamp" pos1="999" pos2="999" relTo="00000000110" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000112" label="Visible" pos1="999" pos2="999" relTo="00000000110" version="1">
+<num_fact antdec="0" max="1.0" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000113" label="Text" pos1="999" pos2="999" relTo="00000000110" version="1">
+<str_fact/>
+</fact>
+</object>
