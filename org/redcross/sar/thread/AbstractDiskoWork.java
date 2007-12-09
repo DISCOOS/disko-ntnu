@@ -22,6 +22,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	public boolean m_isModal = false;
 	public boolean m_showProgress = false;
 	public boolean m_isDone = false;
+	public boolean m_suspend = false;
 	public DiskoProgressMonitor m_monitor = null;
 	public WorkOnThreadType m_workOnThread = null;
 	
@@ -32,6 +33,15 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 			boolean isModal, WorkOnThreadType workOnThread, 
 			String message, long millisToPopup, 
 			boolean showProgress) throws Exception {
+		this(isThreadSafe,isModal,workOnThread,message,millisToPopup,showProgress,true);
+	}
+	/**
+	 * Constructor
+	 */
+	public AbstractDiskoWork(boolean isThreadSafe, 
+			boolean isModal, WorkOnThreadType workOnThread, 
+			String message, long millisToPopup, 
+			boolean showProgress, boolean suspend) throws Exception {
 		// validate parameters
 		if(!isThreadSafe && m_workOnThread == 
 			WorkOnThreadType.WORK_ON_NEW) {
@@ -56,6 +66,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		m_showProgress = showProgress;
 		// get monitor
 		m_monitor = DiskoProgressMonitor.getInstance();
+		// set suspend flag
+		m_suspend = suspend;
 
 	}
 
@@ -130,10 +142,12 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		boolean isEnabled = frame.isEnabled();
 		// disable to prevent user input (keeps work pool concurrent)
 		frame.setEnabled(false);
+		frame.requestFocus();
 		// get flag
 		boolean canShowProgress = canShowProgess();
-		// increment suspend counter
-		MsoModelImpl.getInstance().suspendClientUpdate();
+		// increment suspend counter?
+		if(m_suspend)
+			MsoModelImpl.getInstance().suspendClientUpdate();
 		// show progress?
 		if(m_showProgress && canShowProgress) {
 			// set millis to progress popup?
@@ -155,10 +169,12 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 			// notify progress monitor
 			m_monitor.finish();
 		}
-		// decrement resume suspend counter
-        MsoModelImpl.getInstance().resumeClientUpdate();
+		// decrement resume suspend counter?
+		if(m_suspend)
+			MsoModelImpl.getInstance().resumeClientUpdate();
 		// resume previous state
 		frame.setEnabled(isEnabled);
+		frame.requestFocus();
 	}
 	
 	/** 

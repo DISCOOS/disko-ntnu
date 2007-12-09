@@ -75,6 +75,9 @@ public class UnitTableModel extends AbstractTableModel implements
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
+    	// invalid index?
+    	if(!(rowIndex<rows.length)) return null;
+    	// get row
 		Object[] row = (Object[]) rows[rowIndex];
 		if(row != null)
 			return row[columnIndex];

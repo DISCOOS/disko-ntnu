@@ -378,8 +378,8 @@ public class MapUtil {
 	public static Point getPointFromUTM(String utm) 
 		throws UnknownHostException, IOException {
 		String zone = utm.subSequence(0, 3).toString();
-		String x = utm.subSequence(3, 9).toString();
-		String y = utm.subSequence(10, 16).toString();
+		String x = utm.subSequence(3, 10).toString();
+		String y = utm.subSequence(11, 18).toString();
 		Point point = new Point();
 		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);		
 		point.setSpatialReferenceByRef(incommingCoordSystem);

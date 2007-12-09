@@ -527,6 +527,8 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 		public void actionPerformed(ActionEvent e) {
 			// has no progress?
 			if(!m_isCancelled && System.currentTimeMillis()- m_start > m_millisToShow) {
+				// stop timer
+				m_timer.stop();
 				// show me!
 				setVisible(m_isVisible);
 			}

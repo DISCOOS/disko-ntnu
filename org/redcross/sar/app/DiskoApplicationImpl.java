@@ -765,7 +765,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		SetActiveOperation(String opID) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Kobler til aksjon",100,true);
+					"Kobler til aksjon",100,true,false);
 			// save
 			m_opID = opID;
 		}
@@ -782,19 +782,17 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			try  {
 				if(m_opID!=null)
 				{
-					// suspend update?
+															
+					// notify current work processes?
 					if(currentRole!=null)
-						currentRole.getCurrentDiskoWpModule().suspendUpdate();
+						currentRole.fireBeforeOperationChange();
 										
 					// return status
 					boolean flag = MsoModelImpl.getInstance().getModelDriver().setActiveOperation(m_opID);
 					
-					// reinitalize work processes and resume update?
+					// notify current work processes?
 					if(currentRole!=null) {
-						// reinitialize work process modules
-						currentRole.reInitWpModules();
-						// resume update
-						currentRole.getCurrentDiskoWpModule().resumeUpdate();
+						currentRole.fireAfterOperationChange();
 					}
 					
 					// return flag

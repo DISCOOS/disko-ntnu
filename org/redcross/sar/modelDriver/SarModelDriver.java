@@ -129,11 +129,13 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	        	// failed to clear mso model
 	            return false;
 	        }
+	        
 	        // try to set as active operation
 	        if (!setActiveOperation(soper)){
 	        	// failed to set as active operation
 	            return false;
 	        }
+	        
 	        // save operation
 	        sarOperation = soper;
 	        
@@ -167,46 +169,72 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     
     private boolean clearMSO()
     {
-    	try {
+        
+        // initialize
+        boolean success = false;
+        
+        // notify model
+    	MsoModelImpl.getInstance().setRemoteUpdateMode();
+        MsoModelImpl.getInstance().suspendClientUpdate();
+        
+        try {
+    		
 	    	// get manager
 	        IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
-	        // loop over all objects and remove
-	        Iterator<IMsoObjectIf> it = saraMsoMap.values().iterator();
-        	// start to remove all references
-	        while(it.hasNext()) {
-	        	IMsoObjectIf msoObject = it.next(); 
-	        	if(msoObject instanceof IMsoReferenceIf)
-	        		msoManager.remove(msoObject);
-	        }
-	        // loop over remaining objects and remove except for CmdPost and Operation
-	        it = saraMsoMap.values().iterator();
-        	// start to remove all references
-	        while(it.hasNext()) {
-	        	IMsoObjectIf msoObject = it.next(); 
-	        	if(!(msoObject instanceof ICmdPostIf || msoObject instanceof IOperationIf))
-	        		msoManager.remove(msoObject);
-	        }
-	        // remove command posts
-	        it = saraMsoMap.values().iterator();
-        	// start to remove all references
-	        while(it.hasNext()) {
-	        	IMsoObjectIf msoObject = it.next(); 
-	        	if(msoObject instanceof ICmdPostIf)
-	        		msoManager.remove(msoObject);
-	        }
+	        
+        	// delete all deleteable references
+        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+        		if(msoObj instanceof IMsoReferenceIf) {
+        			if(((IMsoReferenceIf)msoObj).canDelete()) {
+        				msoObj.deleteObject();
+        			}
+        		}
+        	}
+        	
+        	// delete all deleteable objects
+        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
+    				msoObj.deleteObject();
+        		}
+        	}
+
+        	// delete all undeleteable objects
+        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+        		if(!msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
+        			msoObj.deleteObject();
+        	}
+        	        	
 	        // get operation
 	    	IOperationIf opr = msoManager.getOperation();
+	    	
 	    	// remove operation?
-	    	if(opr!=null)
+	    	if(opr!=null) {
+	    		// forward
 	    		msoManager.remove(opr);
-	    	// return success
-	        return true;
+	    	}	    	
+	    	
+	    	// clear maps
+	    	saraMsoMap.clear();	    	
+	    	msoSaraMap.clear();
+	    	
+	    	// do garbage collection
+	    	Runtime.getRuntime().gc();
+	    	
+	    	// set flag
+	    	success = true;
+	    	
     	}
     	catch(Exception e) {
     		e.printStackTrace();
     	}
-    	// return failure
-        return true;
+
+    	// resume old modes
+        MsoModelImpl.getInstance().resumeClientUpdate();
+        MsoModelImpl.getInstance().restoreUpdateMode();
+
+    	// return state
+        return success;
+        
     }
 
     boolean setActiveOperation(SarOperation soper)
@@ -214,10 +242,13 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         // notify model
     	MsoModelImpl.getInstance().setRemoteUpdateMode();
         MsoModelImpl.getInstance().suspendClientUpdate();
+        
         //CREATE MSO operation
         createMsoOperation(soper);
+        
         // get copy of object
         List<SarObject> objects = new ArrayList<SarObject>(soper.getObjectList());
+        
         // ADD ALL CO
         for (SarObject so : objects)
         {
@@ -226,6 +257,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 addMsoObject(so);
             }
         }
+        
         // ADD REST OF SARObjects
         for (SarObject so : objects)
         {
@@ -234,6 +266,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 addMsoObject(so);
             }
         }
+        
         //ADD RELATIONS
         for (SarObject so : objects)
         {
@@ -271,6 +304,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             }
 
         }
+        
         // resume old modes
         MsoModelImpl.getInstance().resumeClientUpdate();
         MsoModelImpl.getInstance().restoreUpdateMode();

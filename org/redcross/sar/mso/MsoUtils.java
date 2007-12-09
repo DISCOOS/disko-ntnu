@@ -5,11 +5,8 @@ package org.redcross.sar.mso;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
-
-import javax.swing.undo.AbstractUndoableEdit;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.DiskoMap;
@@ -20,8 +17,6 @@ import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IOperationAreaIf;
@@ -33,14 +28,9 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
-import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Route;
-import org.redcross.sar.wp.IDiskoWp;
-import org.redcross.sar.wp.messageLog.MessageLogBottomPanel;
 
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IPolyline;
@@ -89,6 +79,42 @@ public class MsoUtils {
 				// cast
 				e = ((AbstractUnit)msoObj).getSubType();
 			}
+		}
+		else if(msoObj instanceof IPOIIf) {
+			e =((IPOIIf)msoObj).getType();
+		}
+		
+    	// return sub type
+        return e;
+    }    
+    
+    public static Enum getStatus(IMsoObjectIf msoObj)
+    {
+    	// initialize
+    	Enum e = null;
+    	IMsoObjectIf msoOwner = null;
+    	
+		// get type object
+    	if(msoObj instanceof IRouteIf) {
+			msoOwner = getOwningArea(msoObj).getOwningAssignment();
+		}
+		else if(msoObj instanceof IAreaIf) {
+			msoOwner = ((IAreaIf)msoObj).getOwningAssignment();
+		}
+
+		// replace with owner?
+		if(msoOwner!=null)
+			msoObj = msoOwner;
+		
+		// get subtype
+		if(msoObj instanceof IAssignmentIf) {
+			e =((IAssignmentIf)msoObj).getStatus();			
+		}
+		else if(msoObj instanceof IUnitIf) {
+			e =((IUnitIf)msoObj).getStatus();
+		}
+		else if(msoObj instanceof ITaskIf) {
+			e =((ITaskIf)msoObj).getStatus();
 		}
 		
     	// return sub type
@@ -149,20 +175,24 @@ public class MsoUtils {
     		// get model
     		IMsoModelIf anModel = Utils.getApp().getMsoModel();
     		
-	    	// get all areas
-	    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getItems());
-	
-	    	// searh for route
-	    	for(int i=0;i<areaList.size();i++) {
-	    		// get area
-	    		IAreaIf area = areaList.get(i); 
-	    		// found?
-	    		if(area.getAreaGeodata().contains(anRoute)) {
-	    			// found
-	    			found = area;
-	    			break;
-	    		}
-	    	}
+            ICmdPostIf cmdPost = anModel.getMsoManager().getCmdPost();        
+            if(cmdPost!=null)	{
+            	
+		    	// get all areas
+		    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getItems());
+		
+		    	// searh for route
+		    	for(int i=0;i<areaList.size();i++) {
+		    		// get area
+		    		IAreaIf area = areaList.get(i); 
+		    		// found?
+		    		if(area.getAreaGeodata().contains(anRoute)) {
+		    			// found
+		    			found = area;
+		    			break;
+		    		}
+		    	}
+            }
     	}
     	// return owning area
         return found;
@@ -179,20 +209,27 @@ public class MsoUtils {
     		// get model
     		IMsoModelIf anModel = Utils.getApp().getMsoModel();
     		
-    		// get all areas
-	    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getItems());
-	
-	    	// searh for route
-	    	for(int i=0;i<areaList.size();i++) {
-	    		// get area
-	    		IAreaIf area = areaList.get(i); 
-	    		// found?
-	    		if(area.getAreaPOIs().contains(anPOI)) {
-	    			// found
-	    			found = area;
-	    			break;
-	    		}
-	    	}
+    		// get cmd post
+    		ICmdPostIf cmdPost = anModel.getMsoManager().getCmdPost();
+    		
+    		// has cmd post?
+    		if(cmdPost!=null) {
+    			
+	    		// get all areas
+		    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(cmdPost.getAreaList().getItems());
+		
+		    	// searh for route
+		    	for(int i=0;i<areaList.size();i++) {
+		    		// get area
+		    		IAreaIf area = areaList.get(i); 
+		    		// found?
+		    		if(area.getAreaPOIs().contains(anPOI)) {
+		    			// found
+		    			found = area;
+		    			break;
+		    		}
+		    	}
+    		}
     	}
     	
     	// return owning area

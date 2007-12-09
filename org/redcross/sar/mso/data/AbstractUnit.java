@@ -774,7 +774,8 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     public Set<IMessageIf> getReferringMessages()
     {
         simpleReferringMesssageSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getMessageLog().selectItems(simpleReferringMesssageSelector);
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        return cmdPost != null ? cmdPost.getMessageLog().selectItems(simpleReferringMesssageSelector) : null;
     }
 
     public Set<IMessageIf> getReferringMessages(Collection<IMessageIf> aCollection)

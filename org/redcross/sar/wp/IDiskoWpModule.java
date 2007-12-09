@@ -55,6 +55,11 @@ public interface IDiskoWpModule {
 	public boolean isChanged();	
 	
 	/**
+	 * @return true if work process is active
+	 */
+	public boolean isActive();	
+	
+	/**
 	 * @return true if DiskoMap is different from null, false otherwise
 	 */
 	public boolean hasMap();
@@ -105,10 +110,17 @@ public interface IDiskoWpModule {
     public void removeTickEventListener(ITickEventListenerIf listener);
     
     /**
-     * Called when changing operation, allows WP to perform house-keeping. E.g. references to CmdPost
+     * Called before operation is changed, allows WP to suspend any 
+     * updates for faster execution
      * lists should be updated.
      */
-    public void reInitWP();
+    public void beforeOperationChange();
+    
+    /**
+     * Called after operation is changed, allows WP to perform house-keeping. E.g. references to CmdPost
+     * lists should be updated.
+     */
+    public void afterOperationChange();
     
     /**
      * Setup of navbar

@@ -84,7 +84,7 @@ public class ChangeToDialog extends DiskoDialog
 				{
 					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 					message.setSingleReceiver(singleReceiver);
-					fireOnWorkChange(null, message, singleReceiver);
+					fireOnWorkFinish();
 				}
 			}	
 		});

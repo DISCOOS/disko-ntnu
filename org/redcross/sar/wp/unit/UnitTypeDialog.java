@@ -25,7 +25,7 @@ public class UnitTypeDialog extends DiskoDialog
 	private JPanel m_contentsPanel;
 	private JButton m_okButton;
 	private JButton m_cancelButton;
-	private EnumSet<UnitType> m_listValues;
+	//private EnumSet<UnitType> m_listValues;
 	private JList m_typeList;
 
 	private static UnitType m_type;
@@ -48,19 +48,19 @@ public class UnitTypeDialog extends DiskoDialog
 		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.PAGE_AXIS));
 
 		// Labels
-		m_contentsPanel.add(new JLabel(m_wpUnit.getText("CreateNewUnit.text")));
-		m_contentsPanel.add(Box.createRigidArea(new Dimension(10, 20)));
+		//m_contentsPanel.add(new JLabel(m_wpUnit.getText("CreateNewUnit.text")));
+		//m_contentsPanel.add(Box.createRigidArea(new Dimension(10, 20)));
 		m_contentsPanel.add(new JLabel(m_wpUnit.getText("ChooseUnitType.text")));
 
 		// List
 		m_typeList = new JList();
-		m_listValues = EnumSet.of(
+		EnumSet<UnitType> data  = EnumSet.of(
 				UnitType.AIRCRAFT,
 				UnitType.BOAT,
 				UnitType.DOG,
 				UnitType.TEAM,
 				UnitType.VEHICLE);
-		m_typeList.setListData(m_listValues.toArray());
+		m_typeList.setListData(data.toArray());
 		m_typeList.setCellRenderer(new UnitTypeCellRenderer());
 		m_typeList.setFixedCellHeight(DiskoButtonFactory.NORMAL_BUTTON_SIZE.height);
 		m_typeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -85,9 +85,14 @@ public class UnitTypeDialog extends DiskoDialog
 		{
 			public void actionPerformed(ActionEvent arg0)
 			{
-				int index = m_typeList.getSelectedIndex();
-				m_type = (UnitType)m_listValues.toArray()[index];
-				fireOnWorkFinish();
+				// get type
+				m_type = (UnitType)m_typeList.getSelectedValue();
+				
+				// was type selected?
+				if(m_type==null)
+					Utils.showWarning("Du må først velge en enhet");
+				else
+					fireOnWorkFinish();
 			}
 		});
 		actionButtonRow.add(m_okButton);

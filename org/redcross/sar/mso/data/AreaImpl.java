@@ -269,7 +269,8 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     public IAssignmentIf getOwningAssignment()
     {
         owningAssigmentSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentList().selectSingleItem(owningAssigmentSelector);
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        return cmdPost != null ? cmdPost.getAssignmentList().selectSingleItem(owningAssigmentSelector) : null;
     }
 
     public void verifyAssignable(IAssignmentIf anAssignment) throws IllegalOperationException

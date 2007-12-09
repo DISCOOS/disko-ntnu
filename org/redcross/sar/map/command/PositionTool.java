@@ -223,7 +223,7 @@ public class PositionTool extends AbstractDrawTool {
 		if(panels==null)
 			panels = new ArrayList<JPanel>(1);			
 		// create panel
-		JPanel panel = new PositionPanel(Utils.getApp(),this,true);
+		JPanel panel = new PositionPanel(this,true);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;

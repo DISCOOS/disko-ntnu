@@ -1,8 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.gui.MapStatusBar;
+import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
 import javax.swing.*;
@@ -10,6 +10,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,6 +58,41 @@ public class MessageLogPanel
 
         WorkspacePanel.add(m_splitter1, BorderLayout.CENTER);
 
+        // get nav button
+        JToggleButton navButton = aWp.getApplication().getUIFactory()
+        	.getMainMenuPanel().getNavToggleButton();
+
+        // add action listener
+        navButton.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				// is wp active?
+				if(m_wpModule.isActive() && m_tablePanel!=null) {
+					// get button
+					final JToggleButton b = (JToggleButton)e.getSource();
+					// show or hide map?
+					if(b.isSelected()){
+						// run after this event has returned to ensure that the map 
+						// is drawn in DiskoMap without bugged output
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								// show map
+					        	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+					            cards.show(m_tablePanel, MAP_ID);
+							}							
+						});
+					}
+					else {
+						// hide map
+			            CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+			            cards.show(m_tablePanel, LOG_ID);
+			        }							
+				}
+				
+			}
+        	
+        });
+        
         initTablePanel();
         initMessagePanel();
     }
@@ -120,7 +157,7 @@ public class MessageLogPanel
         TableColumn column = m_logTable.getColumnModel().getColumn(0);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH);
         column = m_logTable.getColumnModel().getColumn(1);
-        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 1);
+        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 10);
         column = m_logTable.getColumnModel().getColumn(2);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 1);
         column = m_logTable.getColumnModel().getColumn(3);
@@ -129,8 +166,8 @@ public class MessageLogPanel
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
         column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
         column = m_logTable.getColumnModel().getColumn(6);
-        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 25);
-        column.setPreferredWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 25);
+        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 40);
+        column.setPreferredWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 40);
 
         // Init custom renderer
         m_logTable.setDefaultRenderer(Object.class, new MessageTableRenderer());
@@ -169,10 +206,13 @@ public class MessageLogPanel
         return WorkspacePanel;
     }
 
-    private void setTableData()
+    public static void setTableData()
     {
         LogTableModel ltm = (LogTableModel) m_logTable.getModel();
-        ltm.buildTable();
+        ltm.buildTable(null);
+        ltm.fireTableDataChanged();
+        /*int index = ltm.getRowCount()-1;
+        m_logTable.getSelectionModel().setSelectionInterval(index, index);*/
     }
 
     /**
@@ -196,10 +236,12 @@ public class MessageLogPanel
      */
     public static void showMap()
     {
-        if (m_tablePanel != null)
-        {
-        	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
-            cards.show(m_tablePanel, MAP_ID);
+        // get nav button
+        JToggleButton navButton = m_wpModule.getApplication().getUIFactory()
+        	.getMainMenuPanel().getNavToggleButton();
+        // is not selected?
+        if(!navButton.isSelected()) {
+        	navButton.doClick();
         }
     }
 
@@ -208,12 +250,13 @@ public class MessageLogPanel
      */
     public static void hideMap()
     {
-        if (m_tablePanel == null)
-        {
-            return;
+        // get nav button
+        JToggleButton navButton = m_wpModule.getApplication().getUIFactory()
+        	.getMainMenuPanel().getNavToggleButton();
+        // is not selected?
+        if(navButton.isSelected()) {
+        	navButton.doClick();
         }
-        CardLayout cards = (CardLayout) m_tablePanel.getLayout();
-        cards.show(m_tablePanel, LOG_ID);
     }
 
     /**

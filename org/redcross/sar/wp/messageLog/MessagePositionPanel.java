@@ -10,7 +10,6 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.HashMap;
 
-import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
@@ -25,7 +24,6 @@ import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
@@ -168,66 +166,77 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 				// add or move poi?
 				if(p!=null) {
 					
-					// get flag
-					boolean isWorkPoolMode = m_tool.isWorkPoolMode();
+					// get dirty flag
+					boolean isDirty = !unit.getPosition().equals(p);					
 					
-					// reset 
-					m_tool.setWorkPoolMode(false);				
+					// is dirty?
+					if(isDirty) {
 					
-					// update tool
-					m_tool.setCurrentUnit(unit);				
-					
-					// get current message, create if not exist
-					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-					
-					// Get message line, create if not exist
-					IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POSITION, true);
-
-					// get current track
-					ITrackIf track = unit.getTrack();
-					
-					// has no track?
-					if(track==null) {
-						track = m_wpMessageLog.getMsoModel().getMsoManager().createTrack();
-						unit.setTrack(track);
-					}
-					
-					// create track?
-					if(track.getGeodata() == null) {
-						track.setGeodata(new Track(null, null, 1));
-					}
-					
-					// update position
-					unit.setPosition(p);
-					
-					// message line just created?
-					if(messageLine.getLineUnit()==null) {
-
-						// save
-						messageLine.setLineUnit(unit);
-						messageLine.setOperationTime(Calendar.getInstance());
-						messageLine.setLinePosition(p);
-											
-					}
-					else {
-						// get current time position
-						TimePos timePos = new TimePos(
-								messageLine.getLinePosition(),
-								messageLine.getOperationTime());
-						// update position
-						messageLine.setLinePosition(p);					
-						// update last position in track?
-						if(track!=null) {
-							// remove position
-							track.removeTrackPoint(timePos);
+						// get flag
+						boolean isWorkPoolMode = m_tool.isWorkPoolMode();
+						
+						// reset 
+						m_tool.setWorkPoolMode(false);				
+						
+						// update tool
+						m_tool.setCurrentUnit(unit);				
+						
+						// get current message, create if not exist
+						IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+						
+						// Get message line, create if not exist
+						IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POSITION, true);
+	
+						// get current track
+						ITrackIf track = unit.getTrack();
+						
+						// has no track?
+						if(track==null) {
+							track = m_wpMessageLog.getMsoModel().getMsoManager().createTrack();
+							unit.setTrack(track);
 						}
+						
+						// create track?
+						if(track.getGeodata() == null) {
+							track.setGeodata(new Track(null, null, 1));
+						}
+						
+						// update position
+						unit.setPosition(p);
+						
+						// message line just created?
+						if(messageLine.getLineUnit()==null) {
+	
+							// save
+							messageLine.setLineUnit(unit);
+							messageLine.setOperationTime(Calendar.getInstance());
+							messageLine.setLinePosition(p);
+												
+						}
+						else {
+							// get current time position
+							TimePos timePos = new TimePos(
+									messageLine.getLinePosition(),
+									messageLine.getOperationTime());
+							// update position
+							messageLine.setLinePosition(p);					
+							// update last position in track?
+							if(track!=null) {
+								// remove position
+								track.removeTrackPoint(timePos);
+							}
+						}
+						
+						// log current position
+						unit.logPosition();
+						
+						// resume mode
+						m_tool.setWorkPoolMode(isWorkPoolMode);
+						
+						// notify
+						MessageLogBottomPanel.setIsDirty();					
+						
 					}
-					
-					// log current position
-					unit.logPosition();
-					
-					// resume mode
-					m_tool.setWorkPoolMode(isWorkPoolMode);									
 
 				}
 				else {
@@ -285,8 +294,6 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	{
 		// do not show dialog in map
 		m_tool.setShowDialog(false);
-		// show map over log
-		MessageLogPanel.showMap();
 		// center map at position of current unit
 		IUnitIf unit = centerAtPosition(true);
 		// get draw tool dialog
@@ -318,6 +325,8 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		m_tool.setBuffered(true);
 		// show this panel
 		this.setVisible(true);
+		// show map over log
+		MessageLogPanel.showMap();
 	}
 
 	public void hideComponent()
@@ -328,12 +337,10 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		// hide num pad
 		NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 		numPad.setVisible(false);
-		// hide me
-		this.setVisible(false);
 		// hide map
         MessageLogPanel.hideMap();
-        // deselect
-        centerAtPosition(false);
+		// hide me
+		this.setVisible(false);
     }
 
 	private void updatePosition(IMessageIf message)
@@ -431,7 +438,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
                 	IDiskoMap map = m_wpMessageLog.getMap();
 					map.setSelected(unit, isSelected);
 					if(isSelected)
-						map.centerOnMsoObject(unit);
+						map.centerAtMsoObject(unit);
 					map.refreshSelection(unit, map.getSelectionExtent());
 				}
 				catch (AutomationException e1)

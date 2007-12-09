@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
 
 import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
 import org.redcross.sar.gui.DiskoButtonFactory;
@@ -39,6 +40,7 @@ import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
+import org.redcross.sar.wp.messageLog.MessageLogBottomPanel;
 
 /**
  * Implementation of the Unit work process
@@ -359,23 +361,41 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	@Override
 	public boolean confirmDeactivate()
 	{
-		if(changeList.size()>0)
-		{
-			Object[] dialogOptions = {getText("Yes.text"), getText("No.text")};
-    		int n = JOptionPane.showOptionDialog(this.getApplication().getFrame(),
-    				getText("UncommittedChanges.text"),
-    				getText("UncommittedChanges.header"),
-    				JOptionPane.YES_NO_OPTION,
-    				JOptionPane.QUESTION_MESSAGE,
-    				null,
-    				dialogOptions,
-    				dialogOptions[0]);
-    		return (n == JOptionPane.YES_OPTION);
+		// prevent reentry
+		if(isWorking()) {
+			// notify
+			Utils.showWarning(getText("Working.header"), getText("Working.text"));
+			// do not allow to deactivate
+			return false;
 		}
-		else
-		{
-			return true;
-		}
+		
+		// validate data
+		if(isChanged()) {
+							
+			// prompt user
+			String[] options = {getText("DirtyMessageWarning.commit"),
+					getText("DirtyMessageWarning.rollback"),getText("DirtyMessageWarning.cancel")};
+			int ans = JOptionPane.showOptionDialog(getApplication().getFrame(),
+						getText("DirtyMessageWarning.text"),
+						getText("DirtyMessageWarning.header"), JOptionPane.YES_NO_CANCEL_OPTION, 
+		                JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+			
+			// select action
+			switch(ans) {
+			case JOptionPane.OK_OPTION:
+				// forward
+				return finish();
+			case JOptionPane.NO_OPTION:
+				// forward
+				return cancel();						
+			case JOptionPane.CANCEL_OPTION:
+				// do not deactivate
+				return false;
+			}						
+		}	
+		
+		// do not deactivate
+		return false;
 	}
 
 	/**
@@ -1024,7 +1044,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		// Not in use!
 	}
 
-	public void reInitWP()
+	public void afterOperationChange()
 	{
 		// TODO Auto-generated method stub
 		

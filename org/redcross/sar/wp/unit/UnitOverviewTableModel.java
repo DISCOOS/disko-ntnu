@@ -1,7 +1,9 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.MsoUtils;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
@@ -61,9 +63,13 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 	public void handleMsoUpdateEvent(Update e)
 	{
 		// Rebuild list
-		m_units.clear();                                                         // todo use linked list directly
-		IUnitListIf allUnits = m_wpModule.getCmdPost().getUnitList();
-		m_units.addAll(allUnits.selectItems(m_unitSelector, m_unitComparator));
+		m_units.clear();                                                         
+		// todo use linked list directly
+        ICmdPostIf cmdPost = m_wpModule.getCmdPost();        
+        if(cmdPost!=null)	{
+	        IUnitListIf allUnits = cmdPost.getUnitList();
+			m_units.addAll(allUnits.selectItems(m_unitSelector, m_unitComparator));
+        }
 		fireTableDataChanged();
 	}
 
@@ -97,11 +103,13 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 
 	public Object getValueAt(int row, int column)
 	{
-		IUnitIf unit = m_units.get(row);
-		switch(column)
-		{
-		case 0:
-			return MsoUtils.getUnitName(unit, true);
+		// valid index?
+		if(row<m_units.size()) {
+			switch(column){
+			case 0:
+				// return name of unit
+				return MsoUtils.getUnitName(m_units.get(row), true);
+			}
 		}
 		return null;
 	}

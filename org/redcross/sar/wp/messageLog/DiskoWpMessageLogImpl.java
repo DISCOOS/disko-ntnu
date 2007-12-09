@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -52,13 +53,15 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 	        myTools.add(DiskoToolType.MAP_TOGGLE_COMMAND);
 	        myTools.add(DiskoToolType.SCALE_COMMAND);
 	        myTools.add(DiskoToolType.TOC_COMMAND);
+	        myTools.add(DiskoToolType.GOTO_COMMAND);
 	        myTools.add(DiskoToolType.SELECT_FEATURE_TOOL);
 			// forward
-			setupNavBar(myTools,true);
-		}		
-		// show map
+			setupNavBar(myTools,false);
+		}	
+		// make map visible (is not shown in work prosess before
+		// MessageLogPanel.showMap() is called)
 		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(true);
+		map.setVisible(false);
     }
 
     @Override
@@ -70,35 +73,58 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		DiskoMap map = (DiskoMap) getMap();
 		map.setVisible(false);
 		
+		/*
     	m_logPanel.hidePanels();
     	m_logPanel.clearSelection();
 
     	// Delete current message
     	MessageLogBottomPanel.clearCurrentMessage();
+    	*/
     }
     	
     	
     @Override
     public boolean confirmDeactivate()
     {
-    	// Warn user that it work processes can't be changed if message is not committed
-    	if(MessageLogBottomPanel.isMessageDirty())
-    	{
-    		Object[] dialogOptions = {getText("yes.text"), getText("no.text")};
-    		int n = JOptionPane.showOptionDialog(this.getApplication().getFrame(), 
-    				getText("DirtyMessageWarning.text"), 
-    				getText("DirtyMessageWarning.header"), 
-    				JOptionPane.YES_NO_OPTION, 
-    				JOptionPane.QUESTION_MESSAGE, 
-    				null, 
-    				dialogOptions, 
-    				dialogOptions[0]);
-    		return (n == JOptionPane.YES_OPTION);
-    	}
-    	else
-    	{
-    		return true;
-    	}
+
+		// prevent reentry
+		if(isWorking()) {
+			// notify
+			Utils.showWarning(getText("Working.header"), getText("Working.text"));
+			// do not allow to deactivate
+			return false;
+		}
+		
+		// validate data
+		if(MessageLogBottomPanel.isMessageDirty()) {
+							
+			// prompt user
+			String[] options = {getText("DirtyMessageWarning.commit"),
+					getText("DirtyMessageWarning.rollback"),getText("DirtyMessageWarning.cancel")};
+			int ans = JOptionPane.showOptionDialog(getApplication().getFrame(),
+						getText("DirtyMessageWarning.text"),
+						getText("DirtyMessageWarning.header"), JOptionPane.YES_NO_CANCEL_OPTION, 
+		                JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+			
+			// select action
+			switch(ans) {
+			case JOptionPane.OK_OPTION:
+				// forward
+				return MessageLogBottomPanel.apply(true);
+			case JOptionPane.NO_OPTION:
+				// forward
+				MessageLogBottomPanel.clearCurrentMessage();						
+				// allow deactive
+				return true;
+			case JOptionPane.CANCEL_OPTION:
+				// do not deactivate
+				return false;
+			}						
+		}		
+		
+		// allow deactivate
+		return true;
+
     }
 
     /* (non-Javadoc)
@@ -123,12 +149,6 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     public void finish()
     {
     }
-
-	public void reInitWP()
-	{
-		// TODO Auto-generated method stub
-		
-	}
 
 	/**
 	 * Adds or updates the message poi line and generates 

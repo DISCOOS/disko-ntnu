@@ -566,27 +566,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 					"Vent litt",100,notify);
 		}
 
-		/**
-		 * done 
-		 * 
-		 * Executed on the Event Dispatch Thread.
-		 * 
-		 */
-		@Override
-		public void done() {
-			try{
-				// resume update
-		        resumeUpdate();
-				// reset flag
-		        setIsNotWorking();        
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}			
-			// forward
-			super.done();
-		}
-
 		@Override
 		public abstract T doWork();
 
@@ -598,6 +577,10 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			suspendUpdate();			
 			// forward
 			super.run();
+			// resume update
+	        resumeUpdate();
+			// reset flag
+	        setIsNotWorking();        
 		}
 
 	}

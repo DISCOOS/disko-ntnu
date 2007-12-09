@@ -155,6 +155,8 @@ DiskoToolType.POSITION_TOOL.icon=icons/48x48/position.png
 DiskoToolType.POSITION_TOOL.text=Posisjon
 DiskoToolType.DRAW_HOST_TOOL.icon=
 DiskoToolType.DRAW_HOST_TOOL.text=
+DiskoToolType.GOTO_COMMAND.icon=icons/48x48/goto.png
+DiskoToolType.GOTO_COMMAND.text=Gå til
 
 IconEnum.SNAP.icon=icons/32x32/snap.png
 IconEnum.SNAP.text=Snapping
@@ -212,6 +214,12 @@ IconEnum.ALLOCATED.icon=icons/48x48/ready.png
 IconEnum.ALLOCATED.text=Legg i kø
 IconEnum.CANCELED.icon=icons/48x48/canceled.png
 IconEnum.CANCELED.text=Fjern oppdrag
+IconEnum.GOTO.icon=icons/48x48/goto.png
+IconEnum.GOTO.text=Gå til
+IconEnum.FORMAT.icon=icons/32x32/format.png
+IconEnum.FORMAT.text=Format
+IconEnum.COORDINATE.icon=icons/32x32/coordinate.png
+IconEnum.COORDINATE.text=Koordinat
 
 UnitType.CP.icon=icons/48x48/cmdpost.png
 UnitType.CP.symbol=symbols/cmdpost.bmp
@@ -233,6 +241,7 @@ UnitType.VEHICLE.symbol=symbols/car.bmp
 UnitType.VEHICLE.text=Kjøretøy
 
 UnitStatus.EMPTY.text=Tom
+UnitStatus.INITIALIZING.text=Opprettes
 UnitStatus.READY.text=Klar
 UnitStatus.PAUSED.text=Pause
 UnitStatus.WORKING.text=I arbeid

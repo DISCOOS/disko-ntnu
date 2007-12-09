@@ -7,7 +7,6 @@ import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMapReplacedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMouseDownEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMouseMoveEvent;
-import com.esri.arcgis.geodatabase.Feature;
 import com.esri.arcgis.geodatabase.IEnumIDs;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.QueryFilter;
@@ -27,18 +26,17 @@ import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Selector;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.SoftBevelBorder;
 
 import java.awt.Toolkit;
@@ -51,7 +49,6 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Iterator;
 
 /**
  * This calls extends MapBean to provide user interface for map rendering
@@ -625,14 +622,22 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return null;
 	}
 
-	public void centerOnSelected() throws IOException, AutomationException {
+	public void centerAtPosition(Position p) throws IOException, AutomationException {
+		// get esri point
+		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
+		if (!point.isEmpty()) {
+			centerAt(point);
+		}
+	}
+	
+	public void centerAtSelected() throws IOException, AutomationException {
 		IEnvelope env = getSelectionExtent();
 		if (env != null) {
 			centerAt(MapUtil.getCenter(env));
 		}
 	}
 	
-	public void centerOnFeature(IFeature feature) throws IOException, AutomationException {
+	public void centerAtFeature(IFeature feature) throws IOException, AutomationException {
 		if(feature!=null) {
 			IEnvelope env = feature.getExtent();
 			if(env!=null) {
@@ -641,7 +646,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 	}
 
-	public void centerOnMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
+	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
 		IEnvelope env = getMsoObjectExtent(msoObject);
 		if(env!=null) {
 			centerAt(MapUtil.getCenter(env));
@@ -679,7 +684,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	public void zoomToMsoObject(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException {
 		// is poi?
 		if(msoObject instanceof IPOIIf) {
-			centerOnMsoObject(msoObject);
+			centerAtMsoObject(msoObject);
 		}
 		else {
 			IEnvelope env = getMsoObjectExtent(msoObject);

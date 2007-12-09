@@ -136,7 +136,9 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 
 	public Object getValueAt(int row, int column)
 	{
+		
 		ITaskListIf taskList = m_wpTasks.getCmdPost().getTaskList();
+		
 		if(row >= taskList.size())
 		{
 			return null;

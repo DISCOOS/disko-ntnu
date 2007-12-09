@@ -50,12 +50,6 @@ public class DiskoWpMapImpl extends AbstractDiskoWpModule implements IDiskoWpMap
 		return "Kart";
 	}
 
-	public void reInitWP()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
 	public boolean cancel() {
 		// TODO Auto-generated method stub
 		return false;

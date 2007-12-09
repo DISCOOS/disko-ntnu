@@ -248,7 +248,7 @@ public class LogisticsPanel implements
 	            // refresh dirty layers
 	            if(isDirty) {
 		            if(m_mapSelectedAssignment!=null) {
-			            m_map.centerOnMsoObject(m_mapSelectedAssignment);
+			            m_map.centerAtMsoObject(m_mapSelectedAssignment);
 		            }
 		            else {
 		            	m_map.refreshMsoLayers(m_map.getSelectionExtent());

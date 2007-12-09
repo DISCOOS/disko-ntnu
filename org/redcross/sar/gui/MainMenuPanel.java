@@ -8,7 +8,6 @@ import javax.swing.JToggleButton;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Hashtable;
 import com.borland.jbcl.layout.VerticalFlowLayout;

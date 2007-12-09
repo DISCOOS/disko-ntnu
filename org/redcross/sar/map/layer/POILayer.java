@@ -11,6 +11,8 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.POIFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoUtils;
+import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
@@ -29,6 +31,8 @@ public class POILayer extends AbstractMsoFeatureLayer {
 
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
+	private RgbColor plannedColor = null;
+	private RgbColor finishedColor = null;
 	private TextSymbol textSymbol = null;
 	private Hashtable<POIType, IDisplayName> symbols = null;
 
@@ -87,6 +91,13 @@ public class POILayer extends AbstractMsoFeatureLayer {
 						IMarkerSymbol markerSymbol = (IMarkerSymbol)symbols.get(type);
 						IColor savePointColor = markerSymbol.getColor();
 						IColor saveTextColor = textSymbol.getColor();	
+	 					// get assignment?
+	 					if(POIType.START.equals(type) || POIType.VIA.equals(type) 
+	 							|| POIType.STOP.equals(type)) {
+							// set color
+	 						markerSymbol.setColor(IAssignmentIf.AssignmentStatus.FINISHED.equals(
+									MsoUtils.getStatus(MsoUtils.getOwningArea(poi))) ? finishedColor : plannedColor);
+	 					}
 						
 						/*
 						// is layer in edit mode?
@@ -166,6 +177,11 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			selectionColor.setBlue(255);
 			selectionColor.setGreen(255);
 
+			plannedColor = new RgbColor();
+			plannedColor.setRed(255);
+
+			finishedColor = new RgbColor();
+			finishedColor.setGreen(155);
 
 			RgbColor redColor = new RgbColor();
 			redColor.setRed(255);

@@ -27,6 +27,7 @@ import org.redcross.sar.map.command.ElementCommand;
 import org.redcross.sar.map.command.EraseCommand;
 import org.redcross.sar.map.command.FlankTool;
 import org.redcross.sar.map.command.FreeHandTool;
+import org.redcross.sar.map.command.GotoCommand;
 import org.redcross.sar.map.command.IDiskoHostTool;
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.command.LineTool;
@@ -89,6 +90,7 @@ public class NavBar extends JPanel {
 	private JButton tocButton = null;
 	private JButton scaleButton = null;
 	private JButton elementButton = null;
+	private JButton gotoButton = null;
 	private AbstractButton standardButton = null;
 	
 	private DrawHostTool drawHostTool = null;
@@ -100,6 +102,7 @@ public class NavBar extends JPanel {
 	private PositionTool positionTool = null;
 	private TocCommand tocCommand = null;
 	private ElementCommand elementCommand = null;
+	private GotoCommand gotoCommand = null;	
 	private EraseCommand eraseCommand = null;
 	private ScaleCommand scaleCommand = null;
 	private SelectFeatureTool selectFeatureTool = null;
@@ -177,6 +180,8 @@ public class NavBar extends JPanel {
 				DiskoToolType.SCALE_COMMAND, ButtonPlacement.RIGHT);
 		addCommand(getTocToggleButton(), getTocTool(), 
 				DiskoToolType.TOC_COMMAND, ButtonPlacement.RIGHT);
+		addCommand(getGotoToggleButton(), getGotoTool(), 
+				DiskoToolType.GOTO_COMMAND, ButtonPlacement.RIGHT);
 	}
 	
 	private JPanel getLeftPanel() {
@@ -287,6 +292,18 @@ public class NavBar extends JPanel {
 			}
 		}
 		return elementCommand;
+	}	
+	
+	public GotoCommand getGotoTool() {
+		if (gotoCommand == null) {
+			try {
+				gotoCommand = new GotoCommand();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return gotoCommand;
 	}	
 	
 	public SplitTool getSplitTool() {
@@ -702,6 +719,18 @@ public class NavBar extends JPanel {
 		return elementButton;
 	}
 	
+	public JButton getGotoToggleButton(){
+		if (gotoButton == null) {
+			try {
+				gotoButton = (JButton)getGotoTool().getButton();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
+		return gotoButton;
+	}
+	
 	public JButton getZoomInFixedButton() {
 		if (zoomInFixedButton == null) {
 			try {
@@ -810,60 +839,52 @@ public class NavBar extends JPanel {
 	}
 	
 	public void setup() {	
-		/*unselectAll();
-		java.awt.EventQueue.invokeLater(
-			new Runnable() {
-				// wait for the map is loaded
-				public void run() {*/
-					try {
-						// initialize
-						boolean isAnySelected = false;
-						// get map
-						IDiskoMap map = app.getCurrentMap();
-						// load
-						Iterator commandIter = commands.values().iterator();
-						Iterator buttonIter  = buttons.values().iterator();
-						// loop over all keys
-						while (commandIter.hasNext() && buttonIter.hasNext()) {
-							// get command
-							ICommand command = (ICommand)commandIter.next();
-							if (command != null) {
-								// get key and button
-								AbstractButton b = (AbstractButton)buttonIter.next();
-								// has current wp a map?
-								if (map != null) {
-									// create command
-									command.onCreate(map);
-									// activate button?
-									if (b.isSelected()) {
-										//b.doClick();
-										isAnySelected=true;
-									}
-								}
-								else {
-									if (command instanceof IDiskoTool) {
-										((IDiskoTool)command).deactivate();
-									}
-									else if (command instanceof IDiskoHostTool) {
-										((IDiskoHostTool)command).deactivate();
-									}
-								}
-							}
+		try {
+			// initialize
+			boolean isAnySelected = false;
+			// get map
+			IDiskoMap map = app.getCurrentMap();
+			// load
+			Iterator commandIter = commands.values().iterator();
+			Iterator buttonIter  = buttons.values().iterator();
+			// loop over all keys
+			while (commandIter.hasNext() && buttonIter.hasNext()) {
+				// get command
+				ICommand command = (ICommand)commandIter.next();
+				if (command != null) {
+					// get key and button
+					AbstractButton b = (AbstractButton)buttonIter.next();
+					// has current wp a map?
+					if (map != null) {
+						// create command
+						command.onCreate(map);
+						// activate button?
+						if (b.isSelected()) {
+							//b.doClick();
+							isAnySelected=true;
 						}
-						// setup host tools
-						setupHostTools();
-						// select default?
-						if(!isAnySelected) {
-							standardButton.doClick();
-						}
-						
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
-				/*}
+					else {
+						if (command instanceof IDiskoTool) {
+							((IDiskoTool)command).deactivate();
+						}
+						else if (command instanceof IDiskoHostTool) {
+							((IDiskoHostTool)command).deactivate();
+						}
+					}
+				}
 			}
-		);*/
+			// setup host tools
+			setupHostTools();
+			// select default?
+			if(!isAnySelected) {
+				standardButton.doClick();
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void hideDialogs() {
@@ -883,6 +904,13 @@ public class NavBar extends JPanel {
 				}				
 			}
 		}
+	}
+	
+	@Override
+	public void setVisible(boolean isVisible) {
+		if(!isVisible)
+			hideDialogs();
+		super.setVisible(isVisible);
 	}
 	
 	public void unselectAll() {
@@ -1150,7 +1178,8 @@ public class NavBar extends JPanel {
 			UIFactory uiFactory = app.getUIFactory();
 			AbstractButton navButton = uiFactory.getMainMenuPanel().getNavToggleButton();
 			// load state
-			m_navButton.load(navButton); 
+			m_navButton.load(navButton);
+			// hide me?
 		}
 		
 		public class ButtonState {
@@ -1176,11 +1205,12 @@ public class NavBar extends JPanel {
 			}
 			
 			public void load(AbstractButton button) {
+				// update properties
 				button.setVisible(m_isVisible);
 				button.setEnabled(m_isEnabled);
-				// show the Navbar?
-				if (m_isSelected && !button.isSelected()) {
-					button.setSelected(true);
+				// fire click?
+				if (m_isSelected != button.isSelected()) {
+					button.doClick();
 				}
 			}
 		};

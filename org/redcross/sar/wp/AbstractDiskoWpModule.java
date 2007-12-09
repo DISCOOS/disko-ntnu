@@ -43,7 +43,7 @@ import java.util.Timer;
 public abstract class AbstractDiskoWpModule 
 			implements IDiskoWpModule, IMsoUpdateListenerIf {
 	
-    private IDiskoRole role = null;
+	private IDiskoRole role = null;
     private IDiskoMap map = null;
     private boolean hasSubMenu = false;
     private Properties properties = null;
@@ -187,6 +187,28 @@ public abstract class AbstractDiskoWpModule
         return callingWp;
     }
 
+	public void beforeOperationChange() {
+		// suspend map update
+		if(map!=null) {
+			map.suspendNotify();
+			map.setSupressDrawing(true);
+		}						
+	}
+    
+	public void afterOperationChange() {
+		// resume map update
+		if(map!=null) {
+			try {
+				map.setSupressDrawing(false);
+				map.refreshMsoLayers();
+				map.resumeNotify();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}		
+	}
+
     /* (non-Javadoc)
       * @see org.redcross.sar.wp.IDiskoWpModule#hasMap()
       */
@@ -328,6 +350,14 @@ public abstract class AbstractDiskoWpModule
         return (changeList.size()>0);
     }
 
+    /**
+     * @return True if change count is larger then zero
+     */
+    public boolean isActive()
+    {
+        return isActive;
+    }
+    
     /* (non-Javadoc)
     * @see org.redcross.sar.wp.IDiskoWpModule#activated()
     */
@@ -595,6 +625,7 @@ public abstract class AbstractDiskoWpModule
 	}
 	
 	public void resumeUpdate() {
+		Utils.getApp().getMsoModel().resumeClientUpdate();
 		if(map!=null) {
 			try {
 				map.setSupressDrawing(false);
@@ -605,7 +636,6 @@ public abstract class AbstractDiskoWpModule
 				e.printStackTrace();
 			}
 		}		
-		Utils.getApp().getMsoModel().resumeClientUpdate();
 	}
 	
 	public boolean isWorking() {

@@ -159,9 +159,8 @@ public class POITableModel extends AbstractTableModel implements
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		if (rows == null) {
-			return null;
-		}
+		if (rows == null) return null;
+    	if(!(rowIndex<rows.size())) return null;
 		Object[] row = (Object[])rows.get(rowIndex);
 		return row[columnIndex];
 	}

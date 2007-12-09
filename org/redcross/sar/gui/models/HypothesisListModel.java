@@ -48,6 +48,9 @@ public class HypothesisListModel extends AbstractListModel implements
 	}
 
 	public Object getElementAt(int index) {
+    	// invalid index?
+    	if(!(index<data.length)) return null;
+    	// return data
 		return data[index];
 	}
 

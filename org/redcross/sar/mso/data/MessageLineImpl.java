@@ -318,7 +318,8 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     public IMessageIf getOwningMessage()
     {
         owningMessageSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getMessageLog().selectSingleItem(owningMessageSelector);
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        return cmdPost != null ? cmdPost.getMessageLog().selectSingleItem(owningMessageSelector) : null;
     }
 
 }

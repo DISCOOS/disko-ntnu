@@ -55,10 +55,12 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	private IMsoModelIf msoModel;
 	private NumPadDialog numPadDialog = null;
 	private POIField poiField = null;
+	private POIFormatPanel formatPanel = null;
 	private JList unitList = null;
 	private JPanel coordPanel = null;
 	private JSeparator listSeparator = null;
 	private JPanel northPanel = null;
+	private JPanel fieldPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton applyButton = null;
 	private JButton cancelButton = null;
@@ -68,10 +70,10 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	
-	public PositionPanel(IDiskoApplication app, PositionTool tool, boolean isVertical) {
+	public PositionPanel(PositionTool tool, boolean isVertical) {
 		
 		// prepare
-		this.app = app;
+		this.app = Utils.getApp();
 		this.tool = tool;
 		this.msoModel = app.getMsoModel();
 		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
@@ -204,13 +206,32 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	}
 	
 	/**
-	 * This method initializes xCoordTextField	
+	 * This method initializes fieldPanel	
 	 * 	
-	 * @return javax.swing.JTextField	
+	 * @return javax.swing.JPanel
+	 */
+	public JPanel getFieldPanel() {
+		if (fieldPanel == null) {
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			fieldPanel = new JPanel();
+			fieldPanel.setLayout(vfl);
+			fieldPanel.add(getPOIField(),null);
+			fieldPanel.add(new JSeparator(JSeparator.HORIZONTAL),null);
+			fieldPanel.add(getFormatPanel(),null);
+		}
+		return fieldPanel;
+	}
+	
+	/**
+	 * This method initializes poiField	
+	 * 	
+	 * @return POIField	
 	 */
 	public POIField getPOIField() {
 		if (poiField == null) {
-			poiField = new POIField(app);
+			poiField = new POIField();
+			poiField.registrate(getFormatPanel());
 			/*poiField.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseClicked(java.awt.event.MouseEvent e) {					
 					if (e.getClickCount() == 2){
@@ -226,6 +247,19 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 		}
 		return poiField;
 	}
+	
+	/**
+	 * This method initializes formatPanel	
+	 * 	
+	 * @return POIFormatPanel
+	 */
+	public POIFormatPanel getFormatPanel() {
+		if (formatPanel == null) {
+			formatPanel = new POIFormatPanel();
+		}
+		return formatPanel;
+	}
+
 
 	public boolean isSingleUnitOnly() {
 		return isSingleUnitOnly;
@@ -387,7 +421,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			// set flow layout
 			coordPanel.setLayout(vfl); 
 			// add components
-			coordPanel.add(getPOIField());
+			coordPanel.add(getFieldPanel());
 			coordPanel.add(listSeparator);
 			coordPanel.add(getListScrollPane());			
 		}
@@ -399,7 +433,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			// set flow layout
 			coordPanel.setLayout(bl); 
 			// add components
-			coordPanel.add(getPOIField(),BorderLayout.WEST);
+			coordPanel.add(getFieldPanel(),BorderLayout.WEST);
 			coordPanel.add(getListScrollPane(),BorderLayout.CENTER);
 		}
 		return coordPanel;

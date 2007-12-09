@@ -1,8 +1,5 @@
 package org.redcross.sar.map.layer;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import com.esri.arcgis.display.*;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IGeometry;
@@ -12,7 +9,6 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -35,6 +31,8 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
+	private RgbColor plannedColor = null;
+	private RgbColor finishedColor = null;
 	private Hashtable<SearchSubType, SimpleLineSymbol> symbols = null;
 	private SimpleLineSymbol defaultLineSymbol = null;
 	private TextSymbol textSymbol = null;
@@ -87,6 +85,9 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 				if(!isFiltered(feature) && feature.isVisible()){
 					GeometryBag geomBag = (GeometryBag)feature.getShape();
 					if (geomBag != null) {
+						// get color
+						RgbColor color = IAssignmentIf.AssignmentStatus.FINISHED.equals(
+							MsoUtils.getStatus(feature.getMsoObject())) ? finishedColor : plannedColor;
 						IAreaIf area = (IAreaIf)feature.getMsoObject();
 						ISearchIf search = (ISearchIf)area.getOwningAssignment();
 						String text = null;
@@ -127,6 +128,8 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 									lineSymbol.setColor(selectionColor);
 									textSymbol.setColor(selectionColor);
 		 	 					}
+		 	 					else
+		 	 						lineSymbol.setColor(color);
 							}
 							else {
 								// disable all features
@@ -170,13 +173,16 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			selectionColor.setBlue(255);
 			selectionColor.setGreen(255);
 
-			RgbColor redColor = new RgbColor();
-			redColor.setRed(255);
+			plannedColor = new RgbColor();
+			plannedColor.setRed(255);
+
+			finishedColor = new RgbColor();
+			finishedColor.setGreen(155);
 
 			SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
 			lineSymbol.setStyle(esriSimpleLineStyle.esriSLSDash);
 			lineSymbol.setWidth(lineWidth);
-			lineSymbol.setColor(redColor);
+			lineSymbol.setColor(plannedColor);
 
 			symbols.put(ISearchIf.SearchSubType.LINE, lineSymbol);
 			symbols.put(ISearchIf.SearchSubType.PATROL, lineSymbol);
@@ -191,7 +197,8 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 
 			defaultLineSymbol = new SimpleLineSymbol();
 			defaultLineSymbol.setWidth(lineWidth);
-			defaultLineSymbol.setColor(redColor);
+			defaultLineSymbol.setColor(plannedColor);
+			
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

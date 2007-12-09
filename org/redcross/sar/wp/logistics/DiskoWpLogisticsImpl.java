@@ -66,13 +66,18 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 	        myTools.add(DiskoToolType.MAP_TOGGLE_COMMAND);
 	        myTools.add(DiskoToolType.SCALE_COMMAND);
 	        myTools.add(DiskoToolType.TOC_COMMAND);
+	        myTools.add(DiskoToolType.GOTO_COMMAND);
 			// forward
 			setupNavBar(myTools,true);
 		}
 
 		// show map
-		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				DiskoMap map = (DiskoMap) getMap();
+				map.setVisible(true);
+			}			
+		});
 				
     }
 
@@ -158,8 +163,9 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         showWarning(getText("transfer_warning.text"));
     }
 
-	public void reInitWP()
+	public void afterOperationChange()
 	{
+		super.afterOperationChange();
 		m_logisticsPanel.reInitPanel();
 	}
 

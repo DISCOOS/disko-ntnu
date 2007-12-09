@@ -96,10 +96,17 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 		}
 	}
 	
-	public void reInitWpModules() {
+	public void fireBeforeOperationChange() {
 		for (int i = 0; i < modules.size(); i++) {
 			// forward
-			modules.get(i).reInitWP();
+			modules.get(i).beforeOperationChange();
+		}
+	}
+	
+	public void fireAfterOperationChange() {
+		for (int i = 0; i < modules.size(); i++) {
+			// forward
+			modules.get(i).afterOperationChange();
 		}
 	}
 	

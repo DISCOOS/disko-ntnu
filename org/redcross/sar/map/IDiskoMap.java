@@ -8,11 +8,13 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Selector;
 
 import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
@@ -105,11 +107,13 @@ public interface IDiskoMap {
 	
 	public int getMsoSelectionCount(boolean update) throws IOException, AutomationException;
 	
-	public void centerOnSelected () throws IOException, AutomationException;
-
-	public void centerOnFeature(IFeature feature) throws IOException, AutomationException;
+	public void centerAtPosition(Position p) throws IOException, AutomationException;
 	
-	public void centerOnMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
+	public void centerAtSelected () throws IOException, AutomationException;
+
+	public void centerAtFeature(IFeature feature) throws IOException, AutomationException;
+	
+	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
 	
 	public void zoomToSelected () throws IOException, AutomationException;
 	

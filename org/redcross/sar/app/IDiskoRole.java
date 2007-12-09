@@ -59,10 +59,16 @@ public interface IDiskoRole {
 	public String getDescription();
 	
 	/**
+	 * Notify that a operation change is pending
+	 * @return The current worksprocess
+	 */
+	public void fireBeforeOperationChange();
+	
+	/**
 	 * Re-initialize all work processes
 	 * @return The current worksprocess
 	 */
-	public void reInitWpModules();
+	public void fireAfterOperationChange();
 	
 	/**
 	 * Get a reference to the current (active) work process module

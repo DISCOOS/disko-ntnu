@@ -32,6 +32,7 @@ public interface IDiskoTool {
 		MAP_TOGGLE_COMMAND,
 		TOC_COMMAND,
 		SCALE_COMMAND,
+		GOTO_COMMAND,
 		ELEMENT_COMMAND
     }	
 	

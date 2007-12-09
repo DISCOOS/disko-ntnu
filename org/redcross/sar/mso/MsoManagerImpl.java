@@ -134,8 +134,15 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             if (aMsoObject == m_operation)
             {
+                // This methods fails if non-deleteable references exist in the model... 
                 boolean ret = m_operation.deleteObject();
+            	
+            	// remove reference
                 m_operation = null;
+                
+    	    	// do garbage collection
+    	    	Runtime.getRuntime().gc();
+                
                 return ret;
             }
             return false;

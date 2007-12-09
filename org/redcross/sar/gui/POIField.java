@@ -5,7 +5,6 @@ package org.redcross.sar.gui;
 
 import java.util.Arrays;
 import java.awt.GridBagLayout;
-import java.awt.LayoutManager;
 
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -13,32 +12,28 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JComboBox;
-import javax.swing.JSeparator;
-import javax.swing.JToggleButton;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.text.MaskFormatter;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.POIFormatPanel.POIFormatEventListener;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.Point;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author kennetgu
  *
  */
-public class POIField extends JPanel {
+public class POIField extends JPanel implements POIFormatEventListener {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel m_right = null;
@@ -73,53 +68,47 @@ public class POIField extends JPanel {
 								"VD","VC"};  //  @jve:decl-index=0:
 	private JComboBox m_ZoneCombo = null;
 	private JComboBox m_SquareCombo = null;
-	private JPanel m_formatPanel = null;
+	private POIFormatPanel m_formatPanel = null;
 	private JPanel m_positionPanel = null;
-	private JToggleButton m_MGRSButton = null;
-	private JToggleButton m_UTMButton = null;
-	private ButtonGroup m_buttonGroup = null;
 	
 	/**
 	 * Constructor
 	 */
-	public POIField(IDiskoApplication app) {
+	public POIField() {
 		super();
-		m_app = app;
+		m_app = Utils.getApp();
 		initialize();
 	}
 
 	/**
-	 * Constructor
+	 * This method initializes this
 	 * 
-	 * @param arg0
+	 * @return void
 	 */
-	public POIField(IDiskoApplication app, LayoutManager arg0) {
-		super(arg0);
-		m_app = app;
-		initialize();
+	private void initialize() {
+		// setup content pane
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		Dimension dim = new Dimension(250, 120);
+		this.setSize(dim);
+		this.setPreferredSize(dim);
+		this.setMinimumSize(dim);
+		this.setMaximumSize(dim);
+		// add components
+		this.add(getPositionPanel());
+		// set MGRS format
+		setFormat(1); 
 	}
 
-	/**
-	 * @param arg0
-	 */
-	public POIField(IDiskoApplication app, boolean arg0) {
-		super(arg0);
-		m_app = app;
-		initialize();
+	public void registrate(POIFormatPanel panel) {
+		// unregistrate?
+		if(m_formatPanel!=null)
+			m_formatPanel.removePOIFormatEventListener(this);
+		
+		// register
+		m_formatPanel = panel;
+		m_formatPanel.addPOIFormatEventListener(this);
 	}
-
-	/**
-	 * Constructor
-	 * 
-	 * @param arg0
-	 * @param arg1
-	 */
-	public POIField(IDiskoApplication app, LayoutManager arg0, boolean arg1) {
-		super(arg0, arg1);
-		m_app = app;
-		initialize();
-	}
-
+	
 	/**
 	 * This method set mgrs from text
 	 * 
@@ -132,7 +121,7 @@ public class POIField extends JPanel {
 			if (text != null) {
 				// is empty?
 				if (text.length() > 0) { 
-					switch(m_format) {
+					switch(getFormat()) {
 					case 1: // MGRS
 						String zone = text.subSequence(0, 3).toString();
 						String square = text.subSequence(3, 5).toString();
@@ -179,7 +168,7 @@ public class POIField extends JPanel {
 	 */
 	public String getText() {
 		String text = null;
-		switch(m_format) {
+		switch(getFormat()) {
 		case 1:
 			text = (getZoneCombo().getSelectedItem()==null ? "" : 
 					getZoneCombo().getSelectedItem().toString()) +
@@ -196,26 +185,6 @@ public class POIField extends JPanel {
 		return text;
 	}
 	
-	/**
-	 * This method initializes this
-	 * 
-	 * @return void
-	 */
-	private void initialize() {
-		// setup content pane
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		Dimension dim = new Dimension(250, 120);
-		this.setSize(dim);
-		this.setPreferredSize(dim);
-		this.setMinimumSize(dim);
-		this.setMaximumSize(dim);
-		// add components
-		this.add(getPositionPanel());
-		this.add(new JSeparator(JSeparator.HORIZONTAL));
-		this.add(getFormatPanel());
-		setFormat(m_format); // MGRS format
-	}
-
 	/**
 	 * This method initializes m_left	
 	 * 	
@@ -416,23 +385,7 @@ public class POIField extends JPanel {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getFormatPanel() {
-		if (m_formatPanel == null) {
-			FlowLayout fl = new FlowLayout();
-			fl.setAlignment(FlowLayout.LEFT);
-			fl.setHgap(0);
-			fl.setVgap(0);
-			m_formatPanel = new JPanel();
-			m_formatPanel.setLayout(fl);
-			JLabel label = new JLabel("Posisjonsformat");
-			label.setPreferredSize(new Dimension(100,20));
-			m_formatPanel.add(label,null);
-			m_formatPanel.add(getMGRSButton(), null);
-			m_formatPanel.add(getUTMButton(), null);
-			m_buttonGroup = new ButtonGroup();
-			m_buttonGroup.add(getMGRSButton());
-			m_buttonGroup.add(getUTMButton());
-		}
+	public POIFormatPanel getFormatPanel() {
 		return m_formatPanel;
 	}
 
@@ -455,85 +408,25 @@ public class POIField extends JPanel {
 		}
 		return m_positionPanel;
 	}
-
-	/**
-	 * This method initializes m_MGRSButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JToggleButton getMGRSButton() {
-		if (m_MGRSButton == null) {
-			m_MGRSButton = new JToggleButton();
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
-			m_MGRSButton.setPreferredSize(dim);
-			m_MGRSButton.setIcon(Utils.getIcon("IconEnum.MGRS.icon"));
-			m_MGRSButton.setToolTipText(Utils.getProperty("IconEnum.MGRS.text"));
-			m_MGRSButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					setFormat(1);
-				}
-			});
-		}
-		return m_MGRSButton;
-	}
-
-	/**
-	 * This method initializes m_UTMButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JToggleButton getUTMButton() {
-		if (m_UTMButton == null) {
-			m_UTMButton = new JToggleButton();
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
-			m_UTMButton.setPreferredSize(dim);
-			m_UTMButton.setIcon(Utils.getIcon("IconEnum.UTM.icon"));
-			m_UTMButton.setToolTipText(Utils.getProperty("IconEnum.UTM.text"));
-			m_UTMButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					setFormat(2);
-				}
-			});
-		}
-		return m_UTMButton;
-	}
 	
 	public int getFormat() {
-		return m_format;
+		if(m_formatPanel!=null)
+			return m_formatPanel.getFormat();
+		else
+			return m_format;
 	}
 	
 	public void setFormat(int format) {
-		// get current
-		Position p = getPosition();
-		// reset
-		setText(null);
-		// save format
-		m_format = format;
-		// get formaters
-		switch(format) {
-		case 1: // MGRS
-			m_SquareCombo.setVisible(true);
-			m_squareLabel.setVisible(true);
-			m_latitudeText.setFormatterFactory(new MGRSFormat());
-			m_longetudeText.setFormatterFactory(new MGRSFormat());
-			if (!m_MGRSButton.isSelected())
-				m_MGRSButton.setSelected(true);
-			break;
-		case 2: // UTM
-			m_SquareCombo.setVisible(false);
-			m_squareLabel.setVisible(false);
-			m_latitudeText.setFormatterFactory(new UTMFormat("N"));
-			m_longetudeText.setFormatterFactory(new UTMFormat("E"));
-			if (!m_UTMButton.isSelected())
-				m_UTMButton.setSelected(true);
-			break;
+		if(m_formatPanel!=null)
+			m_formatPanel.setFormat(format);
+		else {
+			formatChanged(format);
 		}
-		setPosition(p);
 	}
 
 	public Point getPoint() {
 		try {
-			switch(m_format) {
+			switch(getFormat()) {
 			case 1: // MGRS
 				return MapUtil.getPointFromMGRS(getText());
 			case 2: // UTM
@@ -548,7 +441,7 @@ public class POIField extends JPanel {
 	
 	public Position getPosition() {
 		try {
-			switch(m_format) {
+			switch(getFormat()) {
 			case 1: // MGRS
 				return MapUtil.getPositionFromMGRS(getText());
 			case 2: // UTM
@@ -563,7 +456,7 @@ public class POIField extends JPanel {
 		
 	public void setPosition(Position p) {
 		try {
-			switch(m_format) {
+			switch(getFormat()) {
 			case 1: // MGRS
 				setText(MapUtil.getMGRSfromPosition(p));
 				break;
@@ -579,7 +472,7 @@ public class POIField extends JPanel {
 	
 	public void setPoint(Point p) {
 		try {
-			switch(m_format) {
+			switch(getFormat()) {
 			case 1: // MGRS
 				setText(MapUtil.getMGRSfromPoint(p));
 				break;
@@ -633,6 +526,32 @@ public class POIField extends JPanel {
 			return mf1;
 		}
 		
+	}
+
+	public void formatChanged(int format) {
+		// get current
+		Position p = getPosition();
+		// reset
+		setText(null);
+		// save format
+		m_format = format;
+		// get formaters
+		switch(format) {
+		case 1: // MGRS
+			m_SquareCombo.setVisible(true);
+			m_squareLabel.setVisible(true);
+			m_latitudeText.setFormatterFactory(new MGRSFormat());
+			m_longetudeText.setFormatterFactory(new MGRSFormat());
+			break;
+		case 2: // UTM
+			m_SquareCombo.setVisible(false);
+			m_squareLabel.setVisible(false);
+			m_latitudeText.setFormatterFactory(new UTMFormat("N"));
+			m_longetudeText.setFormatterFactory(new UTMFormat("E"));
+			break;
+		}
+		// foreward
+		setPosition(p);
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="7,7"

@@ -61,12 +61,6 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 		super.deactivated();
 	}
 	
-	public void reInitWP()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
 	public boolean cancel() {
 		// TODO Auto-generated method stub
 		return false;

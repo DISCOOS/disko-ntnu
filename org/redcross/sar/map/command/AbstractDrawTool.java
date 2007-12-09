@@ -1121,11 +1121,14 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	
 	protected boolean doFinishWork() {
 		try {
+			// create work
 			DrawWork work = new DrawWork();
 			if(isWorkPoolMode) {
+				// schedule on work pool thread
 				DiskoWorkPool.getInstance().schedule(work);
 			}
 			else {
+				// do work on this thread
 				work.run();
 			}
 			return true;

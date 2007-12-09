@@ -241,7 +241,8 @@ public class DrawHostTool extends BaseCommand implements IDiskoHostTool {
 			tool.isActive = this.isActive;
 			tool.showDirect = this.showDirect;
 			tool.showDialog = this.showDialog;
-			tool.setTool(this.tool);
+			// forward
+			((DrawDialog)dialog).setActiveTool(this.tool);
 		}
 	}
 }

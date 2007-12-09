@@ -143,7 +143,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 		{
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 			message.setOccuredTime(DTG.DTGToCal(this.getTime()));
-			fireOnWorkChange(null,message,message.getOccuredTime());
+			fireOnWorkFinish();
 		}
 		catch (IllegalMsoArgumentException e1)
 		{
@@ -168,7 +168,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 	public void newMessageSelected(IMessageIf message)
 	{
 		setCreated(message.getCreated());
-		m_timeTextField.setText(DTG.CalToDTG(message.getOccuredTime()));
+		setTime(message.getOccuredTime());
 	}
 
 	/**
@@ -194,13 +194,22 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 	 */
 	public void showComponent()
 	{
+		// get new message
+		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+		
+		// has no message?
+		if(message==null) {		
+			// get time
+			Calendar time = Calendar.getInstance();
+			// update fields
+			setCreated(time);
+			setTime(time);
+		}
+		
+		// show me
 		this.setVisible(true);
 
-		if(m_createdTextField.getText().isEmpty())
-		{
-			setCreated(Calendar.getInstance());
-		}
-
+		// show num pad?
 		if(NOTEBOOK_MODE)
 		{
 			Point location = m_contentsPanel.getLocationOnScreen();

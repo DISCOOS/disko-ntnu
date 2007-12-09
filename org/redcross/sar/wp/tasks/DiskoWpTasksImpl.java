@@ -349,12 +349,6 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         m_currentTask = task;
     }
 
-	public void reInitWP()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-	
 	class TaskTickWork extends ModuleWork<Boolean> {
 
 		/**

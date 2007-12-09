@@ -63,16 +63,20 @@ public class LineListTableModel extends AbstractTableModel
 	 */
 	public Object getValueAt(int rowIndex, int coulumnIndex)
 	{
-		if(m_messageLines.isEmpty())
+		if(m_messageLines.isEmpty() || rowIndex>=m_messageLines.size())
 		{
 			return "";
 		}
 		else
 		{
-			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-			IMessageLineIf line = m_messageLines.get(rowIndex);
-			ICommunicatorIf singleReceiver = message.getSingleReceiver();
+
+			// initialize
 			String lineText = null;
+			
+			// get meesage line
+			IMessageLineIf line = m_messageLines.get(rowIndex);
+
+			// dispatch message line type
 			switch(line.getLineType())
 			{
 			case TEXT:
@@ -88,8 +92,8 @@ public class LineListTableModel extends AbstractTableModel
 				
 				if(p != null)
 				{
-					String receiver = message.isBroadcast() || singleReceiver == null ? m_wpMessageLog.getText("Unit.text") :
-						singleReceiver.getCommunicatorNumberPrefix() + " " + singleReceiver.getCommunicatorNumber();
+					// get unit name
+					String unit = MsoUtils.getUnitName(line.getLineUnit(),false);
 
 					try {
 						String mgrs = MapUtil.getMGRSfromPosition(p);
@@ -100,7 +104,7 @@ public class LineListTableModel extends AbstractTableModel
 						String y = mgrs.subSequence(10, 15).toString();
 						// get text
 						lineText = String.format(m_wpMessageLog.getText("ListItemPOI.text"),
-								receiver, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
+								unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
 					}
 					catch (Exception e) {
 						e.printStackTrace();

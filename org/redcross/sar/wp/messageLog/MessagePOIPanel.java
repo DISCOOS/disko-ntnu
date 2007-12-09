@@ -159,11 +159,15 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		POIPanel panel = getPOIPanel();
 		
 		try {
+			
 			// get point
 			Point point = panel.getPOIField().getPoint();
 			
 			// add or move poi?
 			if(point!=null) {
+				
+				// initialize flag
+				boolean isDirty = false;
 				
 				// get current message, create if not exists
 				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
@@ -179,9 +183,6 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 				
 				// get poi type
 				POIType poiType = panel.getPOIType();
-				
-				// update poi
-				m_tool.setCurrentPOI(poi);
 				
 				// reset flag
 				m_tool.setWorkPoolMode(false);				
@@ -199,15 +200,32 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 					messageLine.setLinePOI(poi);
 				}
 				else {
+					
+					// get flag
+					isDirty = !poi.getType().equals(poiType) || 
+							!poi.getPosition().equals(panel.getPOIField().getPosition());					
+					
+					// update poi
+					m_tool.setCurrentPOI(poi);
+					
 					// add new poi
-					m_tool.movePOIAt(point, poiType, null);					
+					m_tool.movePOIAt(point, poiType, null);
+					
 				}
+				
 				// resume mode
-				m_tool.setWorkPoolMode(isWorkPoolMode);
+				m_tool.setWorkPoolMode(isWorkPoolMode);				
+				
 				// update task?
 				if(poi!=null && (POIType.FINDING.equals(poi.getType()) || 
 						POIType.SILENT_WITNESS.equals(poi.getType())))
-					setTask(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
+					// forward
+					isDirty = isDirty || setTask(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
+				
+				// is dirty?
+				if(isDirty)
+					MessageLogBottomPanel.setIsDirty();					
+				
 			}
 			else {
 				// notify
@@ -220,9 +238,13 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 
 		// resume update
 		m_wpMessageLog.getMsoModel().resumeClientUpdate();
+		
 	}
 
-	private void setTask(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {
+	private boolean setTask(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {
+		
+		// initialize
+		boolean isDirty = false;
 		
 		// Need to add/update task
 		ITaskIf task = null;
@@ -257,10 +279,25 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 			task.setCreatingWorkProcess(getName());
 			// task.setDependentObject(message.getSender());
 			message.addMessageTask(task);
+			// set flag
+			isDirty = true;
+			
 		}
+
+		// set flag
+		isDirty = true;
+		
+		// get task text
+		String text = String.format(match, Utils.getIconText(poi.getType()));
+		
+		// any change?
+		isDirty = isDirty || (text!=null && !text.equals(task.getTaskText()));
 		
 		// Update task text
-		task.setTaskText(String.format(match, Utils.getIconText(poi.getType())));
+		task.setTaskText(text);
+		
+		// return flag
+		return isDirty;
 		
 	}
 	
@@ -302,8 +339,6 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 	{
 		// do not show dialog in map
 		m_tool.setShowDialog(false);
-		// show map
-		MessageLogPanel.showMap();
 		// show poi in map
 		IPOIIf poi = centerAtPOI(true);
 		// get draw tool
@@ -330,6 +365,8 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		m_tool.setBuffered(true);
 		// show panel
 		this.setVisible(true);
+		// show map
+		MessageLogPanel.showMap();
 	}
 
 	public void hideComponent()
@@ -342,12 +379,10 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		numPad.setVisible(false);
 		// apply change directly to mso model
 		m_tool.setBuffered(false);
-		// hide me
-		this.setVisible(false);
 		// hide map
         MessageLogPanel.hideMap();
-        // deselect
-        centerAtPOI(false);
+		// hide me
+		this.setVisible(false);
 
     }
 
@@ -454,7 +489,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
                 	map.suspendNotify();
 					map.setSelected(poi, isSelected);
 					if(isSelected) 
-						map.centerOnMsoObject(poi);
+						map.centerAtMsoObject(poi);
                 	map.resumeNotify();
 					map.refreshSelection(poi, map.getSelectionExtent());
 				}

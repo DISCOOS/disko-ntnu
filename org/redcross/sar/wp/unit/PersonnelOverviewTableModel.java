@@ -85,6 +85,8 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 
 	public Object getValueAt(int row, int column)
 	{
+		if(!(row<m_displayPersonnel.size())) return null;
+		
 		IPersonnelIf personnel = m_displayPersonnel.get(row);
 		switch(column)
 		{

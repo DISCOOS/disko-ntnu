@@ -21,7 +21,6 @@ public class LineListPanel extends JPanel implements IEditMessageComponentIf
 	private LineListTableModel m_messageTableModel;
 	private JScrollPane m_textScrollPane;
 	private IDiskoWpMessageLog m_wpMessageLog;
-	private MessageLineSelectionListener m_lineSelectionListener;
 
 	private Selector<IMessageLineIf> m_messageLineSelector = new Selector<IMessageLineIf>()
 	{
@@ -44,12 +43,11 @@ public class LineListPanel extends JPanel implements IEditMessageComponentIf
 		m_messageListTable = new JTable(m_messageTableModel);
 		m_messageListTable.setTableHeader(null);
 		m_textScrollPane = new JScrollPane(m_messageListTable);
-		m_lineSelectionListener = new MessageLineSelectionListener(m_messageTableModel);
-		m_messageListTable.getSelectionModel().addListSelectionListener(m_lineSelectionListener);
-
 		m_messageListTable.setFillsViewportHeight(true);
 		m_messageListTable.setColumnSelectionAllowed(false);
 		m_messageListTable.setRowSelectionAllowed(true);
+
+		m_messageListTable.addMouseListener(new MessageLineMouseAdapter(m_messageTableModel));
 
 		this.add(m_textScrollPane, BorderLayout.CENTER);
 	}

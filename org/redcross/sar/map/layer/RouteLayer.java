@@ -1,7 +1,5 @@
 package org.redcross.sar.map.layer;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import com.esri.arcgis.display.*;
@@ -20,7 +18,6 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-import org.redcross.sar.util.mso.Route;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -36,6 +33,8 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 	
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
+	private RgbColor plannedColor = null;
+	private RgbColor finishedColor = null;
 	private Hashtable<SearchSubType, SimpleLineSymbol> symbols = null;
 	private SimpleLineSymbol defaultLineSymbol = null;
 	private TextSymbol textSymbol = null;
@@ -86,25 +85,41 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				RouteFeature feature = (RouteFeature)featureClass.getFeature(i);
 				if(!isFiltered(feature) && feature.isVisible()){
+					// get finished color?
 					IGeometry geom = feature.getShape();
 					if (geom != null) {
-						// get owning area
-						IAreaIf area = feature.getOwningArea();
+						
 						// initialise
 						String text = null;
 						SimpleLineSymbol lineSymbol = defaultLineSymbol;
-						// has owning area?
-						if(area!=null) {
-							ISearchIf search = (ISearchIf)area.getOwningAssignment();
-							if (search != null) {
-								lineSymbol = (SimpleLineSymbol)symbols.get(search.getSubType());
-								text = MsoUtils.getAssignmentName(search,2);
-							} 
-						}
+						
+						// update symbols
 						lineSymbol.setWidth(zoomLineWidth);
+						
+						// save current colors
 						IColor saveLineColor = lineSymbol.getColor();
 						IColor saveTextColor = textSymbol.getColor();
 						
+						// get owning area
+						IAreaIf area = feature.getOwningArea();
+						
+						// has owning area?
+						if(area!=null) {
+							// get assignment
+							IAssignmentIf assignment = (IAssignmentIf)area.getOwningAssignment();
+							// is search assignment?
+							if (assignment instanceof ISearchIf) {
+								// cast to ISearchIf
+								ISearchIf search = (ISearchIf)assignment;
+								// get line symbol
+								lineSymbol = (SimpleLineSymbol)symbols.get(search.getSubType());
+								text = MsoUtils.getAssignmentName(search,2);
+								// update line color
+								lineSymbol.setColor(IAssignmentIf.AssignmentStatus.FINISHED.equals(
+									search.getStatus()) ? finishedColor : plannedColor);
+							} 
+						}
+												
 						/*
 						// is layer in edit mode?
 						if (isEditing) {
@@ -131,6 +146,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 									lineSymbol.setColor(selectionColor);
 									textSymbol.setColor(selectionColor);
 		 	 					}
+		 	 					
 							}
 							else {
 								// disable all features
@@ -159,7 +175,6 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 									display.drawText(geom, text);									
 							}
 						}
-
 						
 						// restore state
 						lineSymbol.setColor(saveLineColor);
@@ -197,13 +212,16 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			selectionColor.setBlue(255);
 			selectionColor.setGreen(255);
 
-			RgbColor redColor = new RgbColor();
-			redColor.setRed(255);
+			plannedColor = new RgbColor();
+			plannedColor.setRed(255);
 
+			finishedColor = new RgbColor();
+			finishedColor.setGreen(155);
+			
 			SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
 			lineSymbol.setStyle(esriSimpleLineStyle.esriSLSDash);
 			lineSymbol.setWidth(lineWidth);
-			lineSymbol.setColor(redColor);
+			lineSymbol.setColor(plannedColor);
 
 			symbols.put(ISearchIf.SearchSubType.LINE, lineSymbol);
 			symbols.put(ISearchIf.SearchSubType.PATROL, lineSymbol);
@@ -218,7 +236,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 
 			defaultLineSymbol = new SimpleLineSymbol();
 			defaultLineSymbol.setWidth(lineWidth);
-			defaultLineSymbol.setColor(redColor);
+			defaultLineSymbol.setColor(plannedColor);
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

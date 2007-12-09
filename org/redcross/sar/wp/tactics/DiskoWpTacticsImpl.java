@@ -142,6 +142,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			myButtons.add(DiskoToolType.MAP_TOGGLE_COMMAND);
 			myButtons.add(DiskoToolType.SCALE_COMMAND);
 			myButtons.add(DiskoToolType.TOC_COMMAND);
+			myButtons.add(DiskoToolType.GOTO_COMMAND);
 		}
 		return myButtons;		
 	}
@@ -172,8 +173,12 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 		
 		// show map
-		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				DiskoMap map = (DiskoMap) getMap();
+				map.setVisible(true);
+			}			
+		});
 		
 	}
 
@@ -900,7 +905,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return unitToggleButton;
 	}
 
-	public void reInitWP(){
+	public void afterOperationChange(){
+		super.afterOperationChange();
 		if(isChanged())
 			cancel(false);
 		else

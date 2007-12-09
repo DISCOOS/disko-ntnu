@@ -8,7 +8,6 @@ import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-import org.apache.derby.iapi.types.Resetable;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
@@ -16,7 +15,6 @@ import org.redcross.sar.gui.IHostToolDialog;
 import org.redcross.sar.gui.POIPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -406,7 +404,7 @@ public class POITool extends AbstractDrawTool {
 		if(panels==null)
 			panels = new ArrayList<JPanel>(1);			
 		// create panel
-		JPanel panel = new POIPanel(Utils.getApp(),this,true);
+		JPanel panel = new POIPanel(this,true);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
