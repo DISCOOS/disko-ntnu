@@ -1,12 +1,15 @@
 package org.redcross.sar.wp.messageLog;
 
+import java.awt.BorderLayout;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
 import org.redcross.sar.util.mso.Selector;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * Panel displaying message lines in the currently selected message

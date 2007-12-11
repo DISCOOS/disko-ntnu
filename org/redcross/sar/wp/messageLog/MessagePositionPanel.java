@@ -1,14 +1,17 @@
 package org.redcross.sar.wp.messageLog;
 
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -133,8 +136,8 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 			{
 				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 				numPad.setVisible(false);
-				applyPosition();
-				MessageLogBottomPanel.showListPanel();
+				if(applyPosition())
+					MessageLogBottomPanel.showListPanel();
 			}
 		});
 		this.add(m_okButton, gbc);
@@ -144,8 +147,11 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	/**
 	 * Apply position in current message based on values in GUI fields
 	 */
-	private void applyPosition()
+	private boolean applyPosition()
 	{
+		// initialize flag
+		boolean isSuccess = false;
+
 		// get panel
 		PositionPanel panel = getPositionPanel();
 		
@@ -238,6 +244,9 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 						
 					}
 
+					// set flag
+					isSuccess = true;
+					
 				}
 				else {
 					// notify
@@ -255,6 +264,10 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		else {
 			Utils.showWarning("Du må først velge en enhet");
 		}
+
+		// return flag
+		return isSuccess;
+		
 	}
 	
 	/**

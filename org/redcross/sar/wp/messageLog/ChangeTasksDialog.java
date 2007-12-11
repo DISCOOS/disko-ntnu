@@ -14,12 +14,26 @@ import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 
 /**
  * Dialog for changing task in current message.
@@ -129,7 +143,7 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 		m_changeFindingButton = createChangeButton(TaskSubType.FINDING);
 		addButtonPair(m_findingButton, m_changeFindingButton, TaskSubType.FINDING);
 
-		m_contentsPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+		m_contentsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
 		// General
 		m_generalTaskButton = createToggleButton(TaskSubType.GENERAL);

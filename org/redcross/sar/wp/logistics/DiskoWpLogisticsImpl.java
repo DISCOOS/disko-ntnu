@@ -11,9 +11,11 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
-import javax.swing.*;
 import java.text.MessageFormat;
 import java.util.EnumSet;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  *

@@ -11,9 +11,10 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.AssignmentTransferUtilities;
 import org.redcross.sar.util.mso.DTG;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.CardLayout;
 import java.util.Calendar;
+
+import javax.swing.JOptionPane;
 
 /**
  * Panel for starting an assignment

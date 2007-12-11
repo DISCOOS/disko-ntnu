@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventListener;
@@ -26,10 +25,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
-import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoUtils;
@@ -42,11 +38,8 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.data.ISearchAreaIf.SearchAreaStatus;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.util.mso.Selector;
-
-import com.esri.arcgis.interop.AutomationException;
 
 public class ElementPanel extends JPanel {
 	
@@ -834,8 +827,6 @@ public class ElementPanel extends JPanel {
 		if(list!=null) {
 			// get data
 			List<IMsoObjectIf> data = getData(msoObject);
-			// clear data
-			data.clear();
 			// get selected
 			IMsoObjectIf msoSelected = (IMsoObjectIf)list.getSelectedValue();
 			// get model
@@ -855,10 +846,9 @@ public class ElementPanel extends JPanel {
 			// reselect?
 			if(msoSelected!=null && msoObject!=msoSelected)
 				list.setSelectedValue(msoSelected, true);
-			else{
-				if(getTypeList() != list) {
-					loadParts();
-				}
+			else if(data.size()>0) { 
+				// select first in list
+				list.setSelectedIndex(0);
 			}
 				
 		}

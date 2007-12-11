@@ -12,8 +12,9 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.mso.Selector;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -21,6 +22,12 @@ import java.awt.event.KeyListener;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * The dialog for selecting unit type and number.
@@ -167,9 +174,7 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 					}
 					else
 					{
-						ErrorDialog error = Utils.getErrorDialog(Utils.getApp().getFrame());
-						error.setAlwaysOnTop(true);
-						error.showError(m_wp.getText("NonexistingUnitErrorMessage.text"),
+						Utils.showWarning(m_wp.getText("NonexistingUnitErrorMessage.text"),
 								m_unitTypeField.getText() + " " + m_unitNumberField.getText() +
 								" " + m_wp.getText("NonexistingUnitErrorDetails.text"));
 					}

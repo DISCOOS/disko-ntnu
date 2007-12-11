@@ -1,11 +1,14 @@
 package org.redcross.sar.wp.messageLog;
 
+import java.awt.Color;
+import java.awt.Component;
+
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 
-import javax.swing.*;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
 
 /**
  * Custom cell renderer for message log table

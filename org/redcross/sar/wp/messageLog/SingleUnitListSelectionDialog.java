@@ -11,14 +11,21 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Selector;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+
+import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 
 /**
  * Dialog containing a list of all units  in command post communicator list
@@ -179,36 +186,40 @@ public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditM
 	private void updateButtonSelection()
 	{
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-		if(message != null)
+		JToggleButton button = null;
+		if(m_senderList)
 		{
-			JToggleButton button = null;
-			if(m_senderList)
+			// get current sender
+			ICommunicatorIf sender = (message!=null ? message.getSender() : (ICommunicatorIf)m_wpMessageLog.getCmdPost());
+			// has sender?
+			if(sender != null)
 			{
-				// Mark sender unit button
-				ICommunicatorIf sender = message.getSender();
-				if(sender != null)
-				{
-					button = m_communicatorButtonMap.get(sender);
-				}
+				button = m_communicatorButtonMap.get(sender);
 			}
-			else
-			{
-				// Mark receiver unit button
-				if(!message.isBroadcast())
-				{
-					ICommunicatorIf receiver = message.getSingleReceiver();
-					if(receiver != null)
-					{
-						button = m_communicatorButtonMap.get(receiver);
-					}
-				}
-			}
+		}
+		else
+		{
+			// get flag
+			boolean isBroadcast = (message!=null ? message.isBroadcast() : false); 
 			
-			if(button != null)
-			{
-				m_buttonGroup.setSelected(button.getModel(), true);
-				m_currentButton = button;
+			// setup
+			if(!isBroadcast) {
+
+				// get current receiver
+				ICommunicatorIf receiver = (message!=null ? message.getSingleReceiver() : (ICommunicatorIf)m_wpMessageLog.getCmdPost());
+				
+				// has receiver
+				if(receiver != null)
+				{
+					button = m_communicatorButtonMap.get(receiver);
+				}
 			}
+		}
+		
+		if(button != null)
+		{
+			m_buttonGroup.setSelected(button.getModel(), true);
+			m_currentButton = button;
 		}
 	}
 

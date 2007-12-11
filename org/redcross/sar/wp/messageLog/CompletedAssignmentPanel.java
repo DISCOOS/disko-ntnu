@@ -10,8 +10,9 @@ import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.AssignmentTransferUtilities;
 
-import javax.swing.*;
 import java.util.Calendar;
+
+import javax.swing.JOptionPane;
 
 /**
  * Dialog for setting assignment to complete

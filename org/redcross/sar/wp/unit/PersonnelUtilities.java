@@ -7,9 +7,10 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 
-import javax.swing.*;
 import java.util.Calendar;
 import java.util.ResourceBundle;
+
+import javax.swing.JOptionPane;
 
 /**
  * Handles personnel logic

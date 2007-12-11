@@ -60,9 +60,9 @@ public class CalloutOverviewTableModel extends AbstractTableModel implements IMs
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
 		ICalloutListIf callouts = m_wpModule.getCmdPost().getCalloutList();
-		ICalloutIf[] data = (ICalloutIf[])callouts.getItems().toArray();
+		Object[] data = (Object[])callouts.getItems().toArray();
 		if(data==null || data.length<=rowIndex) return null;
-		ICalloutIf callout = data[rowIndex];
+		ICalloutIf callout = (ICalloutIf)data[rowIndex];
 		switch(columnIndex)
 		{
 		case 0:

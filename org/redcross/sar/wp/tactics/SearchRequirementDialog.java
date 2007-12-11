@@ -13,12 +13,24 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
 import java.util.EnumSet;
 import java.util.Hashtable;
 
@@ -448,14 +460,15 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				personelTextField = new JTextField();
 				personelTextField.setText("0");
 				personelTextField.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) {
+					public void changedUpdate(DocumentEvent e) { apply(); }
+					public void insertUpdate(DocumentEvent arg0) { apply(); }
+					public void removeUpdate(DocumentEvent arg0) { apply(); }
+					private void apply() {
 						// no mso update allowed?
 						if (isWorking()) return;
 						// update mso model
 						setPersonelNeed(Integer.valueOf(personelTextField.getText()),false,true);						
 					}
-					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
-					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 				personelTextField.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -506,14 +519,15 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				remarksTextArea = new JTextArea();
 				remarksTextArea.setLineWrap(true);
 				remarksTextArea.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) {
+					public void changedUpdate(DocumentEvent e) { apply(); }
+					public void insertUpdate(DocumentEvent arg0) { apply(); }
+					public void removeUpdate(DocumentEvent arg0) { apply(); }
+					private void apply() {
 						// no mso update allowed?
 						if (isWorking()) return;
 						// update mso model
-						setRemarks(remarksTextArea.getText(),false,true);						
+						setRemarks(remarksTextArea.getText(),false,true);												
 					}
-					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
-					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 				
 			} catch (java.lang.Throwable e) {

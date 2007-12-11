@@ -1,5 +1,11 @@
 package org.redcross.sar.mso.data;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -8,8 +14,6 @@ import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Selector;
-
-import java.util.*;
 
 /**
  * Strip of field to search

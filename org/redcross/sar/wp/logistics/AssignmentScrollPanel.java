@@ -4,7 +4,6 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoScrollPanel;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
-import org.redcross.sar.gui.dnd.IDiskoDragSource;
 import org.redcross.sar.gui.dnd.IDiskoDropTarget;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
 import org.redcross.sar.gui.renderers.IconRenderer;
@@ -12,13 +11,11 @@ import org.redcross.sar.gui.renderers.IconRenderer.AssignmentIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.AssignmentTransferUtilities;
-import org.redcross.sar.wp.logistics.UnitTableModel.UnitTableDragSourceListener;
-import org.redcross.sar.wp.logistics.UnitTableModel.UnitTableDropTargetListener;
 
-import javax.swing.*;
-import javax.swing.table.TableColumnModel;
-
-import java.awt.*;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -29,7 +26,15 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 
 /**
  * Scroll panel for assignments.

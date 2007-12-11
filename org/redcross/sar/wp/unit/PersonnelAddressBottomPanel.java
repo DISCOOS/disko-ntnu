@@ -4,9 +4,15 @@ import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.util.Internationalization;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.ResourceBundle;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * Bottom panel displaying summary info about personnel

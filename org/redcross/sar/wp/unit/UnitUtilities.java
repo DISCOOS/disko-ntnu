@@ -11,8 +11,9 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.*;
 import java.util.ResourceBundle;
+
+import javax.swing.JOptionPane;
 
 /**
  * Handles logic in units

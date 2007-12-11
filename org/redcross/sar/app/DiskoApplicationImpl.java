@@ -17,8 +17,11 @@ import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.thread.DiskoWorkPool;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -27,6 +30,12 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /**
  * Implements the DiskoApplication interface. This class is responsible for connecting to the

@@ -903,9 +903,23 @@ public class DrawAdapter implements
 					
 					// do a rollback
 					if(ans == JOptionPane.OK_OPTION) {
-						// do deletion;
-						msoObject.deleteObject();
-						// notify change
+						// dispatch type
+						if(msoObject instanceof IAreaIf) {
+							// cast to IAreaIf
+							IAreaIf area = (IAreaIf)msoObject;
+							// get owning assignment
+							IAssignmentIf assignment = area.getOwningAssignment(); 
+							// delete assignment
+							if(assignment!=null)
+								MsoUtils.deleteAssignment(assignment);
+							else
+								MsoUtils.deleteArea(area);
+						}
+						else {
+							// do a general delete
+							MsoUtils.delete(msoObject);
+						}
+						// notify change?
 						fireOnWorkChange(this, msoObject, null);
 					}
 				}

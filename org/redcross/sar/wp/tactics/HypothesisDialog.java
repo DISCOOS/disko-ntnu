@@ -15,13 +15,29 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -420,14 +436,15 @@ public class HypothesisDialog extends DiskoDialog {
 				descriptionTextArea.setLineWrap(true);
 				descriptionTextArea.setEnabled(false);
 				descriptionTextArea.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) {
+					public void changedUpdate(DocumentEvent e) { apply(); }
+					public void insertUpdate(DocumentEvent arg0) { apply(); }
+					public void removeUpdate(DocumentEvent arg0) { apply(); }
+					private void apply() {
 						// no mso update allowed?
 						if (isWorking()) return;
 						// update mso model
 						setDescription(descriptionTextArea.getText(),false,true);						
 					}
-					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
-					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

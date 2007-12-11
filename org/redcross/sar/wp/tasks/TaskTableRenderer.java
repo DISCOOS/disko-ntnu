@@ -5,9 +5,13 @@ import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.TaskImpl;
 import org.redcross.sar.util.mso.DTG;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Component;
 import java.util.Calendar;
 
 /**

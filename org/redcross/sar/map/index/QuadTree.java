@@ -1,7 +1,9 @@
 package org.redcross.sar.map.index;
 
 import java.io.IOException;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.esri.arcgis.geometry.Envelope;

@@ -88,7 +88,7 @@ public class POIField extends JPanel implements POIFormatEventListener {
 	private void initialize() {
 		// setup content pane
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		Dimension dim = new Dimension(250, 120);
+		Dimension dim = new Dimension(250, 55);
 		this.setSize(dim);
 		this.setPreferredSize(dim);
 		this.setMinimumSize(dim);

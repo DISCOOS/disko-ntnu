@@ -149,13 +149,14 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	 */
 	public JPanel getFieldPanel() {
 		if (fieldPanel == null) {
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			BorderLayout bl = new BorderLayout();
+			bl.setVgap(5);
+			bl.setHgap(0);
 			fieldPanel = new JPanel();
-			fieldPanel.setLayout(vfl);
-			fieldPanel.add(getPOIField(),null);
-			fieldPanel.add(new JSeparator(JSeparator.HORIZONTAL),null);
-			fieldPanel.add(getFormatPanel(),null);
+			fieldPanel.setLayout(bl);
+			fieldPanel.add(getPOIField(),BorderLayout.NORTH);
+			fieldPanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.CENTER);
+			fieldPanel.add(getFormatPanel(),BorderLayout.SOUTH);
 		}
 		return fieldPanel;
 	}
@@ -360,7 +361,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	public JList getTypeList() {
 		if (typeList == null) {
             typeList = new JList();
-            typeList.setVisibleRowCount(0);
+            typeList.setVisibleRowCount(4);
             typeList.setCellRenderer(new SimpleListCellRenderer(Internationalization.getBundle(IPOIIf.class)));
 		}
 		return typeList;
@@ -395,9 +396,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 				
 				// create separators
 				listSeparator = new JSeparator(JSeparator.HORIZONTAL);
-				listSeparator.setVisible(false);
 				textSeparator = new JSeparator(JSeparator.HORIZONTAL);
-				textSeparator.setVisible(false);
 
 
 			} catch (java.lang.Throwable e) {
@@ -411,7 +410,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 			VerticalFlowLayout vfl = new VerticalFlowLayout();
 			vfl.setAlignment(VerticalFlowLayout.LEFT);
 			vfl.setHgap(0);
-			vfl.setVgap(5);
+			vfl.setVgap(10);
 			// set flow layout
 			coordPanel.setLayout(vfl); 
 			// add components
@@ -592,6 +591,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
 		return myInterests.contains(aMsoObject.getMsoClassCode());
 	}		
+	
 	
 	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
 		if (tool.getMap() == null) {

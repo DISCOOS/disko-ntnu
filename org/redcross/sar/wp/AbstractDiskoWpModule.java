@@ -28,11 +28,20 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.util.Internationalization;
 
-import javax.swing.*;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 /**
  * This abstract class is a base class that has a default implementation of the
@@ -186,28 +195,6 @@ public abstract class AbstractDiskoWpModule
     {
         return callingWp;
     }
-
-	public void beforeOperationChange() {
-		// suspend map update
-		if(map!=null) {
-			map.suspendNotify();
-			map.setSupressDrawing(true);
-		}						
-	}
-    
-	public void afterOperationChange() {
-		// resume map update
-		if(map!=null) {
-			try {
-				map.setSupressDrawing(false);
-				map.refreshMsoLayers();
-				map.resumeNotify();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}		
-	}
 
     /* (non-Javadoc)
       * @see org.redcross.sar.wp.IDiskoWpModule#hasMap()
@@ -411,8 +398,8 @@ public abstract class AbstractDiskoWpModule
 		// get nav button
 		UIFactory uiFactory = getApplication().getUIFactory();
 		AbstractButton navButton = uiFactory.getMainMenuPanel().getNavToggleButton();
-		// show the navbar as default?
-		if (!navButton.isSelected() && isSelected) {
+		// update navbar selection status
+		if (navButton.isSelected() != isSelected) {
 			navButton.doClick();			
 		}
 		// do not need to do setup any more
@@ -616,16 +603,16 @@ public abstract class AbstractDiskoWpModule
 		return false;
 	}
 	
-	public void suspendUpdate() {
-		Utils.getApp().getMsoModel().suspendClientUpdate();
+	public void beforeOperationChange() {
+		// suspend map update
 		if(map!=null) {
 			map.suspendNotify();
 			map.setSupressDrawing(true);
-		}		
+		}						
 	}
-	
-	public void resumeUpdate() {
-		Utils.getApp().getMsoModel().resumeClientUpdate();
+    
+	public void afterOperationChange() {
+		// resume map update
 		if(map!=null) {
 			try {
 				map.setSupressDrawing(false);
@@ -636,6 +623,32 @@ public abstract class AbstractDiskoWpModule
 				e.printStackTrace();
 			}
 		}		
+	}
+
+	public void suspendUpdate() {
+		Utils.getApp().getMsoModel().suspendClientUpdate();
+		if(map!=null) {
+			map.suspendNotify();
+			map.setSupressDrawing(true);
+		}		
+	}
+	
+	public void resumeUpdate() {
+		Utils.getApp().getMsoModel().resumeClientUpdate();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				if(map!=null) {
+					try {
+						map.setSupressDrawing(false);
+						map.refreshMsoLayers();
+						map.resumeNotify();
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}		
+			}			
+		});
 	}
 	
 	public boolean isWorking() {
@@ -665,22 +678,24 @@ public abstract class AbstractDiskoWpModule
 	
 	public abstract class ModuleWork<T> extends AbstractDiskoWork<T> {
 		
+		private boolean m_suspend = true;
+		
 		public ModuleWork() throws Exception {
 			// forward
-			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,true);
-		}
-		
-		public ModuleWork(boolean show) throws Exception {
-			// forward
-			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,show);
+			this("Vent litt",true,true);
 		}
 		
 		public ModuleWork(String msg) throws Exception {
 			// forward
+			this(msg,true,true);
+		}
+		
+		public ModuleWork(String msg, boolean show, boolean suspend) throws Exception {
+			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					msg,100,true);
+					msg,100,show,false);
+			// save flag
+			m_suspend = suspend;
 		}
 		
 	
@@ -688,8 +703,9 @@ public abstract class AbstractDiskoWpModule
 		public void run() {
 			// set flag to prevent reentry
 			setIsWorking();
-			// suspend for faster execution
-			suspendUpdate();			
+			// suspend for faster execution?
+			if(m_suspend)
+				suspendUpdate();			
 			// forward
 			super.run();
 		}
@@ -709,8 +725,9 @@ public abstract class AbstractDiskoWpModule
 		@Override
 		public void done() {
 			try {
-				// resume update
-		        resumeUpdate();
+				// resume update?
+				if(m_suspend)
+					resumeUpdate();
 				// reset flag
 		        setIsNotWorking();
 			}

@@ -164,14 +164,15 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 				timeTextField.setText("0");
 				timeTextField.setPreferredSize(new Dimension(100, 20));
 				timeTextField.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) {
+					public void changedUpdate(DocumentEvent e) { apply(); }
+					public void insertUpdate(DocumentEvent arg0) { apply(); }
+					public void removeUpdate(DocumentEvent arg0) { apply(); }
+					private void apply() {
 						// no mso update allowed?
 						if (isWorking()) return;
 						// update mso model
 						setEstimatedTime(Integer.getInteger(timeTextField.getText()),false,true);						
 					}
-					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
-					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 				timeTextField.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {					

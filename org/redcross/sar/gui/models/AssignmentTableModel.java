@@ -42,6 +42,7 @@ public class AssignmentTableModel extends AbstractTableModel implements
 		if (createdObject || modifiedObject || deletedObject ) {
 			update(cmdPost.getAssignmentListItems().toArray());
 		}
+		
 	}
 	
 	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {

@@ -1,5 +1,16 @@
 package org.redcross.sar.mso.data;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import no.cmr.tools.Log;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -13,7 +24,7 @@ import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 import org.redcross.sar.util.mso.*;
 
-import java.util.*;
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Base class for all data objects in the MSO data model.

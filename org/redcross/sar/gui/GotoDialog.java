@@ -174,7 +174,6 @@ public class GotoDialog extends DiskoDialog  implements POIFormatEventListener {
 	private POIFormatPanel getFormatPanel() {
 		if (m_formatPanel == null) {
 			m_formatPanel = new POIFormatPanel();
-			m_formatPanel.setPreferredSize(new Dimension(350,75));
 			m_formatPanel.addPOIFormatEventListener(this);
 		}
 		return m_formatPanel;

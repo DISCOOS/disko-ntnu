@@ -18,8 +18,9 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.util.except.CommitException;
 
-import javax.swing.*;
 import java.util.Stack;
+
+import javax.swing.JOptionPane;
 
 
 /**

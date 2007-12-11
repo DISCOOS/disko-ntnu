@@ -16,15 +16,18 @@ import org.redcross.sar.mso.MsoModelImpl;
  */
 public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 
-	public S m_result = null;
-	public long m_millisToPopup = 0;
-	public String m_message = null;
-	public boolean m_isModal = false;
-	public boolean m_showProgress = false;
-	public boolean m_isDone = false;
-	public boolean m_suspend = false;
-	public DiskoProgressMonitor m_monitor = null;
-	public WorkOnThreadType m_workOnThread = null;
+	protected S m_result = null;
+	protected long m_millisToPopup = 0;
+	protected String m_message = null;
+	protected boolean m_isModal = false;
+	protected boolean m_showProgress = false;
+	protected boolean m_isDone = false;
+	protected boolean m_suspend = false;
+	protected boolean m_isEnabled = false;
+	protected boolean m_isNotified = false;
+	protected DiskoProgressMonitor m_monitor = null;
+	protected WorkOnThreadType m_workOnThread = null;
+	
 	
 	/**
 	 * Constructor
@@ -35,6 +38,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 			boolean showProgress) throws Exception {
 		this(isThreadSafe,isModal,workOnThread,message,millisToPopup,showProgress,true);
 	}
+	
 	/**
 	 * Constructor
 	 */
@@ -57,7 +61,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		m_workOnThread = workOnThread;
 		// instructs the work pool do do the work 
 		// application modal: no user input is accepted
-		m_isModal = isModal || !isThreadSafe();		
+		m_isModal = isModal || !isThreadSafe();
 		// number of milli seconds before 
 		// the progress dialog is shown
 		m_millisToPopup = millisToPopup;
@@ -136,18 +140,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	 * This method is called by the DiskoWorkPool
 	 */
 	public void run() {
-		// get frame
-		Frame frame = Utils.getApp().getFrame();
-		// get current state
-		boolean isEnabled = frame.isEnabled();
-		// disable to prevent user input (keeps work pool concurrent)
-		frame.setEnabled(false);
-		frame.requestFocus();
 		// get flag
 		boolean canShowProgress = canShowProgess();
-		// increment suspend counter?
-		if(m_suspend)
-			MsoModelImpl.getInstance().suspendClientUpdate();
 		// show progress?
 		if(m_showProgress && canShowProgress) {
 			// set millis to progress popup?
@@ -155,7 +149,19 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 				m_monitor.setMillisToPopup(m_millisToPopup);
 			// notify progress monitor
 			m_monitor.start(m_message);
+			// set notified flag
+			m_isNotified = true;
 		}
+		// get frame
+		Frame frame = Utils.getApp().getFrame();
+		// get current state
+		m_isEnabled = frame.isEnabled();
+		// disable to prevent user input (keeps work pool concurrent)
+		frame.setEnabled(false);
+		frame.requestFocus();
+		// increment suspend counter?
+		if(m_suspend)
+			MsoModelImpl.getInstance().suspendClientUpdate();
 		// catch any errors
 		try {
 			// forward
@@ -164,17 +170,12 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		// notify progress monitor ?
-		if(m_showProgress && canShowProgress) {
-			// notify progress monitor
-			m_monitor.finish();
-		}
 		// decrement resume suspend counter?
 		if(m_suspend)
 			MsoModelImpl.getInstance().resumeClientUpdate();
-		// resume previous state
-		frame.setEnabled(isEnabled);
-		frame.requestFocus();
+		// is on event dispatch thread?
+		if(SwingUtilities.isEventDispatchThread())
+			done();
 	}
 	
 	/** 
@@ -182,6 +183,16 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	 * 
 	 */
 	public void done() {
+		// get frame
+		Frame frame = Utils.getApp().getFrame();
+		// resume previous state
+		frame.setEnabled(m_isEnabled);
+		frame.requestFocus();
+		// notify progress monitor ?
+		if(m_isNotified) {
+			// notify progress monitor
+			m_monitor.finish();
+		}
 		// set flag
 		m_isDone = true;
 	}

@@ -160,12 +160,14 @@ public class DiskoWorkPool {
   		
   		if(SwingUtilities.isEventDispatchThread()) {
 			// execute
-			work.run(); 
+			work.run();
   		}
   		else {
   			// invoke on EDT thread and wait for result
 			SwingUtilities.invokeLater(work);
   		}
+		// forward
+		done(work);
   	}
   	
   	private synchronized void done(IDiskoWork work) {

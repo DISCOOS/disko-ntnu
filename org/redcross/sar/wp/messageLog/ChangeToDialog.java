@@ -18,13 +18,9 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
 import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Provides a dialog for selecting broadcast or non-broadcast receiver. This dialog also handles sub-dialogs
@@ -199,9 +195,14 @@ public class ChangeToDialog extends DiskoDialog
 	 */
 	public void showComponent()
 	{
-		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+		// show me
 		this.setVisible(true);
-		if(message.isBroadcast())
+		// get current message, do not create if not exist
+		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+		// get flag
+		boolean isBroadcast = (message!=null ? message.isBroadcast() : false); 
+		// setup
+		if(isBroadcast)
 		{
 			showBroadcast();
 		}
@@ -213,15 +214,15 @@ public class ChangeToDialog extends DiskoDialog
 
 	private void showNonBroadcast()
 	{
+		// get current message
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-		if(message != null)
+		// get current receiver
+		ICommunicatorIf receiver = (message!=null ? message.getSingleReceiver() : (ICommunicatorIf)m_wpMessageLog.getCmdPost());
+		// has receiver?
+		if(receiver != null)
 		{
-			ICommunicatorIf receiver = message.getSingleReceiver();
-			if(receiver != null)
-			{
-				m_nbFieldDialog.setCommunicatorNumber(receiver.getCommunicatorNumber());
-				m_nbFieldDialog.setCommunicatorNumberPrefix(receiver.getCommunicatorNumberPrefix());
-			}
+			m_nbFieldDialog.setCommunicatorNumber(receiver.getCommunicatorNumber());
+			m_nbFieldDialog.setCommunicatorNumberPrefix(receiver.getCommunicatorNumberPrefix());
 		}
 		
 		Point location = m_nonBroadcastButton.getLocationOnScreen();
@@ -260,7 +261,7 @@ public class ChangeToDialog extends DiskoDialog
 	 */
 	public void onWorkCancel(DiskoWorkEvent e)
 	{
-		fireOnWorkCancel();
+		// not in use!
 	}
 
 	/**
@@ -268,7 +269,7 @@ public class ChangeToDialog extends DiskoDialog
 	 */
 	public void onWorkFinish(DiskoWorkEvent e)
 	{
-		// not in use!
+		fireOnWorkFinish(e);
 	}
 
 	/**
@@ -276,7 +277,7 @@ public class ChangeToDialog extends DiskoDialog
 	 */
 	public void onWorkChange(DiskoWorkEvent e)
 	{
-		fireOnWorkChange(e);
+		// not in use!
 	}
 	
 	/**

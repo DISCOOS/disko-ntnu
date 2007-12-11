@@ -6,7 +6,15 @@ import org.redcross.sar.event.IDiskoWorkEventListener;
 import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.data.*;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.ICommunicatorIf;
+import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMessageLineIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.ITaskIf;
+import org.redcross.sar.mso.data.ITaskListIf;
+import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
@@ -16,13 +24,32 @@ import org.redcross.sar.util.AssignmentTransferUtilities;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.table.JTableHeader;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
+
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -637,7 +664,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		{
 			getCurrentMessage(true);
 		}
-		//hideEditPanels();
+		hideEditPanels();
 		m_buttonGroup.clearSelection();
 		m_messageDirty = true;
 		updateMessageGUI();
@@ -1424,9 +1451,13 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	 */
 	public void hideEditPanels()
 	{
+		boolean hideAll = (m_currentMessage==null); 
 		for(int i=0; i<m_editComponents.size(); i++)
 		{
-			m_editComponents.get(i).hideComponent();
+			// get component
+			IEditMessageComponentIf edit = m_editComponents.get(i); 
+			if(hideAll || !(edit instanceof LineListPanel))
+				edit.hideComponent();
 		}
 	}
 

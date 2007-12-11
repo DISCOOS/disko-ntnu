@@ -1,14 +1,9 @@
 package org.redcross.sar.wp;
 
+import javax.swing.JButton;
+
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.map.DiskoMap;
-
-import javax.swing.*;
-/**
- * Created by IntelliJ IDEA.
- * User: vinjar
- * Date: 11.apr.2007
- */
 
 /**
  *

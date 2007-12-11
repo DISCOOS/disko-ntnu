@@ -6,9 +6,9 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
-import javax.swing.*;
-
 import java.util.EnumSet;
+
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -61,7 +61,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		// make map visible (is not shown in work prosess before
 		// MessageLogPanel.showMap() is called)
 		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(false);
+		map.setVisible(true);
     }
 
     @Override

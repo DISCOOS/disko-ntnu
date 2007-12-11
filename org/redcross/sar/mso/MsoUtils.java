@@ -46,7 +46,78 @@ import com.esri.arcgis.interop.AutomationException;
  */
 public class MsoUtils {
 		
-    public static Enum getType(IMsoObjectIf msoObj, boolean subtype)
+	public static boolean delete(IMsoObjectIf msoObject) {
+		
+		// dispatch type
+		if(msoObject instanceof IAreaIf) {
+			// forward
+			return deleteArea((IAreaIf)msoObject);
+		}
+		else if (msoObject instanceof IAssignmentIf) {
+			// forward
+			return deleteAssignment((IAssignmentIf)msoObject);
+		}
+		// failed
+		return false;
+		
+	}
+	
+	public static boolean deleteArea(IAreaIf area) {
+		
+		// is object?
+		if(area!=null) {
+		
+			try {
+				// delete POI
+				for(IPOIIf it : area.getAreaPOIsItems()) {
+					// get POIType
+					Enum type = getType(it, false);
+					// can only delete area poi
+					if(POIType.START.equals(type) || POIType.VIA.equals(type) || POIType.STOP.equals(type)) 
+						if(!it.deleteObject()) return false;
+				}
+				// delete geodata
+				for(IMsoObjectIf it: area.getAreaGeodataItems()) {
+					if(!it.deleteObject()) return false;
+				}
+				// delete area
+				return area.deleteObject();	
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// failed
+		return false;
+		
+	}
+	
+	public static boolean deleteAssignment(IAssignmentIf assignment) {
+		
+		// is object?
+		if(assignment!=null) {
+		
+			try {
+				// get area
+				IAreaIf area = assignment.getPlannedArea();
+				// delete assignment?
+				if(assignment!=null)
+				// delete planned area
+				if(deleteArea(area)) {
+					// delete assignment
+					return assignment.deleteObject();
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// failed
+		return false;
+		
+	}
+	
+	public static Enum getType(IMsoObjectIf msoObj, boolean subtype)
     {
     	// initialize
     	Enum e = null;

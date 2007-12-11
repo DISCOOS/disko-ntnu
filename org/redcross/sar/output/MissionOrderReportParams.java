@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIListIf;
@@ -47,17 +48,17 @@ public class MissionOrderReportParams {
 		printParams.clear();	
 		if (assignment instanceof ISearchIf) {
 			ISearchIf search = (ISearchIf)assignment;
-			putNotNullValue(printParams, MISSION_TITLE, search.getTypeAndNumber());
+			putNotNullValue(printParams, MISSION_TITLE, MsoUtils.getAssignmentName(assignment, 1));
 			putNotNullValue(printParams, PRIORITY_TEXT, search.getPriorityText());
 			IUnitIf unit = search.getOwningUnit();
 			if(unit != null)
-				putNotNullValue(printParams, ENTITY_NAME, unit.getUnitNumber());
+				putNotNullValue(printParams, ENTITY_NAME, MsoUtils.getUnitName(unit, false));
 			else
 				putNotNullValue(printParams, ENTITY_NAME, null);
 			putNotNullValue(printParams, N50_MAP_NAME, null);
 			printParams.put(PLANNED_ACCURACY, Integer.toString(search.getPlannedAccuracy())+" %");
 			
-			putNotNullValue(printParams, MISSION_TYPE, search.getTypeText());
+			putNotNullValue(printParams, MISSION_TYPE, MsoUtils.getAssignmentName(search,0));
 			makePoiList(search, srs);
 			
 			putNotNullValue(printParams, MAP, exportMapPath);
@@ -123,8 +124,8 @@ public class MissionOrderReportParams {
 	
 	private void putNotNullValue(Map<String, Object> printParams, String key, String value){
 		if (value == null){
-			//printParams.put(key, "");//
-			printParams.put(key, "<ikke tilgj.>");//testkommentar
+			printParams.put(key, "");//
+			//printParams.put(key, "<ikke tilgj.>");//testkommentar
 		}
 		else
 			printParams.put(key, value);

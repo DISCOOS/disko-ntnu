@@ -1,15 +1,25 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.gui.MapStatusBar;
-import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JToggleButton;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

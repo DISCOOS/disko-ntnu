@@ -4,11 +4,15 @@ import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.TransferHandler;
 import javax.swing.table.TableModel;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+
 import java.io.IOException;
 
 /**

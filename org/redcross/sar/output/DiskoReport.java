@@ -95,6 +95,7 @@ public class DiskoReport {
 		try{
 			// map setup?
 			if(m_map==null){
+				
 				// get print map
 				m_map = (DiskoMap)m_mapManager.getPrintMap();
 											

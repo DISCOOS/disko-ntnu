@@ -174,14 +174,15 @@ public class TextAreaDialog extends DiskoDialog {
 				textArea = new JTextArea();
 				textArea.setLineWrap(true);
 				textArea.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) {
+					public void changedUpdate(DocumentEvent e) { apply(); }
+					public void insertUpdate(DocumentEvent arg0) { apply(); }
+					public void removeUpdate(DocumentEvent arg0) { apply(); }
+					private void apply() {
 						// no mso update allowed?
 						if (isWorking()) return;
 						// update mso model
 						setText(textArea.getText(),false,true);						
 					}
-					public void insertUpdate(DocumentEvent arg0) { /* not in use */ }
-					public void removeUpdate(DocumentEvent arg0) { /* not in use */ }					
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

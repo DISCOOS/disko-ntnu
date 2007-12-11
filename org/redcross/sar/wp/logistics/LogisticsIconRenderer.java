@@ -1,13 +1,16 @@
 package org.redcross.sar.wp.logistics;
 
+import java.awt.Component;
+
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.renderers.IconRenderer;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import java.awt.*;
 
 /**
  *

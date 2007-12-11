@@ -3,20 +3,32 @@ package org.redcross.sar.wp.tasks;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.*;
+import org.redcross.sar.gui.DiskoButtonFactory;
+import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.MainMenuPanel;
+import org.redcross.sar.gui.SubMenuPanel;
+import org.redcross.sar.gui.TaskDialog;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskListIf;
-import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
-import java.awt.*;
+
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
@@ -357,7 +369,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		 * @param task
 		 */
 		TaskTickWork() throws Exception {
-			super(false);
+			super("Vent litt",true,false);
 		}
 		
 		@Override

@@ -3,9 +3,12 @@ package org.redcross.sar.gui.renderers;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.util.Internationalization;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
 import java.util.ResourceBundle;
+
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
 public class SimpleListCellRenderer extends JLabel implements ListCellRenderer
 {

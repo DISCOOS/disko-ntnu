@@ -1556,6 +1556,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			// notify disko work listeners?
 			if(workDone) 
 				fireOnWorkChange();			
+			
 		}		
 		
 		private void polylineWorkDone() {

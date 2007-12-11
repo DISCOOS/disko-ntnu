@@ -15,7 +15,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.ListIterator;
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,9 +36,9 @@ public class SaraObjectCreator
    static final int LOC_POS = 1;
    static final NumberFormat millisforma = new DecimalFormat("00000000000");
    //private HashMap<String, SarBaseObject> facts = new HashMap();
-   private HashMap<String, SarObjectImpl> objs = new LinkedHashMap();
-   private HashMap<String, String> objNameIdMap = new LinkedHashMap();
-   private HashMap<String, String> idObjNameMap = new LinkedHashMap();
+   private HashMap<String, SarObjectImpl> objs = new LinkedHashMap<String, SarObjectImpl>();
+   private HashMap<String, String> objNameIdMap = new LinkedHashMap<String, String>();
+   private HashMap<String, String> idObjNameMap = new LinkedHashMap<String, String>();
 
 
    private int counter = 0;
@@ -334,7 +340,7 @@ public class SaraObjectCreator
 
    public static List<String[]> getSetters(Class cls)
    {
-      List<String[]> list = new ArrayList();
+      List<String[]> list = new ArrayList<String[]>();
       if (cls.getName().indexOf("AbstractMsoObject") >= 0)
       {
          return list;

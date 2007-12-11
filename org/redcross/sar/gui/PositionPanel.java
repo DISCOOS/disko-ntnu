@@ -212,13 +212,12 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	 */
 	public JPanel getFieldPanel() {
 		if (fieldPanel == null) {
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			BorderLayout bl = new BorderLayout();
 			fieldPanel = new JPanel();
-			fieldPanel.setLayout(vfl);
-			fieldPanel.add(getPOIField(),null);
-			fieldPanel.add(new JSeparator(JSeparator.HORIZONTAL),null);
-			fieldPanel.add(getFormatPanel(),null);
+			fieldPanel.setLayout(bl);
+			fieldPanel.add(getPOIField(),BorderLayout.NORTH);
+			fieldPanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.CENTER);
+			fieldPanel.add(getFormatPanel(),BorderLayout.SOUTH);
 		}
 		return fieldPanel;
 	}

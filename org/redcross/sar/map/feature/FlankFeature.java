@@ -1,7 +1,16 @@
 package org.redcross.sar.map.feature;
 
-import com.esri.arcgis.geodatabase.*;
-import com.esri.arcgis.geometry.*;
+import com.esri.arcgis.geodatabase.IFeature;
+import com.esri.arcgis.geodatabase.IFeatureClass;
+import com.esri.arcgis.geodatabase.IFeatureCursor;
+import com.esri.arcgis.geodatabase.SpatialFilter;
+import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
+import com.esri.arcgis.geometry.GeometryBag;
+import com.esri.arcgis.geometry.IGeometry;
+import com.esri.arcgis.geometry.IGeometryCollection;
+import com.esri.arcgis.geometry.Line;
+import com.esri.arcgis.geometry.Polygon;
+import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.ErrorDialog;
@@ -14,7 +23,11 @@ import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Route;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 public class FlankFeature extends AbstractMsoFeature {
 

@@ -27,7 +27,6 @@ public class POIFormatPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private JPanel m_formatPanel = null;
 	private JToggleButton m_MGRSButton = null;
 	private JToggleButton m_UTMButton = null;
 	private ButtonGroup m_buttonGroup = null;
@@ -56,10 +55,10 @@ public class POIFormatPanel extends JPanel {
 	private void initialize() {
 		FlowLayout fl = new FlowLayout();
 		fl.setAlignment(FlowLayout.LEFT);
-		fl.setHgap(0);
+		fl.setHgap(5);
 		fl.setVgap(0);
-		m_formatPanel = new JPanel();
-		m_formatPanel.setLayout(fl);
+		setLayout(fl);
+		setPreferredSize(new Dimension(350,50));
 		JLabel label = new JLabel("Posisjonsformat");
 		add(label,null);
 		add(getMGRSButton(), null);

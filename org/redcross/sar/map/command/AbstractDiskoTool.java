@@ -38,6 +38,7 @@ import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	
@@ -505,7 +506,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 	
 	protected void resumeUpdate() {
-		Utils.getApp().getMsoModel().resumeClientUpdate();
 		if(map!=null) {
 			try {
 				map.setSupressDrawing(false);
@@ -516,6 +516,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 				e.printStackTrace();
 			}
 		}		
+		Utils.getApp().getMsoModel().resumeClientUpdate();
 	}
 	
 	public Object getAttribute(String attribute) {
@@ -577,12 +578,31 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			suspendUpdate();			
 			// forward
 			super.run();
-			// resume update
-	        resumeUpdate();
-			// reset flag
-	        setIsNotWorking();        
+			// is on event dispatch thread?
+			if(SwingUtilities.isEventDispatchThread())
+				done();
 		}
 
+		/**
+		 * done 
+		 * 
+		 * Executed on the Event Dispatch Thread.
+		 * 
+		 */
+		@Override
+		public void done() {
+			try {
+				// resume update
+		        resumeUpdate();
+				// reset flag
+		        setIsNotWorking();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+	        // forward
+	        super.done();
+		}
 	}
 	
 	/**

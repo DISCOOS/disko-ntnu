@@ -4,14 +4,24 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.wp.logistics.UnitTableModel;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Properties;
-import java.util.*;
+
+import javax.swing.Icon;
 
 /**
  *

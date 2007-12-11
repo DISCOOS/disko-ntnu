@@ -2,10 +2,15 @@ package org.redcross.sar.gui.renderers;
 
 import org.redcross.sar.mso.data.IAssignmentIf;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
+
+import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 

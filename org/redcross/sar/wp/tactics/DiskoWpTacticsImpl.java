@@ -5,7 +5,11 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
-import org.redcross.sar.gui.*;
+import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DrawDialog;
+import org.redcross.sar.gui.ElementDialog;
+import org.redcross.sar.gui.MapStatusBar;
+import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawAdapter;
 import org.redcross.sar.map.IDiskoMap;
@@ -15,7 +19,13 @@ import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.*;
+import org.redcross.sar.mso.data.IAreaIf;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IOperationAreaIf;
+import org.redcross.sar.mso.data.IPOIIf;
+import org.redcross.sar.mso.data.IRouteIf;
+import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.event.MsoEvent.Commit;
@@ -23,12 +33,22 @@ import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
   
@@ -304,7 +324,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						IAreaIf area = null;
 						if (msoObj instanceof IRouteIf) {				
 							area = MsoUtils.getOwningArea((IRouteIf) msoObj);
-							hasArea = true;
+							hasArea = (area!=null);
 						}
 						else if (msoObj instanceof IPOIIf) {
 							IPOIIf poi = (IPOIIf)msoObj;
@@ -1029,7 +1049,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				case 2: fireOnWorkCancel(); break;
 				}
 				// cleanup
-				reset(m_keep);				
+				reset(m_keep);	
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -1040,9 +1060,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		
 		private void finish() {
 			try{
-				getMap().setSupressDrawing(true);
 				getMsoModel().commit();
-				getMap().setSupressDrawing(false);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -1051,9 +1069,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		
 		private void cancel() {
 			try{
-				getMap().setSupressDrawing(true);
 				getMsoModel().rollback();
-				getMap().setSupressDrawing(false);
 			}
 			catch(Exception e) {
 				e.printStackTrace();

@@ -12,7 +12,6 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.mso.Selector;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -20,6 +19,11 @@ import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Vector;
+
+import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 
 /**
  *  Model used for the Assignment Display part of the Logistics Panel

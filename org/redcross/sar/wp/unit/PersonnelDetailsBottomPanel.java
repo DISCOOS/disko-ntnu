@@ -14,10 +14,18 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.mso.DTG;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.Calendar;
 import java.util.ResourceBundle;
+
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 /**
  * Panel displaying personnel details at bottom of main panel

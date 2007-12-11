@@ -3,14 +3,15 @@
  */
 package org.redcross.sar.gui;
 
-import javax.swing.*; 
-
-import com.esri.arcgis.beans.map.MapBean;
-import com.esri.arcgis.controls.MapControl;
-
-import java.awt.*; 
+import java.awt.AWTEvent;
+import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.event.AWTEventListener; 
 import java.awt.event.MouseEvent; 
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
  
 /** 
  * GlassPane tutorial 

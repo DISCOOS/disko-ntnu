@@ -394,8 +394,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			}						
 		}	
 		
-		// do not deactivate
-		return false;
+		// deactivate
+		return true;
 	}
 
 	/**
@@ -988,6 +988,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	 */
 	public void onWorkFinish(DiskoWorkEvent e)
 	{
+		
 		if(e.getSource() instanceof ImportCalloutDialog)
 		{
 			m_importCalloutDialog.setVisible(false);

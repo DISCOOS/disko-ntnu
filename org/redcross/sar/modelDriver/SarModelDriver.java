@@ -24,9 +24,18 @@ import org.rescuenorway.saraccess.api.*;
 import org.rescuenorway.saraccess.except.SaraException;
 import org.rescuenorway.saraccess.model.*;
 
-import javax.swing.*;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import javax.swing.SwingUtilities;
+
 
 
 /**
@@ -103,7 +112,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     public List<String[]> getActiveOperations()
     {
-        List<String[]> ops = new ArrayList();
+        List<String[]> ops = new ArrayList<String[]>();
         List<SarOperation> opers = sarSvc.getSession().getOperations().getOperations();
         for (SarOperation soper : opers)
         {
@@ -384,11 +393,46 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         }
     }
 
+    private Map<String, Integer> loopbackIds = Collections.synchronizedMap(new HashMap<String, Integer>());
+    
+    private void setLoopback(String id, boolean register) {
+    	if(register) {
+    		if(loopbackIds.containsKey(id)) {
+    			int count = loopbackIds.get(id);
+    			loopbackIds.put(id,count+1);
+    			System.out.println("setLoopback:="+id+":"+(count+1));
+    		}
+    		else {
+    			loopbackIds.put(id,1);
+    			System.out.println("setLoopback:="+id+":"+1);
+    		}
+    	}
+    	else {
+    		if(loopbackIds.containsKey(id)) {
+    			int count = loopbackIds.get(id);
+    			if(count>1) {
+    				loopbackIds.put(id,count-1);
+        			System.out.println("setLoopback:="+id+":"+(count-1));
+    			}
+    			else {
+    				loopbackIds.remove(id);
+        			System.out.println("setLoopback:="+id+":removed");
+    			}
+    		}
+    	}
+    }
+    
+    private boolean isLoopback(String id) {
+    	return loopbackIds.containsKey(id);
+    }
+    
     private HashMap<String, SarObject> tmpObjects = new HashMap<String, SarObject>();
 
     public void handleMsoCommitEvent(MsoEvent.Commit e) throws CommitException
     {
+    	
         tmpObjects.clear();
+        
         //Check that operation is added
         if (sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
         {
@@ -411,11 +455,6 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 //if modified, modify Saraobject.
                 updateSaraObject(ico);
             }
-//            else if (ico.getType().equals(CommitManager.CommitType.COMMIT_DELETED))
-//            {
-//                //if deleted remove Sara object
-//                deleteSaraObject(ico);
-//            }
         }
 
         List<ICommittableIf.ICommitReferenceIf> attrList = wrapper.getListReferences();
@@ -427,6 +466,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         List<ICommittableIf.ICommitReferenceIf> listList = wrapper.getAttributeReferences();
         for (ICommittableIf.ICommitReferenceIf ico : listList)
         {
+        	// forward
             msoReferenceChanged(ico, true);
         }
         //Handle delete object last
@@ -444,11 +484,12 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     private void msoReferenceChanged(ICommittableIf.ICommitReferenceIf ico, boolean isNamedReference)
     {
-        CommitManager.CommitType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
+        // initialize
+    	CommitManager.CommitType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
         IMsoObjectIf owner = ico.getReferringObject();
         IMsoObjectIf ref = ico.getReferredObject();
         SarObject sourceObj = sarOperation.getSarObject(owner.getObjectId());
-        SarObject relObj = sarOperation.getSarObject(ref.getObjectId());
+        SarObject relObj = sarOperation.getSarObject(ref.getObjectId());        
         String refName = ico.getReferenceName();
         if (sourceObj == null)
         {
@@ -463,8 +504,14 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             Log.warning("Object not found " + owner.getObjectId() + " or " + ref.getObjectId());
         } else
         {
+        	// get id
+        	String id = sourceObj.getId();
+        	// dispatch
             if (ct.equals(CommitManager.CommitType.COMMIT_CREATED))
             {
+            	// register loopback id
+            	setLoopback(id,true);
+            	// add relation
                 if (isNamedReference)
                 {
                     sourceObj.addNamedRelation(refName, relObj);
@@ -478,7 +525,10 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 Log.warning("-------------Modify relation-----------");
             } else if (ct.equals(CommitManager.CommitType.COMMIT_DELETED))
             {
-                if (isNamedReference)
+            	// register loopback id
+            	setLoopback(id,true);
+            	// add relation
+            	if (isNamedReference)
                 {
                     sourceObj.removeNamedRelation(refName);
                 } else
@@ -522,10 +572,13 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, boolean submitChanges)
     {
+    	// initialize
         SarSession sarSess = sarSvc.getSession();
         Map attrMap = msoObj.getAttributes();
         Map relMap = msoObj.getReferenceObjects();
         List<SarBaseObject> objs = sbo.getObjects();
+    	// register loopback id
+    	setLoopback(sbo.getId(),true);        
         //TODO legg inn begincommit
         //sarSvc.getSession().beginCommit(sarOperation.getID());
         for (SarBaseObject so : objs)
@@ -571,6 +624,9 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     {
         //Finn mappet objekt
         SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());
+    	// register loopback id
+    	setLoopback(soi.getId(),true);        
+    	// forward
         soi.delete("DISKO");
 
         //Send slette melding
@@ -603,6 +659,20 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         }
     }
 
+    protected String getSarObjectID(Object obj) {
+        if (obj instanceof SarOperation){
+            return ((SarOperation)obj).getID();
+        } 
+        else if (obj instanceof SarObject){
+            return ((SarObject)obj).getID();
+        } 
+        else if  (obj instanceof ChangeObject) {
+        	return ((ChangeObject)obj).getObjID();
+        }
+        // not found
+    	return null;
+    }
+    
     //---------------SaraChangeListener-----------------------------
     public void saraChanged(final SaraChangeEvent change)
     {
@@ -616,24 +686,44 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         }
         if (sarOperation != null && change.getSarOp() == sarOperation)
         {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-
-                public void run()
-                {
-                    try
-                    {
-                    	// forward
-                    	DiskoWorkPool.getInstance().schedule(
-                    			new SaraChangeWork(change));
-                    	
+        	try {
+        		// invoke later on EDT
+            	SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                        	// create work
+                        	SaraChangeWork work = new SaraChangeWork(change);
+                    		// get id
+                    		String id = getSarObjectID(change.getSource());
+                    		// is loopback?
+                    		if(isLoopback(id)) {
+                    			// only loopback objects shold be done inside loopback to ensure
+                    			// correct update of server values in attributes and relations during 
+                    			// a commit from the mso model assosiated with this model driver 
+                    			work.run();
+                    			System.out.println("Looback:"+id);
+                    			// forward
+                    			setLoopback(id, false);
+                    		}
+                    		else {
+                    			// all other sara change work (commits invoked by other mso models) 
+                    			// should be done by the work pool to ensure concurrency of all running threads 
+                    			// (GUI events on EDT, sara change events from SARA API and mso model 
+                    			// invocations done on either EDT or disko work pool thread)
+                    			DiskoWorkPool.getInstance().schedule(work);
+                    			System.out.println("Schedule:"+id);
+                    		}                        	
+                        }
+                        catch (Exception e){
+                            Log.printStackTrace("Unable to update msomodel " + e.getMessage(), e);
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        Log.printStackTrace("Unable to update msomodel " + e.getMessage(), e);
-                    }
-                }
-            });
+                });        			
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	            
         }
     }
 

@@ -13,8 +13,8 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -23,6 +23,13 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Vector;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
 
 /**
  *

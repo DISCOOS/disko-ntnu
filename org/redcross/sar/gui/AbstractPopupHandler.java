@@ -1,7 +1,8 @@
 package org.redcross.sar.gui;
 
-import javax.swing.*;
 import java.awt.event.MouseEvent;
+
+import javax.swing.JPopupMenu;
 
 /**
  *  Generic handler for popup events

@@ -5,9 +5,10 @@ import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.util.mso.Selector;
 
-import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.AbstractListModel;
 
 /**
  * Data model for assignment lines, used to retrieve list depending on action (assign, start, complete)

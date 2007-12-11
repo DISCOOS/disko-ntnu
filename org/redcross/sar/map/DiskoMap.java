@@ -1031,7 +1031,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					try {							
 						// get key
 						String key = String.valueOf(obj);
-						//System.out.println("L:R:"+key);
+						//System.out.println("L:R:M"+key+":"+DiskoMap.this.hashCode());
 						// refresh view
 						getActiveView().partialRefresh(
 								esriViewDrawPhase.esriViewGeography, obj, extent);

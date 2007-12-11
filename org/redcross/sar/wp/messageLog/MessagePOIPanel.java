@@ -1,14 +1,17 @@
 package org.redcross.sar.wp.messageLog;
 
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
@@ -138,8 +141,8 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 			{
 				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 				numPad.setVisible(false);
-				applyPOI();
-				MessageLogBottomPanel.showListPanel();
+				if(applyPOI())
+					MessageLogBottomPanel.showListPanel();				
 			}
 		});
 		this.add(m_okButton, gbc);
@@ -149,9 +152,12 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 	/**
 	 * apply POI position and type in current message based on values in GUI fields
 	 */
-	private void applyPOI()
+	private boolean applyPOI()
 	{
 
+		// initialize flag
+		boolean isSuccess = false;
+		
 		// suspend update events
 		m_wpMessageLog.getMsoModel().suspendClientUpdate();
 		
@@ -169,14 +175,14 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 				// initialize flag
 				boolean isDirty = false;
 				
-				// get current message, create if not exists
-				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+				// get current message, do create if not exists
+				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 
-				// Get message line, create if not exist
-				IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POI, true);
+				// Get message line, do not create if not exist
+				IMessageLineIf messageLine = (message!=null ? message.findMessageLine(MessageLineType.POI, false) : null);
 
-				// Create new POI and message line if POI message line did not exists
-				IPOIIf poi = messageLine.getLinePOI();
+				// get poi
+				IPOIIf poi = (messageLine!=null ? messageLine.getLinePOI() : null);
 				
 				// get flag
 				boolean isWorkPoolMode = m_tool.isWorkPoolMode();
@@ -196,7 +202,14 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 					// get added poi
 					poi = m_tool.getCurrentPOI();
 					
-					// update linste
+					// create message?
+					if(message==null) {
+						// create message and message line
+						message = MessageLogBottomPanel.getCurrentMessage(true);	
+						messageLine = message.findMessageLine(MessageLineType.POI, true);
+					}
+					
+					// update line
 					messageLine.setLinePOI(poi);
 				}
 				else {
@@ -216,17 +229,22 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 				// resume mode
 				m_tool.setWorkPoolMode(isWorkPoolMode);				
 				
+				// get flag
+				boolean isIntelligence = (POIType.FINDING.equals(poi.getType()) || 
+						POIType.SILENT_WITNESS.equals(poi.getType()));
+				
 				// update task?
-				if(poi!=null && (POIType.FINDING.equals(poi.getType()) || 
-						POIType.SILENT_WITNESS.equals(poi.getType())))
+				if(poi!=null && isIntelligence)
 					// forward
 					isDirty = isDirty || setTask(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
 				
 				// is dirty?
 				if(isDirty)
-					MessageLogBottomPanel.setIsDirty();					
+					MessageLogBottomPanel.setIsDirty();
 				
-			}
+				// set flag
+				isSuccess = true;
+			}			
 			else {
 				// notify
 				Utils.showWarning("Ingen posisjon er valgt");
@@ -239,6 +257,8 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		// resume update
 		m_wpMessageLog.getMsoModel().resumeClientUpdate();
 		
+		// return flag
+		return isSuccess;
 	}
 
 	private boolean setTask(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {

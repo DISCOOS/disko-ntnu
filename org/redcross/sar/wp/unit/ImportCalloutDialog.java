@@ -12,18 +12,39 @@ import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import java.awt.*;
+
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -431,58 +452,65 @@ public class ImportCalloutDialog extends DiskoDialog
 			IPersonnelIf msoPersonnel = null;
 			if(personnel.isInclude())
 			{
-				if(personnel.isPreExisting())
+				if(personnel.isValid()) 
 				{
-					// Update existing personnel
-					if(personnel.isCreateNew())
-					{
-						// Create new personnel instance
-						msoPersonnel = m_wpModule.getMsoManager().createPersonnel();
-						msoPersonnel.setDataSourceID(personnel.getId());
-						msoPersonnel.setFirstname(personnel.getFirstName());
-						msoPersonnel.setLastname(personnel.getLastName());
-						msoPersonnel.setTelephone1(personnel.getPhone());
-						msoPersonnel.setImportStatus(PersonnelImportStatus.IMPORTED);
-						personnel.getPersonnelRef().setNextOccurence(msoPersonnel);
-					}
-					else if(personnel.isUpdate())
+					if(personnel.isPreExisting())
 					{
 						// Update existing personnel
-						msoPersonnel = personnel.getPersonnelRef();
-						msoPersonnel.setDataSourceID(personnel.getId());
+						if(personnel.isCreateNew())
+						{
+							// Create new personnel instance
+							msoPersonnel = m_wpModule.getMsoManager().createPersonnel();
+							msoPersonnel.setDataSourceID(personnel.getId());
+							msoPersonnel.setFirstname(personnel.getFirstName());
+							msoPersonnel.setLastname(personnel.getLastName());
+							msoPersonnel.setTelephone1(personnel.getPhone());
+							msoPersonnel.setImportStatus(PersonnelImportStatus.IMPORTED);
+							personnel.getPersonnelRef().setNextOccurence(msoPersonnel);
+						}
+						else if(personnel.isUpdate())
+						{
+							// Update existing personnel
+							msoPersonnel = personnel.getPersonnelRef();
+							msoPersonnel.setDataSourceID(personnel.getId());
+							msoPersonnel.setFirstname(personnel.getFirstName());
+							msoPersonnel.setLastname(personnel.getLastName());
+							msoPersonnel.setTelephone1(personnel.getPhone());
+							msoPersonnel.setImportStatus(PersonnelImportStatus.UPDATED);
+						}
+						else if(personnel.isKeepExisting())
+						{
+							// Keep personnel
+							msoPersonnel = personnel.getPersonnelRef();
+							msoPersonnel.setImportStatus(PersonnelImportStatus.KEPT);
+						}
+						
+						// Reinstate released personnel
+						if(msoPersonnel.getStatus() == PersonnelStatus.RELEASED)
+						{
+							msoPersonnel = PersonnelUtilities.reinstateResource(msoPersonnel, PersonnelStatus.ON_ROUTE);
+						}
+						else if(msoPersonnel.getStatus() != PersonnelStatus.ARRIVED)
+						{
+							msoPersonnel.setStatus(PersonnelStatus.ON_ROUTE);
+						}
+					}
+					else
+					{
+						// Create new personnel
+						msoPersonnel = m_wpModule.getMsoManager().createPersonnel();
 						msoPersonnel.setFirstname(personnel.getFirstName());
 						msoPersonnel.setLastname(personnel.getLastName());
 						msoPersonnel.setTelephone1(personnel.getPhone());
-						msoPersonnel.setImportStatus(PersonnelImportStatus.UPDATED);
-					}
-					else if(personnel.isKeepExisting())
-					{
-						// Keep personnel
-						msoPersonnel = personnel.getPersonnelRef();
-						msoPersonnel.setImportStatus(PersonnelImportStatus.KEPT);
-					}
-					
-					// Reinstate released personnel
-					if(msoPersonnel.getStatus() == PersonnelStatus.RELEASED)
-					{
-						msoPersonnel = PersonnelUtilities.reinstateResource(msoPersonnel, PersonnelStatus.ON_ROUTE);
-					}
-					else if(msoPersonnel.getStatus() != PersonnelStatus.ARRIVED)
-					{
 						msoPersonnel.setStatus(PersonnelStatus.ON_ROUTE);
 					}
+				
+					callout.addPersonel(msoPersonnel);
+					
 				}
-				else
-				{
-					// Create new personnel
-					msoPersonnel = m_wpModule.getMsoManager().createPersonnel();
-					msoPersonnel.setFirstname(personnel.getFirstName());
-					msoPersonnel.setLastname(personnel.getLastName());
-					msoPersonnel.setTelephone1(personnel.getPhone());
-					msoPersonnel.setStatus(PersonnelStatus.ON_ROUTE);
+				else {
+					// TODO: implement handling of invalid imports
 				}
-			
-				callout.addPersonel(msoPersonnel);
 			}
 		}
 	}
@@ -594,11 +622,17 @@ public class ImportCalloutDialog extends DiskoDialog
 			m_reportStatus = status;
 		}
 		
+		public boolean isValid()
+		{
+			return m_firstName!=null && !m_firstName.isEmpty() && 
+				m_lastName!=null && !m_lastName.isEmpty();
+		}
+		
 		public boolean isInclude()
 		{
 			return m_include;
 		}
-		
+					
 		public void setInclude(boolean include)
 		{
 			m_include = include;
