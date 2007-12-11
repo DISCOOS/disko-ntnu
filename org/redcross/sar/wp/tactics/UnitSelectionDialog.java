@@ -28,6 +28,7 @@ import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
@@ -44,11 +45,13 @@ public class UnitSelectionDialog extends DiskoDialog {
 		MESSAGE_SAME_UNIT,
 		MESSAGE_ASSIGNMENT_MISSING,
 		MESSAGE_UNIT_MISSING,
-		MESSAGE_CLEAR
+		MESSAGE_CLEAR,
+		MESSAGE_NOTHING_ALLOCATED
 	}
 	
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
+	private JPanel titlePanel = null;
 	private JPanel contentPanel = null;
 	private JPanel tablePanel = null;
 	private JPanel buttonPanel = null;
@@ -57,11 +60,11 @@ public class UnitSelectionDialog extends DiskoDialog {
 
 	private IAssignmentIf currentAssignment = null;
 	private JButton allocateButton = null;
+	private JLabel iconLabel = null;
 	private JLabel titleLabel = null;
 	private JButton reclaimButton = null;
 	private Dimension buttonSize = null;
 
-	
 	public UnitSelectionDialog(IDiskoWpModule wp) {
 		
 		// forward
@@ -76,8 +79,9 @@ public class UnitSelectionDialog extends DiskoDialog {
 		
 		// get selected mso feature
 		setSelectedMsoFeature(wp.getMap());
-		
+				
 	}
+	
 
 	/**
 	 * This method initializes this
@@ -85,12 +89,12 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(400, 300));
+            this.setPreferredSize(new Dimension(600, 400));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 
@@ -111,15 +115,12 @@ public class UnitSelectionDialog extends DiskoDialog {
 		JTable table = getUnitTable();
 		if(table != null) {
 			for (int row = 0; row < table.getRowCount(); row++) {
-				for (int col = 0; col < table.getColumnCount(); col++) {
-					IUnitIf unit = (IUnitIf)table.getValueAt(row, col);
-					if (unit != null) {
-						Collection assignments = unit.getAssignedAssignments();
-						if (assignments != null && assignments.contains(assignment)) {
-							table.setRowSelectionInterval(row, row);
-							table.setColumnSelectionInterval(col, col);
-							return;
-						}
+				IUnitIf unit = (IUnitIf)table.getValueAt(row, 0);
+				if (unit != null) {
+					Collection assignments = unit.getAssignedAssignments();
+					if (assignments != null && assignments.contains(assignment)) {
+						table.setRowSelectionInterval(row, row);
+						return;
 					}
 				}
 			}
@@ -137,8 +138,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 				contentPanel = new JPanel();
 				contentPanel.setLayout(new BorderLayout());
 				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				titleLabel = new JLabel("Knytt oppdrag til enhet");
-				contentPanel.add(titleLabel,BorderLayout.NORTH);
+				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
 				contentPanel.add(getTablePanel(), BorderLayout.CENTER);
 				contentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
 			} catch (java.lang.Throwable e) {
@@ -148,6 +148,31 @@ public class UnitSelectionDialog extends DiskoDialog {
 		return contentPanel;
 	}
 
+	/**
+	 * This method initializes titlePanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			try {
+				FlowLayout fl = new FlowLayout();
+				fl.setAlignment(FlowLayout.LEFT);
+				fl.setHgap(5);
+				fl.setVgap(0);
+				titlePanel = new JPanel();
+				titlePanel.setLayout(fl);
+				iconLabel = new JLabel();
+				titleLabel = new JLabel("Velg et oppdrag");
+				titlePanel.add(iconLabel,null);
+				titlePanel.add(titleLabel,null);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return titlePanel;
+	}
+	
 	/**
 	 * This method initializes tablePanel	
 	 * 	
@@ -195,7 +220,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 * @return javax.swing.JButton	
 	 */
 	private JButton getAllocateButton() {
-		if (allocateButton == null || true) {
+		if (allocateButton == null) {
 			try {
 				allocateButton = new JButton();
 				String iconName = "IconEnum.ALLOCATED.icon";
@@ -224,7 +249,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 * @return javax.swing.JButton	
 	 */
 	private JButton getReclaimButton() {
-		if (reclaimButton == null || true) {
+		if (reclaimButton == null) {
 			try {
 				reclaimButton = new JButton();
 				String iconName = "IconEnum.CANCELED.icon";
@@ -272,7 +297,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private UnitTable getUnitTable() {
 		if (unitTable == null) {
 			try {
-				unitTable = new UnitTable(msoModel, 2);
+				unitTable = new UnitTable(msoModel);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -286,42 +311,67 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 */
 	private void clear() {
 
-		// has assignment?
-		if(currentAssignment!=null) {
+		// get selected row
+		int row = unitTable.convertRowIndexToModel(unitTable.getSelectedRow());
+
+		// get unit
+		IUnitIf unit = (row>-1 ? (IUnitIf)unitTable.getModel().getValueAt(row, 0) : null); 
+		
+		// a unit was selected?
+		if(unit!=null) {
+
+			// get count
+			int count = unit.getAllocatedAssignments().size();
 			
-			// initialize
-			int ans = JOptionPane.NO_OPTION;
-			
-			// check if assignment is allocated
-			if(currentAssignment.getStatus()==AssignmentStatus.ALLOCATED) {
+			// has assignments?
+			if(count>0) {
 				
+				// last assignment in list
+				IAssignmentIf assignment = unit.getAllocatedAssignments().get(count-1);
+				
+				
+				// initialize
+				int ans = JOptionPane.NO_OPTION;
+				
+				// check if assignment is allocated
+				if(assignment.getStatus()==AssignmentStatus.ALLOCATED) {
+					
+					// prompt user
+					ans = prompt(MessageBoxType.MESSAGE_CLEAR);
+					
+					// clear?
+					if(ans == JOptionPane.YES_OPTION) {
+		                try
+		                {
+		            		// notify
+		            		setIsWorking();
+		                    // change status and owner (will raise 
+		                	// illegal operation is not possible)
+		            		assignment.setStatusAndOwner(
+		                			AssignmentStatus.READY, null);	
+							// notify
+							fireOnWorkChange(getReclaimButton(),
+									assignment,AssignmentStatus.READY);
+							// finished working
+							setIsNotWorking();
+							// success!
+							return;
+		                }
+		                catch (IllegalOperationException e) {
+							// prompt user
+							prompt(MessageBoxType.MESSAGE_INVALID_STATUS);
+		                }
+					}
+				}			
+			}
+			else {
 				// prompt user
-				ans = prompt(MessageBoxType.MESSAGE_CLEAR);
-				
-				// clear?
-				if(ans == JOptionPane.YES_OPTION) {
-	                try
-	                {
-	            		// notify
-	            		setIsWorking();
-	                    // change status and owner (will raise 
-	                	// illegal operation is not possible)
-	                	currentAssignment.setStatusAndOwner(
-	                			AssignmentStatus.READY, null);	
-						// notify
-						fireOnWorkChange(getReclaimButton(),
-								currentAssignment,AssignmentStatus.READY);
-						// finished working
-						setIsNotWorking();
-						// success!
-						return;
-	                }
-	                catch (IllegalOperationException e) {
-						// prompt user
-						prompt(MessageBoxType.MESSAGE_INVALID_STATUS);
-	                }
-				}
-			}			
+				prompt(MessageBoxType.MESSAGE_NOTHING_ALLOCATED);
+			}
+		}
+		else {
+			// prompt user
+			prompt(MessageBoxType.MESSAGE_UNIT_MISSING);
 		}
 
 		// is working
@@ -435,7 +485,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 		if(type == MessageBoxType.MESSAGE_ALLOCATE) {
 			// notfiy user
 			ans = JOptionPane.showConfirmDialog(getOwner(),
-                "Dette vil legge oppdraget til køen av oppdrag for valgt enhet. Vil du fortsette?",
+                "Dette vil legge oppdraget til bakerst i køen av oppdrag for valgt enhet. Vil du fortsette?",
                 "Bekreft valgt enhet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);								
 		}
 		if(type == MessageBoxType.MESSAGE_REALLOCATE) {
@@ -447,7 +497,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 		else if(type == MessageBoxType.MESSAGE_CLEAR) {
 			// notfiy user
 			ans = JOptionPane.showConfirmDialog(getOwner(),
-                "Dette vil legge fjerne oppdraget fra valgt enhet. Vil du fortsette?",
+                "Dette vil legge fjerne bakerste oppdrag fra køen til valgt enhet. Vil du fortsette?",
                 "Bekreft fjerning", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);								
 		}
 		else if(type == MessageBoxType.MESSAGE_INVALID_STATUS) {
@@ -476,6 +526,12 @@ public class UnitSelectionDialog extends DiskoDialog {
 	                "Ulovlig handling", JOptionPane.INFORMATION_MESSAGE);
 
 		}
+		else if(type == MessageBoxType.MESSAGE_NOTHING_ALLOCATED) {			
+			JOptionPane.showMessageDialog(getOwner(),
+	                "Enheten har ingen oppdrag i kø",
+	                "Ulovlig handling", JOptionPane.INFORMATION_MESSAGE);
+
+		}
 		return ans;
 	}
 	
@@ -483,70 +539,79 @@ public class UnitSelectionDialog extends DiskoDialog {
 		JTable table = getUnitTable();
 		if(table != null) {
 			int row = table.getSelectedRow();
-			int col = table.getSelectedColumn();
-			if (row > -1 && col > -1) {
-				return (IUnitIf)table.getValueAt(row, col);
+			if (row > -1) {
+				return (IUnitIf)table.getValueAt(row, 0);
 			}
 		}
 		return null;
 	}
-
+	
+	@Override
+	public boolean setMsoObject(IMsoObjectIf msoObj) {
+		if(isWorking()) return false;
+		// set to nothing
+		currentAssignment = null;
+		// get assignment
+		if(msoObj instanceof IAssignmentIf) {
+			currentAssignment = (IAssignmentIf)msoObj;
+		}
+		else {
+			IAreaIf area = MsoUtils.getOwningArea(msoObj);
+			if(area!=null) {
+				currentAssignment = area.getOwningAssignment();
+			}
+		}
+		// forward
+		setup();
+		// success
+		return true;
+	}	
+	
 	private void selectAssignedUnit() {
 		if(currentAssignment!=null) {
 			// get table
 			JTable table = getUnitTable();
 			// has table?
 			if(table != null) {
-				// loop over all cells and detect if any unit is assigned to 
-				// appli
+				// find unit allocated to current assignment 
 				for (int row = 0; row < table.getRowCount(); row++) {
-					for (int col = 0; col < table.getColumnCount(); col++) {
-						IUnitIf unit = (IUnitIf)table.getValueAt(row, col);
-						if (unit != null) {
-							List list = unit.getAllocatedAssignments();
-							if (list!=null && list.contains(currentAssignment)) {
-								// select in table
-								table.setRowSelectionInterval(row, row);
-								table.setColumnSelectionInterval(col, col);
-								// enable or diable dialog?
-								if(currentAssignment.getStatus().compareTo(IAssignmentIf.AssignmentStatus.ALLOCATED)<0) {
-									setEnabled(true);
-								}
-								else
-									setEnabled(false);
-								return;
-							}
+					IUnitIf unit = (IUnitIf)table.getValueAt(row, 0);
+					if (unit != null) {
+						List list = unit.getAllocatedAssignments();
+						if (list!=null && list.contains(currentAssignment)) {
+							// select in table
+							table.setRowSelectionInterval(row, row);
+							// finished
+							return;
 						}
 					}
 				}
 			}
 		}
-		// forward
-		clearSelection();
-	}
-	
-	private void clearSelection() {
+		// clear current selection
 		getUnitTable().clearSelection();
-		setEnabled(true);		
 	}
-
-	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
-		IAreaIf area = MsoUtils.getOwningArea(msoObj);
-		if(area!=null) {
-			currentAssignment = area.getOwningAssignment();
-			if (currentAssignment!=null) {		
-				selectAssignedUnit();
-				return true;
-			}
-		}
-		// set to nothing
-		currentAssignment = null;
-		// not selected
-		return false;
-	}	
 	
+	private void setup() {
+		// update icon
+		if(currentAssignment!=null) {
+			Enum e = MsoUtils.getType(currentAssignment,true);
+			iconLabel.setIcon(Utils.getIcon(e));
+			titleLabel.setText("<html>Legg <b>" + 
+					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + 
+					"</b> i kø til en enhet i listen" + (currentAssignment instanceof ISearchIf ? 
+							"    (<i>mannskapsbehov</i>: <b>" + ((ISearchIf)currentAssignment).getPlannedPersonnel() + "</b>)</html>" : "</html>"));
+			getAllocateButton().setEnabled(true);
+		}
+		else {
+			iconLabel.setIcon(null);
+			titleLabel.setText("Du må velge et oppdrag før du kan legge det til køen til enhet");
+			getAllocateButton().setEnabled(false);
+		}		
+		// get current assigned unit
+		selectAssignedUnit();
+	}
+		
 	@Override
 	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
 		if(isWorking()) return;
@@ -566,7 +631,8 @@ public class UnitSelectionDialog extends DiskoDialog {
 			currentAssignment = null;
 			currentMsoFeature =null;
 			currentMsoObj =null;
-			clearSelection();
+			// forward
+			setup();
 		}
 	}
 	

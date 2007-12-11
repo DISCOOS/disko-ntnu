@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.tactics;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NumPadDialog;
@@ -15,9 +16,9 @@ import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -26,7 +27,9 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -38,6 +41,10 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPanel = null;
+	private JPanel titlePanel = null;
+	private JLabel iconLabel = null;
+	private JLabel titleLabel = null;
+	private JPanel requirementPanel = null;
 	private JLabel accuracyLabel = null;
 	private JSlider accuracySlider = null;
 	private JTextField accuracyTextField = null;
@@ -70,9 +77,9 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(800, 145));
+            this.setPreferredSize(new Dimension(800, 200));
             this.setSize(new Dimension(989, 145));
-            this.setContentPane(getTabbedPane());
+            this.setContentPane(getContentPanel());
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -93,16 +100,53 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	    return myLayers;
 	}
 	
-	@Override
-	public void setVisible(boolean isVisible) {
-		if(currentMsoObj==null && isVisible) {
-			// notfiy user
-			JOptionPane.showMessageDialog(getOwner(),
-                "Du må velge et oppdrag i kartet før du kan skrive inn tekst",
-                "Objekt mangler", JOptionPane.INFORMATION_MESSAGE);
-			return;
+	/**
+	 * This method initializes contentPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getContentPanel() {
+		if (contentPanel == null) {
+			try {
+				contentPanel = new JPanel();
+				contentPanel.setLayout(new BorderLayout());
+				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
+				contentPanel.add(getTabbedPane(), BorderLayout.CENTER);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
 		}
-		super.setVisible(isVisible);
+		return contentPanel;
+	}
+	
+	/**
+	 * This method initializes titlePanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			try {
+				FlowLayout fl = new FlowLayout();
+				fl.setAlignment(FlowLayout.LEFT);
+				fl.setHgap(5);
+				fl.setVgap(0);
+				JPanel labels = new JPanel();
+				labels.setLayout(fl);
+				iconLabel = new JLabel();
+				titleLabel = new JLabel();
+				labels.add(iconLabel,null);
+				labels.add(titleLabel,null);
+				titlePanel = new JPanel();
+				titlePanel.setLayout(new BorderLayout());
+				titlePanel.add(labels,BorderLayout.CENTER);
+				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return titlePanel;
 	}
 	
 	/**
@@ -114,9 +158,8 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		if (tabbedPane == null) {
 			try {
 				tabbedPane = new JTabbedPane();
-				tabbedPane.addTab("Krav", null, getContentPanel(), null);
+				tabbedPane.addTab("Krav", null, getRequirementPanel(), null);
 				tabbedPane.addTab("Merknad", null, getRemarksScrollPane(), null);
-				tabbedPane.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -254,12 +297,12 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	}	
 	
 	/**
-	 * This method initializes contentPanel
+	 * This method initializes requirementPanel
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getContentPanel() {
-		if (contentPanel == null) {
+	private JPanel getRequirementPanel() {
+		if (requirementPanel == null) {
 			try {
 				GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 				gridBagConstraints1.fill = GridBagConstraints.HORIZONTAL;
@@ -323,21 +366,21 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				gridBagConstraints.gridy = 0;
 				accuracyLabel = new JLabel();
 				accuracyLabel.setText("Nøyaktighet:");
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new GridBagLayout());
-				contentPanel.add(priorityLabel, gridBagConstraints3);
-				contentPanel.add(personelLabel, gridBagConstraints6);
-				contentPanel.add(accuracyLabel, gridBagConstraints);
-				contentPanel.add(getAccuracySlider(), gridBagConstraints61);
-				contentPanel.add(getAccuracyTextField(), gridBagConstraints71);
-				contentPanel.add(getPrioritySlider(), gridBagConstraints81);
-				contentPanel.add(getPriorityTextField(), gridBagConstraints91);
-				contentPanel.add(getPersonelTextField(), gridBagConstraints1);
+				requirementPanel = new JPanel();
+				requirementPanel.setLayout(new GridBagLayout());
+				requirementPanel.add(priorityLabel, gridBagConstraints3);
+				requirementPanel.add(personelLabel, gridBagConstraints6);
+				requirementPanel.add(accuracyLabel, gridBagConstraints);
+				requirementPanel.add(getAccuracySlider(), gridBagConstraints61);
+				requirementPanel.add(getAccuracyTextField(), gridBagConstraints71);
+				requirementPanel.add(getPrioritySlider(), gridBagConstraints81);
+				requirementPanel.add(getPriorityTextField(), gridBagConstraints91);
+				requirementPanel.add(getPersonelTextField(), gridBagConstraints1);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return contentPanel;
+		return requirementPanel;
 	}
 
 	/**
@@ -549,14 +592,30 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				setAccuracy(currentAssignment.getPlannedAccuracy(),true,false);
 				setPersonelNeed(currentAssignment.getPlannedPersonnel(),true,false);
 				setRemarks(currentAssignment.getRemarks(),true,false);								
-				return true;
 			}
 		}
-		// reset current values
-		reset();
-		// not selected
-		return false;
+		// forward
+		setup();
+		// success
+		return true;
 	}	
+	
+	private void setup() {
+		// update icon
+		if(currentAssignment!=null) {
+			Enum e = MsoUtils.getType(currentAssignment,true);
+			iconLabel.setIcon(Utils.getIcon(e));
+			titleLabel.setText("<html>Krav til <b>" + 
+					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
+			getTabbedPane().setEnabled(true);
+		}
+		else {
+			iconLabel.setIcon(null);
+			titleLabel.setText("Du må først velge et oppdrag");			
+			getTabbedPane().setEnabled(false);
+			reset();
+		}		
+	}
 	
 	@Override
 	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {

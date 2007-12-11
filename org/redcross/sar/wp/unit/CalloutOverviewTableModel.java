@@ -3,6 +3,7 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.ICalloutListIf;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -54,11 +55,14 @@ public class CalloutOverviewTableModel extends AbstractTableModel implements IMs
 
 	public int getRowCount()
 	{
-		return m_wpModule.getCmdPost().getCalloutList().size();
+		ICmdPostIf cmdPost = m_wpModule.getCmdPost();
+		return (cmdPost!=null ? cmdPost.getCalloutList().size() : 0);
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
+		ICmdPostIf cmdPost = m_wpModule.getCmdPost();
+		if(cmdPost==null) return null;
 		ICalloutListIf callouts = m_wpModule.getCmdPost().getCalloutList();
 		Object[] data = (Object[])callouts.getItems().toArray();
 		if(data==null || data.length<=rowIndex) return null;
@@ -80,8 +84,8 @@ public class CalloutOverviewTableModel extends AbstractTableModel implements IMs
 	 */
 	public ICalloutIf getCallout(int index)
 	{
-		ICalloutListIf callouts = m_wpModule.getCmdPost().getCalloutList();
-		return (ICalloutIf)callouts.getItems().toArray()[index];
+		ICmdPostIf cmdPost = m_wpModule.getCmdPost();		
+		return (cmdPost!=null ? (ICalloutIf)cmdPost.getCalloutList().getItems().toArray()[index] : null);
 	}
 
 }

@@ -382,28 +382,28 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 	}
 
 	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
+		// initialize
+		IMsoObjectIf msoObj = null;
+		IMsoFeature msoFeature = null;
+		// get selection list
 		IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
 		List selection = msoLayer.getSelected();
-		// reset current selection
-		currentMsoObj = null;
-		currentMsoFeature = null;
 		// select new?
 		if (selection != null && selection.size() > 0) {
 			// get feature
-			IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
+			msoFeature = (IMsoFeature)selection.get(0);
 			// get mso object
-			IMsoObjectIf msoObj = msoFeature.getMsoObject();
-			// forward
-			if (setMsoObject(msoObj)) {
-				// set current feature
-				currentMsoObj = msoObj;
-				currentMsoFeature = msoFeature;
-			}
+			msoObj = msoFeature.getMsoObject();
 		} 
+		// forward
+		if (setMsoObject(msoObj)) {
+			// set current objects
+			currentMsoObj = msoObj;
+			currentMsoFeature = msoFeature;
+		}
 	}
 	
 	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		currentMsoObj = msoObj;
 		return true;
 	}
 	
@@ -429,35 +429,31 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 	
 	public void setSelectedMsoFeature(IDiskoMap map) {
 
-		// reset current selection
-		currentMsoObj = null;
-		currentMsoFeature = null;
-		
+		// initialize
+		IMsoObjectIf msoObj = null;
+		IMsoFeature msoFeature = null;
+
 		// catch exceptions
 		try {
 	        // get selected object
 	        List<IMsoFeature> features = map.getMsoSelection();
-	        if(features!=null) {
-		        for(int i=0;i<features.size();i++) {
-	        		// cast to IMsoFeature
-	        		IMsoFeature msoFeature = features.get(i);
-	        		// try to select
-	        		if (setMsoObject(msoFeature.getMsoObject())) {
-	        			// set current selection
-	        			currentMsoObj = msoFeature.getMsoObject();
-	        			currentMsoFeature = msoFeature;
-	        			return;
-	        		}
-		        }
+	        if(features!=null && features.size()>0) {
+        		// cast first item to IMsoFeature and get mso object	        	
+	        	msoFeature = features.get(0);
+        		msoObj = msoFeature.getMsoObject();
 	        }
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 		
-		// do cleanup
-		setMsoObject(null);
-		
+		// forward
+		if (setMsoObject(msoObj)) {
+			// set current objects
+			currentMsoObj = msoObj;
+			currentMsoFeature = msoFeature;
+		}
+				
 	}
 	
   	/*========================================================

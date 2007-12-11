@@ -2,9 +2,7 @@ package org.redcross.sar.wp.tactics;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JList;
@@ -17,22 +15,13 @@ import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.renderers.RadioListCellRenderer;
-import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.MsoUtils;
-import org.redcross.sar.mso.data.IAreaIf;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.wp.IDiskoWpModule;
-
-import com.esri.arcgis.interop.AutomationException;
 
 public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListener{
 

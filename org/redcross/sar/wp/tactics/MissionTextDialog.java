@@ -2,6 +2,7 @@ package org.redcross.sar.wp.tactics;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.EnumSet;
 
 import javax.swing.BorderFactory;
@@ -9,30 +10,36 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.MsoUtils;
-import org.redcross.sar.mso.data.IAreaIf;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class TextAreaDialog extends DiskoDialog {
+public class MissionTextDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPanel = null;
+	private JPanel titlePanel = null;
+	private JLabel iconLabel = null;
+	private JLabel titleLabel = null;
+	private JPanel textPanel = null;
 	private JScrollPane textAreaScrollPane = null;
 	private JTextArea textArea = null;
 	private JLabel headerLabel = null;
 	
-	public TextAreaDialog(IDiskoWpModule wp) {
+	private IOperationAreaIf currentOperationArea = null;
+	
+	public MissionTextDialog(IDiskoWpModule wp) {
 		// forward
 		super(wp.getApplication().getFrame(),wp.getMap(), getMyInterest(),getMyLayers());
 		// initialize ui
@@ -47,7 +54,7 @@ public class TextAreaDialog extends DiskoDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(600, 125));
+            this.setPreferredSize(new Dimension(600, 200));
             this.setContentPane(getContentPanel());
             this.pack();
 		}
@@ -83,10 +90,6 @@ public class TextAreaDialog extends DiskoDialog {
 		super.setVisible(isVisible);
 	}
 
-	private String getText() {
-		return getTextArea().getText();
-	}
-	
 	private void setText(String text) {
 		setText(text,true,true);
 	}
@@ -99,23 +102,11 @@ public class TextAreaDialog extends DiskoDialog {
 		}
 		// update mso? (text is update from Mso Update event)
 		if(mso) {
-			// dispatch current mso object
-			if(currentMsoObj instanceof IOperationAreaIf) {
+			// has operation object?
+			if(currentOperationArea!=null) {
 				// update remark
-				((IOperationAreaIf)currentMsoObj).setRemarks(text);
-				fireOnWorkChange(getTextArea(),currentMsoObj,text);
-			}
-			else {
-				IAreaIf area = MsoUtils.getOwningArea(currentMsoObj);
-				if(area!=null) {
-					// get assignment
-					IAssignmentIf assignment = ((IAreaIf)currentMsoObj).getOwningAssignment();
-					// update remark?
-					if(!assignment.getRemarks().equals(text)) {
-						assignment.setRemarks(text);
-						fireOnWorkChange(getTextArea(),currentMsoObj,text);
-					}
-				}						
+				currentOperationArea.setRemarks(text);
+				fireOnWorkChange(getTextArea(),currentOperationArea,text);
 			}
 		}
 		setIsNotWorking();
@@ -126,24 +117,72 @@ public class TextAreaDialog extends DiskoDialog {
 	}
 
 	/**
-	 * This method initializes contentPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes contentPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				headerLabel = new JLabel();
 				contentPanel = new JPanel();
 				contentPanel.setLayout(new BorderLayout());
 				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTextAreaScrollPane(), BorderLayout.CENTER);
-				contentPanel.add(headerLabel, BorderLayout.NORTH);
+				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
+				contentPanel.add(getTextPanel(), BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
+	}
+
+	/**
+	 * This method initializes titlePanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			try {
+				FlowLayout fl = new FlowLayout();
+				fl.setAlignment(FlowLayout.LEFT);
+				fl.setHgap(5);
+				fl.setVgap(0);
+				JPanel labels = new JPanel();
+				labels.setLayout(fl);
+				iconLabel = new JLabel();
+				titleLabel = new JLabel();
+				labels.add(iconLabel,null);
+				labels.add(titleLabel,null);
+				titlePanel = new JPanel();
+				titlePanel.setLayout(new BorderLayout());
+				titlePanel.add(labels,BorderLayout.CENTER);
+				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return titlePanel;
+	}
+	
+	/**
+	 * This method initializes textPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getTextPanel() {
+		if (textPanel == null) {
+			try {
+				headerLabel = new JLabel();
+				textPanel = new JPanel();
+				textPanel.setLayout(new BorderLayout());
+				textPanel.add(getTextAreaScrollPane(), BorderLayout.CENTER);
+				textPanel.add(headerLabel, BorderLayout.NORTH);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return textPanel;
 	}
 
 	/**
@@ -194,32 +233,36 @@ public class TextAreaDialog extends DiskoDialog {
 	@Override
 	public boolean setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorking()) return false;
+		// reset
+		currentOperationArea = null;
+		// set operation area
 		if (msoObj instanceof IOperationAreaIf) {
-			IOperationAreaIf opArea = (IOperationAreaIf)msoObj;
-			setText(opArea.getRemarks(),true,false);
-			return true;
+			currentOperationArea = (IOperationAreaIf)msoObj;
+		}
+		// set current text
+		setText((currentOperationArea!=null 
+				? currentOperationArea.getRemarks() : null),true,false);
+		// forward
+		setup();
+		// success
+		return true;
+	}	
+	
+	private void setup() {
+		// update icon
+		if(currentOperationArea!=null) {
+			iconLabel.setIcon(Utils.getIcon("IconEnum.POLYGON.icon"));
+			titleLabel.setText("<html>Skriv inn ordre for <b>" + 
+					MsoUtils.getOperationAreaName(currentOperationArea,true).toLowerCase() 
+					+ "</b> fra oppdragsgiver</html>");
+			getTextPanel().setEnabled(true);
 		}
 		else {
-			// get owning area
-	    	IAreaIf area = MsoUtils.getOwningArea(msoObj);
-	    	// found?
-	    	if(area!=null) {
-	    		// get assignment
-				IAssignmentIf assignment = area.getOwningAssignment();
-				// has assignment?
-				if (assignment != null) {
-					setText(assignment.getRemarks(),true,false);
-					setEnabled(true);
-					return true;
-				}
-	    	}			
-		}
-		setEnabled(true);
-		// reset current text
-		setText(null);
-		// not selected
-		return false;
-	}
+			iconLabel.setIcon(null);
+			titleLabel.setText("Du må først velge et operasjonsområde");			
+			getTextPanel().setEnabled(false);
+		}		
+	}	
 	
 	@Override
 	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {

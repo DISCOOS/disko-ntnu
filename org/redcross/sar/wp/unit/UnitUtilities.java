@@ -2,6 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
@@ -120,7 +121,13 @@ public class UnitUtilities
 		{
 			throw new IllegalOperationException();
 		}
+		
+		// get cmd post
+		ICmdPostIf cmdPost = wp.getCmdPost();
 
+		// no command post?
+		if(cmdPost==null) return;
+		
 		// Check message log
 		for(IMessageIf message : wp.getCmdPost().getMessageLogItems())
 		{

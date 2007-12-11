@@ -216,8 +216,9 @@ public class ChangeToDialog extends DiskoDialog
 	{
 		// get current message
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+		ICmdPostIf cmdPost = m_wpMessageLog.getCmdPost();
 		// get current receiver
-		ICommunicatorIf receiver = (message!=null ? message.getSingleReceiver() : (ICommunicatorIf)m_wpMessageLog.getCmdPost());
+		ICommunicatorIf receiver = (cmdPost!=null && message!=null? message.getSingleReceiver() : (ICommunicatorIf)cmdPost);
 		// has receiver?
 		if(receiver != null)
 		{

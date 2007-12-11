@@ -18,15 +18,19 @@ public class HypothesisListModel extends AbstractListModel implements
 
 	private static final long serialVersionUID = 1L;
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
-	private ICmdPostIf cmdPost = null;
+	private IMsoModelIf msoModel = null;
 	private Object[] data = null;
 
 	public HypothesisListModel(IMsoModelIf msoModel) {
-		myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS);
+		// prepare
+		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS);
+		this.msoModel = msoModel;
+		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
-		cmdPost = msoModel.getMsoManager().getCmdPost();
-		data = cmdPost.getHypothesisListItems().toArray();
+		// get data
+		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+		data = (cmdPost!=null ? cmdPost.getHypothesisListItems().toArray() : null);
 		super.fireContentsChanged(this, 0, data.length-1);
 	}
 
@@ -38,7 +42,9 @@ public class HypothesisListModel extends AbstractListModel implements
         boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
 		
 		if (createdObject || modifiedObject || deletedObject ) {
-			data = cmdPost.getHypothesisListItems().toArray();
+			// get data
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			data = (cmdPost!=null ? cmdPost.getHypothesisListItems().toArray() : null);
 			super.fireContentsChanged(this, 0, data.length-1);
 		}
 	}
@@ -49,12 +55,12 @@ public class HypothesisListModel extends AbstractListModel implements
 
 	public Object getElementAt(int index) {
     	// invalid index?
-    	if(!(index<data.length)) return null;
+    	if(data==null || !(index<data.length)) return null;
     	// return data
 		return data[index];
 	}
 
 	public int getSize() {
-		return data.length;
+		return (data!=null ? data.length : 0);
 	}
 }

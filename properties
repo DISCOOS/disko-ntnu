@@ -220,6 +220,8 @@ IconEnum.FORMAT.icon=icons/32x32/format.png
 IconEnum.FORMAT.text=Format
 IconEnum.COORDINATE.icon=icons/32x32/coordinate.png
 IconEnum.COORDINATE.text=Koordinat
+IconEnum.POLYGON.icon=icons/48x48/polygon.png
+IconEnum.POLYGON.text=Polygon
 
 UnitType.CP.icon=icons/48x48/cmdpost.png
 UnitType.CP.symbol=symbols/cmdpost.bmp
@@ -355,9 +357,9 @@ MsoClassCode.CLASSCODE_DATASOURCE.icon=
 
 PRIMARY_SEARCH_AREA.text=Primært søkeområde
 SECONDARY_SEARCH_AREA.text=Sekundært søkeområde
-PRIORITY3_SEARCH_AREA.text=3. Prioritet 3
-PRIORITY4_SEARCH_AREA.text=4. Prioritet 4
-PRIORITY5_SEARCH_AREA.text=4. Prioritet 5
+PRIORITY3_SEARCH_AREA.text=Søkeområde 3
+PRIORITY4_SEARCH_AREA.text=Søkeområde 4
+PRIORITY5_SEARCH_AREA.text=søkeområde 5
 
 SHOW_ALL.text=Vis alle
 

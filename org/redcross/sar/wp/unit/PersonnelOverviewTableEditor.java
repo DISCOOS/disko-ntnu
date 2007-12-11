@@ -235,12 +235,13 @@ public class PersonnelOverviewTableEditor
 			PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
 			IPersonnelIf selectedPersonnel = model.getPersonnel(modelIndex);
 
-			PersonnelStatus status = selectedPersonnel.getStatus();
-
-			// Set button selection
-			m_calloutButton.setSelected(status == PersonnelStatus.ON_ROUTE || status == PersonnelStatus.ARRIVED);
-			m_arrivedButton.setSelected(status == PersonnelStatus.ARRIVED);
-			m_releasedButton.setSelected(status == PersonnelStatus.RELEASED);
+			if(selectedPersonnel!=null) {
+				PersonnelStatus status = selectedPersonnel.getStatus();
+				// Set button selection
+				m_calloutButton.setSelected(status == PersonnelStatus.ON_ROUTE || status == PersonnelStatus.ARRIVED);
+				m_arrivedButton.setSelected(status == PersonnelStatus.ARRIVED);
+				m_releasedButton.setSelected(status == PersonnelStatus.RELEASED);
+			}
 		}
 	}
 }

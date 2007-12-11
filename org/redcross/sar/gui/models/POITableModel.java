@@ -151,7 +151,7 @@ public class POITableModel extends AbstractTableModel implements
 	}
 
 	public int getColumnCount() {
-		return 3;
+		return 4;
 	}
 
 	public int getRowCount() {

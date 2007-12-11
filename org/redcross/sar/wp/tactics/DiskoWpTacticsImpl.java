@@ -75,7 +75,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private DrawDialog drawDialog = null;
 	private ElementDialog elementDialog = null;
 	private ArrayList<DiskoDialog> dialogs = null;
-	private TextAreaDialog textAreaDialog = null;
+	private MissionTextDialog missionTextDialog = null;
 	private HypothesisDialog hypothesesDialog = null;
 	private PriorityDialog priorityDialog = null;
 	private UnitSelectionDialog unitSelectionDialog = null;
@@ -477,14 +477,14 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return elementDialog;
 	}
 
-	private TextAreaDialog getTextAreaDialog() {
-		if (textAreaDialog == null) {
-			textAreaDialog = new TextAreaDialog(this);
-			textAreaDialog.setIsToggable(false);
-			textAreaDialog.addDiskoWorkEventListener(this);
-			dialogs.add(textAreaDialog);
+	private MissionTextDialog getMissionTextDialog() {
+		if (missionTextDialog == null) {
+			missionTextDialog = new MissionTextDialog(this);
+			missionTextDialog.setIsToggable(false);
+			missionTextDialog.addDiskoWorkEventListener(this);
+			dialogs.add(missionTextDialog);
 		}
-		return textAreaDialog;
+		return missionTextDialog;
 	}
 
 	private HypothesisDialog getHypothesesDialog() {
@@ -766,7 +766,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				missionToggleButton.setVisible(false);
 				missionToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						TextAreaDialog dialog = getTextAreaDialog();
+						MissionTextDialog dialog = getMissionTextDialog();
 						dialog.setHeaderText("Aksjonens oppdrag:");
 						hideDialogs(dialog);
 						if (missionToggleButton.isSelected() && dialog.isVisible()) {
@@ -910,9 +910,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
+							dialog.setLocationRelativeTo((JComponent) getMap(),
+									DiskoDialog.POS_SOUTH, true);
+							/*
 							java.awt.Point p = unitToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
+							*/
 							dialog.setVisible(true);
 						}
 					}

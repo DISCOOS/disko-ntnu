@@ -8,6 +8,7 @@ import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IHypothesisIf;
 import org.redcross.sar.mso.data.IHypothesisIf.HypothesisStatus;
@@ -24,6 +25,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
@@ -46,6 +48,10 @@ public class HypothesisDialog extends DiskoDialog {
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
 	private JPanel contentPanel = null;
+	private JPanel titlePanel = null;
+	private JLabel iconLabel = null;
+	private JLabel titleLabel = null;
+	private JPanel hypothesisPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton newButton = null;
 	private JScrollPane listScrollPane = null;
@@ -60,6 +66,7 @@ public class HypothesisDialog extends DiskoDialog {
 	private JComboBox statusComboBox;
 	private String[] labels = null;
 
+	private ISearchAreaIf currentSearchArea = null;
 	private IHypothesisIf selectedHypothesis = null;
 
 	public HypothesisDialog(IDiskoWpModule wp) {
@@ -81,9 +88,9 @@ public class HypothesisDialog extends DiskoDialog {
 		try {
 			createlabels();
 			this.setContentPane(getContentPanel());
-			loadHypotheses();
-            this.setPreferredSize(new Dimension(900, 125));
+            this.setPreferredSize(new Dimension(900, 175));
             this.pack();
+			loadHypotheses();
 		}
 		catch (java.lang.Throwable e) {
 			//  Do Something
@@ -191,13 +198,11 @@ public class HypothesisDialog extends DiskoDialog {
 			// update mso?
 			if(mso) {
 				// get search area
-				if(currentMsoObj instanceof ISearchAreaIf) {
-					// cast to ISearchAreaIf
-					ISearchAreaIf searchArea = (ISearchAreaIf)currentMsoObj;
+				if(currentSearchArea!=null) {
 					// any change?
-					if (!hypothesis.equals(searchArea.getSearchAreaHypothesis())) {
-						searchArea.setSearchAreaHypothesis(hypothesis);
-						fireOnWorkChange(hypothesisList,searchArea,hypothesis);
+					if (!hypothesis.equals(currentSearchArea.getSearchAreaHypothesis())) {
+						currentSearchArea.setSearchAreaHypothesis(hypothesis);
+						fireOnWorkChange(hypothesisList,currentSearchArea,hypothesis);
 					}
 				}
 			}
@@ -281,16 +286,62 @@ public class HypothesisDialog extends DiskoDialog {
 			try {
 				contentPanel = new JPanel();
 				contentPanel.setLayout(new BorderLayout());
-				contentPanel.setBorder(BorderFactory.createCompoundBorder(
-						BorderFactory.createBevelBorder(BevelBorder.RAISED),
-						BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-				contentPanel.add(getListScrollPane(), BorderLayout.WEST);
-				contentPanel.add(getCenterPanel(), BorderLayout.CENTER);
+				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
+				contentPanel.add(getHypothesisPanel(), BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
+	}
+
+	/**
+	 * This method initializes titlePanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			try {
+				FlowLayout fl = new FlowLayout();
+				fl.setAlignment(FlowLayout.LEFT);
+				fl.setHgap(5);
+				fl.setVgap(0);
+				JPanel labels = new JPanel();
+				labels.setLayout(fl);
+				iconLabel = new JLabel();
+				titleLabel = new JLabel();
+				labels.add(iconLabel,null);
+				labels.add(titleLabel,null);
+				titlePanel = new JPanel();
+				titlePanel.setLayout(new BorderLayout());
+				titlePanel.add(labels,BorderLayout.CENTER);
+				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return titlePanel;
+	}
+	
+	/**
+	 * This method initializes hypothesisPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getHypothesisPanel() {
+		if (hypothesisPanel == null) {
+			try {
+				hypothesisPanel = new JPanel();
+				hypothesisPanel.setLayout(new BorderLayout());
+				hypothesisPanel.add(getListScrollPane(), BorderLayout.WEST);
+				hypothesisPanel.add(getCenterPanel(), BorderLayout.CENTER);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return hypothesisPanel;
 	}
 
 	/**
@@ -561,16 +612,36 @@ public class HypothesisDialog extends DiskoDialog {
 	@Override
 	public boolean setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorking()) return false;
+		// reset
+		currentSearchArea = null;
+		// get search area
 		if (msoObj instanceof ISearchAreaIf) {
-			ISearchAreaIf searchArea = (ISearchAreaIf)msoObj;			
-			getHypothesisList().setSelectedValue(searchArea.getSearchAreaHypothesis(), true);
-			return true;
+			// save reference
+			currentSearchArea = (ISearchAreaIf)msoObj;
 		}
-		// reset to default selection
-		getHypothesisList().setSelectedIndex(0);
-		// not selected
-		return false;
-	}
+		// select value
+		getHypothesisList().setSelectedValue((currentSearchArea!=null ? 
+				currentSearchArea.getSearchAreaHypothesis() : null),true);
+		// forward
+		setup();
+		// success
+		return true;
+	}	
+	
+	private void setup() {
+		// update icon
+		if(currentSearchArea!=null) {
+			iconLabel.setIcon(Utils.getIcon("IconEnum.POLYGON.icon"));
+			titleLabel.setText("<html>Oppgi hypotese for <b>" + 
+					MsoUtils.getSearchAreaName(currentSearchArea).toLowerCase() + "</b></html>");
+			getHypothesisPanel().setEnabled(true);
+		}
+		else {
+			iconLabel.setIcon(null);
+			titleLabel.setText("Du må først velge et søkeområde");			
+			getHypothesisPanel().setEnabled(false);
+		}		
+	}	
 	
 	@Override
 	public void msoObjectCreated(IMsoObjectIf msoObject, int mask) {

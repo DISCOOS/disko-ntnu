@@ -1,6 +1,8 @@
 package org.redcross.sar.wp.tactics;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -10,11 +12,13 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NumPadDialog;
@@ -29,8 +33,12 @@ import org.redcross.sar.wp.IDiskoWpModule;
 
 public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListener {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;	
 	private JPanel contentPanel = null;
+	private JPanel titlePanel = null;
+	private JLabel iconLabel = null;
+	private JLabel titleLabel = null;
+	private JPanel estimatePanel = null;
 	private IDiskoWpModule wp = null;
 	private JLabel timeLabel = null;
 	private JTextField timeTextField = null;
@@ -54,7 +62,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	private void initialize() {
 		try {
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(800,50));
+            this.setPreferredSize(new Dimension(800,110));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -89,7 +97,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	}
 	
 	private void reset() {
-		getTimeTextField().setText(null);
+		getTimeTextField().setText("");
 	}
 	
 	public int getEstimatedTime() {
@@ -122,12 +130,61 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	}
 	
 	/**
-	 * This method initializes contentPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes contentPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getContentPanel() {
 		if (contentPanel == null) {
+			try {
+				contentPanel = new JPanel();
+				contentPanel.setLayout(new BorderLayout());
+				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
+				contentPanel.add(getEstimatePanel(), BorderLayout.CENTER);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return contentPanel;
+	}
+
+	/**
+	 * This method initializes titlePanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			try {
+				FlowLayout fl = new FlowLayout();
+				fl.setAlignment(FlowLayout.LEFT);
+				fl.setHgap(5);
+				fl.setVgap(0);
+				JPanel labels = new JPanel();
+				labels.setLayout(fl);
+				iconLabel = new JLabel();
+				titleLabel = new JLabel();
+				labels.add(iconLabel,null);
+				labels.add(titleLabel,null);
+				titlePanel = new JPanel();
+				titlePanel.setLayout(new BorderLayout());
+				titlePanel.add(labels,BorderLayout.CENTER);
+				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return titlePanel;
+	}
+	
+	/**
+	 * This method initializes estimatePanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getEstimatePanel() {
+		if (estimatePanel == null) {
 			try {
 				GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 				gridBagConstraints1.fill = GridBagConstraints.VERTICAL;
@@ -140,16 +197,15 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 				gridBagConstraints.gridy = 0;
 				timeLabel = new JLabel();
 				timeLabel.setText("Estimert tidsbruk:");
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new GridBagLayout());
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(timeLabel, gridBagConstraints);
-				contentPanel.add(getTimeTextField(), gridBagConstraints1);
+				estimatePanel = new JPanel();
+				estimatePanel.setLayout(new GridBagLayout());
+				estimatePanel.add(timeLabel, gridBagConstraints);
+				estimatePanel.add(getTimeTextField(), gridBagConstraints1);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return contentPanel;
+		return estimatePanel;
 	}
 
 	/**
@@ -199,19 +255,38 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	@Override
 	public boolean setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorking()) return false;
+		// reset
+		currentAssignment = null;
+		// get owning area
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
 			if (assignment instanceof ISearchIf) {		
 				currentAssignment = (ISearchIf)assignment;
 				setEstimatedTime(currentAssignment.getPlannedProgress(),false,true);
-				return true;
 			}
 		}
-		// reset current values
-		reset();
-		// not selected
-		return false;
+		// forward
+		setup();
+		// success
+		return true;
+	}	
+	
+	private void setup() {
+		// update icon
+		if(currentAssignment!=null) {
+			Enum e = MsoUtils.getType(currentAssignment,true);
+			iconLabel.setIcon(Utils.getIcon(e));
+			titleLabel.setText("<html>Estimer tidsforbruk for <b>" + 
+					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
+			getTimeTextField().setEnabled(true);
+		}
+		else {
+			iconLabel.setIcon(null);
+			titleLabel.setText("Du må først velge et oppdrag");			
+			getTimeTextField().setEnabled(false);
+			reset();
+		}		
 	}	
 	
 	@Override

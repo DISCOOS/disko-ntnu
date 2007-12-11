@@ -13,7 +13,6 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.EventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 
 public class AssignmentTableModel extends AbstractTableModel implements
@@ -22,14 +21,18 @@ public class AssignmentTableModel extends AbstractTableModel implements
 	private static final long serialVersionUID = 1L;
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private Object[] rows = null;
-	private ICmdPostIf cmdPost = null;
+	private IMsoModelIf msoModel = null;
 
 	public AssignmentTableModel(IMsoModelIf msoModel) {
-		myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
+		// prepare
+		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
+		this.msoModel = msoModel;
+		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
-		cmdPost = msoModel.getMsoManager().getCmdPost();
-		update(cmdPost.getAssignmentListItems().toArray());
+		// update table
+		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+		update((cmdPost!=null ? cmdPost.getAssignmentListItems().toArray() : null));
 	}
 
 	public void handleMsoUpdateEvent(Update e) {
@@ -40,7 +43,8 @@ public class AssignmentTableModel extends AbstractTableModel implements
         boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
 		
 		if (createdObject || modifiedObject || deletedObject ) {
-			update(cmdPost.getAssignmentListItems().toArray());
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			update((cmdPost!=null ? cmdPost.getAssignmentListItems().toArray() : null));
 		}
 		
 	}
@@ -50,15 +54,20 @@ public class AssignmentTableModel extends AbstractTableModel implements
 	}
 	
 	private void update(Object[] data) {
-		rows = new Object[data.length];
-		for (int i = 0; i < data.length; i++) {
-			IAssignmentIf assignment = (IAssignmentIf)data[i];
-			Object[] row = new Object[3];
-			row[0] = new Boolean(false);
-			row[1] = assignment;
-			row[2] = assignment;
-			//row[3] = new EditAction();
-			rows[i] = row;
+		if(data!=null) {
+			rows = new Object[data.length];
+			for (int i = 0; i < data.length; i++) {
+				IAssignmentIf assignment = (IAssignmentIf)data[i];
+				Object[] row = new Object[3];
+				row[0] = new Boolean(false);
+				row[1] = assignment;
+				row[2] = assignment;
+				//row[3] = new EditAction();
+				rows[i] = row;
+			}
+		}
+		else {
+			rows = null;
 		}
 		super.fireTableDataChanged();
 	}
@@ -68,17 +77,18 @@ public class AssignmentTableModel extends AbstractTableModel implements
 	}
 
 	public int getRowCount() {
-		return rows.length;
+		return (rows!=null ? rows.length : 0);
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
     	// invalid index?
-    	if(!(rowIndex<rows.length)) return null;
+    	if(rows==null || !(rowIndex<rows.length)) return null;
 		Object[] row = (Object[]) rows[rowIndex];
 		return row[columnIndex];
 	}
 	
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
+    	if(rows==null) return;
 		Object[] row = (Object[]) rows[rowIndex];
 		row[columnIndex] = value;
         fireTableCellUpdated(rowIndex, columnIndex);
