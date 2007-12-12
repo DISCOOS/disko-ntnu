@@ -2,13 +2,13 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.MsoModelImpl;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.IDiskoWpModule;
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.redcross.sar.mso;
+package org.redcross.sar.mso.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,7 +11,9 @@ import java.util.Iterator;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IAreaIf;

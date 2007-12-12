@@ -14,10 +14,10 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.UnitFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

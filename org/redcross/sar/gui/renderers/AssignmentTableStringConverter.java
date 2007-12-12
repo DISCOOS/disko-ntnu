@@ -4,8 +4,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 public class AssignmentTableStringConverter extends TableStringConverter {
 

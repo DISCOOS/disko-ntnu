@@ -6,12 +6,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIListIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.ISpatialReference;

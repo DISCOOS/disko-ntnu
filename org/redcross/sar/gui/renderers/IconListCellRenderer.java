@@ -9,7 +9,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -18,6 +17,7 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ISearchAreaListIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 
 public class IconListCellRenderer extends JLabel implements ListCellRenderer {

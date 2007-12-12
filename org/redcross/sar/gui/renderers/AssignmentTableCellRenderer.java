@@ -6,9 +6,9 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ISearchIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 public class AssignmentTableCellRenderer extends JLabel implements
 		TableCellRenderer {

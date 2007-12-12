@@ -8,10 +8,10 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.SearchAreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import com.esri.arcgis.display.IColor;
 import com.esri.arcgis.display.IDisplay;

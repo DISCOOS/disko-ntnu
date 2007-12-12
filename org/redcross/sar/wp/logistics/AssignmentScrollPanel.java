@@ -10,7 +10,7 @@ import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.gui.renderers.IconRenderer.AssignmentIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 
 import java.awt.Component;
 import java.awt.FlowLayout;

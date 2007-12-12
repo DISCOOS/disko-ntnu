@@ -42,13 +42,13 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.AreaLayer;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.mso.data.RouteImpl;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import com.esri.arcgis.carto.FeatureLayer;

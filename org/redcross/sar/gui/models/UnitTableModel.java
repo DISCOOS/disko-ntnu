@@ -7,7 +7,6 @@ import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -16,6 +15,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.util.MsoUtils;
 
 public class UnitTableModel extends AbstractTableModel implements
 		IMsoUpdateListenerIf {

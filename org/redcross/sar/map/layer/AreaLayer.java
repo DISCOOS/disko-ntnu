@@ -13,9 +13,9 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

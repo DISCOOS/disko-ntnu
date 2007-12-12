@@ -9,8 +9,8 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 

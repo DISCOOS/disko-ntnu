@@ -4,9 +4,9 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Polygon;
 import org.redcross.sar.util.mso.Route;

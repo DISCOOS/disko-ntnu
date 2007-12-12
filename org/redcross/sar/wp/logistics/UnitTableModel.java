@@ -6,7 +6,6 @@ import org.redcross.sar.gui.PopupListener;
 import org.redcross.sar.gui.dnd.AssignmentTransferable;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
-import org.redcross.sar.gui.dnd.IIconDragSource;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.gui.renderers.IconRenderer.AssignmentIcon;
@@ -19,7 +18,7 @@ import org.redcross.sar.mso.data.IUnitListIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -945,11 +944,11 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
     		        		getSelectedAssignmentStatus(dropCol - 1), getUnitAt(dropRow));                	
                 }
 			}
-			catch(UnsupportedFlavorException e1) {
+			catch(UnsupportedFlavorException e) {
 				Utils.showWarning("Mottatt objekt er ikke et oppdrag", Utils.getApp().getFrame());
 			}
-			catch (Exception e2) {
-				e2.printStackTrace();
+			catch (Exception e) {
+				e.printStackTrace();
 			}
 			// can not transfer
 			return false;    	
@@ -977,11 +976,11 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
 					// TODO: Raise exception!					
 				}
 			}
-			catch(UnsupportedFlavorException e1) {
+			catch(UnsupportedFlavorException e) {
 				Utils.showWarning("Mottatt objekt er ikke et oppdrag", Utils.getApp().getFrame());
 			}
-			catch (Exception e2) {
-				e2.printStackTrace();
+			catch (Exception e) {
+				e.printStackTrace();
 			}
 			// can not transfer
 			return false;    	

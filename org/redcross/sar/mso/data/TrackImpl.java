@@ -3,7 +3,7 @@ package org.redcross.sar.mso.data;
 import no.cmr.tools.Log;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoUtils;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;

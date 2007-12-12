@@ -17,9 +17,9 @@ import javax.swing.border.Border;
 
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.mso.MsoUtils;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import com.esri.arcgis.geometry.Point;
 

@@ -1,4 +1,4 @@
-package org.redcross.sar.util;
+package org.redcross.sar.mso.util;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
