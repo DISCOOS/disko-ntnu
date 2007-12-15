@@ -5,7 +5,6 @@ package org.redcross.sar.map.command;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.swing.JPanel;
 
@@ -13,12 +12,12 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.FreeHandPanel;
 import org.redcross.sar.gui.IHostToolDialog;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-import org.redcross.sar.mso.util.MsoUtils;
 
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IPoint;
@@ -87,48 +86,6 @@ public class FreeHandTool extends AbstractDrawTool {
 		dialog.register((IDrawTool)this, propertyPanel);		
 		
 	}
-
-	@Override
-	public void onCreate(Object obj) {
-		
-		// forward
-		super.onCreate(obj);
-		
-		try {
-
-			// is map valid?
-			if (map!=null) {
-				
-				// add layer listeners
-				IMsoFeatureLayer msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-				if(msoLayer!=null) {
-					Iterator<JPanel> it = panels.iterator();
-					while(it.hasNext()) {
-						msoLayer.addDiskoLayerEventListener((FreeHandPanel)it.next());
-					}
-				}
-				msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-				if(msoLayer!=null) {
-					Iterator<JPanel> it = panels.iterator();
-					while(it.hasNext()) {
-						msoLayer.addDiskoLayerEventListener((FreeHandPanel)it.next());
-					}
-				}
-				msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
-				if(msoLayer!=null) {
-					Iterator<JPanel> it = panels.iterator();
-					while(it.hasNext()) {
-						msoLayer.addDiskoLayerEventListener((FreeHandPanel)it.next());
-					}
-				}
-				
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}			
-	}	
 	
 	@Override
 	public boolean activate(boolean allow) {
@@ -166,7 +123,15 @@ public class FreeHandTool extends AbstractDrawTool {
 		}
 		return super.getAttribute(attribute);
 	}
-	
+		
+	@Override
+	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
+		// forward
+		super.setMsoDrawData(msoOwner, msoObject, msoClassCode);
+		// forward
+		((FreeHandPanel)getPropertyPanel()).setMsoObject((msoObject!=null ? msoObject : msoOwner));
+	}
+
 	@Override
 	public boolean doPrepare() {
 		// is owner search assignment?

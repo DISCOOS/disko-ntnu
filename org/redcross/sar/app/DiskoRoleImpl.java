@@ -38,6 +38,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 	private String description = null;
 	private IDiskoWpModule currentModule = null;
 	private ArrayList<IDiskoWpModule> modules = null;
+	private IDiskoWpModule defaultModule = null;
 	//private Border bussyBorder = null;
 	//private Border normalBorder = null;
 	
@@ -69,7 +70,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.app.IDiskoRole#addDiskoWpModule(org.redcross.sar.wp.IDiskoWpModule)
 	 */
-	public void addDiskoWpModule(final IDiskoWpModule module) {
+	public void addDiskoWpModule(final IDiskoWpModule module, boolean isDefault) {
 		try {
 			final String id = getName()+module.getName();
 			module.addDiskoWorkEventListener(this);
@@ -89,6 +90,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 			});
 			MainMenuPanel mainMenuPanel = app.getUIFactory().getMainMenuPanel();
 			mainMenuPanel.addItem(tbutton, new DiskoCustomIcon(icon,Color.ORANGE,0.3f),getName());
+			defaultModule = (isDefault ? module : defaultModule);
 			modules.add(module);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -108,6 +110,10 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 			// forward
 			modules.get(i).afterOperationChange();
 		}
+	}
+	
+	public IDiskoWpModule getDefaultDiskoWpModule() {
+		return (defaultModule!=null ? defaultModule : (modules.size()>0 ? modules.get(0) : null));
 	}
 	
 	public IDiskoWpModule getDiskoWpModule(String id) {

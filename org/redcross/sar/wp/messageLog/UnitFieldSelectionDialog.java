@@ -402,7 +402,10 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 			}
 			else
 			{
-				m_unitTypeField.setText(m_wp.getText("BroadcastLabel.text"));
+				int unconfirmed = message.getUnconfirmedReceivers().size();
+				int count = unconfirmed + message.getConfirmedReceivers().size();
+				m_unitTypeField.setText(String.format(m_wp.getText("BroadcastLabel.text"),
+						(count-unconfirmed),count));
 				m_unitNumberField.setText("");
 			}
 		}

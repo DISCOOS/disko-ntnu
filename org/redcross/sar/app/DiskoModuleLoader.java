@@ -94,12 +94,16 @@ public class DiskoModuleLoader {
 			}
 			if (child.getNodeName().equalsIgnoreCase("DiskoModule")) {
 				String className = ((Element) child).getAttribute("classname");
+				Boolean isDefault = false;
+				if(((Element) child).hasAttribute("isDefault")) {
+					isDefault = Boolean.valueOf(((Element) child).getAttribute("isDefault"));
+				}
 				Class cla = classLoader.loadClass(className);
 				Object[] args = {rolle};
 				Object obj = cla.getConstructors()[0].newInstance(args);
 				if (obj instanceof IDiskoWpModule) {
 					IDiskoWpModule module = (IDiskoWpModule)obj;
-					rolle.addDiskoWpModule(module);
+					rolle.addDiskoWpModule(module,isDefault);
 				}
 				else {
 					throw new Exception("Wrong class");

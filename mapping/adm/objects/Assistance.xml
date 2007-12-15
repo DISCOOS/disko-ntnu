@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000033" name="Assistance" objectType="test" pos="3">
-<fact comp="n" edit="y" id="00000000034" label="Priority" pos1="999" pos2="999" relTo="00000000033" version="1">
+<object id="00000000033" pos="3" objectType="test" name="Assistance">
+<fact id="00000000034" label="Priority" pos1="999" pos2="999" comp="n" relTo="00000000033" edit="y" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000035" label="Status" pos1="999" pos2="999" relTo="00000000033" version="1">
+<fact id="00000000035" label="Status" pos1="999" pos2="999" comp="n" relTo="00000000033" edit="y" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000036" label="Remarks" pos1="999" pos2="999" relTo="00000000033" version="1">
+<fact id="00000000036" label="Remarks" pos1="999" pos2="999" comp="n" relTo="00000000033" edit="y" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000037" label="Number" pos1="999" pos2="999" relTo="00000000033" version="1">
-<num_fact antdec="0" max="1.0E8" min="0.0"/>
+<fact id="00000000037" label="Number" pos1="999" pos2="999" comp="n" relTo="00000000033" edit="y" version="1">
+<num_fact min="0.0" max="1.0E8" antdec="0"/>
 </fact>
-<fact comp="n" edit="y" id="00000000038" label="PrioritySequence" pos1="999" pos2="999" relTo="00000000033" version="1">
-<num_fact antdec="0" max="1.0E8" min="0.0"/>
+<fact id="00000000038" label="PrioritySequence" pos1="999" pos2="999" comp="n" relTo="00000000033" edit="y" version="1">
+<num_fact min="0.0" max="1.0E8" antdec="0"/>
 </fact>
-<fact comp="n" edit="y" id="00000000039" label="TimeEstimatedFinished" pos1="999" pos2="999" relTo="00000000033" version="1">
+<fact id="00000000039" label="TimeEstimatedFinished" pos1="999" pos2="999" comp="n" relTo="00000000033" edit="y" version="1">
 <date_fact/>
 </fact>
 </object>

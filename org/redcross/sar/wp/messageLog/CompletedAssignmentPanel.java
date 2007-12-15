@@ -72,7 +72,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	protected void updateAssignmentLineList()
 	{
-		AssignmentListModel model = (AssignmentListModel)m_assignmentLineList.getModel();
+		MessageLineListModel model = (MessageLineListModel)m_assignmentLineList.getModel();
 		model.setMessageLineType(MessageLineType.COMPLETE);
 	}
 

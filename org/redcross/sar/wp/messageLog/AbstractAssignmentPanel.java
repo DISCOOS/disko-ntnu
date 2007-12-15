@@ -193,7 +193,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
 
-        m_assignmentLineList = new JList(new AssignmentListModel(m_wpMessageLog));
+        m_assignmentLineList = new JList(new MessageLineListModel(m_wpMessageLog));
         m_assignmentLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_assignmentLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_assignmentLineList, this));
         m_assignmentLineList.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -561,7 +561,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
      */
     protected void showEditAssignment(int selectedAssignment)
     {
-        AssignmentListModel model = (AssignmentListModel) m_assignmentLineList.getModel();
+        MessageLineListModel model = (MessageLineListModel) m_assignmentLineList.getModel();
         m_editingLine = (IMessageLineIf) model.getElementAt(selectedAssignment);
         if (m_editingLine == null)
         {

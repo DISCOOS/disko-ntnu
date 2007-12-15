@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000115" name="Event" objectType="test" pos="14">
-<fact comp="n" edit="y" id="00000000116" label="TimeStamp" pos1="999" pos2="999" relTo="00000000115" version="1">
+<object id="00000000115" pos="14" objectType="test" name="Event">
+<fact id="00000000116" label="TimeStamp" pos1="999" pos2="999" comp="n" relTo="00000000115" edit="y" version="1">
 <date_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000117" label="Visible" pos1="999" pos2="999" relTo="00000000115" version="1">
-<num_fact antdec="0" max="1.0" min="0.0"/>
+<fact id="00000000117" label="Visible" pos1="999" pos2="999" comp="n" relTo="00000000115" edit="y" version="1">
+<num_fact min="0.0" max="1.0" antdec="0"/>
 </fact>
-<fact comp="n" edit="y" id="00000000118" label="Number" pos1="999" pos2="999" relTo="00000000115" version="1">
-<num_fact antdec="0" max="1.0E8" min="0.0"/>
+<fact id="00000000118" label="Number" pos1="999" pos2="999" comp="n" relTo="00000000115" edit="y" version="1">
+<num_fact min="0.0" max="1.0E8" antdec="0"/>
 </fact>
-<fact comp="n" edit="y" id="00000000119" label="EventTime" pos1="999" pos2="999" relTo="00000000115" version="1">
+<fact id="00000000119" label="EventTime" pos1="999" pos2="999" comp="n" relTo="00000000115" edit="y" version="1">
 <date_fact/>
 </fact>
 </object>

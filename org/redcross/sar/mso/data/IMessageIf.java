@@ -22,7 +22,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
     {
         public int compare(IMessageIf m1, IMessageIf m2)
         {
-            return m1.getNumber() - m2.getNumber();
+            return m2.getNumber()-m1.getNumber();
         }
     };
 

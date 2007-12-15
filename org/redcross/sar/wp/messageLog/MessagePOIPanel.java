@@ -54,6 +54,8 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 	protected POIPanel m_poiPanel = null;
 	protected POIType[] types = null;
 	protected HashMap<String,IUnitIf> m_units = null;
+	
+	private int isWorking = 0;
 
 	/**
 	 * @param wp Message log work process
@@ -149,12 +151,31 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 
 	}
 
+	private boolean isWorking() {
+		return (isWorking>0);
+	}
+
+	private int setIsWorking() {
+		isWorking++;
+		return isWorking; 
+	}
+	
+	private int setIsNotWorking() {
+		if(isWorking>0) {
+			isWorking--;
+		}
+		return isWorking; 
+	}
+	
 	/**
 	 * apply POI position and type in current message based on values in GUI fields
 	 */
 	private boolean applyPOI()
 	{
 
+		// set flag
+		setIsWorking();
+		
 		// initialize flag
 		boolean isSuccess = false;
 		
@@ -206,11 +227,15 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 					if(message==null) {
 						// create message and message line
 						message = MessageLogBottomPanel.getCurrentMessage(true);	
-						messageLine = message.findMessageLine(MessageLineType.POI, true);
+						
 					}
+					
+					// get message line, create if not exists
+					messageLine = message.findMessageLine(MessageLineType.POI, true);
 					
 					// update line
 					messageLine.setLinePOI(poi);
+					
 				}
 				else {
 					
@@ -256,6 +281,9 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 
 		// resume update
 		m_wpMessageLog.getMsoModel().resumeClientUpdate();
+		
+		// reset flag
+		setIsNotWorking();
 		
 		// return flag
 		return isSuccess;
@@ -435,6 +463,9 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 	 */
 	public void newMessageSelected(IMessageIf message)
 	{
+		// consume?
+		if(isWorking()) return;
+		
 		// Update dialog
 		updatePOI(message);
 	}

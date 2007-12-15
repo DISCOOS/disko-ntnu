@@ -172,7 +172,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 	
 	public void setMsoDrawData(IDiskoTool tool) {
-		if(tool instanceof AbstractDiskoTool) {
+		if(tool instanceof AbstractDiskoTool && tool!=this) {
 			AbstractDiskoTool abstractTool = (AbstractDiskoTool)tool;
 			setMsoDrawData(abstractTool.msoOwner,abstractTool.msoObject,abstractTool.msoClassCode);
 		}

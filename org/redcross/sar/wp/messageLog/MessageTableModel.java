@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * Table model providing log table with data
  */
-public class LogTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class MessageTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
     private static final long serialVersionUID = 1L;
 
@@ -55,7 +55,7 @@ public class LogTableModel extends AbstractTableModel implements IMsoUpdateListe
      * @param aModule  Message log work process
      * @param listener Selection listener
      */
-    public LogTableModel(JTable aTable, IDiskoWpMessageLog aModule, MessageRowSelectionListener listener)
+    public MessageTableModel(JTable aTable, IDiskoWpMessageLog aModule, MessageRowSelectionListener listener)
     {
         m_table = aTable;
         m_wpModule = aModule;
@@ -161,7 +161,9 @@ public class LogTableModel extends AbstractTableModel implements IMsoUpdateListe
             case 3:
                 if (message.isBroadcast())
                 {
-                    return m_wpModule.getText("BroadcastLabel.text");
+    				int unconfirmed = message.getUnconfirmedReceivers().size();
+    				int count = unconfirmed + message.getConfirmedReceivers().size();
+                    return String.format(m_wpModule.getText("BroadcastLabel.text"),(count-unconfirmed),count);
                 } else
                 {
                     ICommunicatorIf receiver = message.getSingleReceiver();

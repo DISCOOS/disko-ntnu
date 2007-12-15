@@ -81,12 +81,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		DRAW_DISCARD
 	}
 	
-	protected enum DrawFeatureType {
-		DRAW_FEATURE_POINT,
-		DRAW_FEATURE_POLYLINE,
-		DRAW_FEATURE_POLYGON
-	}
-	
 	// flags
 	protected boolean isDrawing = false;
 	protected boolean isMoving = false;
@@ -500,6 +494,10 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	 * Implemention of IDrawTool (override with care)
 	 * ==================================================
 	 */
+	
+	public DrawFeatureType getFeatureType() {
+		return drawFeatureType;
+	}
 	
 	public int getMaxStep() {
 		return maxStep;

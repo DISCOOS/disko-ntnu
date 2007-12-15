@@ -22,7 +22,10 @@ public class AssignmentTableStringConverter extends TableStringConverter {
 				text = Utils.translate(assignment.getStatus());
 			}
 			return text;
-		}
-		return value.toString();
+		} 
+		else if(value!=null)
+			return value.toString();
+		else
+			return null;
 	}
 }

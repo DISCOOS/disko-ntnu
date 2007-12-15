@@ -299,6 +299,7 @@ public class LogisticsInfoPanel extends JPanel
             m_textArea.setLineWrap(true);
             m_textArea.setWrapStyleWord(true);
             m_textArea.setOpaque(false);
+            m_textArea.setEditable(false);
 
             setText("");
         }

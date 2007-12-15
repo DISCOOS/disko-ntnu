@@ -11,10 +11,10 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 
 /**
- * Data model for assignment lines, used to retrieve list depending on action (assign, start, complete)
+ * Data model for message lines, used to retrieve list depending message line type (assign, start, complete)
  * @author thomasl
  */
-public class AssignmentListModel extends AbstractListModel
+public class MessageLineListModel extends AbstractListModel
 {
 	private static final long serialVersionUID = 1L;
 
@@ -25,7 +25,7 @@ public class AssignmentListModel extends AbstractListModel
 	/**
 	 * @param wp Message log work process
 	 */
-	public AssignmentListModel(IDiskoWpMessageLog wp)
+	public MessageLineListModel(IDiskoWpMessageLog wp)
 	{
 		m_wpMessageLog = wp;
 
@@ -55,15 +55,7 @@ public class AssignmentListModel extends AbstractListModel
 			{
 				public boolean select(IMessageLineIf anObject)
 				{
-					if(anObject.getLineType() == m_lineType)
-					{
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-
+					return (anObject!=null && anObject.getLineType().equals(m_lineType));
 				}
 			};
 			m_messageLines.addAll(message.getMessageLines().selectItems(lineSelector));

@@ -4,6 +4,12 @@ import org.redcross.sar.map.SnappingAdapter;
 
 public interface IDrawTool extends IDiskoTool {
 	
+	public enum DrawFeatureType {
+		DRAW_FEATURE_POINT,
+		DRAW_FEATURE_POLYLINE,
+		DRAW_FEATURE_POLYGON
+	}
+	
 	public SnappingAdapter getSnappingAdapter();
 	
 	public void setSnappingAdapter(SnappingAdapter adapter);
@@ -28,5 +34,7 @@ public interface IDrawTool extends IDiskoTool {
 	
 	public int getMinStep();
 	public void setMinStep(int distance);	
+	
+	public DrawFeatureType getFeatureType();
 	
 }

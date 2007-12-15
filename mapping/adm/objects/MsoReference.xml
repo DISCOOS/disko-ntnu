@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000151" name="MsoReference" objectType="test" pos="22">
-<fact comp="n" edit="y" id="00000000152" label="CanDelete" pos1="999" pos2="999" relTo="00000000151" version="1">
-<num_fact antdec="0" max="1.0" min="0.0"/>
+<object id="00000000151" pos="22" objectType="test" name="MsoReference">
+<fact id="00000000152" label="CanDelete" pos1="999" pos2="999" comp="n" relTo="00000000151" edit="y" version="1">
+<num_fact min="0.0" max="1.0" antdec="0"/>
 </fact>
 </object>

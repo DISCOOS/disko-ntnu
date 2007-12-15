@@ -307,9 +307,6 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 				tool.movePOIAt(point, getPOIType(), getRemarks());
 			else
 				tool.addPOIAt(point, getPOIType(), getRemarks());
-			// apply change?
-			if(tool.isBuffered())
-				tool.apply();
 		}
 		else 
 			Utils.showWarning("Ingen posisjon er valgt");

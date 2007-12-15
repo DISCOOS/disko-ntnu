@@ -1,4 +1,4 @@
-package org.redcross.sar.wp.unit;
+package org.redcross.sar.mso.util;
 
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -11,6 +11,7 @@ import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
+import org.redcross.sar.wp.unit.IDiskoWpUnit;
 
 import java.util.ResourceBundle;
 

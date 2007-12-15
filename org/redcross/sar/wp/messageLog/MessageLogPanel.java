@@ -150,7 +150,7 @@ public class MessageLogPanel
         m_rowSelectionListener = new MessageRowSelectionListener();
         m_logTable.getSelectionModel().addListSelectionListener(m_rowSelectionListener);
 
-        final LogTableModel model = new LogTableModel(m_logTable, m_wpModule, m_rowSelectionListener);
+        final MessageTableModel model = new MessageTableModel(m_logTable, m_wpModule, m_rowSelectionListener);
         m_rowSelectionListener.setModel(model);
         m_logTable.setModel(model);
         m_logTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -218,7 +218,7 @@ public class MessageLogPanel
 
     public static void setTableData()
     {
-        LogTableModel ltm = (LogTableModel) m_logTable.getModel();
+        MessageTableModel ltm = (MessageTableModel) m_logTable.getModel();
         ltm.buildTable(null);
         ltm.fireTableDataChanged();
         /*int index = ltm.getRowCount()-1;

@@ -10,6 +10,7 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
 import java.awt.Image;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 
 /**
@@ -83,7 +84,7 @@ public class DiskoCustomIcon implements Icon {
         gbi.setColor(Color.BLACK);
         int x = markMask.getWidth();
         int y = markMask.getHeight();
-        int d = 5;
+        int d = 0;
         gbi.drawLine(x, y, x, y-d);
         gbi.drawLine(x, y-d, x-d, y);
         gbi.drawLine(x-d, y, x, y);

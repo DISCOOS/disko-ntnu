@@ -79,7 +79,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 
 	protected void updateAssignmentLineList()
 	{
-		AssignmentListModel model = (AssignmentListModel)m_assignmentLineList.getModel();
+		MessageLineListModel model = (MessageLineListModel)m_assignmentLineList.getModel();
 		model.setMessageLineType(MessageLineType.STARTED);
 	}
 
@@ -92,10 +92,12 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		if(unitHasAssignedAssignment())
 		{
 			// If unit has assigned, ask if this is started
-			assignment = unit.getActiveAssignment();
+			assignment = unit.getAssignedAssignment();
 
 			// Check that unit can accept assignment
-			if(!AssignmentTransferUtilities.unitCanAccept(unit, AssignmentStatus.EXECUTING))
+			if(!(AssignmentTransferUtilities.unitCanAccept(unit, AssignmentStatus.EXECUTING) || 
+					AssignmentTransferUtilities.assignmentCanChangeToStatus(assignment, 
+							AssignmentStatus.EXECUTING, unit)))
 			{
 				Utils.showWarning(m_wpMessageLog.getText("CanNotStartError.header"),
 						String.format(m_wpMessageLog.getText("CanNotStartError.details"), 
@@ -103,12 +105,14 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 				this.hideComponent();
 				return;
 			}
-
+			
+			// get next in line
+			
 			hideComponent();
 
 			Object[] options = {m_wpMessageLog.getText("yes.text"), m_wpMessageLog.getText("no.text")};
 			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
-					String.format(m_wpMessageLog.getText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,1), MsoUtils.getMsoObjectName(assignment,1)),
+					String.format(m_wpMessageLog.getText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),
 					m_wpMessageLog.getText("UnitStartedAssignment.header"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,

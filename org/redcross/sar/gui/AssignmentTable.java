@@ -31,10 +31,13 @@ public class AssignmentTable extends JTable {
 	
 	@SuppressWarnings("unchecked")
 	public AssignmentTable(IMsoModelIf msoModel) {
+		
+		// create the mode
 		AssignmentTableModel model = new AssignmentTableModel(msoModel);
 		setModel(model);
 		
-		tableRowSorter = new TableRowSorter(model);
+		// add row sorter
+		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
 		tableRowSorter.setStringConverter(new AssignmentTableStringConverter());
 		setRowSorter(tableRowSorter);
 		

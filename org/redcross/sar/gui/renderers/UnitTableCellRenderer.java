@@ -5,7 +5,6 @@ import java.util.Hashtable;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 import org.redcross.sar.app.Utils;
@@ -24,11 +23,21 @@ public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
-		if (value != null && value instanceof IUnitIf) {
-			IUnitIf unit = (IUnitIf)value;
-			setIcon(getIcon(unit.getType()));
-			setText(MsoUtils.getUnitName(unit, true));
-			setToolTipText(MsoUtils.getUnitName(unit, true));
+		if (value != null) {
+			if (column == 0) {
+				IUnitIf unit = (IUnitIf)value;
+				setIcon(getIcon(unit.getType()));
+				setText(MsoUtils.getUnitName(unit, true));
+				setToolTipText(MsoUtils.getUnitName(unit, true));
+			}
+			else if (column > 0 && column < 3) {
+				setIcon(null);
+				setText(String.valueOf(value));
+				setToolTipText(String.valueOf(value));
+			}
+			else {
+				setText(null);
+			}
 			//check if this cell is selected. Change border
 			if (isSelected) {
 				setBackground(table.getSelectionBackground());

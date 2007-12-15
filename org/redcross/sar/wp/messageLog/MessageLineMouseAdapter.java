@@ -15,12 +15,12 @@ import org.redcross.sar.mso.data.IMessageLineIf;
  */
 public class MessageLineMouseAdapter extends DiskoMouseAdapter implements DiskoMouseDelayListener
 {
-	protected LineListTableModel m_tableModel;
+	protected MessageLineTableModel m_tableModel;
 	
 	/**
-	 * @param listTableModel Line table model {@link LineListTableModel}
+	 * @param listTableModel Line table model {@link MessageLineTableModel}
 	 */
-	public MessageLineMouseAdapter(LineListTableModel listTableModel)
+	public MessageLineMouseAdapter(MessageLineTableModel listTableModel)
 	{
 		// forward
 		super();

@@ -17,7 +17,7 @@ public class MessageRowSelectionListener implements ListSelectionListener
 {
 	protected MessageLogBottomPanel m_messagePanel;
 	protected JTable m_messageTable;
-	protected LogTableModel m_tableModel;
+	protected MessageTableModel m_tableModel;
 	protected boolean m_msoUpdate = false;
 
 	/**
@@ -88,7 +88,7 @@ public class MessageRowSelectionListener implements ListSelectionListener
 	 * Set the table model
 	 * @param model
 	 */
-	public void setModel(LogTableModel model)
+	public void setModel(MessageTableModel model)
 	{
 		m_tableModel = model;
 	}

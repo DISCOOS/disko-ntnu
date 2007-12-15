@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000114" name="Equipment" objectType="test" pos="13"/>
+<object id="00000000114" pos="13" objectType="test" name="Equipment"/>

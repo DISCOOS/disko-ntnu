@@ -15,6 +15,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -32,6 +33,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
 	private RgbColor plannedColor = null;
+	private RgbColor executingColor = null;
 	private RgbColor finishedColor = null;
 	private TextSymbol textSymbol = null;
 	private Hashtable<POIType, IDisplayName> symbols = null;
@@ -94,10 +96,31 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	 					// get assignment?
 	 					if(POIType.START.equals(type) || POIType.VIA.equals(type) 
 	 							|| POIType.STOP.equals(type)) {
+							// initialize
+							RgbColor color = plannedColor;
+							// get status
+							Enum status = MsoUtils.getStatus(MsoUtils.getOwningArea(poi));
+							// replace color?
+							if(AssignmentStatus.EXECUTING.equals(status)) {
+								color = executingColor;
+							}
+							else if(AssignmentStatus.FINISHED.equals(status)){
+								color = finishedColor;							
+							}
 							// set color
-	 						markerSymbol.setColor(IAssignmentIf.AssignmentStatus.FINISHED.equals(
-									MsoUtils.getStatus(MsoUtils.getOwningArea(poi))) ? finishedColor : plannedColor);
+	 						markerSymbol.setColor(color);
 	 					}
+	 					
+	 					// get point size
+	 					double size = zoomPointSize;
+	 					
+	 					// increase size?
+	 					if(POIType.FINDING.equals(type) || POIType.SILENT_WITNESS.equals(type) 
+	 							|| POIType.INTELLIGENCE.equals(type)) {
+	 						// double the size
+	 						size = size*2; 
+	 					}
+	 						
 						
 						/*
 						// is layer in edit mode?
@@ -133,7 +156,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 							}
 						//}
 						
-						markerSymbol.setSize(zoomPointSize);
+						markerSymbol.setSize(size);
 						display.setSymbol((ISymbol)markerSymbol);
 						display.drawPoint(point);
 						
@@ -180,6 +203,10 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			plannedColor = new RgbColor();
 			plannedColor.setRed(255);
 
+			executingColor = new RgbColor();
+			executingColor.setRed(255);
+			executingColor.setGreen(230);
+			
 			finishedColor = new RgbColor();
 			finishedColor.setGreen(155);
 
@@ -189,6 +216,9 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			blueColor.setBlue(255);
 			RgbColor greenColor = new RgbColor();
 			greenColor.setGreen(255);
+			RgbColor cyanColor = new RgbColor();
+			cyanColor.setRed(255);
+			cyanColor.setBlue(255);
 
 			SimpleMarkerSymbol redSquareSymbol = new SimpleMarkerSymbol();
 			redSquareSymbol.setStyle(esriSimpleMarkerStyle.esriSMSSquare);
@@ -226,13 +256,18 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			greenDiamondSymbol.setColor(greenColor);
 			greenDiamondSymbol.setSize(pointSize);
 			
+			SimpleMarkerSymbol cyanDiamondSymbol = new SimpleMarkerSymbol();
+			cyanDiamondSymbol.setStyle(esriSimpleMarkerStyle.esriSMSDiamond);
+			cyanDiamondSymbol.setColor(cyanColor);
+			cyanDiamondSymbol.setSize(pointSize);
+			
 			symbols.put(POIType.START, redRoundSymbol);
 			symbols.put(POIType.STOP, redRoundSymbol);
 			symbols.put(POIType.VIA, blueRoundSymbol);
 			symbols.put(POIType.OBSERVATION, blackDiamondSymbol);
-			symbols.put(POIType.FINDING, blueSquareSymbol);
 			symbols.put(POIType.GENERAL, blueSquareSymbol);
-			symbols.put(POIType.SILENT_WITNESS, greenDiamondSymbol);
+			symbols.put(POIType.FINDING, cyanDiamondSymbol);
+			symbols.put(POIType.SILENT_WITNESS, cyanDiamondSymbol);
 			symbols.put(POIType.INTELLIGENCE, redDiamondSymbol);
 
 			textSymbol = new TextSymbol();

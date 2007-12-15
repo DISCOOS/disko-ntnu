@@ -38,5 +38,6 @@ public class AssignmentLineSelectionListener implements ListSelectionListener
 		
 		// Show selected assignment in edit mode
 		m_panel.showEditAssignment(selectedLine);
+		
 	}
 }

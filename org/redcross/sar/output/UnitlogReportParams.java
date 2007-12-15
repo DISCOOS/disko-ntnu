@@ -10,6 +10,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 public class UnitlogReportParams {
 	
@@ -56,7 +57,7 @@ public class UnitlogReportParams {
 		
 		if(unitList != null){
 			if(unit != null){
-				unitParams.put(UNIT_TYPE_NUMBER, unit.getTypeAndNumber());
+				unitParams.put(UNIT_TYPE_NUMBER, MsoUtils.getUnitName(unit,false));
 				IPersonnelIf leader = unit.getUnitLeader();
 				if(leader != null){
 					unitParams.put(LEADER_NAME, leader.getFirstname() + " " + leader.getLastname());
@@ -84,7 +85,7 @@ public class UnitlogReportParams {
 				//todo		
 				
 				//fjerner alle null verdier
-				//putNotNullValue(unitParams);
+				putNotNullValue(unitParams);
 			}		
 			else 
 				System.out.println("Unit er tom");
@@ -167,8 +168,8 @@ public class UnitlogReportParams {
 				callSigns[iter2][1] = unit2.getCallSign();
 				keyCallSign = KEY_CALLSIGN_PREFIX + Integer.toString(iter2);
 				keyUnit = KEY_UNIT_PREFIX + Integer.toString(iter2);
-				unitParams.put(keyCallSign, unit.getCallSign());
-				unitParams.put(keyUnit, unit.getUnitNumber());
+				unitParams.put(keyCallSign, MsoUtils.getUnitName(unit2,false));
+				unitParams.put(keyUnit, unit2.getUnitNumber());
 			}
 			iter2++;
 		}		
@@ -206,8 +207,7 @@ public class UnitlogReportParams {
 			unitParams.put(keyAssignmentStatus, "");
 		}
 	}
-	
-	/*
+
 	private void putNotNullValue(Map<String, Object> printParams){		
 		Set set = printParams.keySet();
 		Iterator iterator = set.iterator();
@@ -222,8 +222,6 @@ public class UnitlogReportParams {
 				printParams.put(key, value);
 		}
 	}
-	*/
-	
 	
 }
 

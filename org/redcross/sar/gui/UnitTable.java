@@ -10,6 +10,7 @@ import javax.swing.table.TableRowSorter;
 import org.redcross.sar.gui.models.UnitTableModel;
 import org.redcross.sar.gui.renderers.DiskoTableHeaderCellRenderer;
 import org.redcross.sar.gui.renderers.UnitTableCellRenderer;
+import org.redcross.sar.gui.renderers.UnitTableStringConverter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
 
@@ -18,6 +19,8 @@ public class UnitTable extends JTable {
 	private static final long serialVersionUID = 1L;
 	
 	private static final int ROW_HEIGHT = 50;
+	
+	private TableRowSorter<UnitTableModel> tableRowSorter = null;
 	
 	public UnitTable(IMsoModelIf msoModel) {
 		
@@ -28,6 +31,11 @@ public class UnitTable extends JTable {
 		UnitTableModel model = new UnitTableModel(msoModel); 
 		setModel(model);
 		
+		// add row sorter
+		tableRowSorter = new TableRowSorter<UnitTableModel>(model);
+		tableRowSorter.setStringConverter(new UnitTableStringConverter());
+		setRowSorter(tableRowSorter);		
+		
 		// prepare table
 		setRowHeight(ROW_HEIGHT);
 		setShowHorizontalLines(false);
@@ -37,12 +45,6 @@ public class UnitTable extends JTable {
 		setColumnSelectionAllowed(false);
 		setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		/*
-		// prepare row sorter
-		TableRowSorter<UnitTableModel> sorter = new TableRowSorter<UnitTableModel>(model);
-		setRowSorter(sorter);
-		*/
 		
 		// prepare header
         JTableHeader tableHeader = getTableHeader();
@@ -57,6 +59,8 @@ public class UnitTable extends JTable {
 				// size to fit
 				for(int i=0;i<getModel().getColumnCount();i++)
 					getColumnModel().getColumn(i).sizeWidthToFit();
+				// apply sorting
+				((TableRowSorter)getRowSorter()).sort();
 			}
         	
         });

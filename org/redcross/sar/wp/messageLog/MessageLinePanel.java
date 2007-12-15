@@ -16,12 +16,12 @@ import org.redcross.sar.util.mso.Selector;
  *
  * @author thomasl
  */
-public class LineListPanel extends JPanel implements IEditMessageComponentIf
+public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
 	private JTable m_messageListTable;
-	private LineListTableModel m_messageTableModel;
+	private MessageLineTableModel m_messageTableModel;
 	private JScrollPane m_textScrollPane;
 	private IDiskoWpMessageLog m_wpMessageLog;
 
@@ -36,13 +36,13 @@ public class LineListPanel extends JPanel implements IEditMessageComponentIf
 	/**
 	 * @param wp Message log work process
 	 */
-	public LineListPanel(IDiskoWpMessageLog wp)
+	public MessageLinePanel(IDiskoWpMessageLog wp)
 	{
 		m_wpMessageLog = wp;
 
 		setLayout(new BorderLayout());
 
-		m_messageTableModel = new LineListTableModel(m_wpMessageLog);
+		m_messageTableModel = new MessageLineTableModel(m_wpMessageLog);
 		m_messageListTable = new JTable(m_messageTableModel);
 		m_messageListTable.setTableHeader(null);
 		m_textScrollPane = new JScrollPane(m_messageListTable);

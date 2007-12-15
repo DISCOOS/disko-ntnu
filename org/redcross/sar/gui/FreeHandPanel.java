@@ -7,8 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -22,22 +20,15 @@ import javax.swing.border.TitledBorder;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.map.SnappingAdapter;
 import org.redcross.sar.map.command.FreeHandTool;
-import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
-import com.esri.arcgis.interop.AutomationException;
-
-public class FreeHandPanel extends JPanel implements IMsoLayerEventListener {
+public class FreeHandPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoApplication app = null;
@@ -124,8 +115,7 @@ public class FreeHandPanel extends JPanel implements IMsoLayerEventListener {
 	}
 	
 	private void apply() {
-		// force update mode off
-		tool.setUpdateMode(false);
+		// forward
 		tool.apply();
 	}
 	
@@ -411,16 +401,14 @@ public class FreeHandPanel extends JPanel implements IMsoLayerEventListener {
 		return snapToButton;
 	}	
 	
-	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
-		if (tool.getMap() == null) {
-			return;
+	public void setMsoObject(IMsoObjectIf msoObject) {
+		// consume?
+		if (tool.getMap() == null) return;
+		// reset?
+		if(msoObject==null) {
+			reset();
 		}
-		IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
-		List selection = msoLayer.getSelected();
-		if (selection != null && selection.size() > 0) {
-			// get mso object
-			IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
-			IMsoObjectIf msoObject = msoFeature.getMsoObject();
+		else {
 			// get area
 			IMsoObjectIf parent = MsoUtils.getGeoDataParent(msoObject);
 			// get object name
@@ -437,8 +425,6 @@ public class FreeHandPanel extends JPanel implements IMsoLayerEventListener {
 				getObjectText().setText(name);				
 			}
 		}
-		else {
-			reset();
-		}
 	}
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

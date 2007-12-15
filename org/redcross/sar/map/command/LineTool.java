@@ -1,22 +1,26 @@
 package org.redcross.sar.map.command;
 
-import com.esri.arcgis.geometry.*;
+import com.esri.arcgis.geometry.GeometryBag;
+import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.ISegmentGraphCursor;
+import com.esri.arcgis.geometry.Point;
+import com.esri.arcgis.geometry.Polyline;
+import com.esri.arcgis.geometry.SegmentGraph;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.IHostToolDialog;
 import org.redcross.sar.gui.LinePanel;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-import org.redcross.sar.mso.util.MsoUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.swing.JPanel;
 
@@ -77,49 +81,7 @@ public class LineTool extends AbstractDrawTool {
 		dialog.register((IDrawTool)this, propertyPanel);
 		
 	}
-	
-	@Override
-	public void onCreate(Object obj) {
 		
-		// forward
-		super.onCreate(obj);
-		
-		try {
-
-			// is map valid?
-			if (map!=null) {
-				
-				// add layer listeners
-				IMsoFeatureLayer msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-				if(msoLayer!=null) {
-					Iterator<JPanel> it = panels.iterator();
-					while(it.hasNext()) {
-						msoLayer.addDiskoLayerEventListener((LinePanel)it.next());
-					}
-				}
-				msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-				if(msoLayer!=null) {
-					Iterator<JPanel> it = panels.iterator();
-					while(it.hasNext()) {
-						msoLayer.addDiskoLayerEventListener((LinePanel)it.next());
-					}
-				}
-				msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
-				if(msoLayer!=null) {
-					Iterator<JPanel> it = panels.iterator();
-					while(it.hasNext()) {
-						msoLayer.addDiskoLayerEventListener((LinePanel)it.next());
-					}
-				}
-				
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}			
-	}	
-	
 	@Override
 	public void setAttribute(Object value, String attribute) {
 		super.setAttribute(value, attribute);
@@ -146,7 +108,15 @@ public class LineTool extends AbstractDrawTool {
 		}
 		return super.getAttribute(attribute);
 	}
-		
+
+	@Override
+	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
+		// forward
+		super.setMsoDrawData(msoOwner, msoObject, msoClassCode);
+		// set mso object in panel
+		((LinePanel)getPropertyPanel()).setMsoObject((msoObject!=null ? msoObject : msoOwner));
+	}
+
 	@Override
 	public boolean doPrepare() {
 		// is owner search assignment?

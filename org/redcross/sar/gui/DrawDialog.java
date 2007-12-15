@@ -3,6 +3,7 @@
  */
 package org.redcross.sar.gui;
 
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import org.redcross.sar.map.command.IDiskoHostTool;
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.command.IDrawTool;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.command.IDrawTool.DrawFeatureType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
@@ -540,7 +542,9 @@ public class DrawDialog extends DiskoDialog
 	public void setMsoDrawData(IDiskoTool source) {
 		Iterator<IDiskoTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
-			tools.next().setMsoDrawData(source);
+			IDiskoTool tool = tools.next();
+			if(tool!=source)
+				tool.setMsoDrawData(source);
 		}		
 	}
 
@@ -610,6 +614,8 @@ public class DrawDialog extends DiskoDialog
 				setAttribute(attributes[0],"ISUPDATEMODE");
 				setAttribute(true,"DRAWPOLYGON");
 				setAttribute(null,"SEARCHSUBTYPE");
+				// enable all tools
+				enableToolTypes(EnumSet.allOf(DrawFeatureType.class));
 				// set mso draw data
 				setMsoDrawData(null, (IMsoObjectIf)attributes[1], MsoClassCode.CLASSCODE_OPERATIONAREA);
 			}
@@ -622,6 +628,8 @@ public class DrawDialog extends DiskoDialog
 				setAttribute(attributes[0],"ISUPDATEMODE");
 				setAttribute(true,"DRAWPOLYGON");
 				setAttribute(null,"SEARCHSUBTYPE");
+				// enable all tools
+				enableToolTypes(EnumSet.allOf(DrawFeatureType.class));
 				// set mso draw data
 				setMsoDrawData(null, (IMsoObjectIf)attributes[1], MsoClassCode.CLASSCODE_SEARCHAREA);
 			}
@@ -633,6 +641,8 @@ public class DrawDialog extends DiskoDialog
 				setAttribute(attributes[0],"ISUPDATEMODE");
 				setAttribute(attributes[1],"DRAWPOLYGON");
 				setAttribute(attributes[2],"SEARCHSUBTYPE");
+				// enable all tools
+				enableToolTypes(EnumSet.allOf(DrawFeatureType.class));
 				// set mso draw data
 				setMsoDrawData((IMsoObjectIf)attributes[3], (IMsoObjectIf)attributes[4], MsoClassCode.CLASSCODE_ROUTE);
 			}
@@ -642,11 +652,15 @@ public class DrawDialog extends DiskoDialog
 				if((Boolean)attributes[1]) {
 					POIType[] t1 = { POIType.START, POIType.VIA, POIType.STOP };
 					setAttribute(DiskoToolType.POI_TOOL,t1,"POITYPES");
+					// enable all tools
+					enableToolTypes(EnumSet.allOf(DrawFeatureType.class));
 				}
 				else {
 					POIType[] t2 = { POIType.GENERAL, POIType.INTELLIGENCE,
 							 POIType.OBSERVATION, POIType.FINDING, POIType.SILENT_WITNESS };
 						setAttribute(DiskoToolType.POI_TOOL,t2,"POITYPES");
+					// enable point tools only
+					enableToolTypes(EnumSet.of(DrawFeatureType.DRAW_FEATURE_POINT));
 				}
 				setAttribute(false,"DRAWPOLYGON");
 				setAttribute(null,"SEARCHSUBTYPE");
@@ -658,6 +672,8 @@ public class DrawDialog extends DiskoDialog
 				setAttribute(attributes[0],"ISUPDATEMODE");
 				setAttribute(false,"DRAWPOLYGON");
 				setAttribute(null,"SEARCHSUBTYPE");
+				// enable position tools only
+				enableToolType(DiskoToolType.POSITION_TOOL);
 				// set mso draw data
 				setMsoDrawData(null, (IMsoObjectIf)attributes[1], MsoClassCode.CLASSCODE_UNIT);
 			}
@@ -668,12 +684,52 @@ public class DrawDialog extends DiskoDialog
 					IDiskoTool tool = tools.next();
 					tool.setMsoOwner(null);
 					tool.setMsoObject(null);
-				}								
+				}
+				// diable all tools
+				enableTools(false);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}			
 	}
+	
+	private void enableTools(boolean isEnabled) {
+		for(IDiskoTool tool: m_tools.values()) {
+			// get button
+			AbstractButton b = tool.getButton();
+			// enable or diable?
+			b.setEnabled(isEnabled);
+			m_buttons.get(tool.getType()).setEnabled(isEnabled);
+		}		
+	}
+	
+	private void enableToolTypes(EnumSet<DrawFeatureType> types) {
+		for(IDiskoTool it: m_tools.values()) {
+			if(it instanceof IDrawTool) {
+				// cast to IDrawTool
+				IDrawTool tool = (IDrawTool)it;
+				// get button
+				AbstractButton b = it.getButton();
+				// get flag
+				boolean isEnabled = types.contains(tool.getFeatureType());
+				// enable or diable?
+				b.setEnabled(isEnabled);
+				m_buttons.get(tool.getType()).setEnabled(isEnabled);
+			}
+		}
+	}
 
+	private void enableToolType(DiskoToolType type) {
+		for(IDiskoTool tool: m_tools.values()) {
+			// get button
+			AbstractButton b = tool.getButton();
+			// get flag
+			boolean isEnabled = tool.equals(tool.getType());
+			// enable or diable?
+			b.setEnabled(isEnabled);
+			m_buttons.get(tool.getType()).setEnabled(isEnabled);
+		}
+	}
+	
 }  //  @jve:decl-index=0:visual-constraint="23,0"

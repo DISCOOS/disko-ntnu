@@ -211,7 +211,7 @@ public class ListDialog extends DiskoDialog {
 				}
 				printButton.setPreferredSize(buttonSize);
 				printButton.setEnabled(false);
-				report = new DiskoReport(app);
+				report = app.getDiskoReport();
 				printButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {						
 						sendToPrint();

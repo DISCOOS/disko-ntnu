@@ -38,6 +38,7 @@ import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
+import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.messageLog.MessageLogBottomPanel;
@@ -507,7 +508,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private void newPersonnel()
 	{
 		// Single new object at a time
-		if(!(m_newUnit || m_newCallOut))
+		if(!(m_newPersonnel || m_newUnit || m_newCallOut))
 		{
 			// View personnel details
 			CardLayout layout = (CardLayout)m_leftPanel.getLayout();
@@ -534,7 +535,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_personnelOverviewTable.setEnabled(false);
 		}
 		else
-			showWarning("Du må først avslutte " + (m_newCallOut ? "import av varsel" : "opprettelse av ny enhet"));
+			Utils.showWarning("Begrensning", "Du må først avslutte " + (m_newPersonnel ? "registrering av nytt personell" : 
+				(m_newCallOut ? "import av varsel" : "opprettelse av ny enhet")));
 
 	}
 	
@@ -544,7 +546,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private void newUnit()
 	{
 		// Single new object at a time
-		if(!(m_newCallOut || m_newPersonnel))
+		if(!(m_newPersonnel || m_newUnit || m_newCallOut))
 		{
 			// View unit table
 			m_overviewTabPane.setSelectedIndex(1);
@@ -566,9 +568,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_newUnitButton.setSelected(true);
 			
 			m_unitOverviewTable.setEnabled(false);
+			
+			m_newUnit = true;
+			
 		}
 		else
-			showWarning("Du må først avslutte " + (m_newCallOut ? "import av varsel" : "registrering av nytt mannskap"));
+			Utils.showWarning("Begrensning", "Du må først avslutte " + (m_newPersonnel ? "registrering av nytt personell" : 
+				(m_newCallOut ? "import av varsel" : "opprettelse av ny enhet")));
 	}
 	
 	/**
@@ -576,13 +582,20 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	 */
 	private void importCallout()
 	{
-		m_newCallOut = true;
-		m_overviewTabPane.setSelectedIndex(2);
-		m_overviewTabPane.setEnabled(false);
-		m_importCalloutButton.setSelected(true);
-		m_importCalloutDialog.setLocationRelativeTo(m_contentsPanel,
-				DiskoDialog.POS_CENTER, true);	
-		m_importCalloutDialog.setVisible(true);
+		// single object at the time
+		if(!(m_newPersonnel || m_newUnit || m_newCallOut)) {
+			m_newCallOut = true;
+			m_overviewTabPane.setSelectedIndex(2);
+			m_overviewTabPane.setEnabled(false);
+			m_importCalloutButton.setSelected(true);
+			m_importCalloutDialog.setLocationRelativeTo(m_contentsPanel,
+					DiskoDialog.POS_CENTER, true);	
+			m_importCalloutDialog.setVisible(true);
+		}
+		else {
+			Utils.showWarning("Begrensning","Du først avslutte " + (m_newPersonnel ? "registrering av nytt personell" : 
+				(m_newCallOut ? "impoer av varsel" : "opprettelse av ny enhet")));
+		}
 	}
 	
 	/**

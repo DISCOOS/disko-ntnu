@@ -950,7 +950,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 					// get current role
 					currentRole = m_current;
 					// select first module
-					currentRole.selectDiskoWpModule(0);
+					currentRole.selectDiskoWpModule(currentRole.getDefaultDiskoWpModule());
 					getUIFactory().getMainMenuPanel().showMenu(currentRole.getName());
 					getUIFactory().getMenuPanel().setVisible(true);
 				}

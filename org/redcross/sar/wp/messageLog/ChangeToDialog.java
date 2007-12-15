@@ -114,7 +114,8 @@ public class ChangeToDialog extends DiskoDialog
 			public void actionPerformed(ActionEvent e)
 			{
 				m_broadcast = false;
-				MessageLogBottomPanel.getCurrentMessage(true).setBroadcast(false);
+				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+				if(message!=null) message.setBroadcast(false);
 
 				m_broadcastDialog.hideComponent();
 				m_broadcastDialog.clearSelection();
@@ -132,7 +133,8 @@ public class ChangeToDialog extends DiskoDialog
 			public void actionPerformed(ActionEvent arg0)
 			{
 				m_broadcast = true;
-				MessageLogBottomPanel.getCurrentMessage(true).setBroadcast(true);
+				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+				if(message!=null) message.setBroadcast(true);
 
 				m_nbFieldDialog.hideComponent();
 				m_nbListDialog.hideComponent();
@@ -214,11 +216,13 @@ public class ChangeToDialog extends DiskoDialog
 
 	private void showNonBroadcast()
 	{
-		// get current message
+		// get current message and command post
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		ICmdPostIf cmdPost = m_wpMessageLog.getCmdPost();
+		
 		// get current receiver
 		ICommunicatorIf receiver = (cmdPost!=null && message!=null? message.getSingleReceiver() : (ICommunicatorIf)cmdPost);
+		
 		// has receiver?
 		if(receiver != null)
 		{

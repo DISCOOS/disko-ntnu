@@ -16,8 +16,9 @@ public interface IDiskoRole {
 	/**
 	 * Add a new work process module to this DiskoRole.
 	 * @param module A class that implements the IDiskoWpModule interface.
+	 * @param isDefault Module is the default module for the role
 	 */
-	public void addDiskoWpModule(IDiskoWpModule module);
+	public void addDiskoWpModule(IDiskoWpModule module, boolean isDefault);
 	
 	/**
 	 * Activate an work process module with the given ID, 
@@ -33,6 +34,8 @@ public interface IDiskoRole {
 	 * @param index And index that identifies a work process module
 	 */
 	public IDiskoWpModule selectDiskoWpModule(IDiskoWpModule module);
+	
+	public IDiskoWpModule getDefaultDiskoWpModule();
 	
 	public IDiskoWpModule getDiskoWpModule(int index);
 	

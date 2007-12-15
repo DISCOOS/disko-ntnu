@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author thomasl
  */
-public class LineListTableModel extends AbstractTableModel
+public class MessageLineTableModel extends AbstractTableModel
 {
 	private final static long serialVersionUID = 1L;
 
@@ -26,7 +26,7 @@ public class LineListTableModel extends AbstractTableModel
 	/**
 	 * @param wp Message log work process
 	 */
-	public LineListTableModel(IDiskoWpMessageLog wp)
+	public MessageLineTableModel(IDiskoWpMessageLog wp)
 	{
 		m_messageLines = new LinkedList<IMessageLineIf>();
 

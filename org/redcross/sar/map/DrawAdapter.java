@@ -343,6 +343,9 @@ public class DrawAdapter implements
 		// update this
 		try {
 			
+			// initialize
+			Enum type = MsoClassCode.CLASSCODE_OPERATIONAREA;
+			
 			// get mso layer
 			IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
 			
@@ -372,40 +375,28 @@ public class DrawAdapter implements
 				
 				// dispatch type of object
 				if (currentMsoObj instanceof IOperationAreaIf) {
-					// select type?
-					if (elementList.getSelectedValue()!=MsoClassCode.CLASSCODE_OPERATIONAREA) {
-						elementList.setSelectedValue(MsoClassCode.CLASSCODE_OPERATIONAREA, true);
-					}
+					// get type
+					type = MsoClassCode.CLASSCODE_OPERATIONAREA;
 				}
 				else if (currentMsoObj instanceof ISearchAreaIf) {
-					// select type?
-					if (elementList.getSelectedValue()!=MsoClassCode.CLASSCODE_SEARCHAREA) {
-						elementList.setSelectedValue(MsoClassCode.CLASSCODE_SEARCHAREA, false);
-					}
-					else {
-						setup(MsoClassCode.CLASSCODE_SEARCHAREA);
-					}
+					// get type
+					type = MsoClassCode.CLASSCODE_SEARCHAREA;
 				}
 				else if (currentMsoObj instanceof IRouteIf) {
+					// initialize
+					type = SearchSubType.PATROL;
 					// get owning area
 					IAreaIf area = (IAreaIf)currentMsoOwn;
 					// found area?
 					if(area!=null) {
 						// get sub type
-						Enum type = MsoUtils.getType(currentMsoObj,true);
-						// select type?
-						if (elementList.getSelectedValue()!=type) {
-							elementList.setSelectedValue(type, false);
-						}
-						else {
-							setup(type);
-						}							
-					}
-					else {
-						setup(SearchSubType.PATROL);
+						type = MsoUtils.getType(currentMsoObj,true);
 					}
 				}
 				else if (currentMsoObj instanceof IPOIIf) {
+					
+					// initialize
+					type = MsoClassCode.CLASSCODE_POI;
 					
 					// get poi
 					IPOIIf poi = (IPOIIf)currentMsoObj;
@@ -420,6 +411,9 @@ public class DrawAdapter implements
 					// is area poi?
 					if(isAreaPOI) {
 
+						// initialize
+						type = SearchSubType.PATROL;
+						
 						// get owning area
 						IAreaIf area = (IAreaIf)currentMsoOwn;
 						
@@ -431,23 +425,21 @@ public class DrawAdapter implements
 							IAssignmentIf assignment = area.getOwningAssignment();
 							if (assignment instanceof ISearchIf) {
 								ISearchIf search = (ISearchIf)assignment;
-								SearchSubType type = search.getSubType();
-								// select type?
-								if (elementList.getSelectedValue()!=type) {
-									elementList.setSelectedValue(type, false);
-								}
-								else {
-									setup(type);
-								}
+								type = search.getSubType();
 							}							
-							else {
-								setup(SearchSubType.PATROL);
-							}
-						}
-						else {
-							setup(SearchSubType.PATROL);
 						}
 					}
+				}
+				else if(currentMsoObj instanceof IUnitIf) {
+					// get type
+					type = MsoClassCode.CLASSCODE_UNIT;
+				}
+				// select type?
+				if (elementList.getSelectedValue()!=type) {
+					elementList.setSelectedValue(type, false);
+				}
+				else {
+					setup(type);
 				}
 				// reset flag
 				isSelecting = false;
@@ -612,13 +604,20 @@ public class DrawAdapter implements
 						type == SearchSubType.LINE || 
 						type == SearchSubType.MARINE ||
 						type == SearchSubType.URBAN);
+				// get update mode
+				boolean isUpdateMode = (currentMsoOwn instanceof IAreaIf || currentMsoObj instanceof IRouteIf);
 				// get attributes
-				Object[] attributes = {currentMsoOwn instanceof IAreaIf, drawPolygon,type,currentMsoOwn,currentMsoObj};
+				Object[] attributes = {isUpdateMode, drawPolygon,type,currentMsoOwn,currentMsoObj};
+				// get draw mode
+				DrawMode drawMode = (isUpdateMode ? 
+						((currentMsoObj instanceof IRouteIf) ? 
+								DrawMode.REPLACE : DrawMode.APPEND) : DrawMode.CREATE);
 				// set draw mode
-				enterMode((Boolean)attributes[0] ? DrawMode.APPEND : DrawMode.CREATE);
+				enterMode(drawMode);
 				// forward
 				drawDialog.setToolSet(MsoClassCode.CLASSCODE_ROUTE, attributes);
-				setDefaultTool(navBar.getFreeHandTool());
+				// select default tool
+				setDefaultTool(currentMsoObj instanceof IPOIIf ? navBar.getPOITool() : navBar.getFreeHandTool());
 				
 			}
 			else if (MsoClassCode.CLASSCODE_POI.equals(element)) {
@@ -673,7 +672,7 @@ public class DrawAdapter implements
 	
 	private void setDefaultTool(IDrawTool tool) {
 		// is selecting?
-		if(!isSelecting && tool!=null) {
+		if(tool!=null) { //!isSelecting && tool!=null) {
 			// activate directly?
 			if(currentTool==null || !currentTool.getType().equals(tool.getType())) {
 				currentTool = tool;

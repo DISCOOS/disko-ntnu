@@ -298,6 +298,9 @@ public class POITool extends AbstractDrawTool {
 	}
 
 	public void addPOIAt(Point p,POIType type,String remarks) {
+		// update dialog
+		getPOIPanel().setPOIType(type);
+		getPOIPanel().setRemarks(remarks);
 		// validate
 		if(validate(true)) {
 			try {
@@ -305,9 +308,6 @@ public class POITool extends AbstractDrawTool {
 				msoObject = null;
 				// update point
 				this.p = (Point)p.esri_clone();
-				// update dialog
-				getPOIPanel().setPOIType(type);
-				getPOIPanel().setRemarks(remarks);
 				// forward
 				doFinishWork();
 			}
@@ -318,14 +318,14 @@ public class POITool extends AbstractDrawTool {
 	}
 	
 	public void movePOIAt(Point p,POIType type,String remarks) {
+		// update dialog
+		getPOIPanel().setPOIType(type);
+		getPOIPanel().setRemarks(remarks);
 		// validate
 		if(validate(false)) {
 			try {
 				// update point
 				this.p = (Point)p.esri_clone();
-				// update dialog
-				getPOIPanel().setPOIType(type);
-				getPOIPanel().setRemarks(remarks);
 				// forward
 				doFinishWork();
 			}
@@ -388,11 +388,6 @@ public class POITool extends AbstractDrawTool {
 						search.setSubType(searchSubType);
 				}
 			}
-		}
-		else {
-			// reset panel
-			panel.setPOIType(POIType.GENERAL);
-			panel.setRemarks(null);			
 		}
 		// forward
 		return super.doPrepare();

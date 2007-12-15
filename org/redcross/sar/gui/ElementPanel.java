@@ -723,9 +723,9 @@ public class ElementPanel extends JPanel {
 				if(MsoClassCode.CLASSCODE_POI.equals(e)) {
 					// validate
 					if(exists)
-						return parts.contains(msoObject) ? getPartList() : null;
+						return objects.contains(msoObject) ? getObjectList() : null;
 					else
-						return getPartList();				
+						return getObjectList();				
 				}
 			}
 		}	

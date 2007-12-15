@@ -15,7 +15,9 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.RouteFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -34,6 +36,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
 	private RgbColor plannedColor = null;
+	private RgbColor executingColor = null;
 	private RgbColor finishedColor = null;
 	private Hashtable<SearchSubType, SimpleLineSymbol> symbols = null;
 	private SimpleLineSymbol defaultLineSymbol = null;
@@ -43,6 +46,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE,
  				LayerCode.ROUTE_LAYER, msoModel, srs, 
  				esriGeometryType.esriGeometryPolyline);
+ 		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
  		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
@@ -109,14 +113,24 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 							IAssignmentIf assignment = (IAssignmentIf)area.getOwningAssignment();
 							// is search assignment?
 							if (assignment instanceof ISearchIf) {
+								// initialize
+								RgbColor color = plannedColor;
+								// get status
+								Enum status = MsoUtils.getStatus(assignment);
+								// replace color?
+								if(AssignmentStatus.EXECUTING.equals(status)) {
+									color = executingColor;
+								}
+								else if(AssignmentStatus.FINISHED.equals(status)){
+									color = finishedColor;							
+								}
 								// cast to ISearchIf
 								ISearchIf search = (ISearchIf)assignment;
 								// get line symbol
 								lineSymbol = (SimpleLineSymbol)symbols.get(search.getSubType());
 								text = MsoUtils.getAssignmentName(search,2);
 								// update line color
-								lineSymbol.setColor(IAssignmentIf.AssignmentStatus.FINISHED.equals(
-									search.getStatus()) ? finishedColor : plannedColor);
+								lineSymbol.setColor(color);
 							} 
 						}
 												
@@ -215,6 +229,10 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			plannedColor = new RgbColor();
 			plannedColor.setRed(255);
 
+			executingColor = new RgbColor();
+			executingColor.setRed(255);
+			executingColor.setGreen(230);
+			
 			finishedColor = new RgbColor();
 			finishedColor.setGreen(155);
 			

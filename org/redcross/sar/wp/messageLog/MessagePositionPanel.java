@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.EnumSet;
-import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -50,8 +49,9 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	protected PositionTool m_tool = null;
 	protected JPanel m_buttonPanel = null;
 	protected PositionPanel m_positionPanel = null;
-	protected HashMap<String,IUnitIf> m_units = null;
 
+	private int isWorking = 0;
+	
 	/**
 	 * @param wp Message log work process
 	 * @param poiTypes Which POI types are valid in panel
@@ -144,11 +144,31 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 
 	}
 
+	private boolean isWorking() {
+		return (isWorking>0);
+	}
+
+	private int setIsWorking() {
+		isWorking++;
+		return isWorking; 
+	}
+	
+	private int setIsNotWorking() {
+		if(isWorking>0) {
+			isWorking--;
+		}
+		return isWorking; 
+	}
+	
 	/**
 	 * Apply position in current message based on values in GUI fields
 	 */
 	private boolean applyPosition()
 	{
+		
+		// set flag
+		setIsWorking();
+
 		// initialize flag
 		boolean isSuccess = false;
 
@@ -265,6 +285,9 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 			Utils.showWarning("Du må først velge en enhet");
 		}
 
+		// reset flag
+		setIsNotWorking();
+		
 		// return flag
 		return isSuccess;
 		
@@ -387,6 +410,9 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	 */
 	public void newMessageSelected(IMessageIf message)
 	{
+		// consume?
+		if(isWorking()) return;
+		
 		// Update dialog
 		updatePosition(message);
 	}

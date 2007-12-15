@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000189" name="Route" objectType="test" pos="27">
-<fact comp="n" edit="y" id="00000000190" label="Remarks" pos1="999" pos2="999" relTo="00000000189" version="1">
+<object id="00000000189" pos="27" objectType="test" name="Route">
+<fact id="00000000190" label="Remarks" pos1="999" pos2="999" comp="n" relTo="00000000189" edit="y" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000191" label="Geodata" pos1="999" pos2="999" relTo="00000000189" version="1">
-<track_fact attached_to="" speed="0"/>
+<fact id="00000000191" label="Geodata" pos1="999" pos2="999" comp="n" relTo="00000000189" edit="y" version="1">
+<track_fact speed="0" attached_to=""/>
 </fact>
-<fact comp="n" edit="y" id="00000000192" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="00000000189" version="1">
-<num_fact antdec="0" max="1.0E8" min="0.0"/>
+<fact id="00000000192" label="AreaSequenceNumber" pos1="999" pos2="999" comp="n" relTo="00000000189" edit="y" version="1">
+<num_fact min="0.0" max="1.0E8" antdec="0"/>
 </fact>
 </object>

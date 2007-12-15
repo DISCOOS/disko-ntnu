@@ -8,6 +8,7 @@ import javax.swing.table.AbstractTableModel;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
+import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -113,11 +114,11 @@ public class UnitTableModel extends AbstractTableModel implements
 		case 0:
 			return AbstractUnit.class; 
 		case 1:
-			return String.class;
+			return AssignmentImpl.class;
 		case 2:
-			return String.class;
+			return AssignmentImpl.class;
 		case 3:
-			return String.class;
+			return AssignmentImpl.class;
 		default:
 			return Object.class;
 		}

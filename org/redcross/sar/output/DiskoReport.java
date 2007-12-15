@@ -69,6 +69,8 @@ public class DiskoReport {
 	 
 	private String m_now = new String();
 	
+	private JasperViewer m_viewer = null;
+	
 	public DiskoReport(IDiskoApplication app){
 		
 		//System.out.println("test");
@@ -259,7 +261,12 @@ public class DiskoReport {
 	private void view(JasperPrint jrprintFile){		
 		//System.out.println("DiskoReport: view() " + jrprintFile);
 		try{
-			JasperViewer.viewReport(jrprintFile, false, null);
+			// close current?
+			if(m_viewer!=null)
+				m_viewer.dispose();
+			// create new
+			m_viewer = new JasperViewer(jrprintFile, false);
+			m_viewer.setVisible(true);
 		}
 		catch(Exception e){
 			e.printStackTrace();

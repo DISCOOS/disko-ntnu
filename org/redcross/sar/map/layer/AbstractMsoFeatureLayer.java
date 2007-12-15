@@ -14,10 +14,12 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.mso.event.MsoEvent.EventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Selector;
 
@@ -39,11 +41,11 @@ import com.esri.arcgis.system.IUID;
 import com.esri.arcgis.system.IVariantStream;
 
 public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoDataset,
-IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
+	IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
 
 	protected String name = null;
-	protected IMsoManagerIf.MsoClassCode classCode = null;
-	protected IMsoFeatureLayer.LayerCode layerCode = null;
+	protected MsoClassCode classCode = null;
+	protected LayerCode layerCode = null;
 	protected IEnvelope extent = null;
 	protected ISpatialReference srs = null;
 	protected IFeatureClass featureClass = null;
@@ -61,13 +63,13 @@ IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
 	protected ArrayList<IMsoLayerEventListener> listeners = null;
 	protected MsoLayerEvent msoLayerEvent = null;
 	protected IMsoModelIf msoModel = null;
-	protected EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
-	protected HashMap<MsoLayerEvent.MsoLayerEventType,MsoLayerEvent> suspendedEvents = null;
+	protected EnumSet<MsoClassCode> myInterests = null;
+	protected HashMap<MsoLayerEventType,MsoLayerEvent> suspendedEvents = null;
 	protected Selector<IMsoObjectIf> selector = null;
 	protected boolean isTextShown = true;
 
-	public AbstractMsoFeatureLayer(IMsoManagerIf.MsoClassCode classCode, 
-			IMsoFeatureLayer.LayerCode layerCode, IMsoModelIf msoModel, 
+	public AbstractMsoFeatureLayer(MsoClassCode classCode, 
+			LayerCode layerCode, IMsoModelIf msoModel, 
 			ISpatialReference srs, int shapeType) {
 
 		// initialize objects
@@ -81,14 +83,30 @@ IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
 
 		// event handling
 		listeners = new ArrayList<IMsoLayerEventListener>();
-		msoLayerEvent = new MsoLayerEvent(this,MsoLayerEvent.MsoLayerEventType.SELECTION_CHANGED_EVENT);
-		suspendedEvents = new HashMap<MsoLayerEvent.MsoLayerEventType,MsoLayerEvent>(1);		
+		msoLayerEvent = new MsoLayerEvent(this,MsoLayerEventType.SELECTION_CHANGED_EVENT);
+		suspendedEvents = new HashMap<MsoLayerEventType,MsoLayerEvent>(1);		
 		myInterests = EnumSet.of(classCode);
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
 
 	}
 
+
+	protected boolean addInterestIn(MsoClassCode classCode) {
+		if(!myInterests.contains(classCode)) {
+			return myInterests.add(classCode);
+		}
+		return false;			
+	}
+	
+	protected boolean removeInterestIn(MsoClassCode classCode) {
+		if(myInterests.contains(classCode) && !this.classCode.equals(classCode)) {
+			return myInterests.remove(classCode);
+		}
+		return false;			
+		
+	}
+	
 	public IMsoModelIf getMsoModel() {
 		return msoModel;
 	}
@@ -101,16 +119,19 @@ IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
 			IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 			IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
 
-			// get flags
+			// get event flags
 			int mask = e.getEventTypeMask();
-			boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-			boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-			boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-			boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-			boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
-
+			boolean createdObject  = (mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+			boolean deletedObject  = (mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+			boolean modifiedObject = (mask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+			boolean addedReference = (mask & EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+			boolean removedReference = (mask & EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
+			
+			// get other flags
+			boolean isFeature = msoObj.getMsoClassCode().equals(classCode);
+			
 			// add object?
-			if (createdObject && msoFeature == null) {
+			if (createdObject && msoFeature == null && isFeature) {
 				msoFeature = createMsoFeature(msoObj);
 				msoFC.addFeature(msoFeature);
 				if (msoFeature.getShape() != null) {
@@ -123,8 +144,9 @@ IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
 				msoFeature.msoGeometryChanged();
 				isDirty = true;
 			}
+			
 			// delete object?
-			if ((deletedObject) && msoFeature != null) {
+			if ((deletedObject) && msoFeature != null && isFeature) {
 				msoFC.removeFeature(msoFeature);
 				isDirty = true;
 			}

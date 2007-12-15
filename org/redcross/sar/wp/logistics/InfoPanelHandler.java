@@ -10,6 +10,7 @@ import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.output.DiskoReport;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
 
@@ -19,9 +20,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JLabel;
@@ -74,12 +77,16 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private static final long m_timeInterval = 60 * 1000; // once every minute.
 
     private long m_timeCounter;
+    
+    private DiskoReport m_report = null;
 
     public InfoPanelHandler(JPanel anInfoPanel, IDiskoWpLogistics aWpModule, AssignmentLabel.AssignmentLabelActionHandler anActionHandler)
     {
+    	// prepare
         m_infoPanel = anInfoPanel;
         m_assignmentLabelMouseListener = anActionHandler;
         m_wpModule = aWpModule;
+        m_report = aWpModule.getApplication().getDiskoReport();
 
         m_infoPanel.add(new JPanel(), EMPTY_PANEL_NAME);
 
@@ -236,7 +243,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
             }
             m_assignmentInfoPanel.setTopText(3, m_displayedAsssignment.getPriorityText());
             m_assignmentInfoPanel.setTopText(4, hoursSince(m_displayedAsssignment.getTimeAssigned()));
-
+            m_assignmentInfoPanel.setTopText(5,m_displayedAsssignment.getRemarks());
         } else
         {
             m_assignmentInfoPanel.clearTopTexts();
@@ -378,7 +385,10 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
             }
         } else if (command.equalsIgnoreCase(UNIT_PRINT))
         {
-            System.out.println("Trykk 2: " + command + m_displayedUnit.getUnitNumber());
+        	// has unit to print out?
+        	if(m_displayedUnit!=null) {
+        		m_report.printUnitLog(m_displayedUnit);
+        	}
         } else if (command.equalsIgnoreCase(ASG_RESULT))
         {
             System.out.println("Trykk 3: " + command + m_displayedAsssignment.getNumber());
@@ -389,7 +399,12 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
             showPanel(ASSIGNMENT_LIST_PANEL_NAME);
         } else if (command.equalsIgnoreCase(ASG_PRINT))
         {
-            System.out.println("Trykk 5: " + command + m_displayedAsssignment.getNumber());
+        	// has assignment to print?
+        	if(m_displayedAsssignment!=null) {
+	        	List<IAssignmentIf> assignments = new ArrayList<IAssignmentIf>(1);
+	        	assignments.add(m_displayedAsssignment);
+	            m_report.printAssignments(assignments);
+        	}
         } else if (command.equalsIgnoreCase(ASG_CHANGE))
         {
             IDiskoRole role = m_wpModule.getDiskoRole();

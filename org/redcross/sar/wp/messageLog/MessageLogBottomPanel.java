@@ -85,22 +85,40 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	
 	/**
 	 * Get current message. Singleton
+
+	 * @param create Whether to create new or not if current message is {@code null}
+	 * 
 	 * @return The message
-	 * @param createNew Whether to create new or not if current message is {@code null}
 	 */
-	public static IMessageIf getCurrentMessage(boolean createNew)
+	public static IMessageIf getCurrentMessage(boolean create)
+	{		
+		return getCurrentMessage(create,false);
+	}
+
+	/**
+	 * Get current message. Singleton
+	 * 
+	 * @param create Whether to create new or not if current message is {@code null}
+	 * @param isBroadcast Sets Broadcast flag if message is created
+	 * 
+	 * @return The message
+	 */
+	public static IMessageIf getCurrentMessage(boolean create, boolean isBroadcast)
 	{
-		if(m_currentMessage == null && createNew)
+		if(m_currentMessage == null && create)
 		{
+			m_wpMessageLog.getMsoModel().suspendClientUpdate();
 			m_currentMessage = m_wpMessageLog.getMsoManager().createMessage();
 			m_currentMessage.setCreated(Calendar.getInstance());
 			m_currentMessage.setOccuredTime(Calendar.getInstance());
+			m_currentMessage.setBroadcast(isBroadcast);
+			m_wpMessageLog.getMsoModel().resumeClientUpdate();
 			m_newMessage = true;
 			m_messageDirty = false;
 		}
 		return m_currentMessage;
 	}
-
+	
 	/**
 	 *
 	 * @return Whether the current message is new or not, i.e. not stored in MSO
@@ -154,7 +172,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	private static AbstractAssignmentPanel m_messageAssignedPanel;
 	private static AbstractAssignmentPanel m_messageStartedPanel;
 	private static AbstractAssignmentPanel m_messageCompletedPanel;
-	private static LineListPanel m_messageListPanel;
+	private static MessageLinePanel m_messageListPanel;
 
     private JPanel m_taskPanel;
     private static JLabel m_taskLabel;
@@ -320,11 +338,11 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	}
 
-    private LineListPanel getMessageListPanel()
+    private MessageLinePanel getMessageListPanel()
     {
     	if(m_messageListPanel == null)
     	{
-    		m_messageListPanel = new LineListPanel(m_wpMessageLog);
+    		m_messageListPanel = new MessageLinePanel(m_wpMessageLog);
     		m_editComponents.add(m_messageListPanel);
     		m_cardsPanel.add(m_messageListPanel, LIST_PANEL_ID);
     	}
@@ -583,7 +601,10 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 			// Update TO
 			if(m_currentMessage.isBroadcast())
 			{
-				m_toLabel.setText(m_wpMessageLog.getText("BroadcastLabel.text"));
+				int unconfirmed = m_currentMessage.getUnconfirmedReceivers().size();
+				int count = unconfirmed + m_currentMessage.getConfirmedReceivers().size();
+				m_toLabel.setText(String.format(m_wpMessageLog.getText("BroadcastLabel.text"),
+						(count-unconfirmed),count));
 			}
 			else
 			{
@@ -689,12 +710,14 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	public static boolean validateMessage() {
 		// has any data to commit?
 		if(m_currentMessage == null) {
-			Utils.showWarning("Ingenting å endre");
+			Utils.showWarning(m_wpMessageLog.getText("NoMessageData.header"),
+					m_wpMessageLog.getText("NoMessageData.text"));
 			return false;
 		}
 		// has lines?
 		if(m_currentMessage != null && m_currentMessage.getLines().length==0) {
-			Utils.showWarning("Du må oppgi minst én meldingslinje");
+			Utils.showWarning(m_wpMessageLog.getText("NoMessageLines.header"),
+					m_wpMessageLog.getText("NoMessageLines.text"));
 			return false;
 		}
 		// is valid
@@ -782,27 +805,25 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	// validate
 		if(validateMessage())
 		{
+			// initialize
+			MessageStatus status = (isConfirmed ? MessageStatus.CONFIRMED : MessageStatus.POSTPONED);
+			
 			// Set message status
 			if(m_currentMessage.isBroadcast()){
-				if(m_currentMessage.getUnconfirmedReceivers().size() == 0){
-					if(isConfirmed)
-						m_currentMessage.setStatus(MessageStatus.CONFIRMED);
-					else
-						m_currentMessage.setStatus(MessageStatus.POSTPONED);				
-				}
-				else{
+
+
+				// apply limits
+				if(isConfirmed && m_currentMessage.getUnconfirmedReceivers().size() > 0){
 					// If broadcast all units have to confirm to get confirmed status
-					Utils.showWarning(m_wpMessageLog.getText("UnconfirmedUnitsExists.text"));
-					// set unconfirmed
-					m_currentMessage.setStatus(MessageStatus.UNCONFIRMED);
+					Utils.showWarning(m_wpMessageLog.getText("UnconfirmedUnitsExists.header"),
+							m_wpMessageLog.getText("UnconfirmedUnitsExists.text"));
+					// keep current status
+					status = m_currentMessage.getStatus();
 				}
 			}
-			else {
-				if(isConfirmed)
-					m_currentMessage.setStatus(MessageStatus.CONFIRMED);
-				else
-					m_currentMessage.setStatus(MessageStatus.POSTPONED);								
-			}
+
+			// apply status
+			m_currentMessage.setStatus(status);				
 
 			// reload data?
 			if(m_newMessage)
@@ -1123,7 +1144,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 					Utils.showWarning(m_wpMessageLog.getText("CompletedError.header"),
 							m_wpMessageLog.getText("CompletedError.details"));
 				}
-				else if(isReceiverCommandPost())
+				else if(isSenderCommandPost())
 				{
 					// Not possible to assign when receiver is CP
 					Utils.showWarning(m_wpMessageLog.getText("ReceiverCommandPostError.header"),
@@ -1301,70 +1322,75 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 		if(m_currentMessage != null && !m_currentMessage.isBroadcast())
 		{
-			ICommunicatorIf communicator = m_currentMessage.getSingleReceiver();
+			// initialize
 			IUnitIf unit = null;
-			if(communicator instanceof IUnitIf)
+			IAssignmentIf assignment = null;
+			ICommunicatorIf communicator = null;			
+			List<IMessageLineIf> messageLines = new LinkedList<IMessageLineIf>();
+
+			// Get all assignment lines. Lines from complete is placed first, started second, assign last.
+			// This should ensure that unit statuses are updated in the correct order
+			messageLines.addAll(m_messageCompletedPanel.getAddedLines());
+			messageLines.addAll(m_messageStartedPanel.getAddedLines());
+			messageLines.addAll(m_messageAssignedPanel.getAddedLines());
+
+			// Update status
+			for(IMessageLineIf line : messageLines)
 			{
-				unit = (IUnitIf)communicator;
-			}
+				assignment = line.getLineAssignment();
 
-			if(unit != null)
-			{
-				IAssignmentIf assignment = null;
-				List<IMessageLineIf> messageLines = new LinkedList<IMessageLineIf>();
-
-				// Get all assignment lines. Lines from complete is placed first, started second, assign last.
-				// This should ensure that unit statuses are updated in the correct order
-				messageLines.addAll(m_messageCompletedPanel.getAddedLines());
-				messageLines.addAll(m_messageStartedPanel.getAddedLines());
-				messageLines.addAll(m_messageAssignedPanel.getAddedLines());
-
-				// Update status
-				for(IMessageLineIf line : messageLines)
+				switch(line.getLineType())
 				{
-					assignment = line.getLineAssignment();
-
-						switch(line.getLineType())
+				case ASSIGNED:
+					try
+					{
+						communicator = m_currentMessage.getSingleReceiver();
+						if(communicator instanceof IUnitIf)
 						{
-						case ASSIGNED:
-							try
-							{
-								AssignmentTransferUtilities.assignAssignmentToUnit(assignment, unit);
-							}
-							catch(IllegalOperationException e)
-							{
-								line.deleteObject();
-								Utils.showWarning(m_wpMessageLog.getText("CanNotAssignError.header"),
-										String.format(m_wpMessageLog.getText("CanNotAssignError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
-							}
-							break;
-						case STARTED:
-							try
-							{
-								AssignmentTransferUtilities.unitStartAssignment(unit, assignment);
-							}
-							catch(IllegalOperationException e)
-							{
-								line.deleteObject();
-								Utils.showWarning(m_wpMessageLog.getText("CanNotStartError.header"),
-										String.format(m_wpMessageLog.getText("CanNotStartError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
-							}
-							break;
-						case COMPLETE:
-							try
-							{
-								AssignmentTransferUtilities.unitCompleteAssignment(unit, assignment);
-							}
-							catch(IllegalOperationException e)
-							{
-								line.deleteObject();
-								Utils.showWarning(m_wpMessageLog.getText("CanNotCompleteError.header"),
-										String.format(m_wpMessageLog.getText("CanNotCompleteError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
-							}
-							break;
-						default:
-							continue;
+							AssignmentTransferUtilities.assignAssignmentToUnit(assignment, (IUnitIf)communicator);
 						}
+					}
+					catch(IllegalOperationException e)
+					{
+						line.deleteObject();
+						Utils.showWarning(m_wpMessageLog.getText("CanNotAssignError.header"),
+								String.format(m_wpMessageLog.getText("CanNotAssignError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
+					}
+					break;
+				case STARTED:
+					try
+					{
+						communicator = m_currentMessage.getSender();
+						if(communicator instanceof IUnitIf)
+						{
+							AssignmentTransferUtilities.unitStartAssignment((IUnitIf)communicator, assignment);
+						}
+					}
+					catch(IllegalOperationException e)
+					{
+						line.deleteObject();
+						Utils.showWarning(m_wpMessageLog.getText("CanNotStartError.header"),
+								String.format(m_wpMessageLog.getText("CanNotStartError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
+					}
+					break;
+				case COMPLETE:
+					try
+					{
+						communicator = m_currentMessage.getSender();
+						if(communicator instanceof IUnitIf)
+						{
+							AssignmentTransferUtilities.unitCompleteAssignment((IUnitIf)communicator, assignment);
+						}
+					}
+					catch(IllegalOperationException e)
+					{
+						line.deleteObject();
+						Utils.showWarning(m_wpMessageLog.getText("CanNotCompleteError.header"),
+								String.format(m_wpMessageLog.getText("CanNotCompleteError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
+					}
+					break;
+				default:
+					continue;
 				}
 			}
 
@@ -1456,7 +1482,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		{
 			// get component
 			IEditMessageComponentIf edit = m_editComponents.get(i); 
-			if(hideAll || !(edit instanceof LineListPanel))
+			if(hideAll || !(edit instanceof MessageLinePanel))
 				edit.hideComponent();
 		}
 	}

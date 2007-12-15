@@ -28,8 +28,11 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.util.Internationalization;
 
+import com.esri.arcgis.interop.AutomationException;
+
 
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
@@ -352,6 +355,23 @@ public abstract class AbstractDiskoWpModule
     {
     	// set active
         isActive=true;
+        // refresh map?
+        if(hasMap()) {
+    		SwingUtilities.invokeLater(new Runnable() {
+
+				public void run() {
+		        	try {
+						getMap().refreshMsoLayers();
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}						
+				}        			
+    		});
+        }
     	setFrameText(null);
     	// has nav state?
     	if(m_navState!=null) {

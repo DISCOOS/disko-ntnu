@@ -13,7 +13,9 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -32,15 +34,17 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
 	private RgbColor plannedColor = null;
+	private RgbColor executingColor = null;
 	private RgbColor finishedColor = null;
 	private Hashtable<SearchSubType, SimpleLineSymbol> symbols = null;
 	private SimpleLineSymbol defaultLineSymbol = null;
 	private TextSymbol textSymbol = null;
 
  	public AreaLayer(IMsoModelIf msoModel, ISpatialReference srs) {
- 		super(IMsoManagerIf.MsoClassCode.CLASSCODE_AREA,
+ 		super(MsoClassCode.CLASSCODE_AREA,
  				LayerCode.AREA_LAYER, msoModel, srs, 
  				esriGeometryType.esriGeometryBag);
+ 		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
  		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
@@ -85,9 +89,17 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 				if(!isFiltered(feature) && feature.isVisible()){
 					GeometryBag geomBag = (GeometryBag)feature.getShape();
 					if (geomBag != null) {
-						// get color
-						RgbColor color = IAssignmentIf.AssignmentStatus.FINISHED.equals(
-							MsoUtils.getStatus(feature.getMsoObject())) ? finishedColor : plannedColor;
+						// initialize
+						RgbColor color = plannedColor;
+						// get status
+						Enum status = MsoUtils.getStatus(feature.getMsoObject());
+						// replace color?
+						if(AssignmentStatus.EXECUTING.equals(status)) {
+							color = executingColor;
+						}
+						else if(AssignmentStatus.FINISHED.equals(status)){
+							color = finishedColor;							
+						}
 						IAreaIf area = (IAreaIf)feature.getMsoObject();
 						ISearchIf search = (ISearchIf)area.getOwningAssignment();
 						String text = null;
@@ -176,6 +188,10 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			plannedColor = new RgbColor();
 			plannedColor.setRed(255);
 
+			executingColor = new RgbColor();
+			executingColor.setRed(255);
+			executingColor.setGreen(230);
+			
 			finishedColor = new RgbColor();
 			finishedColor.setGreen(155);
 

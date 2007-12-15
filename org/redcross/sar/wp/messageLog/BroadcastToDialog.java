@@ -148,7 +148,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 				public void actionPerformed(ActionEvent e)
 				{
 					// Update message receiver lists. Toggle buttons gets updated through newMessageSelected, triggered by mso update
-					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true, true);
 					JToggleButton toggleButton = (JToggleButton)e.getSource();
 					if(!toggleButton.isSelected())
 					{
@@ -481,7 +481,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 	 */
 	private void addSelectedUnits(UnitType type)
 	{
-		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true,true);
 		for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
 		{
 			if(communicator instanceof ICmdPostIf && type == UnitType.CP)
@@ -571,36 +571,33 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 	 */
 	public void showComponent()
 	{
+		
 		// If there exists unconfirmed receivers in the message, go to confirmation mode, most efficient work flow
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-		if(message != null)
+		
+		// forward
+		newMessageSelected(message);
+
+		// get selection mode
+		m_selectionMode = (message==null || message.getBroadcastUnconfirmed().size() == 0 ? true : false);
+
+		// show me
+		this.setVisible(true);		
+		m_listArea.revalidate();
+
+		// Refresh list of communicators
+		updateCommunicatorList();
+
+		if(m_selectionMode)
 		{
-			if(message.getBroadcastUnconfirmed().size() != 0)
-			{
-				m_selectionMode = false;
-			}
-			else
-			{
-				m_selectionMode = true;
-			}
-
-			this.setVisible(true);
-			m_listArea.revalidate();
-
-			// Refresh list of communicators
-			updateCommunicatorList();
-
-			if(m_selectionMode)
-			{
-				setSelectionMode();
-			}
-			else
-			{
-				setConfirmationMode();
-			}
-
-			updateButtonSelection();
+			setSelectionMode();
 		}
+		else
+		{
+			setConfirmationMode();
+		}
+
+		updateButtonSelection();
 	}
 
 	/**

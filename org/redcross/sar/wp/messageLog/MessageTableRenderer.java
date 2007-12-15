@@ -31,7 +31,7 @@ public class MessageTableRenderer extends JTextArea implements TableCellRenderer
      */
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
     {
-		LogTableModel model = (LogTableModel)table.getModel();
+		MessageTableModel model = (MessageTableModel)table.getModel();
 		IMessageIf message = (IMessageIf)model.getValueAt(table.convertRowIndexToModel(row), 7);
 
 		if(message!=null) {

@@ -14,6 +14,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.output.DiskoReport;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
