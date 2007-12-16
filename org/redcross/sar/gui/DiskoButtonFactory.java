@@ -145,14 +145,15 @@ public class DiskoButtonFactory
 		return button;
 	}
 
-	public static JButton createNormalButton(String string)
+	public static JButton createNormalButton(String text)
 	{
 		JButton button = createNormalButton();
 		
-		if(!string.isEmpty())
+		if(!text.isEmpty())
 		{
-			button.setText(string);
+			button.setText(text);
 		}
+		button.setToolTipText(text);
 		
 		return button;
 	}
@@ -187,15 +188,15 @@ public class DiskoButtonFactory
 		return button;
 	}
 
-	public static JToggleButton createNormalToggleButton(String string)
+	public static JToggleButton createNormalToggleButton(String text)
 	{
 		JToggleButton button = createNormalToggleButton();
 		
-		if(!string.isEmpty())
+		if(!text.isEmpty())
 		{
-			//button.setText(string);
+			//button.setText(name);
 		}
-		button.setToolTipText(string);
+		button.setToolTipText(text);
 		
 		return button;
 	}

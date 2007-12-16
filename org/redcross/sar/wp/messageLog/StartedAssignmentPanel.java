@@ -33,7 +33,9 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 	{
 		super(wp);
 
-		m_timeLabel.setText(m_wpMessageLog.getText("StartedTimeLabel.text") + ": ");
+		m_editAssignmentPanel.getAttribute("Time").setCaption(
+				 m_wpMessageLog.getText("StartedTimeLabel.text") + ": ");
+
 	}
 
 	/**
@@ -71,7 +73,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		{
 			time = DTG.CalToDTG(Calendar.getInstance());
 		}
-		m_timeTextField.setText(time);
+		m_editAssignmentPanel.getAttribute("Time").setValue(time);
 
 		CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
 		layout.show(m_cardsPanel, EDIT_ASSIGNMENT_ID);
@@ -79,7 +81,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 
 	protected void updateAssignmentLineList()
 	{
-		MessageLineListModel model = (MessageLineListModel)m_assignmentLineList.getModel();
+		MessageLineListModel model = (MessageLineListModel)m_messageLineList.getModel();
 		model.setMessageLineType(MessageLineType.STARTED);
 	}
 
@@ -106,10 +108,6 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 				return;
 			}
 			
-			// get next in line
-			
-			hideComponent();
-
 			Object[] options = {m_wpMessageLog.getText("yes.text"), m_wpMessageLog.getText("no.text")};
 			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
 					String.format(m_wpMessageLog.getText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),

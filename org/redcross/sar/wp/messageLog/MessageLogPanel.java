@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.MapStatusBar;
+import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 

@@ -17,9 +17,9 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
-import org.redcross.sar.gui.DrawDialog;
+import org.redcross.sar.gui.map.DrawDialog;
+import org.redcross.sar.gui.map.PositionPanel;
 import org.redcross.sar.gui.NumPadDialog;
-import org.redcross.sar.gui.PositionPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.PositionTool;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
@@ -47,7 +47,6 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	protected JButton m_cancelButton = null;
 	protected IDiskoWpMessageLog m_wpMessageLog = null;
 	protected PositionTool m_tool = null;
-	protected JPanel m_buttonPanel = null;
 	protected PositionPanel m_positionPanel = null;
 
 	private int isWorking = 0;

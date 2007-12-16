@@ -31,7 +31,9 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	{
 		super(wp);
 
-		m_timeLabel.setText(m_wpMessageLog.getText("CompletedTimeLabel.text") + ": ");
+		m_editAssignmentPanel.getAttribute("Time").setCaption(
+				 m_wpMessageLog.getText("CompletedTimeLabel.text") + ": ");
+		
 	}
 
 	/**
@@ -72,7 +74,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	protected void updateAssignmentLineList()
 	{
-		MessageLineListModel model = (MessageLineListModel)m_assignmentLineList.getModel();
+		MessageLineListModel model = (MessageLineListModel)m_messageLineList.getModel();
 		model.setMessageLineType(MessageLineType.COMPLETE);
 	}
 
@@ -91,7 +93,6 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 
 		if(assignment != null)
 		{
-			this.hideComponent();
 
 			// If unit has assigned or started assignment, ask user if this is completed
 			if(!AssignmentTransferUtilities.unitCanAccept(unit, AssignmentStatus.FINISHED))
@@ -130,9 +131,10 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 				}
 
 				m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETE, assignment, false));
-
+				
 				MessageLogBottomPanel.showCompletePanel();
 			}
+			
 		}
 		else if(unitHasNextAssignment())
 		{

@@ -2,10 +2,13 @@ package org.redcross.sar.wp.messageLog;
 
 import no.cmr.tools.Log;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
-import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.attribute.AttributesPanel;
+import org.redcross.sar.gui.attribute.TextAttribute;
 import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -13,21 +16,23 @@ import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Selector;
 
+import com.esri.arcgis.interop.AutomationException;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -45,7 +50,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 
@@ -57,43 +62,41 @@ import javax.swing.ListSelectionModel;
  */
 public abstract class AbstractAssignmentPanel extends JPanel implements IEditMessageComponentIf
 {
-    protected static final String ASSIGNMENT_OVERVIEW_ID = "ASSIGNMENT OVERVIEW";
+    protected static final String MESSAGE_LINES_ID = "MESSAGE_LINES";
     protected static final String EDIT_ASSIGNMENT_ID = "EDIT ASSIGNMENT";
     protected static final String NEXT_ASSIGNMENT_ID = "NEXT ASSIGNMENT";
     protected static final String ASSIGNMENT_POOL_ID = "ASSIGNMENT POOL";
 
+    protected String m_currentView = null;
+    
     protected IDiskoWpMessageLog m_wpMessageLog = null;
 
     protected JPanel m_cardsPanel = null;
 
-    protected JPanel m_overviewPanel = null;
-    protected JList m_assignmentLineList = null;
-    protected JButton m_newButton = null;
+    protected JPanel m_messageLinesPanel = null;
+    protected JList m_messageLineList = null;
+    
+    protected IAssignmentIf m_selectedAssignment = null;
+    protected AttributesPanel m_selectedPanel = null;
+    
+    protected JPanel m_buttonPanel = null;
+    protected JButton m_okButton = null;
+    protected JButton m_cancelButton = null;
+    protected JButton m_centerAtButton = null;
 
-    protected JPanel m_editAssignmentPanel = null;
-    protected JLabel m_assignmentLabel = null;
-    protected JLabel m_assignmentTextLabel = null;
-    protected JLabel m_timeLabel = null;
-    protected JTextField m_timeTextField = null;
-    protected JButton m_okEditButton = null;
-    protected JButton m_cancelEditButton = null;
-
+    protected AttributesPanel m_editAssignmentPanel = null;
+    protected IMessageLineIf m_editingLine = null;
+    
     protected JPanel m_nextAssignmentsPanel = null;
     protected JPanel m_nextAssignmentsButtonPanel = null;
     protected JScrollPane m_nextAssignmentScrollPane = null;
     protected ButtonGroup m_nextAssignmentButtonGroup = null;
-    protected JButton m_okAddNextAssignmentButton = null;
-    protected JButton m_cancelAddNextAssignmentButton = null;
 
     protected JPanel m_assignmentPoolPanel = null;
     protected JPanel m_assignmentPoolButtonPanel = null;
     protected JScrollPane m_assignmentPoolScrollPane = null;
     protected ButtonGroup m_assignmentPoolButtonGroup = null;
-    protected JButton m_okAddPoolAssignmentButton = null;
-    protected JButton m_cancelAddPoolAssignmentButton = null;
 
-    protected IAssignmentIf m_selectedAssignment = null;
-    protected IMessageLineIf m_editingLine = null;
 
     protected List<IMessageLineIf> m_addedLines = new LinkedList<IMessageLineIf>();
 
@@ -108,15 +111,24 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
     protected void initialize()
     {
-        this.setLayout(new BorderLayout());
+    	BorderLayout bl = new BorderLayout();
+    	bl.setVgap(5);
+    	bl.setHgap(5);
+        
+    	this.setLayout(bl);
+        
         m_cardsPanel = new JPanel(new CardLayout());
 
-        initAssignmentOverviewPanel();
+        initSelectedPanel();
+        initMessageLinesPanel();
         initEditAssignmentPanel();
         initNextAssignmentPanel();
         initAssignmentPoolPanel();
-
+        initButtonPanel();             
+        
+        this.add(m_selectedPanel, BorderLayout.WEST);
         this.add(m_cardsPanel, BorderLayout.CENTER);
+        this.add(m_buttonPanel, BorderLayout.EAST);
     }
 
     /**
@@ -128,7 +140,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         {
             try
             {
-                Calendar time = DTG.DTGToCal(m_timeTextField.getText());
+                Calendar time = DTG.DTGToCal(m_editAssignmentPanel
+                		.getAttribute("Time").getValue().toString());
                 m_editingLine.setOperationTime(time);
             }
             catch (IllegalMsoArgumentException e1)
@@ -182,124 +195,52 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
             if (line != null)
             {
-                m_timeTextField.setText(DTG.CalToDTG(line.getOperationTime()));
+            	m_editAssignmentPanel.getAttribute("Time").setValue(
+            			DTG.CalToDTG(line.getOperationTime()));
             }
         }
+        showComponent();        
     }
-
-    protected void initAssignmentOverviewPanel()
+    
+    protected void initSelectedPanel() {
+    	// create
+    	m_selectedPanel = new AttributesPanel("<Velg oppdrag>");
+    	m_selectedPanel.setMinimumSize(new Dimension(150,60));
+    }
+    
+    protected void initMessageLinesPanel()
     {
-        m_overviewPanel = new JPanel(new GridBagLayout());
+        m_messageLinesPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
 
-        m_assignmentLineList = new JList(new MessageLineListModel(m_wpMessageLog));
-        m_assignmentLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        m_assignmentLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_assignmentLineList, this));
-        m_assignmentLineList.setBorder(BorderFactory.createLineBorder(Color.black));
+        m_messageLineList = new JList(new MessageLineListModel(m_wpMessageLog));
+        m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        m_messageLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_messageLineList, this));
+        m_messageLineList.setBorder(BorderFactory.createLineBorder(Color.black));
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
-        m_overviewPanel.add(m_assignmentLineList, gbc);
-
-        m_newButton = DiskoButtonFactory.createNormalButton(m_wpMessageLog.getText("NewButton.text"),
-                m_wpMessageLog.getText("NewButton.icon"));
-        m_newButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent arg0)
-            {
-                addNewMessageLine();
-            }
-        });
-        gbc.anchor = GridBagConstraints.LINE_END;
-        gbc.weightx = 0.0;
-        gbc.weighty = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
-        m_overviewPanel.add(m_newButton, gbc);
-
-        m_cardsPanel.add(m_overviewPanel, ASSIGNMENT_OVERVIEW_ID);
+        m_messageLinesPanel.add(m_messageLineList, gbc);
+        
+        m_cardsPanel.add(m_messageLinesPanel, MESSAGE_LINES_ID);
     }
-
+    
     protected void initEditAssignmentPanel()
     {
-        m_editAssignmentPanel = new JPanel();
-        m_editAssignmentPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-
-        m_assignmentLabel = new JLabel(m_wpMessageLog.getText("AssignmentLabel.text") + ":");
-        m_editAssignmentPanel.add(m_assignmentLabel, gbc);
-
-        gbc.gridx++;
-        m_assignmentTextLabel = new JLabel();
-        m_editAssignmentPanel.add(m_assignmentTextLabel, gbc);
-
-        gbc.gridx--;
-        gbc.gridy++;
-        m_timeLabel = new JLabel();
-        m_editAssignmentPanel.add(m_timeLabel, gbc);
-
-        gbc.gridx++;
-        m_timeTextField = new JTextField(6);
-        if (m_notebookMode)
-        {
-            m_timeTextField.addFocusListener(new FocusListener()
-            {
-                public void focusGained(FocusEvent e)
-                {
-                    NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
-                    // Don't display dialog again if returning from it
-                    Component component = e.getOppositeComponent();
-                    if (component != numPad.getOkButton())
-                    {
-                        numPad.setTextField(m_timeTextField);
-                        Point location = m_timeTextField.getLocationOnScreen();
-                        location.x += m_timeTextField.getWidth();
-                        numPad.setLocation(location);
-                        numPad.setVisible(true);
-                    }
-                }
-
-                public void focusLost(FocusEvent e)
-                {
-                }
-            });
-        }
-
-        m_editAssignmentPanel.add(m_timeTextField, gbc);
-
-        gbc.weightx = 0.0;
-        gbc.weighty = 0.0;
-        gbc.gridy--;
-        gbc.gridx++;
-        m_cancelEditButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
-        m_cancelEditButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                //Revert to values stored in MSO
-                revertEditPanel();
-            }
-        });
-        m_editAssignmentPanel.add(m_cancelEditButton, gbc);
-
-        gbc.gridy++;
-        m_okEditButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
-        m_okEditButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                updateMessageLine();
-            }
-        });
-        m_editAssignmentPanel.add(m_okEditButton, gbc);
+        
+    	m_editAssignmentPanel = new AttributesPanel("<Velg oppdragslinje>");
+    	m_editAssignmentPanel.setMinimumSize(new Dimension(150,60));
+    	
+    	// add attributes
+    	m_editAssignmentPanel.addAttribute(new TextAttribute("Assignment",
+    			m_wpMessageLog.getText("AssignmentLabel.text"),"<velg oppdrag>",false));
+    	m_editAssignmentPanel.addAttribute(new TextAttribute("Time",
+    			m_wpMessageLog.getText("AssignedTimeLabel.text"),"<velg oppdrag>",true));    	
 
         m_cardsPanel.add(m_editAssignmentPanel, EDIT_ASSIGNMENT_ID);
     }
-
+    
     protected void initNextAssignmentPanel()
     {
         m_nextAssignmentsPanel = new JPanel();
@@ -310,33 +251,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         m_nextAssignmentsPanel.add(m_nextAssignmentScrollPane, BorderLayout.CENTER);
         m_nextAssignmentButtonGroup = new ButtonGroup();
 
-        JPanel actionButtonPanel = new JPanel();
-        actionButtonPanel.setLayout(new BoxLayout(actionButtonPanel, BoxLayout.PAGE_AXIS));
-
-        m_cancelAddNextAssignmentButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
-        m_cancelAddNextAssignmentButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent arg0)
-            {
-                showComponent();
-            }
-        });
-        actionButtonPanel.add(m_cancelAddNextAssignmentButton);
-
-        m_okAddNextAssignmentButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
-        m_okAddNextAssignmentButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                addSelectedAssignment();
-            }
-        });
-        actionButtonPanel.add(m_okAddNextAssignmentButton);
-        m_nextAssignmentsPanel.add(actionButtonPanel, BorderLayout.EAST);
-
         m_cardsPanel.add(m_nextAssignmentsPanel, NEXT_ASSIGNMENT_ID);
     }
-
 
     protected void initAssignmentPoolPanel()
     {
@@ -349,44 +265,76 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
         m_assignmentPoolPanel.add(m_assignmentPoolScrollPane, BorderLayout.CENTER);
 
-        JPanel actionButtonPanel = new JPanel();
-        actionButtonPanel.setLayout(new BoxLayout(actionButtonPanel, BoxLayout.PAGE_AXIS));
-        m_cancelAddPoolAssignmentButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
-        m_cancelAddPoolAssignmentButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                showComponent();
-            }
-        });
-        actionButtonPanel.add(m_cancelAddPoolAssignmentButton);
-        m_okAddPoolAssignmentButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
-        m_okAddPoolAssignmentButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                addSelectedAssignment();
-            }
-        });
-        actionButtonPanel.add(m_okAddPoolAssignmentButton);
-        m_assignmentPoolPanel.add(actionButtonPanel, BorderLayout.EAST);
-
         m_cardsPanel.add(m_assignmentPoolPanel, ASSIGNMENT_POOL_ID);
     }
 
+
+    protected void initButtonPanel() {
+        
+    	m_buttonPanel = new JPanel();
+    	m_buttonPanel.setLayout(new BoxLayout(m_buttonPanel,BoxLayout.Y_AXIS));
+    	
+    	// create OK button
+    	m_okButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
+        
+    	m_okButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+            	if(MESSAGE_LINES_ID.equals(m_currentView)) 
+            		addNewMessageLine();
+            	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView)) 
+                    updateMessageLine();
+            	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView))
+                    addSelectedAssignment();
+            	else if(ASSIGNMENT_POOL_ID.equals(m_currentView))
+            		addSelectedAssignment();
+            }
+        });
+        
+        m_buttonPanel.add(m_okButton);
+        
+    	// create Center At button
+    	m_centerAtButton = DiskoButtonFactory.createNormalButton();
+    	m_centerAtButton.setIcon(Utils.getIcon("IconEnum.CENTERAT.icon"));
+    	m_centerAtButton.setToolTipText(Utils.getProperty("IconEnum.CENTERAT.text"));
+        
+    	m_centerAtButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+            	centerAtSelected();
+            }
+        });
+        
+        m_buttonPanel.add(m_centerAtButton);
+        
+        m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+        
+        m_cancelButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+            	if(MESSAGE_LINES_ID.equals(m_currentView)) 
+            		hideComponent(); 
+            	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView))             	
+                    revertEditPanel();
+            	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView))
+                    showComponent();
+            	else if(ASSIGNMENT_POOL_ID.equals(m_currentView))
+            		showComponent();
+            }
+        });
+
+        m_buttonPanel.add(m_cancelButton);
+        
+    }
+    
     /**
      *
      */
     public void clearContents()
     {
-    }
-
-    /**
-     *
-     */
-    public void hideComponent()
-    {
-        this.setVisible(false);
     }
 
     /**
@@ -400,18 +348,82 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     public void showComponent()
     {
         this.setVisible(true);
+        setView(MESSAGE_LINES_ID);
+        
+    }
+    
+    /**
+    *
+    */
+   public void hideComponent()
+   {
+		MessageLogPanel.hideMap();
+       this.setVisible(false);
+   }
+
+    private void setView(String key) {
+    	// save view key
+    	m_currentView = key;
+    	// do view spesific tasks
+    	if(MESSAGE_LINES_ID.equals(m_currentView)) { 
+    		m_selectedPanel.setVisible(false);
+    		MessageLogPanel.hideMap();
+    	}
+    	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView)) {
+    		m_selectedPanel.setVisible(false);
+    	}
+    	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView)) {
+    		m_selectedPanel.setVisible(true);
+    	}
+    	else if(ASSIGNMENT_POOL_ID.equals(m_currentView)) {
+    		m_selectedPanel.setVisible(true);
+    	}
+    	// show view
         CardLayout layout = (CardLayout) m_cardsPanel.getLayout();
-        layout.show(m_cardsPanel, ASSIGNMENT_OVERVIEW_ID);
+        layout.show(m_cardsPanel, key);    	
     }
 
+	/**
+	 * Center map on selected assignment
+	 */
+	private void centerAtSelected()
+	{
+		
+		// has selected?
+		if(m_selectedAssignment != null)
+		{
+			
+			try
+			{
+            	IDiskoMap map = m_wpMessageLog.getMap();
+            	map.suspendNotify();
+				map.centerAtMsoObject(m_selectedAssignment);
+            	map.resumeNotify();
+				map.refreshSelection(m_selectedAssignment, map.getSelectionExtent());
+			}
+			catch (AutomationException e1)
+			{
+				e1.printStackTrace();
+			}
+			catch (IOException e1)
+			{
+				e1.printStackTrace();
+			}
+		}
+		else {
+			Utils.showWarning("Du må først velge ett oppdrag");
+		}
+		
+	}
+    
     /**
      * Show all assignments available from command post
      */
     EnumSet<AssignmentStatus> m_assignmentPoolSet = EnumSet.of
             (
                     AssignmentStatus.ABORTED,
-                    AssignmentStatus.DRAFT,
-                    AssignmentStatus.EMPTY,
+                    //AssignmentStatus.DRAFT,
+                    //AssignmentStatus.EMPTY,
                     AssignmentStatus.READY
             );
     Selector<IAssignmentIf> m_assignmentPoolSelector = new Selector<IAssignmentIf>()
@@ -448,7 +460,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
                     // Select button
                     JToggleButton sourceButton = (JToggleButton) e.getSource();
                     selectAssignmentButton(sourceButton, m_assignmentPoolButtonGroup);
-                    m_selectedAssignment = assignment;
+                    selectAssignment(assignment);
                 }
             });
             m_assignmentPoolButtonGroup.add(button);
@@ -470,14 +482,14 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
             JToggleButton selectedButton = (JToggleButton) m_assignmentPoolButtonGroup.getElements().nextElement();
             selectAssignmentButton(selectedButton, m_assignmentPoolButtonGroup);
             Iterator<IAssignmentIf> assignmentIt = assignments.iterator();
-            m_selectedAssignment = assignmentIt.hasNext() ? assignmentIt.next() : null;
+            selectAssignment(assignmentIt.hasNext() ? assignmentIt.next() : null);
         }
         catch (Exception e)
         {
         }
 
-        CardLayout layout = (CardLayout) m_cardsPanel.getLayout();
-        layout.show(m_cardsPanel, ASSIGNMENT_POOL_ID);
+        setView(ASSIGNMENT_POOL_ID);
+        
     }
 
     /**
@@ -501,7 +513,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
                     // Mark icon as selected
                     JToggleButton sourceButton = (JToggleButton) e.getSource();
                     selectAssignmentButton(sourceButton, m_nextAssignmentButtonGroup);
-                    m_selectedAssignment = assignment;
+                    selectAssignment(assignment);
                 }
             });
             m_nextAssignmentButtonGroup.add(button);
@@ -515,16 +527,56 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
             m_nextAssignmentButtonGroup.setSelected(selectedButton.getModel(), true);
             selectAssignmentButton(selectedButton, m_nextAssignmentButtonGroup);
             Iterator<IAssignmentIf> assignmentIt = assignments.iterator();
-            m_selectedAssignment = assignmentIt.hasNext() ? assignmentIt.next() : null;
+            selectAssignment(assignmentIt.hasNext() ? assignmentIt.next() : null);
         }
         catch (Exception e)
         {
+        	e.printStackTrace();
         }
 
-        CardLayout layout = (CardLayout) m_cardsPanel.getLayout();
-        layout.show(m_cardsPanel, NEXT_ASSIGNMENT_ID);
+        setView(NEXT_ASSIGNMENT_ID);
     }
 
+    private void selectAssignment(IAssignmentIf selected) {
+    	// forward
+    	m_selectedAssignment = selected;
+    	// is assignment selected?
+    	if(selected!=null) {
+    		m_selectedPanel.clearAttributes();
+	    	// create?
+    		if(m_selectedPanel.getAttributeCount()==0) {
+	    		// add attributes (this should only occure once)
+    			m_selectedPanel.addAttribute(new TextAttribute("Assignment",
+    					m_wpMessageLog.getText("AssignmentLabel.text"),
+    					MsoUtils.getAssignmentName(selected, 1),false));
+    			m_selectedPanel.addAttribute(new TextAttribute("Priority",
+    					m_wpMessageLog.getText("PriorityLabel.text"),
+    					selected.getPriorityText(),false));
+    			m_selectedPanel.addAttribute(selected.getRemarksAttribute(),
+    					m_wpMessageLog.getText("RemarksLabel.text"),false);
+    			Dimension size = new Dimension(350,25);
+    			m_selectedPanel.setAttributeSize(size);
+    			m_selectedPanel.setCaptionWidth(100);
+    			size = new Dimension(350,75);
+    			m_selectedPanel.setAttributeSize("Remarks",size);
+    			m_selectedPanel.doLayout();
+    			m_selectedPanel.revalidate();
+	    	}
+    		else {
+    			// update static properties
+    			m_selectedPanel.getAttribute("Assignment").setValue(MsoUtils.getAssignmentName(selected, 1));
+    			m_selectedPanel.getAttribute("Priority").setValue(selected.getPriorityText());
+    			//m_selectedPanel.getAttribute("Remarks").setMsoObject(m_selectedPanel);
+    			// update dynamic properties
+    			m_selectedPanel.load();
+    		}
+    	}
+    	else {
+    		// reset panel
+    		m_selectedPanel.clearAttributes();
+    	}
+    }
+    
     /**
      * Updates button selection for the given button group
      *
@@ -559,10 +611,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     /**
      * Show current message assignment
      */
-    protected void showEditAssignment(int selectedAssignment)
+    protected void showEditAssignment(int index)
     {
-        MessageLineListModel model = (MessageLineListModel) m_assignmentLineList.getModel();
-        m_editingLine = (IMessageLineIf) model.getElementAt(selectedAssignment);
+        MessageLineListModel model = (MessageLineListModel) m_messageLineList.getModel();
+        m_editingLine = (IMessageLineIf) model.getElementAt(index);
         if (m_editingLine == null)
         {
             Log.error("showEditAssignment: edit line null");
@@ -570,11 +622,12 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         }
         IAssignmentIf assignment = m_editingLine.getLineAssignment();
 
-        m_assignmentTextLabel.setText(assignment.getTypeAndNumber());
-        m_timeTextField.setText(DTG.CalToDTG(m_editingLine.getOperationTime()));
+        m_editAssignmentPanel.getAttribute("Assignment").setValue(
+        		MsoUtils.getAssignmentName(assignment, 1));
+		m_editAssignmentPanel.getAttribute("Time").setValue(
+				DTG.CalToDTG(m_editingLine.getOperationTime()));
 
-        CardLayout layout = (CardLayout) m_cardsPanel.getLayout();
-        layout.show(m_cardsPanel, EDIT_ASSIGNMENT_ID);
+        setView(EDIT_ASSIGNMENT_ID);
     }
 
     /**
@@ -703,4 +756,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
             m_addedLines.remove(line);
         }
     }
+    
+    /*===================================================================
+     * Inner classes
+     *=================================================================== 
+     */
+    
 }

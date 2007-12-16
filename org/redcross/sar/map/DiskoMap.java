@@ -19,7 +19,7 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
-import org.redcross.sar.gui.MapStatusBar;
+import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;

@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.redcross.sar.gui.IDrawDialog;
+import org.redcross.sar.gui.map.IDrawDialog;
 import org.redcross.sar.map.index.IndexedGeometry;
 
 import com.esri.arcgis.carto.IFeatureLayer;

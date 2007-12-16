@@ -2,6 +2,7 @@ package org.redcross.sar.gui;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.map.MapOptionDialog;
 import org.redcross.sar.util.Internationalization;
 
 import java.awt.Dimension;

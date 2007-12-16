@@ -10,8 +10,8 @@ import javax.swing.JPanel;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.FreeHandPanel;
-import org.redcross.sar.gui.IHostToolDialog;
+import org.redcross.sar.gui.map.FreeHandPanel;
+import org.redcross.sar.gui.map.IHostToolDialog;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;

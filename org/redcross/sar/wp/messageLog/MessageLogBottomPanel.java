@@ -532,7 +532,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
         createListButton();
         createDeleteButton();
         createChangeTasksButton();
-        createCancleButton();
+        createCancelButton();
         createWaitEndButton();
         createFinishedButton();
     }
@@ -1007,7 +1007,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_changeToButton;
     }
 
-    private JButton createCancleButton()
+    private JButton createCancelButton()
     {
     	if(m_cancelStatusButton == null)
     	{
@@ -1128,49 +1128,6 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_listButton);
 	}
 
-	private void createCompletedButton()
-	{
-		m_completedButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("CompletedButton.text"));
-		m_completedButton.setIcon(Utils.getIcon("IconEnum.FINISHED.icon"));
-		m_completedButton.setToolTipText(Utils.getProperty("IconEnum.FINISHED.text"));
-		m_completedButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				hideEditPanels();
-
-				if(getCurrentMessage(true).isBroadcast())
-				{
-					Utils.showWarning(m_wpMessageLog.getText("CompletedError.header"),
-							m_wpMessageLog.getText("CompletedError.details"));
-				}
-				else if(isSenderCommandPost())
-				{
-					// Not possible to assign when receiver is CP
-					Utils.showWarning(m_wpMessageLog.getText("ReceiverCommandPostError.header"),
-							m_wpMessageLog.getText("ReceiverCommandPostError.details"));
-				}
-				else if(!isAssignmentOperationLegal())
-				{
-					// Require certain message status
-					Utils.showWarning(m_wpMessageLog.getText("MessageTaskOperationError.header"),
-							m_wpMessageLog.getText("MessageTaskOperationError.details"));
-				}
-				else
-				{
-					getCompletedPanel();
-					m_currentMessageLineType = MessageLineType.COMPLETE;
-
-					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-					layout.show(m_cardsPanel, COMPLETED_PANEL_ID);
-					m_messageCompletedPanel.showComponent();
-				}
-			}
-		});
-		m_buttonGroup.add(m_completedButton);
-		m_buttonRow.add(m_completedButton);
-	}
-
 	private void createStartedButton()
 	{
 		m_startButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("StartedButton.text"));
@@ -1258,7 +1215,58 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonGroup.add(m_assignButton);
 		m_buttonRow.add(m_assignButton);
 	}
+	
+	private void createCompletedButton()
+	{
+		m_completedButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("CompletedButton.text"));
+		m_completedButton.setIcon(Utils.getIcon("IconEnum.FINISHED.icon"));
+		m_completedButton.setToolTipText(Utils.getProperty("IconEnum.FINISHED.text"));
+		m_completedButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				hideEditPanels();
 
+				if(getCurrentMessage(true).isBroadcast())
+				{
+					// de-select button
+					m_completedButton.setSelected(false);
+					// not possible to assign when message is a broadcast
+					Utils.showWarning(m_wpMessageLog.getText("CompletedError.header"),
+							m_wpMessageLog.getText("CompletedError.details"));
+				}
+				else if(isSenderCommandPost())
+				{
+					// de-select button
+					m_completedButton.setSelected(false);
+					// Not possible to assign when receiver is CP
+					Utils.showWarning(m_wpMessageLog.getText("ReceiverCommandPostError.header"),
+							m_wpMessageLog.getText("ReceiverCommandPostError.details"));					
+				}
+				else if(!isAssignmentOperationLegal())
+				{
+					// de-select button
+					m_completedButton.setSelected(false);
+					// Require certain message status
+					Utils.showWarning(m_wpMessageLog.getText("MessageTaskOperationError.header"),
+							m_wpMessageLog.getText("MessageTaskOperationError.details"));
+				}
+				else
+				{
+					getCompletedPanel();
+					m_currentMessageLineType = MessageLineType.COMPLETE;
+
+					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+					layout.show(m_cardsPanel, COMPLETED_PANEL_ID);
+					m_messageCompletedPanel.showComponent();
+					
+				}
+			}
+		});
+		m_buttonGroup.add(m_completedButton);
+		m_buttonRow.add(m_completedButton);
+	}
+	
 	private boolean isSenderCommandPost()
 	{
 		if(m_currentMessage != null)
@@ -1403,7 +1411,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createPOIButton()
 	{
-		m_poiButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("FindingButton.text"));
+		m_poiButton = DiskoButtonFactory.createNormalToggleButton();
 		m_poiButton.setIcon(Utils.getIcon("IconEnum.INCIDENT.icon"));
 		m_poiButton.setToolTipText(Utils.getProperty("IconEnum.INCIDENT.text"));
 		m_poiButton.addActionListener(new ActionListener()

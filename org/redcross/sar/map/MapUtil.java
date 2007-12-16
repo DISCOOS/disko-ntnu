@@ -328,18 +328,28 @@ public class MapUtil {
 
 	public static String getMGRSfromPosition(Position pos) 
 			throws AutomationException, IOException {
+		return getMGRSfromPosition(pos.getPosition());
+	}
+	
+	public static String getUTMfromPosition(Position pos) 
+			throws AutomationException, IOException {
+		return getUTMfromPosition(pos.getPosition());
+	}
+	
+	public static String getMGRSfromPosition(Point2D pos) 
+			throws AutomationException, IOException {
 		Point point = new Point();
-		point.setX(pos.getPosition().getX());
-		point.setY(pos.getPosition().getY());
+		point.setX(pos.getX());
+		point.setY(pos.getY());
 		point.setSpatialReferenceByRef(getGeographicCS());
 		return point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 	}
 	
-	public static String getUTMfromPosition(Position pos) 
+	public static String getUTMfromPosition(Point2D pos) 
 		throws AutomationException, IOException {
 		Point point = new Point();
-		point.setX(pos.getPosition().getX());
-		point.setY(pos.getPosition().getY());
+		point.setX(pos.getX());
+		point.setY(pos.getY());
 		point.setSpatialReferenceByRef(getGeographicCS());	
 		String mgrs = point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 		String zone = mgrs.substring(0,3);

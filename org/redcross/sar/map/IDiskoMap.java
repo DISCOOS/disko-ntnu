@@ -3,7 +3,7 @@ package org.redcross.sar.map;
 import java.io.IOException;
 import java.util.List;
 
-import org.redcross.sar.gui.MapStatusBar;
+import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;

@@ -10,6 +10,7 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.gui.map.MapOptionDialog;
 
 public class UIFactory {
 	

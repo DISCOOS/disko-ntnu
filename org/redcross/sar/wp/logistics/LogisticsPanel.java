@@ -4,7 +4,7 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.gui.MapStatusBar;
+import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.gui.renderers.DiskoTableHeaderCellRenderer;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;

@@ -30,7 +30,23 @@ public class NumericDocument extends PlainDocument {
         this.decimalPrecision = decimalPrecision;
         this.allowNegative = allowNegative;
    }
+   
+   public void setDecimalPrecision(int precision) {
+	   this.decimalPrecision = precision;
+   }
  
+   public int getDecimalPrecision() {
+	   return this.decimalPrecision;
+   }
+   
+   public void setAllowNegative(boolean allow) {
+	   this.allowNegative = allow;
+   }
+ 
+   public boolean getAllowNegative() {
+	   return this.allowNegative;
+   }
+   
    //Insert string method
    public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
         if (str != null){

@@ -8,7 +8,7 @@ import javax.swing.JButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.ScaleDialog;
+import org.redcross.sar.gui.map.ScaleDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;

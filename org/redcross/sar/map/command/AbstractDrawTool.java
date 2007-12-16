@@ -18,7 +18,7 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.IDrawDialog;
+import org.redcross.sar.gui.map.IDrawDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.SnappingAdapter;

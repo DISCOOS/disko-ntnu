@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.logistics;
 
-import org.redcross.sar.gui.DiskoBorder;
+import org.redcross.sar.gui.map.DiskoBorder;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 

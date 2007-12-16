@@ -21,6 +21,7 @@ import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.map.IHostToolDialog;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.DrawHostTool;
 import org.redcross.sar.map.command.ElementCommand;

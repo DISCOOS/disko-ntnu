@@ -8,10 +8,10 @@ import javax.swing.JButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.ElementDialog;
-import org.redcross.sar.gui.TocDialog;
-import org.redcross.sar.gui.ElementPanel.ElementEvent;
-import org.redcross.sar.gui.ElementPanel.IElementEventListener;
+import org.redcross.sar.gui.map.ElementDialog;
+import org.redcross.sar.gui.map.TocDialog;
+import org.redcross.sar.gui.map.ElementPanel.ElementEvent;
+import org.redcross.sar.gui.map.ElementPanel.IElementEventListener;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 
