@@ -1,5 +1,7 @@
 package org.redcross.sar.wp;
 
+import java.lang.instrument.IllegalClassFormatException;
+
 import javax.swing.JButton;
 
 import org.redcross.sar.app.IDiskoRole;
@@ -16,7 +18,7 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
     private JButton m_PoiButton = null;
     private JButton m_HypothesisButton = null;
 
-    public DiskoWpIntelligenceImpl(IDiskoRole role)
+    public DiskoWpIntelligenceImpl(IDiskoRole role) throws IllegalClassFormatException
     {
         super(role);
         initialize();
@@ -46,13 +48,10 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
         layoutButton(getHypothesisButton());
     }
 
-    /* (non-Javadoc)
-    * @see com.geodata.engine.disko.task.DiskoAp#getName()
-    */
-    public String getName()
-    {
-        return "Etterretning";
-    }
+	public String getCaption() {
+		return "Etterretning";
+	}
+
 
     public JButton getListButton()
     {
@@ -60,7 +59,7 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
         {
             try
             {
-                m_ListButton = createLargeButton("Liste", new java.awt.event.ActionListener()
+                m_ListButton = createNormalButton("Liste", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -81,7 +80,7 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
         {
             try
             {
-                m_SituationButton = createLargeButton("Situasjon", new java.awt.event.ActionListener()
+                m_SituationButton = createNormalButton("Situasjon", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -102,7 +101,7 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
         {
             try
             {
-                m_PoiButton = createLargeButton("PUI", new java.awt.event.ActionListener()
+                m_PoiButton = createNormalButton("PUI", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -123,7 +122,7 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
         {
             try
             {
-                m_HypothesisButton = createLargeButton("Hypotese", new java.awt.event.ActionListener()
+                m_HypothesisButton = createNormalButton("Hypotese", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -147,6 +146,5 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 
 }

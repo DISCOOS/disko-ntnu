@@ -6,9 +6,11 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.util.Calendar;
 import java.util.EnumSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -22,6 +24,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -29,6 +32,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListener {
@@ -41,7 +45,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	private JPanel estimatePanel = null;
 	private IDiskoWpModule wp = null;
 	private JLabel timeLabel = null;
-	private JTextField timeTextField = null;
+	private JFormattedTextField timeTextField = null;
 	private ISearchIf currentAssignment = null;
 
 	public EstimateDialog(IDiskoWpModule wp) {
@@ -216,8 +220,9 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	private JTextField getTimeTextField() {
 		if (timeTextField == null) {
 			try {
-				timeTextField = new JTextField();
-				timeTextField.setText("0");
+				timeTextField = new JFormattedTextField();
+				timeTextField.setDocument(new NumericDocument(6,0,false));
+				timeTextField.setText(DTG.CalToDTG(Calendar.getInstance()));
 				timeTextField.setPreferredSize(new Dimension(100, 20));
 				timeTextField.getDocument().addDocumentListener(new DocumentListener() {
 					public void changedUpdate(DocumentEvent e) { apply(); }
@@ -276,7 +281,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e));
+			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
 			titleLabel.setText("<html>Estimer tidsforbruk for <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getTimeTextField().setEnabled(true);

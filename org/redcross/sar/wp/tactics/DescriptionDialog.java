@@ -255,7 +255,7 @@ public class DescriptionDialog extends DiskoDialog {
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e));
+			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
 			titleLabel.setText("<html>Punktvis beskrivelse av <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getDescriptionPanel().setEnabled(true);

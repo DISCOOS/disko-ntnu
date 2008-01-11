@@ -17,6 +17,9 @@ import javax.swing.BorderFactory;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 public class MainMenuPanel extends JPanel {
 
@@ -119,12 +122,9 @@ public class MainMenuPanel extends JPanel {
 	public JToggleButton getNavToggleButton() {
 		if (navToggleButton == null) {
 			try {
-				navToggleButton = new JToggleButton();
-				String iconName = "NAV.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				navToggleButton.setIcon(icon);
-				Dimension size = app.getUIFactory().getLargeButtonSize();
-				navToggleButton.setPreferredSize(size);
+				// get NAV button
+				navToggleButton = DiskoButtonFactory.createToggleButton(
+						"SYSTEM.NAV", ButtonSize.NORMAL, 0, 0,null);
 				navToggleButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						MainPanel mainPanel = app.getUIFactory().getMainPanel();
@@ -151,12 +151,9 @@ public class MainMenuPanel extends JPanel {
 	public JToggleButton getSysToggleButton() {
 		if (sysToggleButton == null) {
 			try {
-				sysToggleButton = new JToggleButton();
-				String iconName = "SYS.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				sysToggleButton.setIcon(icon);
-				Dimension size = app.getUIFactory().getLargeButtonSize();
-				sysToggleButton.setPreferredSize(size);
+			
+				sysToggleButton = DiskoButtonFactory.createToggleButton(
+						"SYSTEM.SYS", ButtonSize.NORMAL);
 				sysToggleButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						MainPanel mainPanel = app.getUIFactory().getMainPanel();

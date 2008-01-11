@@ -1,6 +1,7 @@
 package org.redcross.sar.gui.renderers;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.wp.logistics.UnitTableModel;
 
@@ -269,12 +270,12 @@ public class IconRenderer implements Icon
         private void initImageMap()
         {
             String[] unitIconNames = new String[]{
-                    "CmdUnit.icon", 
-                    "TemUnit.icon",
-                    "DogUnit.icon",
-                    "AirUnit.icon",  
-                    "BoatUnit.icon", 
-                    "CarUnit.icon"
+                    "UNIT.CMDPOST", 
+                    "UNIT.TEAM",
+                    "UNIT.DOG",
+                    "UNIT.AIRCRAFT",  
+                    "UNIT.BOAT", 
+                    "UNIT.VEHICLE"
                     
             };
             IUnitIf.UnitType[] unitTypes = new IUnitIf.UnitType[]{
@@ -286,6 +287,7 @@ public class IconRenderer implements Icon
                     IUnitIf.UnitType.VEHICLE
             };
 
+            /*
             EnumSet<IBoatIf.BoatSubType> allBoatSubTypes = EnumSet.allOf(IBoatIf.BoatSubType.class);
 
             for (IUnitIf.UnitType unitType : EnumSet.allOf(IUnitIf.UnitType.class))
@@ -309,13 +311,14 @@ public class IconRenderer implements Icon
                     }
                 }
             }
-
+            */
+            
             for (int i = 0; i < unitIconNames.length; i++)
             {
                 try
                 {
                     String iconName = unitIconNames[i];
-                    Image image = Utils.createImageIcon(getProperties().getProperty(iconName), iconName).getImage();
+                    Image image = DiskoIconFactory.getIcon(iconName, "48x48").getImage();
                     m_images.put(unitTypes[i], image);
                 }
                 catch (Exception e)
@@ -384,18 +387,17 @@ public class IconRenderer implements Icon
         private final boolean m_singleAssigmentIcon;
 
         static final HashMap<ISearchIf.SearchSubType, Image> m_searchImages = new LinkedHashMap<ISearchIf.SearchSubType, Image>();
-        static final EnumSet<ISearchIf.SearchSubType> m_leftIcons = EnumSet.noneOf(ISearchIf.SearchSubType.class);
 
         private void initImageMap()
         {
             String[] searchIconNames = new String[]{
-                    "SearchLine.icon",
-                    "PatrolSearch.icon",
-                    "UrbanSearch.icon", 
-                    "ShoreLineSearch.icon", 
-                    "WaterSearch.icon", 
-                    "AirSearch.icon", 
-                    "DogSearch.icon"
+                    "SEARCH.LINE",
+                    "SEARCH.PATROL",
+                    "SEARCH.URBAN", 
+                    "SEARCH.SHORELINE", 
+                    "SEARCH.WATER", 
+                    "SEARCH.AIR", 
+                    "SEARCH.DOG"
             };
             ISearchIf.SearchSubType[] assignmentTypes = new ISearchIf.SearchSubType[]{
                     ISearchIf.SearchSubType.LINE,
@@ -412,8 +414,7 @@ public class IconRenderer implements Icon
                 String iconName = searchIconNames[i];
                 try
                 {
-
-                    Image image = Utils.createImageIcon(getProperties().getProperty(iconName), iconName).getImage();
+                    Image image = DiskoIconFactory.getIcon(iconName, "48x48").getImage();
                     m_searchImages.put(assignmentTypes[i], image);
                 }
                 catch (Exception e)
@@ -423,9 +424,6 @@ public class IconRenderer implements Icon
                 }
             }
 
-            m_leftIcons.add(ISearchIf.SearchSubType.DOG);
-            m_leftIcons.add(ISearchIf.SearchSubType.PATROL);
-            m_leftIcons.add(ISearchIf.SearchSubType.URBAN);
         }
 
         public AssignmentIcon(IAssignmentIf anAssignment, boolean isSelected, IconActionHandler anActionHandler)

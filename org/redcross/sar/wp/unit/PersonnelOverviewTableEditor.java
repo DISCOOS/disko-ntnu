@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.util.Internationalization;
@@ -74,7 +75,9 @@ public class PersonnelOverviewTableEditor
 			m_panel = new JPanel();
 			m_panel.setBackground(m_table.getBackground());
 
-			m_editButton = DiskoButtonFactory.createSmallButton(m_resources.getString("EditButton.letter"));
+			String text = m_resources.getString("EditButton.text");
+			String letter = m_resources.getString("EditButton.letter");
+			m_editButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_editButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -153,7 +156,9 @@ public class PersonnelOverviewTableEditor
 			fl.setAlignment(FlowLayout.RIGHT);
 			m_panel.setLayout(fl);
 
-			m_calloutButton = DiskoButtonFactory.createSmallButton(m_resources.getString("CalloutButton.letter"));
+			String text = m_resources.getString("CalloutButton.text");
+			String letter = m_resources.getString("CalloutButton.letter");
+			m_calloutButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_calloutButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent ae)
@@ -170,7 +175,9 @@ public class PersonnelOverviewTableEditor
 			});
 			m_panel.add(m_calloutButton);
 
-			m_arrivedButton = DiskoButtonFactory.createSmallButton(m_resources.getString("ArrivedButton.letter"));
+			text = m_resources.getString("ArrivedButton.text");
+			letter = m_resources.getString("ArrivedButton.letter");
+			m_arrivedButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_arrivedButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -187,7 +194,9 @@ public class PersonnelOverviewTableEditor
 			});
 			m_panel.add(m_arrivedButton);
 
-			m_releasedButton = DiskoButtonFactory.createSmallButton(m_resources.getString("DismissedButton.letter"));
+			text = m_resources.getString("DismissButton.text");
+			letter = m_resources.getString("DismissButton.letter");
+			m_releasedButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_releasedButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)

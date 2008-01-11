@@ -24,6 +24,8 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.EditActionTableCellEditor;
 import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
 import org.redcross.sar.map.IDiskoMap;
@@ -40,7 +42,6 @@ public class ListDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoWpModule wp = null;
-	private Dimension buttonSize = null;
 	private JPanel contentPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton printButton = null;
@@ -56,7 +57,6 @@ public class ListDialog extends DiskoDialog {
 		super(wp.getApplication().getFrame());
 		this.wp = wp;
 		app = wp.getApplication();
-		buttonSize = wp.getApplication().getUIFactory().getSmallButtonSize();
 		initialize();
 	}
 
@@ -171,15 +171,7 @@ public class ListDialog extends DiskoDialog {
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
 			try {
-				makeReadyButton = new JButton();
-				Enum key = TacticsTaskType.MAKE_READY_TASK;
-				ImageIcon icon = Utils.getIcon(key);
-				if (icon != null) {
-					makeReadyButton.setIcon(icon);
-				} else {
-					makeReadyButton.setText(key.name());
-				}
-				makeReadyButton.setPreferredSize(buttonSize);
+				makeReadyButton = DiskoButtonFactory.createButton(TacticsTaskType.MAKE_READY_TASK,ButtonSize.NORMAL);
 				makeReadyButton.setEnabled(false);
 				makeReadyButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -201,15 +193,7 @@ public class ListDialog extends DiskoDialog {
 	private JButton getPrintButton() {
 		if (printButton == null) {
 			try {
-				printButton = new JButton();
-				Enum key = TacticsTaskType.PRINT_TASK;
-				ImageIcon icon = Utils.getIcon(key);
-				if (icon != null) {
-					printButton.setIcon(icon);
-				} else {
-					printButton.setText(key.name());
-				}
-				printButton.setPreferredSize(buttonSize);
+				printButton = DiskoButtonFactory.createButton(TacticsTaskType.PRINT_TASK,ButtonSize.NORMAL);
 				printButton.setEnabled(false);
 				report = app.getDiskoReport();
 				printButton.addActionListener(new java.awt.event.ActionListener() {

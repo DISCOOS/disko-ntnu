@@ -1,7 +1,8 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.util.UnitUtilities;
@@ -82,7 +83,9 @@ public class UnitOverviewTableEditor
 			m_panel = new JPanel();
 			m_panel.setBackground(m_table.getBackground());
 
-			m_editButton = DiskoButtonFactory.createSmallButton(m_resources.getString("EditButton.letter"));
+			String text = m_resources.getString("EditButton.text");
+			String letter = m_resources.getString("EditButton.letter");
+			m_editButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_editButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent arg0)
@@ -149,7 +152,9 @@ public class UnitOverviewTableEditor
 			m_panel = new JPanel();
 			m_panel.setBackground(m_table.getBackground());
 
-			m_pauseButton = DiskoButtonFactory.createSmallButton(m_resources.getString("PauseButton.letter"));
+			String text = m_resources.getString("PauseButton.text");
+			String letter = m_resources.getString("PauseButton.letter");
+			m_pauseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_pauseButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent arg0)

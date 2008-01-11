@@ -83,6 +83,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         }
         m_operation = new OperationImpl(operationId, aNumberPrefix, aNumber);
         m_operation.setupReferences();
+        m_operation.resumeClientUpdate();
         return m_operation;
     }
 

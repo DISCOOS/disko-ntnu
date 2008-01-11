@@ -16,8 +16,9 @@ import javax.swing.SwingConstants;
 
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -99,16 +100,17 @@ public class ChangeToDialog extends DiskoDialog
 		m_contentsPanel = new JPanel();
 		m_contentsPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
 		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.LINE_AXIS));
-		m_contentsPanel.setPreferredSize(new Dimension(DiskoButtonFactory.LONG_BUTTON_SIZE.width*2,
-				DiskoButtonFactory.LONG_BUTTON_SIZE.height));
+		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.LONG);
+		m_contentsPanel.setPreferredSize(new Dimension(dim.width*2,dim.height));
 		this.add(m_contentsPanel);
 	}
 
 	private void initButtons()
 	{
 		m_buttonGroup = new ButtonGroup();
-		m_nonBroadcastButton = DiskoButtonFactory.createLongToggleButton(m_wpMessageLog.getText("NonBroadcastButton.text"));
-		m_nonBroadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
+		String text = m_wpMessageLog.getText("NonBroadcastButton.text");
+		m_nonBroadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
+		//m_nonBroadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
 		m_nonBroadcastButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -125,9 +127,10 @@ public class ChangeToDialog extends DiskoDialog
 		m_nonBroadcastButton.setSelected(true);
 		m_buttonGroup.add(m_nonBroadcastButton);
 		m_contentsPanel.add(m_nonBroadcastButton);
-
-		m_broadcastButton = DiskoButtonFactory.createLongToggleButton(m_wpMessageLog.getText("BroadcastButton.text"));
-		m_broadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
+		
+		text = m_wpMessageLog.getText("BroadcastButton.text");
+		m_broadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
+		//m_broadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
 		m_broadcastButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)

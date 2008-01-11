@@ -2,7 +2,8 @@ package org.redcross.sar.gui;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
@@ -189,7 +190,8 @@ public class TaskDialog extends DiskoDialog
 		addComponent(0, m_resources.getString("TaskDescription.text"), scrollPane, 10, gbc);
 
 		// Use source
-		m_useSourceButton = DiskoButtonFactory.createNormalButton(m_resources.getString("TaskUseSource.text"));
+		String text = m_resources.getString("TaskUseSource.text");
+		m_useSourceButton = DiskoButtonFactory.createButton(text,text,null,ButtonSize.NORMAL);
 		m_useSourceButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -225,7 +227,7 @@ public class TaskDialog extends DiskoDialog
 
 		// Finish button
 		JPanel actionButtonPanel = new JPanel();
-		m_finishedButton = DiskoButtonFactory.createNormalButton(ButtonType.FinishedButton);
+		m_finishedButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 		m_finishedButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -246,7 +248,7 @@ public class TaskDialog extends DiskoDialog
 		actionButtonPanel.add(m_finishedButton);
 
 		// Cancel button
-		m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 		m_cancelButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)

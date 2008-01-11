@@ -22,7 +22,8 @@ import javax.swing.JSlider;
 import javax.swing.border.TitledBorder;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.SnappingAdapter;
 import org.redcross.sar.map.SnappingAdapter.SnappingListener;
 import org.redcross.sar.map.command.IDrawTool;
@@ -113,9 +114,9 @@ public class SnapPanel extends JPanel implements SnappingListener {
 				snapButtonPanel = new JPanel();
 				snapButtonPanel.setLayout(new FlowLayout());
 				// create buttons
-				snapAllButton = DiskoButtonFactory.createNormalButton("Alle");
-				snapNoneButton = DiskoButtonFactory.createNormalButton("Ingen");
-				snapApplyButton = DiskoButtonFactory.createNormalButton("Bruk");
+				snapAllButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);
+				snapNoneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);
+				snapApplyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
 				// add action listeners
 				snapAllButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {

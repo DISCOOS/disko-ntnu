@@ -28,6 +28,9 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.PositionField;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
 import org.redcross.sar.map.command.PositionTool;
@@ -358,7 +361,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 		if (unitList == null) {
             unitList = new JList();
             unitList.setVisibleRowCount(0);
-            unitList.setCellRenderer(new IconListCellRenderer(1));
+            unitList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
             unitList.setModel(new DefaultComboBoxModel());
             // add listener
             unitList.addListSelectionListener(new ListSelectionListener() {
@@ -486,12 +489,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	public JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = new JButton();
-				String iconName = "cancel.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				cancelButton.setIcon(icon);
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				cancelButton.setPreferredSize(size);
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				cancelButton.setActionCommand("cancel");
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -509,12 +507,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	private JButton getApplyButton() {
 		if (applyButton == null) {
 			try {
-				applyButton = new JButton();
-				String iconName = "finish.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				applyButton.setIcon(icon);
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				applyButton.setPreferredSize(size);
+				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 				applyButton.setActionCommand("finish");
 				applyButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {

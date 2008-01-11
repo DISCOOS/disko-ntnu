@@ -3,8 +3,8 @@ package org.redcross.sar.wp.messageLog;
 import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.mso.data.AbstractDerivedList;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -26,8 +26,8 @@ import java.util.ResourceBundle;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
  * The dialog for selecting unit type and number.
@@ -42,12 +42,12 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 	private JPanel m_contentsPanel = null;
 
 	private JPanel m_unitTypePanel = null;
-	private JTextField m_unitTypeField = null;
+	private JFormattedTextField m_unitTypeField = null;
 	private JComponent m_unitTypePadArea = null;
 	private UnitTypeDialog m_unitTypePad = null;
 
 	private JPanel m_unitNumberPanel = null;
-	private JTextField m_unitNumberField = null;
+	private JFormattedTextField m_unitNumberField = null;
 	private JComponent m_unitNumberPadArea = null;
 	private NumPadDialog m_unitNumberPad;
 
@@ -95,7 +95,7 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 	private void initUnitTypePanel()
 	{
 		m_unitTypePanel = new JPanel(new BorderLayout());
-		m_unitTypeField = new JTextField(8);
+		m_unitTypeField = new JFormattedTextField(0);
 
 		m_unitTypeField.addKeyListener(this);
 		m_unitTypePanel.add(m_unitTypeField, BorderLayout.NORTH);
@@ -137,7 +137,8 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 	{
 		m_unitNumberPanel = new JPanel(new BorderLayout());
 
-		m_unitNumberField = new JTextField(8);
+		m_unitNumberField = new JFormattedTextField();
+		m_unitNumberField.setDocument(new NumericDocument(-1,0,false));
 
 		m_unitNumberField.addKeyListener(this);
 		m_unitNumberPanel.add(m_unitNumberField, BorderLayout.NORTH);

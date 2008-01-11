@@ -1,9 +1,10 @@
 package org.redcross.sar.wp.messageLog;
 
 import no.cmr.tools.Log;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.TaskDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -105,8 +106,10 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 		// Initialize contents panel
 		m_contentsPanel = new JPanel();
 		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.PAGE_AXIS));
-		m_contentsPanel.setPreferredSize(new Dimension(DiskoButtonFactory.LONG_BUTTON_SIZE.width + DiskoButtonFactory.NORMAL_BUTTON_SIZE.width + 54,
-				DiskoButtonFactory.LONG_BUTTON_SIZE.height*6 + 6));
+		Dimension normDim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
+		Dimension longDim = DiskoButtonFactory.getButtonSize(ButtonSize.LONG);
+		m_contentsPanel.setPreferredSize(new Dimension(
+				longDim.width + normDim.width + 54,longDim.height*6 + 6));
 		m_contentsPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
 
 		initButtons();
@@ -367,7 +370,7 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 	 */
 	private JButton createChangeButton(final TaskSubType type)
 	{
-		JButton button = DiskoButtonFactory.createNormalButton(m_wpMessageLog.getText("ChangeButton.text"));
+		JButton button = DiskoButtonFactory.createButton("GENERAL.EDIT",ButtonSize.NORMAL);
 		button.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -405,7 +408,8 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 		{
 			buttonText = m_wpMessageLog.getText("TaskSubType." + type.name() + ".text");
 		}
-		JToggleButton button = 	DiskoButtonFactory.createLongToggleButton(buttonText,50,0);
+		JToggleButton button = 	DiskoButtonFactory.createToggleButton(
+				buttonText,buttonText,null,ButtonSize.LONG, 50,0);
 		button.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent ae)

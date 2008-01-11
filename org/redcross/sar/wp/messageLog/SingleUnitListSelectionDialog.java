@@ -1,7 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.ICmdPostIf.CmdPostStatus;
@@ -48,7 +49,7 @@ public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditM
 	protected HashMap<ICommunicatorIf, JToggleButton> m_communicatorButtonMap = null;
 	protected JToggleButton m_currentButton = null;
 
-	final public static int PANEL_WIDTH = DiskoButtonFactory.LONG_BUTTON_SIZE.width * 5;
+	final public static int PANEL_WIDTH = DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width * 5;
 	private final int NUMBER_OF_ROWS = 6;
 
 	/**
@@ -136,8 +137,8 @@ public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditM
 		m_scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		m_scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		m_scrollPane.setPreferredSize(new Dimension(PANEL_WIDTH,
-				DiskoButtonFactory.LONG_BUTTON_SIZE.height*NUMBER_OF_ROWS + 20));
-//		
+				DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*NUMBER_OF_ROWS + 20));
+
 		this.add(m_scrollPane);
 		
 		buildList();
@@ -300,8 +301,8 @@ public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditM
 				panel = new JPanel();
 				panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 				panel.setAlignmentY(Component.TOP_ALIGNMENT);
-				panel.setPreferredSize(new Dimension(DiskoButtonFactory.LONG_BUTTON_SIZE.width,
-				DiskoButtonFactory.LONG_BUTTON_SIZE.height*NUMBER_OF_ROWS));
+				panel.setPreferredSize(new Dimension(DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width,
+						DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*NUMBER_OF_ROWS));
 				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 				m_contentsPanel.add(panel);
 				}
@@ -315,7 +316,7 @@ public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditM
 
 	private void addUnitButton(final ICommunicatorIf communicator, JPanel buttonPanel)
 	{
-		JToggleButton button = DiskoButtonFactory.createLongToggleButton(communicator);
+		JToggleButton button = DiskoButtonFactory.createToggleButton(communicator,ButtonSize.LONG);
 
 		m_buttonCommunicatorMap.put(button, communicator);
 		m_communicatorButtonMap.put(communicator, button);

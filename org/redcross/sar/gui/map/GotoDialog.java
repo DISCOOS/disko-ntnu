@@ -13,6 +13,8 @@ import java.io.IOException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.PositionFormatPanel.POIFormatEventListener;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.util.mso.Position;
@@ -130,13 +132,7 @@ public class GotoDialog extends DiskoDialog  implements POIFormatEventListener {
 	 */
 	private JButton getGotoButton() {
 		if (m_gotoButton == null) {
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
-			m_gotoButton = new JButton();
-			m_gotoButton.setMinimumSize(dim);
-			m_gotoButton.setPreferredSize(dim);
-			m_gotoButton.setMaximumSize(dim);
-			m_gotoButton.setIcon(Utils.getIcon("IconEnum.CENTERAT.icon"));
-			m_gotoButton.setToolTipText(Utils.getProperty("IconEnum.CENTERAT.text"));			
+			m_gotoButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);			
 			m_gotoButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent arg0) {
@@ -188,9 +184,9 @@ public class GotoDialog extends DiskoDialog  implements POIFormatEventListener {
 	private JTabbedPane getTabbedPane() {
 		if (m_tabbedPane == null) {
 			m_tabbedPane = new JTabbedPane();
-			m_tabbedPane.addTab(null, Utils.getIcon("IconEnum.COORDINATE.icon"), 
+			m_tabbedPane.addTab(null, Utils.getIcon("IconEnum.COORDINATE.icon","32x32"), 
 					getGotoPanel(), Utils.getProperty("IconEnum.COORDINATE.text"));
-			m_tabbedPane.addTab(null, Utils.getIcon("IconEnum.FORMAT.icon"), 
+			m_tabbedPane.addTab(null, Utils.getIcon("IconEnum.FORMAT.icon","32x32"), 
 					getFormatPanel(), Utils.getProperty("IconEnum.FORMAT.text"));
 			m_tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 			m_tabbedPane.setTabPlacement(JTabbedPane.LEFT);

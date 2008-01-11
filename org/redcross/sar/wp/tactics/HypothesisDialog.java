@@ -2,6 +2,7 @@ package org.redcross.sar.wp.tactics;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.models.HypothesisListModel;
 import org.redcross.sar.gui.renderers.HypothesisListCellRenderer;
 import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
@@ -631,7 +632,7 @@ public class HypothesisDialog extends DiskoDialog {
 	private void setup() {
 		// update icon
 		if(currentSearchArea!=null) {
-			iconLabel.setIcon(Utils.getIcon("IconEnum.POLYGON.icon"));
+			iconLabel.setIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
 			titleLabel.setText("<html>Oppgi hypotese for <b>" + 
 					MsoUtils.getSearchAreaName(currentSearchArea).toLowerCase() + "</b></html>");
 			getHypothesisPanel().setEnabled(true);

@@ -11,6 +11,8 @@ import javax.swing.JToggleButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IHostToolDialog;
 import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -69,9 +71,7 @@ public class POITool extends AbstractDrawTool {
 		IDiskoApplication app = Utils.getApp();
 		
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JToggleButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
 		// create current point
 		p = new Point();

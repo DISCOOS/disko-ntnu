@@ -10,11 +10,7 @@ import javax.swing.ListCellRenderer;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.data.IAreaIf;
-import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IRouteIf;
-import org.redcross.sar.mso.data.ISearchAreaIf;
-import org.redcross.sar.mso.data.ISearchAreaListIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -25,13 +21,15 @@ public class IconListCellRenderer extends JLabel implements ListCellRenderer {
 	private static final long serialVersionUID = 1L;
 
 	private int options = 0;
+	private String catalog = "48x48";
 	
 	private HashMap<Enum, Icon> icons = null;
 
-	public IconListCellRenderer(int options)
+	public IconListCellRenderer(int options, String catalog)
 	{
 		super.setOpaque(true);
 		this.options = options;
+		this.catalog = catalog;
 		this.icons = new HashMap<Enum, Icon>();
 	}
 
@@ -102,7 +100,7 @@ public class IconListCellRenderer extends JLabel implements ListCellRenderer {
 		}
 		else {
 			// get icon
-			icon = Utils.getIcon(e);
+			icon = Utils.getIcon(e,catalog);
 			// found icon?
 			if(icon!=null) {
 				icons.put(e,icon);

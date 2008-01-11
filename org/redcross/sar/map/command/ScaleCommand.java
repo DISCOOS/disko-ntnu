@@ -8,6 +8,8 @@ import javax.swing.JButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.ScaleDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
@@ -34,9 +36,7 @@ public class ScaleCommand extends AbstractDiskoTool {
 		IDiskoApplication app = Utils.getApp();
 		
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 
 		// create dialog
 		dialog = new ScaleDialog(app, this);

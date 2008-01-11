@@ -4,6 +4,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -15,6 +16,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -55,7 +57,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	private JScrollPane remarksScrollPane = null;
 	private JTextArea remarksTextArea = null;
 	private JTabbedPane tabbedPane = null;  //  @jve:decl-index=0:visual-constraint="10,10"
-	private JTextField personelTextField = null;
+	private JFormattedTextField personnelTextField = null;
 	private IDiskoWpModule wp = null;
 	private ISearchIf currentAssignment = null;
 
@@ -493,16 +495,17 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	}
 
 	/**
-	 * This method initializes personelTextField
+	 * This method initializes personnelTextField
 	 *
 	 * @return javax.swing.JTextField
 	 */
 	private JTextField getPersonelTextField() {
-		if (personelTextField == null) {
+		if (personnelTextField == null) {
 			try {
-				personelTextField = new JTextField();
-				personelTextField.setText("0");
-				personelTextField.getDocument().addDocumentListener(new DocumentListener() {
+				personnelTextField = new JFormattedTextField();
+				personnelTextField.setDocument(new NumericDocument(-1,0,false));
+				personnelTextField.setText("0");
+				personnelTextField.getDocument().addDocumentListener(new DocumentListener() {
 					public void changedUpdate(DocumentEvent e) { apply(); }
 					public void insertUpdate(DocumentEvent arg0) { apply(); }
 					public void removeUpdate(DocumentEvent arg0) { apply(); }
@@ -510,19 +513,19 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 						// no mso update allowed?
 						if (isWorking()) return;
 						// update mso model
-						setPersonelNeed(Integer.valueOf(personelTextField.getText()),false,true);						
+						setPersonelNeed(Integer.valueOf(personnelTextField.getText()),false,true);						
 					}
 				});
-				personelTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+				personnelTextField.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
 						if (e.getClickCount() == 2){
 							NumPadDialog npDialog = wp.getApplication().
 								getUIFactory().getNumPadDialog();
-							Point p = personelTextField.getLocationOnScreen();
-							p.setLocation(p.x + personelTextField.getWidth()-
+							Point p = personnelTextField.getLocationOnScreen();
+							p.setLocation(p.x + personnelTextField.getWidth()-
 									npDialog.getWidth(), p.y-npDialog.getHeight()-2);
 							npDialog.setLocation(p);
-							npDialog.setTextField(personelTextField);
+							npDialog.setTextField(personnelTextField);
 							npDialog.setVisible(true);
 						}
 					}
@@ -531,7 +534,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				e.printStackTrace();
 			}
 		}
-		return personelTextField;
+		return personnelTextField;
 	}
 
 	/**
@@ -604,7 +607,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e));
+			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
 			titleLabel.setText("<html>Krav til <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getTabbedPane().setEnabled(true);

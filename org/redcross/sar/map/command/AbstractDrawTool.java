@@ -18,6 +18,8 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IDrawDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
@@ -178,13 +180,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// set flags
 		this.showDirect = false;
 		
-		// get current application
-		IDiskoApplication app = Utils.getApp();
-				
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JToggleButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
 		// add show dialog listener
 		button.addMouseListener(new MouseListener() {

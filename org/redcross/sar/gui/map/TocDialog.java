@@ -26,8 +26,9 @@ import javax.swing.border.TitledBorder;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DefaultMapLayerSelectionModel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
@@ -226,9 +227,9 @@ public class TocDialog extends DiskoDialog {
 				buttonPanel = new JPanel();
 				buttonPanel.setLayout(new FlowLayout());
 				// create buttons
-				selectAllButton = DiskoButtonFactory.createNormalButton("Alle");
-				selectNoneButton = DiskoButtonFactory.createNormalButton("Ingen");
-				selectApplyButton = DiskoButtonFactory.createNormalButton("Bruk");
+				selectAllButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);
+				selectNoneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);
+				selectApplyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
 				// add action listeners
 				selectAllButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {

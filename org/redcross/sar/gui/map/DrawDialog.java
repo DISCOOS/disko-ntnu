@@ -21,6 +21,8 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.SnappingAdapter;
@@ -104,9 +106,9 @@ public class DrawDialog extends DiskoDialog
 	private void initialize() {
 		try {
 			// get properties
-			m_snapIcon = Utils.getIcon("IconEnum.SNAP.icon");
+			m_snapIcon = Utils.getIcon("IconEnum.SNAP.icon","48x48");
 			m_snapTooltipText = Utils.getProperty("IconEnum.SNAP.text");
-			m_propsIcon = Utils.getIcon("IconEnum.PROPERTIES.icon");
+			m_propsIcon = Utils.getIcon("IconEnum.PROPERTIES.icon","48x48");
 			m_propsToolTipText = Utils.getProperty("IconEnum.PROPERTIES.text");
 			// create button group
 			m_buttonGroup = new ButtonGroup();
@@ -151,7 +153,7 @@ public class DrawDialog extends DiskoDialog
 			fl.setHgap(0);
 			m_buttonsPanel = new JPanel();
 			m_buttonsPanel.setLayout(fl);
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
+			Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
 			m_buttonsPanel.setPreferredSize(dim);
 		}
 		return m_buttonsPanel;
@@ -267,9 +269,7 @@ public class DrawDialog extends DiskoDialog
 			}		
 			
 			// add button
-			JToggleButton button = new JToggleButton();
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
-			button.setPreferredSize(dim);
+			JToggleButton button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 			button.setIcon(tool.getButton().getIcon());
 			button.setToolTipText(tool.getButton().getToolTipText());
 			m_buttonsPanel.add(button,null);

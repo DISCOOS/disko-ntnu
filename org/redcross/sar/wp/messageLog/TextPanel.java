@@ -1,8 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtonFactory;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
@@ -76,7 +76,7 @@ public class TextPanel extends JPanel implements IEditMessageComponentIf
 		gbc.gridx++;
 		gbc.weightx = 0.0;
 
-		m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 
 		m_cancelButton.addActionListener(new ActionListener()
 		{
@@ -89,7 +89,7 @@ public class TextPanel extends JPanel implements IEditMessageComponentIf
 		this.add(m_cancelButton, gbc);
 
 		gbc.gridy = 1;
-		m_okButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_okButton.setDefaultCapable(true);
 		m_okButton.addActionListener(new ActionListener()
 		{

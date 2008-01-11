@@ -7,6 +7,8 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
@@ -52,13 +54,8 @@ public class SplitTool extends AbstractDiskoTool {
 		// set tool type
 		type = DiskoToolType.SPLIT_TOOL;		
 		
-		// get current application
-		IDiskoApplication app = Utils.getApp();
-		
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JToggleButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
 	}
 

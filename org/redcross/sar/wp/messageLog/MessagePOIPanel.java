@@ -17,8 +17,9 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtonFactory;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.gui.NumPadDialog;
@@ -101,7 +102,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		gbc.weightx = 0.0;
 		gbc.gridx++;
 		
-		m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 		m_cancelButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -115,9 +116,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		this.add(m_cancelButton, gbc);
 
 		gbc.gridy = 1;		
-		m_centerAtButton = DiskoButtonFactory.createNormalButton();
-		m_centerAtButton.setIcon(Utils.getIcon("IconEnum.CENTERAT.icon"));
-		m_centerAtButton.setToolTipText(Utils.getProperty("IconEnum.CENTERAT.text"));
+		m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
 		m_centerAtButton.addActionListener(new ActionListener()
 		{
 			/**
@@ -133,7 +132,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		this.add(m_centerAtButton, gbc);
 		
 		gbc.gridy = 2;		
-		m_okButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_okButton.addActionListener(new ActionListener()
 		{
 			/**

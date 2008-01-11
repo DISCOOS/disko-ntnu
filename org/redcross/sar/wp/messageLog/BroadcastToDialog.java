@@ -1,8 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -113,7 +113,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 		m_scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		m_scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 		m_scrollPane.setPreferredSize(new Dimension(SingleUnitListSelectionDialog.PANEL_WIDTH+250,
-				DiskoButtonFactory.LONG_BUTTON_SIZE.height*(NUM_ROWS_COMMUNICATOR_LIST)+20));
+				DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*(NUM_ROWS_COMMUNICATOR_LIST)+20));
 		m_contentsPanel.add(m_scrollPane);
 	}
 
@@ -142,7 +142,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 				m_listArea.add(buttonPanel);
 			}
 
-			JToggleButton button = DiskoButtonFactory.createLongToggleButton(communicator);
+			JToggleButton button = DiskoButtonFactory.createToggleButton(communicator,ButtonSize.LONG);
 			button.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -261,12 +261,13 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 		m_buttonRowPanel = new JPanel();
 		m_buttonRowPanel.setLayout(new BoxLayout(m_buttonRowPanel, BoxLayout.LINE_AXIS));
 		m_buttonRowPanel.setPreferredSize(new Dimension(SingleUnitListSelectionDialog.PANEL_WIDTH,
-				DiskoButtonFactory.LONG_BUTTON_SIZE.height));
+				DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height));
 		m_buttonRowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		m_buttonGroup = new ButtonGroup();
 
-		m_selectionButton = DiskoButtonFactory.createLongToggleButton(m_wpMessageLog.getText("SelectionButton.text"));
+		String text = m_wpMessageLog.getText("SelectionButton.text");
+		m_selectionButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
 		m_selectionButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_selectionButton.addActionListener(new ActionListener()
 		{
@@ -283,7 +284,8 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 		m_buttonGroup.add(m_selectionButton);
 		m_buttonRowPanel.add(m_selectionButton);
 
-		m_confirmButton = DiskoButtonFactory.createLongToggleButton(m_wpMessageLog.getText("ConfirmButton.text"));
+		text = m_wpMessageLog.getText("ConfirmButton.text");
+		m_confirmButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
 		m_confirmButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_confirmButton.addActionListener(new ActionListener()
 		{
@@ -299,10 +301,10 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 		m_buttonGroup.add(m_confirmButton);
 		m_buttonRowPanel.add(m_confirmButton);
 
-		Dimension emptyAreaDimension = new Dimension(30, DiskoButtonFactory.LONG_BUTTON_SIZE.height);
+		Dimension emptyAreaDimension = new Dimension(30, DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height);
 		m_buttonRowPanel.add(Box.createRigidArea(emptyAreaDimension));
 
-		m_allButton = DiskoButtonFactory.createNormalButton(m_wpMessageLog.getText("AllButton.text"));
+		m_allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);
 		m_allButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_allButton.addActionListener(new ActionListener()
 		{
@@ -339,7 +341,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 		});
 		m_buttonRowPanel.add(m_allButton);
 
-		m_noneButton = DiskoButtonFactory.createNormalButton(m_wpMessageLog.getText("NoneButton.text"));
+		m_noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);
 		m_noneButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		// None button should remove all selected items from the current selection mode (selection/confirmation)
 		m_noneButton.addActionListener(new ActionListener()
@@ -402,8 +404,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 
 	private JToggleButton createUnitButton(final UnitType type)
 	{
-		JToggleButton button = DiskoButtonFactory.createNormalToggleButton();
-		button.setIcon(Utils.getIcon(type));
+		JToggleButton button = DiskoButtonFactory.createToggleButton(type,ButtonSize.NORMAL);
 
 		button.addActionListener(new ActionListener()
 		{
@@ -508,7 +509,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 	 */
 	public void newMessageSelected(IMessageIf message)
 	{
-		if(!message.isBroadcast())
+		if(message==null || !message.isBroadcast())
 		{
 			return;
 		}

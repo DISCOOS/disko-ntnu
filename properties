@@ -1,113 +1,47 @@
+#===============================
+# ArcGIS Engine
+#===============================
+
 Database.path=C:\\DISKO\\Trondheim.gdb
 MxdDocument.path=C:\\DISKO\\Trondheim.mxd
 MxdDocument.secondary.path=C:\\DISKO\\Trondheim_hoyde.mxd
 MxdDocument.catalog.path=C:\\DISKO\\
-BasicLine.featureClass.Name=basislinje
-BufferPath.featureClass.Name=soek
-PUI.featureClass.Name=pui
+
+#===============================
+# SARA API
+#===============================
 
 integrate.sara=true
 
-LargeButton.width=50
-LargeButton.height=50
-SmallButton.width=50
-SmallButton.height=50
+#===============================
+# DISKO GUI API
+#===============================
 
-# Module properties
-Taktikk.icon=icons/48x48/tactics.png
-Taktikk.text=Taktikk
-Logistikk.icon=icons/48x48/logistics.png
-Logistikk.text=Logistikk
-Sambandslogg.icon=icons/48x48/messagelog.png
-Sambandslogg.Tekst=Logg
-Oppgaver.icon=icons/48x48/tasks.png
-Oppgaver.text=Oppgaver
-Kart.icon=icons/48x48/map.png
-Kart.text=Kart
-Tilstand.icon=icons/60x60/state.gif
-Tilstand.text=Tilstand
-Beslutningsstøtte.icon=icons/60x60/ds.gif
-Beslutningsstøtte.text=Støtte
-Enhet.icon=icons/48x48/units.png
-Enhet.text=Ressurser
+#SearchLine.icon=icons/48x48/searchline.png
+#SearchLine_small.icon=icons/24x24/searchline.png
+#SearchLine.text=Søkelinje
+#PatrolSearch.icon=icons/48x48/patrolsearch.png
+#PatrolSearch_small.icon=icons/24x24/patrolsearch.png
+#PatrolSearch.text=Patruljesøk
+#UrbanSearch.icon=icons/48x48/urbansearch.png
+#UrbanSearch_small.icon=icons/24x24/urbansearch.png
+#UrbanSearch.text=Rodesøk
+#ShoreLineSearch.icon=icons/48x48/shorelinesearch.png
+#ShoreLineSearch_small.icon=icons/24x24/shorelinesearch.png
+#ShoreLineSearch.text=Strandsøk
+#WaterSearch.icon=icons/48x48/watersearch.png
+#WaterSearch_small.icon=icons/24x24/watersearch.png
+#WaterSearch.text=Vannsøk
+#AirSearch.icon=icons/48x48/airsearch.png
+#AirSearch_small.icon=icons/24x24/airsearch.png
+#AirSearch.text=Flysøk
+#DogSearch.icon=icons/48x48/dogsearch.png
+#DogSearch_small.icon=icons/24x24/dogsearch.png
+#DogSearch.text=Hundesøk
 
-NAV.icon=icons//48x48/nav.png
-SYS.icon=icons/48x48/sys.png
-
-SwitchRole.icon=icons/48x48/switch.png
-finish.icon=icons/48x48/commit.png
-finish.text=Ferdig
-cancel.icon=icons/48x48/rollback.png
-cancel.text=Avbryt
-
-CarUnit.icon=icons/48x48/car.png
-CarUnit_small.icon=icons/24x24/car.png
-CarUnit.text=Bil
-DogUnit.icon=icons/48x48/dog.png
-DogUnit_small.icon=icons/24x24/dog.png
-DogUnit.text=Hund
-TemUnit.icon=icons/48x48/team.png
-TemUnit_small.icon=icons/24x24/team.png
-TemUnit.text=Lag
-CmdUnit.icon=icons/48x48/cmdpost.png
-CmdUnit_small.icon=icons/24x24/cmdpost.png
-CmdUnit.text=KO
-AirUnit.icon=icons/48x48/aircraft.png
-AirUnit_small.icon=icons/24x24/aircraft.png
-AirUnit.text=Fly
-BoatUnit.icon=icons/48x48/boat.png
-BoatUnit_small.icon=icons/24x24/boat.png
-BoatUnit.text=Båt
-
-FinishOperation.icon=icons/48x48/endex.png
-FinishOperation.text=Avslutt
-SelectOperation.icon=icons/48x48/swap.png
-SelectOperation.text=Koble
-Merge.icon=icons/48x48/merge.png
-Merge.text=Flette
-NewOperation.icon=icons/48x48/new.png
-NewOperation.text=Ny
-
-SearchLine.icon=icons/48x48/searchline.png
-SearchLine_small.icon=icons/24x24/searchline.png
-SearchLine.text=Søkelinje
-PatrolSearch.icon=icons/48x48/patrolsearch.png
-PatrolSearch_small.icon=icons/24x24/patrolsearch.png
-PatrolSearch.text=Patruljesøk
-UrbanSearch.icon=icons/48x48/urbansearch.png
-UrbanSearch_small.icon=icons/24x24/urbansearch.png
-UrbanSearch.text=Rodesøk
-ShoreLineSearch.icon=icons/48x48/shorelinesearch.png
-ShoreLineSearch_small.icon=icons/24x24/shorelinesearch.png
-ShoreLineSearch.text=Strandsøk
-WaterSearch.icon=icons/48x48/watersearch.png
-WaterSearch_small.icon=icons/24x24/watersearch.png
-WaterSearch.text=Vannsøk
-AirSearch.icon=icons/48x48/airsearch.png
-AirSearch_small.icon=icons/24x24/airsearch.png
-AirSearch.text=Flysøk
-DogSearch.icon=icons/48x48/dogsearch.png
-DogSearch_small.icon=icons/24x24/dogsearch.png
-DogSearch.text=Hundesøk
-
-ApplyButton.icon=icons/48x48/commit.png
-ApplyButton.text=Utfør
-FinishedButton.icon=icons/48x48/commit.png
-FinishedButton.text=Ferdig
-OkButton.icon=icons/48x48/commit.png
-OkButton.text=OK
-CancelButton.icon=icons/48x48/rollback.png
-CancelButton.text=Avbryt
-DeleteButton.icon=icons/48x48/delete.png
-DeleteButton.text= Slett
-BackButton.icon=icons/48x48/left.png
-BackButton.text=Tilbake
-NextButton.icon=icons/48x48/right.png
-NextButton.text=Neste
-AllButton.icon=
-AllButton.text=Alle
-NoneButton.icon=
-NoneButton.text=Ingen
+#===============================
+# DISKO Enums 
+#===============================
 
 DiskoToolType.POI_TOOL.icon=icons/48x48/poi.png
 DiskoToolType.POI_TOOL.text=PUI
@@ -409,18 +343,6 @@ TaskProgress.text=Fremdrift (%)
 TaskDescription.text=Beskrivelse
 TaskSource.text=Kilde
 
-# Reports
-report.template.path=reports/template/
-report.printfile.path=reports/
-report.output.path=output/
-report.output.printname=diskoprint_
-report.TACTICS_TEMPLATE=MissionOrder
-report.UNITLOG_TEMPLATE=UnitLog
-report.PARTICIPANTS_TEMPLATE=
-report.COMMUNICATIONLOG_TEMPLATE=
-report.MISSIONLOG_TEMPLATE=
-report.mapscale=50000
-
 # MSO Layers
 Layer.OPERATION_AREA_LAYER=Operasjonsområde
 Layer.OPERATION_AREA_MASK_LAYER=Demp alt annet
@@ -430,3 +352,19 @@ Layer.ROUTE_LAYER=Søketeig (ruter)
 Layer.POI_LAYER=Punkt av interesse (PUI)
 Layer.FLANK_LAYER=Flanke (søketeig)
 Layer.UNIT_LAYER=Enhet (posisjon)
+
+#===============================
+# DISKO Report API
+#===============================
+
+report.template.path=reports/template/
+report.printfile.path=reports/
+report.output.path=output/
+report.output.printname=diskoprint_
+report.TACTICS_TEMPLATE=MissionOrder
+report.UNITLOG_TEMPLATE=UnitLog
+report.PARTICIPANTS_TEMPLATE=
+report.COMMUNICATIONLOG_TEMPLATE=
+report.MISSIONLOG_TEMPLATE=
+report.mapscale=15000
+

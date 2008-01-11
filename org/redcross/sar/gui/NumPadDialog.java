@@ -3,8 +3,8 @@ package org.redcross.sar.gui;
 import java.awt.Frame;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import java.awt.Dimension;
@@ -29,7 +29,7 @@ public class NumPadDialog extends JDialog {
 	private JButton zeroButton = null;
 	private JButton delButton = null;
 	private JButton okButton = null;	
-	private JTextField jtf = null;
+	private JFormattedTextField jtf = null;
 	private Dimension size = new Dimension(60,50);
 
 	public NumPadDialog(Frame owner) {
@@ -45,7 +45,7 @@ public class NumPadDialog extends JDialog {
         this.pack();
 	}
 	
-	public void setTextField(JTextField jtf){
+	public void setTextField(JFormattedTextField jtf){
 		this.jtf = jtf;
 	}
 	

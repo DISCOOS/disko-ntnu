@@ -25,6 +25,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -177,7 +179,7 @@ public class ElementPanel extends JPanel {
 		if (typeList == null) {
 			try {
 				typeList = new JList();
-				typeList.setCellRenderer(new IconListCellRenderer(0));
+				typeList.setCellRenderer(new IconListCellRenderer(0,"32x32"));
 				typeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				//typeList.setPreferredSize(new Dimension(180, 480));
 				typeList.addListSelectionListener(new ListSelectionListener() {
@@ -253,7 +255,7 @@ public class ElementPanel extends JPanel {
 		if (objectList == null) {
 			// create list
             objectList = new JList();
-            objectList.setCellRenderer(new IconListCellRenderer(1));
+            objectList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
 			//objectList.setVisibleRowCount(1);
             /*Dimension dim = new Dimension(180, 430);
 			objectList.setMinimumSize(dim);
@@ -353,7 +355,7 @@ public class ElementPanel extends JPanel {
 		if (partList == null) {
 			// create list
             partList = new JList();
-            partList.setCellRenderer(new IconListCellRenderer(1));
+            partList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
             partList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
             //partList.setPreferredSize(new Dimension(180, 430));
             // add listener
@@ -987,11 +989,7 @@ public class ElementPanel extends JPanel {
 		public JButton getEditButton() {
 			if (editButton == null) {
 				try {
-					editButton = new JButton();
-					editButton.setIcon(Utils.getIcon("IconEnum.EDIT.icon"));
-					editButton.setToolTipText(Utils.getProperty("IconEnum.EDIT.text"));
-					Dimension size = Utils.getApp().getUIFactory().getSmallButtonSize();
-					editButton.setPreferredSize(size);
+					editButton = DiskoButtonFactory.createButton("GENERAL.EDIT",ButtonSize.NORMAL);
 					editButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {
@@ -1021,11 +1019,7 @@ public class ElementPanel extends JPanel {
 		public JButton getDeleteButton() {
 			if (deleteButton == null) {
 				try {
-					deleteButton = new JButton();
-					deleteButton.setIcon(Utils.getIcon("IconEnum.DELETE.icon"));
-					deleteButton.setToolTipText(Utils.getProperty("IconEnum.DELETE.text"));
-					Dimension size = Utils.getApp().getUIFactory().getSmallButtonSize();
-					deleteButton.setPreferredSize(size);
+					deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
 					deleteButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {
@@ -1055,11 +1049,7 @@ public class ElementPanel extends JPanel {
 		public JButton getCenterAtButton() {
 			if (centerAtButton == null) {
 				try {
-					centerAtButton = new JButton();
-					centerAtButton.setIcon(Utils.getIcon("IconEnum.CENTERAT.icon"));
-					centerAtButton.setToolTipText(Utils.getProperty("IconEnum.CENTERAT.text"));
-					Dimension size = Utils.getApp().getUIFactory().getSmallButtonSize();
-					centerAtButton.setPreferredSize(size);
+					centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
 					centerAtButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {

@@ -1,15 +1,18 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.document.NumericDocument;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -41,7 +44,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 
 	private JPanel m_timePanel;
 	private JLabel m_timeLabel;
-	private JTextField m_timeTextField;
+	private JFormattedTextField m_timeTextField;
 	private IDiskoWpMessageLog m_wp;
 
 	private NumPadDialog m_numpad = null;
@@ -64,8 +67,8 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 		{
             this.setContentPane(getContentPanel());
 			this.pack();
-			this.setMinimumSize(new Dimension((int)(DiskoButtonFactory.NORMAL_BUTTON_SIZE.width*3.5),
-					(int)(DiskoButtonFactory.NORMAL_BUTTON_SIZE.height*1.5)));
+			Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
+			this.setMinimumSize(new Dimension((int)(dim.width*3.5),(int)(dim.height*1.5)));
 			m_timeTextField.requestFocus();
 		}
 		catch (java.lang.Throwable e){}
@@ -108,7 +111,8 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 				m_timeLabel = new JLabel(m_wp.getText("ChangeDTGDialogTime.text"));
 				m_timeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_timePanel.add(m_timeLabel);
-				m_timeTextField = new JTextField(6);
+				m_timeTextField = new JFormattedTextField();
+				m_timeTextField.setDocument(new NumericDocument(6,0,false));
 				m_timeTextField.addKeyListener(this);
 				m_timePanel.add(m_timeTextField);
 				m_contentsPanel.add(m_timePanel);

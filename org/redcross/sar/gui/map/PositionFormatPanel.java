@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -78,11 +80,7 @@ public class PositionFormatPanel extends JPanel {
 	 */
 	private JToggleButton getMGRSButton() {
 		if (m_MGRSButton == null) {
-			m_MGRSButton = new JToggleButton();
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
-			m_MGRSButton.setPreferredSize(dim);
-			m_MGRSButton.setIcon(Utils.getIcon("IconEnum.MGRS.icon"));
-			m_MGRSButton.setToolTipText(Utils.getProperty("IconEnum.MGRS.text"));
+			m_MGRSButton = DiskoButtonFactory.createToggleButton("FORMAT.MGRS",ButtonSize.NORMAL);
 			m_MGRSButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					setFormat(1);
@@ -99,11 +97,7 @@ public class PositionFormatPanel extends JPanel {
 	 */
 	private JToggleButton getUTMButton() {
 		if (m_UTMButton == null) {
-			m_UTMButton = new JToggleButton();
-			Dimension dim = Utils.getApp().getUIFactory().getSmallButtonSize();
-			m_UTMButton.setPreferredSize(dim);
-			m_UTMButton.setIcon(Utils.getIcon("IconEnum.UTM.icon"));
-			m_UTMButton.setToolTipText(Utils.getProperty("IconEnum.UTM.text"));
+			m_UTMButton = DiskoButtonFactory.createToggleButton("FORMAT.UTM",ButtonSize.NORMAL);
 			m_UTMButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					setFormat(2);

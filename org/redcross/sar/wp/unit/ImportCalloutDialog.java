@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -158,8 +158,9 @@ public class ImportCalloutDialog extends DiskoDialog
 		gbc.gridwidth = 1;
 		m_fileTextField = new JTextField();
 		layoutComponent(m_importPanel, m_resources.getString("FileName.text"), m_fileTextField, gbc, 0);
-		
-		m_fileDialogButton = DiskoButtonFactory.createNormalButton( m_resources.getString("File.text"));
+
+		String text = m_resources.getString("File.text");
+		m_fileDialogButton = DiskoButtonFactory.createButton(text,text,null,ButtonSize.NORMAL);
 		m_fileDialogButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -205,14 +206,15 @@ public class ImportCalloutDialog extends DiskoDialog
 		m_tableModel = new ImportPersonnelTableModel();
 		m_personnelTable = new JTable(m_tableModel);
 		
-		m_personnelTable.setRowHeight(DiskoButtonFactory.SMALL_BUTTON_SIZE.height + 10);
+		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
+		m_personnelTable.setRowHeight(dim.height + 10);
 		TableColumn column = m_personnelTable.getColumnModel().getColumn(0);
-		column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
+		column.setPreferredWidth(dim.width + 10);
+		column.setMaxWidth(dim.width + 10);
 
 		column = m_personnelTable.getColumnModel().getColumn(2);
-		column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 3 + 20);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 3 + 20);
+		column.setPreferredWidth(dim.width * 3 + 20);
+		column.setMaxWidth(dim.width * 3 + 20);
 		
 		ImportPersonnelCellEditor editor = new ImportPersonnelCellEditor();
 		m_personnelTable.setDefaultEditor(Object.class, editor);
@@ -228,7 +230,7 @@ public class ImportCalloutDialog extends DiskoDialog
 
 	private void initializeButtons()
 	{
-		m_backButton = DiskoButtonFactory.createNormalButton(ButtonType.BackButton);
+		m_backButton = DiskoButtonFactory.createButton("GENERAL.BACK",ButtonSize.NORMAL);
 		m_backButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -247,7 +249,7 @@ public class ImportCalloutDialog extends DiskoDialog
 		m_backButton.setEnabled(false);
 		m_bottomPanel.add(m_backButton);
 		
-		m_nextButton = DiskoButtonFactory.createNormalButton(ButtonType.NextButton);
+		m_nextButton = DiskoButtonFactory.createButton("GENERAL.NEXT",ButtonSize.NORMAL);
 		m_nextButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent ae)
@@ -283,7 +285,7 @@ public class ImportCalloutDialog extends DiskoDialog
 		});
 		m_bottomPanel.add(m_nextButton);
 		
-		m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 		m_cancelButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -296,7 +298,7 @@ public class ImportCalloutDialog extends DiskoDialog
 		});
 		m_bottomPanel.add(m_cancelButton);
 		
-		m_okButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_okButton.setEnabled(false);
 		m_okButton.addActionListener(new ActionListener()
 		{
@@ -753,7 +755,9 @@ public class ImportCalloutDialog extends DiskoDialog
 			m_optionsPanel = new JPanel();
 			m_optionsPanel.setBackground(m_personnelTable.getBackground());
 			
-			m_updateButton = DiskoButtonFactory.createSmallButton(m_resources.getString("UpdateButton.letter"));
+			String letter = m_resources.getString("UpdateButton.text");
+			String text = m_resources.getString("UpdateButton.letter");
+			m_updateButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_updateButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -767,7 +771,9 @@ public class ImportCalloutDialog extends DiskoDialog
 			});
 			m_optionsPanel.add(m_updateButton);
 			
-			m_keepButton = DiskoButtonFactory.createSmallButton(m_resources.getString("KeepButton.letter"));
+			letter = m_resources.getString("KeepButton.text");
+			text = m_resources.getString("KeepButton.letter");
+			m_keepButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_keepButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -781,7 +787,9 @@ public class ImportCalloutDialog extends DiskoDialog
 			});
 			m_optionsPanel.add(m_keepButton);
 			
-			m_newButton = DiskoButtonFactory.createSmallButton(m_resources.getString("NewButton.letter"));
+			letter = m_resources.getString("NewButton.text");
+			text = m_resources.getString("NewButton.letter");
+			m_newButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_newButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)

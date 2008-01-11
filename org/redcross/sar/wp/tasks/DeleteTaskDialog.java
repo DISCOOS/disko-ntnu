@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.tasks;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
@@ -91,7 +91,7 @@ public class DeleteTaskDialog extends DiskoDialog
 		m_contentsPanel.add(m_descriptionTextArea, gbc);
 
 		JPanel buttonRowPanel = new JPanel();
-		m_deleteButton = DiskoButtonFactory.createNormalButton(ButtonType.DeleteButton);
+		m_deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
 		m_deleteButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -100,7 +100,7 @@ public class DeleteTaskDialog extends DiskoDialog
 			}
 		});
 		buttonRowPanel.add(m_deleteButton);
-		m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
 		m_cancelButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)

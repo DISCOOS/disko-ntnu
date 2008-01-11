@@ -1,5 +1,7 @@
 package org.redcross.sar.wp;
 
+import java.lang.instrument.IllegalClassFormatException;
+
 import javax.swing.JButton;
 
 import org.redcross.sar.app.IDiskoRole;
@@ -15,7 +17,7 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
 
     private JButton m_situationButton = null;
 
-    public DiskoWpBriefingImpl(IDiskoRole role)
+    public DiskoWpBriefingImpl(IDiskoRole role) throws IllegalClassFormatException
     {
         super(role);
         initialize();
@@ -42,13 +44,9 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
         layoutButton(getSituationButton());
     }
 
-    /* (non-Javadoc)
-    * @see com.geodata.engine.disko.task.DiskoAp#getName()
-    */
-    public String getName()
-    {
-        return "5PO";
-    }
+	public String getCaption() {
+		return "5PO";
+	}
 
     private JButton getSituationButton()
     {
@@ -57,7 +55,7 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
         {
             try
             {
-                m_situationButton = createLargeButton("Situasjon", new java.awt.event.ActionListener()
+                m_situationButton = createNormalButton("Situasjon", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -81,4 +79,5 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
 		// TODO Auto-generated method stub
 		return false;
 	}
+
 }

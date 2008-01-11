@@ -11,8 +11,10 @@ import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.MainPanel;
 import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.gui.SubMenuPanel;
-import org.redcross.sar.gui.UIFactory;
 import org.redcross.sar.gui.NavBar.NavState;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
@@ -33,6 +35,7 @@ import com.esri.arcgis.interop.AutomationException;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
@@ -82,9 +85,14 @@ public abstract class AbstractDiskoWpModule
     /**
      * @param role
      */
-    public AbstractDiskoWpModule(IDiskoRole role)
+    public AbstractDiskoWpModule(IDiskoRole role) throws IllegalClassFormatException
     {
-        this.role = role;
+        
+    	// valid package name?
+    	if(Utils.getPackageName(getClass()) == null) 
+    		throw new IllegalClassFormatException("Implementation of IDiskoWpModule must be inside a unique package");
+    	
+    	this.role = role;
         this.listeners = new ArrayList<IDiskoWorkEventListener>();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
@@ -183,11 +191,15 @@ public abstract class AbstractDiskoWpModule
 
     /* (non-Javadoc)
       * @see org.redcross.sar.wp.IDiskoWpModule#getName()
+      *
+      * Extenders should not override this method!
+      *
       */
-    public String getName()
-    {
-        return null;
-    }
+     public String getName()
+     {
+         return Utils.getPackageName(getClass());
+     }
+
 
     public void setCallingWp(String name)
     {
@@ -467,14 +479,14 @@ public abstract class AbstractDiskoWpModule
         hasSubMenu = true;
     }
 
-    protected JButton createLargeButton(String aText, java.awt.event.ActionListener aListener)
+    protected JButton createNormalButton(String aText, java.awt.event.ActionListener aListener)
     {
-        return createButton(aText, getApplication().getUIFactory().getLargeButtonSize(), aListener);
+        return createButton(aText, DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL), aListener);
     }
 
     protected JButton createSmallButton(String aText, java.awt.event.ActionListener aListener)
     {
-        return createButton(aText, getApplication().getUIFactory().getSmallButtonSize(), aListener);
+        return createButton(aText, DiskoButtonFactory.getButtonSize(ButtonSize.SMALL), aListener);
     }
 
     protected JButton createButton(String aText, Dimension aSize, java.awt.event.ActionListener aListener)

@@ -8,8 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.lang.instrument.IllegalClassFormatException;
 import java.util.EnumSet;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -28,9 +30,11 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -88,7 +92,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private static boolean m_newUnit = false;
 	private static boolean m_newCallOut = false;
 
-	public DiskoWpUnitImpl(IDiskoRole role)
+	public DiskoWpUnitImpl(IDiskoRole role) throws IllegalClassFormatException
 	{
 		super(role);
 		
@@ -233,12 +237,14 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		PersonnelOverviewTableEditor personnelRenderer = new PersonnelOverviewTableEditor(this);
 		personnelRenderer.setTable(m_personnelOverviewTable);
 		
-		m_personnelOverviewTable.setRowHeight(DiskoButtonFactory.SMALL_BUTTON_SIZE.height + 10);
+		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
+		
+		m_personnelOverviewTable.setRowHeight(dim.height + 10);
 		TableColumn column = m_personnelOverviewTable.getColumnModel().getColumn(2);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
+		column.setMaxWidth(dim.width + 10);
 		column = m_personnelOverviewTable.getColumnModel().getColumn(3);
-		column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 3 + 20);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 3 + 20);
+		column.setPreferredWidth(dim.width * 3 + 20);
+		column.setMaxWidth(dim.width * 3 + 20);
 	    
 		m_personnelOverviewTable.setTableHeader(null);
 		
@@ -256,13 +262,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		UnitOverviewTableEditor unitRenderer = new UnitOverviewTableEditor(this);
 		unitRenderer.setTable(m_unitOverviewTable);
 		
-		m_unitOverviewTable.setRowHeight(DiskoButtonFactory.SMALL_BUTTON_SIZE.height + 10);
+		m_unitOverviewTable.setRowHeight(dim.height + 10);
 		column = m_unitOverviewTable.getColumnModel().getColumn(1);
-		column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
+		column.setPreferredWidth(dim.width + 10);
+		column.setMaxWidth(dim.width + 10);
 		column = m_unitOverviewTable.getColumnModel().getColumn(2);
-		column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 2 + 15);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 2 + 15);
+		column.setPreferredWidth(dim.width * 2 + 15);
+		column.setMaxWidth(dim.width * 2 + 15);
 		
 		m_unitOverviewTable.setTableHeader(null);
 
@@ -275,7 +281,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_calloutOverviewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_calloutOverviewTable.addMouseListener(new CalloutTableMouseListener());
 		
-		m_calloutOverviewTable.setRowHeight(DiskoButtonFactory.SMALL_BUTTON_SIZE.height + 10);
+		m_calloutOverviewTable.setRowHeight(dim.height + 10);
 		column = m_calloutOverviewTable.getColumnModel().getColumn(0);
 		column.setPreferredWidth(80);
 		column.setMaxWidth(80);
@@ -288,8 +294,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	
 	private void initButtons()
 	{
-		m_newPersonnelButton = DiskoButtonFactory.createNormalButton("", 
-					getText("NewPersonnelButton.icon"));
+		String text = getText("NewPersonnelButton.text");
+		Icon icon = DiskoIconFactory.createImageIcon("NEW_PERSONNEL", getText("NewPersonnelButton.icon")); 
+		m_newPersonnelButton = DiskoButtonFactory.createButton(null,text,icon,ButtonSize.NORMAL);
 		m_newPersonnelButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -299,8 +306,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		});
 		layoutButton(m_newPersonnelButton);
 		
-		m_newUnitButton = DiskoButtonFactory.createNormalButton("", 
-				getText("NewUnitButton.icon"));
+		text = getText("NewUnitButton.text");
+		icon = DiskoIconFactory.createImageIcon("NEW_UNIT", getText("NewUnitButton.icon")); 
+		m_newUnitButton = DiskoButtonFactory.createButton(null,text,icon,ButtonSize.NORMAL);
 		m_newUnitButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -310,8 +318,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		});
 		layoutButton(m_newUnitButton);
 		
-		m_importCalloutButton = DiskoButtonFactory.createNormalButton("", 
-			getText("ImportCalloutButton.icon"));
+		text = getText("ImportCalloutButton.text");
+		icon = DiskoIconFactory.createImageIcon("IMPORT_CALLOUT", getText("ImportCalloutButton.icon")); 
+		m_importCalloutButton = DiskoButtonFactory.createButton(null,text,icon,ButtonSize.NORMAL);
 		m_importCalloutButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -321,7 +330,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		});
 		layoutButton(m_importCalloutButton);
 		
-		m_deleteButton = DiskoButtonFactory.createNormalButton("", getText("DeleteButton.icon"));
+		m_deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
 		m_deleteButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -333,9 +342,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	}
 
 	@Override
-	public String getName()
+	public String getCaption()
 	{
-		return "Enhet";
+		return getText("Caption");
 	}
 	
 	@Override

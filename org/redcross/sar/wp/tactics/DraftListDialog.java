@@ -17,9 +17,9 @@ import javax.swing.border.BevelBorder;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.AssignmentTable;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
@@ -30,7 +30,6 @@ public class DraftListDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoWpModule wp = null;
-	private Dimension buttonSize = null;
 	private JPanel contentPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton cancelButton = null;
@@ -48,7 +47,6 @@ public class DraftListDialog extends DiskoDialog {
 		// prepare
 		this.wp = wp;
 		this.app = wp.getApplication();
-		this.buttonSize = wp.getApplication().getUIFactory().getSmallButtonSize();
 		// is modal to main frame when visible
 		setModal(true);
 		// initialize gui
@@ -171,8 +169,7 @@ public class DraftListDialog extends DiskoDialog {
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
-				cancelButton.setPreferredSize(buttonSize);
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						// forward
@@ -194,8 +191,7 @@ public class DraftListDialog extends DiskoDialog {
 	private JButton getApplyButton() {
 		if (applyButton == null) {
 			try {
-				applyButton = DiskoButtonFactory.createNormalButton(ButtonType.FinishedButton);
-				applyButton.setPreferredSize(buttonSize);
+				applyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
 				applyButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						// forward

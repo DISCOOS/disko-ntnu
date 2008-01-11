@@ -6,6 +6,7 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
+import java.lang.instrument.IllegalClassFormatException;
 import java.util.EnumSet;
 
 import javax.swing.JOptionPane;
@@ -17,7 +18,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 {
     MessageLogPanel m_logPanel;
 
-    public DiskoWpMessageLogImpl(IDiskoRole role)
+    public DiskoWpMessageLogImpl(IDiskoRole role) throws IllegalClassFormatException
     {
         // initialize with spesific map interests
     	super(role);
@@ -128,12 +129,12 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     }
 
     /* (non-Javadoc)
-    * @see com.geodata.engine.disko.task.DiskoAp#getName()
+    * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
     */
     @Override
-	public String getName()
+	public String getCaption()
     {
-        return "Sambandslogg";
+        return getText("Caption");
     }
 
     /* (non-Javadoc)

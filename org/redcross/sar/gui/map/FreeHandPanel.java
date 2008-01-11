@@ -21,6 +21,9 @@ import javax.swing.border.TitledBorder;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.document.NumericDocument;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.SnappingAdapter;
 import org.redcross.sar.map.command.FreeHandTool;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -281,7 +284,7 @@ public class FreeHandPanel extends JPanel {
 			minStepText = new JTextField("0");
 			minStepText.setToolTipText("Minimum avstand mellom to punktet");
 			minStepText.setPreferredSize(new Dimension(100,20));
-			minStepText.setDocument(new NumericDocument(0,false));
+			minStepText.setDocument(new NumericDocument(-1,0,false));
 		}
 		return minStepText;
 	}	
@@ -304,7 +307,7 @@ public class FreeHandPanel extends JPanel {
 			maxStepText = new JTextField("0");
 			maxStepText.setToolTipText("Maksimum avstand mellom to punktet");
 			maxStepText.setPreferredSize(new Dimension(100,20));
-			maxStepText.setDocument(new NumericDocument(0,false));
+			maxStepText.setDocument(new NumericDocument(-1,0,false));
 		}
 		return maxStepText;
 	}	
@@ -331,13 +334,7 @@ public class FreeHandPanel extends JPanel {
 	public JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = new JButton();
-				String iconName = "cancel.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				cancelButton.setIcon(icon);
-				cancelButton.setToolTipText(Utils.getProperty("cancel.text"));
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				cancelButton.setPreferredSize(size);
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				cancelButton.setActionCommand("cancel");
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -355,13 +352,7 @@ public class FreeHandPanel extends JPanel {
 	private JButton getApplyButton() {
 		if (applyButton == null) {
 			try {
-				applyButton = new JButton();
-				String iconName = "finish.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				applyButton.setIcon(icon);
-				applyButton.setToolTipText(Utils.getProperty("finish.text"));
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				applyButton.setPreferredSize(size);
+				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 				applyButton.setActionCommand("finish");
 				applyButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -380,13 +371,7 @@ public class FreeHandPanel extends JPanel {
 	private JButton getSnapToButton() {
 		if (snapToButton == null) {
 			try {
-				snapToButton = new JButton();
-				String iconName = "IconEnum.SNAPTO.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				snapToButton.setIcon(icon);
-				snapToButton.setToolTipText(Utils.getProperty("IconEnum.SNAPTO.text"));
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				snapToButton.setPreferredSize(size);
+				snapToButton = DiskoButtonFactory.createButton("MAP.SNAPTO",ButtonSize.NORMAL);
 				snapToButton.setActionCommand("snapTo");
 				snapToButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {

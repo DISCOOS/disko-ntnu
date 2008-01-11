@@ -17,6 +17,9 @@ import org.redcross.sar.gui.MainMenuPanel;
 import org.redcross.sar.gui.MainPanel;
 import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.gui.SubMenuPanel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -74,22 +77,22 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
 		try {
 			final String id = getName()+module.getName();
 			module.addDiskoWorkEventListener(this);
-			JToggleButton tbutton = new JToggleButton();
-			//normalBorder = tbutton.getBorder();
-			String iconName = module.getName()+".icon";
-			String iconText = module.getName()+".text";
-			Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-			tbutton.setToolTipText(app.getProperty(iconText));
-			Dimension size = app.getUIFactory().getLargeButtonSize();
-			tbutton.setPreferredSize(size);
-			tbutton.setMaximumSize(size);
+
+			// get toggle button
+			JToggleButton tbutton = DiskoButtonFactory
+				.createToggleButton(ButtonSize.NORMAL, 0, 0);
+			// get icon
+			DiskoCustomIcon icon = DiskoIconFactory.getIcon("MODULE."+module.getName(), 
+					DiskoButtonFactory.getCatalog(ButtonSize.NORMAL),Color.ORANGE,0.3f);
+			// set tooltip
+			tbutton.setToolTipText(module.getCaption());
+			// add actions listener
 			tbutton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					selectDiskoWpModule(id);
 				}
 			});
-			MainMenuPanel mainMenuPanel = app.getUIFactory().getMainMenuPanel();
-			mainMenuPanel.addItem(tbutton, new DiskoCustomIcon(icon,Color.ORANGE,0.3f),getName());
+			app.getUIFactory().getMainMenuPanel().addItem(tbutton, icon,getName());
 			defaultModule = (isDefault ? module : defaultModule);
 			modules.add(module);
 		} catch (Exception e) {

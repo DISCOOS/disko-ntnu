@@ -2,8 +2,9 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -37,6 +38,7 @@ import javax.swing.table.TableColumn;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -77,7 +79,6 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     private JTextField m_assignmentTextField;
     private JTextField m_stopTimeTextField;
     private JTable m_personnelTable;
-    private DiskoReport diskoReport;
 
     private IDiskoWpUnit m_wpUnit;
 
@@ -106,7 +107,9 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         topButtonsPanel.setBorder(null);
         m_topPanelLabel = new JLabel();
         topPanel.add(m_topPanelLabel, BorderLayout.CENTER);
-        m_pauseToggleButton = DiskoButtonFactory.createNormalToggleButton(m_resources.getString("PauseButton.text"));
+        String text = m_resources.getString("PauseButton.text");
+        String letter = m_resources.getString("PauseButton.letter");
+        m_pauseToggleButton = DiskoButtonFactory.createToggleButton(letter,text,null,ButtonSize.NORMAL);
         m_pauseToggleButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent arg0)
@@ -130,7 +133,10 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             }
         });
         topButtonsPanel.add(m_pauseToggleButton);
-        m_releaseButton = DiskoButtonFactory.createNormalButton(m_resources.getString("DissolveButton.text")/*, ""*/);
+        
+        text = m_resources.getString("DissolveButton.text");
+        letter = m_resources.getString("DissolveButton.letter");        
+        m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.NORMAL);
         m_releaseButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent arg0)
@@ -157,7 +163,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             }
         });
         topButtonsPanel.add(m_releaseButton);
-        m_showReportButton = DiskoButtonFactory.createNormalButton(m_resources.getString("ShowReportButton.text")/*, iconPath*/);
+        m_showReportButton = DiskoButtonFactory.createButton("GENERAL.PRINT",ButtonSize.NORMAL);
         m_showReportButton.addActionListener(new ActionListener()
          {
              public void actionPerformed(ActionEvent arg0)
@@ -552,7 +558,9 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
             m_panel = new JPanel();
 
-            m_leaderButton = DiskoButtonFactory.createSmallButton(m_resources.getString("LeaderButton.letter"));
+            String letter = m_resources.getString("LeaderButton.letter");
+            String text = m_resources.getString("LeaderButton.text");
+            m_leaderButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
             m_leaderButton.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent arg0)
@@ -586,9 +594,10 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             TableColumn column = m_table.getColumnModel().getColumn(2);
             column.setCellEditor(this);
             column.setCellRenderer(this);
-            column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
-            column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width + 10);
-            m_table.setRowHeight(DiskoButtonFactory.SMALL_BUTTON_SIZE.height + 10);
+            Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
+            column.setPreferredWidth(dim.width + 10);
+            column.setMaxWidth(dim.width + 10);
+            m_table.setRowHeight(dim.height + 10);
         }
 
 

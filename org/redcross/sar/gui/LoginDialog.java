@@ -9,6 +9,10 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JComboBox;
+
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -136,7 +140,7 @@ public class LoginDialog extends DiskoDialog {
 	private JButton getOkButton() {
 		if (okButton == null) {
 			try {
-				okButton = DiskoButtonFactory.createNormalButton("OK");
+				okButton = DiskoButtonFactory.createButton("GENERAL.OK", ButtonSize.NORMAL);
 				okButton.setPreferredSize(new Dimension(100, 50));
 				okButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -158,7 +162,7 @@ public class LoginDialog extends DiskoDialog {
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = DiskoButtonFactory.createNormalButton("Avbryt");
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL);
 				cancelButton.setPreferredSize(new Dimension(100, 50));
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {

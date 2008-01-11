@@ -15,6 +15,8 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
@@ -56,9 +58,7 @@ public class DrawHostTool extends BaseCommand implements IDiskoHostTool {
 		IDiskoApplication app = Utils.getApp();
 		
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JToggleButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		
 		// add show dialog listener
 		button.addMouseListener(new MouseListener() {

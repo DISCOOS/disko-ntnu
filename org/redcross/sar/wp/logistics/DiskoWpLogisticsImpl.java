@@ -11,6 +11,7 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
+import java.lang.instrument.IllegalClassFormatException;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 
@@ -24,7 +25,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 {
     LogisticsPanel m_logisticsPanel;
 
-    public DiskoWpLogisticsImpl(IDiskoRole role)
+    public DiskoWpLogisticsImpl(IDiskoRole role) throws IllegalClassFormatException
     {
         super(role);
         initialize();
@@ -94,14 +95,10 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 
     }
     
-    /* (non-Javadoc)
-    * @see com.geodata.engine.disko.task.DiskoAp#getName()
-    */
-    public String getName()
-    {
-        return "Logistikk";
-    }
-
+	public String getCaption() {
+		return getText("Caption");
+	}
+	
     /* (non-Javadoc)
      * @see com.geodata.engine.disko.task.DiskoAp#cancel()
      */

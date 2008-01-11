@@ -18,6 +18,9 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.wp.IDiskoWp;
 import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
@@ -54,7 +57,7 @@ public class SubMenuPanel extends JPanel {
 		this.add(getCancelButton(), BorderLayout.NORTH);
 		this.add(getMenuPanel(), BorderLayout.CENTER);
 		this.add(getFinishButton(), BorderLayout.SOUTH);
-		Dimension size = app.getUIFactory().getLargeButtonSize();
+		Dimension size = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
 		this.setPreferredSize(size);
 	}
 	
@@ -118,16 +121,8 @@ public class SubMenuPanel extends JPanel {
 	public JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = new JButton();
-				String iconName = "cancel.icon";
-				String iconText = "cancel.text";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				cancelButton.setIcon(new DiskoCustomIcon(icon,Color.RED,0.4f));
-				((DiskoCustomIcon)cancelButton.getIcon()).setColored(false);
-				cancelButton.setToolTipText(app.getProperty(iconText));
-				Dimension size = app.getUIFactory().getLargeButtonSize();
-				cancelButton.setPreferredSize(size);
-				cancelButton.setMaximumSize(size);
+				cancelButton = DiskoButtonFactory.createButton("SYSTEM.ROLLBACK",ButtonSize.NORMAL);
+				cancelButton.setIcon(new DiskoCustomIcon(cancelButton.getIcon(),Color.RED,0.4f));
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						/*String msg = "Dette vil slette allt som er gjort til nå."+
@@ -154,16 +149,8 @@ public class SubMenuPanel extends JPanel {
 	public JButton getFinishButton() {
 		if (finishButton == null) {
 			try {
-				finishButton = new JButton();
-				String iconName = "finish.icon";
-				String iconText = "finish.text";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				finishButton.setIcon(new DiskoCustomIcon(icon,Color.GREEN,0.4f));
-				((DiskoCustomIcon)finishButton.getIcon()).setColored(false);
-				finishButton.setToolTipText(app.getProperty(iconText));
-				Dimension size = app.getUIFactory().getLargeButtonSize();
-				finishButton.setPreferredSize(size);
-				finishButton.setMaximumSize(size);
+				finishButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
+				finishButton.setIcon(new DiskoCustomIcon(finishButton.getIcon(),Color.RED,0.4f));
 				finishButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						IDiskoWp wp = (IDiskoWp)app.getCurrentRole().getCurrentDiskoWpModule();

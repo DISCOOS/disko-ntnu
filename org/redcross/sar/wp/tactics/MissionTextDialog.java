@@ -18,6 +18,7 @@ import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -251,7 +252,7 @@ public class MissionTextDialog extends DiskoDialog {
 	private void setup() {
 		// update icon
 		if(currentOperationArea!=null) {
-			iconLabel.setIcon(Utils.getIcon("IconEnum.POLYGON.icon"));
+			iconLabel.setIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
 			titleLabel.setText("<html>Skriv inn ordre for <b>" + 
 					MsoUtils.getOperationAreaName(currentOperationArea,true).toLowerCase() 
 					+ "</b> fra oppdragsgiver</html>");

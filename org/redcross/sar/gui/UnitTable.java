@@ -22,10 +22,10 @@ public class UnitTable extends JTable {
 	
 	private TableRowSorter<UnitTableModel> tableRowSorter = null;
 	
-	public UnitTable(IMsoModelIf msoModel) {
+	public UnitTable(IMsoModelIf msoModel, String catalog) {
 		
 		// set default unit cell table renderer
-		setDefaultRenderer(AbstractUnit.class, new UnitTableCellRenderer());
+		setDefaultRenderer(AbstractUnit.class, new UnitTableCellRenderer(catalog));
 		
 		// prepare data model
 		UnitTableModel model = new UnitTableModel(msoModel); 

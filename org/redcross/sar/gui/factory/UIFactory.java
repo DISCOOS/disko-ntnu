@@ -1,4 +1,4 @@
-package org.redcross.sar.gui;
+package org.redcross.sar.gui.factory;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -10,6 +10,13 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.gui.DiskoGlassPane;
+import org.redcross.sar.gui.LoginDialog;
+import org.redcross.sar.gui.MainMenuPanel;
+import org.redcross.sar.gui.MainPanel;
+import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.SubMenuPanel;
+import org.redcross.sar.gui.TaskDialog;
 import org.redcross.sar.gui.map.MapOptionDialog;
 
 public class UIFactory {
@@ -27,6 +34,7 @@ public class UIFactory {
 	private TaskDialog taskDialog = null;
 	
 	private Dimension largeButtonSize = null;
+	private Dimension normalButtonSize = null;
 	private Dimension smallButtonSize = null;
 	
 	public UIFactory(IDiskoApplication app) {
@@ -185,8 +193,8 @@ public class UIFactory {
 		if (largeButtonSize == null) {
 			int width  = 50; // default width
 			int height = 50; // default height
-			String widthProp  = app.getProperty("LargeButton.width");
-			String heightProp = app.getProperty("LargeButton.height");
+			String widthProp  = app.getProperty("Button.Large.width");
+			String heightProp = app.getProperty("Button.Large.height");
 			if (widthProp != null && heightProp != null) {
 				try {
 					width  = Integer.parseInt(widthProp);
@@ -198,28 +206,6 @@ public class UIFactory {
 			largeButtonSize = new Dimension(width, height);
 		}
 		return largeButtonSize;
-	}
-	
-	/**
-	 * Gets the default size of small buttons use in the Disko application
-	 * @return
-	 */
-	public Dimension getSmallButtonSize() {
-		if (smallButtonSize == null) {
-			int width  = 50; // default width
-			int height = 50; // default height
-			String widthProp  = app.getProperty("SmallButton.width");
-			String heightProp = app.getProperty("SmallButton.height");
-			if (widthProp != null && heightProp != null) {
-				try {
-					width  = Integer.parseInt(widthProp);
-					height = Integer.parseInt(heightProp);
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-				}
-			}
-			smallButtonSize =  new Dimension(width, height);
-		}
-		return smallButtonSize;
-	}
+	}	
+
 }

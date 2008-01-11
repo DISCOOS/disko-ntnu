@@ -3,7 +3,9 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -101,13 +103,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		JPanel topPanel = new JPanel(new BorderLayout());
 		m_topLabel = new JLabel();
 		topPanel.add(m_topLabel, BorderLayout.CENTER);
-		m_changeStatusButton = DiskoButtonFactory.createNormalButton();
-		try {
-			m_changeStatusButton.setIcon(Utils.createImageIcon(m_wpUnit.getText("AlertedButton.icon"),"alerted"));
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
+		
+		m_changeStatusButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
+		m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("AlertedButton.icon"),"48x48"));
 		m_changeStatusButton.setToolTipText(m_wpUnit.getText("AlertedButton.text"));
 		m_changeStatusButton.addActionListener(new ActionListener()
 		{
@@ -123,18 +121,18 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						{
 						case ON_ROUTE:
 							m_currentPersonnel = PersonnelUtilities.callOutPersonnel(m_currentPersonnel);
-							m_changeStatusButton.setIcon(Utils.createImageIcon(m_wpUnit.getText("AlertedButton.icon"),"alerted"));
+							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("AlertedButton.icon"),"48x48"));
 							m_changeStatusButton.setToolTipText(m_wpUnit.getText("AlertedButton.text"));
 							updateFieldContents();
 							break;
 						case ARRIVED:
 							PersonnelUtilities.arrivedPersonnel(m_currentPersonnel);
-							m_changeStatusButton.setIcon(Utils.createImageIcon(m_wpUnit.getText("ArrivedButton.icon"),"arrived"));
+							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("ArrivedButton.icon"),"48x48"));
 							m_changeStatusButton.setToolTipText(m_wpUnit.getText("ArrivedButton.text"));
 							break;
 						case RELEASED:
 							PersonnelUtilities.releasePersonnel(m_currentPersonnel);
-							m_changeStatusButton.setIcon(Utils.createImageIcon(m_wpUnit.getText("ReleasedButton.icon"),"dismissed"));
+							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("ReleasedButton.icon"),"48x48"));
 							m_changeStatusButton.setToolTipText(m_wpUnit.getText("ReleasedButton.text"));
 						}
 					}

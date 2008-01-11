@@ -3,10 +3,11 @@ package org.redcross.sar.wp.messageLog;
 import no.cmr.tools.Log;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtonFactory;
-import org.redcross.sar.gui.DiskoButtonFactory.ButtonType;
 import org.redcross.sar.gui.attribute.AttributesPanel;
 import org.redcross.sar.gui.attribute.TextAttribute;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -275,7 +276,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	m_buttonPanel.setLayout(new BoxLayout(m_buttonPanel,BoxLayout.Y_AXIS));
     	
     	// create OK button
-    	m_okButton = DiskoButtonFactory.createNormalButton(ButtonType.OkButton);
+    	m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
         
     	m_okButton.addActionListener(new ActionListener()
         {
@@ -294,10 +295,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         
         m_buttonPanel.add(m_okButton);
         
-    	// create Center At button
-    	m_centerAtButton = DiskoButtonFactory.createNormalButton();
-    	m_centerAtButton.setIcon(Utils.getIcon("IconEnum.CENTERAT.icon"));
-    	m_centerAtButton.setToolTipText(Utils.getProperty("IconEnum.CENTERAT.text"));
+    	// create CENTERAT button
+    	m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
         
     	m_centerAtButton.addActionListener(new ActionListener()
         {
@@ -309,7 +308,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         
         m_buttonPanel.add(m_centerAtButton);
         
-        m_cancelButton = DiskoButtonFactory.createNormalButton(ButtonType.CancelButton);
+        m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
         
         m_cancelButton.addActionListener(new ActionListener()
         {
@@ -449,10 +448,11 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         }
         Collection<IAssignmentIf> assignments = cmdPost.getAssignmentList().selectItems(m_assignmentPoolSelector);
         int i = 0;
-        int numButtonsInRow = m_assignmentPoolButtonPanel.getWidth() / DiskoButtonFactory.NORMAL_BUTTON_SIZE.width;
+        int numButtonsInRow = m_assignmentPoolButtonPanel.getWidth() / 
+        		DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).width;
         for (final IAssignmentIf assignment : assignments)
         {
-            JToggleButton button = DiskoButtonFactory.createNormalAssignmentToggleButton(assignment);
+            JToggleButton button = DiskoButtonFactory.createToggleButton(assignment,ButtonSize.NORMAL);
             button.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent e)
@@ -505,7 +505,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         List<IAssignmentIf> assignments = unit.getAllocatedAssignments();
         for (final IAssignmentIf assignment : assignments)
         {
-            JToggleButton button = DiskoButtonFactory.createLongToggleButton(assignment);
+            JToggleButton button = DiskoButtonFactory.createToggleButton(assignment,ButtonSize.LONG);
             button.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent e)

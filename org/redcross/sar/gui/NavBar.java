@@ -21,6 +21,9 @@ import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IHostToolDialog;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.DrawHostTool;
@@ -605,9 +608,7 @@ public class NavBar extends JPanel {
 	public JToggleButton getEraseToggleButton() {
 		if (eraseToggleButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				eraseToggleButton = new JToggleButton();
-				eraseToggleButton.setPreferredSize(size);
+				eraseToggleButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -643,9 +644,7 @@ public class NavBar extends JPanel {
 	public JToggleButton getZoomInToggleButton() {
 		if (zoomInToggleButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				zoomInToggleButton = new JToggleButton();
-				zoomInToggleButton.setPreferredSize(size);
+				zoomInToggleButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -656,10 +655,8 @@ public class NavBar extends JPanel {
 	
 	public JToggleButton getZoomOutToggleButton() {
 		if (zoomOutToggleButton == null) {
-			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				zoomOutToggleButton = new JToggleButton();
-				zoomOutToggleButton.setPreferredSize(size);
+			try {			
+				zoomOutToggleButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -671,9 +668,7 @@ public class NavBar extends JPanel {
 	public JToggleButton getPanToggleButton() {
 		if (panToggleButton == null)  {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				panToggleButton = new JToggleButton();
-				panToggleButton.setPreferredSize(size);
+				panToggleButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -685,9 +680,7 @@ public class NavBar extends JPanel {
 	public JButton getMapToggleButton(){
 		if (mapToggleButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				mapToggleButton = new JButton();
-				mapToggleButton.setPreferredSize(size);
+				mapToggleButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -735,9 +728,7 @@ public class NavBar extends JPanel {
 	public JButton getZoomInFixedButton() {
 		if (zoomInFixedButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				zoomInFixedButton = new JButton();
-				zoomInFixedButton.setPreferredSize(size);
+				zoomInFixedButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -749,9 +740,7 @@ public class NavBar extends JPanel {
 	public JButton getZoomOutFixedButton() {
 		if (zoomOutFixedButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				zoomOutFixedButton = new JButton();
-				zoomOutFixedButton.setPreferredSize(size);
+				zoomOutFixedButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -764,9 +753,7 @@ public class NavBar extends JPanel {
 	public JButton getFullExtentButton() {
 		if (fullExtentButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				fullExtentButton = new JButton();
-				fullExtentButton.setPreferredSize(size);
+				fullExtentButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -778,9 +765,7 @@ public class NavBar extends JPanel {
 	public JButton getZoomToLastExtentForwardButton() {
 		if (zoomToLastExtentForwardButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				zoomToLastExtentForwardButton = new JButton();
-				zoomToLastExtentForwardButton.setPreferredSize(size);
+				zoomToLastExtentForwardButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -792,9 +777,7 @@ public class NavBar extends JPanel {
 	public JButton getZoomToLastExtentBackwardButton() {
 		if (zoomToLastExtentBackwardButton == null) {
 			try {
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				zoomToLastExtentBackwardButton = new JButton();
-				zoomToLastExtentBackwardButton.setPreferredSize(size);
+				zoomToLastExtentBackwardButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -922,7 +905,7 @@ public class NavBar extends JPanel {
 		return (AbstractButton)buttons.get(key);
 	}
 	
-	public void addCommand(AbstractButton button, ICommand command, Enum key, Enum buttonPlacement) {
+	public void addCommand(AbstractButton button, ICommand command, Enum e, Enum buttonPlacement) {
 		if (buttonPlacement == ButtonPlacement.LEFT) {
 			getLeftPanel().add(button);
 		} else {
@@ -931,16 +914,16 @@ public class NavBar extends JPanel {
 		if (button instanceof JToggleButton) {
 			bgroup.add(button);
 		}
-		buttons.put(key, button);
-		commands.put(key, command);
+		buttons.put(e, button);
+		commands.put(e, command);
 		if (command != null) {
 			button.addActionListener(new NavActionListener(command));
 		}
-		DiskoCustomIcon icon = new DiskoCustomIcon(Utils.getIcon(key));
+		DiskoCustomIcon icon = new DiskoCustomIcon(Utils.getIcon(e,"48x48"));
 		if (icon != null) {
 			button.setIcon(icon);
 		}
-		button.setToolTipText(Utils.getIconText(key));
+		button.setToolTipText(Utils.getIconText(e));
 	}
 	
 	public EnumSet<DiskoToolType> getEnabledButtons(boolean isEnabled){

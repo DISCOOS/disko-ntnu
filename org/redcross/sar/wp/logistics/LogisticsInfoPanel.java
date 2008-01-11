@@ -1,7 +1,9 @@
 package org.redcross.sar.wp.logistics;
 
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,7 +29,9 @@ import javax.swing.SwingConstants;
  */
 public class LogisticsInfoPanel extends JPanel
 {
-    private final static Dimension m_buttonDimension = new Dimension(50, 50);
+
+	private static final long serialVersionUID = 1L;
+	
     private JPanel m_topInfoPanel;
     private ScrollInfoPanel m_centerScrollPanel;
     private JPanel m_lowButtonPanel;
@@ -123,13 +127,10 @@ public class LogisticsInfoPanel extends JPanel
     private void initLowPanel(int buttonCount)
     {
         m_lowButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-//        m_lowButtonPanel.setBackground(Color.WHITE);
         m_lowPanelButtons = new JButton[buttonCount];
         for (int i = 0; i < buttonCount; i++)
         {
-            JButton b = new JButton("B" + i);
-            b.setMinimumSize(m_buttonDimension);
-            b.setPreferredSize(m_buttonDimension);
+            JButton b = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
             m_lowButtonPanel.add(b);
             m_lowPanelButtons[i] = b;
             b.setVisible(false);
@@ -206,13 +207,13 @@ public class LogisticsInfoPanel extends JPanel
         {
             if (i < theButtonTexts.length)
             {
-                String buttonText = theButtonTexts[i].toLowerCase();
+                String buttonText = theButtonTexts[i];
                 boolean iconSet = false;
-                if (buttonText.endsWith(".gif") || buttonText.endsWith(".png"))
+                if (buttonText.contains("."))
                 {
                     try
                     {
-                        ImageIcon icon = Utils.createImageIcon(buttonText, null);
+                        ImageIcon icon = DiskoIconFactory.getIcon(buttonText, "48x48");
                         if (icon != null)
                         {
                             b.setIcon(icon);
@@ -220,14 +221,12 @@ public class LogisticsInfoPanel extends JPanel
                             iconSet = true;
                         }
                     }
-                    catch (Exception e)
-                    {
-                    }
+                    catch (Exception e){ /* CONSUME */ }
 
                 }
                 if (!iconSet)
                 {
-                    b.setText(buttonText);
+                    b.setText(buttonText.toLowerCase());
                     b.setIcon(null);
                 }
                 b.setVisible(true);

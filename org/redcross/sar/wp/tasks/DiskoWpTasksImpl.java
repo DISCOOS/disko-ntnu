@@ -3,13 +3,15 @@ package org.redcross.sar.wp.tasks;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.MainMenuPanel;
 import org.redcross.sar.gui.SubMenuPanel;
 import org.redcross.sar.gui.TaskDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
@@ -19,6 +21,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.AbstractButton;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,6 +34,7 @@ import javax.swing.table.TableColumn;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.instrument.IllegalClassFormatException;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -64,7 +68,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     private final static int TASK_ALERT_TIME = 10000;
     private long m_timeCounter = 0;
 
-    public DiskoWpTasksImpl(IDiskoRole role)
+    public DiskoWpTasksImpl(IDiskoRole role) throws IllegalClassFormatException
     {
         super(role);
 
@@ -136,14 +140,16 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     }
 
     @Override
-    public String getName()
+    public String getCaption()
     {
-        return "Oppgaver";
+        return getText("Caption");
     }
 
     private void initButtons()
     {
-        m_newButton = DiskoButtonFactory.createNormalButton("", getText("NewButton.icon"));
+    	String text = getText("NewButton.text");
+    	Icon icon = DiskoIconFactory.createImageIcon("NEW",getText("NewButton.icon"));
+    	m_newButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_newButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent arg0)
@@ -152,8 +158,10 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             }
         });
         layoutButton(m_newButton, true);
-
-        m_changeButton = DiskoButtonFactory.createNormalButton("", getText("ChangeButton.icon"));
+        
+        text = getText("ChangeButton.text");
+        icon = DiskoIconFactory.createImageIcon("EDIT",getText("ChangeButton.icon"));
+        m_changeButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_changeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -163,7 +171,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_changeButton, true);
 
-        m_deleteButton = DiskoButtonFactory.createNormalButton("", this.getText("DeleteButton.icon"));
+        text = getText("DeleteButton.text");
+        icon = DiskoIconFactory.createImageIcon("DELETE",getText("DeleteButton.icon"));
+        m_deleteButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_deleteButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -173,7 +183,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_deleteButton, true);
 
-        m_performedButton = DiskoButtonFactory.createNormalButton("", this.getText("PerformedButton.icon"));
+        text = getText("PerformedButton.text");
+        icon = DiskoIconFactory.createImageIcon("DELETE",getText("PerformedButton.icon"));
+        m_performedButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_performedButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)

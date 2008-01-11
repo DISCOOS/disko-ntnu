@@ -8,6 +8,8 @@ import javax.swing.JButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.TocDialog;
 import org.redcross.sar.gui.map.ElementPanel.ElementEvent;
@@ -32,13 +34,8 @@ public class ElementCommand extends AbstractDiskoTool implements IElementEventLi
 		// set tool type
 		type = DiskoToolType.ELEMENT_COMMAND;		
 		
-		// get current application
-		IDiskoApplication app = Utils.getApp();
-		
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 
 		// create dialog
 		dialog = new ElementDialog(Utils.getApp().getFrame());
@@ -66,7 +63,7 @@ public class ElementCommand extends AbstractDiskoTool implements IElementEventLi
 	
 	public void onElementChange(Enum element) {
 		// update toggle button
-		button.setIcon(Utils.getIcon(element));
+		button.setIcon(Utils.getIcon(element,"48x48"));
 		button.setToolTipText(Utils.translate(element));
 	}
 

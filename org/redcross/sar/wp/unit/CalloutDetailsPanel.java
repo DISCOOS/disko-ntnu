@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -87,7 +88,7 @@ public class CalloutDetailsPanel extends JPanel
 		JPanel topPanel = new JPanel(new BorderLayout());
 		m_topLabel = new JLabel();
 		topPanel.add(m_topLabel, BorderLayout.CENTER);
-		m_printButton = DiskoButtonFactory.createNormalButton("Print"/*, m_resources.getString("PrintButton.icon")*/);
+		m_printButton = DiskoButtonFactory.createButton("GENERAL.PRINT",ButtonSize.NORMAL);
 		topPanel.add(m_printButton, BorderLayout.EAST);
 		gbc.gridwidth = 2;
 		this.add(topPanel, gbc);
@@ -118,13 +119,13 @@ public class CalloutDetailsPanel extends JPanel
 		m_personnelTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		CallOutPersonnelStatusEditor editor = new CallOutPersonnelStatusEditor();
 		m_personnelTable.setColumnSelectionAllowed(false);
-		m_personnelTable.setRowHeight(DiskoButtonFactory.SMALL_BUTTON_SIZE.height + 10);
+		m_personnelTable.setRowHeight(DiskoButtonFactory.getButtonSize(ButtonSize.SMALL).height + 10);
 
 		TableColumn column = m_personnelTable.getColumnModel().getColumn(2);
 		column.setCellEditor(editor);
 		column.setCellRenderer(editor);
-		column.setPreferredWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 2 + 15);
-		column.setMaxWidth(DiskoButtonFactory.SMALL_BUTTON_SIZE.width * 2 + 15);
+		column.setPreferredWidth(DiskoButtonFactory.getButtonSize(ButtonSize.SMALL).width * 2 + 15);
+		column.setMaxWidth(DiskoButtonFactory.getButtonSize(ButtonSize.SMALL).width * 2 + 15);
 
 //		JTableHeader header = m_personnelTable.getTableHeader();
 //		header.setReorderingAllowed(false);
@@ -357,7 +358,9 @@ public class CalloutDetailsPanel extends JPanel
 			m_panel = new JPanel();
 			m_panel.setBackground(m_personnelTable.getBackground());
 
-			m_arrivedButton = DiskoButtonFactory.createSmallButton(m_resources.getString("ArrivedButton.letter"));
+			String text = m_resources.getString("ArrivedButton.letter");
+			String letter = m_resources.getString("ArrivedButton.text");
+			m_arrivedButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_arrivedButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent arg0)
@@ -388,7 +391,9 @@ public class CalloutDetailsPanel extends JPanel
 			});
 			m_panel.add(m_arrivedButton);
 
-			m_releaseButton = DiskoButtonFactory.createSmallButton(m_resources.getString("ReleaseButton.letter"));
+			text = m_resources.getString("ReleaseButton.letter");
+			letter = m_resources.getString("ReleaseButton.text");
+			m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_releaseButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)

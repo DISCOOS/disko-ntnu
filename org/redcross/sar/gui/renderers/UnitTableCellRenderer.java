@@ -14,11 +14,16 @@ import org.redcross.sar.mso.util.MsoUtils;
 public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
-	private Hashtable<Enum<?>, ImageIcon> icons = null;
 
-	public UnitTableCellRenderer() {
-		setOpaque(true); //MUST do this for background to show up.
-		icons = new Hashtable<Enum<?>, ImageIcon>();
+	private Hashtable<Enum<?>, ImageIcon> icons = null;
+	private String catalog = "48x48";
+
+	public UnitTableCellRenderer(String catalog) {
+		// prepare
+		this.catalog = catalog;
+		this.icons = new Hashtable<Enum<?>, ImageIcon>();
+		// MUST do this for background to show up.
+		setOpaque(true); 
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,
@@ -52,12 +57,13 @@ public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 		return null;
 	}
 	
-	private ImageIcon getIcon(Enum key) {
-		ImageIcon icon = (ImageIcon)icons.get(key);
+	private ImageIcon getIcon(Enum e) {
+		ImageIcon icon = (ImageIcon)icons.get(e);
 		if (icon == null) {
-			icon = Utils.getIcon(key);
-			icons.put(key, icon);
+			icon = Utils.getIcon(e,catalog);
+			icons.put(e, icon);
 		}
 		return icon;
 	}
+	
 }

@@ -6,7 +6,7 @@ import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.LoginDialog;
 import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.gui.SysBar;
-import org.redcross.sar.gui.UIFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;

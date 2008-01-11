@@ -21,6 +21,9 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.UnitTable;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -33,6 +36,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
+import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsTaskType;
 
 import java.util.Collection;
 
@@ -63,7 +67,6 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private JLabel iconLabel = null;
 	private JLabel titleLabel = null;
 	private JButton reclaimButton = null;
-	private Dimension buttonSize = null;
 
 	public UnitSelectionDialog(IDiskoWpModule wp) {
 		
@@ -72,7 +75,6 @@ public class UnitSelectionDialog extends DiskoDialog {
 		
 		// prepare objects
 		msoModel = wp.getMsoModel();
-		buttonSize = wp.getApplication().getUIFactory().getLargeButtonSize();
 		
 		// initialize UI
 		initialize();
@@ -222,15 +224,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private JButton getAllocateButton() {
 		if (allocateButton == null) {
 			try {
-				allocateButton = new JButton();
-				String iconName = "IconEnum.ALLOCATED.icon";
-				String iconText = "IconEnum.ALLOCATED.text";
-				IDiskoApplication app = Utils.getApp();
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				allocateButton.setIcon(icon);
-				allocateButton.setToolTipText(app.getProperty(iconText));
-				allocateButton.setPreferredSize(buttonSize);
-				allocateButton.setMaximumSize(buttonSize);
+				allocateButton = DiskoButtonFactory.createButton("IconEnum.ALLOCATED",ButtonSize.NORMAL);
 				allocateButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						allocate();
@@ -251,15 +245,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private JButton getReclaimButton() {
 		if (reclaimButton == null) {
 			try {
-				reclaimButton = new JButton();
-				String iconName = "IconEnum.CANCELED.icon";
-				String iconText = "IconEnum.CANCELED.text";
-				IDiskoApplication app = Utils.getApp();
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				reclaimButton.setIcon(icon);
-				reclaimButton.setToolTipText(app.getProperty(iconText));
-				reclaimButton.setPreferredSize(buttonSize);
-				reclaimButton.setMaximumSize(buttonSize);
+				reclaimButton = DiskoButtonFactory.createButton("IconEnum.CANCELED",ButtonSize.NORMAL);
 				reclaimButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						clear();
@@ -297,7 +283,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private UnitTable getUnitTable() {
 		if (unitTable == null) {
 			try {
-				unitTable = new UnitTable(msoModel);
+				unitTable = new UnitTable(msoModel,"48x48");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -596,7 +582,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e));
+			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
 			titleLabel.setText("<html>Legg <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + 
 					"</b> i kø til en enhet i listen" + (currentAssignment instanceof ISearchIf ? 

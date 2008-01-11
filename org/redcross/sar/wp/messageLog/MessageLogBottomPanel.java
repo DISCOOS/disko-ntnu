@@ -3,8 +3,10 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -64,8 +66,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final int PANEL_HEIGHT = (DiskoButtonFactory.NORMAL_BUTTON_SIZE.height) * 4 + 30;
-	public static final int SMALL_PANEL_WIDTH = DiskoButtonFactory.NORMAL_BUTTON_SIZE.width;
+	public static final int PANEL_HEIGHT = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height * 4 + 30;
+	public static final int SMALL_PANEL_WIDTH = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).width;
 
 	private static final String EMPTY_PANEL_ID = "EMPTY_PANEL";
 	private static final String TEXT_PANEL_ID = "TEXT_PANEL";
@@ -404,7 +406,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
         m_nrPanel = createPanel(SMALL_PANEL_WIDTH - 3, PANEL_HEIGHT - header.getHeight());
         m_nrLabel = new JLabel();
         m_nrPanel.add(m_nrLabel, BorderLayout.CENTER);
-        m_nrPanel.add(Box.createRigidArea(DiskoButtonFactory.NORMAL_BUTTON_SIZE), BorderLayout.SOUTH);
+        m_nrPanel.add(Box.createRigidArea(DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL)), BorderLayout.SOUTH);
         gbc.gridy = 1;
         this.add(m_nrPanel, gbc);
         gbc.gridx++;
@@ -456,7 +458,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
         m_buttonRow.setAlignmentY(Component.BOTTOM_ALIGNMENT);
         m_buttonRow.setMaximumSize(new Dimension(SMALL_PANEL_WIDTH*9,
-        		(int)DiskoButtonFactory.NORMAL_BUTTON_SIZE.getHeight()));
+        		(int)DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height));
         m_buttonRow.setAlignmentX(0.0f);
         m_messagePanel.add(m_buttonRow);
         gbc.gridx++;
@@ -520,7 +522,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	m_buttonRow = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 0));
     	m_buttonGroup = new ButtonGroup();
 
-    	createChangeDtgButton();
+    	createChangeDTGButton();
         createChangeFromButton();
         createChangeToButton();
         createTextButton();
@@ -728,11 +730,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_waitEndStatusButton == null)
     	{
-    		m_waitEndStatusButton = DiskoButtonFactory.createNormalButton(); 
-    		m_waitEndStatusButton.setIcon(Utils.getIcon("IconEnum.WAIT.icon"));
-    		m_waitEndStatusButton.setToolTipText(Utils.getProperty("IconEnum.WAIT.text"));
-    				
-    				
+    		m_waitEndStatusButton = DiskoButtonFactory.createButton("IconEnum.WAIT",ButtonSize.NORMAL);
+    				    				
     		m_waitEndStatusButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent arg0)
@@ -775,17 +774,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_finishedStatusButton == null)
     	{
-    		m_finishedStatusButton = DiskoButtonFactory.createNormalButton(); 
-			String iconName = "IconEnum.FINISH.icon";
-			try {
-				Icon icon = Utils.createImageIcon(Utils.getProperty(iconName),iconName);
-				m_finishedStatusButton.setIcon(new DiskoCustomIcon(icon,Color.GREEN,0.4f));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+    		m_finishedStatusButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
+    		m_finishedStatusButton.setIcon(new DiskoCustomIcon(m_finishedStatusButton.getIcon(),Color.GREEN,0.3f));
 			((DiskoCustomIcon)m_finishedStatusButton.getIcon()).setColored(false);
-    		m_finishedStatusButton.setToolTipText(Utils.getProperty("IconEnum.FINISH.text"));
     		m_finishedStatusButton.addActionListener(new ActionListener()
     		{
 				// Commit current message
@@ -853,12 +844,10 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		return true;    	
     }
     
-    private JToggleButton createChangeDtgButton()
+    private JToggleButton createChangeDTGButton()
     {
-    	m_changeDTGButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("DTGButton.text"));
+    	m_changeDTGButton = DiskoButtonFactory.createToggleButton("FORMAT.DTG",ButtonSize.NORMAL);
     	m_changeDTGButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    	m_changeDTGButton.setIcon(Utils.getIcon("IconEnum.DTG.icon"));
-    	m_changeDTGButton.setToolTipText(Utils.getProperty("IconEnum.DTG.text"));
     	m_changeDTGButton.addActionListener(new ActionListener()
     	{
     		// Display the change DTG dialog when button is pressed
@@ -888,10 +877,10 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_changeTasksButton == null)
     	{
-    		m_changeTasksButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("TasksButton.text"));
+    		m_changeTasksButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
     		m_changeTasksButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeTasksButton.setIcon(Utils.getIcon("IconEnum.TASK.icon"));
-    		m_changeTasksButton.setToolTipText(Utils.getProperty("IconEnum.TASK.text"));
+    		m_changeTasksButton.setIcon(DiskoIconFactory.getIcon("GENERAL.TASKS","48x48"));
+    		m_changeTasksButton.setToolTipText(m_wpMessageLog.getText("TasksButton.text"));
     		m_changeTasksButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -926,10 +915,10 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_changeFromButton == null)
     	{
-    		m_changeFromButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("FromButton.text"));
+    		m_changeFromButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
     		m_changeFromButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeFromButton.setIcon(Utils.getIcon("IconEnum.FROM.icon"));
-    		m_changeFromButton.setToolTipText(Utils.getProperty("IconEnum.FROM.text"));
+    		m_changeFromButton.setIcon(DiskoIconFactory.getIcon("COM.FROM","48x48"));
+    		m_changeFromButton.setToolTipText(m_wpMessageLog.getText("FromButton.text"));
     		m_changeFromButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent arg0)
@@ -978,10 +967,10 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_changeToButton == null)
     	{
-    		m_changeToButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("ToButton.text"));
+    		m_changeToButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
     		m_changeToButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeToButton.setIcon(Utils.getIcon("IconEnum.TO.icon"));
-    		m_changeToButton.setToolTipText(Utils.getProperty("IconEnum.TO.text"));
+    		m_changeToButton.setIcon(DiskoIconFactory.getIcon("COM.TO","48x48"));
+    		m_changeToButton.setToolTipText(m_wpMessageLog.getText("ToButton.text"));
     		m_changeToButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -996,7 +985,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 						getChangeToDialog();
 						hideEditPanels();
 						Point location = m_changeToButton.getLocationOnScreen();
-						location.y -= DiskoButtonFactory.LONG_BUTTON_SIZE.height;
+						location.y -= DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height;
 						m_changeToDialog.setLocation(location);
 						m_changeToDialog.showComponent();
 					}
@@ -1012,13 +1001,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	if(m_cancelStatusButton == null)
     	{
     		try {
-        		m_cancelStatusButton = DiskoButtonFactory.createNormalButton(); 
-    			String iconName = "IconEnum.CANCEL.icon";
-    			Icon icon = Utils.createImageIcon(Utils.getProperty(iconName),iconName);
-    			m_cancelStatusButton.setIcon(new DiskoCustomIcon(icon,Color.RED,0.4f));
+    			m_cancelStatusButton = DiskoButtonFactory.createButton("SYSTEM.ROLLBACK",ButtonSize.NORMAL);
+    			m_cancelStatusButton.setIcon(new DiskoCustomIcon(m_cancelStatusButton.getIcon(),Color.RED,0.3f));
     			((DiskoCustomIcon)m_cancelStatusButton.getIcon()).setColored(false);
-        		m_cancelStatusButton.setToolTipText(Utils.getProperty("IconEnum.CANCEL.text"));
-
         		m_cancelStatusButton.addActionListener(new ActionListener()
         		{
     				public void actionPerformed(ActionEvent e)
@@ -1039,9 +1024,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
     private void createDeleteButton()
 	{
-    	m_deleteButton = DiskoButtonFactory.createNormalButton();
-    	m_deleteButton.setIcon(Utils.getIcon("IconEnum.DELETE.icon"));
-    	m_deleteButton.setToolTipText(Utils.getProperty("IconEnum.DELETE.text"));
+    	m_deleteButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
+    	m_deleteButton.setIcon(DiskoIconFactory.getIcon("GENERAL.DELETE","48x48"));
+    	m_deleteButton.setToolTipText(m_wpMessageLog.getText("DeleteButton.text"));
 		m_deleteButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1103,9 +1088,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createListButton()
 	{
-		m_listButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("ListButton.text"));
-		m_listButton.setIcon(Utils.getIcon("IconEnum.LIST.icon"));
-		m_listButton.setToolTipText(Utils.getProperty("IconEnum.LIST.text"));
+		m_listButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_listButton.setIcon(DiskoIconFactory.getIcon("GENERAL.LIST","48x48"));
+		m_listButton.setToolTipText(m_wpMessageLog.getText("ListButton.text"));
 		m_listButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1130,9 +1115,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createStartedButton()
 	{
-		m_startButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("StartedButton.text"));
-		m_startButton.setIcon(Utils.getIcon("IconEnum.STARTED.icon"));
-		m_startButton.setToolTipText(Utils.getProperty("IconEnum.STARTED.text"));
+		m_startButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_startButton.setIcon(DiskoIconFactory.getIcon("STATUS.STARTED","48x48"));
+		m_startButton.setToolTipText(m_wpMessageLog.getText("StartedButton.text"));
 		m_startButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1173,9 +1158,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createAssignedButton()
 	{
-		m_assignButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("AssignedButton.text"));
-		m_assignButton.setIcon(Utils.getIcon("IconEnum.ASSIGNED.icon"));
-		m_assignButton.setToolTipText(Utils.getProperty("IconEnum.ASSIGNED.text"));
+		m_assignButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_assignButton.setIcon(DiskoIconFactory.getIcon("STATUS.ASSIGNED","48x48"));
+		m_assignButton.setToolTipText(m_wpMessageLog.getText("AssignedButton.text"));
 		m_assignButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1218,9 +1203,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	
 	private void createCompletedButton()
 	{
-		m_completedButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("CompletedButton.text"));
-		m_completedButton.setIcon(Utils.getIcon("IconEnum.FINISHED.icon"));
-		m_completedButton.setToolTipText(Utils.getProperty("IconEnum.FINISHED.text"));
+		m_completedButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_completedButton.setIcon(DiskoIconFactory.getIcon("STATUS.FINISHED","48x48"));
+		m_completedButton.setToolTipText(m_wpMessageLog.getText("CompletedButton.text"));
 		m_completedButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1411,9 +1396,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createPOIButton()
 	{
-		m_poiButton = DiskoButtonFactory.createNormalToggleButton();
-		m_poiButton.setIcon(Utils.getIcon("IconEnum.INCIDENT.icon"));
-		m_poiButton.setToolTipText(Utils.getProperty("IconEnum.INCIDENT.text"));
+		m_poiButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_poiButton.setIcon(DiskoIconFactory.getIcon("THEME.INCIDENT","48x48"));
+		m_poiButton.setToolTipText(m_wpMessageLog.getText("POIButton.text"));
 		m_poiButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1435,9 +1420,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createPositionButton()
 	{
-		m_positionButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("PositionButton.text"));
-		m_positionButton.setIcon(Utils.getIcon("IconEnum.POSITION.icon"));
-		m_positionButton.setToolTipText(Utils.getProperty("IconEnum.POSITION.text"));
+		m_positionButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_positionButton.setIcon(DiskoIconFactory.getIcon("MAP.POSITION","48x48"));
+		m_positionButton.setToolTipText(m_wpMessageLog.getText("PositionButton.text"));
 		m_positionButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1459,9 +1444,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void createTextButton()
 	{
-		m_textButton = DiskoButtonFactory.createNormalToggleButton(m_wpMessageLog.getText("TextButton.text"));
-		m_textButton.setIcon(Utils.getIcon("IconEnum.ABC.icon"));
-		m_textButton.setToolTipText(Utils.getProperty("IconEnum.ABC.text"));
+		m_textButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		m_textButton.setIcon(DiskoIconFactory.getIcon("GENERAL.ABC","48x48"));
+		m_textButton.setToolTipText(m_wpMessageLog.getText("TextButton.text"));
 		m_textButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)

@@ -8,6 +8,8 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.FlankPanel;
 import org.redcross.sar.gui.map.IDrawDialog;
 import org.redcross.sar.gui.map.IHostToolDialog;
@@ -64,9 +66,7 @@ public class FlankTool extends AbstractDiskoTool {
 		IDiskoApplication app = Utils.getApp();
 		
 		// create button
-		Dimension size = app.getUIFactory().getSmallButtonSize();
-		button = new JToggleButton();
-		button.setPreferredSize(size);
+		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		
 		// save dialog
 		this.dialog = (DiskoDialog)dialog;

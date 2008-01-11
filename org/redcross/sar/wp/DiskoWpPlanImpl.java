@@ -1,5 +1,7 @@
 package org.redcross.sar.wp;
 
+import java.lang.instrument.IllegalClassFormatException;
+
 import javax.swing.JButton;
 
 import org.redcross.sar.app.IDiskoRole;
@@ -15,7 +17,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
     private JButton m_tidsplanButton = null;
     private JButton m_grovplanButton = null;
 
-    public DiskoWpPlanImpl(IDiskoRole role)
+    public DiskoWpPlanImpl(IDiskoRole role) throws IllegalClassFormatException
     {
         super(role);
         initialize();
@@ -43,13 +45,10 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
         layoutButton(getGrovplanButton());
     }
 
-    /* (non-Javadoc)
-    * @see com.geodata.engine.disko.task.DiskoAp#getName()
-    */
-    public String getName()
-    {
-        return "Plan";
-    }
+	public String getCaption() {
+		return "Plan";
+	}
+	
 
    private JButton getTidsplanButton()
     {
@@ -58,7 +57,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
         {
             try
             {
-                m_tidsplanButton = createLargeButton("Tidsplan", new java.awt.event.ActionListener()
+                m_tidsplanButton = createNormalButton("Tidsplan", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -80,7 +79,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
         {
             try
             {
-                m_grovplanButton = createLargeButton("Grovplan", new java.awt.event.ActionListener()
+                m_grovplanButton = createNormalButton("Grovplan", new java.awt.event.ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
@@ -104,4 +103,5 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
 }

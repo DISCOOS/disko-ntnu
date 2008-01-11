@@ -187,8 +187,9 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
                 m_wpModule.getText("UnitInfoPanel_hdr_4.text"),
                 m_wpModule.getText("UnitInfoPanel_hdr_5.text")});
 
-        m_unitInfoPanel.setButtons(new String[]{"icons/48x48/edit.png",          // todo Internationalize
-                "icons/48x48/printer.png"}, new String[]{UNIT_CHANGE, UNIT_PRINT}, this);
+        m_unitInfoPanel.setButtons(
+        		new String[]{"GENERAL.EDIT","GENERAL.PRINT"},
+        		new String[]{UNIT_CHANGE, UNIT_PRINT}, this);
     }
 
     private void initAssignmentInfoPanel()
@@ -201,10 +202,12 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
                 m_wpModule.getText("AsgInfoPanel_hdr_3.text"),
                 m_wpModule.getText("AsgInfoPanel_hdr_4.text"),
                 m_wpModule.getText("AsgInfoPanel_hdr_5.text")});
-        m_assignmentInfoPanel.setButtons(new String[]{"icons/48x48/edit.png",          // todo Internationalize
-                "icons/48x48/printer.png",
-                "icons/48x48/empty.png",
-                "icons/48x48/left.png"}, new String[]{ASG_CHANGE, ASG_PRINT, ASG_RESULT, ASG_RETURN}, this);
+        m_assignmentInfoPanel.setButtons(
+        		new String[]{"GENERAL.EDIT",          
+                "GENERAL.PRINT",
+                "GENERAL.EMPTY",
+                "GENERAL.LEFT"}, 
+                new String[]{ASG_CHANGE, ASG_PRINT, ASG_RESULT, ASG_RETURN}, this);
     }
 
     private void initAssignmentListPanel()
@@ -366,9 +369,9 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         }
         if (command.equalsIgnoreCase(UNIT_CHANGE))
         {
-            System.out.println("Trykk 1: " + command + m_displayedUnit.getUnitNumber());
+            //System.out.println("Trykk 1: " + command + m_displayedUnit.getUnitNumber());
             IDiskoRole role = m_wpModule.getDiskoRole();
-            String id = role.getName() + "Enhet";
+            String id = role.getName() + "UNITS";
             IDiskoWpModule calledModule = role.getDiskoWpModule(id);
             if (calledModule != null && calledModule instanceof IDiskoWpUnit)
             {
@@ -408,7 +411,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         } else if (command.equalsIgnoreCase(ASG_CHANGE))
         {
             IDiskoRole role = m_wpModule.getDiskoRole();
-            String id = role.getName() + "Taktikk";
+            String id = role.getName() + "TACTICS";
             IDiskoWpModule calledModule = role.getDiskoWpModule(id);
             if (calledModule != null)
             {

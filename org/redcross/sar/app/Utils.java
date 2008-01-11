@@ -17,6 +17,7 @@ import javax.swing.SwingUtilities;
 
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 
 /**
@@ -70,38 +71,6 @@ public class Utils {
 		String old = getProperties().getProperty(key);
 		getProperties().setProperty(key,value);
 		return old;
-	}
-
-	/**
-	 * Create a image icon
-	 * @param path The path to the icon image
-	 * @param name A name to identify the icon
-	 * @return A ImageIcon
-	 * @throws Exception
-	 */
-	public static ImageIcon createImageIcon(String path, String name) 
-	throws Exception {
-		if (path != null) {
-			File file = new File(path);
-			if (file.exists()) {
-				java.net.URL imgURL = file.toURI().toURL();
-				return new ImageIcon(imgURL, name);
-			}
-		}
-		else
-		{
-			BufferedImage defaultImage = new BufferedImage(40, 40, BufferedImage.TYPE_INT_RGB);
-
-			java.awt.Graphics2D g2 = defaultImage.createGraphics();
-			java.awt.Color col = new java.awt.Color(255, 0, 0);
-			g2.setColor(col);
-			g2.fill3DRect(0, 0, 30, 30, true);
-
-			ImageIcon img=new ImageIcon(defaultImage,name+" not found");
-
-			return img;
-		}
-		return null;
 	}
 
 	/**
@@ -206,18 +175,18 @@ public class Utils {
 		return null;
 	}
 	
-	public static ImageIcon getIcon(Enum e) {
+	public static ImageIcon getIcon(Enum e, String catalog) {
 		if (e != null) {
 			String key = e.getClass().getSimpleName()+"."+e.name()+".icon";
-			return getIcon(key);
+			return getIcon(key,catalog);
 		}
 		return null;
 	}
 
-	public static DiskoCustomIcon getIcon(Enum e, Color color, float alfa) {
+	public static DiskoCustomIcon getIcon(Enum e, String catalog, Color color, float alfa) {
 		if (e != null) {
 			String key = e.getClass().getSimpleName()+"."+e.name()+".icon";
-			return getIcon(key,color,alfa);
+			return getIcon(key,catalog,color,alfa);
 		}
 		return null;
 	}	
@@ -235,10 +204,10 @@ public class Utils {
 		return null;
 	}
 
-	public static ImageIcon getIcon(String key) {
+	public static ImageIcon getIcon(String key, String catalog) {
 		try {
 			Properties props = getProperties();
-			return props != null ? createImageIcon(props.getProperty(key), key) : null;
+			return props != null ? DiskoIconFactory.getIcon(props.getProperty(key), catalog) : null;
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -255,10 +224,11 @@ public class Utils {
 		return null;
 	}
 	
-	public static DiskoCustomIcon getIcon(String key, Color color, float alfa) {
+	public static DiskoCustomIcon getIcon(String key, String catalog, Color color, float alfa) {
 		try {
 			Properties props = getProperties();
-			return props != null ? new DiskoCustomIcon(createImageIcon(props.getProperty(key), key),color,alfa) : null;
+			return props != null ? new DiskoCustomIcon(
+					DiskoIconFactory.getIcon(props.getProperty(key), catalog),color,alfa) : null;
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -354,5 +324,15 @@ public class Utils {
 			}
 		};
 		SwingUtilities.invokeLater(r);
+	}
+	
+	public static String getPackageName(Class c) {
+		String fullyQualifiedName = c.getName();
+		int lastDot = fullyQualifiedName.lastIndexOf ('.');
+		if (lastDot==-1){ return null; }
+		String packageName = fullyQualifiedName.substring (0,lastDot);
+		lastDot = packageName.lastIndexOf ('.');
+		if (lastDot==-1){ return null; }
+		return packageName.substring (lastDot+1,packageName.length()).toUpperCase();
 	}	
 }

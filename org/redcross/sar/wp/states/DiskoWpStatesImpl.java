@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.states;
 
+import java.lang.instrument.IllegalClassFormatException;
 import java.util.EnumSet;
 
 import org.redcross.sar.app.IDiskoRole;
@@ -24,7 +25,7 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 	 * @param rolle
 	 *            A reference to the DiskoRolle
 	 */
-	public DiskoWpStatesImpl(IDiskoRole rolle) {
+	public DiskoWpStatesImpl(IDiskoRole rolle) throws IllegalClassFormatException {
 		super(rolle);
 	    initialize();
 	}
@@ -38,9 +39,9 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.geodata.engine.disko.task.DiskoAp#getName()
+	 * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
 	 */
-	public String getName() {
+	public String getCaption() {
 		return "Tilstand";
 	}
 

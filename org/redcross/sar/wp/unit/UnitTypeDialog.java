@@ -1,8 +1,9 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtonFactory;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.Internationalization;
 
@@ -75,7 +76,7 @@ public class UnitTypeDialog extends DiskoDialog
 				UnitType.VEHICLE);
 		m_typeList.setListData(data.toArray());
 		m_typeList.setCellRenderer(new UnitTypeCellRenderer());
-		m_typeList.setFixedCellHeight(DiskoButtonFactory.NORMAL_BUTTON_SIZE.height);
+		m_typeList.setFixedCellHeight(DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height);
 		m_typeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane tableScroller = new JScrollPane(m_typeList);
 		m_contentsPanel.add(tableScroller);
@@ -83,7 +84,7 @@ public class UnitTypeDialog extends DiskoDialog
 		// Buttons
 		JPanel actionButtonRow = new JPanel();
 
-		m_cancelButton = DiskoButtonFactory.createNormalButton(DiskoButtonFactory.ButtonType.CancelButton);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 		m_cancelButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -93,7 +94,7 @@ public class UnitTypeDialog extends DiskoDialog
 		});
 		actionButtonRow.add(m_cancelButton);
 
-		m_okButton = DiskoButtonFactory.createNormalButton(DiskoButtonFactory.ButtonType.OkButton);
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_okButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -135,7 +136,7 @@ public class UnitTypeDialog extends DiskoDialog
 		{
 			UnitType type = (UnitType)value;
 
-			ImageIcon icon = Utils.getIcon(type);
+			ImageIcon icon = Utils.getIcon(type,"48x48");
 			this.setIcon(icon);
 
 			String text = Internationalization.translate(type);

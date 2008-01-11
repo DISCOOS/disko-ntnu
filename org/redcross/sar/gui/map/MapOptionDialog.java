@@ -32,6 +32,9 @@ import javax.swing.AbstractButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.CustomMapData;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DiskoMapManagerImpl;
@@ -413,12 +416,7 @@ public class MapOptionDialog extends DiskoDialog {
 			try{
 				
 				
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				String iconName = "finish.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);
-				finishButton = new JButton();
-				finishButton.setPreferredSize(size);
-				finishButton.setIcon(icon);
+				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 				finishButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						//System.out.println("actionPerformed(): finish"); 
@@ -499,14 +497,7 @@ public class MapOptionDialog extends DiskoDialog {
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try{
-				Dimension size = app.getUIFactory().getSmallButtonSize();
-				String iconName = "cancel.icon";
-				Icon icon = Utils.createImageIcon(app.getProperty(iconName),iconName);				
-				cancelButton = new JButton();
-				cancelButton.setPreferredSize(size);
-				cancelButton.setMnemonic(KeyEvent.VK_UNDEFINED);
-				cancelButton.setIcon(icon);
-				cancelButton.setText("");
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {						
 						if (jTabbedMapPane.getSelectedIndex() == 1){

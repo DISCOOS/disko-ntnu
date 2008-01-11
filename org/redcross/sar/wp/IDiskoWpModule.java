@@ -31,6 +31,15 @@ public interface IDiskoWpModule {
 	public String getName();
 
 	/**
+	 * Get the caption of this IDiskoWpModule. Implementations
+	 * of this interface and subclasses must override this method to provide
+	 * a caption for the spesific work process module. The caption is shown
+	 * in the title bar of the JFrame
+	 * @return The caption of this IDiskoWpModule
+	 */
+	public String getCaption();	
+	
+	/**
 	 * Get a reference to the DiskoMap. If the implementing class has no map,
 	 * null should be returned
 	 * @return A reference to a DiskoMap

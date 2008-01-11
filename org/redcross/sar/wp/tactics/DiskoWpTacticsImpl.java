@@ -7,6 +7,8 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.MapStatusBar;
@@ -95,7 +97,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		
 		// initialize objects
 		dialogs = new ArrayList<DiskoDialog>();
-        buttonSize = getApplication().getUIFactory().getLargeButtonSize();
+        buttonSize = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
 
 		// init GUI
 		initialize();
@@ -126,6 +128,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		
 	private void initialize() {
 		loadProperties("properties");
+		assignWpBundle(IDiskoWpTactics.class);		
 		DiskoMap map = (DiskoMap) getMap();
 		layoutComponent(MapStatusBar.createPanelWithMapAndStatusBar(map, 
 				new MapStatusBar(), BorderLayout.NORTH, 
@@ -170,10 +173,10 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see com.geodata.engine.disko.task.DiskoAp#getName()
+	 * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
 	 */
-	public String getName() {
-		return "Taktikk";
+	public String getCaption() {
+		return getText("Caption");
 	}
 
 	public void activated() {
@@ -654,7 +657,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				descriptionToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.DESCRIPTION_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					descriptionToggleButton.setIcon(icon);
 				} else {
@@ -687,7 +690,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				hypotheseToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.HYPOTHESIS_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					hypotheseToggleButton.setIcon(icon);
 				} else {
@@ -722,7 +725,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				listToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.LIST_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					listToggleButton.setIcon(icon);
 				} else {
@@ -756,7 +759,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				missionToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.MISSON_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					missionToggleButton.setIcon(icon);
 				} else {
@@ -792,7 +795,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				priorityToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.PRIORITY_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					priorityToggleButton.setIcon(icon);
 				} else {
@@ -828,7 +831,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				requirementToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.REQUIREMENT_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					requirementToggleButton.setIcon(icon);
 				} else {
@@ -862,7 +865,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				estimateToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.ESTIMATE_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					estimateToggleButton.setIcon(icon);
 				estimateToggleButton.setToolTipText(Utils.getIconText(key));
@@ -895,7 +898,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			try {
 				unitToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.UNIT_TASK;
-				ImageIcon icon = Utils.getIcon(key);
+				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
 					unitToggleButton.setIcon(icon);
 				} else {
@@ -967,7 +970,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}			
 		// update toggle button
 		JToggleButton button = getElementToggleButton();
-		button.setIcon(Utils.getIcon(element));
+		button.setIcon(Utils.getIcon(element,"48x48"));
 		button.setToolTipText(Utils.translate(element));
 		// update frame text
 		setFrameText("<Metode: "+Utils.translate(element)+">");

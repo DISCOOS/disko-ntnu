@@ -1,12 +1,10 @@
 package org.redcross.sar.wp.ds;
 
+import java.lang.instrument.IllegalClassFormatException;
 import java.util.EnumSet;
-
-import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.UIFactory;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
@@ -27,7 +25,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	 * @param rolle
 	 *            A reference to the DiskoRolle
 	 */
-	public DiskoWpDsImpl(IDiskoRole rolle) {
+	public DiskoWpDsImpl(IDiskoRole rolle) throws IllegalClassFormatException {
 		super(rolle);
 		// initialize gui
 	    initialize();
@@ -37,15 +35,6 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 		loadProperties("properties");						
         m_routeCost = new RouteCostPanel(this);
         layoutComponent(m_routeCost);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.geodata.engine.disko.task.DiskoAp#getName()
-	 */
-	public String getName() {
-		return "Beslutningsstøtte";
 	}
 
 	public void activated() {
@@ -84,5 +73,10 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	public boolean finish() {
 		// TODO Auto-generated method stub
 		return false;
-	}	
+	}
+	
+	public String getCaption() {
+		return "Beslutningsstøtte";
+	}
+	
 }

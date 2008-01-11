@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.util.Internationalization;
 
@@ -82,7 +83,7 @@ public class PersonnelAddressBottomPanel extends JPanel
 		topLeftConstraints.gridy = 0;
 		topLeftConstraints.gridheight = 2;
 		topLeftConstraints.weightx = 0.0;
-		m_showInMapButton = DiskoButtonFactory.createNormalButton("", m_resources.getString("ShowInMapButton.icon"));
+		m_showInMapButton = DiskoButtonFactory.createButton("MAP.GOTO", ButtonSize.NORMAL);
 		m_showInMapButton.setVisible(false);
 		topLeftPanel.add(m_showInMapButton, topLeftConstraints);
 

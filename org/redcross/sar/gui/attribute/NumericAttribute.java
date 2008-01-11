@@ -21,34 +21,34 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	
 	public NumericAttribute(IAttributeIf attribute, String caption, boolean isEditable) {
 		// forward
-		this(attribute,caption,0,false,isEditable);		
+		this(attribute,caption,-1,0,false,isEditable);		
 	}
 	
 	public NumericAttribute(IAttributeIf attribute, String caption, 
-			int decimalPrecision, boolean allowNegative, boolean isEditable) {
+			int maxDigits, int decimalPrecision, boolean allowNegative, boolean isEditable) {
 		// forward
 		super(attribute.getName(),caption,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// apply number document
 		((JTextField)m_component).setDocument(
-				new NumericDocument(decimalPrecision,allowNegative));		
+				new NumericDocument(maxDigits,decimalPrecision,allowNegative));		
 		// get value from attribute
 		load();		
 	}
 	
 	public NumericAttribute(String name, String caption, Object value, boolean isEditable) {
 		// forward
-		this(name,caption,value,0,false,isEditable);
+		this(name,caption,value,-1,0,false,isEditable);
 	}
 	
 	public NumericAttribute(String name, String caption, Object value, 
-			int decimalPrecision, boolean allowNegative, boolean isEditable) {
+			int maxDigits, int decimalPrecision, boolean allowNegative, boolean isEditable) {
 		// forward
 		super(name,caption,null,isEditable);
 		// apply number document
 		((JTextField)m_component).setDocument(
-				new NumericDocument(decimalPrecision,allowNegative));		
+				new NumericDocument(maxDigits,decimalPrecision,allowNegative));		
 	}
 	
 	/*==================================================================
