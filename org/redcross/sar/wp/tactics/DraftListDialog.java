@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -15,7 +14,6 @@ import javax.swing.JTable;
 import javax.swing.border.BevelBorder;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -24,7 +22,6 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
-import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsTaskType;
 
 public class DraftListDialog extends DiskoDialog {
 
@@ -152,8 +149,8 @@ public class DraftListDialog extends DiskoDialog {
 				buttonPanel.setLayout(flowLayout);
 				infoLabel = new JLabel("Velg oppdrag som er klare");
 				buttonPanel.add(infoLabel,null);
-				buttonPanel.add(getCancelButton(), null);
 				buttonPanel.add(getApplyButton(), null);
+				buttonPanel.add(getCancelButton(), null);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

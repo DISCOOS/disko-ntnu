@@ -5,7 +5,7 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.MainPanel;
@@ -64,7 +64,7 @@ public abstract class AbstractDiskoWpModule
     private Properties properties = null;
     private NavState m_navState = null;
     private boolean isNavBarSetupNeeded = true;
-    private ArrayList<IDiskoWorkEventListener> listeners = null;
+    private ArrayList<IDiskoWorkListener> listeners = null;
 	private EnumSet<IMsoManagerIf.MsoClassCode> wpInterests = null;
 	private EnumSet<IMsoFeatureLayer.LayerCode> mapLayers = null;
 	
@@ -93,7 +93,7 @@ public abstract class AbstractDiskoWpModule
     		throw new IllegalClassFormatException("Implementation of IDiskoWpModule must be inside a unique package");
     	
     	this.role = role;
-        this.listeners = new ArrayList<IDiskoWorkEventListener>();
+        this.listeners = new ArrayList<IDiskoWorkListener>();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
         this.changeList = new ArrayList<DiskoWorkEvent>();
@@ -121,7 +121,7 @@ public abstract class AbstractDiskoWpModule
     {
         // initialize objects
     	this.role = role;
-        this.listeners = new ArrayList<IDiskoWorkEventListener>();
+        this.listeners = new ArrayList<IDiskoWorkListener>();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
         this.changeList = new ArrayList<DiskoWorkEvent>();
@@ -256,7 +256,7 @@ public abstract class AbstractDiskoWpModule
         }
     }
 
-    public void addDiskoWorkEventListener(IDiskoWorkEventListener listener)
+    public void addDiskoWorkEventListener(IDiskoWorkListener listener)
     {
         if (listeners.indexOf(listener) == -1)
         {
@@ -264,7 +264,7 @@ public abstract class AbstractDiskoWpModule
         }
     }
 
-    public void removeDiskoWorkEventListener(IDiskoWorkEventListener listener)
+    public void removeDiskoWorkEventListener(IDiskoWorkListener listener)
     {
         listeners.remove(listener);
     }
@@ -440,7 +440,7 @@ public abstract class AbstractDiskoWpModule
     
     public void setFrameText(String text)
     {
-        String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + getName() +"> - ";
+        String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + getProperty(getName() + ".name") +"> - ";
         String o = "<Aksjon: " + getApplication().getMsoModel().getModelDriver().getActiveOperationName() + ">";
         if (text != null) {
             s += text + " - " + o;

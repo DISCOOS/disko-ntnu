@@ -3,7 +3,6 @@ package org.redcross.sar.map;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;

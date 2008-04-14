@@ -3,11 +3,12 @@
  */
 package org.redcross.sar.thread;
 
-import java.awt.Frame;
+import java.util.Calendar;
 
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.mso.MsoModelImpl;
 
 /**
@@ -23,11 +24,14 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	protected boolean m_showProgress = false;
 	protected boolean m_isDone = false;
 	protected boolean m_suspend = false;
-	protected boolean m_isEnabled = false;
+	protected boolean m_isLocked = false;
 	protected boolean m_isNotified = false;
 	protected DiskoProgressMonitor m_monitor = null;
-	protected WorkOnThreadType m_workOnThread = null;
+	protected WorkOnThreadType m_workOnThread = null;	
 	
+	private long m_tic = 0;
+	
+	protected DiskoGlassPane m_glassPane;
 	
 	/**
 	 * Constructor
@@ -136,6 +140,18 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	public abstract S doWork();
 	
 	/**
+	 * Helper function
+	 * 
+	 * @return DiskoGlassPane
+	 */
+	private DiskoGlassPane getGlassPane() {
+    	if(m_glassPane==null) {
+    		m_glassPane = (DiskoGlassPane)Utils.getApp().getFrame().getGlassPane();
+    	}
+    	return m_glassPane;
+    }
+	
+	/**
 	 * Implements the run() method of interface Runnable
 	 * This method is called by the DiskoWorkPool
 	 */
@@ -152,13 +168,11 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 			// set notified flag
 			m_isNotified = true;
 		}
-		// get frame
-		Frame frame = Utils.getApp().getFrame();
+		m_tic = Calendar.getInstance().getTimeInMillis();
 		// get current state
-		m_isEnabled = frame.isEnabled();
-		// disable to prevent user input (keeps work pool concurrent)
-		frame.setEnabled(false);
-		frame.requestFocus();
+		m_isLocked = getGlassPane().isLocked();
+		// prevent user input (keeps work pool concurrent)
+		getGlassPane().setLocked(true);
 		// increment suspend counter?
 		if(m_suspend)
 			MsoModelImpl.getInstance().suspendClientUpdate();
@@ -183,11 +197,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	 * 
 	 */
 	public void done() {
-		// get frame
-		Frame frame = Utils.getApp().getFrame();
 		// resume previous state
-		frame.setEnabled(m_isEnabled);
-		frame.requestFocus();
+		getGlassPane().setLocked(m_isLocked);
 		// notify progress monitor ?
 		if(m_isNotified) {
 			// notify progress monitor
@@ -195,6 +206,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		}
 		// set flag
 		m_isDone = true;
+		System.out.println("WORKER:Finished (" + (Calendar.getInstance().getTimeInMillis() - m_tic) + " ms)");
 	}
 	
 	/** 

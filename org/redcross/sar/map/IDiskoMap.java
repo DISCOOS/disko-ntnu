@@ -99,6 +99,8 @@ public interface IDiskoMap {
 	public void setSelected(FeatureLayer layer, String whereclause)
 			throws IOException, AutomationException;
 	
+	public int isSelected(IMsoObjectIf msoObj) throws AutomationException, IOException;
+	
 	public List setSelected(IMsoObjectIf msoObject, boolean selected) throws IOException, AutomationException;
 	
 	public List clearSelected() throws IOException, AutomationException;

@@ -1,6 +1,8 @@
 package org.redcross.sar.gui;
 
 import javax.swing.JPanel;
+
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -13,6 +15,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.BorderFactory;
@@ -22,7 +25,7 @@ import javax.swing.border.BevelBorder;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
@@ -37,7 +40,8 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 
 import com.esri.arcgis.interop.AutomationException;
 
-public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLayerEventListener  {
+public class DiskoDialog extends JDialog 
+		implements IMsoUpdateListenerIf, IMsoLayerEventListener, IDiskoWorkListener {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -50,7 +54,7 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 	public static final int POS_SOUTH  = 4;
 	public static final int POS_CENTER = 5;
 	
-	private ArrayList<IDiskoWorkEventListener> listeners = null;  //  @jve:decl-index=0:
+	private ArrayList<IDiskoWorkListener> listeners = null;  //  @jve:decl-index=0:
 	
 	private JToggleButton toggleButton = null;
 	private JDialog navDialogToggle = null;
@@ -81,8 +85,31 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 		// prepare objects
         myInterests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
         myLayers =  EnumSet.noneOf(IMsoFeatureLayer.LayerCode.class);
+        // listen to component events from frame
+        owner.addComponentListener(new ComponentListener() {
+			public void componentHidden(ComponentEvent arg0) {
+				setVisible(false);		
+			}
+			public void componentMoved(ComponentEvent arg0) {
+				updatePosition();
+			}
+			public void componentResized(ComponentEvent arg0) {
+				setFixedSize();
+				updatePosition();
+			}
+			public void componentShown(ComponentEvent arg0) {
+				setFixedSize();
+				updatePosition();
+			}
+		});        
 		// initialize ui
 		initialize();
+	}
+	
+	public void setFixedSize() {}
+	
+	public Component createRigidArea() {
+		return Box.createRigidArea(new Dimension(5,5));
 	}
 
 	/**
@@ -100,6 +127,20 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 		this.myInterests = myInterests;
 		this.myLayers = myLayers;
         // add listeners
+        owner.addComponentListener(new ComponentListener() {
+			public void componentHidden(ComponentEvent arg0) {
+				setVisible(false);		
+			}
+			public void componentMoved(ComponentEvent arg0) {
+				updatePosition();
+			}
+			public void componentResized(ComponentEvent arg0) {
+				updatePosition();
+			}
+			public void componentShown(ComponentEvent arg0) {
+				updatePosition();
+			}
+		});		
 		if(myInterests!=null && myInterests.size()>0) {
         	Utils.getApp().getMsoModel().getEventManager().addClientUpdateListener(this);
     	}
@@ -121,14 +162,14 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 	 */
 	private void initialize() {
 		this.setUndecorated(true);
-		listeners = new ArrayList<IDiskoWorkEventListener>();
+		listeners = new ArrayList<IDiskoWorkListener>();
 	}
 	
-	public void addDiskoWorkEventListener(IDiskoWorkEventListener listener) {
+	public void addDiskoWorkEventListener(IDiskoWorkListener listener) {
 		listeners.add(listener);
 	}
 	
-	public void removeDiskoWorkEventListener(IDiskoWorkEventListener listener) {
+	public void removeDiskoWorkEventListener(IDiskoWorkListener listener) {
 		listeners.remove(listener);
 	}
 	
@@ -180,7 +221,22 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 			listeners.get(i).onWorkChange(e);
 		}
 	}
+    
+	public void onWorkChange(DiskoWorkEvent e) {
+		// forward
+		fireOnWorkChange(e);						
+	}
 	
+	public void onWorkCancel(DiskoWorkEvent e) {
+		// forward
+		fireOnWorkCancel(e);						
+	}
+    
+	public void onWorkFinish(DiskoWorkEvent e) {
+		// forward
+		fireOnWorkFinish(e);						
+	}
+    	
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (isToggable) {
@@ -240,8 +296,8 @@ public class DiskoDialog extends JDialog implements IMsoUpdateListenerIf, IMsoLa
 			return;
 		}
 		if (width == -1 && height == -1) {
-			width  = getWidth();
-			height = getHeight();
+			width  = getWidth() !=0 ? getWidth() : -1;
+			height = getHeight() !=0 ? getHeight() : -1;
 		}
 		int offset = 2;
 		int x = positionComp.getLocationOnScreen().x;

@@ -84,16 +84,6 @@ public class UnitTypeDialog extends DiskoDialog
 		// Buttons
 		JPanel actionButtonRow = new JPanel();
 
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				fireOnWorkCancel();
-			}
-		});
-		actionButtonRow.add(m_cancelButton);
-
 		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_okButton.addActionListener(new ActionListener()
 		{
@@ -110,6 +100,16 @@ public class UnitTypeDialog extends DiskoDialog
 			}
 		});
 		actionButtonRow.add(m_okButton);
+
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+		m_cancelButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent arg0)
+			{
+				fireOnWorkCancel();
+			}
+		});
+		actionButtonRow.add(m_cancelButton);
 
 		m_contentsPanel.add(actionButtonRow);
 

@@ -8,7 +8,7 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.map.IHostToolDialog;
@@ -70,14 +70,14 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	
 	// objects
 	protected ArrayList<JPanel> panels = null;
-	private ArrayList<IDiskoWorkEventListener> listeners = null;
+	private ArrayList<IDiskoWorkListener> listeners = null;
 	
 	/**
 	 * Constructor
 	 *
 	 */
 	protected AbstractDiskoTool() {
-		listeners = new ArrayList<IDiskoWorkEventListener>();
+		listeners = new ArrayList<IDiskoWorkListener>();
 	}
 	
 	/*===============================================
@@ -194,11 +194,11 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		
 	}
 
-	public void addDiskoWorkEventListener(IDiskoWorkEventListener listener) {
+	public void addDiskoWorkEventListener(IDiskoWorkListener listener) {
 		listeners.add(listener);
 	}
 
-	public void removeDiskoWorkEventListener(IDiskoWorkEventListener listener) {
+	public void removeDiskoWorkEventListener(IDiskoWorkListener listener) {
 		listeners.remove(listener);
 	}
 	

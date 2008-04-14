@@ -2,6 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.util.Internationalization;
 
@@ -153,7 +154,7 @@ public class PersonnelAddressBottomPanel extends JPanel
 	/**
 	 * Save field contents to current personnel
 	 */
-	public void savePersonnel()
+	public boolean savePersonnel()
 	{
 		if(m_currentPersonnel != null)
 		{
@@ -167,5 +168,8 @@ public class PersonnelAddressBottomPanel extends JPanel
 
 			m_currentPersonnel.resumeClientUpdate();
 		}
+		// success!
+		return true;
 	}
+	
 }

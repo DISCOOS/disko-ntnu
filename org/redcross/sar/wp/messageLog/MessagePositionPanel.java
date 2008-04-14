@@ -94,18 +94,22 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		gbc.weightx = 0.0;
 		gbc.gridx++;
 		
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+		m_okButton.addActionListener(new ActionListener()
 		{
+			/**
+			 * Add/update POI in current message
+			 */
 			public void actionPerformed(ActionEvent e)
 			{
 				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 				numPad.setVisible(false);
-				revertPosition();
-				MessageLogBottomPanel.showListPanel();
+				if(applyPosition())
+					MessageLogBottomPanel.showListPanel();
 			}
 		});
-		this.add(m_cancelButton, gbc);
+		this.add(m_okButton, gbc);
+
 
 		gbc.gridy = 1;		
 		m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
@@ -124,21 +128,18 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		this.add(m_centerAtButton, gbc);
 		
 		gbc.gridy = 2;		
-		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
-		m_okButton.addActionListener(new ActionListener()
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+		m_cancelButton.addActionListener(new ActionListener()
 		{
-			/**
-			 * Add/update POI in current message
-			 */
 			public void actionPerformed(ActionEvent e)
 			{
 				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 				numPad.setVisible(false);
-				if(applyPosition())
-					MessageLogBottomPanel.showListPanel();
+				revertPosition();
+				MessageLogBottomPanel.showListPanel();
 			}
 		});
-		this.add(m_okButton, gbc);
+		this.add(m_cancelButton, gbc);
 
 	}
 

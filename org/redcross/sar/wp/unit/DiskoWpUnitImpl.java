@@ -25,16 +25,19 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.models.UnitTableModel;
+import org.redcross.sar.gui.renderers.UnitTableStringConverter;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -45,14 +48,13 @@ import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
-import org.redcross.sar.wp.messageLog.MessageLogBottomPanel;
 
 /**
  * Implementation of the Unit work process
  * 
  * @author thomasl
  */
-public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IDiskoWorkEventListener
+public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IDiskoWorkListener
 {
 	private JPanel m_contentsPanel;
 	
@@ -234,6 +236,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_personnelOverviewTable.setTransferHandler(m_personnelTransferHandler);
 		m_personnelOverviewTable.setDragEnabled(true);
 		
+		TableRowSorter<PersonnelOverviewTableModel> tableRowSorter = 
+				new TableRowSorter<PersonnelOverviewTableModel>(personnelModel);
+		m_personnelOverviewTable.setRowSorter(tableRowSorter);;
+		tableRowSorter.setSortsOnUpdates(true);
+		tableRowSorter.setSortable(2, false);
+		tableRowSorter.setSortable(3, false);
+		
 		PersonnelOverviewTableEditor personnelRenderer = new PersonnelOverviewTableEditor(this);
 		personnelRenderer.setTable(m_personnelOverviewTable);
 		
@@ -246,7 +255,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(dim.width * 3 + 20);
 		column.setMaxWidth(dim.width * 3 + 20);
 	    
-		m_personnelOverviewTable.setTableHeader(null);
+		//m_personnelOverviewTable.setTableHeader(null);
 		
 		JScrollPane personnelOverviewScrollPane = new JScrollPane(m_personnelOverviewTable);
 		m_overviewTabPane.addTab(getText("Personnel.text"), personnelOverviewScrollPane);
@@ -458,9 +467,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 	public boolean finish()
 	{
-		// Check to see if new personnel is created
+		
+		this.getMsoModel().suspendClientUpdate();
+		
+		// create a new personnel?
 		if(m_newPersonnel)
 		{
+			// create data
 			IPersonnelIf personnel = this.getMsoManager().createPersonnel();
 			m_personnelLeftDetailsPanel.setPersonnel(personnel);
 			m_newPersonnel = false;
@@ -469,15 +482,29 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_overviewTabPane.setEnabled(true);
 			m_personnelOverviewTable.setEnabled(true);
 		}
-		m_personnelLeftDetailsPanel.savePersonnel();
-		//m_personnelLeftDetailsPanel.setPersonnel(null);
-		//m_personnelLeftDetailsPanel.updateFieldContents();
+		
+		// try to save personel
+		if(!m_personnelLeftDetailsPanel.savePersonnel()) {
+			// is new personell?
+			if(m_newPersonnel) {
+				// delete object!
+				m_personnelLeftDetailsPanel.getPersonnel().deleteObject();
+			}
+			// failed?
+			if(m_leftViewId == PERSONNEL_DETAILS_VIEW_ID) {
+				// resume update
+				this.getMsoModel().resumeClientUpdate();
+				// failed!
+				return false;
+			}
+		}
+				
+		// save adress information
 		m_personnelAddressBottomPanel.savePersonnel();
-		//m_personnelAddressBottomPanel.setPersonnel(null);
-		//m_personnelAddressBottomPanel.updateFieldContents();
 		
 		// Check for new unit
 		m_unitDetailsLeftPanel.saveUnit();
+		
 		if(m_newUnit)
 		{
 			// Unit is set to ready on first commit
@@ -488,27 +515,26 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_newUnitButton.setSelected(false);
 			m_newUnit = false;
 		}
-		//m_unitDetailsLeftPanel.setUnit(null);
-		//m_unitDetailsLeftPanel.updateFieldContents();
 		
 		// Check for new call-out
 		if(m_newCallOut)
 		{
 			m_overviewTabPane.setEnabled(true);
-			//m_calloutDetailsPanel.setCallOut(null);
-			//m_calloutDetailsPanel.updateFieldContents();
 			
 			m_newCallOut = false;
 			m_importCalloutButton.setSelected(false);
 		}
 		m_calloutDetailsPanel.saveCallOut();
-		//m_calloutDetailsPanel.setCallOut(null);
-		//m_calloutDetailsPanel.updateFieldContents();
 		
+		
+		this.getMsoModel().resumeClientUpdate();
+		
+		// committ changes
 		this.getMsoModel().commit();
 
-		// success
+		// success!
 		return true;
+		
 	}
 	
 	/**

@@ -1,23 +1,21 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
+import javax.swing.AbstractButton;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
 import javax.swing.table.TableColumn;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.models.POITableModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -31,12 +29,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class DescriptionDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPanel = null;
-	private JPanel titlePanel = null;
-	private JLabel iconLabel = null;
-	private JLabel titleLabel = null;
-	private JPanel descriptionPanel = null;
-	private JScrollPane tableScrollPane = null;
+	private DiskoPanel contentPanel = null;
 	private JTable poiTable = null;
 	private IDiskoWpModule wp = null;
 	private POITableModel tableModel = null;
@@ -86,31 +79,25 @@ public class DescriptionDialog extends DiskoDialog {
 	    return myLayers;
 	}
 	
-	@Override
-	public void setVisible(boolean isVisible) {
-		if(currentMsoObj==null && isVisible) {
-			// notfiy user
-			JOptionPane.showMessageDialog(getOwner(),
-                "Du må velge et oppdrag i kartet før du kan endre beskrivelse",
-                "Objekt mangler", JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		super.setVisible(isVisible);
-	}
-	
 	/**
 	 * This method initializes contentPanel
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getContentPanel() {
+	private DiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
-				contentPanel.add(getDescriptionPanel(), BorderLayout.CENTER);
+				contentPanel = new DiskoPanel();
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				AbstractButton button = contentPanel.addButton(
+						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// hide me!
+						setVisible(false);						
+					}					
+				});
+				contentPanel.setContent(getPoiTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -118,70 +105,6 @@ public class DescriptionDialog extends DiskoDialog {
 		return contentPanel;
 	}
 
-	/**
-	 * This method initializes titlePanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getTitlePanel() {
-		if (titlePanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.LEFT);
-				fl.setHgap(5);
-				fl.setVgap(0);
-				JPanel labels = new JPanel();
-				labels.setLayout(fl);
-				iconLabel = new JLabel();
-				titleLabel = new JLabel();
-				labels.add(iconLabel,null);
-				labels.add(titleLabel,null);
-				titlePanel = new JPanel();
-				titlePanel.setLayout(new BorderLayout());
-				titlePanel.add(labels,BorderLayout.CENTER);
-				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return titlePanel;
-	}
-	
-	/**
-	 * This method initializes descriptionPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getDescriptionPanel() {
-		if (descriptionPanel == null) {
-			try {
-				descriptionPanel = new JPanel();
-				descriptionPanel.setLayout(new BorderLayout());
-				descriptionPanel.add(getTableScrollPane(), BorderLayout.CENTER);
-				descriptionPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return descriptionPanel;
-	}
-
-	/**
-	 * This method initializes tableScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getTableScrollPane() {
-		if (tableScrollPane == null) {
-			try {
-				tableScrollPane = new JScrollPane();
-				tableScrollPane.setViewportView(getPoiTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return tableScrollPane;
-	}
 	
 	private POITableModel getPOITableModel() {
 		if (tableModel == null) {
@@ -214,7 +137,6 @@ public class DescriptionDialog extends DiskoDialog {
 	private void setColumnWidths() {
 		for (int i = 0; i < 4; i++) {
 			TableColumn column = getPoiTable().getColumnModel().getColumn(i);
-			column.setResizable(false);
 			switch(i) {
 				case 0: 
 					column.setPreferredWidth(15);
@@ -235,6 +157,8 @@ public class DescriptionDialog extends DiskoDialog {
 	@Override
 	public boolean setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorking()) return false;
+		// reset assignment
+		currentAssignment = null;
 		// get area
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
@@ -255,15 +179,15 @@ public class DescriptionDialog extends DiskoDialog {
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
-			titleLabel.setText("<html>Punktvis beskrivelse av <b>" + 
+			getContentPanel().setCaptionIcon(Utils.getIcon(e,"48x48"));
+			getContentPanel().setCaptionText("<html>Punktvis beskrivelse av <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
-			getDescriptionPanel().setEnabled(true);
+			getPoiTable().setEnabled(true);
 		}
 		else {
-			iconLabel.setIcon(null);
-			titleLabel.setText("Du må først velge et oppdrag");			
-			getDescriptionPanel().setEnabled(false);
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
+			getPoiTable().setEnabled(false);
 		}		
 	}	
 

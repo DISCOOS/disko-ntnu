@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -29,7 +28,6 @@ import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.PositionField;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
@@ -477,8 +475,8 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 				fl.setVgap(0);
 				fl.setAlignment(FlowLayout.RIGHT);
 				buttonPanel.setLayout(fl);
-				buttonPanel.add(getCancelButton());
 				buttonPanel.add(getApplyButton());
+				buttonPanel.add(getCancelButton());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

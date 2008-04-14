@@ -5,6 +5,7 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 
 import org.redcross.sar.gui.document.NumericDocument;
@@ -19,15 +20,15 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public NumericAttribute(IAttributeIf attribute, String caption, boolean isEditable) {
+	public NumericAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
-		this(attribute,caption,-1,0,false,isEditable);		
+		this(attribute,caption,width,-1,0,false,isEditable);		
 	}
 	
-	public NumericAttribute(IAttributeIf attribute, String caption, 
+	public NumericAttribute(IAttributeIf attribute, String caption, int width,  
 			int maxDigits, int decimalPrecision, boolean allowNegative, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,null,isEditable);
+		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// apply number document
@@ -37,18 +38,19 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		load();		
 	}
 	
-	public NumericAttribute(String name, String caption, Object value, boolean isEditable) {
+	public NumericAttribute(String name, String caption, int width, Object value, boolean isEditable) {
 		// forward
-		this(name,caption,value,-1,0,false,isEditable);
+		this(name,caption,width,value,-1,0,false,isEditable);
 	}
 	
-	public NumericAttribute(String name, String caption, Object value, 
+	public NumericAttribute(String name, String caption, int width, Object value, 
 			int maxDigits, int decimalPrecision, boolean allowNegative, boolean isEditable) {
 		// forward
-		super(name,caption,null,isEditable);
+		super(name,caption,width,null,isEditable);
 		// apply number document
 		((JTextField)m_component).setDocument(
-				new NumericDocument(maxDigits,decimalPrecision,allowNegative));		
+				new NumericDocument(maxDigits,decimalPrecision,allowNegative));
+		
 	}
 	
 	/*==================================================================
@@ -58,8 +60,12 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	
 	protected Component getComponent() {
 		if(m_component==null) {
-			m_component = new JTextField();
-			((JTextField)m_component).setEditable(m_isEditable);
+			// create
+			JFormattedTextField field = new JFormattedTextField();
+			// set format
+			field.setEditable(m_isEditable);
+			// save the component
+			m_component = field;
 		}
 		return m_component;
 	}
@@ -69,8 +75,17 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
+	public void setAutoSave(boolean auto) {
+		m_autoSave = auto;
+	}
+	
+	public boolean getAutoSave() {
+		return m_autoSave;
+	}	
+	
 	public Object getValue() {
-		return ((JTextField)m_component).getText();
+		String value = ((JTextField)m_component).getText();
+		return value!=null && value.length()>0? Integer.valueOf(value) : 0;
 	}
 	
 	public boolean setValue(Object value) {
@@ -85,6 +100,12 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	}
 	
 	public boolean setMsoAttribute(IAttributeIf attribute) {
+		// reset?
+		if(attribute==null) {
+			// reset
+			m_attribute = null;			
+		}
+		else 
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
@@ -101,6 +122,16 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// failure
 		return false;
 	}	
+	
+	public void setMaxDigits(int digits) {
+		// set precision
+		((NumericDocument)((JTextField)m_component).getDocument()).setMaxDigits(digits); 
+	}
+ 
+	public int getMaxDigits() {
+		// get precision
+		return ((NumericDocument)((JTextField)m_component).getDocument()).getMaxDigits(); 
+	}
 	
 	public void setDecimalPrecision(int precision) {
 		// set precision
@@ -121,6 +152,6 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// get flag
 		return ((NumericDocument)((JTextField)m_component).getDocument()).getAllowNegative(); 
 	}
-	
+
 	
 }

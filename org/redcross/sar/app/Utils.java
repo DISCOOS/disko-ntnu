@@ -1,6 +1,8 @@
 package org.redcross.sar.app;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.image.BufferedImage;
 
@@ -335,4 +337,13 @@ public class Utils {
 		if (lastDot==-1){ return null; }
 		return packageName.substring (lastDot+1,packageName.length()).toUpperCase();
 	}	
+	
+	public static void setFixedSize(Component c, int w, int h) {
+		Dimension dim = new Dimension(w,h);
+		c.setSize(dim);
+		c.setMinimumSize(dim);
+		c.setPreferredSize(dim);
+		c.setMaximumSize(dim);
+	}
+	
 }

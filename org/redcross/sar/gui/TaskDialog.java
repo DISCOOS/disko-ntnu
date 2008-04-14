@@ -4,15 +4,25 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMessageLineIf;
+import org.redcross.sar.mso.data.IMessageLineListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.data.TaskImpl;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.wp.IDiskoWpModule;
+import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog;
 import org.redcross.sar.wp.tasks.TaskUtilities;
 
 import javax.swing.BorderFactory;
@@ -227,7 +237,7 @@ public class TaskDialog extends DiskoDialog
 
 		// Finish button
 		JPanel actionButtonPanel = new JPanel();
-		m_finishedButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
+		m_finishedButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_finishedButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -491,12 +501,33 @@ public class TaskDialog extends DiskoDialog
 			String description = m_currentTask.getDescription();
 			m_descriptionTextArea.setText(description);
 
-			// Source
-			m_sourceTextArea.setText(m_currentTask.getSourceClassText());
+			// initialize text
+			String source = m_currentTask.getSourceClassText();
+			
+			// get more source information?
+			if(m_currentTask instanceof TaskImpl) {
+				// get source object
+				IMsoObjectIf srcObj = ((TaskImpl)m_currentTask).getSourceObject();
+				// get text
+				if(srcObj instanceof IMessageIf) {
+					// cast
+					IMessageIf message = (IMessageIf)srcObj;
+					// get resource bundle
+					ResourceBundle bundle = Internationalization.getBundle(IDiskoWpMessageLog.class);
+					// get source text
+					source = MsoUtils.getMessageText(message,bundle);
+				}				
+			}
+			else {
+			}
+			
+			// save source text
+			m_sourceTextArea.setText(source);
 
 			// Object
 			IMsoObjectIf object = m_currentTask.getDependentObject();
 			m_objectTextField.setText(object == null ? "" : object.shortDescriptor());
+			
 		}
 		else
 		{
@@ -516,7 +547,7 @@ public class TaskDialog extends DiskoDialog
 		updateDueComboBox();
 		updateAlertComboBox();
 	}
-
+	
 	private void updateDueComboBox()
 	{
 		m_dueComboBox.removeAllItems();

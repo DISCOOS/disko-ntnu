@@ -3,14 +3,15 @@ package org.redcross.sar.thread;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoProgressDialog;
+import org.redcross.sar.gui.DiskoProgressPanel;
 import org.redcross.sar.thread.DiskoProgressEvent.DiskoProgressEventType;
 
 /**
@@ -22,7 +23,7 @@ import org.redcross.sar.thread.DiskoProgressEvent.DiskoProgressEventType;
  * @author kennetgu
  *
  */
-public class DiskoProgressMonitor implements IDiskoProgress {
+public class DiskoProgressMonitor {
 	   
 	private static int PAUSE_MILLIS = 10;
 	
@@ -39,26 +40,23 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 	private DecisionWorker m_worker = null;
 	private boolean m_hasProgress = false;
 	private boolean m_oldState = false;
+	
+	private DiskoGlassPane m_glassPane = null;
 	private DiskoProgressDialog m_progressDialog = null;
-	private List<IDiskoProgressListener> listeners = null;
+	private DiskoProgressPanel m_progressPanel = null;
+	
+	private List<IDiskoProgressListener> m_listeners = null;
 
-  	/*========================================================
+	private DiskoProgressMonitor() {
+		// prepare
+		m_listeners = new ArrayList<IDiskoProgressListener>();
+	}
+	
+	/*========================================================
   	 * The singleton code
   	 *========================================================
   	 */
 
-	/**
-	 * private constructor
-	 */
-	private DiskoProgressMonitor() {
-		// create list of progress listeners
-        listeners = Collections.synchronizedList(
-        		new ArrayList<IDiskoProgressListener>());
-		// The dialog is not shown before EVENT_START is raised
-		m_progressDialog = new DiskoProgressDialog(
-				Utils.getApp().getFrame(),this,false,false);
-	}
-	
 	/**
 	 * Get singleton instance of class
 	 * 
@@ -69,7 +67,7 @@ public class DiskoProgressMonitor implements IDiskoProgress {
   			// only allowed to be created on the AWT thread!
   			if(!SwingUtilities.isEventDispatchThread())
   				throw new Exception("DiskoProgressMonitor can only " +
-  						"be instansiated on the Event Dispatch Thread");  		
+  						"be instansiated on the Event Dispatch Thread");
   			// it's ok, we can call this constructor
   			m_this = new DiskoProgressMonitor();
   		}
@@ -101,8 +99,6 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 	}
 	
 	public synchronized int start(String note, int min, int max, int progress) {
-		// is not intermediate
-		m_intermediate = false;
 		// initialize
 		m_min = 0;
 		m_max = 0;
@@ -119,6 +115,8 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 		else {
 			// increment
 			m_isInAction++;
+			// update progress bar
+			update();
 			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);			
 		}
@@ -131,6 +129,8 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 			// update
 			m_note = note;
 			m_progress = step;
+			// update progress bar
+			update();
 			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);
 		}
@@ -251,11 +251,11 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 	}
 		
 	public synchronized void addListener(IDiskoProgressListener listener) {
-		listeners.add(listener);		
+		m_listeners.add(listener);		
 	}
 
 	public synchronized void removeListener(IDiskoProgressListener listener) {
-		listeners.remove(listener);
+		m_listeners.remove(listener);
 	}
 	
 	public synchronized boolean isInhibit() {
@@ -268,15 +268,15 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 	
 	public synchronized void hide() {
 		// get state
-		m_oldState = m_progressDialog.isVisible();
+		m_oldState = isVisible();
 		if(m_oldState)
-			m_progressDialog.setVisible(false);
+			setVisible(false);
 	}
 	
 	public synchronized boolean showAgain() {
 		// show?
-		if(m_oldState && !m_inhibit && !m_progressDialog.isVisible()) {
-			m_progressDialog.setVisible(true);
+		if(m_oldState && !m_inhibit && !isVisible()) {
+			setVisible(true);
 			return true;
 		}
 		return false;
@@ -318,13 +318,13 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 		}
 		// ensure that dialog is closed
 		if(SwingUtilities.isEventDispatchThread())
-			m_progressDialog.setVisible(false);					
+			setVisible(false);
 		else {
 			try {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							m_progressDialog.setVisible(false);					
+							setVisible(false);					
 						}
 						catch(Exception e) {
 							e.printStackTrace();
@@ -338,6 +338,32 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 		}
 	}
 	
+	private void update() {
+		// prepate progress bar
+		if(getIntermediate()) {
+			getProgressPanel().setLimits(m_min, m_max, true);
+		}
+		else {
+			getProgressPanel().setLimits(0, 0, false);
+		}
+		// update progress 
+		getProgressPanel().setProgress(m_progress,m_note,m_note);			
+	}
+	
+	public synchronized boolean isVisible() {
+		// hide progress
+		return getGlassPane().isVisible() && getProgressDialog().isVisible();
+	}
+	
+	private synchronized void setVisible(boolean isVisible) {
+		// prepare?
+		if(isVisible) {
+			update();
+		}
+		getGlassPane().setVisible(isVisible);
+		getProgressDialog().setVisible(isVisible);				
+	}
+	
 	private void fireUpdateProgressEvent(final DiskoProgressEventType type) {
 		if(!SwingUtilities.isEventDispatchThread()) {
 			try {
@@ -345,11 +371,7 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 					public void run() {
 						try {
 							// get event
-							DiskoProgressEvent e = new DiskoProgressEvent(this,type);
-							// notify listeners
-							for(int i=0;i<listeners.size();i++) {
-								listeners.get(i).changeProgress(e);
-							}
+							fireProgressEvent(new DiskoProgressEvent(this,type));
 						}
 						catch(Exception e) {
 							e.printStackTrace();
@@ -363,12 +385,53 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 		}
 		else {
 			// get event
-			DiskoProgressEvent e = new DiskoProgressEvent(this,type);
-			// notify listeners
-			for(int i=0;i<listeners.size();i++) {
-				listeners.get(i).changeProgress(e);
-			}			
+			fireProgressEvent(new DiskoProgressEvent(this,type));
 		}
+	}
+	
+	private void fireProgressEvent(DiskoProgressEvent e) {
+		// notify listeners
+		for(int i=0;i<m_listeners.size();i++) {
+			m_listeners.get(i).changeProgress(e);
+		}					
+	}
+	
+	/**
+	 * Helper function
+	 * 
+	 * @return DiskoGlassPane
+	 */
+	private DiskoGlassPane getGlassPane() {
+    	if(m_glassPane==null) {
+    		m_glassPane = (DiskoGlassPane)Utils.getApp().getFrame().getGlassPane();
+    	}
+    	return m_glassPane;
+    }
+	
+	/**
+	 * Helper function
+	 * 
+	 * @return DiskoProgressDialog
+	 */
+	private DiskoProgressDialog getProgressDialog() {
+		// initialize?
+		if(m_progressDialog==null) {
+			m_progressDialog = getGlassPane().getProgressDialog();
+		}
+		return m_progressDialog;		
+	}
+	
+	/**
+	 * Helper function
+	 * 
+	 * @return DiskoProgressPanel
+	 */
+	private DiskoProgressPanel getProgressPanel() {
+		// initialize?
+		if(m_progressPanel==null) {
+			m_progressPanel = getGlassPane().getProgressDialog().getProgressPanel();
+		}
+		return m_progressPanel;		
 	}
 	
   	/*========================================================
@@ -416,8 +479,8 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 				// success
 				return true;
 			}
-			// hide dialog is visible
-			m_progressDialog.setVisible(false);
+			// hide progress
+			setVisible(false);
 			// invalid
 			return false;			
 		}
@@ -436,6 +499,10 @@ public class DiskoProgressMonitor implements IDiskoProgress {
 		public void actionPerformed(ActionEvent e) {
 			// has no progress?
 			if(!m_isCancelled && !m_hasProgress && System.currentTimeMillis()- m_start > m_millisToPopup) {
+				// stop timer
+				m_timer.stop();
+				// show progress
+				setVisible(true);
 				// forward event to listeners
 				fireUpdateProgressEvent(DiskoProgressEventType.EVENT_START);
 			}

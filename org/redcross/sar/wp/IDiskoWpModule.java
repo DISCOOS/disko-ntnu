@@ -4,7 +4,7 @@ import java.util.EnumSet;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
@@ -93,9 +93,9 @@ public interface IDiskoWpModule {
      */
     public boolean confirmDeactivate();
 
-	public void addDiskoWorkEventListener(IDiskoWorkEventListener listener);
+	public void addDiskoWorkEventListener(IDiskoWorkListener listener);
 
-    public void removeDiskoWorkEventListener(IDiskoWorkEventListener listener);
+    public void removeDiskoWorkEventListener(IDiskoWorkListener listener);
 
     public void showWarning(String msg);
 

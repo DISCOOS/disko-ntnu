@@ -1,24 +1,20 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.EnumSet;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
+import javax.swing.AbstractButton;
 import javax.swing.JTextArea;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -29,14 +25,8 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class MissionTextDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPanel = null;
-	private JPanel titlePanel = null;
-	private JLabel iconLabel = null;
-	private JLabel titleLabel = null;
-	private JPanel textPanel = null;
-	private JScrollPane textAreaScrollPane = null;
+	private DiskoPanel contentPanel = null;
 	private JTextArea textArea = null;
-	private JLabel headerLabel = null;
 	
 	private IOperationAreaIf currentOperationArea = null;
 	
@@ -47,6 +37,8 @@ public class MissionTextDialog extends DiskoDialog {
 		initialize();
 		// get selected mso feature
 		setSelectedMsoFeature(wp.getMap());
+		// forward
+		setup();
 	}
 
 	/**
@@ -78,18 +70,6 @@ public class MissionTextDialog extends DiskoDialog {
 		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
 	    return myLayers;
 	}
-	
-	@Override
-	public void setVisible(boolean isVisible) {
-		if(currentMsoObj==null && isVisible) {
-			// notfiy user
-			JOptionPane.showMessageDialog(getOwner(),
-                "Du må velge et objekt i kartet før du kan skrive inn tekst",
-                "Objekt mangler", JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		super.setVisible(isVisible);
-	}
 
 	private void setText(String text) {
 		setText(text,true,true);
@@ -113,94 +93,32 @@ public class MissionTextDialog extends DiskoDialog {
 		setIsNotWorking();
 	}
 	
-	public void setHeaderText(String text) {
-		headerLabel.setText(text);
-	}
-
 	/**
 	 * This method initializes contentPanel
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getContentPanel() {
+	private DiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
-				contentPanel.add(getTextPanel(), BorderLayout.CENTER);
+				contentPanel = new DiskoPanel();
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				AbstractButton button = contentPanel.addButton(
+						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// remove any changes 
+						cancel();
+						// hide me!
+						setVisible(false);						
+					}					
+				});
+				contentPanel.setContent(getTextArea());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
-	}
-
-	/**
-	 * This method initializes titlePanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getTitlePanel() {
-		if (titlePanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.LEFT);
-				fl.setHgap(5);
-				fl.setVgap(0);
-				JPanel labels = new JPanel();
-				labels.setLayout(fl);
-				iconLabel = new JLabel();
-				titleLabel = new JLabel();
-				labels.add(iconLabel,null);
-				labels.add(titleLabel,null);
-				titlePanel = new JPanel();
-				titlePanel.setLayout(new BorderLayout());
-				titlePanel.add(labels,BorderLayout.CENTER);
-				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return titlePanel;
-	}
-	
-	/**
-	 * This method initializes textPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getTextPanel() {
-		if (textPanel == null) {
-			try {
-				headerLabel = new JLabel();
-				textPanel = new JPanel();
-				textPanel.setLayout(new BorderLayout());
-				textPanel.add(getTextAreaScrollPane(), BorderLayout.CENTER);
-				textPanel.add(headerLabel, BorderLayout.NORTH);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return textPanel;
-	}
-
-	/**
-	 * This method initializes textAreaScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getTextAreaScrollPane() {
-		if (textAreaScrollPane == null) {
-			try {
-				textAreaScrollPane = new JScrollPane();
-				textAreaScrollPane.setViewportView(getTextArea());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return textAreaScrollPane;
 	}
 
 	/**
@@ -213,16 +131,17 @@ public class MissionTextDialog extends DiskoDialog {
 			try {
 				textArea = new JTextArea();
 				textArea.setLineWrap(true);
-				textArea.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) { apply(); }
-					public void insertUpdate(DocumentEvent arg0) { apply(); }
-					public void removeUpdate(DocumentEvent arg0) { apply(); }
-					private void apply() {
-						// no mso update allowed?
-						if (isWorking()) return;
-						// update mso model
-						setText(textArea.getText(),false,true);						
+				textArea.addFocusListener(new FocusAdapter() {
+
+					@Override
+					public void focusLost(FocusEvent e) {						
+						// forward
+						super.focusLost(e);
+						// forward?
+						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
+							finish();
 					}
+					
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -231,6 +150,23 @@ public class MissionTextDialog extends DiskoDialog {
 		return textArea;
 	}
 
+	public boolean finish() {
+		// no mso update allowed?
+		if (isWorking()) return false;
+		// update mso model
+		setText(textArea.getText(),false,true);
+		// success
+		return true;
+	}
+		
+	public void cancel() {
+		// not allowed?
+		if (isWorking()) return;
+		// reset to mso model
+		setText((currentOperationArea!=null 
+				? currentOperationArea.getRemarks() : null),true,false);
+	}
+	
 	@Override
 	public boolean setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorking()) return false;
@@ -252,16 +188,16 @@ public class MissionTextDialog extends DiskoDialog {
 	private void setup() {
 		// update icon
 		if(currentOperationArea!=null) {
-			iconLabel.setIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
-			titleLabel.setText("<html>Skriv inn ordre for <b>" + 
+			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
+			getContentPanel().setCaptionText("<html>Skriv inn ordre fra oppdragsgiver for <b>" + 
 					MsoUtils.getOperationAreaName(currentOperationArea,true).toLowerCase() 
-					+ "</b> fra oppdragsgiver</html>");
-			getTextPanel().setEnabled(true);
+					+ "</b></html>");
+			getTextArea().setVisible(true);
 		}
 		else {
-			iconLabel.setIcon(null);
-			titleLabel.setText("Du må først velge et operasjonsområde");			
-			getTextPanel().setEnabled(false);
+			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionText("Du må først velge et operasjonsområde");			
+			getTextArea().setVisible(false);
 		}		
 	}	
 	

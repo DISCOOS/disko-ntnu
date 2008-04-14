@@ -366,5 +366,15 @@ report.UNITLOG_TEMPLATE=UnitLog
 report.PARTICIPANTS_TEMPLATE=
 report.COMMUNICATIONLOG_TEMPLATE=
 report.MISSIONLOG_TEMPLATE=
-report.mapscale=15000
+report.mapscale=50000
+
+#===============================
+# DISKO Work Process API
+#===============================
+
+TACTICS.name = Taktikk
+LOGISTICS.name = Logistikk
+MESSAGELOG.name = Sambandslogg
+TASKS.name = Oppgaver
+UNIT.name = Enheter
 

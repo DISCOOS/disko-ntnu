@@ -32,7 +32,7 @@ import com.esri.arcgis.geometry.esriGeometryType;
 public class SelectFeatureTool extends AbstractDiskoTool {
 
 	private static final long serialVersionUID = 1L;
-	private static final int SNAP_TOL_FACTOR = 200;
+	private static final int SNAP_TOL_FACTOR = 100;
 
 	private Point p = null;
 	private IFeature currentFeature = null;
@@ -50,9 +50,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		// set tool type
 		type = DiskoToolType.SELECT_FEATURE_TOOL;		
 
-		// get current application
-		IDiskoApplication app = Utils.getApp();
-		
+		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		
 	}
@@ -257,7 +255,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		
 		SelectFeatureWork(DiskoMap map,IMsoFeature msoFeature) 
 									throws Exception {
-			super(true);
+			super(false);
 			this.map = map;
 			this.msoFeature = msoFeature;
 		}
@@ -266,20 +264,30 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		public Boolean doWork() {
 		
 			try {
+				boolean isDirty = false;
 				// suspend update
 				map.suspendNotify();
 				map.setSupressDrawing(true);
 				// forward to map
 				if(msoFeature==null) {
-					map.clearSelected();				
+					if(map.getSelectionCount(true)>0) {
+						map.clearSelected();
+						isDirty = true;
+					}
 				}
 				else {
-					map.clearSelected();				
-					map.setSelected(msoFeature.getMsoObject(),true);
+					if(map.getSelectionCount(false)>0) {
+						map.clearSelected();			
+						isDirty = true;
+					}
+					if(map.isSelected(msoFeature.getMsoObject())==0) {
+						map.setSelected(msoFeature.getMsoObject(),true);
+						isDirty = true;
+					}
 				}
 				// resume update
 				map.setSupressDrawing(false);
-				map.refreshMsoLayers();
+				if(isDirty) map.refreshMsoLayers();
 				map.resumeNotify();
 				// success
 				return true;

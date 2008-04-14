@@ -13,12 +13,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.Enumeration;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -30,13 +28,10 @@ import javax.swing.border.BevelBorder;
 import javax.swing.AbstractButton;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.CustomMapData;
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.MapSourceInfo;
 
@@ -173,8 +168,8 @@ public class MapOptionDialog extends DiskoDialog {
 				buttonPanel = new JPanel();
 				buttonPanel.setLayout(flowLayout);
 				
-				buttonPanel.add(getCancelButton(), null);
 				buttonPanel.add(getFinishButton(), null);
+				buttonPanel.add(getCancelButton(), null);
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

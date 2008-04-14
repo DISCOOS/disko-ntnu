@@ -4,7 +4,7 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -48,6 +48,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 import java.io.IOException;
 
@@ -61,7 +63,7 @@ import java.util.EnumSet;
  *
  */
 public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
-		implements IDiskoWpTactics, IDiskoWorkEventListener, IDrawAdapterListener {
+		implements IDiskoWpTactics, IDiskoWorkListener, IDrawAdapterListener {
 
 	private Dimension buttonSize = null;
 	private JToggleButton elementToggleButton = null;
@@ -69,7 +71,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton missionToggleButton = null;
 	private JToggleButton hypotheseToggleButton = null;
 	private JToggleButton priorityToggleButton = null;
-	private JToggleButton requirementToggleButton = null;
+	private JToggleButton searchRequirementToggleButton = null;
 	private JToggleButton descriptionToggleButton = null;
 	private JToggleButton unitToggleButton = null;
 	private JToggleButton estimateToggleButton = null;
@@ -138,7 +140,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		layoutButton(getMissionToggleButton(), true);
 		layoutButton(getPriorityToggleButton(), true);
 		layoutButton(getHypotheseToggleButton(), true);
-		layoutButton(getRequirementToggleButton(), true);
+		layoutButton(getSearchRequirementToggleButton(), true);
 		layoutButton(getEstimateToggleButton(), true);
 		layoutButton(getDescriptionToggleButton(), true);
 		layoutButton(getUnitToggleButton(), true);
@@ -280,7 +282,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// validate data
 		if(validate()) {
 			//schedule the finish task to work pool
-			return doFinishWork(false);						
+			return doFinishWork(true);						
 		}
 		// failed
 		return false;
@@ -386,7 +388,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// do a rollback
 			if(ans == JOptionPane.OK_OPTION) {
 				//schedule the finish task to work pool
-				return doCancelWork(false);						
+				return doCancelWork(keep);						
 			}
 		}
 		
@@ -397,7 +399,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 
 	public boolean cancel() {
 		// forward
-		return cancel(false);		
+		return cancel(true);		
 	}
 	
 	private void reset(boolean keep) {
@@ -408,8 +410,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			callingWp = null;
 			// keep current object selected?
 			if(!keep) clearSelected();
-			// select next element
-			getDrawAdapter().selectElement();
+			// select next element?
+			if(getMap().getSelectionCount(false)>0) getDrawAdapter().selectElement();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -461,7 +463,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			
 			// get draw dialog
 	        NavBar navBar = getApplication().getNavBar();
-			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();		
+			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
+			drawDialog.setLocationRelativeTo((DiskoMap)getMap(),DiskoDialog.POS_WEST, false);
+
 									
 		}
 		return drawDialog;
@@ -565,18 +569,19 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			draftListDialog = new DraftListDialog(this);
 			draftListDialog.setIsToggable(false);
 			draftListDialog.addDiskoWorkEventListener(this);
-			draftListDialog.setLocationRelativeTo((DiskoMap)getMap());
+			draftListDialog.setLocationRelativeTo((DiskoMap)getMap(),DiskoDialog.POS_CENTER, false);
 			dialogs.add(draftListDialog);
 		}
 		return draftListDialog;
 	}
 	
 	private void showOperationAreaButtons() {
+		
 		getListToggleButton().setVisible(true);
 		getMissionToggleButton().setVisible(true);
 		getHypotheseToggleButton().setVisible(false);
 		getPriorityToggleButton().setVisible(false);
-		getRequirementToggleButton().setVisible(false);
+		getSearchRequirementToggleButton().setVisible(false);
 		getEstimateToggleButton().setVisible(false);
 		getDescriptionToggleButton().setVisible(false);
 		getUnitToggleButton().setVisible(false);
@@ -584,6 +589,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// apply change of visible button
 		//NavBar navBar = getApplication().getNavBar();
 		//navBar.setVisibleButtons(getDefaultNavBarButtons(true, false),true,true);
+		
 	}
 
 	private void showSearchAreaButtons() {
@@ -591,7 +597,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMissionToggleButton().setVisible(false);
 		getHypotheseToggleButton().setVisible(true);
 		getPriorityToggleButton().setVisible(true);
-		getRequirementToggleButton().setVisible(false);
+		getSearchRequirementToggleButton().setVisible(false);
 		getEstimateToggleButton().setVisible(false);
 		getDescriptionToggleButton().setVisible(false);
 		getUnitToggleButton().setVisible(false);
@@ -607,7 +613,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMissionToggleButton().setVisible(false);
 		getHypotheseToggleButton().setVisible(false);
 		getPriorityToggleButton().setVisible(false);
-		getRequirementToggleButton().setVisible(true);
+		getSearchRequirementToggleButton().setVisible(true);
 		getEstimateToggleButton().setVisible(true);
 		getDescriptionToggleButton().setVisible(true);
 		getUnitToggleButton().setVisible(true);
@@ -624,13 +630,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				elementToggleButton.setPreferredSize(buttonSize);
 				elementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						/*
-						if (isChanged()) {
-							Enum element = (Enum) getElementDialog().getElementList().getSelectedValue();
-							showWarning("Du må avslutte "+Utils.translate(element)+" først");
-							return;
-						}
-						*/
 						ElementDialog dialog = getElementDialog();
 						hideDialogs(dialog);
 						if (elementToggleButton.isSelected() && dialog.isVisible()) {
@@ -640,10 +639,36 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							java.awt.Point p = elementToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
-							dialog.setVisible(true);
+							dialog.setVisible(true);							
 						}
 					}
 				});
+				getApplication().getFrame().addComponentListener(new ComponentListener() {
+					public void componentHidden(ComponentEvent arg0) {
+						update(true);
+					}
+					public void componentMoved(ComponentEvent arg0) {
+						update(false);
+					}
+					public void componentResized(ComponentEvent arg0) {
+						update(false);
+					}
+					public void componentShown(ComponentEvent arg0) {
+						update(false);
+					}					
+					private void update(boolean hidden) {
+						ElementDialog dialog = getElementDialog();
+						if (hidden) {
+							dialog.setVisible(false);
+						}
+						else if(elementToggleButton.isSelected() && dialog.isVisible() && elementToggleButton.isVisible()) {
+							java.awt.Point p = elementToggleButton.getLocationOnScreen();
+							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
+							dialog.setLocation(p);
+						}						
+					}
+				});
+
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -741,7 +766,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setLocationRelativeTo(mapComp);
+							dialog.setLocationRelativeTo(mapComp,DiskoDialog.POS_CENTER, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -770,7 +795,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				missionToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MissionTextDialog dialog = getMissionTextDialog();
-						dialog.setHeaderText("Aksjonens oppdrag:");
 						hideDialogs(dialog);
 						if (missionToggleButton.isSelected() && dialog.isVisible()) {
 							dialog.setVisible(false);
@@ -826,23 +850,23 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return priorityToggleButton;
 	}
 
-	private JToggleButton getRequirementToggleButton() {
-		if (requirementToggleButton == null) {
+	private JToggleButton getSearchRequirementToggleButton() {
+		if (searchRequirementToggleButton == null) {
 			try {
-				requirementToggleButton = new JToggleButton();
+				searchRequirementToggleButton = new JToggleButton();
 				Enum key = TacticsTaskType.REQUIREMENT_TASK;
 				ImageIcon icon = Utils.getIcon(key,"48x48");
 				if (icon != null) {
-					requirementToggleButton.setIcon(icon);
+					searchRequirementToggleButton.setIcon(icon);
 				} else {
-					requirementToggleButton.setText(key.name());
+					searchRequirementToggleButton.setText(key.name());
 				}
-				requirementToggleButton.setPreferredSize(buttonSize);
-				requirementToggleButton.addActionListener(new ActionListener() {
+				searchRequirementToggleButton.setPreferredSize(buttonSize);
+				searchRequirementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						SearchRequirementDialog dialog = getSearchRequirementDialog();
 						hideDialogs(dialog);
-						if (requirementToggleButton.isSelected() && dialog.isVisible()) {
+						if (searchRequirementToggleButton.isSelected() && dialog.isVisible()) {
 							dialog.setVisible(false);
 						}
 						else {
@@ -857,7 +881,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				e.printStackTrace();
 			}
 		}
-		return requirementToggleButton;
+		return searchRequirementToggleButton;
 	}
 
 	private JToggleButton getEstimateToggleButton() {
@@ -947,7 +971,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 	}	
 	
-	public void onElementChange(Enum element) {
+	public void onElementChange(Enum element, IMsoObjectIf msoObject) {
 
 		// dispatch element
 		if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(element)) {
@@ -976,7 +1000,25 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		setFrameText("<Metode: "+Utils.translate(element)+">");
 	}
 
-	public void onDrawModeChange(DrawMode mode, DrawMode oldMode) {
+	public void onDrawFinished(DrawMode mode, IMsoObjectIf msoObject) {
+		// auto show dialog?
+		if(DrawMode.CREATE.equals(mode)) {
+			// get class code
+			MsoClassCode code = msoObject.getMsoClassCode();
+			// select correct dialog
+			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code)) {
+				getMissionToggleButton().doClick();
+			}
+			else if(MsoClassCode.CLASSCODE_SEARCHAREA.equals(code)) {
+				getHypotheseToggleButton().doClick();
+			}
+			else if(MsoUtils.inAssignment(msoObject)) {
+				getSearchRequirementToggleButton().doClick();
+			}
+		}
+	}
+	
+	public void onDrawModeChange(DrawMode mode, DrawMode oldMode, IMsoObjectIf msoObject) {
 		// TODO Implement status bar notifications		
 	}
 	
@@ -986,7 +1028,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 
 	private boolean doFinishWork(boolean keep) {
-		try {			
+		try {
+			// hide dialogs
+			hideDialogs(null);
 			// prompt user 
 			if(getDraftListDialog().prompt()!=-1) {
 				// forward work
@@ -1083,5 +1127,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			}
 		}		
 	}
+
 
 }

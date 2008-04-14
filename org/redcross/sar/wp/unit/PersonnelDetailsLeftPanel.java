@@ -229,87 +229,98 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 		gbc.gridy += height;
 	}
-
+	
     /**
      * Updates personnel data in MSO
      */
-    public void savePersonnel()
+    public boolean savePersonnel()
     {
         if (m_currentPersonnel != null)
         {
-            String[] name = m_nameTextField.getText().split(" ");
+            String[] fields = m_nameTextField.getText().split(" ");
             
             // validate
-            if (name.length > 0)
+            if (fields.length > 0)
             {
             	m_currentPersonnel.suspendClientUpdate();
             	
-                StringBuilder firstName = new StringBuilder();
-                for (int i = 0; i < name.length - 1; i++)
+                StringBuilder text = new StringBuilder();
+                for (int i = 0; i < fields.length - 1; i++)
                 {
-                    firstName.append(name[i] + " ");
+                	text.append(fields[i] + " ");
                 }
 
-                if (firstName.toString() != null)
-                {
-                    m_currentPersonnel.setFirstname(firstName.toString().trim());
+                String firstName = text.toString().trim();
+                String lastName = fields[fields.length - 1].trim();
+                
+                // valid name?
+                if(firstName.length()!=0 || lastName.length()!=0) {
+                
+	                if (firstName.toString() != null)
+	                {
+	                    m_currentPersonnel.setFirstname(firstName);
+	                }
+	                m_currentPersonnel.setLastname(lastName);
+	
+	                String phone = m_cellTextField.getText();
+		            m_currentPersonnel.setTelephone1(phone);
+		
+		            PersonnelType type = (PersonnelType) m_propertyComboBox.getSelectedItem();
+		            if (type == null)
+		            {
+		                type = PersonnelType.OTHER;
+		            }
+		            m_currentPersonnel.setType(type);
+		
+		            String organization = m_organizationTextField.getText();
+		            m_currentPersonnel.setOrganization(organization);
+		
+		            String department = m_departmentTextField.getText();
+		            m_currentPersonnel.setDepartment(department);
+		
+		            try
+		            {
+		                Calendar callout = DTG.DTGToCal(m_calloutTextField.getText());
+		                m_currentPersonnel.setCallOut(callout);
+		            }
+		            catch (IllegalMsoArgumentException e)
+		            {
+		            }
+		
+		            m_currentPersonnel.setEstimatedArrival(parseEstimatedArrival());
+		
+		            try
+		            {
+		                Calendar arrived = DTG.DTGToCal(m_arrivedTextField.getText());
+		                m_currentPersonnel.setArrived(arrived);
+		            }
+		            catch (IllegalMsoArgumentException e)
+		            {
+		            }
+		
+		            try
+		            {
+		                Calendar released = DTG.DTGToCal(m_releasedTextField.getText());
+		                m_currentPersonnel.setReleased(released);
+		            }
+		            catch (IllegalMsoArgumentException e)
+		            {
+		            }
+		
+		            String remarks = m_remarksTextArea.getText();
+		            m_currentPersonnel.setRemarks(remarks);
+		
+		            m_currentPersonnel.resumeClientUpdate();
+		            
+		            // finished!
+		            return true;
+		            
                 }
-                m_currentPersonnel.setLastname(name[name.length - 1].trim());
-
-                String phone = m_cellTextField.getText();
-	            m_currentPersonnel.setTelephone1(phone);
-	
-	            PersonnelType type = (PersonnelType) m_propertyComboBox.getSelectedItem();
-	            if (type == null)
-	            {
-	                type = PersonnelType.OTHER;
-	            }
-	            m_currentPersonnel.setType(type);
-	
-	            String organization = m_organizationTextField.getText();
-	            m_currentPersonnel.setOrganization(organization);
-	
-	            String department = m_departmentTextField.getText();
-	            m_currentPersonnel.setDepartment(department);
-	
-	            try
-	            {
-	                Calendar callout = DTG.DTGToCal(m_calloutTextField.getText());
-	                m_currentPersonnel.setCallOut(callout);
-	            }
-	            catch (IllegalMsoArgumentException e)
-	            {
-	            }
-	
-	            m_currentPersonnel.setEstimatedArrival(parseEstimatedArrival());
-	
-	            try
-	            {
-	                Calendar arrived = DTG.DTGToCal(m_arrivedTextField.getText());
-	                m_currentPersonnel.setArrived(arrived);
-	            }
-	            catch (IllegalMsoArgumentException e)
-	            {
-	            }
-	
-	            try
-	            {
-	                Calendar released = DTG.DTGToCal(m_releasedTextField.getText());
-	                m_currentPersonnel.setReleased(released);
-	            }
-	            catch (IllegalMsoArgumentException e)
-	            {
-	            }
-	
-	            String remarks = m_remarksTextArea.getText();
-	            m_currentPersonnel.setRemarks(remarks);
-	
-	            m_currentPersonnel.resumeClientUpdate();
             }
-            else {
-            	Utils.showWarning("Begrensning","Fullt navn må oppgis for personell");
-            }
+        	Utils.showWarning("Begrensning","Fullt navn må oppgis for personell");
         }
+        // failed!
+        return false;
     }
 
     /**

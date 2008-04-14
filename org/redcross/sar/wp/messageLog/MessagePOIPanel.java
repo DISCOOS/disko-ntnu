@@ -36,6 +36,8 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
+import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
@@ -102,18 +104,21 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		gbc.weightx = 0.0;
 		gbc.gridx++;
 		
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+		m_okButton.addActionListener(new ActionListener()
 		{
+			/**
+			 * Add/update POI in current message
+			 */
 			public void actionPerformed(ActionEvent e)
 			{
 				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 				numPad.setVisible(false);
-				revertPOI();
-				MessageLogBottomPanel.showListPanel();
+				if(applyPOI())
+					MessageLogBottomPanel.showListPanel();				
 			}
 		});
-		this.add(m_cancelButton, gbc);
+		this.add(m_okButton, gbc);
 
 		gbc.gridy = 1;		
 		m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
@@ -132,21 +137,18 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		this.add(m_centerAtButton, gbc);
 		
 		gbc.gridy = 2;		
-		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
-		m_okButton.addActionListener(new ActionListener()
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+		m_cancelButton.addActionListener(new ActionListener()
 		{
-			/**
-			 * Add/update POI in current message
-			 */
 			public void actionPerformed(ActionEvent e)
 			{
 				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 				numPad.setVisible(false);
-				if(applyPOI())
-					MessageLogBottomPanel.showListPanel();				
+				revertPOI();
+				MessageLogBottomPanel.showListPanel();
 			}
 		});
-		this.add(m_okButton, gbc);
+		this.add(m_cancelButton, gbc);
 
 	}
 
@@ -324,16 +326,14 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 			task.setType(type);
 			task.setSourceClass(message.getMsoClassCode());
 			task.setCreatingWorkProcess(getName());
-			// task.setDependentObject(message.getSender());
+			task.setDescription(MsoUtils.getMessageText(message,Internationalization.getBundle(IDiskoWpMessageLog.class)));
+			task.setDependentObject(message.getSender());
 			message.addMessageTask(task);
 			// set flag
 			isDirty = true;
 			
 		}
 
-		// set flag
-		isDirty = true;
-		
 		// get task text
 		String text = String.format(match, Utils.getIconText(poi.getType()));
 		

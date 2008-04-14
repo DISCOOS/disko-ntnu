@@ -46,7 +46,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		DiskoMap map = null;
 		try {
 			String mxdDoc = app.getProperty("MxdDocument.path");
-			map = new DiskoMap(mxdDoc, this, app.getMsoModel(),myLayers);
+			map = new DiskoMap(mxdDoc, this, app.getMsoModel(), myLayers);
 			maps.add(map);
 			if (printMap == null){
 				printMap = new DiskoMap(mxdDoc, this, app.getMsoModel(),getPrintMapLayers());

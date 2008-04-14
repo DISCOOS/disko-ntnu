@@ -96,7 +96,7 @@ public class POITableModel extends AbstractTableModel implements
 	
 	private void update(IPOIIf poi, Object[] row) {
 		try {
-			row[0] = new Integer(rows.size());
+			row[0] = new Integer(rows.size()+1);
 			row[1] = Utils.translate(poi.getType());
 			row[2] = MapUtil.formatMGRS(MapUtil.getMGRSfromPosition(poi.getPosition()),3);		
 			row[3] = poi.getRemarks();		
@@ -110,7 +110,7 @@ public class POITableModel extends AbstractTableModel implements
 	private void updateSortNumber() {
 		for (int i = 0; i < rows.size(); i++) {
 			Object[] row = rows.get(i);
-			row[0] = i;
+			row[0] = i+1;
 		}
 	}
 	

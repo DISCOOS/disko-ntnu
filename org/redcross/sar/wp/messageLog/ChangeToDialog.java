@@ -15,7 +15,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -30,7 +30,7 @@ import org.redcross.sar.mso.data.IMessageIf;
  * @author thomasl
  */
 public class ChangeToDialog extends DiskoDialog 
-	implements IEditMessageComponentIf, IDiskoWorkEventListener
+	implements IEditMessageComponentIf, IDiskoWorkListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -265,7 +265,7 @@ public class ChangeToDialog extends DiskoDialog
 	}
 
 	/**
-	 * {@link IDiskoWorkEventListener#onDialogCancel(DiskoWorkEvent)}
+	 * {@link IDiskoWorkListener#onDialogCancel(DiskoWorkEvent)}
 	 */
 	public void onWorkCancel(DiskoWorkEvent e)
 	{
@@ -273,7 +273,7 @@ public class ChangeToDialog extends DiskoDialog
 	}
 
 	/**
-	 * {@link IDiskoWorkEventListener#onWorkFinish(DiskoWorkEvent)}
+	 * {@link IDiskoWorkListener#onWorkFinish(DiskoWorkEvent)}
 	 */
 	public void onWorkFinish(DiskoWorkEvent e)
 	{
@@ -281,7 +281,7 @@ public class ChangeToDialog extends DiskoDialog
 	}
 
 	/**
-	 * {@link IDiskoWorkEventListener#onWorkChange(DiskoWorkEvent)}
+	 * {@link IDiskoWorkListener#onWorkChange(DiskoWorkEvent)}
 	 */
 	public void onWorkChange(DiskoWorkEvent e)
 	{

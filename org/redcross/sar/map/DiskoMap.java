@@ -21,6 +21,7 @@ import com.esri.arcgis.systemUI.ITool;
 
 import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.command.IDiskoTool;
+import org.redcross.sar.map.command.IDrawTool;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
@@ -98,12 +99,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		this.myLayers = myLayers;
 		
 		initialize();
-	}
-
-	/**
-	 * Default empty constructor
-	 */
-	public DiskoMap(){
 	}
 
 	private void initialize() throws IOException, AutomationException {
@@ -778,6 +773,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			List layers = getMsoLayers(msoObject.getMsoClassCode());
 
 			for (int i = 0; i < layers.size(); i++) {
+				
 				IFeatureLayer flayer = (IFeatureLayer)layers.get(i);
 				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
 				IMsoFeature msoFeature = msoFC.getFeature(msoObject.getObjectId());
@@ -1015,10 +1011,54 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return null;
 	}
 
+	public String getMxdDoc() {
+		return mxdDoc;
+	}
+
+	public boolean isDrawing() {
+		if (currentTool instanceof IDrawTool) {
+			// cast to draw tool
+			IDrawTool tool = (IDrawTool)currentTool;
+			// return drawing status
+			return tool.isDrawing();
+		}
+		// is not drawing
+		return false;
+	}
+	
+	public void refresh() throws IOException, AutomationException {
+		
+		// consume?
+		if(isDrawing()) return;
+		
+		// create object
+		Runnable r = new Runnable() {
+			public void run() {
+				try {
+					// hide
+					setVisible(false);
+					// refresh view
+					getActiveView().refresh();
+					// show
+					setVisible(true);
+				} catch (AutomationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		SwingUtilities.invokeLater(r);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#refreshLayer(com.esri.arcgis.geometry.IEnvelope)
 	 */
 	public void refreshLayer(final Object obj, final IEnvelope extent) {
+		// consume?
+		if(isDrawing()) return;
 		// get key
 		String key = String.valueOf(obj);
 		//System.out.println("L:T:"+key);
@@ -1051,14 +1091,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 	}
 
-	public String getMxdDoc() {
-		return mxdDoc;
-	}
-
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#refreshSelection(com.esri.arcgis.geometry.IEnvelope)
 	 */
 	public void refreshSelection(final Object obj, final IEnvelope extent) {
+		// consume?
+		if(isDrawing()) return;
 		// get key
 		String key = String.valueOf(obj);
 		//System.out.println("S:T:"+key);
@@ -1089,29 +1127,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			refreshStack.put(key, r);
 			SwingUtilities.invokeLater(r);
 		}
-	}
-
-	public void refresh() throws IOException, AutomationException {
-		// create object
-		Runnable r = new Runnable() {
-			public void run() {
-				try {
-					// hide
-					setVisible(false);
-					// refresh view
-					getActiveView().refresh();
-					// show
-					setVisible(true);
-				} catch (AutomationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		};
-		SwingUtilities.invokeLater(r);
 	}
 
 	public void refreshMsoLayers() throws IOException,
@@ -1177,6 +1192,16 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			}
 		}
 		return features;
+	}
+	
+	public int isSelected(IMsoObjectIf msoObj) throws AutomationException, IOException {
+		int count = 0;
+		List<IMsoFeature> features = getMsoFeature(msoObj);
+		for (IMsoFeature it : features) {
+			// is selected?
+			count += it.isSelected() ? 1 : 0;
+		}
+		return count;
 	}
 	
 	private IMsoObjectIf getGeodataMsoObject(IMsoObjectIf msoObject) {

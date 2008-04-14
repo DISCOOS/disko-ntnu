@@ -3,16 +3,23 @@
  */
 package org.redcross.sar.gui.attribute;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
+import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -39,17 +46,26 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 
 	protected IAttributeIf m_attribute = null;
 	
+	protected boolean m_autoSave = false;
+	
+	private int m_isWorking = 0;
+	
+	private List<IDiskoWorkListener> listeners = null;
+	
 	/*==================================================================
 	 * Protected methods
 	 *================================================================== 
 	 */
 	
-	protected AbstractDiskoAttribute(String name, String caption, Object value, boolean isEditable) {
+	protected AbstractDiskoAttribute(String name, String caption, int width, Object value, boolean isEditable) {
 		// prepare
 		m_caption = caption;
 		m_isEditable = isEditable;
+		listeners = new ArrayList<IDiskoWorkListener>(); 
 		// initialize GUI
 		initialize();
+		// forward
+		setCaptionWidth(width);
 		// set component name
 		setName(name);
 		// set value
@@ -57,17 +73,34 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	}
 	
 	private void initialize() {
-		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
+		BorderLayout bl = new BorderLayout();
+		bl.setHgap(5);
+		bl.setVgap(5);
+		this.setLayout(bl);
 		this.setAttributeSize(new Dimension(250,25));
-		this.add(getCaptionLabel());
-		this.add(getComponent());
+		this.add(getCaptionLabel(),BorderLayout.WEST);
+		this.add(getComponent(),BorderLayout.CENTER);
+		// add update manager
+		getComponent().addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {						
+				// forward
+				super.focusLost(e);
+				// save?
+				if(isWorking() || !m_autoSave) return;
+				// forward
+				save();				
+			}
+			
+		});
+		
 	}
 					
 	protected JLabel getCaptionLabel() {
 		if(m_captionLabel==null) {
 			m_captionLabel = new JLabel(m_caption);
+			m_captionLabel.setVerticalAlignment(SwingConstants.TOP);
 			m_captionLabel.setLabelFor(getComponent());
-			setCaptionWidth(150);
 		}
 		return m_captionLabel;
 	}
@@ -76,6 +109,28 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		c.setMinimumSize(size);
 		c.setPreferredSize(size);
 		c.setMaximumSize(size);
+	}
+	
+	protected boolean isWorking() {
+		return (m_isWorking>0);
+	}
+	
+	protected void setIsWorking() {
+		m_isWorking++;
+	}
+	
+	protected void setIsNotWorking() {
+		if(m_isWorking>0) m_isWorking--;
+	}
+	
+	protected void fireOnWorkChange() {
+		fireOnWorkChange(new DiskoWorkEvent(this,m_component,null,getValue(),DiskoWorkEventType.TYPE_CHANGE));
+	}
+			
+	protected void fireOnWorkChange(DiskoWorkEvent e) {
+		for(IDiskoWorkListener it: listeners) {
+			it.onWorkChange(e);
+		}
 	}
 	
 	/*==================================================================
@@ -127,6 +182,14 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return m_isEditable;
 	}
 	
+	public void setAutoSave(boolean auto) {
+		throw new IllegalArgumentException("AutoSave not supported");
+	}
+	
+	public boolean getAutoSave() {
+		throw new IllegalArgumentException("AutoSave not supported");
+	}	
+	
 	public String getCaption() {
 		return getCaptionLabel().getText();
 	}
@@ -134,6 +197,8 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	public void setCaption(String text) {
 		getCaptionLabel().setText(text);
 	}
+	
+	public boolean fill(Object values) { return true; };
 	
 	public boolean load() {
 		// load from mso model?
@@ -158,7 +223,12 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		if(!isMsoAttribute() || ! m_isEditable) return false;
 		try {
 			// forward
-			return setAttribValue(m_attribute,getValue());
+			if(setAttribValue(m_attribute,getValue())) {
+				// notify				
+				fireOnWorkChange();
+				// success
+				return true;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -175,6 +245,37 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return m_attribute;
 	}
 
+  	public static boolean isMsoAttributeSupported(IAttributeIf attribute) {
+		return !(attribute instanceof AttributeImpl.MsoPolygon || 
+				attribute instanceof AttributeImpl.MsoRoute || 
+				attribute instanceof AttributeImpl.MsoTrack);  		
+  	}
+
+	@Override
+	public void setEnabled(boolean isEnabled) {
+		// forward
+		super.setEnabled(isEnabled);
+		// forward?
+		if(m_component!=null) m_component.setEnabled(isEnabled);
+	}  	
+	
+	public boolean addDiskoWorkListener(IDiskoWorkListener listener) {
+		return listeners.add(listener);
+	}
+	
+	public boolean removeDiskoWorkListener(IDiskoWorkListener listener) {
+		return listeners.remove(listener);
+		
+	}
+	
+	public void addFocusListener(FocusListener listener) {
+		getComponent().addFocusListener(listener);
+	}
+	
+	public void removeFocusListener(FocusListener listener) {
+		getComponent().removeFocusListener(listener);
+	}
+	
 	/*==================================================================
 	 * Abstract public methods
 	 *================================================================== 
@@ -311,12 +412,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		}
 		// failed
 		return false;
-	}	
-
-  	public static boolean isMsoAttributeSupported(IAttributeIf attribute) {
-		return !(attribute instanceof AttributeImpl.MsoPolygon || 
-				attribute instanceof AttributeImpl.MsoRoute || 
-				attribute instanceof AttributeImpl.MsoTrack);  		
-  	}  	
+	}		
 	
 }

@@ -3,7 +3,7 @@ package org.redcross.sar.map.command;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -69,9 +69,9 @@ public interface IDiskoTool {
 	
 	public AbstractButton getButton();
 	
-	public void addDiskoWorkEventListener(IDiskoWorkEventListener listener);
+	public void addDiskoWorkEventListener(IDiskoWorkListener listener);
 	
-	public void removeDiskoWorkEventListener(IDiskoWorkEventListener listener);
+	public void removeDiskoWorkEventListener(IDiskoWorkListener listener);
 	
 	public Object getAttribute(String attribute);
 	

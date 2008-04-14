@@ -1,10 +1,37 @@
 package org.redcross.sar.wp.tactics;
 
+
+import javax.swing.AbstractButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.util.EnumSet;
+import java.util.Hashtable;
+
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -15,37 +42,11 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSlider;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.util.EnumSet;
-import java.util.Hashtable;
 
 public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEventListener {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPanel = null;
-	private JPanel titlePanel = null;
-	private JLabel iconLabel = null;
-	private JLabel titleLabel = null;
+	private DiskoPanel contentPanel = null;
 	private JPanel requirementPanel = null;
 	private JLabel accuracyLabel = null;
 	private JSlider accuracySlider = null;
@@ -53,7 +54,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	private JLabel priorityLabel = null;
 	private JSlider prioritySlider = null;
 	private JTextField priorityTextField = null;
-	private JLabel personelLabel = null;
+	private JLabel personnelLabel = null;
 	private JScrollPane remarksScrollPane = null;
 	private JTextArea remarksTextArea = null;
 	private JTabbedPane tabbedPane = null;  //  @jve:decl-index=0:visual-constraint="10,10"
@@ -107,48 +108,27 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getContentPanel() {
+	private DiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
-				contentPanel.add(getTabbedPane(), BorderLayout.CENTER);
+				contentPanel = new DiskoPanel();
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				AbstractButton button = contentPanel.addButton(
+						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// cancel any pending changes
+						cancel();
+						// hide me!
+						setVisible(false);						
+					}					
+				});
+				contentPanel.setContent(getTabbedPane());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
-	}
-	
-	/**
-	 * This method initializes titlePanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getTitlePanel() {
-		if (titlePanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.LEFT);
-				fl.setHgap(5);
-				fl.setVgap(0);
-				JPanel labels = new JPanel();
-				labels.setLayout(fl);
-				iconLabel = new JLabel();
-				titleLabel = new JLabel();
-				labels.add(iconLabel,null);
-				labels.add(titleLabel,null);
-				titlePanel = new JPanel();
-				titlePanel.setLayout(new BorderLayout());
-				titlePanel.add(labels,BorderLayout.CENTER);
-				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return titlePanel;
 	}
 	
 	/**
@@ -168,19 +148,33 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		}
 		return tabbedPane;
 	}
+	
+	public boolean finish() {
+		// no mso update allowed?
+		if (isWorking()) return false;
+		// update mso model
+		setPersonnelNeed(getPersonnelNeed(),false,true);
+		setRemarks(getRemarks(),false,true);
+		setPriority(getPriority(), false, true);
+		setAccuracy(getAccuracy(),false,true);		
+		// success
+		return true;
+	}
 
-	private void reset() {
+	public void cancel() {
 		setIsWorking();
-		getAccuracyTextField().setText(null);
-		getPriorityTextField().setText(null);
+		//getAccuracyTextField().setText(null);
+		//getPriorityTextField().setText(null);
 		getRemarksTextArea().setText(null);
-		getPersonelTextField().setText(null);
+		getPersonnelTextField().setText(null);
 		getPrioritySlider().setValue(2);
 		getAccuracySlider().setValue(50);
 		currentAssignment = null;
 		setIsNotWorking();
 	}
 
+	
+	
 	public int getAccuracy() {
 		return getAccuracySlider().getValue();
 	}
@@ -195,9 +189,9 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		return null;
 	}
 
-	public int getPersonelNeed() {
+	public int getPersonnelNeed() {
 		try {
-			return Integer.parseInt(getPersonelTextField().getText());
+			return Integer.parseInt(getPersonnelTextField().getText());
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 		}
@@ -258,20 +252,20 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		setIsNotWorking();
 	}
 	
-	public void setPersonelNeed(int number) {
-		setPersonelNeed(number,true,true);
+	public void setPersonnelNeed(int number) {
+		setPersonnelNeed(number,true,true);
 	}
 
-	private void setPersonelNeed(int number, boolean gui, boolean mso) {
+	private void setPersonnelNeed(int number, boolean gui, boolean mso) {
 		setIsWorking();
 		if(gui) {
-			getPersonelTextField().setText(String.valueOf(number));
+			getPersonnelTextField().setText(String.valueOf(number));
 		}
 		if(mso) {
 			if(currentAssignment!=null) {
 				if(currentAssignment.getPlannedPersonnel()!=number) {
 					currentAssignment.setPlannedPersonnel(number);
-					fireOnWorkChange(getPersonelTextField(),currentAssignment,number);
+					fireOnWorkChange(getPersonnelTextField(),currentAssignment,number);
 				}
 			}
 		}
@@ -352,8 +346,8 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				gridBagConstraints6.anchor = GridBagConstraints.SOUTHWEST;
 				gridBagConstraints6.insets = new Insets(0, 0, 0, 0);
 				gridBagConstraints6.gridy = 0;
-				personelLabel = new JLabel();
-				personelLabel.setText("Mannskapsbehov:");
+				personnelLabel = new JLabel();
+				personnelLabel.setText("Mannskapsbehov:");
 				GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
 				gridBagConstraints3.gridx = 0;
 				gridBagConstraints3.anchor = GridBagConstraints.WEST;
@@ -371,13 +365,13 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				requirementPanel = new JPanel();
 				requirementPanel.setLayout(new GridBagLayout());
 				requirementPanel.add(priorityLabel, gridBagConstraints3);
-				requirementPanel.add(personelLabel, gridBagConstraints6);
+				requirementPanel.add(personnelLabel, gridBagConstraints6);
 				requirementPanel.add(accuracyLabel, gridBagConstraints);
 				requirementPanel.add(getAccuracySlider(), gridBagConstraints61);
 				requirementPanel.add(getAccuracyTextField(), gridBagConstraints71);
 				requirementPanel.add(getPrioritySlider(), gridBagConstraints81);
 				requirementPanel.add(getPriorityTextField(), gridBagConstraints91);
-				requirementPanel.add(getPersonelTextField(), gridBagConstraints1);
+				requirementPanel.add(getPersonnelTextField(), gridBagConstraints1);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -407,7 +401,6 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 					public void stateChanged(javax.swing.event.ChangeEvent e) {
 						if (isWorking()) return;
 						getAccuracyTextField().setText(accuracySlider.getValue()+"%");
-						setAccuracy(accuracySlider.getValue(),false,true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -441,7 +434,6 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 						Integer key = Integer.valueOf(prioritySlider.getValue());
 						String text = ((JLabel)prioritySlider.getLabelTable().get(key)).getText();
 						getPriorityTextField().setText(text);
-						setPriority(getPriority(), false, true);
 					}
 				});
 				Hashtable<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
@@ -468,6 +460,19 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				accuracyTextField.setPreferredSize(new Dimension(75, 20));
 				accuracyTextField.setEditable(true);
 				accuracyTextField.setText("50%");
+				accuracyTextField.addFocusListener(new FocusAdapter() {
+
+					@Override
+					public void focusLost(FocusEvent e) {						
+						// forward
+						super.focusLost(e);
+						// forward?
+						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
+							finish();
+					}
+					
+				});
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -487,6 +492,18 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				priorityTextField.setPreferredSize(new Dimension(75, 20));
 				priorityTextField.setEditable(true);
 				priorityTextField.setText("HØY");
+				priorityTextField.addFocusListener(new FocusAdapter() {
+
+					@Override
+					public void focusLost(FocusEvent e) {						
+						// forward
+						super.focusLost(e);
+						// forward?
+						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
+							finish();
+					}
+					
+				});				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -499,23 +516,24 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	 *
 	 * @return javax.swing.JTextField
 	 */
-	private JTextField getPersonelTextField() {
+	private JTextField getPersonnelTextField() {
 		if (personnelTextField == null) {
 			try {
 				personnelTextField = new JFormattedTextField();
 				personnelTextField.setDocument(new NumericDocument(-1,0,false));
 				personnelTextField.setText("0");
-				personnelTextField.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) { apply(); }
-					public void insertUpdate(DocumentEvent arg0) { apply(); }
-					public void removeUpdate(DocumentEvent arg0) { apply(); }
-					private void apply() {
-						// no mso update allowed?
-						if (isWorking()) return;
-						// update mso model
-						setPersonelNeed(Integer.valueOf(personnelTextField.getText()),false,true);						
+				personnelTextField.addFocusListener(new FocusAdapter() {
+
+					@Override
+					public void focusLost(FocusEvent e) {						
+						// forward
+						super.focusLost(e);
+						// forward?
+						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
+							finish();
 					}
-				});
+					
+				});								
 				personnelTextField.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseClicked(java.awt.event.MouseEvent e) {
 						if (e.getClickCount() == 2){
@@ -564,17 +582,18 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			try {
 				remarksTextArea = new JTextArea();
 				remarksTextArea.setLineWrap(true);
-				remarksTextArea.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) { apply(); }
-					public void insertUpdate(DocumentEvent arg0) { apply(); }
-					public void removeUpdate(DocumentEvent arg0) { apply(); }
-					private void apply() {
-						// no mso update allowed?
-						if (isWorking()) return;
-						// update mso model
-						setRemarks(remarksTextArea.getText(),false,true);												
+				remarksTextArea.addFocusListener(new FocusAdapter() {
+
+					@Override
+					public void focusLost(FocusEvent e) {						
+						// forward
+						super.focusLost(e);
+						// forward?
+						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
+							finish();
 					}
-				});
+					
+				});												
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -593,7 +612,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				currentAssignment = (ISearchIf)assignment;
 				setPriority(currentAssignment.getPriority(),true,false);
 				setAccuracy(currentAssignment.getPlannedAccuracy(),true,false);
-				setPersonelNeed(currentAssignment.getPlannedPersonnel(),true,false);
+				setPersonnelNeed(currentAssignment.getPlannedPersonnel(),true,false);
 				setRemarks(currentAssignment.getRemarks(),true,false);								
 			}
 		}
@@ -607,16 +626,16 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
-			titleLabel.setText("<html>Krav til <b>" + 
+			getContentPanel().setCaptionIcon(Utils.getIcon(e,"48x48"));
+			getContentPanel().setCaptionText("<html>Krav til <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getTabbedPane().setEnabled(true);
 		}
 		else {
-			iconLabel.setIcon(null);
-			titleLabel.setText("Du må først velge et oppdrag");			
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getTabbedPane().setEnabled(false);
-			reset();
+			cancel();
 		}		
 	}
 	
@@ -637,7 +656,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			// reset selection
 			currentMsoFeature =null;
 			currentMsoObj =null;
-			reset();
+			cancel();
 		}
 	}
 	

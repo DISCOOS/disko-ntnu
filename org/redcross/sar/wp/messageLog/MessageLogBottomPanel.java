@@ -2,7 +2,7 @@ package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -62,7 +62,7 @@ import java.util.List;
  *
  * @author thomasl
  */
-public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerIf, IDiskoWorkEventListener
+public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerIf, IDiskoWorkListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -668,7 +668,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	}
 
 	/**
-	 * {@link IDiskoWorkEventListener#onWorkCancel(DiskoWorkEvent)}
+	 * {@link IDiskoWorkListener#onWorkCancel(DiskoWorkEvent)}
 	 */
 	public void onWorkCancel(DiskoWorkEvent e)
 	{

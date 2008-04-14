@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.unit;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.ErrorDialog;
@@ -635,20 +636,22 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     /**
      * Saves field contents in unit MSO object
      */
-    public void saveUnit()
+    public boolean saveUnit()
     {
         if (m_currentUnit != null)
         {
+            String toneId = m_toneIDTextField.getText();
+            String callSign = m_callsignTextField.getText();
+
             m_currentUnit.suspendClientUpdate();
 
-            String toneId = m_toneIDTextField.getText();
             m_currentUnit.setToneID(toneId);
-
-            String callSign = m_callsignTextField.getText();
             m_currentUnit.setCallSign(callSign);
 
             m_currentUnit.resumeClientUpdate();
         }
+        // success!
+    	return true;
     }
 
     public long getInterval()

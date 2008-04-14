@@ -150,7 +150,7 @@ public class SubMenuPanel extends JPanel {
 		if (finishButton == null) {
 			try {
 				finishButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
-				finishButton.setIcon(new DiskoCustomIcon(finishButton.getIcon(),Color.RED,0.4f));
+				finishButton.setIcon(new DiskoCustomIcon(finishButton.getIcon(),Color.GREEN,0.4f));
 				finishButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						IDiskoWp wp = (IDiskoWp)app.getCurrentRole().getCurrentDiskoWpModule();

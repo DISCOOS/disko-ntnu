@@ -1,25 +1,19 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.border.BevelBorder;
 import javax.swing.JOptionPane;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.UnitTable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -36,7 +30,6 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
-import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsTaskType;
 
 import java.util.Collection;
 
@@ -55,17 +48,11 @@ public class UnitSelectionDialog extends DiskoDialog {
 	
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
-	private JPanel titlePanel = null;
-	private JPanel contentPanel = null;
-	private JPanel tablePanel = null;
-	private JPanel buttonPanel = null;
-	private JScrollPane jScrollPane = null;
+	private DiskoPanel contentPanel = null;
 	private UnitTable unitTable = null;
 
 	private IAssignmentIf currentAssignment = null;
 	private JButton allocateButton = null;
-	private JLabel iconLabel = null;
-	private JLabel titleLabel = null;
 	private JButton reclaimButton = null;
 
 	public UnitSelectionDialog(IDiskoWpModule wp) {
@@ -134,15 +121,34 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getContentPanel() {
+	private DiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
-				contentPanel.add(getTablePanel(), BorderLayout.CENTER);
-				contentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
+				contentPanel = new DiskoPanel();
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				AbstractButton button = DiskoButtonFactory.createButton("IconEnum.ALLOCATED",ButtonSize.NORMAL);
+				button.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						allocate();
+					}
+				});
+				contentPanel.addButton(button, "allocated");
+				button = DiskoButtonFactory.createButton("IconEnum.CANCELED",ButtonSize.NORMAL);
+				button.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						clear();
+					}
+				});
+				contentPanel.addButton(button, "canceled");				
+				button = DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL);
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// hide me!
+						setVisible(false);						
+					}					
+				});
+				contentPanel.addButton(button,"cancel");
+				contentPanel.setContent(getUnitTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -150,71 +156,6 @@ public class UnitSelectionDialog extends DiskoDialog {
 		return contentPanel;
 	}
 
-	/**
-	 * This method initializes titlePanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getTitlePanel() {
-		if (titlePanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.LEFT);
-				fl.setHgap(5);
-				fl.setVgap(0);
-				titlePanel = new JPanel();
-				titlePanel.setLayout(fl);
-				iconLabel = new JLabel();
-				titleLabel = new JLabel("Velg et oppdrag");
-				titlePanel.add(iconLabel,null);
-				titlePanel.add(titleLabel,null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return titlePanel;
-	}
-	
-	/**
-	 * This method initializes tablePanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getTablePanel() {
-		if (tablePanel == null) {
-			try {
-				tablePanel = new JPanel();
-				tablePanel.setLayout(new BorderLayout());
-				tablePanel.add(getJScrollPane(), BorderLayout.CENTER);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return tablePanel;
-	}
-	
-	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setHgap(0);
-				fl.setVgap(0);
-				fl.setAlignment(FlowLayout.RIGHT);
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(fl);
-				buttonPanel.add(getAllocateButton());
-				buttonPanel.add(getReclaimButton());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return buttonPanel;
-	}	
 	
 	/**
 	 * This method initializes allocateButton	
@@ -256,23 +197,6 @@ public class UnitSelectionDialog extends DiskoDialog {
 			}
 		}
 		return reclaimButton;
-	}
-	
-	/**
-	 * This method initializes jScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getJScrollPane() {
-		if (jScrollPane == null) {
-			try {
-				jScrollPane = new JScrollPane(getUnitTable());
-				jScrollPane.getViewport().setBackground(Color.white);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return jScrollPane;
 	}
 
 	/**
@@ -582,17 +506,19 @@ public class UnitSelectionDialog extends DiskoDialog {
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			iconLabel.setIcon(Utils.getIcon(e,"48x48"));
-			titleLabel.setText("<html>Legg <b>" + 
+			getContentPanel().setCaptionIcon(Utils.getIcon(e,"48x48"));
+			getContentPanel().setCaptionText("<html>Legg <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + 
 					"</b> i kø til en enhet i listen" + (currentAssignment instanceof ISearchIf ? 
 							"    (<i>mannskapsbehov</i>: <b>" + ((ISearchIf)currentAssignment).getPlannedPersonnel() + "</b>)</html>" : "</html>"));
 			getAllocateButton().setEnabled(true);
+			getReclaimButton().setEnabled(true);
 		}
 		else {
-			iconLabel.setIcon(null);
-			titleLabel.setText("Du må velge et oppdrag før du kan legge det til køen til enhet");
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionText("Du må velge et oppdrag før du kan legge det til køen til enhet");
 			getAllocateButton().setEnabled(false);
+			getReclaimButton().setEnabled(false);
 		}		
 		// get current assigned unit
 		selectAssignedUnit();
@@ -620,7 +546,6 @@ public class UnitSelectionDialog extends DiskoDialog {
 			// forward
 			setup();
 		}
-	}
-	
+	}		
 	
 }  //  @jve:decl-index=0:visual-constraint="10,2"

@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -54,7 +54,7 @@ import javax.swing.border.BevelBorder;
  *
  */
 public class DrawDialog extends DiskoDialog 
-			implements IDrawDialog, IHostToolDialog, IDiskoWorkEventListener {
+			implements IDrawDialog, IHostToolDialog, IDiskoWorkListener {
 
 	private static final long serialVersionUID = 1L;
 	

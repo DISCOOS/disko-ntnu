@@ -18,18 +18,18 @@ public class TextAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public TextAttribute(IAttributeIf attribute, String caption, boolean isEditable) {
+	public TextAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,null,isEditable);
+		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// get value from attribute
 		load();		
 	}
 	
-	public TextAttribute(String name, String caption, String value, boolean isEditable) {
+	public TextAttribute(String name, String caption, int width, String value, boolean isEditable) {
 		// forward
-		super(name,caption,value,isEditable);
+		super(name,caption,width,value,isEditable);
 	}
 	
 	/*==================================================================
@@ -39,8 +39,10 @@ public class TextAttribute extends AbstractDiskoAttribute {
 	
 	protected Component getComponent() {
 		if(m_component==null) {
-			m_component = new JTextField();
-			((JTextField)m_component).setEditable(m_isEditable);
+			JTextField field = new JTextField();
+			field.setEditable(m_isEditable);
+			// save the component
+			m_component = field;			
 		}
 		return m_component;
 	}
@@ -49,6 +51,14 @@ public class TextAttribute extends AbstractDiskoAttribute {
 	 * Public methods
 	 *================================================================== 
 	 */
+	
+	public void setAutoSave(boolean auto) {
+		m_autoSave = auto;
+	}
+	
+	public boolean getAutoSave() {
+		return m_autoSave;
+	}	
 	
 	public Object getValue() {
 		return ((JTextField)m_component).getText();

@@ -285,19 +285,6 @@ public class ImportCalloutDialog extends DiskoDialog
 		});
 		m_bottomPanel.add(m_nextButton);
 		
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				CardLayout layout = (CardLayout)m_topPanel.getLayout();
-				layout.show(m_topPanel, IMPORT_ID);
-				m_currentPanel = IMPORT_ID;
-				fireOnWorkCancel();
-			}
-		});
-		m_bottomPanel.add(m_cancelButton);
-		
 		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
 		m_okButton.setEnabled(false);
 		m_okButton.addActionListener(new ActionListener()
@@ -313,6 +300,21 @@ public class ImportCalloutDialog extends DiskoDialog
 			}
 		});
 		m_bottomPanel.add(m_okButton);
+		
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+		m_cancelButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent arg0)
+			{
+				CardLayout layout = (CardLayout)m_topPanel.getLayout();
+				layout.show(m_topPanel, IMPORT_ID);
+				m_currentPanel = IMPORT_ID;
+				fireOnWorkCancel();
+			}
+		});
+		m_bottomPanel.add(m_cancelButton);
+		
+		
 	}
 	
 	private void layoutComponent(JPanel panel, String label, JComponent component, GridBagConstraints gbc, int height)

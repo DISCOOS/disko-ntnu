@@ -5,8 +5,6 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
-import javax.swing.JTextField;
-
 import org.redcross.sar.gui.map.PositionField;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -22,14 +20,14 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public PositionAttribute(IAttributeIf attribute, String caption, boolean isEditable) {
+	public PositionAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
-		this(attribute,caption,0,isEditable);		
+		this(attribute,caption,width,0,isEditable);		
 	}
 	
-	public PositionAttribute(IAttributeIf attribute, String caption, int format, boolean isEditable) {
+	public PositionAttribute(IAttributeIf attribute, String caption, int width, int format, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,null,isEditable);
+		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// save format
@@ -38,14 +36,14 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		load();		
 	}
 	
-	public PositionAttribute(String name, String caption, Object value, boolean isEditable) {
+	public PositionAttribute(String name, String caption, int width, Object value, boolean isEditable) {
 		// forward
-		this(name,caption,value,0,isEditable);		
+		this(name,caption,width,value,0,isEditable);		
 	}
 	
-	public PositionAttribute(String name, String caption, Object value, int format, boolean isEditable) {
+	public PositionAttribute(String name, String caption, int width, Object value, int format, boolean isEditable) {
 		// forward
-		super(name,caption,value,isEditable);
+		super(name,caption,width,value,isEditable);
 		// save format
 		((PositionField)m_component).setFormat(format);
 	}

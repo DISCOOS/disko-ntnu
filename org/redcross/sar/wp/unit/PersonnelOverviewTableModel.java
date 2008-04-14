@@ -1,12 +1,10 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IAttributeIf.IMsoStringIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -66,12 +64,6 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		IPersonnelListIf allPersonnel = m_wpModule.getCmdPost().getAttendanceList();
 		m_displayPersonnel.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
 	}
-
-	@Override
-    public String getColumnName(int column)
-    {
-    	return null;
-    }
 
 	public int getColumnCount()
 	{
@@ -153,4 +145,33 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 			return null;
 		}
 	}
+	
+	@Override
+	public Class<?> getColumnClass(int columnIndex) {
+		switch (columnIndex) {
+		case 0:
+			return String.class;
+		case 1:
+			return String.class;
+		default:
+			return Object.class;
+		}
+	}
+
+	@Override
+	public String getColumnName(int column) {
+		switch (column) {
+		case 0:
+			return "Fornavn";
+		case 1:
+			return "Tildelt";
+		case 2:
+			return "Vis";
+		case 3:
+			return "Status";
+		default:
+			return null;
+		}
+	}
+	
 }

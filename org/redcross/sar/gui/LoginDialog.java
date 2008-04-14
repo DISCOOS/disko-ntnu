@@ -1,57 +1,57 @@
 package org.redcross.sar.gui;
 
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
 import java.awt.Frame;
 import java.awt.FlowLayout;
 import javax.swing.JButton;
-import java.awt.Dimension;
-import javax.swing.JTextField;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JComboBox;
 
+import javax.swing.BoxLayout;
+
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.attribute.ComboAttribute;
+import org.redcross.sar.gui.attribute.TextAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 public class LoginDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
+
+	private boolean allowExit = true;
+
 	private JPanel mainPanel = null;
 	private JButton okButton = null;
 	private JButton cancelButton = null;
-	private JTextField usernameTextField = null;
-	private JLabel usernameLabel = null;
-	private JLabel passwordLabel = null;
-	private JPasswordField passwordField = null;
-	private JLabel rolleLabel = null;
-	private JComboBox rolleComboBox = null;
 	private JPanel buttonPanel = null;
-	private boolean allowExit = true;
 
+	private TextAttribute attrUserName = null;
+	private TextAttribute attrPassword = null;
+	private ComboAttribute attrRoles = null;
+	
 	/**
 	 * @param owner
 	 */
 	public LoginDialog(Frame owner) {
+		// forward
 		super(owner);
+		// initialize GUI
 		initialize();
 	}
 	
 	private void initialize() {
 		try {
-			this.setSize(319, 289);
 			this.setTitle("DISKO Innlogging");
             this.setContentPane(getMainPanel());
+            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             this.setUndecorated(false);
             this.setModal(true);
             this.pack();
 				
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 
@@ -70,78 +70,39 @@ public class LoginDialog extends DiskoDialog {
 	 */
 	private JPanel getMainPanel() {
 		if (mainPanel == null) {
-			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
-			gridBagConstraints8.gridx = 1;
-			gridBagConstraints8.gridy = 4;
-			GridBagConstraints gridBagConstraints7 = new GridBagConstraints();
-			gridBagConstraints7.gridx = 0;
-			gridBagConstraints7.anchor = GridBagConstraints.WEST;
-			gridBagConstraints7.insets = new Insets(0, 10, 25, 0);
-			gridBagConstraints7.gridy = 2;
-			rolleLabel = new JLabel();
-			rolleLabel.setText("Rolle:");
-			GridBagConstraints gridBagConstraints6 = new GridBagConstraints();
-			gridBagConstraints6.gridx = 0;
-			gridBagConstraints6.anchor = GridBagConstraints.WEST;
-			gridBagConstraints6.insets = new Insets(0, 10, 25, 0);
-			gridBagConstraints6.gridy = 1;
-			passwordLabel = new JLabel();
-			passwordLabel.setText("Passord:");
-			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
-			gridBagConstraints5.gridx = 0;
-			gridBagConstraints5.anchor = GridBagConstraints.WEST;
-			gridBagConstraints5.insets = new Insets(10, 10, 25, 0);
-			gridBagConstraints5.gridy = 0;
-			usernameLabel = new JLabel();
-			usernameLabel.setText("Brukernavn:");
-			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
-			gridBagConstraints4.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints4.gridx = 1;
-			gridBagConstraints4.gridy = 2;
-			gridBagConstraints4.ipady = 0;
-			gridBagConstraints4.weightx = 1.0;
-			gridBagConstraints4.gridheight = 1;
-			gridBagConstraints4.insets = new Insets(0, 0, 25, 10);
-			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-			gridBagConstraints2.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints2.gridx = 1;
-			gridBagConstraints2.gridy = 1;
-			gridBagConstraints2.ipadx = -189;
-			gridBagConstraints2.weightx = 1.0;
-			gridBagConstraints2.gridwidth = 2;
-			gridBagConstraints2.weighty = 0.0D;
-			gridBagConstraints2.insets = new Insets(0, 0, 25, 10);
-			GridBagConstraints gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.gridx = 1;
-			gridBagConstraints.gridy = 0;
-			gridBagConstraints.ipadx = 0;
-			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.insets = new Insets(10, 0, 25, 10);
-			gridBagConstraints.gridwidth = 1;
 			mainPanel = new JPanel();
-			mainPanel.setLayout(new GridBagLayout());
-			mainPanel.add(getUsernameTextField(), gridBagConstraints);
-			mainPanel.add(getPasswordField(), gridBagConstraints2);
-			mainPanel.add(getRolleComboBox(), gridBagConstraints4);
-			mainPanel.add(usernameLabel, gridBagConstraints5);
-			mainPanel.add(passwordLabel, gridBagConstraints6);
-			mainPanel.add(rolleLabel, gridBagConstraints7);
-			mainPanel.add(getButtonPanel(), gridBagConstraints8);
+			mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
+			mainPanel.add(createRigidArea());
+			mainPanel.add(getRoles());
+			mainPanel.add(createRigidArea());
+			mainPanel.add(getUserName());
+			mainPanel.add(createRigidArea());
+			mainPanel.add(getPassword());
+			mainPanel.add(createRigidArea());
+			mainPanel.add(getButtonPanel());
+			mainPanel.add(createRigidArea());
 		}
 		return mainPanel;
 	}
 
+	public void setFixedSize() {
+		int offset = 0;
+		Utils.setFixedSize(getRoles(),getWidth()-offset, 25);	
+		Utils.setFixedSize(getUserName(),getWidth()-offset, 25);	
+		Utils.setFixedSize(getPassword(),getWidth()-offset, 25);	
+		Utils.setFixedSize(getButtonPanel(),getWidth()-offset, 60);	
+	}	
+	
 	/**
 	 * This method initializes okButton	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getOkButton() {
+	private JButton getOKButton() {
 		if (okButton == null) {
 			try {
 				okButton = DiskoButtonFactory.createButton("GENERAL.OK", ButtonSize.NORMAL);
-				okButton.setPreferredSize(new Dimension(100, 50));
+				//okButton.setPreferredSize(new Dimension(100, 50));
 				okButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						fireOnWorkFinish();
@@ -163,7 +124,7 @@ public class LoginDialog extends DiskoDialog {
 		if (cancelButton == null) {
 			try {
 				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL);
-				cancelButton.setPreferredSize(new Dimension(100, 50));
+				//cancelButton.setPreferredSize(new Dimension(100, 50));
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						fireOnWorkCancel();
@@ -175,57 +136,53 @@ public class LoginDialog extends DiskoDialog {
 		}
 		return cancelButton;
 	}
-
-
+	
 	/**
-	 * This method initializes usernameTextField	
+	 * This method initializes UserName attribute
 	 * 	
-	 * @return javax.swing.JTextField	
+	 * @return {@link TextAttribute}
 	 */
-	public JTextField getUsernameTextField() {
-		if (usernameTextField == null) {
+	public TextAttribute getUserName() {
+		if (attrUserName == null) {
 			try {
-				usernameTextField = new JTextField();
-				usernameTextField.setPreferredSize(new Dimension(200, 24));
+				attrUserName = new TextAttribute("username","Brukernavn",70,"",true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return usernameTextField;
+		return attrUserName;
 	}
-
+	
 	/**
-	 * This method initializes passwordField	
+	 * This method initializes Password attribute
 	 * 	
-	 * @return javax.swing.JPasswordField	
+	 * @return {@link TextAttribute}
 	 */
-	public JPasswordField getPasswordField() {
-		if (passwordField == null) {
+	public TextAttribute getPassword() {
+		if (attrPassword == null) {
 			try {
-				passwordField = new JPasswordField();
-				passwordField.setPreferredSize(new Dimension(200, 24));
+				attrPassword = new TextAttribute("password","Passord",70,"",true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return passwordField;
+		return attrPassword;
 	}
-
+	
 	/**
-	 * This method initializes rolleComboBox	
+	 * This method initializes Roles attribute
 	 * 	
-	 * @return javax.swing.JComboBox	
+	 * @return {@link ComboAttribute}
 	 */
-	public JComboBox getRolleComboBox() {
-		if (rolleComboBox == null) {
+	public ComboAttribute getRoles() {
+		if (attrRoles == null) {
 			try {
-				rolleComboBox = new JComboBox();
-				rolleComboBox.setPreferredSize(new Dimension(200, 24));
+				attrRoles = new ComboAttribute("roles","Roller",70,"",false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return rolleComboBox;
+		return attrRoles;
 	}
 
 	/**
@@ -236,20 +193,11 @@ public class LoginDialog extends DiskoDialog {
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
 			try {
-				GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-				gridBagConstraints1.insets = new Insets(0, 111, 0, 0);
-				gridBagConstraints1.gridx = 1;
-				gridBagConstraints1.gridy = 0;
-				gridBagConstraints1.ipady = 0;
-				gridBagConstraints1.gridheight = 1;
-				GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-				gridBagConstraints3.gridwidth = 1;
-				gridBagConstraints3.gridy = -1;
-				gridBagConstraints3.ipadx = 0;
-				gridBagConstraints3.gridx = -1;
+				FlowLayout fl = new FlowLayout();
+				fl.setAlignment(FlowLayout.CENTER);
 				buttonPanel = new JPanel();
-				buttonPanel.setLayout(new FlowLayout());
-				buttonPanel.add(getOkButton(), null);
+				buttonPanel.setLayout(fl);
+				buttonPanel.add(getOKButton(), null);
 				buttonPanel.add(getCancelButton(), null);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -257,5 +205,5 @@ public class LoginDialog extends DiskoDialog {
 		}
 		return buttonPanel;
 	}
-
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -85,7 +85,7 @@ public class AttributesPanel extends JPanel {
 		return getEmptyLabel().getText();
 	}
 		
-	public void create(IMsoObjectIf msoObject, boolean isEditable) {
+	public void create(IMsoObjectIf msoObject, int width, boolean isEditable) {
 		// invalid argument?
 		if(msoObject==null) throw new NullPointerException("MsoObject can not be null");
 		// get attributes
@@ -95,10 +95,10 @@ public class AttributesPanel extends JPanel {
 			attributes.add(it.next());
 		}
 		// forward
-		create(msoObject,attributes,isEditable);
+		create(msoObject,attributes,width,isEditable);
 	}
 	
-	public int create(IMsoObjectIf msoObject, List<String> attributes, boolean isEditable) {
+	public int create(IMsoObjectIf msoObject, List<String> attributes, int width, boolean isEditable) {
 		// initialize
 		int added = 0;
 		// remove old panels
@@ -114,7 +114,7 @@ public class AttributesPanel extends JPanel {
 				// is supported?
 				if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
 					// add new attribute panel this
-					added += (addAttribute(attr,attr.getName(),isEditable)!=null ? 1 : 0);
+					added += (addAttribute(attr,attr.getName(),width,isEditable)!=null ? 1 : 0);
 				}
 			}
 		}		
@@ -164,13 +164,13 @@ public class AttributesPanel extends JPanel {
 		return false;
 	}
 	
-	public IDiskoAttribute addAttribute(IAttributeIf attribute, String caption, boolean isEditable)  {
+	public IDiskoAttribute addAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
 		if(!m_attributes.contains(name)) {
 			// forward
-			IDiskoAttribute attr = createAttribute(attribute,caption,isEditable);
+			IDiskoAttribute attr = createAttribute(attribute,caption,width,isEditable);
 			// add to list
 			m_panels.put(name,attr);			
 			m_attributes.add(name);			
@@ -262,7 +262,7 @@ public class AttributesPanel extends JPanel {
 		m_panels.get(name).setCaptionWidth(width);		
 	}	
 	
-  	public static IDiskoAttribute createAttribute(IAttributeIf attribute, String caption, boolean isEditable) {
+  	public static IDiskoAttribute createAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
   		// initialize component
   		IDiskoAttribute component = null;
 		try {
@@ -270,37 +270,37 @@ public class AttributesPanel extends JPanel {
 			if (attribute instanceof AttributeImpl.MsoBoolean) {
 				// get checkbox attribute
 			    component = new CheckBoxAttribute(
-			    		(AttributeImpl.MsoBoolean)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoBoolean)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoInteger) {
 				// get numeric attribute
 			    component = new NumericAttribute(
-			    		(AttributeImpl.MsoInteger)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoInteger)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoDouble) {
 				// get numeric attribute
 			    component = new NumericAttribute(
-			    		(AttributeImpl.MsoDouble)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoDouble)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoString) {
 				// get text attribute
 			    component = new TextAttribute(
-			    		(AttributeImpl.MsoString)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoString)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoCalendar) {
 				// get DTG attribute
 			    component = new DTGAttribute(
-			    		(AttributeImpl.MsoCalendar)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoCalendar)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoPosition) {
 				// get position attribute
 			    component = new PositionAttribute(
-			    		(AttributeImpl.MsoPosition)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoPosition)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoTimePos) {
 				// get position attribute
 			    component = new PositionAttribute(
-			    		(AttributeImpl.MsoTimePos)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoTimePos)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoPolygon) {
 			    //AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
@@ -317,7 +317,7 @@ public class AttributesPanel extends JPanel {
 			else if (attribute instanceof AttributeImpl.MsoEnum) {
 				// get enum attribute
 			    component = new EnumAttribute(
-			    		(AttributeImpl.MsoEnum)attribute,caption,isEditable);
+			    		(AttributeImpl.MsoEnum)attribute,caption,width,isEditable);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

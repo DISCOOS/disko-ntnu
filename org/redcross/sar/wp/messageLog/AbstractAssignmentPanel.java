@@ -235,9 +235,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	
     	// add attributes
     	m_editAssignmentPanel.addAttribute(new TextAttribute("Assignment",
-    			m_wpMessageLog.getText("AssignmentLabel.text"),"<velg oppdrag>",false));
+    			m_wpMessageLog.getText("AssignmentLabel.text"),150,"<velg oppdrag>",false));
     	m_editAssignmentPanel.addAttribute(new TextAttribute("Time",
-    			m_wpMessageLog.getText("AssignedTimeLabel.text"),"<velg oppdrag>",true));    	
+    			m_wpMessageLog.getText("AssignedTimeLabel.text"),150,"<velg oppdrag>",true));    	
 
         m_cardsPanel.add(m_editAssignmentPanel, EDIT_ASSIGNMENT_ID);
     }
@@ -547,13 +547,13 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     		if(m_selectedPanel.getAttributeCount()==0) {
 	    		// add attributes (this should only occure once)
     			m_selectedPanel.addAttribute(new TextAttribute("Assignment",
-    					m_wpMessageLog.getText("AssignmentLabel.text"),
+    					m_wpMessageLog.getText("AssignmentLabel.text"),150,
     					MsoUtils.getAssignmentName(selected, 1),false));
     			m_selectedPanel.addAttribute(new TextAttribute("Priority",
-    					m_wpMessageLog.getText("PriorityLabel.text"),
+    					m_wpMessageLog.getText("PriorityLabel.text"),150,
     					selected.getPriorityText(),false));
     			m_selectedPanel.addAttribute(selected.getRemarksAttribute(),
-    					m_wpMessageLog.getText("RemarksLabel.text"),false);
+    					m_wpMessageLog.getText("RemarksLabel.text"),150,false);
     			Dimension size = new Dimension(350,25);
     			m_selectedPanel.setAttributeSize(size);
     			m_selectedPanel.setCaptionWidth(100);

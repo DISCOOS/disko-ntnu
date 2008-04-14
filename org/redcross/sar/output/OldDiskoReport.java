@@ -48,7 +48,7 @@ public class OldDiskoReport {
 	private MsoModelImpl m_msoModel = null;
 	private IActiveView activeView = null;
 		
-	private DiskoMap diskoMap_print = new DiskoMap();
+	private DiskoMap diskoMap_print = null;
 	private IDiskoMapManager mapManager = null;
 	
 	private final static String outputPrintFormat = ".PNG";

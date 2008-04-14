@@ -199,7 +199,7 @@ public class CalloutDetailsPanel extends JPanel
 	/**
 	 * Updates attributes
 	 */
-	public void saveCallOut()
+	public boolean saveCallOut()
 	{
 		if(m_callout != null)
 		{
@@ -211,6 +211,8 @@ public class CalloutDetailsPanel extends JPanel
 
 			m_callout.resumeClientUpdate();
 		}
+		// success!
+		return true;
 	}
 
 	/**

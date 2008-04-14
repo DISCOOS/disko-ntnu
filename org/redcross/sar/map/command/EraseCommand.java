@@ -1,14 +1,11 @@
 package org.redcross.sar.map.command;
 
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;

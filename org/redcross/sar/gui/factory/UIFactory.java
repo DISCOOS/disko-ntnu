@@ -3,13 +3,14 @@ package org.redcross.sar.gui.factory;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.LoginDialog;
 import org.redcross.sar.gui.MainMenuPanel;
@@ -51,9 +52,9 @@ public class UIFactory {
 	public LoginDialog getLoginDialog() {
 		if (loginDialog == null) {
 			loginDialog = new LoginDialog(app.getFrame());
-			loginDialog.getUsernameTextField().setText("disko");
-			loginDialog.getPasswordField().setText("disko");
-			loginDialog.addDiskoWorkEventListener(new IDiskoWorkEventListener() {
+			loginDialog.getUserName().setValue("disko");
+			loginDialog.getPassword().setValue("disko");
+			loginDialog.addDiskoWorkEventListener(new IDiskoWorkListener() {
 				
 				public void onWorkCancel(DiskoWorkEvent e) {
 					loginDialog.setVisible(false);
@@ -61,10 +62,9 @@ public class UIFactory {
 						System.exit(0);
 				}
 				public void onWorkFinish(DiskoWorkEvent e) {
-					JComboBox cbox = loginDialog.getRolleComboBox();
-					String rolleName = (String)cbox.getSelectedItem();
-					String user = loginDialog.getUsernameTextField().getText();
-					char[] password = loginDialog.getPasswordField().getPassword();
+					String rolleName = (String)loginDialog.getRoles().getValue();
+					String user = (String)loginDialog.getUserName().getValue();
+					char[] password = String.valueOf(loginDialog.getPassword().getValue()).toCharArray();
 					// hide me
 					loginDialog.setVisible(false);
 					// try to login
@@ -82,8 +82,7 @@ public class UIFactory {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		JComboBox cbox = loginDialog.getRolleComboBox();
-		cbox.removeAllItems();
+		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for (int i = 0; i < rolleNames.length; i++) {
 			IDiskoRole currentRolle = app.getCurrentRole();
 			if (currentRolle != null && 
@@ -91,8 +90,9 @@ public class UIFactory {
 				// skip current rolle
 				continue;
 			}
-			cbox.addItem(rolleNames[i]);
+			model.addElement(rolleNames[i]);
 		}
+		loginDialog.getRoles().fill(model);
 		return loginDialog;
 	}
 	

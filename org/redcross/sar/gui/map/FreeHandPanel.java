@@ -9,7 +9,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -22,7 +21,6 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.SnappingAdapter;
 import org.redcross.sar.map.command.FreeHandTool;
@@ -321,9 +319,9 @@ public class FreeHandPanel extends JPanel {
 				fl.setAlignment(FlowLayout.RIGHT);
 				buttonPanel = new JPanel();
 				buttonPanel.setLayout(fl);
-				buttonPanel.add(getCancelButton());
-				buttonPanel.add(getSnapToButton());
 				buttonPanel.add(getApplyButton());
+				buttonPanel.add(getSnapToButton());
+				buttonPanel.add(getCancelButton());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

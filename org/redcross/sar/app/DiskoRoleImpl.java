@@ -11,7 +11,7 @@ import javax.swing.Icon;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkEventListener;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.MainMenuPanel;
 import org.redcross.sar.gui.MainPanel;
@@ -33,7 +33,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  *
  */
-public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkEventListener {
+public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	
 	private IDiskoApplication app = null;
 	private String name = null;

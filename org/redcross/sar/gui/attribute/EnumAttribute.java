@@ -7,7 +7,6 @@ import java.awt.Component;
 import java.util.EnumSet;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JFormattedTextField;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
@@ -22,14 +21,14 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 
-	public EnumAttribute(AttributeImpl.MsoEnum attribute, String caption, boolean isEditable) {
+	public EnumAttribute(AttributeImpl.MsoEnum attribute, String caption, int width, boolean isEditable) {
 		// forward
-		this(attribute,caption,getAllEnumValues(attribute),isEditable);						
+		this(attribute,caption,width,getAllEnumValues(attribute),isEditable);						
 	}
 	
-	public EnumAttribute(IAttributeIf attribute, String caption, Enum[] values, boolean isEditable) {
+	public EnumAttribute(IAttributeIf attribute, String caption, int width, Enum[] values, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,null,isEditable);
+		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// fill values
@@ -38,13 +37,13 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		load();		
 	}
 	
-	public EnumAttribute(String name, String caption, Enum value, boolean isEditable) {
-		this(name,caption,value,null,isEditable);
+	public EnumAttribute(String name, String caption, int width, Enum value, boolean isEditable) {
+		this(name,caption,width,value,null,isEditable);
 	}
 	
-	public EnumAttribute(String name, String caption, Enum value, Enum[] values, boolean isEditable) {
+	public EnumAttribute(String name, String caption, int width, Enum value, Enum[] values, boolean isEditable) {
 		// forward
-		super(name,caption,null,isEditable);
+		super(name,caption,width,null,isEditable);
 		// fill values
 		setValues(values);	
 	}
@@ -56,8 +55,9 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	
 	protected Component getComponent() {
 		if(m_component==null) {
-			m_component = new JList();
-			m_component.setEnabled(m_isEditable);		
+			JList list = new JList();
+			list.setEnabled(m_isEditable);
+			m_component = list;
 		}
 		return m_component;
 	}
@@ -66,6 +66,14 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	 * Public methods
 	 *================================================================== 
 	 */
+	
+	public void setAutoSave(boolean auto) {
+		m_autoSave = auto;
+	}
+	
+	public boolean getAutoSave() {
+		return m_autoSave;
+	}	
 	
 	public Object getValue() {
 		return ((JList)m_component).getSelectedValue();

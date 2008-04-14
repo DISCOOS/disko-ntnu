@@ -93,11 +93,11 @@ public class SnapPanel extends JPanel implements SnappingListener {
 				vfl.setHgap(0);
 				vfl.setAlignment(VerticalFlowLayout.TOP);
 				snapPanel.setLayout(vfl);
+				snapPanel.add(getSnapButtonPanel(), BorderLayout.NORTH);
 				snapPanel.setBorder(BorderFactory.createTitledBorder(null, 
 						"Snapp til kartlag", TitledBorder.LEFT, TitledBorder.TOP, 
 						new Font("Tahoma", Font.PLAIN, 11), new Color(0, 70, 213)));
-				snapPanel.add(getSnapSelectionPanel(), BorderLayout.NORTH);
-				snapPanel.add(getSnapButtonPanel(), BorderLayout.CENTER);
+				snapPanel.add(getSnapSelectionPanel(), BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

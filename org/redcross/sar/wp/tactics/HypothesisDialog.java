@@ -1,8 +1,38 @@
 package org.redcross.sar.wp.tactics;
 
+import javax.swing.AbstractButton;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.util.Collection;
+import java.util.EnumSet;
+
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.models.HypothesisListModel;
 import org.redcross.sar.gui.renderers.HypothesisListCellRenderer;
 import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
@@ -17,41 +47,12 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.Collection;
-import java.util.EnumSet;
 
 public class HypothesisDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
-	private JPanel contentPanel = null;
-	private JPanel titlePanel = null;
-	private JLabel iconLabel = null;
-	private JLabel titleLabel = null;
+	private DiskoPanel contentPanel = null;
 	private JPanel hypothesisPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton newButton = null;
@@ -89,7 +90,7 @@ public class HypothesisDialog extends DiskoDialog {
 		try {
 			createlabels();
 			this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(900, 175));
+            this.setPreferredSize(new Dimension(900, 300));
             this.pack();
 			loadHypotheses();
 		}
@@ -135,29 +136,23 @@ public class HypothesisDialog extends DiskoDialog {
 	}
 	
 	private IHypothesisIf getHypothesis(String name) {
+		
+		if(name==null || name.isEmpty()) return null;
+		
 		Collection<IHypothesisIf> c = msoModel.getMsoManager()
 			.getCmdPost().getHypothesisListItems();
 	
 		for(IHypothesisIf h:c) {
-			if(name.equalsIgnoreCase(Utils.translate(IMsoManagerIf
-				.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber())) { 
-					// found!
-					return h;
+			if(name.equalsIgnoreCase(getHypothesisName(h))) { 
+				// found!
+				return h;
 			}
 		}
 		return null;
 	}
 	
-	@Override
-	public void setVisible(boolean isVisible) {
-		if(currentMsoObj==null && isVisible) {
-			// notfiy user
-			JOptionPane.showMessageDialog(getOwner(),
-                "Du må velge et søkeområde i kartet før du kan oppgi hypotese",
-                "Objekt mangler", JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		super.setVisible(isVisible);
+	private String getHypothesisName(IHypothesisIf h) {
+		return h!=null ? Utils.translate(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null;
 	}
 	
 	private void createlabels() {
@@ -168,15 +163,6 @@ public class HypothesisDialog extends DiskoDialog {
 		labels[3] = Utils.translate("PRIORITY4_SEARCH_AREA");
 		labels[4] = Utils.translate("PRIORITY5_SEARCH_AREA");
 	}
-	
-	private void reset() {
-		setIsWorking();
-		getDescriptionTextArea().setText(null);
-		getPriorityComboBox().setSelectedIndex(0);
-		getStatusComboBox().setSelectedIndex(0);
-		selectedHypothesis = null;
-		setIsNotWorking();
-	}
 
 	public IHypothesisIf getSelectedHypothesis() {
 		return selectedHypothesis;
@@ -184,6 +170,7 @@ public class HypothesisDialog extends DiskoDialog {
 
 	private void setHypotesis(IHypothesisIf hypothesis, boolean gui, boolean mso) {
 		setIsWorking();
+		boolean enable = false;
 		if(hypothesis!=null) {
 			// update gui?
 			if (gui) {
@@ -207,13 +194,13 @@ public class HypothesisDialog extends DiskoDialog {
 					}
 				}
 			}
-			getDescriptionTextArea().setEnabled(true);						
-			setIsNotWorking();
-			return;
+			enable = true;
 		}
-		// disable text and reset selected
-		getDescriptionTextArea().setEnabled(false);						
+		// update selection
 		selectedHypothesis = hypothesis;
+		// update enabled state
+		getDescriptionTextArea().setEnabled(enable);						
+		// finished
 		setIsNotWorking();
 	}
 	
@@ -221,7 +208,6 @@ public class HypothesisDialog extends DiskoDialog {
 		setIsWorking();
 		// has hypothesis?
 		if(selectedHypothesis!=null) {
-			setIsWorking();
 			// update gui?
 			if (gui) {
 				getDescriptionTextArea().setText(text);
@@ -241,7 +227,6 @@ public class HypothesisDialog extends DiskoDialog {
 		setIsWorking();
 		// has hypothesis?
 		if(selectedHypothesis!=null) {
-			setIsWorking();
 			// update gui?
 			if (gui) {
 				getPriorityComboBox().setSelectedIndex(priority-1);
@@ -261,7 +246,6 @@ public class HypothesisDialog extends DiskoDialog {
 		setIsWorking();
 		// has hypothesis?
 		if(selectedHypothesis!=null) {
-			setIsWorking();
 			// update gui?
 			if (gui) {
 				getStatusComboBox().setSelectedItem(status);
@@ -282,14 +266,22 @@ public class HypothesisDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getContentPanel() {
+	private DiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTitlePanel(),BorderLayout.NORTH);
-				contentPanel.add(getHypothesisPanel(), BorderLayout.CENTER);
+				contentPanel = new DiskoPanel();
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				AbstractButton button = contentPanel.addButton(
+						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// cancel any pending changes
+						cancel();
+						// hide me!
+						setVisible(false);						
+					}					
+				});
+				contentPanel.setContent(getHypothesisPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -297,35 +289,6 @@ public class HypothesisDialog extends DiskoDialog {
 		return contentPanel;
 	}
 
-	/**
-	 * This method initializes titlePanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getTitlePanel() {
-		if (titlePanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.LEFT);
-				fl.setHgap(5);
-				fl.setVgap(0);
-				JPanel labels = new JPanel();
-				labels.setLayout(fl);
-				iconLabel = new JLabel();
-				titleLabel = new JLabel();
-				labels.add(iconLabel,null);
-				labels.add(titleLabel,null);
-				titlePanel = new JPanel();
-				titlePanel.setLayout(new BorderLayout());
-				titlePanel.add(labels,BorderLayout.CENTER);
-				titlePanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.SOUTH);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return titlePanel;
-	}
-	
 	/**
 	 * This method initializes hypothesisPanel
 	 *
@@ -487,16 +450,28 @@ public class HypothesisDialog extends DiskoDialog {
 				descriptionTextArea = new JTextArea();
 				descriptionTextArea.setLineWrap(true);
 				descriptionTextArea.setEnabled(false);
-				descriptionTextArea.getDocument().addDocumentListener(new DocumentListener() {
-					public void changedUpdate(DocumentEvent e) { apply(); }
-					public void insertUpdate(DocumentEvent arg0) { apply(); }
-					public void removeUpdate(DocumentEvent arg0) { apply(); }
-					private void apply() {
-						// no mso update allowed?
-						if (isWorking()) return;
-						// update mso model
-						setDescription(descriptionTextArea.getText(),false,true);						
+				// add updata manager
+				descriptionTextArea.addFocusListener(new FocusAdapter() {
+					
+					@Override
+					public void focusLost(FocusEvent e) {						
+						// forward
+						super.focusLost(e);						
+						// forward?
+						if(e.getOppositeComponent() != getContentPanel().getButton("cancel")) {
+							// update mso model
+							Runnable r = new Runnable() {
+	
+								public void run() {
+									finish();
+								}
+								
+							};
+							SwingUtilities.invokeLater(r);
+						}
+						
 					}
+					
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -620,9 +595,13 @@ public class HypothesisDialog extends DiskoDialog {
 			// save reference
 			currentSearchArea = (ISearchAreaIf)msoObj;
 		}
+		// get hypothesis
+		IHypothesisIf h = (currentSearchArea!=null ? currentSearchArea.getSearchAreaHypothesis() : null);
 		// select value
-		getHypothesisList().setSelectedValue((currentSearchArea!=null ? 
-				currentSearchArea.getSearchAreaHypothesis() : null),true);
+		if(h!=null)
+			getHypothesisList().setSelectedValue(getHypothesisName(h),true);
+		else 
+			cancel();
 		// forward
 		setup();
 		// success
@@ -632,15 +611,25 @@ public class HypothesisDialog extends DiskoDialog {
 	private void setup() {
 		// update icon
 		if(currentSearchArea!=null) {
-			iconLabel.setIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
-			titleLabel.setText("<html>Oppgi hypotese for <b>" + 
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON", "48x48"));			
+			getContentPanel().setCaptionText("<html>Oppgi hypotese for <b>" + 
 					MsoUtils.getSearchAreaName(currentSearchArea).toLowerCase() + "</b></html>");
-			getHypothesisPanel().setEnabled(true);
+			getHypothesisList().setEnabled(true);
+			getNewButton().setEnabled(true);
+			getTextAreaScrollPane().setEnabled(true);
+			getDescriptionTextArea().setEnabled(true);
+			getPriorityComboBox().setEnabled(true);
+			getStatusComboBox().setEnabled(true);			
 		}
 		else {
-			iconLabel.setIcon(null);
-			titleLabel.setText("Du må først velge et søkeområde");			
-			getHypothesisPanel().setEnabled(false);
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionText("Du må først velge et søkeområde");			
+			getHypothesisList().setEnabled(false);
+			getNewButton().setEnabled(false);
+			getTextAreaScrollPane().setEnabled(false);
+			getDescriptionTextArea().setEnabled(false);
+			getPriorityComboBox().setEnabled(false);
+			getStatusComboBox().setEnabled(false);			
 		}		
 	}	
 	
@@ -674,6 +663,22 @@ public class HypothesisDialog extends DiskoDialog {
 		else if(msoObject instanceof IHypothesisIf) {
 			removeHypothesis((IHypothesisIf)msoObject);
 		}
-	}			
+	}		
+	
+	public boolean finish() {
+		// no mso update allowed?
+		if (!isWorking()) {
+			setDescription(getDescriptionTextArea().getText(),false,true);
+			return true;
+		}
+		return false;
+	}
+	
+	public void cancel() {
+		getDescriptionTextArea().setText(null);
+		getHypothesisList().clearSelection();
+		getPriorityComboBox().setSelectedItem(0);
+		getStatusComboBox().setSelectedItem(0);
+	}
 		
 }  //  @jve:decl-index=0:visual-constraint="10,10"

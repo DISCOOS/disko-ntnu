@@ -22,18 +22,18 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public DTGAttribute(IAttributeIf attribute, String caption, boolean isEditable) {
+	public DTGAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,null,isEditable);
+		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// get value from attribute
 		load();		
 	}
 	
-	public DTGAttribute(String name, String caption, Object value, boolean isEditable) {
+	public DTGAttribute(String name, String caption, int width, Object value, boolean isEditable) {
 		// forward
-		super(name,caption,value,isEditable);
+		super(name,caption,width,value,isEditable);
 	}
 	
 	/*==================================================================
@@ -44,10 +44,14 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	protected Component getComponent() {
 		if(m_component==null) {
 			// create
-			m_component = new JFormattedTextField();
+			JFormattedTextField field = new JFormattedTextField();
+			// get
 			// set format
-			((JFormattedTextField)m_component).setFormatterFactory(new DTGFormat());
-			((JFormattedTextField)m_component).setEditable(m_isEditable);
+			field.setFormatterFactory(new DTGFormat());
+			field.setEditable(m_isEditable);
+			// save the component
+			m_component = field;
+			
 		}
 		return m_component;
 	}
@@ -56,6 +60,14 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	 * Public methods
 	 *================================================================== 
 	 */
+	
+	public void setAutoSave(boolean auto) {
+		m_autoSave = auto;
+	}
+	
+	public boolean getAutoSave() {
+		return m_autoSave;
+	}	
 	
 	public Object getValue() {
 		return ((JFormattedTextField)m_component).getText();

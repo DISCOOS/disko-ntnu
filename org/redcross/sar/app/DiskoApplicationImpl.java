@@ -5,6 +5,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.LoginDialog;
 import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.gui.OperationPanel;
 import org.redcross.sar.gui.SysBar;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.map.DiskoMapManagerImpl;
@@ -182,8 +183,9 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		super();
 		// registrate me
 		Utils.setApp(this);
-		// initialze
+		// initialze ArcGIS
 		initializeArcGISLicenses();
+		// initialize GUI
 		initialize();
 	}
 
@@ -192,7 +194,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		try
 		{
 			// set title
-			setTitle("DISKO");
+			this.setTitle("DISKO");
 			// get disko glass pane
 			DiskoGlassPane glassPane = getUIFactory().getGlassPane();
 			// set glass pane
@@ -202,26 +204,34 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
             // add glass pane as mouse listener
             Toolkit.getDefaultToolkit().addAWTEventListener(al,
                     AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
-            // set DISKO content panel
+            // add operations panel
+            this.getUIFactory().getMainPanel().addComponent(new OperationPanel(), "SYSTEM.OPERATION");
+            // show panel
+            this.getUIFactory().getMainPanel().showComponent("SYSTEM.OPERATION");
+            // set content panel
 			this.setContentPane(getUIFactory().getContentPanel());
-			//this.pack();
-			getFrame().setPreferredSize(new Dimension(1024,768));
+			// apply size and layout
+			this.getFrame().setPreferredSize(new Dimension(1024,768));
 			this.pack();
-			getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
+			// show extended
+			this.getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
 			// initialize logging
 			Log.init("DISKO");
 			// add this as window listener
-			addWindowListener(this);
+			this.addWindowListener(this);
 			// show me
-			setVisible(true);
+			this.setVisible(true);
 			//initiate modeldriver
-			getMsoModel().getModelDriver().initiate();
-			getMsoModel().getModelDriver().setDiskoApplication(this);
+			this.getMsoModel().getModelDriver().initiate();
+			this.getMsoModel().getModelDriver().setDiskoApplication(this);
 			// show the login dialog
 			final LoginDialog loginDialog = getUIFactory().getLoginDialog();
 			loginDialog.setLocationRelativeTo((JComponent)getFrame().getContentPane(),LoginDialog.POS_CENTER,false);         
 			diskoReport = new DiskoReport(this);
-			java.awt.EventQueue.invokeLater(new Runnable() {public void run() {loginDialog.setVisible(true,true);}}); 
+			java.awt.EventQueue.invokeLater(new Runnable() {public void 
+				run() {
+					loginDialog.setVisible(true,true);
+				}}); 
 		}
 		catch (Exception e)
 		{

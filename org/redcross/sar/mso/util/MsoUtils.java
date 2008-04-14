@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.DiskoMap;
@@ -19,6 +20,9 @@ import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMessageLineIf;
+import org.redcross.sar.mso.data.IMessageLineListIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IOperationAreaIf;
@@ -31,7 +35,10 @@ import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
+import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
+import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.IGeodataIf;
+import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 
 import com.esri.arcgis.geometry.GeometryBag;
@@ -59,8 +66,10 @@ public class MsoUtils {
 			// forward
 			return deleteAssignment((IAssignmentIf)msoObject);
 		}
-		// failed
-		return false;
+		else {
+			// forward
+			return msoObject.deleteObject();
+		}
 		
 	}
 	
@@ -564,5 +573,125 @@ public class MsoUtils {
 		else
 			return "<null>";
 		
-	}	
+	}
+	
+	public static String getMessageText(IMessageIf message, ResourceBundle bundle) {
+
+		// initialize
+    	StringBuilder stringBuilder = new StringBuilder();
+
+    	// get message lines
+    	IMessageLineListIf lines = message.getMessageLines();
+    	
+    	// loop over all lines
+    	for(IMessageLineIf line : lines.getItems())
+    	{
+    		String lineText = "";
+    		switch(line.getLineType()){
+			case TEXT: {
+				lineText = String.format(bundle.getString("ListItemText.text"),
+						line.getLineText());
+			}
+				break;
+			case POSITION: {
+				// get posiyion
+				Position p = line.getLinePosition();
+				
+				if(p != null)
+				{
+					// get unit name
+					String unit = MsoUtils.getUnitName(line.getLineUnit(),false);
+					
+					try {
+						String mgrs = MapUtil.getMGRSfromPosition(p);
+						// get zone
+						String zone = mgrs.subSequence(0, 3).toString();
+						String square = mgrs.subSequence(3, 5).toString();
+						String x = mgrs.subSequence(5, 10).toString();
+						String y = mgrs.subSequence(10, 15).toString();
+						// get text
+						lineText = String.format(bundle.getString("ListItemPOI.text"),
+								unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			break;
+			case POI: {
+				IPOIIf poi = line.getLinePOI();
+				if(poi != null)
+				{
+					String type = poi.getTypeText();
+					Position pos = line.getLinePOI().getPosition();
+					if(pos != null)
+					{
+						try {
+							String mgrs = MapUtil.getMGRSfromPosition(pos);
+							// get zone
+							String zone = mgrs.subSequence(0, 3).toString();
+							String square = mgrs.subSequence(3, 5).toString();
+							String x = mgrs.subSequence(5, 10).toString();
+							String y = mgrs.subSequence(10, 15).toString();
+							// get text
+							lineText = String.format(bundle.getString("ListItemFinding.text"),
+									type, zone, square, x, y);
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			break;
+			case ASSIGNED: {
+				IAssignmentIf assignment = line.getLineAssignment();
+				lineText = String.format(bundle.getString("ListItemAssigned.text"),
+						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
+			}
+			break;
+			case STARTED: {
+				IAssignmentIf assignment = line.getLineAssignment();
+				lineText = String.format(bundle.getString("ListItemStarted.text"),
+						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
+			}
+			break;
+			case COMPLETE: {
+				IAssignmentIf assignment = line.getLineAssignment();
+				lineText = String.format(bundle.getString("ListItemCompleted.text"),
+						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
+			}
+			break;
+			}
+    		if (stringBuilder.length()>0)
+            	stringBuilder.append(". " + lineText);
+    		else
+    			stringBuilder.append(lineText);
+        }
+        return stringBuilder.toString();		
+	}
+	
+	public static boolean inAssignment(IMsoObjectIf msoObj) {
+		
+		if (msoObj instanceof IRouteIf) {
+			return true;
+		}
+		else if (msoObj instanceof IPOIIf) {
+			
+			// get poi
+			IPOIIf poi = (IPOIIf)msoObj;
+			
+			// get poi type
+			IPOIIf.POIType poiType = poi.getType();
+			
+			// get flag
+			return (poiType == IPOIIf.POIType.START) || 
+				(poiType == IPOIIf.POIType.VIA) || (poiType == IPOIIf.POIType.STOP);
+			
+		}
+		
+		return false;
+		
+	}
 }

@@ -2,7 +2,7 @@ package org.redcross.sar.event;
 
 import java.util.EventListener;
 
-public interface IDiskoWorkEventListener extends EventListener {
+public interface IDiskoWorkListener extends EventListener {
 	
 	public void onWorkChange(DiskoWorkEvent e);
 	

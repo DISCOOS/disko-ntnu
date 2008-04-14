@@ -5,30 +5,30 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
-import javax.swing.JCheckBox;
+import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
-
 
 /**
  * @author kennetgu
  *
  */
-public class CheckBoxAttribute extends AbstractDiskoAttribute {
+public class ComboAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public CheckBoxAttribute(AttributeImpl.MsoBoolean attribute, String caption, int width, boolean isEditable) {
+	public ComboAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,150,null,isEditable);
+		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// get value from attribute
 		load();		
 	}
 	
-	public CheckBoxAttribute(String name, String caption, int width, boolean value, boolean isEditable) {
+	public ComboAttribute(String name, String caption, int width, String value, boolean isEditable) {
 		// forward
 		super(name,caption,width,value,isEditable);
 	}
@@ -40,12 +40,14 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 	
 	protected Component getComponent() {
 		if(m_component==null) {
-			m_component = new JCheckBox();
-			m_component.setEnabled(m_isEditable);
+			JComboBox field = new JComboBox();
+			field.setEditable(m_isEditable);
+			// save the component
+			m_component = field;			
 		}
 		return m_component;
 	}
-
+			
 	/*==================================================================
 	 * Public methods
 	 *================================================================== 
@@ -59,21 +61,24 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
+	public boolean fill(Object values) {
+		try {
+			((JComboBox)m_component).setModel((ComboBoxModel)values);
+			return true;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	public Object getValue() {
-		return ((JCheckBox)m_component).isSelected();
+		return ((JComboBox)m_component).getSelectedItem();
 	}
 	
 	public boolean setValue(Object value) {
-		// allowed?
-		if(!m_isEditable) return false;
-		if(value instanceof String)
-			((JCheckBox)m_component).setSelected(Boolean.valueOf((String)value));
-		else if(value instanceof Boolean) 
-			((JCheckBox)m_component).setSelected(Boolean.valueOf((Boolean)value));
-		else {
-			// failure
-			return false;
-		}
+		// update
+		((JComboBox)m_component).setSelectedItem(value);
 		// success
 		return true;
 	}
@@ -82,7 +87,7 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoBoolean) {
+			if(attribute instanceof AttributeImpl.MsoString) {
 				// save attribute
 				m_attribute = attribute;
 				// update name
@@ -94,5 +99,5 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		// failure
 		return false;
 	}	
-		
+	
 }
