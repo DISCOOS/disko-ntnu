@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000130" pos="18" objectType="test" name="Intelligence">
-<fact id="00000000131" label="Priority" pos1="999" pos2="999" comp="n" relTo="00000000130" edit="y" version="1">
-<num_fact min="0.0" max="1.0E8" antdec="0"/>
+<object id="00000000130" name="Intelligence" objectType="test" pos="18">
+<fact comp="n" edit="y" id="00000000131" label="Priority" pos1="999" pos2="999" relTo="00000000130" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
 </fact>
-<fact id="00000000132" label="Time" pos1="999" pos2="999" comp="n" relTo="00000000130" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000132" label="Time" pos1="999" pos2="999" relTo="00000000130" version="1">
 <date_fact/>
 </fact>
-<fact id="00000000133" label="Status" pos1="999" pos2="999" comp="n" relTo="00000000130" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000133" label="Status" pos1="999" pos2="999" relTo="00000000130" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000134" label="Description" pos1="999" pos2="999" comp="n" relTo="00000000130" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000134" label="Description" pos1="999" pos2="999" relTo="00000000130" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000135" label="Source" pos1="999" pos2="999" comp="n" relTo="00000000130" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000135" label="Source" pos1="999" pos2="999" relTo="00000000130" version="1">
 <str_fact/>
 </fact>
 </object>

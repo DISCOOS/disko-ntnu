@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000099" pos="11" objectType="test" name="Dog">
-<fact id="00000000100" label="AverageSpeed" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
-<num_fact min="0.0" max="1.0E8" antdec="0"/>
+<object id="00000000099" name="Dog" objectType="test" pos="11">
+<fact comp="n" edit="y" id="00000000100" label="AverageSpeed" pos1="999" pos2="999" relTo="00000000099" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
 </fact>
-<fact id="00000000101" label="MaxSpeed" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
-<num_fact min="0.0" max="1.0E8" antdec="0"/>
+<fact comp="n" edit="y" id="00000000101" label="MaxSpeed" pos1="999" pos2="999" relTo="00000000099" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
 </fact>
-<fact id="00000000102" label="Status" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000102" label="Status" pos1="999" pos2="999" relTo="00000000099" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000103" label="Bearing" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
-<num_fact min="0.0" max="1.0E8" antdec="0"/>
+<fact comp="n" edit="y" id="00000000103" label="Bearing" pos1="999" pos2="999" relTo="00000000099" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
 </fact>
-<fact id="00000000104" label="CallSign" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000104" label="CallSign" pos1="999" pos2="999" relTo="00000000099" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000105" label="Position" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
-<loc_fact lat_value="" long_value="" locationType="1"/>
+<fact comp="n" edit="y" id="00000000105" label="Position" pos1="999" pos2="999" relTo="00000000099" version="1">
+<loc_fact lat_value="" locationType="1" long_value=""/>
 </fact>
-<fact id="00000000106" label="Remarks" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000106" label="Remarks" pos1="999" pos2="999" relTo="00000000099" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000107" label="Speed" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
-<num_fact min="0.0" max="1.0E8" antdec="0"/>
+<fact comp="n" edit="y" id="00000000107" label="Speed" pos1="999" pos2="999" relTo="00000000099" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
 </fact>
-<fact id="00000000108" label="ToneID" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000108" label="ToneID" pos1="999" pos2="999" relTo="00000000099" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000109" label="Number" pos1="999" pos2="999" comp="n" relTo="00000000099" edit="y" version="1">
-<num_fact min="0.0" max="1.0E8" antdec="0"/>
+<fact comp="n" edit="y" id="00000000109" label="Number" pos1="999" pos2="999" relTo="00000000099" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
 </fact>
 </object>

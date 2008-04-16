@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000153" pos="23" objectType="test" name="OperationArea">
-<fact id="00000000154" label="Remarks" pos1="999" pos2="999" comp="n" relTo="00000000153" edit="y" version="1">
+<object id="00000000153" name="OperationArea" objectType="test" pos="23">
+<fact comp="n" edit="y" id="00000000154" label="Remarks" pos1="999" pos2="999" relTo="00000000153" version="1">
 <str_fact/>
 </fact>
-<fact id="00000000155" label="Geodata" pos1="999" pos2="999" comp="n" relTo="00000000153" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000155" label="Geodata" pos1="999" pos2="999" relTo="00000000153" version="1">
 <fact_area name="" state="0"/>
 </fact>
-<fact id="00000000156" label="Assignment" pos1="999" pos2="999" comp="n" relTo="00000000153" edit="y" version="1">
+<fact comp="n" edit="y" id="00000000156" label="Assignment" pos1="999" pos2="999" relTo="00000000153" version="1">
 <str_fact/>
 </fact>
 </object>
