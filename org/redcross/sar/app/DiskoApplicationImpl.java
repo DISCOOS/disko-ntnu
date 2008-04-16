@@ -205,9 +205,9 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
             Toolkit.getDefaultToolkit().addAWTEventListener(al,
                     AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
             // add operations panel
-            this.getUIFactory().getMainPanel().addComponent(new OperationPanel(), "SYSTEM.OPERATION");
+            //this.getUIFactory().getMainPanel().addComponent(new OperationPanel(), "SYSTEM.OPERATION");
             // show panel
-            this.getUIFactory().getMainPanel().showComponent("SYSTEM.OPERATION");
+            //this.getUIFactory().getMainPanel().showComponent("SYSTEM.OPERATION");
             // set content panel
 			this.setContentPane(getUIFactory().getContentPanel());
 			// apply size and layout
@@ -280,7 +280,15 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	{
 		return this;
 	}
-
+	
+	public boolean isLocked() {
+		return ((DiskoGlassPane)getFrame().getGlassPane()).isLocked();
+	}
+	
+	public boolean setLocked(boolean isLocked) {
+		return ((DiskoGlassPane)getFrame().getGlassPane()).setLocked(isLocked);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.app.IDiskoApplication#getUIFactory()
 	 */

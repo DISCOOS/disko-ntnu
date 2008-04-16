@@ -586,26 +586,31 @@ public class HypothesisDialog extends DiskoDialog {
 	}
 
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
-		// reset
-		currentSearchArea = null;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;		
+		if(isWorking()) return state;
 		// get search area
 		if (msoObj instanceof ISearchAreaIf) {
 			// save reference
 			currentSearchArea = (ISearchAreaIf)msoObj;
+			// set state
+			state = 1;
+			// get hypothesis
+			IHypothesisIf h = (currentSearchArea!=null ? currentSearchArea.getSearchAreaHypothesis() : null);
+			// select value
+			if(h!=null)
+				getHypothesisList().setSelectedValue(getHypothesisName(h),true);			
+			else 
+				getHypothesisList().clearSelection();
 		}
-		// get hypothesis
-		IHypothesisIf h = (currentSearchArea!=null ? currentSearchArea.getSearchAreaHypothesis() : null);
-		// select value
-		if(h!=null)
-			getHypothesisList().setSelectedValue(getHypothesisName(h),true);
-		else 
+		else {
+			state = -1;
 			cancel();
+		}
 		// forward
 		setup();
 		// success
-		return true;
+		return state;
 	}	
 	
 	private void setup() {
@@ -679,6 +684,8 @@ public class HypothesisDialog extends DiskoDialog {
 		getHypothesisList().clearSelection();
 		getPriorityComboBox().setSelectedItem(0);
 		getStatusComboBox().setSelectedItem(0);
+		// reset
+		currentSearchArea = null;
 	}
 		
 }  //  @jve:decl-index=0:visual-constraint="10,10"

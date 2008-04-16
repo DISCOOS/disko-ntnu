@@ -603,8 +603,9 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	}
 	
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;
+		if(isWorking()) return state;
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
@@ -613,13 +614,19 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 				setPriority(currentAssignment.getPriority(),true,false);
 				setAccuracy(currentAssignment.getPlannedAccuracy(),true,false);
 				setPersonnelNeed(currentAssignment.getPlannedPersonnel(),true,false);
-				setRemarks(currentAssignment.getRemarks(),true,false);								
+				setRemarks(currentAssignment.getRemarks(),true,false);
+				state = 1;
 			}
+		}
+		else {
+			state = -1;
+			// forward
+			cancel();
 		}
 		// forward
 		setup();
 		// success
-		return true;
+		return state;
 	}	
 	
 	private void setup() {

@@ -5,44 +5,39 @@ import javax.swing.JPanel;
 
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.systemUI.ICommand;
 
-public interface IDiskoTool extends ICommand {
+public interface IDiskoCommand extends ICommand {
 
-	public enum DiskoToolType {
-		DRAW_HOST_TOOL,
-		FREEHAND_TOOL,
-		LINE_TOOL,
-		POI_TOOL,
-		POSITION_TOOL,
-		FLANK_TOOL,
-		SPLIT_TOOL,
-		SELECT_FEATURE_TOOL,
-		ZOOM_IN_TOOL,
-		ZOOM_OUT_TOOL,
-		PAN_TOOL,
-		ERASE_TOOL
+	public enum DiskoCommandType {
+		ZOOM_IN_FIXED_COMMAND,
+		ZOOM_OUT_FIXED_COMMAND,
+		ZOOM_FULL_EXTENT_COMMAND,
+		ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND,
+		ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND,
+		MAP_TOGGLE_COMMAND,
+		TOC_COMMAND,
+		SCALE_COMMAND,
+		GOTO_COMMAND,
+		ELEMENT_COMMAND
     }	
 	
 	public String getName();
 	
-	public DiskoToolType getType();
-	
-	public boolean isHosted();
-	
-	public IHostDiskoTool getHostTool();
+	public DiskoCommandType getType();
 	
 	public void onCreate(Object obj);
 	
-	public boolean activate(boolean allow);
+	public void onClick();	
+			
+	public boolean isHosted();
 	
-	public boolean deactivate();
+	public IHostDiskoCommand getHostCommand();
 	
-	public void setMsoDrawData(IDiskoTool tool);
+	public void setMsoDrawData(IDiskoCommand command);
 	
 	public void setMsoDrawData(IMsoObjectIf msoOwner, 
 			IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode);
@@ -57,8 +52,6 @@ public interface IDiskoTool extends ICommand {
 	
 	public IMsoManagerIf.MsoClassCode getMsoClassCode();
 
-	public IDiskoMap getMap();
-	
 	public DiskoDialog getDialog();
 	
 	public AbstractButton getButton();
@@ -83,10 +76,10 @@ public interface IDiskoTool extends ICommand {
 	
 	public boolean removePropertyPanel(JPanel panel);
 	
-	public IDiskoToolState save();
+	public IDiskoCommandState save();
 	
-	public boolean load(IDiskoToolState state);
+	public boolean load(IDiskoCommandState state);
 	
-	public interface IDiskoToolState {};
+	public interface IDiskoCommandState {};
 	
 }

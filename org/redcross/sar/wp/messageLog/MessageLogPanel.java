@@ -140,7 +140,7 @@ public class MessageLogPanel
 
         m_tablePanel.add(m_scrollPane1, LOG_ID);
         m_tablePanel.add(
-        		MapStatusBar.createPanelWithMapAndStatusBar(m_map, 
+        		MapStatusBar.createPanel(m_map, 
 				new MapStatusBar(), BorderLayout.NORTH, 
 				BorderFactory.createBevelBorder(BevelBorder.LOWERED)), MAP_ID);
 

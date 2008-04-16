@@ -184,7 +184,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 
 			public void mouseClicked(MouseEvent e) {
 				// double click?
-				if(e.getClickCount() == 2) {
+				if(e.getClickCount() > 1) {
 					dialog.setVisible(!dialog.isVisible());
 				}
 			}

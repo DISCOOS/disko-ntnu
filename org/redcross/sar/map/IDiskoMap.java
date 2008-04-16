@@ -9,23 +9,15 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.util.mso.Selector;
 
 import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
-import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
 public interface IDiskoMap {
-
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#setCurrentToolByRef(com.esri.arcgis.systemUI.ITool)
-	 */
-	public void setCurrentToolByRef(ITool tool, boolean allow) throws IOException,
-			AutomationException;
 	
 	public void setActiveTool(ITool tool, boolean allow) throws IOException, AutomationException;
 	
@@ -183,11 +175,10 @@ public interface IDiskoMap {
 	public List getSnappableLayers() throws IOException, AutomationException;
 	
 	public void setMapStatusBar(MapStatusBar buddy);
+	public MapStatusBar getMapStatusBar();
 	
 	public Point getClickPoint();
 	
 	public Point getMovePoint();
-	
-	public void setFilter(Selector<IMsoObjectIf> selector);
-	
+		
 }

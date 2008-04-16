@@ -70,7 +70,7 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 			
  			for (int i = 0; i < featureClass.featureCount(null); i++) {
  				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
- 				if(!isFiltered(feature) && feature.isVisible()){
+ 				if(select(feature) && feature.isVisible()){
  					Polygon polygon = (Polygon)feature.getShape();
  	 				if (polygon != null) {	 		
  	 					/*

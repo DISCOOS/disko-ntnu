@@ -165,24 +165,30 @@ public class MissionTextDialog extends DiskoDialog {
 		// reset to mso model
 		setText((currentOperationArea!=null 
 				? currentOperationArea.getRemarks() : null),true,false);
+		// reset
+		currentOperationArea = null;		
 	}
 	
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
-		// reset
-		currentOperationArea = null;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;
+		if(isWorking()) return state;
 		// set operation area
 		if (msoObj instanceof IOperationAreaIf) {
 			currentOperationArea = (IOperationAreaIf)msoObj;
+			state = 1;
+			// set current text
+			setText((currentOperationArea!=null 
+					? currentOperationArea.getRemarks() : null),true,false);
 		}
-		// set current text
-		setText((currentOperationArea!=null 
-				? currentOperationArea.getRemarks() : null),true,false);
+		else {
+			state = -1;
+			cancel();
+		}
 		// forward
 		setup();
 		// success
-		return true;
+		return state;
 	}	
 	
 	private void setup() {

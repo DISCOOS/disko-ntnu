@@ -9,6 +9,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
@@ -346,4 +350,28 @@ public class Utils {
 		c.setMaximumSize(dim);
 	}
 	
+	public static List<Enum<?>> getListOf(Enum e) {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		list.add(e);
+		return list;
+	}
+	
+	public static List<Enum<?>> getListOfAll(Class e) {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		Iterator<Enum> it = EnumSet.allOf(e).iterator();
+		while(it.hasNext()) {
+			list.add(it.next());
+		}
+		return list;
+	}
+	
+	public static List<Enum<?>> getListNoneOf(Class e) {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		Iterator<Enum> it = EnumSet.noneOf(e).iterator();
+		while(it.hasNext()) {
+			list.add(it.next());
+		}
+		return list;
+	}
+		
 }

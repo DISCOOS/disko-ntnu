@@ -52,7 +52,7 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 			}
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				FlankFeature feature = (FlankFeature)featureClass.getFeature(i);
-				if(!isFiltered(feature) && feature.isVisible()) {
+				if(select(feature) && feature.isVisible()) {
 					List leftFlanks  = feature.getLeftFlanks();
 					for (int j = 0; j < leftFlanks.size(); j++) {
 						display.setSymbol(redFill);

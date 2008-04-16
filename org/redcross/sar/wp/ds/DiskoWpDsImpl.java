@@ -1,10 +1,13 @@
 package org.redcross.sar.wp.ds;
 
 import java.lang.instrument.IllegalClassFormatException;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
@@ -43,19 +46,19 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
 			// get tool set 
-	        EnumSet<DiskoToolType> myTools =
-	                EnumSet.of(DiskoToolType.ZOOM_IN_TOOL);
-	        myTools.add(DiskoToolType.ZOOM_OUT_TOOL);
-	        myTools.add(DiskoToolType.PAN_TOOL);
-	        myTools.add(DiskoToolType.ZOOM_FULL_EXTENT_COMMAND);
-	        myTools.add(DiskoToolType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
-	        myTools.add(DiskoToolType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
-	        myTools.add(DiskoToolType.MAP_TOGGLE_COMMAND);
-	        myTools.add(DiskoToolType.SCALE_COMMAND);
-	        myTools.add(DiskoToolType.TOC_COMMAND);
-	        myTools.add(DiskoToolType.SELECT_FEATURE_TOOL);
+	        List<Enum<?>> myButtons = new ArrayList<Enum<?>>();	  
+	        myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
+	        myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
+	        myButtons.add(DiskoToolType.PAN_TOOL);
+	        myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
+	        myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
+	        myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
+	        myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
+	        myButtons.add(DiskoCommandType.SCALE_COMMAND);
+	        myButtons.add(DiskoCommandType.TOC_COMMAND);
+	        myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
 			// forward
-			setupNavBar(myTools,true);
+			setupNavBar(myButtons,true);
 		}				
 	}
 	

@@ -1,6 +1,5 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.Dimension;
 import java.awt.Frame;
 
 import org.redcross.sar.gui.DiskoDialog;

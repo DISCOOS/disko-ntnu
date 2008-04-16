@@ -155,24 +155,30 @@ public class DescriptionDialog extends DiskoDialog {
 	}
 	
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
-		// reset assignment
-		currentAssignment = null;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;
+		if(isWorking()) return state;
 		// get area
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
 			if (assignment instanceof ISearchIf) {		
 				currentAssignment = (ISearchIf)assignment;
+				state = 1;
 			}
+		}
+		else {
+			// set state
+			state = -1;
+			// reset assignment
+			currentAssignment = null;
 		}
 		// set current area
 		getPOITableModel().setArea(area);
 		// forward
 		setup();
 		// success
-		return true;
+		return state;
 	}	
 	
 	private void setup() {

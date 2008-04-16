@@ -18,7 +18,6 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -39,6 +38,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Timer;
@@ -420,11 +420,11 @@ public abstract class AbstractDiskoWpModule
     /* (non-Javadoc)
      * @see org.redcross.sar.wp.IDiskoWpModule#isNavBarSetupNeeded()
      */
-    public void setupNavBar(EnumSet<DiskoToolType> tools, boolean isSelected) {
+    public void setupNavBar(List<Enum<?>> buttons, boolean isSelected) {
     	// get navbar
     	NavBar navBar = getApplication().getNavBar();
     	// show buttons
-    	navBar.setVisibleButtons(tools,true,false);
+    	navBar.setVisibleButtons(buttons,true,false);
     	// setup navbar
     	navBar.setup();
 		// get nav button

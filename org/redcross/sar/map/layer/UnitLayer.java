@@ -87,7 +87,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 				IUnitIf unit = (IUnitIf)feature.getMsoObject();
 				UnitStatus status = unit.getStatus();
 				boolean exists = !(UnitStatus.EMPTY.equals(status) || UnitStatus.RELEASED.equals(status));
-				if(!isFiltered(feature) && feature.isVisible() && exists){
+				if(select(feature) && feature.isVisible() && exists){
 					IGeometry geom = feature.getShape();
 					if (geom != null) {
 						

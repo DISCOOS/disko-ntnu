@@ -457,10 +457,9 @@ public class UnitSelectionDialog extends DiskoDialog {
 	}
 	
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
-		// set to nothing
-		currentAssignment = null;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;
+		if(isWorking()) return state;
 		// get assignment
 		if(msoObj instanceof IAssignmentIf) {
 			currentAssignment = (IAssignmentIf)msoObj;
@@ -470,11 +469,15 @@ public class UnitSelectionDialog extends DiskoDialog {
 			if(area!=null) {
 				currentAssignment = area.getOwningAssignment();
 			}
+			else {
+				// set to nothing
+				currentAssignment = null;
+			}
 		}
 		// forward
 		setup();
 		// success
-		return true;
+		return currentAssignment == null ? -1 : 1;
 	}	
 	
 	private void selectAssignedUnit() {

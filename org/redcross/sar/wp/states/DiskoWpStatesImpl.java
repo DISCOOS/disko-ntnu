@@ -1,10 +1,9 @@
 package org.redcross.sar.wp.states;
 
 import java.lang.instrument.IllegalClassFormatException;
-import java.util.EnumSet;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
@@ -50,11 +49,8 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
-			// get tool set 
-	        EnumSet<DiskoToolType> myTools =
-	                EnumSet.noneOf(DiskoToolType.class);
 			// forward
-			setupNavBar(myTools,false);
+			setupNavBar(Utils.getListNoneOf(DiskoToolType.class),false);
 		}				
 	}
 	

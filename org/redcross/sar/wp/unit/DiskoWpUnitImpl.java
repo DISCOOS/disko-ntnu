@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.lang.instrument.IllegalClassFormatException;
-import java.util.EnumSet;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -36,8 +35,6 @@ import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.models.UnitTableModel;
-import org.redcross.sar.gui.renderers.UnitTableStringConverter;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -363,11 +360,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
-			// get tool set 
-	        EnumSet<DiskoToolType> myTools =
-	                EnumSet.noneOf(DiskoToolType.class);
 			// forward
-			setupNavBar(myTools,false);
+			setupNavBar(Utils.getListNoneOf(DiskoToolType.class),false);
 		}		
 	}
 	

@@ -3,16 +3,16 @@ package org.redcross.sar.gui.map;
 import javax.swing.JPanel;
 
 import org.redcross.sar.map.command.IDiskoTool;
-import org.redcross.sar.map.command.IDiskoHostTool;
+import org.redcross.sar.map.command.IHostDiskoTool;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 public interface IHostToolDialog {
 	
-	public IDiskoHostTool getHostTool();
+	public IHostDiskoTool getHostTool();
 	
-	public void setHostTool(IDiskoHostTool tool);
+	public void setHostTool(IHostDiskoTool tool);
 	
 	public IDiskoTool  getActiveTool();
 	

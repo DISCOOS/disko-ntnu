@@ -86,7 +86,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
-				if(!isFiltered(feature) && feature.isVisible()){
+				if(select(feature) && feature.isVisible()){
 					GeometryBag geomBag = (GeometryBag)feature.getShape();
 					if (geomBag != null) {
 						// initialize

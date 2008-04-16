@@ -452,15 +452,24 @@ public class DiskoDialog extends JDialog
 			msoObj = msoFeature.getMsoObject();
 		} 
 		// forward
-		if (setMsoObject(msoObj)) {
-			// set current objects
-			currentMsoObj = msoObj;
-			currentMsoFeature = msoFeature;
+		switch(setMsoObject(msoObj)) {
+			case 1: 
+				// set current objects
+				currentMsoObj = msoObj;
+				currentMsoFeature = msoFeature;
+				// finished
+				break;
+			case -1:			
+				// reset current 
+				currentMsoObj = null;
+				currentMsoFeature = null;
+				// finished
+				break;
 		}
 	}
 	
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		return true;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		return 0;
 	}
 	
 	public boolean isWorking() {
@@ -504,10 +513,19 @@ public class DiskoDialog extends JDialog
 		}
 		
 		// forward
-		if (setMsoObject(msoObj)) {
-			// set current objects
-			currentMsoObj = msoObj;
-			currentMsoFeature = msoFeature;
+		switch(setMsoObject(msoObj)) {
+			case 1: 
+				// set current objects
+				currentMsoObj = msoObj;
+				currentMsoFeature = msoFeature;
+				// finished
+				break;
+			case -1:			
+				// reset current 
+				currentMsoObj = null;
+				currentMsoFeature = null;
+				// finished
+				break;
 		}
 				
 	}

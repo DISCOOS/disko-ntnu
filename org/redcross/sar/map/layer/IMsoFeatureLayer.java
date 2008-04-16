@@ -1,7 +1,6 @@
 package org.redcross.sar.map.layer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
@@ -83,9 +82,11 @@ public interface IMsoFeatureLayer extends IFeatureLayer {
 
 	public IMsoFeature getFeature(int index) throws AutomationException, IOException;	
 
-	public Selector<IMsoObjectIf> getFilter();
+	public Selector<IMsoObjectIf> getSelector(int id);
 	
-	public void setFilter(Selector<IMsoObjectIf> selector);
+	public boolean addSelector(Selector<IMsoObjectIf> selector, int id);
+	
+	public boolean removeSelector(int id);
 	
 	public boolean isTextShown();
 	

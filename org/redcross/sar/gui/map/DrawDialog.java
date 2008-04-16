@@ -26,7 +26,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.SnappingAdapter;
-import org.redcross.sar.map.command.IDiskoHostTool;
+import org.redcross.sar.map.command.IHostDiskoTool;
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.command.IDrawTool;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
@@ -65,7 +65,7 @@ public class DrawDialog extends DiskoDialog
 	private SnapPanel m_snapPanel = null;
 	private JSplitPane m_splitPane = null;
 	private JTabbedPane m_tabbedPane = null;
-	private IDiskoHostTool m_hostTool = null;
+	private IHostDiskoTool m_hostTool = null;
 	private IDiskoMap map = null;
 	
 	private IDiskoTool m_activeTool = null;
@@ -228,11 +228,11 @@ public class DrawDialog extends DiskoDialog
 	 *========================================================== 
 	 */
 	
-	public IDiskoHostTool getHostTool() {
+	public IHostDiskoTool getHostTool() {
 		return m_hostTool;
 	}
 
-	public void setHostTool(IDiskoHostTool tool) {
+	public void setHostTool(IHostDiskoTool tool) {
 		// alredy set?
 		if(m_hostTool==null)
 			m_hostTool = tool;
@@ -278,7 +278,7 @@ public class DrawDialog extends DiskoDialog
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
-						map.setCurrentToolByRef((ITool)drawTool,false);
+						map.setActiveTool((ITool)drawTool,false);
 						activateTool(drawTool);
 					} catch (AutomationException e) {
 						e.printStackTrace();

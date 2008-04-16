@@ -48,7 +48,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final MessageLogImpl m_messageLog = new MessageLogImpl(this, "MessageLog", true, 100);
     private final MessageLineListImpl m_messageLineList = new MessageLineListImpl(this, "MessageLineList", true, 1000);
     private final OperationAreaListImpl m_operationAreaList = new OperationAreaListImpl(this, "OperationAreaList", true, 100);
-    private final POIListImpl m_pOIList = new POIListImpl(this, "POIList", true, 100);
+    private final POIListImpl m_poiList = new POIListImpl(this, "POIList", true, 100);
     private final RouteListImpl m_routeList = new RouteListImpl(this, "RouteList", true, 100);
     private final SearchAreaListImpl m_searchAreaList = new SearchAreaListImpl(this, "SearchAreaList", true, 100);
     private final SketchListImpl m_sketchList = new SketchListImpl(this, "SketchList", true, 100);
@@ -123,7 +123,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         addList(m_messageLog);
         addList(m_messageLineList);
         addList(m_operationAreaList);
-        addList(m_pOIList);
+        addList(m_poiList);
         addList(m_routeList);
         addList(m_searchAreaList);
         addList(m_sketchList);
@@ -637,17 +637,17 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public IPOIListIf getPOIList()
     {
-        return m_pOIList;
+        return m_poiList;
     }
 
     public IMsoModelIf.ModificationState getPOIListState(IPOIIf anIPOIIf)
     {
-        return m_pOIList.getState(anIPOIIf);
+        return m_poiList.getState(anIPOIIf);
     }
 
     public Collection<IPOIIf> getPOIListItems()
     {
-        return m_pOIList.getItems();
+        return m_poiList.getItems();
     }
 
     public IRouteListIf getRouteList()

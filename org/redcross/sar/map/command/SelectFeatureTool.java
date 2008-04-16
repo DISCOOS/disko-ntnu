@@ -1,15 +1,11 @@
 package org.redcross.sar.map.command;
 
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -265,9 +261,6 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		
 			try {
 				boolean isDirty = false;
-				// suspend update
-				map.suspendNotify();
-				map.setSupressDrawing(true);
 				// forward to map
 				if(msoFeature==null) {
 					if(map.getSelectionCount(true)>0) {
@@ -285,10 +278,6 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 						isDirty = true;
 					}
 				}
-				// resume update
-				map.setSupressDrawing(false);
-				if(isDirty) map.refreshMsoLayers();
-				map.resumeNotify();
 				// success
 				return true;
 			}
@@ -306,13 +295,6 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			// update selected feature
 			currentFeature = msoFeature;
 
-			try {
-				// update map
-				map.refreshMsoLayers();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
 			// forward
 			super.done();
 		}		

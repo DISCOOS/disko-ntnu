@@ -9,7 +9,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.AWTEventListener; 
@@ -175,7 +174,8 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 		return m_isLocked;
 	}
 	
-	public void setLocked(boolean isLocked) {
+	public boolean setLocked(boolean isLocked) {
+		boolean bFlag = m_isLocked;
 		// any change?
 		if(m_isLocked!=isLocked) {
 	        // get root pane
@@ -206,6 +206,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 			m_isLocked = isLocked;
 		}
 		setVisible(isLocked);
+		return bFlag;
 	}
 	
 }

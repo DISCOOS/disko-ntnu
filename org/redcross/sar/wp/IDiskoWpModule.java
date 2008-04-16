@@ -1,13 +1,12 @@
 package org.redcross.sar.wp;
 
-import java.util.EnumSet;
+import java.util.List;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -134,7 +133,7 @@ public interface IDiskoWpModule {
     /**
      * Setup of navbar
      */
-    public void setupNavBar(EnumSet<DiskoToolType> tools, boolean isSelected);
+    public void setupNavBar(List<Enum<?>> buttons, boolean isSelected);
     
     /**
      * Used to check if NavBar must be initiated

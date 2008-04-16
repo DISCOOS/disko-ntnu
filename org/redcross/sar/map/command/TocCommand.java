@@ -1,28 +1,24 @@
 package org.redcross.sar.map.command;
 
-import java.awt.Dimension;
 import java.io.IOException;
 
-import javax.swing.JButton;
+import javax.swing.JComponent;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.TocDialog;
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 
 import com.esri.arcgis.interop.AutomationException;
 
-public class TocCommand extends AbstractDiskoTool {
+public class TocCommand extends AbstractDiskoCommand {
 	
 	private static final long serialVersionUID = 1L; 
 	
 	/**
-	 * Constructs the DrawTool
+	 * Constructs the command
 	 */
 	public TocCommand() throws IOException, AutomationException {
 
@@ -30,30 +26,31 @@ public class TocCommand extends AbstractDiskoTool {
 		super();
 		
 		// set tool type
-		type = DiskoToolType.TOC_COMMAND;		
+		type = DiskoCommandType.TOC_COMMAND;		
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 
+		// shows dialog first time onClick is invoked
+		showDirect = true;
+		
 		// create dialog
 		dialog = new TocDialog(Utils.getApp());
-		dialog.setIsToggable(false);
-		showDirect = true; // shows dialog first time onClick is invoked
 		
 	}
 	
-	public void onCreate(Object obj) {
-		
+	public void onCreate(Object obj) {		
 		try {
 			if (obj instanceof IDiskoMap) {
-				map = (DiskoMap)obj;
 				TocDialog tocDialog = (TocDialog)dialog;
-				tocDialog.onLoad(map);
-				tocDialog.setLocationRelativeTo(map, DiskoDialog.POS_EAST, true);			
+				tocDialog.onLoad((IDiskoMap)obj);
+				tocDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, true);			
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		// forward
+		super.onCreate(obj);		
 	}	
 }

@@ -11,7 +11,6 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.output.DiskoReport;
-import org.redcross.sar.thread.DiskoProgressMonitor;
 
 
 /**
@@ -141,5 +140,9 @@ public interface IDiskoApplication {
     void operationAdded(String id);
     
     void shutdown();
+    
+	boolean isLocked();
+	
+	public boolean setLocked(boolean isLocked);
     
 }

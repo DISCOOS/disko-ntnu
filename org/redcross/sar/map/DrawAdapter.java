@@ -521,7 +521,7 @@ public class DrawAdapter implements
 		}		
 	}	
 	
-	public boolean selectElement() {
+	public boolean nextElement() {
 
 		// consume?
 		if(isWorking()) return false;

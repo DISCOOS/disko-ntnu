@@ -219,7 +219,7 @@ public class MapStatusBar extends JPanel {
 		}
 	}
 	
-	public static JPanel createPanelWithMapAndStatusBar(IDiskoMap map, 
+	public static JPanel createPanel(IDiskoMap map, 
 			MapStatusBar buddy, String position, Border border) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());

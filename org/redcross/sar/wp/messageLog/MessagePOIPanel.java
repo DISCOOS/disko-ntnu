@@ -6,9 +6,10 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -18,7 +19,6 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.POIPanel;
@@ -407,7 +407,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		dialog.setToolSet(MsoClassCode.CLASSCODE_POI, attributes);
 		// show tool
 		m_wpMessageLog.getApplication().getNavBar().setVisibleButtons(
-				EnumSet.of(DiskoToolType.POI_TOOL), true, true);
+				Utils.getListOf(DiskoToolType.POI_TOOL), true, true);
 		// buffer changes. use m_tool.apply() to update the mso model
 		m_tool.setBuffered(true);
 		// show panel
@@ -420,7 +420,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 	{
 		// hide tool
 		m_wpMessageLog.getApplication().getNavBar().setVisibleButtons(
-				EnumSet.of(DiskoToolType.POI_TOOL), false, true);
+				Utils.getListOf(DiskoToolType.POI_TOOL), false, true);
 		// hide num pad
 		NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 		numPad.setVisible(false);
@@ -493,7 +493,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		IDiskoMap map = m_wpMessageLog.getMap();
 		try
 		{
-			map.setCurrentToolByRef(m_tool,true);
+			map.setActiveTool(m_tool,true);
 		}
 		catch (AutomationException e)
 		{

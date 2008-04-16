@@ -256,11 +256,6 @@ public class ElementPanel extends JPanel {
 			// create list
             objectList = new JList();
             objectList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
-			//objectList.setVisibleRowCount(1);
-            /*Dimension dim = new Dimension(180, 430);
-			objectList.setMinimumSize(dim);
-			objectList.setPreferredSize(dim);
-			objectList.setMaximumSize(dim);*/
             objectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // add selection listener
             objectList.addListSelectionListener(new ListSelectionListener() {
@@ -491,6 +486,7 @@ public class ElementPanel extends JPanel {
 		
 		// initialize data
 		Object[] data = null;
+		ArrayList<IMsoObjectIf> c = null;
 		
 		// clear buffer
 		objects.clear();
@@ -503,7 +499,7 @@ public class ElementPanel extends JPanel {
 			// set current type
 			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(e)) {
 				// get operation areas
-				Collection<IOperationAreaIf> c = cp.getOperationAreaListItems();
+				c = new ArrayList<IMsoObjectIf>(cp.getOperationAreaListItems());
 				// get data?
 				if(!c.isEmpty()) {
 					data = c.toArray();
@@ -513,7 +509,7 @@ public class ElementPanel extends JPanel {
 			}	
 			else if(MsoClassCode.CLASSCODE_SEARCHAREA.equals(e)) {
 				// get search areas
-				Collection<ISearchAreaIf> c = cp.getSearchAreaListItems();
+				c = new ArrayList<IMsoObjectIf>(cp.getSearchAreaListItems());
 				// get data?
 				if(!c.isEmpty()) {
 					data = c.toArray();
@@ -524,25 +520,24 @@ public class ElementPanel extends JPanel {
 			else if(e instanceof SearchSubType ||
 					MsoClassCode.CLASSCODE_AREA.equals(e) ) {
 				// get areas
-				Collection<IAreaIf> c = cp.getAreaList().selectItems(
-						getAreaSelector((SearchSubType)e), null);				// get data?
-				if(!c.isEmpty()) {
-					data = c.toArray();
-					objects.addAll(c);
-				}
+				c = new ArrayList<IMsoObjectIf>(cp.getAreaList().selectItems(getAreaSelector((SearchSubType)e), null));
 			}
 			else if(MsoClassCode.CLASSCODE_POI.equals(e)) {
 				// get areas
-				Collection<IPOIIf> c = cp.getPOIList().selectItems(getPOISelector(),null);
-				// get data?
-				if(!c.isEmpty()) {
-					data = c.toArray();
-					objects.addAll(c);
-				}
+				c = new ArrayList<IMsoObjectIf>(cp.getPOIList().selectItems(getPOISelector(),null));
 			}		
 		}
 		// set flag
 		listsAreChangeing = true;
+		
+		// get data?
+		if(!c.isEmpty()) {
+			// sort objects
+			MsoUtils.sortByName(c,1);
+			data = c.toArray();
+			objects.addAll(c);
+		}
+		
 		// update model
 		if(data==null)
 			getObjectList().setModel(new DefaultListModel());

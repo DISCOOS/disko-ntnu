@@ -1,23 +1,21 @@
 package org.redcross.sar.map.command;
 
-import com.esri.arcgis. geodatabase.IFeature;
+import java.io.IOException;
+
+import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.FlankPanel;
-import org.redcross.sar.gui.map.IDrawDialog;
 import org.redcross.sar.gui.map.IHostToolDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.feature.FlankFeature;
-import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -26,13 +24,6 @@ import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.mso.Route;
-
-import java.awt.Dimension;
-import java.io.IOException;
-
-import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-
 
 /**
  * A custom flank draw tool
@@ -61,9 +52,6 @@ public class FlankTool extends AbstractDiskoTool {
 		
 		// set tool type
 		type = DiskoToolType.FLANK_TOOL;
-		
-		// get current application
-		IDiskoApplication app = Utils.getApp();
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

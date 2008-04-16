@@ -24,7 +24,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	protected boolean m_showProgress = false;
 	protected boolean m_isDone = false;
 	protected boolean m_suspend = false;
-	protected boolean m_isLocked = false;
+	protected boolean m_wasLocked = false;
 	protected boolean m_isNotified = false;
 	protected DiskoProgressMonitor m_monitor = null;
 	protected WorkOnThreadType m_workOnThread = null;	
@@ -140,18 +140,6 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	public abstract S doWork();
 	
 	/**
-	 * Helper function
-	 * 
-	 * @return DiskoGlassPane
-	 */
-	private DiskoGlassPane getGlassPane() {
-    	if(m_glassPane==null) {
-    		m_glassPane = (DiskoGlassPane)Utils.getApp().getFrame().getGlassPane();
-    	}
-    	return m_glassPane;
-    }
-	
-	/**
 	 * Implements the run() method of interface Runnable
 	 * This method is called by the DiskoWorkPool
 	 */
@@ -169,10 +157,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 			m_isNotified = true;
 		}
 		m_tic = Calendar.getInstance().getTimeInMillis();
-		// get current state
-		m_isLocked = getGlassPane().isLocked();
 		// prevent user input (keeps work pool concurrent)
-		getGlassPane().setLocked(true);
+		m_wasLocked = Utils.getApp().setLocked(true);
 		// increment suspend counter?
 		if(m_suspend)
 			MsoModelImpl.getInstance().suspendClientUpdate();
@@ -198,7 +184,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	 */
 	public void done() {
 		// resume previous state
-		getGlassPane().setLocked(m_isLocked);
+		Utils.getApp().setLocked(m_wasLocked);
 		// notify progress monitor ?
 		if(m_isNotified) {
 			// notify progress monitor

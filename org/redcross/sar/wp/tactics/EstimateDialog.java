@@ -184,27 +184,31 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	}
 
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;
+		if(isWorking()) return state;
 		// initialize
 		IAttributeIf eta = null;
-		// reset
-		currentAssignment = null;
 		// get owning area
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
-			if (assignment instanceof ISearchIf) {		
+			if (assignment instanceof ISearchIf) {
+				state = 1;
 				currentAssignment = (ISearchIf)assignment;
 				eta = currentAssignment.getPlannedProgressAttribute();
 			}
+		}
+		else {
+			state = -1;
+			currentAssignment = null;			
 		}
 		// update
 		getEtaAttribute().setMsoAttribute(eta);
 		// forward
 		setup();
 		// success
-		return true;
+		return state;
 	}	
 	
 	private void setup() {

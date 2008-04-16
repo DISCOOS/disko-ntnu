@@ -88,7 +88,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				RouteFeature feature = (RouteFeature)featureClass.getFeature(i);
-				if(!isFiltered(feature) && feature.isVisible()){
+				if(select(feature) && feature.isVisible()){
 					// get finished color?
 					IGeometry geom = feature.getShape();
 					if (geom != null) {

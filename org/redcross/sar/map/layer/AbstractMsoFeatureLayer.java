@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
@@ -18,7 +19,6 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.EventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Selector;
@@ -65,7 +65,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	protected IMsoModelIf msoModel = null;
 	protected EnumSet<MsoClassCode> myInterests = null;
 	protected HashMap<MsoLayerEventType,MsoLayerEvent> suspendedEvents = null;
-	protected Selector<IMsoObjectIf> selector = null;
+	protected Map<Integer,Selector<IMsoObjectIf>> selectors = null;
 	protected boolean isTextShown = true;
 
 	public AbstractMsoFeatureLayer(MsoClassCode classCode, 
@@ -77,6 +77,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		this.layerCode = layerCode;
 		this.msoModel = msoModel;
 		this.srs = srs;
+		this.selectors = new HashMap<Integer,Selector<IMsoObjectIf>>(); 
 
 		featureClass = new MsoFeatureClass(shapeType);
 		name = Utils.translate(layerCode);
@@ -817,19 +818,34 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return featureClass.featureCount(null);
 	}
 
-	public Selector<IMsoObjectIf> getFilter() {
-		return selector;
+	public Selector<IMsoObjectIf> getSelector(int id) {
+		return selectors.get(id);
 	}
 	
-	public void setFilter(Selector<IMsoObjectIf> selector) {
-		this.selector = selector;
+	public boolean addSelector(Selector<IMsoObjectIf> selector,int id) {
+		// replace existing
+		selectors.put(id,selector);
+		isDirty = true;
+		return true;
 	}
 
-	protected boolean isFiltered(IMsoFeature msoFeature) {
-		if(selector!=null) {
-			return !selector.select(msoFeature.getMsoObject());
+	public boolean removeSelector(int id) {
+		if(selectors.containsKey(id)) {
+			selectors.remove(id);
+			isDirty = true;
+			return true;
 		}
-		return false;
+		return false;	
+	}
+	
+	protected boolean select(IMsoFeature msoFeature) {
+		boolean doSelect = selectors.size()==0;
+		for(Selector<IMsoObjectIf> it : selectors.values()) {
+			// select?
+			if(it.select(msoFeature.getMsoObject())) return true;
+		}
+		// select feature
+		return doSelect;
 	}
 
 	public boolean isTextShown() {

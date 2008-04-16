@@ -1,5 +1,23 @@
 package org.redcross.sar.map;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+
+import java.awt.BorderLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+
 import com.esri.arcgis.beans.map.MapBean;
 import com.esri.arcgis.carto.*;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
@@ -19,6 +37,7 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
+import org.redcross.sar.gui.map.MapFilterBar;
 import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.command.IDrawTool;
@@ -34,22 +53,6 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.util.mso.Selector;
-
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.border.SoftBevelBorder;
-
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * This calls extends MapBean to provide user interface for map rendering
@@ -78,6 +81,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private List<AbstractMsoFeatureLayer> msoLayers = null;
 	private HashMap<String,Runnable> refreshStack = null;
 	private MapStatusBar mapStatusBar = null;
+	private MapFilterBar mapFilterBar = null;
 	
 	private long previous = 0;
 	
@@ -105,7 +109,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		setName("diskoMap");
 		setShowScrollbars(false);
 		setBorderStyle(com.esri.arcgis.controls.esriControlsBorderStyle.esriNoBorder);
-		setBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED));
+		setBorder(null);
 
 		//setDocumentFilename(mxdDoc);
 		loadMxFile(mxdDoc, null, null);
@@ -455,26 +459,35 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return myInterests.contains(aMsoObject.getMsoClassCode());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#setCurrentToolByRef(com.esri.arcgis.systemUI.ITool)
-	 */
-	public void setCurrentToolByRef(ITool tool, boolean allow)
+	@Override
+	public void setCurrentToolByRef(ITool tool)
 			throws IOException, AutomationException {
-		super.setCurrentToolByRef(tool);
-		setActiveTool(tool,allow);
+		setActiveTool(tool,true);
 	}
 
 	public void setActiveTool(ITool tool, boolean allow)
 			throws IOException, AutomationException {
+		// forward
+		super.setCurrentToolByRef(tool);
+		// update locals
 		if (currentTool instanceof IDiskoTool &&
 				currentTool != null && tool != currentTool) {
-			currentTool.deactivate();
+			if(!currentTool.deactivate()) {
+				JOptionPane.showMessageDialog(this, "Aktivt verktøy kan ikke deaktiveres","Begrensing",JOptionPane.OK_OPTION);
+				return;
+			}
 		}
 		if (tool instanceof IDiskoTool) {
-			currentTool = (IDiskoTool)tool;
-			currentTool.activate(allow);
+			IDiskoTool t = (IDiskoTool)tool;
+			// allowed?
+			if(!t.activate(allow)) {
+				JOptionPane.showMessageDialog(this, "Verktøy kan ikke velges","Begrensing",JOptionPane.OK_OPTION);
+				return;
+			}
+			currentTool = t;
 		}
 		else {
+			// not a disko tool...
 			currentTool = null;
 		}
 	}
@@ -1068,13 +1081,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			// create object
 			Runnable r = new Runnable() {
 				public void run() {
-					try {							
+					try {				
 						// get key
 						String key = String.valueOf(obj);
 						//System.out.println("L:R:M"+key+":"+DiskoMap.this.hashCode());
 						// refresh view
 						getActiveView().partialRefresh(
-								esriViewDrawPhase.esriViewGeography, obj, extent);
+								esriViewDrawPhase.esriViewGraphics, obj, extent);
 						// remove from stack
 						refreshStack.remove(key);
 					} catch (AutomationException e) {
@@ -1136,12 +1149,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	public void refreshMsoLayers(IEnvelope extent) throws IOException,
 		AutomationException {
-		for (int i = 0; i < msoLayers.size(); i++) {
-			IMsoFeatureLayer flayer = (IMsoFeatureLayer)msoLayers.get(i);
-			if (flayer.isDirty()) {
-				refreshLayer(flayer, extent);
+		int count = 0;
+		IMsoFeatureLayer msoLayer = null;
+		for (IMsoFeatureLayer it : msoLayers) {
+			if (it.isDirty()) {
+				count++;
+				msoLayer = it;
 			}
 		}
+		// refresh layer(s)
+		if(count==1)
+			refreshLayer(msoLayer, extent);
+		else if(count > 1)
+			refreshLayer(null, extent);
+
 	}
 	
 	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode classCode) throws IOException,
@@ -1316,6 +1337,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		mapStatusBar = buddy;		
 	}
 
+	public MapStatusBar getMapStatusBar() {
+		return mapStatusBar;		
+	}
+	
 	public Point getClickPoint() {
 		return clickPoint;
 	}
@@ -1324,13 +1349,15 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return movePoint;
 	}
 
-	public void setFilter(Selector<IMsoObjectIf> selector) {
-		for (int i = 0; i < msoLayers.size(); i++) {
-			IMsoFeatureLayer msoLayer = msoLayers.get(i);
-			if (msoLayer!=null) {
-				msoLayer.setFilter(selector);
-			}
-		}
+	public static JPanel createPanel(IDiskoMap map, 
+			MapStatusBar statusBar, MapFilterBar filterBar, Border border) {
+		JPanel panel = MapStatusBar.createPanel(
+				map, statusBar, BorderLayout.NORTH, border);
+		map.setMapStatusBar(statusBar);
+		filterBar.setMap(map);
+		panel.add(filterBar,BorderLayout.SOUTH);
+		return panel;
+		
 	}
 	
 }

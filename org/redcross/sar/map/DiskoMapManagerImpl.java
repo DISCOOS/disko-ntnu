@@ -185,7 +185,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		map.setVisible(true);
 		
 		//toggle icon
-		app.getNavBar().switchIcon("maptoggle", primarActive);
+		app.getNavBar().switchIcon("maptoggle", primarActive ? 0 : 1);
 		
 		setIsNotWorking();
 		

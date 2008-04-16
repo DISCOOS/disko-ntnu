@@ -1,25 +1,20 @@
 package org.redcross.sar.map.command;
 
-import java.awt.Dimension;
 import java.io.IOException;
 
-import javax.swing.JButton;
+import javax.swing.JComponent;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.ElementDialog;
-import org.redcross.sar.gui.map.TocDialog;
 import org.redcross.sar.gui.map.ElementPanel.ElementEvent;
 import org.redcross.sar.gui.map.ElementPanel.IElementEventListener;
-import org.redcross.sar.map.DiskoMap;
-import org.redcross.sar.map.IDiskoMap;
 
 import com.esri.arcgis.interop.AutomationException;
 
-public class ElementCommand extends AbstractDiskoTool implements IElementEventListener {
+public class ElementCommand extends AbstractDiskoCommand implements IElementEventListener {
 	
 	private static final long serialVersionUID = 1L; 
 	
@@ -32,7 +27,7 @@ public class ElementCommand extends AbstractDiskoTool implements IElementEventLi
 		super();
 		
 		// set tool type
-		type = DiskoToolType.ELEMENT_COMMAND;		
+		type = DiskoCommandType.ELEMENT_COMMAND;		
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
@@ -48,12 +43,11 @@ public class ElementCommand extends AbstractDiskoTool implements IElementEventLi
 	}
 	
 	public void onCreate(Object obj) {
-		
+		// NOP
 		try {
-			if (obj instanceof IDiskoMap) {
-				map = (DiskoMap)obj;
+			if (obj instanceof JComponent) {
 				ElementDialog elementDialog = (ElementDialog)dialog;
-				elementDialog.setLocationRelativeTo(map, DiskoDialog.POS_WEST, false);			
+				elementDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false);			
 			}
 		}
 		catch (Exception e) {

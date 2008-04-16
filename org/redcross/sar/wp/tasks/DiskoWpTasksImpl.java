@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.tasks;
 
 import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.DiskoCustomIcon;
@@ -240,11 +241,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
-			// get tool set 
-	        EnumSet<DiskoToolType> myTools =
-	                EnumSet.noneOf(DiskoToolType.class);
 			// forward
-			setupNavBar(myTools,false);
+			setupNavBar(Utils.getListNoneOf(DiskoToolType.class),false);
 		}		
         
         SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();

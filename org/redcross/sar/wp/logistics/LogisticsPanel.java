@@ -104,7 +104,7 @@ public class LogisticsPanel implements
         }*/
         defineSubpanelActionHandlers();
         m_splitter3.setLeftComponent(
-        		MapStatusBar.createPanelWithMapAndStatusBar(m_map, 
+        		MapStatusBar.createPanel(m_map, 
 				new MapStatusBar(), BorderLayout.NORTH, 
 				BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
 //        setSplitters();

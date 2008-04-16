@@ -3,13 +3,11 @@
  */
 package org.redcross.sar.map.command;
 
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 
 import javax.swing.AbstractButton;
-import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
@@ -30,7 +28,8 @@ import com.esri.arcgis.systemUI.ITool;
  * @author kennetgu
  *
  */
-public class DrawHostTool extends BaseCommand implements IDiskoHostTool {
+public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
+
 	private static final long serialVersionUID = 1L; 
 	
 	// flags
@@ -122,7 +121,7 @@ public class DrawHostTool extends BaseCommand implements IDiskoHostTool {
 			if(map!=null && (tool instanceof ITool)) {
 				try {
 					// set as current map tool
-					map.setCurrentToolByRef((ITool)tool,false);
+					map.setActiveTool((ITool)tool,false);
 				}
 				catch(Exception e) {
 					e.printStackTrace();
@@ -204,6 +203,110 @@ public class DrawHostTool extends BaseCommand implements IDiskoHostTool {
 	
 	}	
 	
+	/*===============================================
+	 * Overridden ICommand methods
+	 *===============================================
+	 */
+	
+	@Override
+	public String getCaption() {
+		try {
+			return tool==null ? super.getCaption() : tool.getCaption();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public String getCategory() {
+		try {
+			return tool==null ? super.getCategory() : tool.getCategory();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public int getHelpContextID() {
+		try {
+			return tool==null ? super.getHelpContextID() : tool.getHelpContextID();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public String getHelpFile() {
+		try {
+			return tool==null ? super.getHelpFile() : tool.getHelpFile();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public String getMessage() {
+		try {
+			return tool==null ? super.getMessage() : tool.getMessage();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public String getName() {
+		try {
+			return tool==null ? super.getName() : tool.getName();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public String getTooltip() {
+		try {
+			return tool==null ? super.getTooltip() : tool.getTooltip();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public boolean isChecked() {
+		try {
+			return tool==null ? super.isChecked() : tool.isChecked();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		try {
+			return tool==null ? super.isEnabled() : tool.isEnabled();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+		
 	/*===============================================
 	 * Inner classes
 	 *===============================================

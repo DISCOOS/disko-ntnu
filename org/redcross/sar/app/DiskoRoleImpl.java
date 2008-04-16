@@ -1,13 +1,11 @@
 package org.redcross.sar.app;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.event.DiskoWorkEvent;
@@ -159,7 +157,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	 */
 	public IDiskoWpModule selectDiskoWpModule(IDiskoWpModule module) {
 		if (module != null) {
-	    	
+	    	boolean isLocked = app.setLocked(true);
 	    	// has a current module 
 			if (currentModule!=null) {
 				// Require current WP to confirm switch (E.g. confirm abort for uncommitted changes).
@@ -171,11 +169,12 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 					if (button != null) {
 						button.setSelected(true);
 					}
+					app.setLocked(isLocked);
 					return currentModule;
 				}
 				// deactiat previous module
 				try {
-					currentModule.getMap().setCurrentToolByRef(null,false);
+					currentModule.getMap().setActiveTool(null,false);
 				} catch (AutomationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -209,6 +208,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			if (button != null) {
 				button.setSelected(true);
 			}
+			app.setLocked(isLocked);
   		}		
 		return currentModule;
 	}

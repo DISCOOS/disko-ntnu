@@ -11,12 +11,14 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.ElementDialog;
+import org.redcross.sar.gui.map.MapFilterBar;
 import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawAdapter;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.DrawAdapter.DrawMode;
 import org.redcross.sar.map.DrawAdapter.IDrawAdapterListener;
+import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -40,6 +42,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
@@ -55,6 +58,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
   
 /**
  * Implements the DiskoApTaktikk interface
@@ -132,9 +136,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		loadProperties("properties");
 		assignWpBundle(IDiskoWpTactics.class);		
 		DiskoMap map = (DiskoMap) getMap();
-		layoutComponent(MapStatusBar.createPanelWithMapAndStatusBar(map, 
-				new MapStatusBar(), BorderLayout.NORTH, 
-				BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+		layoutComponent(DiskoMap.createPanel(map, new MapStatusBar(), 
+				new MapFilterBar(), BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
 		layoutButton(getElementToggleButton(), true);
 		layoutButton(getListToggleButton(), true);
 		layoutButton(getMissionToggleButton(), true);
@@ -147,27 +150,26 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		//isInitializing = false;
 	}
 	
-	private EnumSet<DiskoToolType> getDefaultNavBarButtons(boolean left, boolean right) {
-		EnumSet<DiskoToolType> myButtons = 
-			EnumSet.noneOf(DiskoToolType.class);
+	private List<Enum<?>> getDefaultNavBarButtons(boolean left, boolean right) {
+		List<Enum<?>> myButtons = Utils.getListNoneOf(DiskoToolType.class);
 		if(left){		
 			myButtons.add(DiskoToolType.FREEHAND_TOOL);
 			myButtons.add(DiskoToolType.LINE_TOOL);
 			myButtons.add(DiskoToolType.POI_TOOL);
-			myButtons.add(DiskoToolType.ERASE_COMMAND);
+			myButtons.add(DiskoToolType.ERASE_TOOL);
 		}
 		if(right) {
 			myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
 			myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
 			myButtons.add(DiskoToolType.PAN_TOOL);
 			myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
-			myButtons.add(DiskoToolType.ZOOM_FULL_EXTENT_COMMAND);
-			myButtons.add(DiskoToolType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
-			myButtons.add(DiskoToolType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
-			myButtons.add(DiskoToolType.MAP_TOGGLE_COMMAND);
-			myButtons.add(DiskoToolType.SCALE_COMMAND);
-			myButtons.add(DiskoToolType.TOC_COMMAND);
-			myButtons.add(DiskoToolType.GOTO_COMMAND);
+			myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
+			myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
+			myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
+			myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
+			myButtons.add(DiskoCommandType.SCALE_COMMAND);
+			myButtons.add(DiskoCommandType.TOC_COMMAND);
+			myButtons.add(DiskoCommandType.GOTO_COMMAND);
 		}
 		return myButtons;		
 	}
@@ -194,7 +196,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				
 		// set element if editing
 		if (!isChanged()) {
-			getDrawAdapter().selectElement();
+			getDrawAdapter().nextElement();
 		}
 		
 		// show map
@@ -282,7 +284,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// validate data
 		if(validate()) {
 			//schedule the finish task to work pool
-			return doFinishWork(true);						
+			return doFinishWork(false);						
 		}
 		// failed
 		return false;
@@ -399,7 +401,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 
 	public boolean cancel() {
 		// forward
-		return cancel(true);		
+		return cancel(false);		
 	}
 	
 	private void reset(boolean keep) {
@@ -411,7 +413,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// keep current object selected?
 			if(!keep) clearSelected();
 			// select next element?
-			if(getMap().getSelectionCount(false)>0) getDrawAdapter().selectElement();
+			if(getMap().getSelectionCount(false)==0) getDrawAdapter().nextElement();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -967,7 +969,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	public void handleMsoCommitEvent(Commit e) throws CommitException {
 		if(!isChanged()) {
 			//select next element
-			getDrawAdapter().selectElement();
+			getDrawAdapter().nextElement();
 		}
 	}	
 	

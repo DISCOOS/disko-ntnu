@@ -569,19 +569,22 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                     // Set unit leader to selected personnel
                     IUnitIf editingUnit = m_wpUnit.getEditingUnit();
 
-                    int index = m_table.convertRowIndexToModel(m_editingRow);
-                    UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
-                    IPersonnelIf newLeader = model.getPersonnel(index);
-
-                    editingUnit.setUnitLeader(newLeader);
-
-                    // Commit changes¨
-                    if (!m_wpUnit.getNewUnit())
-                    {
-                        m_wpUnit.getMsoModel().commit();
+                    // has editing unit?
+                    if(editingUnit!=null) {
+	                    int index = m_table.convertRowIndexToModel(m_editingRow);
+	                    UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
+	                    IPersonnelIf newLeader = model.getPersonnel(index);
+	
+	                    editingUnit.setUnitLeader(newLeader);
+	
+	                    // Commit changes¨
+	                    if (!m_wpUnit.getNewUnit())
+	                    {
+	                        m_wpUnit.getMsoModel().commit();
+	                    }
+	
+	                    fireEditingStopped();
                     }
-
-                    fireEditingStopped();
                 }
             });
             m_panel.add(m_leaderButton);

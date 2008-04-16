@@ -38,7 +38,7 @@ import com.esri.arcgis.geometry.Point;
  * @author geira
  *
  */
-public class EraseCommand extends AbstractDiskoTool {
+public class EraseTool extends AbstractDiskoTool {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -46,7 +46,7 @@ public class EraseCommand extends AbstractDiskoTool {
 	
 	private Point p = null;
 	
-	public EraseCommand() {
+	public EraseTool() {
 		
 		// prepare BaseTool
 		cursorPath = "cursors/eraser.cur"; 
@@ -58,7 +58,7 @@ public class EraseCommand extends AbstractDiskoTool {
 		enabled = true; 
 		
 		// set tool type
-		type = DiskoToolType.ERASE_COMMAND;
+		type = DiskoToolType.ERASE_TOOL;
 
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

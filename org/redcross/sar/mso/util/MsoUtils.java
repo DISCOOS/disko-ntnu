@@ -1,12 +1,12 @@
-/**
- * 
- */
 package org.redcross.sar.mso.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.redcross.sar.app.Utils;
@@ -35,7 +35,6 @@ import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
@@ -694,4 +693,18 @@ public class MsoUtils {
 		return false;
 		
 	}
+
+	//	create name comparator
+	private static final MsoCompareName compareNames = new MsoCompareName();
+	
+	public static void sortByName(List<IMsoObjectIf> data, int options) {
+		compareNames.setOptions(options);
+		Collections.sort(data,compareNames);
+	}
+	
+	public static void sortByName(IMsoObjectIf[] data, int options) {
+		compareNames.setOptions(options);
+		Arrays.sort(data, compareNames);
+	}
+	
 }

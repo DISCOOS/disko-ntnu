@@ -1,8 +1,6 @@
 package org.redcross.sar.map.command;
 
-import com.esri.arcgis.controls.BaseTool;
-import com.esri.arcgis.display.IDisplayTransformation;
-import com.esri.arcgis.geodatabase.*;
+import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.geometry.*;
 import com.esri.arcgis.interop.AutomationException;
 
@@ -11,8 +9,6 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.map.IHostToolDialog;
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -29,18 +25,19 @@ import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
-import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
+public abstract class AbstractDiskoCommand extends BaseCommand implements IDiskoCommand {
+	
+	// properties
+	protected int helpContextID = 0;
 	
 	// flags
 	protected boolean isActive = false;
@@ -49,7 +46,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	
 	// objects
 	protected Properties properties = null;
-	protected IDisplayTransformation transform = null;
 	
 	// mso objects information
 	protected IMsoObjectIf msoOwner = null;
@@ -57,13 +53,12 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	protected IMsoManagerIf.MsoClassCode msoClassCode = null;	
 	
 	// GUI components
-	protected DiskoMap map = null;
 	protected DiskoDialog dialog = null;
 	protected JPanel propertyPanel = null;
 	protected AbstractButton button = null;
 
 	// types
-	protected DiskoToolType type = null;
+	protected DiskoCommandType type = null;
 	
 	// counter
 	private int workCount = 0;
@@ -76,40 +71,59 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 * Constructor
 	 *
 	 */
-	protected AbstractDiskoTool() {
+	protected AbstractDiskoCommand() {
 		listeners = new ArrayList<IDiskoWorkListener>();
 	}
 	
 	/*===============================================
-	 * IDiskoTool interface implementation
+	 * Overridden ICommand methods
+	 *===============================================
+	 */
+
+	public int getHelpContextID() {
+		return helpContextID;
+	}
+
+
+	public boolean isChecked() {
+		return getButton().isSelected();
+	}
+
+	/*===============================================
+	 * IDiskoCommand interface implementation
 	 *===============================================
 	 */
 
 	/**
-	 * Returns the disko tool type
+	 * Returns the disko command type
 	 */
-	public DiskoToolType getType() {
+	public DiskoCommandType getType() {
 		return type;
 	}
 
 	/**
-	 * If true, the tool is hosted
-	 */
-	public boolean isHosted() {
-		// is the dialog is a host dialog, then
-		// the tool must be hosted
-		return (dialog instanceof IHostToolDialog);
+	 * The default behaviour is to execute the 
+	 * command. However, an extender
+	 * of this class can override this behavior. 
+	 */	
+	public void onClick() {
+		if (dialog != null && showDialog && showDirect)
+			dialog.setVisible(!dialog.isVisible());
 	}
 	
 	/**
-	 * Returns the host tool is hosted
+	 * If true, the command is hosted
 	 */
-	public IHostDiskoTool getHostTool() {
-		// is hosted?
-		if (dialog instanceof IHostToolDialog) {
-			// return current host tool
-			return ((IHostToolDialog)dialog).getHostTool();
-		}
+	public boolean isHosted() {
+		// TODO: Implement
+		return false;
+	}
+	
+	/**
+	 * Returns the host command if hosted
+	 */
+	public IHostDiskoCommand getHostCommand() {
+		// TODO: Implement
 		return null;
 	}
 	
@@ -119,36 +133,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 
 	public void setShowDialog(boolean isShowDialog) {
 		showDialog = isShowDialog;
-	}
-
-	/**
-	 * The default behaviour is that is allways allowed 
-	 * to activate this class. Howerver, an extender
-	 * of this class can override this behavior. 
-	 */	
-	public boolean activate(boolean allow){
-		// set flag
-		isActive = true;
-		// toogle dialog?
-		if (dialog != null && allow && showDialog && showDirect)
-				dialog.setVisible(!dialog.isVisible());
-		// allways allowed
-		return true;
-	}
-
-	/**
-	 * The default behaviour is that is allways allowed 
-	 * to deactivate this class. However, an extender
-	 * of this class can override this behavior. 
-	 */
-	public boolean deactivate(){
-		// reset flag
-		isActive = false;
-		// An extender of this class could override this method
-		if (dialog != null && showDialog && showDirect)
-			dialog.setVisible(false);
-		// return state
-		return true;
 	}
 
 	public MsoClassCode getMsoClassCode() {
@@ -171,10 +155,10 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		setMsoDrawData(msoOwner,msoObject,msoClassCode);
 	}
 	
-	public void setMsoDrawData(IDiskoTool tool) {
-		if(tool instanceof AbstractDiskoTool && tool!=this) {
-			AbstractDiskoTool abstractTool = (AbstractDiskoTool)tool;
-			setMsoDrawData(abstractTool.msoOwner,abstractTool.msoObject,abstractTool.msoClassCode);
+	public void setMsoDrawData(IDiskoCommand command) {
+		if(command instanceof AbstractDiskoCommand && command!=this) {
+			AbstractDiskoCommand abstractCommand = (AbstractDiskoCommand)command;
+			setMsoDrawData(abstractCommand.msoOwner,abstractCommand.msoObject,abstractCommand.msoClassCode);
 		}
 	}
 	
@@ -210,25 +194,21 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return dialog;
 	}
 
-	public DiskoMap getMap() {
-		return map;
-	}
-	
 	public String getName() {
 		return name;
 	}
 		
 	@Override
-	public IDiskoToolState save() {
+	public IDiskoCommandState save() {
 		// get new state
-		return new DiskoToolState(this);
+		return new DiskoCommandState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IDiskoCommandState state) {
 		// valid state?
-		if(state instanceof DiskoToolState) {
-			((DiskoToolState)state).load(this);
+		if(state instanceof DiskoCommandState) {
+			((DiskoCommandState)state).load(this);
 			return true;
 		}
 		return false;
@@ -254,128 +234,18 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		}
 		// disable?
 		else if(!isEnabled && enabled) {
-			// must also be deactivated
-			if (deactivate()) {
-				// diable
-				enabled = false;
-				if(button!=null) {
-					button.setEnabled(false);
-				}
-				return true;
+			// diable
+			enabled = false;
+			if(button!=null) {
+				button.setEnabled(false);
 			}
+			return true;
 		}
+		// failed
 		return false;
 	}
 	
-	/**
-	 * Method used to get current display transformation. Display
-	 * transformation is a utility class for the map spatial reference
-	 * and convertion between map and screen
-	 * 
-	 * @return Current display transformation
-	 * @throws IOException
-	 * @throws AutomationException
-	 */
-	protected IDisplayTransformation getTransform()
-			throws IOException, AutomationException {
-		if (transform == null) {
-			transform = map.getActiveView().getScreenDisplay().getDisplayTransformation();
-		}
-		return transform;
-	}
 
-	/**
-	 * Utility function used to transform screen coordinates to map point
-	 * 
-	 * @param x Screen x-position
-	 * @param y Screen y-position
-	 * @return Point in map coordinates
-	 * @throws IOException
-	 * @throws AutomationException
-	 */
-	protected Point transform(int x, int y) throws IOException, AutomationException {
-		return (Point)getTransform().toMapPoint(x,y);
-	}
-
-	/**
-	 * Utility function used to transform from map paint to screen coordinates
-	 * @param p
-	 * @return Point2D of screen coordinates 
-	 * @throws IOException
-	 * @throws AutomationException
-	 */
-	protected Point2D toScreen(Point p) throws IOException, AutomationException {
-		int x[] = {0};
-		int y[] = {0};
-		getTransform().fromMapPoint(p, x, y);
-		return new Point2D.Double(x[0],y[0]);
-	}
-	
-	protected void transform(Point p) throws IOException, AutomationException {
-		p.transform(com.esri.arcgis.geometry.esriTransformDirection.esriTransformReverse, getTransform());
-	}
-
-	protected IFeatureCursor search(IFeatureClass fc, IPoint p, double size) throws UnknownHostException, IOException {
-		//System.out.println("Extent.Width:="+map.getActiveView().getExtent().getWidth());
-		IEnvelope env = MapUtil.getEnvelope(p, size); //map.getActiveView().getExtent().getWidth()/50);
-		ISpatialFilter filter = new SpatialFilter();
-		filter.setGeometryByRef(env);
-		filter.setSpatialRel(esriSpatialRelEnum.esriSpatialRelOverlaps);
-		/*IFeatureCursor cursor = fc.search(filter, false);
-		IFeature feature = cursor.nextFeature();*/
-		return fc.search(filter, false);
-	}
-
-	protected int getGeomIndex(GeometryBag geomBag, IPoint p) throws AutomationException, IOException {
-		IEnvelope env = MapUtil.getEnvelope(p, map.getActiveView().getExtent().getWidth()/50);
-		for (int i = 0; i < geomBag.getGeometryCount(); i++) {
-			IRelationalOperator relOp = (IRelationalOperator)geomBag.getGeometry(i);
-			if (!relOp.disjoint(env)) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	protected double getMinimumDistance(Object f, IPoint p) throws AutomationException, IOException {
-		double min = -1;
-		if(f instanceof IProximityOperator) {
-			min = ((IProximityOperator)f).returnDistance(p);
-		}
-		else if(f instanceof IMsoFeature) {
-			// get shape
-			IGeometry geom = ((IMsoFeature)f).getShape();
-			// is geometry bag?
-			if(geom instanceof GeometryBag) {
-				// cast
-				GeometryBag geomBag = (GeometryBag)geom;
-				// get count
-				int count = geomBag.getGeometryCount();
-				// has items?
-				if(count>0) {
-					// get minimum length of first
-					min = getMinimumDistance(geomBag.getGeometry(0), p);
-					// loop
-					for(int i=1;i<count;i++) {
-						// get distance
-						double d = getMinimumDistance(geomBag.getGeometry(i), p);
-						// update minimum distance
-						if(d>0)
-							min = java.lang.Math.min(min, d);
-					}
-				}
-			}
-			// has proximity operator?
-			else if(geom instanceof IProximityOperator) {
-				// get point
-				IProximityOperator opr = (IProximityOperator)(geom);
-				IProximityOperator p2 =  (IProximityOperator)opr.returnNearestPoint(p, 0);
-				min = p2.returnDistance(p);
-			}
-		}
-		return min;
-	}
-	
 	protected void updateMsoObject(IMsoFeature msoFeature, IGeometry geom) throws IOException, AutomationException {
 		
 		// get mso object
@@ -493,29 +363,10 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 	
 	protected void suspendUpdate() {
-		if(map!=null) {
-			try {
-				map.suspendNotify();
-				map.setSupressDrawing(true);
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}		
 		Utils.getApp().getMsoModel().suspendClientUpdate();
 	}
 	
 	protected void resumeUpdate() {
-		if(map!=null) {
-			try {
-				map.setSupressDrawing(false);
-				map.refreshMsoLayers();
-				map.resumeNotify();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}		
 		Utils.getApp().getMsoModel().resumeClientUpdate();
 	}
 	
@@ -611,10 +462,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 * @author kennetgu
 	 *
 	 */
-	public class DiskoToolState implements IDiskoToolState {
+	public class DiskoCommandState implements IDiskoCommandState {
 
 		// flags
-		private boolean isActive = false;
 		private boolean showDirect = false;
 		private boolean showDialog = false;
 
@@ -627,28 +477,26 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		private JPanel propertyPanel = null;
 		
 		// create state
-		public DiskoToolState(AbstractDiskoTool tool) {
-			save(tool);
+		public DiskoCommandState(AbstractDiskoCommand command) {
+			save(command);
 		}
 		
-		public void save(AbstractDiskoTool tool) {
-			this.isActive = tool.isActive;
-			this.showDirect = tool.showDirect;
-			this.showDialog = tool.showDialog;
-			this.msoClassCode = tool.msoClassCode;
-			this.msoObject = tool.msoObject;
-			this.msoOwner = tool.msoOwner;
-			this.propertyPanel = tool.propertyPanel;
+		public void save(AbstractDiskoCommand command) {
+			this.showDirect = command.showDirect;
+			this.showDialog = command.showDialog;
+			this.msoClassCode = command.msoClassCode;
+			this.msoObject = command.msoObject;
+			this.msoOwner = command.msoOwner;
+			this.propertyPanel = command.propertyPanel;
 		}
 		
-		public void load(AbstractDiskoTool tool) {
-			tool.isActive = this.isActive;
-			tool.showDirect = this.showDirect;
-			tool.showDialog = this.showDialog;
-			tool.msoClassCode = this.msoClassCode;
-			tool.msoObject = this.msoObject;
-			tool.msoOwner = this.msoOwner;
-			tool.propertyPanel = this.propertyPanel;
+		public void load(AbstractDiskoCommand command) {
+			command.showDirect = this.showDirect;
+			command.showDialog = this.showDialog;
+			command.msoClassCode = this.msoClassCode;
+			command.msoObject = this.msoObject;
+			command.msoOwner = this.msoOwner;
+			command.propertyPanel = this.propertyPanel;
 		}
 	}
 }

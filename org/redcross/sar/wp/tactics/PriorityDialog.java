@@ -162,20 +162,24 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 	}
 
 	@Override
-	public boolean setMsoObject(IMsoObjectIf msoObj) {
-		if(isWorking()) return false;		
+	public int setMsoObject(IMsoObjectIf msoObj) {
+		int state = 0;
+		if(isWorking()) return state;		
 		// dispatch type
 		if (msoObj instanceof ISearchAreaIf) {
 			ISearchAreaIf searchArea = (ISearchAreaIf)msoObj;
 			setPriority(searchArea.getPriority(),true,false);
-			return true;
+			state = 1;
 		}
-		// reset to default priority
-		setPriority(1,true,false);
+		else {
+			// reset to default priority
+			setPriority(1,true,false);
+			state = -1;
+		}
 		// forward
 		setup();
 		// not selected
-		return false;
+		return state;
 	}
 	
 	@Override
