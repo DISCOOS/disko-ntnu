@@ -45,6 +45,7 @@ public class DiskoButtons extends JPanel {
 		fl.setVgap(0);
 		fl.setAlignment(m_alignment);
 		this.setLayout(fl);
+		this.setBorder(null);
 		m_buttons = new HashMap<String, AbstractButton>();
 	}	
 	

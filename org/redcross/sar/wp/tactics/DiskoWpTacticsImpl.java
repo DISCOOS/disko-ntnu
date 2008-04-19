@@ -1,5 +1,26 @@
 package org.redcross.sar.wp.tactics;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
+import javax.swing.border.BevelBorder;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
 import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
@@ -36,29 +57,6 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
   
 /**
  * Implements the DiskoApTaktikk interface
@@ -466,9 +464,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// get draw dialog
 	        NavBar navBar = getApplication().getNavBar();
 			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
-			drawDialog.setLocationRelativeTo((DiskoMap)getMap(),DiskoDialog.POS_WEST, false);
+			drawDialog.setLocationRelativeTo((DiskoMap)getMap(),DiskoDialog.POS_WEST, true);
 
-									
 		}
 		return drawDialog;
 	}
@@ -478,7 +475,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			
 			// create
 			elementDialog = new ElementDialog(getApplication().getFrame());
-			elementDialog.setIsToggable(false);
+			elementDialog.setLocationRelativeTo((DiskoMap)getMap(),DiskoDialog.POS_EAST, false);
 
 			// add to dialogs
 			dialogs.add(elementDialog);

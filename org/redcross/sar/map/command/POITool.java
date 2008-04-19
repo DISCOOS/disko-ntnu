@@ -2,13 +2,10 @@ package org.redcross.sar.map.command;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.awt.Dimension;
 import java.io.IOException;
 
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -66,9 +63,6 @@ public class POITool extends AbstractDrawTool {
 		// map draw operation
 		onMouseDownAction = DrawActionType.DRAW_BEGIN;
 		onMouseUpAction = DrawActionType.DRAW_FINISH;
-		
-		// get current application
-		IDiskoApplication app = Utils.getApp();
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
@@ -264,14 +258,13 @@ public class POITool extends AbstractDrawTool {
 		msoObject = msoPOI;
 		POIPanel panel = (POIPanel)getPropertyPanel();
 		if(msoPOI!=null) {
-			panel.getPOIField().setPosition(msoPOI.getPosition());
+			panel.getGotoPanel().getPositionField().setPosition(msoPOI.getPosition());
 			panel.setPOIType(msoPOI.getType());
 			panel.setRemarks(msoPOI.getRemarks());
 		}
 		else {
-			panel.getPOIField().setText(null);
-			if(panel.getTypeList().getModel().getSize()>0)
-				panel.getTypeList().setSelectedIndex(0);			
+			panel.getGotoPanel().reset();
+			panel.getTypePanel().reset();			
 			panel.setRemarks(null);
 		}
 	}

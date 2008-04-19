@@ -38,10 +38,17 @@ public class ToggableTab extends JLabel {
 		super.setVerticalTextPosition(SwingConstants.CENTER);
 		super.addMouseListener(new MouseAdapter() {
 
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				doClick();
+			}
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// forward
-				doClick();
+				//doClick();
 			}
 			
 		});

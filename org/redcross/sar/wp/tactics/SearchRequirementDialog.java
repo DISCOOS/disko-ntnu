@@ -123,7 +123,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 						setVisible(false);						
 					}					
 				});
-				contentPanel.setContent(getTabbedPane());
+				contentPanel.setBodyComponent(getTabbedPane());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

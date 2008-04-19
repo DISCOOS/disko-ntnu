@@ -321,45 +321,12 @@ public class MapUtil {
 	}
 
 	public static String getMGRSfromPoint(Point p) 
-			throws AutomationException, IOException {
+			throws Exception {
 		return p.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 	}
 
-	public static String getMGRSfromPosition(Position pos) 
-			throws AutomationException, IOException {
-		return getMGRSfromPosition(pos.getPosition());
-	}
-	
-	public static String getUTMfromPosition(Position pos) 
-			throws AutomationException, IOException {
-		return getUTMfromPosition(pos.getPosition());
-	}
-	
-	public static String getMGRSfromPosition(Point2D pos) 
-			throws AutomationException, IOException {
-		Point point = new Point();
-		point.setX(pos.getX());
-		point.setY(pos.getY());
-		point.setSpatialReferenceByRef(getGeographicCS());
-		return point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
-	}
-	
-	public static String getUTMfromPosition(Point2D pos) 
-		throws AutomationException, IOException {
-		Point point = new Point();
-		point.setX(pos.getX());
-		point.setY(pos.getY());
-		point.setSpatialReferenceByRef(getGeographicCS());	
-		String mgrs = point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
-		String zone = mgrs.substring(0,3);
-		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(zone);		
-		point.project(outgoingCoordSystem);
-		return zone + formatCoord(point.getX(),7,7)+ "E" + formatCoord(point.getY(),7,7) + "N";
-	}
-	
-	
 	public static String getUTMfromPoint(Point p) 
-			throws AutomationException, IOException {
+			throws Exception {
 		String mgrs = p.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 		String zone = mgrs.substring(0,3);
 		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(zone);		
@@ -368,51 +335,282 @@ public class MapUtil {
 		
 	}
 	
-	public static Position getPositionFromMGRS(String mgrs) 
-			throws UnknownHostException, IOException {
+	public static String getDESfromPoint(Point p) 
+		throws Exception {	
+		return formatCoord(p.getX(),7,7)+ "E" + formatCoord(p.getY(),7,7) + "N";
+	}
+	
+	public static String getDEGfromPoint(Point p) 
+		throws Exception {
+		return fromDEGtoDES(p.getX())+ "E" + fromDEGtoDES(p.getY()) + "N";
+	}
+	
+	private static String fromDEGtoDES(double des) {
+		
+		// Get degrees by chopping off at the decimal
+		double d = Math.floor( des );
+		
+		// correction required since floor() is not the same as int()
+		if ( d < 0 )
+			d = d + 1;
+
+		// Get fraction after the decimal
+		double fd = Math.abs( des - d );
+
+		// Convert this fraction to seconds (without minutes)
+		double fs = fd * 3600;
+
+		// Determine number of whole minutes in the fraction
+		double m = Math.floor( fs / 60 );
+
+		// Put the remainder in seconds
+		double s = fs - m * 60;
+
+		// Fix rounoff errors
+		if ( Math.rint( s ) == 60 ) {
+			m = m + 1;
+			s = 0;
+		}
+
+		if ( Math.rint( m ) == 60 ) {
+			if ( d < 0 )
+				d = d - 1;
+			else // ( dfDegree => 0 )
+				d = d + 1;
+
+			m = 0;
+		}
+		
+		// return string
+		return Math.round(d) + Character.toString((char)186) +
+			Math.round(m) + Character.toString((char)39) +
+			Math.round(s) + Character.toString((char)34);
+		
+	}
+	
+	public static String getMGRSfromPosition(Position pos) 
+		throws Exception {
+		return getMGRSfromPosition(pos.getPosition());
+	}	
+
+	public static String getUTMfromPosition(Position pos) 
+		throws Exception {
+		return getUTMfromPosition(pos.getPosition());
+	}
+	
+	public static String getDEGfromPosition(Position pos) 
+		throws Exception {
+		return getDEGfromPosition(pos.getPosition());
+	}
+	
+	public static String getDESfromPosition(Position pos) 
+		throws Exception {
+		return getDESfromPosition(pos.getPosition());
+	}
+	
+	public static String getMGRSfromPosition(Point2D p) 
+		throws Exception {
+		Point point = new Point();
+		point.setX(p.getX());
+		point.setY(p.getY());
+		point.setSpatialReferenceByRef(getGeographicCS());
+		return point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+	}
+	
+	public static String getUTMfromPosition(Point2D p) 
+		throws Exception {
+		Point point = new Point();
+		point.setX(p.getX());
+		point.setY(p.getY());
+		point.setSpatialReferenceByRef(getGeographicCS());	
+		String mgrs = point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		String zone = mgrs.substring(0,3);
+		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(zone);		
+		point.project(outgoingCoordSystem);
+		return zone + formatCoord(point.getX(),7,7)+ "E" + formatCoord(point.getY(),7,7) + "N";
+	}
+	
+	public static String getDEGfromPosition(Point2D p) 
+		throws Exception {
+		return formatCoord(p.getX(),7,7)+ "E" + formatCoord(p.getY(),7,7) + "N";
+	}
+
+	public static String getDESfromPosition(Point2D p) 
+		throws Exception {
+		return fromDEGtoDES(p.getX())+ "E" + fromDEGtoDES(p.getY()) + "N";
+	}
+	
+
+	/**
+	 * Converts a MGRS position string to a point in decimal degress
+	 * 
+	 * @param mgrs 	A MGRS string on the strict format ZZZSS(-)######N(-)######E, where
+	 * 				zzz equals zone, SS equals 100-km square, x = ######E equals 
+	 * 				east direction (x) and y = ######N equals north direction (y)
+	 * @return {@link Point}
+	 * @throws Exception
+	 */	
+	public static Point getPointFromMGRS(String mgrs) 
+		throws Exception {
+		// trim 
+		mgrs = mgrs.trim();
+		String prefix = mgrs.substring(0,5);
+		String suffix = mgrs.substring(5,mgrs.length());
+		suffix = suffix.toUpperCase().replace("E", "").replace("N", "");
 		Point point = new Point();
 		point.setSpatialReferenceByRef(getGeographicCS());
-		point.putCoordsFromMGRS(mgrs, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		point.putCoordsFromMGRS(prefix.concat(suffix), esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		return point;
+	}
+	
+	/**
+	 * Converts a UTM position string to a point in decimal degress
+	 * 
+	 * IMPORTANT: Only a subset of all UTM strings are supported (32-36 N)
+	 * 
+	 * @param utm 	A UTM string on the strict format ZZZ(-)########N(-)########E, where
+	 * 				zzz equals zone, x = ########E equals east direction (x) 
+	 * 				and y = ########N equals north direction (y)
+	 * @return {@link Point}
+	 * @throws Exception
+	 */
+	public static Point getPointFromUTM(String utm) 
+		throws Exception {
+		utm = utm.trim();
+		String zone = utm.subSequence(0, 3).toString();
+		String x = utm.subSequence(3, 10).toString();
+		String y = utm.subSequence(11, 18).toString();
+		Point point = new Point();
+		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);		
+		point.setSpatialReferenceByRef(incommingCoordSystem);
+		point.setX(Double.valueOf(x));
+		point.setY(Double.valueOf(y));
+		point.project(getGeographicCS());
+		return point;
+	}
+
+	/**
+	 * Converts a DEGREE position string to a point in decimal degress
+	 * 
+	 * @param deg	A DEGREE string on the strict format (-)##*##'##''E(-)##*##'##''N, where
+	 * 				x = ##*##'##''E equals east direction (x) 
+	 * 				and y = ##*##'##''N equals north direction (y)
+	 * @return {@link Point}
+	 * @throws Exception
+	 */
+	public static Point getPointFromDEG(String deg) 
+		throws Exception {
+
+		// remove any spaces
+		deg = deg.trim().toUpperCase();
+		
+		// split into longitude and latitude
+		String[] split = deg.split("E");
+		
+		// get sub strings
+		String lat = split[0]; 
+		String lon = split[1].replace("N", "0");
+		
+		// account for sign
+		int offset = lat.startsWith("-") ? 1 : 0;
+		
+		// parse longitude (E) 
+		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString());
+		double m1 = Double.valueOf(lat.subSequence(3+offset, 5+offset).toString());
+		double s1 = Double.valueOf(lat.subSequence(6+offset, 8+offset).toString());
+		
+		// account for sign
+		offset = lon.startsWith("-") ? 1 : 0;
+		
+		// parse latitude (N)
+		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString());
+		double m2 = Double.valueOf(lon.subSequence(3+offset, 5+offset).toString());
+		double s2 = Double.valueOf(lon.subSequence(6+offset, 8+offset).toString());
+		
+		// Determine longitude fraction from minutes and seconds
+		double f1 = Double.valueOf(m1) / 60 + Double.valueOf(s1) / 3600;
+
+		// Be careful to get the sign right.
+		double dec1 = ( d1 < 0 ) ? d1 - f1 : d1 + f1;
+		
+		// Determine latitude fraction from minutes and seconds
+		double f2 = Double.valueOf(m2) / 60 + Double.valueOf(s2) / 3600;
+		
+		// Be careful to get the sign right.
+		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
+		
+		// create point
+		Point point = new Point();
+		point.setSpatialReferenceByRef(getGeographicCS());
+		point.setX(dec1);
+		point.setY(dec2);
+		return point;
+		
+	}
+	
+	/**
+	 * Converts a DECIMAL DEGREE position string to a point in decimal degress
+	 * 
+	 * @param deg	A DEGREE string on the strict format ##.#[#-->#]E##.#[#-->#]N, where
+	 * 				x = ##.#[#-->#]E equals east direction (x) 
+	 * 				and y = ##.#[#-->#]N equals north direction (y)
+	 * @return {@link Point}
+	 * @throws Exception
+	 */
+	public static Point getPointFromDES(String des) 
+		throws Exception {
+	
+		// remove any spaces
+		des = des.trim().toUpperCase();
+		
+		// split into longitude and latitude
+		String[] split = des.split("E");
+		
+		// get sub strings
+		String lat = split[0]; 
+		String lon = split[1].replace("N", ""); 
+		
+		// parse longitude (E) 
+		double x = Double.valueOf(lat);
+		
+		// parse latitude (N)
+		double y = Double.valueOf(lon);
+		// create point
+		Point point = new Point();
+		point.setSpatialReferenceByRef(getGeographicCS());
+		point.setX(x);
+		point.setY(y);
+		return point;
+		
+	}
+		
+	public static Position getPositionFromMGRS(String mgrs) 
+			throws Exception {
+		IPoint point = getPointFromMGRS(mgrs);
 		return new Position(null, point.getX(), point.getY());
 	}
 	
-	public static Point getPointFromMGRS(String mgrs) 
-		throws UnknownHostException, IOException {
-		Point point = new Point();
-		point.setSpatialReferenceByRef(getGeographicCS());
-		point.putCoordsFromMGRS(mgrs, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
-		return point;
-	}
-	
-	public static Point getPointFromUTM(String utm) 
-		throws UnknownHostException, IOException {
-		String zone = utm.subSequence(0, 3).toString();
-		String x = utm.subSequence(3, 10).toString();
-		String y = utm.subSequence(11, 18).toString();
-		Point point = new Point();
-		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);		
-		point.setSpatialReferenceByRef(incommingCoordSystem);
-		point.setX(Double.valueOf(x));
-		point.setY(Double.valueOf(y));
-		point.project(getGeographicCS());
-		return point;
-	}
-	
 	public static Position getPositionFromUTM(String utm) 
-		throws UnknownHostException, IOException {
-		String zone = utm.subSequence(0, 3).toString();
-		String x = utm.subSequence(3, 10).toString();
-		String y = utm.subSequence(11, 18).toString();
-		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);		
-		Point point = new Point();
-		point.setSpatialReferenceByRef(incommingCoordSystem);
-		point.setX(Double.valueOf(x));
-		point.setY(Double.valueOf(y));
-		point.project(getGeographicCS());
-		return new Position("",point.getX(),point.getY());
+		throws Exception {
+		Point point = getPointFromUTM(utm);
+		return new Position(null,point.getX(),point.getY());
+	}
+	
+	public static Position getPositionFromDEG(String deg) 
+		throws Exception {
+		Point point = getPointFromDEG(deg);
+		return new Position(null,point.getX(),point.getY());
+	}
+	
+	public static Position getPositionFromDES(String des) 
+		throws Exception {
+		Point point = getPointFromDES(des);
+		return new Position(null,point.getX(),point.getY());
 	}
 	
 	public static ISpatialReference getProjectedSpatialReference(String zone) {
+		
+		zone = zone.trim();
 		
 		if (zone.length()!=3) return null;
 		
@@ -422,7 +620,7 @@ public class MapUtil {
 			
 			/* 
 			 *
-			 * UTM latitude is devided from C --> X (20 rowa). Northern hemisphere is
+			 * UTM latitude is devided from C --> X (20 rows). Northern hemisphere is
 			 * therefor from N --> X and suthern from C --> M.
 			 * 
 			 * UTM longitude is devided from 1 --> 60

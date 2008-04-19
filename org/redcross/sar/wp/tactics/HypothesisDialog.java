@@ -281,7 +281,7 @@ public class HypothesisDialog extends DiskoDialog {
 						setVisible(false);						
 					}					
 				});
-				contentPanel.setContent(getHypothesisPanel());
+				contentPanel.setBodyComponent(getHypothesisPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

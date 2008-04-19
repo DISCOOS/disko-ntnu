@@ -12,7 +12,6 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Dimension;
 import java.awt.CardLayout;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -21,6 +20,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -39,7 +39,6 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JPanel;
@@ -47,7 +46,6 @@ import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.border.BevelBorder;
 
 /**
  * @author kennetgu
@@ -58,7 +56,7 @@ public class DrawDialog extends DiskoDialog
 
 	private static final long serialVersionUID = 1L;
 	
-	private JPanel m_contentPanel = null;
+	private DiskoPanel m_contentPanel = null;
 	private JPanel m_buttonsPanel = null;
 	private JPanel m_toolsPanel = null;
 	private ButtonGroup m_buttonGroup = null;	
@@ -126,16 +124,12 @@ public class DrawDialog extends DiskoDialog
 	/**
 	 * This method initializes m_contentPanel	
 	 * 	
-	 * @return javax.swing.JPanel	
+	 * @return {@link DiskoPanel}	
 	 */
 	private JPanel getContentPanel() {
 		if (m_contentPanel == null) {
-			m_contentPanel = new JPanel();
-			m_contentPanel.setLayout(new BorderLayout());
-			m_contentPanel.setPreferredSize(new Dimension(250, 300));
-			m_contentPanel.setBorder(BorderFactory.
-					createBevelBorder(BevelBorder.RAISED));
-			m_contentPanel.add(getSplitPane(), BorderLayout.CENTER);
+			m_contentPanel = new DiskoPanel("Tegneverktøy");
+			m_contentPanel.setBodyComponent(getSplitPane());
 		}
 		return m_contentPanel;
 	}

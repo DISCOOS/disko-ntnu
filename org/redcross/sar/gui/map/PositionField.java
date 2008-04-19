@@ -22,7 +22,6 @@ import javax.swing.text.MaskFormatter;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.NumPadDialog;
-import org.redcross.sar.gui.map.PositionFormatPanel.POIFormatEventListener;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.mso.Position;
 
@@ -34,9 +33,19 @@ import java.awt.BorderLayout;
  * @author kennetgu
  *
  */
-public class PositionField extends JPanel implements POIFormatEventListener {
+public class PositionField extends JPanel {
 
 	private static final long serialVersionUID = 1L;
+	
+	private final MGRSFormat m_mgrsFormatE = new MGRSFormat("E");
+	private final MGRSFormat m_mgrsFormatN = new MGRSFormat("N");
+	private final UTMFormat m_utmFormatE = new UTMFormat("E");
+	private final UTMFormat m_utmFormatN = new UTMFormat("N");
+	private final DESFormat m_desFormatE = new DESFormat("E");
+	private final DESFormat m_desFormatN = new DESFormat("N");
+	private final DEGFormat m_degFormatE = new DEGFormat("E");
+	private final DEGFormat m_degFormatN = new DEGFormat("N");
+	
 	private JPanel m_right = null;
 	private JLabel m_latitudeLabel = null;
 	private JFormattedTextField m_latitudeText = null;
@@ -69,7 +78,6 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 								"VD","VC"};  //  @jve:decl-index=0:
 	private JComboBox m_ZoneCombo = null;
 	private JComboBox m_SquareCombo = null;
-	private PositionFormatPanel m_formatPanel = null;
 	private JPanel m_positionPanel = null;
 	
 	/**
@@ -89,25 +97,11 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 	private void initialize() {
 		// setup content pane
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		Dimension dim = new Dimension(250, 55);
-		this.setSize(dim);
-		this.setPreferredSize(dim);
-		this.setMinimumSize(dim);
-		this.setMaximumSize(dim);
+		Utils.setFixedSize(this, 250, 55);
 		// add components
 		this.add(getPositionPanel());
 		// set MGRS format
 		setFormat(1); 
-	}
-
-	public void registrate(PositionFormatPanel panel) {
-		// unregistrate?
-		if(m_formatPanel!=null)
-			m_formatPanel.removePOIFormatEventListener(this);
-		
-		// register
-		m_formatPanel = panel;
-		m_formatPanel.addPOIFormatEventListener(this);
 	}
 	
 	public void setEditable(boolean isEditable) {
@@ -148,11 +142,21 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 						break;
 					case 2: // UTM
 						zone = text.subSequence(0, 3).toString();
-						x = text.subSequence(3, 10).toString();
-						y = text.subSequence(11, 18).toString();
+						x = text.subSequence(3, 9).toString();
+						y = text.subSequence(11, 17).toString();
 						getZoneCombo().setSelectedItem(zone);
-						getLatitudeText().setText(x);
-						getLongetudeText().setText(y);
+						getLatitudeText().setText("00");
+						getLongetudeText().setText("00");
+						break;					
+					case 3: // DES
+						String[] split = text.split("E");
+						getLatitudeText().setText(split[0]);
+						getLongetudeText().setText(split[1]);
+						break;					
+					case 4: // DEG
+						split = text.split("E");
+						getLatitudeText().setText(split[0]);
+						getLongetudeText().setText(split[1]);
 						break;					
 					}
 				}
@@ -170,8 +174,8 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 		if (bEmpty) {
 			getZoneCombo().setSelectedIndex(0);
 			getSquareCombo().setSelectedIndex(0);
-			getLatitudeText().setText(null);
-			getLongetudeText().setText(null);
+			getLatitudeText().setText("");
+			getLongetudeText().setText("");
 		}			
 	}
 	
@@ -183,17 +187,23 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 	public String getText() {
 		String text = null;
 		switch(getFormat()) {
-		case 1:
+		case 1: // MGRS
 			text = (getZoneCombo().getSelectedItem()==null ? "" : 
 					getZoneCombo().getSelectedItem().toString()) +
 					(getSquareCombo().getSelectedItem()==null ? "" : 
 						getSquareCombo().getSelectedItem().toString()) +
 				getLatitudeText().getText() + getLongetudeText().getText();
 			break;	
-		case 2:
+		case 2:	// UTM
 			text = (getZoneCombo().getSelectedItem()==null ? "" : 
 				getZoneCombo().getSelectedItem().toString()) +
 				getLatitudeText().getText() + getLongetudeText().getText();
+			break;	
+		case 3: // DES
+			text = getLatitudeText().getText() + getLongetudeText().getText();
+			break;	
+		case 4: // DEG
+			text = getLatitudeText().getText() + getLongetudeText().getText();
 			break;	
 		}
 		return text;
@@ -395,15 +405,6 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 	}
 
 	/**
-	 * This method initializes m_formatPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	public PositionFormatPanel getFormatPanel() {
-		return m_formatPanel;
-	}
-
-	/**
 	 * This method initializes m_positionPanel	
 	 * 	
 	 * @return javax.swing.JPanel	
@@ -424,18 +425,45 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 	}
 	
 	public int getFormat() {
-		if(m_formatPanel!=null)
-			return m_formatPanel.getFormat();
-		else
-			return m_format;
+		return m_format;
 	}
 	
 	public void setFormat(int format) {
-		if(m_formatPanel!=null)
-			m_formatPanel.setFormat(format);
-		else {
-			formatChanged(format);
+		// get current
+		Position p = getPosition();
+		// reset
+		setText(null);
+		// save format
+		m_format = format;
+		// get formaters
+		switch(format) {
+		case 1: // MGRS
+			m_SquareCombo.setVisible(true);
+			m_squareLabel.setVisible(true);
+			m_latitudeText.setFormatterFactory(m_mgrsFormatE);
+			m_longetudeText.setFormatterFactory(m_mgrsFormatN);
+			break;
+		case 2: // UTM
+			m_SquareCombo.setVisible(false);
+			m_squareLabel.setVisible(false);
+			m_latitudeText.setFormatterFactory(m_utmFormatE);
+			m_longetudeText.setFormatterFactory(m_utmFormatN);
+			break;
+		case 3: // DES
+			m_SquareCombo.setVisible(false);
+			m_squareLabel.setVisible(false);
+			m_latitudeText.setFormatterFactory(m_desFormatE);
+			m_longetudeText.setFormatterFactory(m_desFormatN);
+			break;
+		case 4: // DEG
+			m_SquareCombo.setVisible(false);
+			m_squareLabel.setVisible(false);
+			m_latitudeText.setFormatterFactory(m_degFormatE);
+			m_longetudeText.setFormatterFactory(m_degFormatN);
+			break;
 		}
+		// foreward
+		setPosition(p);
 	}
 
 	public Point getPoint() {
@@ -445,6 +473,10 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 				return MapUtil.getPointFromMGRS(getText());
 			case 2: // UTM
 				return MapUtil.getPointFromUTM(getText());
+			case 3: // DES
+				return MapUtil.getPointFromDES(getText());
+			case 4: // DEG
+				return MapUtil.getPointFromDEG(getText());
 			}
 		}
 		catch (Exception e) {
@@ -460,6 +492,10 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 				return MapUtil.getPositionFromMGRS(getText());
 			case 2: // UTM
 				return MapUtil.getPositionFromUTM(getText());
+			case 3: // DES
+				return MapUtil.getPositionFromDES(getText());
+			case 4: // DEG
+				return MapUtil.getPositionFromDEG(getText());
 			}
 		}
 		catch (Exception e) {
@@ -477,6 +513,12 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 			case 2: // UTM
 				setText(MapUtil.getUTMfromPosition(p));
 				break;
+			case 3: // DES
+				setText(MapUtil.getDESfromPosition(p));
+				break;
+			case 4: // DEG
+				setText(MapUtil.getDEGfromPosition(p));
+				break;
 			}
 		}
 		catch (Exception e) {
@@ -493,6 +535,12 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 			case 2: // UTM
 				setText(MapUtil.getUTMfromPoint(p));
 				break;
+			case 3: // DES
+				setText(MapUtil.getDESfromPoint(p));
+				break;
+			case 4: // DEG
+				setText(MapUtil.getDEGfromPoint(p));
+				break;
 			}
 		}
 		catch (Exception e) {
@@ -502,70 +550,98 @@ public class PositionField extends JPanel implements POIFormatEventListener {
 	
 	class MGRSFormat extends JFormattedTextField.AbstractFormatterFactory {
 
-		@Override
-		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
-			MaskFormatter mf1 = null;
+		MaskFormatter m_mf = null;
+		
+		MGRSFormat(String direction) {
 			try {
-				mf1 = new MaskFormatter("#####");
-				mf1.setPlaceholder("00000");
-				mf1.setPlaceholderCharacter('0');
+				m_mf = new MaskFormatter("#####"+direction);
+				m_mf.setPlaceholder("00000"+direction);
+				m_mf.setPlaceholderCharacter('0');
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			return mf1;
+		}
+		
+		@Override
+		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
+			return m_mf;
 		}
 		
 	}
 
 	class UTMFormat extends JFormattedTextField.AbstractFormatterFactory {
 
-		String m_direction = "E";
+		MaskFormatter m_mf = null;
 		
 		UTMFormat(String direction) {
-			m_direction = direction;
-		}
-		
-		@Override
-		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
-			MaskFormatter mf1 = null;
 			try {
-				mf1 = new MaskFormatter("#######"+m_direction);
-				mf1.setPlaceholder("0000000"+m_direction);
-				mf1.setPlaceholderCharacter('0');
+				m_mf = new MaskFormatter("#######"+direction);
+				m_mf.setPlaceholder("0000000"+direction);
+				m_mf.setPlaceholderCharacter('0');
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			return mf1;
+		}
+		
+		@Override
+		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
+			return m_mf;
 		}
 		
 	}
 
-	public void formatChanged(int format) {
-		// get current
-		Position p = getPosition();
-		// reset
-		setText(null);
-		// save format
-		m_format = format;
-		// get formaters
-		switch(format) {
-		case 1: // MGRS
-			m_SquareCombo.setVisible(true);
-			m_squareLabel.setVisible(true);
-			m_latitudeText.setFormatterFactory(new MGRSFormat());
-			m_longetudeText.setFormatterFactory(new MGRSFormat());
-			break;
-		case 2: // UTM
-			m_SquareCombo.setVisible(false);
-			m_squareLabel.setVisible(false);
-			m_latitudeText.setFormatterFactory(new UTMFormat("N"));
-			m_longetudeText.setFormatterFactory(new UTMFormat("E"));
-			break;
+	class DEGFormat extends JFormattedTextField.AbstractFormatterFactory {
+
+		MaskFormatter m_mf = null;
+		
+		DEGFormat(String direction) {
+			try {
+				String mask = "##"+Character.toString((char)186)+
+					"##"+Character.toString((char)39)+
+					"##"+Character.toString((char)34)+ direction;
+				m_mf = new MaskFormatter(mask);
+				m_mf.setPlaceholder(mask.replace("#", "0"));
+				m_mf.setPlaceholderCharacter('0');
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-		// foreward
-		setPosition(p);
+		
+		@Override
+		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
+			return m_mf;
+		}
+		
+	}
+	
+	class DESFormat extends JFormattedTextField.AbstractFormatterFactory {
+
+		MaskFormatter m_mf = null;
+		
+		DESFormat(String direction) {
+			try {
+				String mask = "##.";
+				for(int i=0;i<4;i++) {
+					mask = mask.concat("#");
+				}
+				mask = mask.concat(direction);
+				m_mf = new MaskFormatter(mask);
+				m_mf.setPlaceholder(mask.replace("#", "0"));
+				m_mf.setPlaceholderCharacter('0');
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
+			return m_mf;
+		}
+		
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="7,7"

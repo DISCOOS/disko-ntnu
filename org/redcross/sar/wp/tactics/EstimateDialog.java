@@ -120,7 +120,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 						setVisible(false);						
 					}					
 				});
-				contentPanel.setContent(getEstimatePanel());
+				contentPanel.setBodyComponent(getEstimatePanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

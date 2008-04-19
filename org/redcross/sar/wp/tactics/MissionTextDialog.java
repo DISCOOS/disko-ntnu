@@ -113,7 +113,7 @@ public class MissionTextDialog extends DiskoDialog {
 						setVisible(false);						
 					}					
 				});
-				contentPanel.setContent(getTextArea());
+				contentPanel.setBodyComponent(getTextArea());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

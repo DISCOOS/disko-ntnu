@@ -5,8 +5,6 @@ import java.awt.Frame;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
-import javax.swing.BorderFactory;
-import javax.swing.border.BevelBorder;
 import javax.swing.JList;
 
 public class ElementDialog extends DiskoDialog {
@@ -31,7 +29,7 @@ public class ElementDialog extends DiskoDialog {
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 
@@ -44,7 +42,6 @@ public class ElementDialog extends DiskoDialog {
 		if (elementPanel == null) {
 			try {
 				elementPanel = new ElementPanel();
-				elementPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

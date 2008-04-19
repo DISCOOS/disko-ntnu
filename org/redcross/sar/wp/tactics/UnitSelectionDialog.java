@@ -148,7 +148,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 					}					
 				});
 				contentPanel.addButton(button,"cancel");
-				contentPanel.setContent(getUnitTable());
+				contentPanel.setBodyComponent(getUnitTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

@@ -97,7 +97,7 @@ public class DescriptionDialog extends DiskoDialog {
 						setVisible(false);						
 					}					
 				});
-				contentPanel.setContent(getPoiTable());
+				contentPanel.setBodyComponent(getPoiTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

@@ -8,22 +8,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.EditActionTableCellEditor;
@@ -42,7 +39,7 @@ public class ListDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoWpModule wp = null;
-	private JPanel contentPanel = null;
+	private DiskoPanel contentPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton printButton = null;
 	private JButton makeReadyButton = null;
@@ -66,7 +63,7 @@ public class ListDialog extends DiskoDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(593, 600));
+            this.setPreferredSize(new Dimension(600, 600));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}
@@ -126,11 +123,11 @@ public class ListDialog extends DiskoDialog {
 	private JPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTableScrollPane(), BorderLayout.CENTER);
+				contentPanel = new DiskoPanel("Oppdrag");
+				JPanel panel = (JPanel)contentPanel.getBodyComponent();
+				panel.setLayout(new BorderLayout());
+				panel.add(getButtonPanel(), BorderLayout.SOUTH);
+				panel.add(getTableScrollPane(), BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

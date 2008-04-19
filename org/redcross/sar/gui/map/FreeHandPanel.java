@@ -19,6 +19,7 @@ import javax.swing.border.TitledBorder;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -29,7 +30,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
-public class FreeHandPanel extends JPanel {
+public class FreeHandPanel extends DiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoApplication app = null;
@@ -70,30 +71,33 @@ public class FreeHandPanel extends JPanel {
 	 *
 	 */
 	private void initialize() {
-		try {
-			// remove all from container
-			removeAll();
-			// build container
-			if(isVertical) {
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				vfl.setHgap(0);
-				vfl.setVgap(5);
-				this.setLayout(vfl);
-				this.add(getNorthPanel());
-				this.add(getButtonPanel());
-			}
-			else {
-				BorderLayout bl = new BorderLayout();
-				bl.setHgap(5);
-				bl.setVgap(0);
-				this.setLayout(bl);
-				this.add(getNorthPanel(),BorderLayout.CENTER);
-				this.add(getButtonPanel(),BorderLayout.EAST);				
-			}
+		// build container
+		if(isVertical) {
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			vfl.setHgap(0);
+			vfl.setVgap(5);
+			// get default panel
+			JPanel panel = (JPanel)getBodyComponent();
+			// remove panels from pane
+			panel.removeAll();
+			// update
+			panel.setLayout(vfl);
+			panel.add(getNorthPanel());
+			panel.add(getButtonPanel());
 		}
-		catch (java.lang.Throwable e) {
-			e.printStackTrace();
+		else {
+			BorderLayout bl = new BorderLayout();
+			bl.setHgap(5);
+			bl.setVgap(0);
+			// get default panel
+			JPanel panel = (JPanel)getBodyComponent();
+			// remove panels from pane
+			panel.removeAll();
+			// update
+			panel.setLayout(bl);
+			panel.add(getNorthPanel(),BorderLayout.CENTER);
+			panel.add(getButtonPanel(),BorderLayout.EAST);				
 		}
 	}
 	

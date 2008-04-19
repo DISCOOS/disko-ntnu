@@ -1,24 +1,19 @@
 package org.redcross.sar.gui.map;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -26,10 +21,8 @@ import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.PositionField;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
 import org.redcross.sar.map.command.PositionTool;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -55,14 +48,10 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	private IDiskoApplication app = null;
 	private PositionTool tool = null;
 	private IMsoModelIf msoModel;
-	private NumPadDialog numPadDialog = null;
-	private PositionField poiField = null;
-	private PositionFormatPanel formatPanel = null;
 	private JList unitList = null;
 	private JPanel coordPanel = null;
-	private JSeparator listSeparator = null;
 	private JPanel northPanel = null;
-	private JPanel fieldPanel = null;
+	private GotoPanel gotoPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton applyButton = null;
 	private JButton cancelButton = null;
@@ -91,6 +80,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 		
 		// load units
 		loadUnits();
+		
 	}
 
 	/**
@@ -152,10 +142,10 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 		// coordinates
 		Point point = null;
 		try {
-			point = getPOIField().getPoint();
+			point = getGotoPanel().getPositionField().getPoint();
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(app.getFrame(),
-					"Ugyldig MGRS koordinat", null, 
+					"Ugyldig format. Sjekk koordinater og prøv igjen", null, 
 					JOptionPane.WARNING_MESSAGE);
 			ex.printStackTrace();
 		}
@@ -185,7 +175,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	
 	public void reset() {
 		tool.cancel();
-		getPOIField().setText(null);
+		getGotoPanel().getPositionField().setText(null);
 		if(getUnitList().getModel().getSize()>0)
 			getUnitList().setSelectedIndex(-1);
 	}
@@ -210,58 +200,16 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	/**
 	 * This method initializes fieldPanel	
 	 * 	
-	 * @return javax.swing.JPanel
+	 * @return GotoPanel
 	 */
-	public JPanel getFieldPanel() {
-		if (fieldPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			fieldPanel = new JPanel();
-			fieldPanel.setLayout(bl);
-			fieldPanel.add(getPOIField(),BorderLayout.NORTH);
-			fieldPanel.add(new JSeparator(JSeparator.HORIZONTAL),BorderLayout.CENTER);
-			fieldPanel.add(getFormatPanel(),BorderLayout.SOUTH);
+	public GotoPanel getGotoPanel() {
+		if (gotoPanel == null) {
+			gotoPanel = new GotoPanel("Skriv inn posisjon");
+			gotoPanel.setGotoButtonVisible(false);
 		}
-		return fieldPanel;
+		return gotoPanel;
 	}
 	
-	/**
-	 * This method initializes poiField	
-	 * 	
-	 * @return POIField	
-	 */
-	public PositionField getPOIField() {
-		if (poiField == null) {
-			poiField = new PositionField();
-			poiField.registrate(getFormatPanel());
-			/*poiField.addMouseListener(new java.awt.event.MouseAdapter() {
-				public void mouseClicked(java.awt.event.MouseEvent e) {					
-					if (e.getClickCount() == 2){
-						NumPadDialog numPadDialog = app.getUIFactory().getNumPadDialog();
-						java.awt.Point p = poiField.getLocationOnScreen();
-						p.setLocation(p.x + (poiField.getWidth()+7), p.y);
-						numPadDialog.setLocation(p);					
-						numPadDialog.setTextField(poiField);
-						numPadDialog.setVisible(true);	
-					}
-				}
-			});*/
-		}
-		return poiField;
-	}
-	
-	/**
-	 * This method initializes formatPanel	
-	 * 	
-	 * @return POIFormatPanel
-	 */
-	public PositionFormatPanel getFormatPanel() {
-		if (formatPanel == null) {
-			formatPanel = new PositionFormatPanel();
-		}
-		return formatPanel;
-	}
-
-
 	public boolean isSingleUnitOnly() {
 		return isSingleUnitOnly;
 	}
@@ -302,7 +250,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	}
 
 	public void updatePosition(Point p) {
-		poiField.setPoint(p);
+		getGotoPanel().getPositionField().setPoint(p);
 	}
 	
 	public boolean isUnitsVisible() {
@@ -315,7 +263,6 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	
 	public void setUnitsVisible(boolean isVisible) {
 		getUnitList().setVisible(isVisible);
-		listSeparator.setVisible(isVisible && isVertical);
 	}
 	
 	public void setButtonsVisible(boolean isVisible) {
@@ -404,9 +351,6 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 				// create panel
 				coordPanel = new JPanel();
 
-				// create separators
-				listSeparator = new JSeparator(JSeparator.HORIZONTAL);
-				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -422,8 +366,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			// set flow layout
 			coordPanel.setLayout(vfl); 
 			// add components
-			coordPanel.add(getFieldPanel());
-			coordPanel.add(listSeparator);
+			coordPanel.add(getGotoPanel());
 			coordPanel.add(getListScrollPane());			
 		}
 		else {
@@ -434,7 +377,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			// set flow layout
 			coordPanel.setLayout(bl); 
 			// add components
-			coordPanel.add(getFieldPanel(),BorderLayout.WEST);
+			coordPanel.add(getGotoPanel(),BorderLayout.WEST);
 			coordPanel.add(getListScrollPane(),BorderLayout.CENTER);
 		}
 		return coordPanel;
@@ -450,11 +393,6 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			try {
 				BorderLayout borderLayout = new BorderLayout();
 				northPanel = new JPanel();
-				northPanel.setBorder(BorderFactory.createTitledBorder(
-						null, "Posisjon", TitledBorder.DEFAULT_JUSTIFICATION, 
-						TitledBorder.DEFAULT_POSITION, 
-						new Font("Tahoma", Font.PLAIN, 12), 
-						new Color(0, 70, 213)));
 				northPanel.setLayout(borderLayout);
 
 			} catch (java.lang.Throwable e) {
@@ -601,7 +539,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			getUnitList().setSelectedValue(unit, true);
 			com.esri.arcgis.geometry.Point point = 
 				(com.esri.arcgis.geometry.Point)msoFeature.getShape();
-			getPOIField().setPoint(point);
+			getGotoPanel().getPositionField().setPoint(point);
 		}
 		else {
 			reset();

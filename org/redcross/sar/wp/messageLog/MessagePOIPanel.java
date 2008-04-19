@@ -6,10 +6,8 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -189,7 +187,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		try {
 			
 			// get point
-			Point point = panel.getPOIField().getPoint();
+			Point point = panel.getGotoPanel().getPositionField().getPoint();
 			
 			// add or move poi?
 			if(point!=null) {
@@ -242,7 +240,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 					
 					// get flag
 					isDirty = !poi.getType().equals(poiType) || 
-							!poi.getPosition().equals(panel.getPOIField().getPosition());					
+							!poi.getPosition().equals(panel.getGotoPanel().getPositionField().getPosition());					
 					
 					// update poi
 					m_tool.setCurrentPOI(poi);

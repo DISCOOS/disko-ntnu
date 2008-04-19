@@ -1,30 +1,5 @@
 package org.redcross.sar.gui;
 
-import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.IMessageLineListIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IPOIIf;
-import org.redcross.sar.mso.data.ITaskIf;
-import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
-import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
-import org.redcross.sar.mso.data.ITaskIf.TaskType;
-import org.redcross.sar.mso.data.TaskImpl;
-import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.except.IllegalMsoArgumentException;
-import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.wp.IDiskoWpModule;
-import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog;
-import org.redcross.sar.wp.tasks.TaskUtilities;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -36,7 +11,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
-import javax.swing.border.BevelBorder;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -49,6 +23,25 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.ResourceBundle;
 
+import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.ITaskIf;
+import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
+import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
+import org.redcross.sar.mso.data.ITaskIf.TaskType;
+import org.redcross.sar.mso.data.TaskImpl;
+import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.except.IllegalMsoArgumentException;
+import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog;
+import org.redcross.sar.wp.tasks.TaskUtilities;
+
+
 /**
  * Dialog for editing/creating tasks.
  * If dialog is initiated with task, it will edit this one, else it will create a new task
@@ -58,8 +51,10 @@ import java.util.ResourceBundle;
 public class TaskDialog extends DiskoDialog
 {
 	private static final long serialVersionUID = 1L;
+	
 	private IDiskoApplication m_application = null;
-	private JPanel m_contentsPanel = null;
+	
+	private DiskoPanel m_contentsPanel = null;
 
 	private ITaskIf m_currentTask = null;
 
@@ -92,8 +87,10 @@ public class TaskDialog extends DiskoDialog
 
 	private void initialize()
 	{
-		m_contentsPanel = new JPanel(new GridBagLayout());
-		m_contentsPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+		m_contentsPanel = new DiskoPanel("Oppgave");
+		
+		JPanel panel = (JPanel)m_contentsPanel.getBodyComponent();
+		panel.setLayout(new GridBagLayout());
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridy = 0;
@@ -214,7 +211,7 @@ public class TaskDialog extends DiskoDialog
 		gbc.fill = GridBagConstraints.NONE;
 		gbc.gridy--;
 		gbc.gridx = 0;
-		m_contentsPanel.add(m_useSourceButton, gbc);
+		panel.add(m_useSourceButton, gbc);
 		gbc.gridy++;
 		gbc.fill = GridBagConstraints.BOTH;
 
@@ -271,7 +268,7 @@ public class TaskDialog extends DiskoDialog
 
 		gbc.gridwidth = 4;
 		gbc.gridy++;
-		m_contentsPanel.add(actionButtonPanel, gbc);
+		panel.add(actionButtonPanel, gbc);
 
 		this.add(m_contentsPanel);
 		this.pack();
@@ -281,13 +278,14 @@ public class TaskDialog extends DiskoDialog
 	{
 		gbc.gridheight = Math.max(1, numRows);
 		gbc.gridx = column + 1;
-		m_contentsPanel.add(component, gbc);
+		JPanel panel = (JPanel)m_contentsPanel.getBodyComponent();
+		panel.add(component, gbc);
 
 		JLabel label = new JLabel(labelText);
 		gbc.gridx = column;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
-		m_contentsPanel.add(label, gbc);
+		panel.add(label, gbc);
 
 		gbc.gridy += numRows;
 	}

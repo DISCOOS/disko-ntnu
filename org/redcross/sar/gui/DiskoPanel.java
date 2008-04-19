@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,14 +27,17 @@ import org.redcross.sar.app.Utils;
 public class DiskoPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
+
+	private Color m_borderColor = Color.GRAY;
 	
-	private JPanel m_titlePanel = null;
+	private JPanel m_headerPanel = null;
+	private JPanel m_captionPanel = null;
 	private JLabel m_iconLabel = null;
 	private JLabel m_captionLabel = null;
 	private DiskoButtons m_buttons = null;
 	private JScrollPane m_scrollPane = null;
 
-	private Component m_content = null;
+	private Component m_bodyComponent = null;
 	
 	private Map<String,ActionEvent> m_actions = null;
 	private ArrayList<ActionListener> m_listeners = null;
@@ -51,9 +53,11 @@ public class DiskoPanel extends JPanel {
 		// initialize GUI
 		initialize();
 		// set caption
-		setCaptionText(caption);
+		this.setCaptionText(caption);
 		// set caption heigth
-		setCaptionHeight();
+		this.setCaptionHeight();
+		// set caption color
+		this.setCaptionColor(Color.WHITE,Color.LIGHT_GRAY);
 	}
 	
 	/**
@@ -61,9 +65,11 @@ public class DiskoPanel extends JPanel {
 	 * 	
 	 */
 	private void initialize() {
+		// initialize body component
+		setBodyComponent(new JPanel());
+		// prepare this
 		this.setLayout(new BorderLayout());		
-		this.setBorder(new CustomBorder(1,1,1,1,Color.GRAY));
-		this.add(getTitlePanel(), BorderLayout.NORTH);
+		this.add(getHeaderPanel(), BorderLayout.NORTH);
 		this.add(getScrollPane(), BorderLayout.CENTER);
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
@@ -81,7 +87,7 @@ public class DiskoPanel extends JPanel {
 				setFixedSize();	
 			}			
 		});		
-
+		this.setBorderColor(m_borderColor);
 	}
 	
 	/**
@@ -89,27 +95,39 @@ public class DiskoPanel extends JPanel {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getTitlePanel() {
-		if (m_titlePanel == null) {
+	private JPanel getHeaderPanel() {
+		if (m_headerPanel == null) {
+			try {
+				m_headerPanel = new JPanel();
+				m_headerPanel.setOpaque(true);
+				m_headerPanel.setBorder(new CustomBorder(0,0,0,1,Color.GRAY));
+				m_headerPanel.setLayout(new BorderLayout());
+				m_headerPanel.add(getCaptionPanel(),BorderLayout.CENTER);
+				m_headerPanel.add(getButtonsPanel(),BorderLayout.EAST);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return m_headerPanel;
+	}
+	
+	private JPanel getCaptionPanel() {
+		if (m_captionPanel == null) {
 			try {
 				FlowLayout fl = new FlowLayout();
 				fl.setAlignment(FlowLayout.LEFT);
 				fl.setHgap(5);
 				fl.setVgap(0);
-				JPanel labels = new JPanel();
-				labels.setLayout(fl);
-				labels.add(getIconLabel(),null);
-				labels.add(getCaptionLabel(),null);
-				m_titlePanel = new JPanel();
-				m_titlePanel.setBorder(new CustomBorder(0,0,0,1,Color.GRAY));
-				m_titlePanel.setLayout(new BorderLayout());
-				m_titlePanel.add(labels,BorderLayout.CENTER);
-				m_titlePanel.add(getButtons(),BorderLayout.EAST);
+				m_captionPanel = new JPanel();
+				m_captionPanel.setOpaque(false);
+				m_captionPanel.setLayout(fl);
+				m_captionPanel.add(getIconLabel(),null);
+				m_captionPanel.add(getCaptionLabel(),null);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return m_titlePanel;
+		return m_captionPanel;		
 	}
 	
 	/**
@@ -127,16 +145,19 @@ public class DiskoPanel extends JPanel {
 	 */
 	public void setCaptionIcon(Icon icon) {
 		getIconLabel().setIcon(icon);
-		getIconLabel().setVisible(icon!=null);
+		setCaptionVisible();
 		setCaptionHeight();
 	}	
 	
 	private void setCaptionHeight() {
 		Icon icon = getCaptionIcon();
 		int	w = icon!=null ? 
-				Math.max(getWidth()-getButtons().getWidth()-icon.getIconWidth()-50,25) : 
-				Math.max(getWidth()-getButtons().getWidth(),25);
-		Utils.setFixedSize(getCaptionLabel(),w,25);
+				Math.max(getWidth()-getButtonsPanel().getWidth()-icon.getIconWidth()-50,25) : 
+				Math.max(getWidth()-getButtonsPanel().getWidth(),25);
+		int	h = icon!=null ? 
+				Math.max(Math.max(Math.max(getCaptionPanel().getHeight(),getButtonsPanel().getHeight()),icon.getIconWidth()),25) : 
+				Math.max(Math.max(getCaptionPanel().getHeight(),getButtonsPanel().getHeight()),25);
+		Utils.setFixedSize(getCaptionLabel(),w,h);
 	}
 
 	
@@ -159,11 +180,9 @@ public class DiskoPanel extends JPanel {
 	}	
 	
 	private void setCaptionVisible() {
-		boolean isVisible = getCaptionIcon() !=null || 
-			getCaptionText() !=null && getCaptionText().length()>0;
-			
-		getIconLabel().setVisible(isVisible);
-		getCaptionLabel().setVisible(isVisible);
+		getIconLabel().setVisible(getCaptionIcon() !=null);
+		getCaptionLabel().setVisible(getCaptionText() !=null 
+				&& getCaptionText().length()>0);
 	}
 	
 	/**
@@ -171,21 +190,29 @@ public class DiskoPanel extends JPanel {
 	 *
 	 */
 	public void setBorderColor(Color color) {
+		m_borderColor = color;
 		this.setBorder(new CustomBorder(1,1,1,1,color));
-		getTitlePanel().setBorder(new CustomBorder(0,0,0,1,color));
+		getHeaderPanel().setBorder(m_bodyComponent!=null ? new CustomBorder(0,0,0,1,color) : null);
 	}	
 	
+	public Color getBorderColor() {
+		return m_borderColor;
+	}
+
+	
 	/**
-	 * This method sets the border color
+	 * This method sets the caption colors
 	 *
 	 */
-	public void setTitleColor(Color background, Color foreground) {
-		getIconLabel().setBackground(background);
+	public void setCaptionColor(Color foreground,Color background) {
 		getIconLabel().setForeground(foreground);
+		getIconLabel().setBackground(background);
+		getButtonsPanel().setForeground(foreground);
+		getButtonsPanel().setBackground(background);
+		getCaptionLabel().setForeground(foreground);
 		getCaptionLabel().setBackground(background);
-		getCaptionLabel().setForeground(background);
-		getTitlePanel().setBackground(background);
-		getTitlePanel().setForeground(foreground);
+		getHeaderPanel().setForeground(foreground);
+		getHeaderPanel().setBackground(background);
 	}	
 		
 	/**
@@ -217,14 +244,11 @@ public class DiskoPanel extends JPanel {
 	 *
 	 * @return javax.swing.JButton
 	 */
-	public DiskoButtons getButtons() {
+	public DiskoButtons getButtonsPanel() {
 		if (m_buttons == null) {
 			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setHgap(5);
-				fl.setVgap(5);
-				fl.setAlignment(FlowLayout.RIGHT);
 				m_buttons = new DiskoButtons(FlowLayout.RIGHT);
+				m_buttons.setOpaque(false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -234,7 +258,7 @@ public class DiskoPanel extends JPanel {
 	
 	private JScrollPane getScrollPane() {
 		if(m_scrollPane==null) {
-			m_scrollPane = new JScrollPane();
+			m_scrollPane = new JScrollPane(getBodyComponent());
 			m_scrollPane.setBorder(null);
 			m_scrollPane.setOpaque(true);
 		}
@@ -264,51 +288,53 @@ public class DiskoPanel extends JPanel {
 	
 	public void cancel() {}
 	
-	public Component getContent() {
-		return m_content;
+	public Component getBodyComponent() {
+		return m_bodyComponent;
 	}
 	
-	public void setContent(Component content) {
+	public void setBodyComponent(Component body) {
 		// update viewport
-		getScrollPane().setViewportView(content);
+		getScrollPane().setViewportView(body);
 		// update hool
-		m_content = content;
+		m_bodyComponent = body;
+		// update borders
+		setBorderColor(m_borderColor);
 	}
 	
 	public AbstractButton addButton(AbstractButton button, String command) {
-		return getButtons().addButton(button,command);
+		return getButtonsPanel().addButton(button,command);
 	}
 	
 	public AbstractButton addButton(String command, String caption) {
-		return getButtons().addButton(command, caption);
+		return getButtonsPanel().addButton(command, caption);
 	}
 	
 	public void removeButton(String command) {
-		getButtons().removeButton(command);
+		getButtonsPanel().removeButton(command);
 	}
 	
 	public boolean containsButton(String command) {
-		return getButtons().containsButton(command);
+		return getButtonsPanel().containsButton(command);
 	}
 	
 	public AbstractButton getButton(String command) {
-		return getButtons().getButton(command);
+		return getButtonsPanel().getButton(command);
 	}
 	
 	public boolean isButtonVisible(String command) {
-		return getButtons().isButtonVisible(command);
+		return getButtonsPanel().isButtonVisible(command);
 	}
 	
 	public void setButtonVisible(String command, boolean isVisible) {
-		getButtons().setButtonVisible(command,isVisible);
+		getButtonsPanel().setButtonVisible(command,isVisible);
 	}
 	
 	public boolean isButtonEnabled(String command) {
-		return getButtons().isButtonEnabled(command);
+		return getButtonsPanel().isButtonEnabled(command);
 	}
 	
 	public void setButtonEnabled(String command, boolean isEnabled) {
-		getButtons().setButtonEnabled(command,isEnabled);
+		getButtonsPanel().setButtonEnabled(command,isEnabled);
 	}
 	
 	public void addAction(String command) {
@@ -321,16 +347,16 @@ public class DiskoPanel extends JPanel {
 	
 	public void addActionListener(ActionListener listener) {
 		m_listeners.add(listener);
-		getButtons().addActionListener(listener);
+		getButtonsPanel().addActionListener(listener);
 	}
 	
 	public void removeActionListener(ActionListener listener) {
 		m_listeners.remove(listener);
-		getButtons().removeActionListener(listener);
+		getButtonsPanel().removeActionListener(listener);
 	}
 	
 	public boolean doAction(String command) {
-		if(!getButtons().doAction(command)) {
+		if(!getButtonsPanel().doAction(command)) {
 			if(m_actions.containsKey(command)) {
 				ActionEvent e = m_actions.get(command);
 				for(ActionListener it: m_listeners) {

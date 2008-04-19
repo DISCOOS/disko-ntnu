@@ -2,7 +2,6 @@ package org.redcross.sar.gui;
 
 import java.awt.Frame;
 
-import javax.swing.BorderFactory;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JDialog;
@@ -10,12 +9,11 @@ import javax.swing.JRootPane;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.JButton;
-import javax.swing.border.BevelBorder;
 import javax.swing.text.BadLocationException;
 
 public class NumPadDialog extends JDialog {
 
-	private JPanel componentPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
+	private DiskoPanel componentPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
 	private static final long serialVersionUID = 1L;
 	private JButton oneButton = null;
 	private JButton twoButton = null;
@@ -80,22 +78,22 @@ public class NumPadDialog extends JDialog {
 			GridLayout gridLayout = new GridLayout();
 			gridLayout.setRows(4);
 			gridLayout.setColumns(3);
-			componentPanel = new JPanel();
-			componentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-			componentPanel.setLayout(gridLayout);		
-			componentPanel.setSize(new Dimension(215, 214));
-			componentPanel.add(getOneButton(), null);
-			componentPanel.add(getTwoButton(), null);
-			componentPanel.add(getThreeButton(), null);
-			componentPanel.add(getFourButton(), null);
-			componentPanel.add(getFiveButton(), null);
-			componentPanel.add(getSixButton(), null);
-			componentPanel.add(getSevenjButton(), null);
-			componentPanel.add(getEightButton(), null);
-			componentPanel.add(getNineButton(), null);
-			componentPanel.add(getZeroButton(), null);
-			componentPanel.add(getDelButton(), null);
-			componentPanel.add(getOkButton(), null);
+			componentPanel = new DiskoPanel();
+			JPanel panel = (JPanel)componentPanel.getBodyComponent();
+			panel.setLayout(gridLayout);		
+			panel.setSize(new Dimension(215, 214));
+			panel.add(getOneButton(), null);
+			panel.add(getTwoButton(), null);
+			panel.add(getThreeButton(), null);
+			panel.add(getFourButton(), null);
+			panel.add(getFiveButton(), null);
+			panel.add(getSixButton(), null);
+			panel.add(getSevenjButton(), null);
+			panel.add(getEightButton(), null);
+			panel.add(getNineButton(), null);
+			panel.add(getZeroButton(), null);
+			panel.add(getDelButton(), null);
+			panel.add(getOkButton(), null);
 		}
 		return componentPanel;
 	}

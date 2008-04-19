@@ -16,6 +16,7 @@ import javax.swing.border.BevelBorder;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -27,7 +28,7 @@ public class DraftListDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoWpModule wp = null;
-	private JPanel contentPanel = null;
+	private DiskoPanel contentPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton cancelButton = null;
 	private JButton applyButton = null;
@@ -56,7 +57,7 @@ public class DraftListDialog extends DiskoDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(593, 600));
+            this.setPreferredSize(new Dimension(600, 600));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}
@@ -123,11 +124,11 @@ public class DraftListDialog extends DiskoDialog {
 	private JPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new JPanel();
-				contentPanel.setLayout(new BorderLayout());
-				contentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
-				contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				contentPanel.add(getTableScrollPane(), BorderLayout.CENTER);
+				contentPanel = new DiskoPanel("Endre status på oppdrag");
+				JPanel panel = (JPanel)contentPanel.getBodyComponent();
+				panel.setLayout(new BorderLayout());
+				panel.add(getButtonPanel(), BorderLayout.SOUTH);
+				panel.add(getTableScrollPane(), BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

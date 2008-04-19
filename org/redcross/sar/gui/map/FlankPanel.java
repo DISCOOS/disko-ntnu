@@ -18,13 +18,14 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
 import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.ScaleBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.FlankTool;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
-public class FlankPanel extends JPanel {
+public class FlankPanel extends DiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -51,16 +52,7 @@ public class FlankPanel extends JPanel {
 	 * 
 	 */
 	private void initialize() {
-		try {
-			this.setLayout(new BorderLayout());
-			this.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-			this.add(getCenterPanel(), BorderLayout.CENTER);
-			//this.add(getNorthPanel(), BorderLayout.NORTH);
-			//this.add(getSouthPanel(), BorderLayout.SOUTH);
-		}
-		catch (java.lang.Throwable e) {
-			//  Do Something
-		}
+		this.setBodyComponent(getCenterPanel());
 	}
 	
 	public void onLoad(IDiskoMap diskoMap) throws IOException {

@@ -184,7 +184,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 			try {
 				
 				// get point
-				Position p = panel.getPOIField().getPosition();
+				Position p = panel.getGotoPanel().getPositionField().getPosition();
 							
 				// add or move poi?
 				if(p!=null) {

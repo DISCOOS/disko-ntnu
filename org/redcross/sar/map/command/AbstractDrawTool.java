@@ -1284,8 +1284,11 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						area.addAreaGeodata((IRouteIf)msoObject);
 					}
 					else {
+						// create new route
+						Route route = MapUtil.getMsoRoute(polyline);
+						route.setLayout(getLayout(true));
 						// replace current route with new route (update)
-						((IRouteIf)msoObject).setGeodata(MapUtil.getMsoRoute(polyline));
+						((IRouteIf)msoObject).setGeodata(route);
 					}
 				}
 				else {

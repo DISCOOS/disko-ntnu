@@ -114,7 +114,7 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 						setVisible(false);						
 					}					
 				});
-				contentPanel.setContent(getPriorityList());
+				contentPanel.setBodyComponent(getPriorityList());
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

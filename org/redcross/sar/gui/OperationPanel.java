@@ -33,7 +33,7 @@ public class OperationPanel extends JPanel {
 	private JPanel getPanel() {
 		if(m_panel == null) {
 			m_panel = new DiskoPanel();
-			m_panel.setContent(getList());
+			m_panel.setBodyComponent(getList());
 			m_panel.setCaptionText("Velg operasjon");
 			Utils.setFixedSize(m_panel, 400, 300);
 		}

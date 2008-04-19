@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
@@ -43,7 +44,7 @@ import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 
-public class ElementPanel extends JPanel {
+public class ElementPanel extends DiskoPanel {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -86,6 +87,9 @@ public class ElementPanel extends JPanel {
 	private List<IMsoObjectIf> parts = null;
 	
 	public ElementPanel() {
+
+		// set caption
+		super("Elementer");
 		
 		// prepare
 		this.msoModel = Utils.getApp().getMsoModel();
@@ -102,9 +106,7 @@ public class ElementPanel extends JPanel {
 	}
 
 	private void initialize() {
-		BorderLayout bl = new BorderLayout();
-		setLayout(bl);
-		add(getListsPanel(), BorderLayout.CENTER);		
+		setBodyComponent(getListsPanel());		
 	}
 	
 	/**
