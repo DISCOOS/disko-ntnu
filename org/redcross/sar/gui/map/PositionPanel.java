@@ -3,6 +3,7 @@ package org.redcross.sar.gui.map;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -11,13 +12,11 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
@@ -41,11 +40,11 @@ import com.borland.jbcl.layout.VerticalFlowLayout;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-public class PositionPanel extends JPanel implements IMsoUpdateListenerIf, 
-							IMsoLayerEventListener {
+public class PositionPanel extends JPanel implements 
+					IMsoUpdateListenerIf, IMsoLayerEventListener,
+					IPropertyPanel {
 
 	private static final long serialVersionUID = 1L;
-	private IDiskoApplication app = null;
 	private PositionTool tool = null;
 	private IMsoModelIf msoModel;
 	private JList unitList = null;
@@ -64,13 +63,12 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 	public PositionPanel(PositionTool tool, boolean isVertical) {
 		
 		// prepare
-		this.app = Utils.getApp();
 		this.tool = tool;
-		this.msoModel = app.getMsoModel();
+		this.msoModel = Utils.getApp().getMsoModel();
 		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 		
 		// add listeners
-		app.getMsoModel().getEventManager().addClientUpdateListener(this);
+		this.msoModel.getEventManager().addClientUpdateListener(this);
 		
 		// set layout information
 		this.isVertical = isVertical;
@@ -97,6 +95,8 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 				vfl.setAlignment(VerticalFlowLayout.LEFT);
 				vfl.setHgap(0);
 				vfl.setVgap(5);
+				vfl.setVerticalFill(true);
+				vfl.setHorizontalFill(true);
 				this.setPreferredSize(new Dimension(200,450));
 				this.setLayout(vfl);
 				this.add(getNorthPanel());
@@ -124,10 +124,7 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 				// revert
 				setCurrentPosition(getCurrentPosition());
 			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(app.getFrame(),
-						"Ugyldig koordinat format", null, 
-						JOptionPane.WARNING_MESSAGE);
-				ex.printStackTrace();
+				// consume any exceptions
 			}
 
 		} else {
@@ -144,19 +141,15 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 		try {
 			point = getGotoPanel().getPositionField().getPoint();
 		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(app.getFrame(),
-					"Ugyldig format. Sjekk koordinater og prøv igjen", null, 
-					JOptionPane.WARNING_MESSAGE);
-			ex.printStackTrace();
+			Utils.showWarning("Ugyldig format. Sjekk koordinater og prøv igjen");
 		}
 		// add or move poi?
 		if (tool.getCurrentUnit() == null) {
 			Utils.showWarning("Du må først velge en enhet");
 		} else {
 			tool.setPositionAt(point);
-			// apply change?
-			if(tool.isBuffered())
-				tool.apply();
+			// forward
+			tool.apply();
 		}		
 	}
 	
@@ -363,6 +356,8 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 			vfl.setAlignment(VerticalFlowLayout.LEFT);
 			vfl.setHgap(0);
 			vfl.setVgap(5);
+			vfl.setVerticalFill(true);
+			vfl.setHorizontalFill(true);
 			// set flow layout
 			coordPanel.setLayout(vfl); 
 			// add components
@@ -544,5 +539,20 @@ public class PositionPanel extends JPanel implements IMsoUpdateListenerIf,
 		else {
 			reset();
 		}
+	}
+
+	public void addActionListener(ActionListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeActionListener(ActionListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void update() {
+		// TODO Auto-generated method stub
+		
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

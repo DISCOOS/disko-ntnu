@@ -55,7 +55,7 @@ public class UnitTypeDialog extends DiskoDialog
 
 	private void initialize(JComponent parentComponent)
 	{
-		this.setLocationRelativeTo(parentComponent, DiskoDialog.POS_CENTER, true);
+		this.setLocationRelativeTo(parentComponent, DiskoDialog.POS_CENTER, true, true);
 		this.setPreferredSize(new Dimension(400, 500));
 		m_contentsPanel = new JPanel();
 		m_contentsPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
@@ -136,7 +136,7 @@ public class UnitTypeDialog extends DiskoDialog
 		{
 			UnitType type = (UnitType)value;
 
-			ImageIcon icon = Utils.getIcon(type,"48x48");
+			ImageIcon icon = Utils.getEnumIcon(type,"48x48");
 			this.setIcon(icon);
 
 			String text = Internationalization.translate(type);

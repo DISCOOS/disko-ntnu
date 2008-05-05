@@ -9,22 +9,50 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.IMsoListIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IPOIIf;
+import org.redcross.sar.mso.data.IPOIListIf;
+import org.redcross.sar.mso.data.IRouteIf;
+import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.util.mso.GeoPos;
+import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.Track;
 
+import com.esri.arcgis.carto.CompositeGraphicsLayer;
+import com.esri.arcgis.carto.ICompositeGraphicsLayer;
+import com.esri.arcgis.carto.IElement;
 import com.esri.arcgis.carto.IIdentify;
+import com.esri.arcgis.carto.ILayer;
+import com.esri.arcgis.carto.IMap;
+import com.esri.arcgis.carto.IPictureElement3;
 import com.esri.arcgis.carto.IRowIdentifyObjectProxy;
+import com.esri.arcgis.carto.SymbolBackground;
+import com.esri.arcgis.carto.SymbolBorder;
 import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
+import com.esri.arcgis.display.IDisplay;
+import com.esri.arcgis.display.IFillSymbol;
+import com.esri.arcgis.display.ILineSymbol;
+import com.esri.arcgis.display.ISymbol;
+import com.esri.arcgis.display.RgbColor;
+import com.esri.arcgis.display.SimpleFillSymbol;
+import com.esri.arcgis.display.SimpleLineSymbol;
+import com.esri.arcgis.display.esriScreenCache;
+import com.esri.arcgis.display.esriSimpleFillStyle;
+import com.esri.arcgis.display.esriSimpleLineStyle;
 import com.esri.arcgis.geodatabase.IFeatureClass;
 import com.esri.arcgis.geodatabase.IFeatureProxy;
 import com.esri.arcgis.geodatabase.Workspace;
 import com.esri.arcgis.geometry.Envelope;
+import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeographicCoordinateSystem;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.ISpatialReferenceFactory2;
 import com.esri.arcgis.geometry.Point;
@@ -82,7 +110,19 @@ public class MapUtil {
 	public static IEnvelope expand(double ratio, IEnvelope env) 
 		throws IOException, AutomationException {
 		env.expand(ratio, ratio, true);
-		return env;
+		return env.getEnvelope();
+	}
+	
+	public static IEnvelope expand(double x, double y, boolean isRatio, IEnvelope env) 
+		throws IOException, AutomationException {
+		env.expand(x, y, isRatio);
+		return env.getEnvelope();
+	}
+	
+	public static IEnvelope offset(double x, double y, IEnvelope env) 
+		throws IOException, AutomationException {
+		env.offset(x, y);
+		return env.getEnvelope();
 	}
 	
 	public static IPoint getCenter(IEnvelope env) 
@@ -111,11 +151,11 @@ public class MapUtil {
 		// round up to nearest long value
 		long c = Math.round(coord);
 		// get length of coordinate
-		int length = Long.toString(c).length();
+		//int length = Long.toString(c).length();
 		// limit presision to [1,max]
 		presision = Math.max(1,Math.min(max, presision));
 		// limit maximum on coordinate length
-		max = Math.min(max, length);
+		//max = Math.min(max, length);
 		// get minimum of limited max and presision
 		int min = Math.max(1,Math.min(max, presision));
 		// devide on presision
@@ -236,6 +276,57 @@ public class MapUtil {
 		}
 		return msoPolygon;
 	}
+
+	public static GeometryBag getEsriGeometryBag(IPOIListIf msoList, ISpatialReference srs) 
+		throws IOException, AutomationException {
+        if (msoList != null && msoList.size() > 0) {        	
+			GeometryBag geomBag = new GeometryBag();
+			geomBag.setSpatialReferenceByRef(srs);
+			for(IPOIIf poi : msoList.getItems()) {
+				// get object
+				IGeometry geo = getEsriPoint(poi.getPosition(), srs);					
+				// add?
+				if(geo!=null)
+					geomBag.addGeometry(geo, null, null);
+			}
+			return geomBag;
+		}
+        return null;		
+	}
+	
+	public static GeometryBag getEsriGeometryBag(IMsoListIf<IMsoObjectIf> msoList, 
+			MsoClassCode code, ISpatialReference srs) 
+		throws IOException, AutomationException {
+        if (msoList != null && msoList.size() > 0) {        	
+			GeometryBag geomBag = new GeometryBag();
+			geomBag.setSpatialReferenceByRef(srs);
+			for(IMsoObjectIf mso : msoList.getItems()) {
+				// valid class type?
+				if (code == null || mso.getMsoClassCode().equals(code)) {
+					// initialize
+					IGeometry geo = null;
+					// parse
+					if(mso instanceof IRouteIf) {
+						// get geodata
+						IGeodataIf geodata = ((IRouteIf)mso).getGeodata();
+						// convert to a polyline
+						geo = getEsriPolyline((Route)geodata, srs);
+					}
+					else if(mso instanceof ITrackIf) {
+						// get geodata
+						IGeodataIf geodata = ((ITrackIf)mso).getGeodata();
+						// convert to a polyline
+						//geo = getEsriPolyline((Track)geodata, srs);
+					}
+					// add?
+					if(geo!=null) 
+						geomBag.addGeometry(geo, null, null);
+				}					
+			}
+			return geomBag;
+		}
+        return null;
+	}
 	
 	public static Polygon getEsriPolygon(Route route, ISpatialReference srs) 
 			throws IOException, AutomationException {
@@ -291,6 +382,7 @@ public class MapUtil {
 	public static Polyline getPolyline(Polygon polygon) 
 			throws IOException, AutomationException {
 		Polyline polyline = new Polyline();
+		polyline.setSpatialReferenceByRef(polygon.getSpatialReference());
 		for (int i = 0; i < polygon.getPointCount(); i++) {
 			polygon.addPoint(polygon.getPoint(i), null, null);
 		}
@@ -300,18 +392,37 @@ public class MapUtil {
 	
 	public static Polygon getPolygon(Polyline polyline) 
 		throws IOException, AutomationException {
+		// clone
+		polyline = (Polyline)polyline.esri_clone();
 		// closing
 		polyline.addPoint(polyline.getFromPoint(), null, null);
+		// create polygon
 		Polygon polygon = new Polygon();
+		polygon.setSpatialReferenceByRef(polyline.getSpatialReference());
 		for (int i = 0; i < polyline.getPointCount(); i++) {
 			polygon.addPoint(polyline.getPoint(i), null, null);
 		}
-		polygon.simplify();
+		//polygon.simplify();
 		return polygon;
-}
+	}
+	
+	public static Polyline getPolyline(IEnvelope e) 
+		throws IOException, AutomationException {
+		// create polygon
+		Polyline polyline = new Polyline();
+		polyline.setSpatialReferenceByRef(e.getSpatialReference());
+		polyline.addPoint(e.getUpperLeft(), null, null);
+		polyline.addPoint(e.getUpperRight(), null, null);
+		polyline.addPoint(e.getLowerRight(), null, null);
+		polyline.addPoint(e.getLowerLeft(), null, null);		
+		polyline.addPoint(e.getUpperLeft(), null, null);
+		return polyline;
+	}
+	
 	public static IEnvelope getEnvelope(IPoint p, double size) 
 			throws IOException, AutomationException {
 		IEnvelope env = new Envelope();
+		env.setSpatialReferenceByRef(p.getSpatialReference());
 		double xmin = p.getX()-size/2;
 		double ymin = p.getY()-size/2;
 		double xmax = p.getX()+size/2;
@@ -390,7 +501,10 @@ public class MapUtil {
 	
 	public static String getMGRSfromPosition(Position pos) 
 		throws Exception {
-		return getMGRSfromPosition(pos.getPosition());
+		if(pos!=null)
+			return getMGRSfromPosition(pos.getPosition());
+		else
+			return null;
 	}	
 
 	public static String getUTMfromPosition(Position pos) 
@@ -851,5 +965,279 @@ public class MapUtil {
 			e.printStackTrace();
 		}					
 	}
+	
+	public static IPoint createPoint() {
+		try {
+			return createPoint(0,0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
+	public static IPoint createPoint(IPoint p) {
+		try {
+			return createPoint(p.getX(), p.getY());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
+	
+	public static IPoint createPoint(double x, double y) {
+		try {
+			// initialize group geometry
+			IPoint p = new Point();
+			p.setSpatialReferenceByRef(getGeographicCS());
+			p.setX(x);
+			p.setY(y);
+			return p;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
+	public static IEnvelope createEnvelope() {
+		try {
+			// create envelope
+			return getEnvelope(createPoint(),0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
+	public static IEnvelope createEnvelope(IPoint p) {
+		try {
+			// create envelope
+			return getEnvelope(p,0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+
+	public static IEnvelope getElementBounds(IDisplay display, IElement element) 
+		throws UnknownHostException, IOException {
+		// initialize
+		IEnvelope e = new Envelope();
+		// get hdc flag
+		boolean bFlag = display.getHDC()==0;
+		// get default hdc?
+		if(bFlag)
+			display.startDrawing(0,(short) esriScreenCache.esriNoScreenCache);
+		// query
+		element.queryBounds(display, e);
+		// finished with hdc?
+		if(bFlag)
+			display.finishDrawing();
+		// finished
+		return e;
+	}
+	
+	public static IEnvelope getSymbolBounds(IDisplay display, 
+			ISymbol symbol, IGeometry geometry) throws UnknownHostException, IOException {
+		// initialize
+		IPolygon b = new Polygon();
+		// get hdc flag
+		boolean bFlag = display.getHDC()==0;
+		// get default hdc?
+		if(bFlag)
+			display.startDrawing(0,(short) esriScreenCache.esriNoScreenCache);
+		// query
+		symbol.queryBoundary(display.getHDC(), display.getDisplayTransformation(), geometry, b);
+		// finished with hdc?
+		if(bFlag)
+			display.finishDrawing();
+		// finished
+		return (b!=null) ? b.getEnvelope() : null;
+	}
+	
+	public static IEnvelope getPictureBounds(IDisplay display, IElement element) throws AutomationException, IOException {
+		// valid picture element?
+		if(element instanceof IPictureElement3) {
+			// initialize
+			double[] w = {0};
+			double[] h = {0};
+			// get hdc flag
+			boolean bFlag = display.getHDC()==0;
+			// get default hdc?
+			if(bFlag) display.startDrawing(0,(short) esriScreenCache.esriNoScreenCache);
+			// forward using the IPictureElement3 interface
+			((IPictureElement3)element).queryIntrinsicSize(w, h);
+			// finished with hdc?
+			if(bFlag) display.finishDrawing();
+			// convert to display units
+			w[0] = display.getDisplayTransformation().fromPoints(w[0]);
+			h[0] = display.getDisplayTransformation().fromPoints(h[0]);
+			// initialize 
+			IPoint p = null;
+			// get geometry
+			IGeometry g = element.getGeometry();		
+			if(g!=null && !g.isEmpty()) 
+				p = getCenter(g.getEnvelope());
+			else 
+				p = MapUtil.createPoint();
+			// create envelope
+			IEnvelope e = createEnvelope(p);
+			// apply width and height
+			e.setWidth(w[0]);
+			e.setHeight(h[0]);
+			// center at pont
+			e.centerAt(p);
+			// finished
+			return e;
+		}
+		// failed
+		return null;
+	}
+	
+	public static RgbColor getRgbColor(int r, int g, int b) throws UnknownHostException, IOException {
+		
+		// create color
+		RgbColor color = new RgbColor();
+		color.setRed(r);
+		color.setGreen(g);
+		color.setBlue(b);
+		
+		// finished
+		return color;
+	}
+	
+	public static ILineSymbol getLineSymbol(int line) throws UnknownHostException, IOException {
+		
+		// finished
+		return getLineSymbol(128,128,128,line);
+		
+	}
+	
+	public static ILineSymbol getLineSymbol(int r, int g, int b, int line) throws UnknownHostException, IOException {
+
+		// finished
+		return getLineSymbol(getRgbColor(r,g,b),line);
+		
+	}
+	
+	public static ILineSymbol getLineSymbol(RgbColor color, int line) throws UnknownHostException, IOException {
+
+		// create outline symbol
+		SimpleLineSymbol symbol = new SimpleLineSymbol();
+		symbol.setColor(color);
+		symbol.setStyle(line);
+		
+		// finished
+		return symbol;
+		
+	}
+	
+	public static IFillSymbol getFillSymbol(int fill, int outline) throws UnknownHostException, IOException {
+		
+		// finished
+		return getFillSymbol(240,240,240,fill,outline);
+		
+	}
+	
+	public static IFillSymbol getFillSymbol(int r, int g, int b, int fill, int outline) throws UnknownHostException, IOException {
+		
+		// finished
+		return getFillSymbol(getRgbColor(r,g,b),fill,outline);
+		
+	}	
+	
+	public static IFillSymbol getFillSymbol(RgbColor color, int fill, int outline) throws UnknownHostException, IOException {
+		
+		// create fill symbol
+		SimpleFillSymbol  symbol = new SimpleFillSymbol();
+		symbol.setColor(color);
+		symbol.setStyle(fill);
+
+		// set outline symbol in fill symbol
+		symbol.setOutline(getLineSymbol(outline));		
+		
+		// finished
+		return symbol;
+		
+	}	
+	
+	public static SymbolBorder getSymbolBorder() throws UnknownHostException, IOException {
+		
+		// finished
+		return getSymbolBorder(esriSimpleLineStyle.esriSLSSolid);
+	}
+	
+	public static SymbolBorder getSymbolBorder(int style) throws UnknownHostException, IOException {
+		
+		// create border element
+		SymbolBorder symbol = new SymbolBorder();
+		symbol.setLineSymbol(getLineSymbol(style));
+		
+		// finished
+		return symbol;
+	}
+	
+	public static SymbolBorder getSymbolBorder(int r, int g, int b, int style) throws UnknownHostException, IOException {
+		
+		// create border element
+		SymbolBorder symbol = new SymbolBorder();
+		symbol.setLineSymbol(getLineSymbol(r,g,b,style));
+		
+		// finished
+		return symbol;
+	}
+	
+	public static SymbolBackground getSymbolBackground(double sx, double sy) throws UnknownHostException, IOException {
+		
+		// create background
+		SymbolBackground symbol = new SymbolBackground();
+		symbol.setFillSymbol(getFillSymbol(esriSimpleFillStyle.esriSFSSolid, esriSimpleLineStyle.esriSLSSolid));
+		symbol.setHorizontalSpacing(sx);
+		symbol.setVerticalSpacing(sy);
+		
+		// finished
+		return symbol;
+	}	
+
+	public static ICompositeGraphicsLayer createCompositeGraphicsLayer(IMap map, String name) throws AutomationException, IOException {
+
+		// has this layer already?
+		int count = map.getLayerCount();
+		for(int i=0;i<count;i++) {
+			ILayer l = map.getLayer(i);
+			if(l instanceof ICompositeGraphicsLayer) {
+				if(name.equalsIgnoreCase(map.getLayer(i).getName())) {
+					return (ICompositeGraphicsLayer)l;
+				}
+			}
+		}
+		
+		// not found, create and name the new graphics layer
+	    ICompositeGraphicsLayer pCGLayer = new CompositeGraphicsLayer();
+	    
+	    // cast to ILayer
+	    ILayer pLayer = (ILayer)pCGLayer;
+	    
+	    // ser name
+	    pLayer.setName(name);
+	    
+	    // make cache
+	    pLayer.setCached(true);
+	    
+	    // hide
+	    pLayer.setVisible(false);
+	    
+	    // add to map
+	    map.addLayer(pLayer);
+	    	    
+	    // return graphics layer
+	    return pCGLayer;
+
+	}	
 	
 }

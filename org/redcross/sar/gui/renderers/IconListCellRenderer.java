@@ -100,7 +100,7 @@ public class IconListCellRenderer extends JLabel implements ListCellRenderer {
 		}
 		else {
 			// get icon
-			icon = Utils.getIcon(e,catalog);
+			icon = Utils.getEnumIcon(e,catalog);
 			// found icon?
 			if(icon!=null) {
 				icons.put(e,icon);

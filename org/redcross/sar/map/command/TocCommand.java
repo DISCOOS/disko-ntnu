@@ -44,7 +44,7 @@ public class TocCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				TocDialog tocDialog = (TocDialog)dialog;
 				tocDialog.onLoad((IDiskoMap)obj);
-				tocDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, true);			
+				tocDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, true, true);			
 			}
 		}
 		catch (Exception e) {

@@ -1,17 +1,17 @@
 package org.redcross.sar.map.command;
 
 import javax.swing.AbstractButton;
-import javax.swing.JPanel;
 
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
-import com.esri.arcgis.systemUI.ICommand;
+import com.esri.arcgis.systemUI.ITool;
 
-public interface IDiskoTool extends ICommand {
+public interface IDiskoTool extends ITool {
 
 	public enum DiskoToolType {
 		DRAW_HOST_TOOL,
@@ -28,6 +28,11 @@ public interface IDiskoTool extends ICommand {
 		ERASE_TOOL
     }	
 	
+	/*===============================================
+	 * IDiskoTool methods
+	 *===============================================
+	 */
+	
 	public String getName();
 	
 	public DiskoToolType getType();
@@ -37,6 +42,8 @@ public interface IDiskoTool extends ICommand {
 	public IHostDiskoTool getHostTool();
 	
 	public void onCreate(Object obj);
+	
+	public boolean isActive();
 	
 	public boolean activate(boolean allow);
 	
@@ -75,18 +82,39 @@ public interface IDiskoTool extends ICommand {
 		
 	public void setShowDialog(boolean isShowDialog);
 	
-	public boolean setPropertyPanel(JPanel panel);
+	public boolean setPropertyPanel(IPropertyPanel panel);
 	
-	public JPanel getPropertyPanel();
+	public IPropertyPanel getPropertyPanel();
 	
-	public JPanel addPropertyPanel();
+	public IPropertyPanel addPropertyPanel();
 	
-	public boolean removePropertyPanel(JPanel panel);
+	public boolean removePropertyPanel(IPropertyPanel panel);
 	
 	public IDiskoToolState save();
 	
 	public boolean load(IDiskoToolState state);
 	
 	public interface IDiskoToolState {};
+	
+	/*===============================================
+	 * ICommand methods
+	 *===============================================
+	 */
+	
+	public String getCaption();
+
+	public String getCategory();
+
+	public int getHelpContextID();
+
+	public String getHelpFile();
+
+	public String getMessage();
+
+	public String getTooltip();
+
+	public boolean isChecked();
+
+	public boolean isEnabled();	
 	
 }

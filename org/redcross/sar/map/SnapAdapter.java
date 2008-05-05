@@ -8,12 +8,18 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.redcross.sar.gui.map.IDrawDialog;
+import javax.swing.SwingUtilities;
+
+import org.redcross.sar.gui.map.SnapDialog;
 import org.redcross.sar.map.index.IndexedGeometry;
+import org.redcross.sar.thread.AbstractDiskoWork;
+import org.redcross.sar.thread.DiskoWorkPool;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.IIdentify;
+import com.esri.arcgis.carto.esriViewDrawPhase;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
+import com.esri.arcgis.controls.IMapControlEvents2OnAfterDrawEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnFullExtentUpdatedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMapReplacedEvent;
@@ -28,11 +34,11 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public class SnappingAdapter {
+public class SnapAdapter {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final int SNAP_TOL_FACTOR = 200;
+	private static final int SNAP_TOL_FACTOR = 100;
 	
 	// flags
 	protected boolean isDirty = false;
@@ -48,21 +54,24 @@ public class SnappingAdapter {
 	private MapControlAdapter listener = null;
 	
 	// listeners
-	private ArrayList<SnappingListener> listeners = null;
+	private ArrayList<SnapListener> listeners = null;
 	
-	// registered map
+	// components
 	private DiskoMap map = null;
+	private SnapDialog snapDialog = null;
 	
 	// snapping
 	private IGeometry snapGeometry = null;
-	private List<DiskoMap> maps = null;
 	private List<IFeatureLayer> snapTo = null;
 	private List<IFeatureLayer> snappable = null;
 	
-	public SnappingAdapter() {
+	// control 
+	public int workCount = 0;
+	
+	public SnapAdapter() {
 		// prepare
 		this.listener = new MapControlAdapter();
-		this.listeners = new ArrayList<SnappingListener>();
+		this.listeners = new ArrayList<SnapListener>();
 		this.indexedGeometry = new IndexedGeometry();
 		try {
 			// create the search envelope
@@ -79,11 +88,11 @@ public class SnappingAdapter {
 		}
 	}
 	
-	public void addSnappingListener(SnappingListener listener) {
+	public void addSnapListener(SnapListener listener) {
 		listeners.add(listener);
 	}
 	
-	public void removeSnappingListener(SnappingListener listener) {
+	public void removeSnapListener(SnapListener listener) {
 		listeners.remove(listener);
 	}
 	
@@ -92,6 +101,10 @@ public class SnappingAdapter {
 	}
 	
 	public void register(DiskoMap map) throws IOException, AutomationException {
+		
+		// is not supporting this?
+		if(!map.isEditSupportInstalled()) return;
+		
 		// remove old listener?
 		if(this.map!=null) {
 			this.map.removeIMapControlEvents2Listener(listener);
@@ -104,7 +117,25 @@ public class SnappingAdapter {
 		isDirty = true;
 		// update
 		updateSnappable();
-		updateIndexing();
+		// forward
+		register(map.getSnapDialog());
+	}
+	
+	private void register(SnapDialog dialog) {
+		// unregister?
+		if(this.snapDialog!=null) {
+			this.snapDialog.getSnapPanel().setSnapAdapter(null);
+		}
+		// register?
+		if(dialog!=null)
+			dialog.getSnapPanel().setSnapAdapter(this);
+		// save dialog
+		this.snapDialog = dialog;
+		
+	}
+	
+	public SnapDialog getSnapDialog() {
+		return snapDialog;
 	}
 	
 	public void setSnapTolerance(double tolerance) throws IOException, AutomationException {
@@ -112,8 +143,8 @@ public class SnappingAdapter {
 		searchEnvelope.setWidth(tolerance);
 	}
 
-	public int getSnapTolerance() throws IOException {
-		return (int)searchEnvelope.getHeight();
+	public double getSnapTolerance() throws IOException {
+		return searchEnvelope.getHeight();
 	}
 	
 	public boolean isSnapReady() {
@@ -129,10 +160,10 @@ public class SnappingAdapter {
 	}
 	
 	public void setSnapToMode(boolean isSnapToMode) 
-	throws IOException, AutomationException {
+		throws IOException, AutomationException {
 		// set dirty flag
 		isDirty = this.isSnapToMode != isSnapToMode && isSnapToMode;
-		// update flag
+		// set flag
 		this.isSnapToMode = isSnapToMode;
 		// update indexing
 		updateIndexing();
@@ -196,7 +227,7 @@ public class SnappingAdapter {
 		return (Point)pline.returnNearestPoint(point, esriSegmentExtension.esriNoExtension);
 	}
 	
-	public List<IFeatureLayer> getSnappableLayers() {
+	public List<IFeatureLayer> getSnapableLayers() {
 		return snappable;		
 	}
 	
@@ -211,8 +242,8 @@ public class SnappingAdapter {
 		// valid?
 		if(snapTo!=null && this.snapTo!=null) {
 			// check if dirty
-			for(int i = 0;i<snapTo.size();i++) {
-				if(!this.snapTo.contains(snapTo.get(i))) {
+			for(int i = 0;i<this.snapTo.size();i++) {
+				if(!snapTo.contains(this.snapTo.get(i))) {
 					// set dirty
 					isDirty = true;
 					// finished
@@ -227,10 +258,11 @@ public class SnappingAdapter {
 			// forward
 			updateIndexing();
 			// notify
-			fireSnapToChange();
+			fireSnapToChanged();
 		}
 		
 		return snapTo!=null && this.snapTo==null;
+		
 	}
 	
 	public IndexedGeometry getIndexing() {
@@ -241,94 +273,237 @@ public class SnappingAdapter {
 		return snapGeometry;
 	}
 	
+	public void update(boolean force) {
+		
+		// update flag
+		isDirty = isDirty || snappable.size()==0 || force;
+		
+		// update?
+		try {
+			updateSnappable();
+			updateIndexing();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public double getMaxSnapScale() {
+		return map!=null ? map.getMaxSnapScale() : -1;
+	}
+	
+	public boolean isSnappingAllowed() {
+		try {
+			return map!=null ? map.isSnapAllowed() : false;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	private void updateSnappable() throws IOException, AutomationException {
-		// set snap tolerance of tool
-		setSnapTolerance(map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR);
-		// get available snappable layers from map and update draw dialg
+		// is snapping allowed?
+		if(map.isSnapAllowed()) {
+			// set snap tolerance of tool
+			setSnapTolerance(map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR);
+		}
+		// get available snappable layers from map
 		snappable = map.getSnappableLayers();	
 		// notify
-		fireSnappableChange();
+		fireSnapableChanged();
 	}
 
 	private void updateIndexing() throws IOException, AutomationException {
-		// is dirty?
-		if(isDirty) {
-			// is in mode and is dirty?
-			if(isSnapToMode) {
-				// indexed geometry and SnapTo available?
-				if (indexedGeometry != null && snapTo!=null) {
-					// any selected?
-					if(snapTo.size()>0) {
-						// get current extent
-						Envelope extent = (Envelope)map.getActiveView().getExtent();
-						// update indexing
-						indexedGeometry.update(extent, snapTo);
-					}				
-				}
+		// validate update
+		if(isDirty && isSnapToMode && isSnappingAllowed() && !isWorking()) {
+			// indexed geometry and SnapTo available?
+			if (indexedGeometry != null && snapTo!=null) {
+				// any selected?
+				if(snapTo.size()>0) {
+					// get current extent
+					Envelope extent = (Envelope)map.getActiveView().getExtent();
+					// schedule on work pool thread
+					try {
+						DiskoWorkPool.getInstance().schedule(new SnappingWork(extent,snapTo,true));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}				
 			}
 			// not dirty
 			isDirty = false;
 		}
 	}
 	
-	private void fireSnappableChange(){
+	private void fireSnapableChanged(){
 		for(int i=0;i<listeners.size();i++)
-			listeners.get(i).onSnappableChange();
+			listeners.get(i).onSnapableChanged();
 	}
 	
-	private void fireSnapToChange(){
+	private void fireSnapToChanged(){
 		for(int i=0;i<listeners.size();i++)
-			listeners.get(i).onSnapToChange();
+			listeners.get(i).onSnapToChanged();
 	}
 
+	private boolean isWorking() {
+		return (workCount>0);
+	}
+	
+	private int setIsWorking() {
+		workCount++;
+		return workCount; 
+	}
+	
+	private int setIsNotWorking() {
+		if(workCount>0) {
+			workCount--;
+		}
+		return workCount; 
+	}
+	
+	private void suspendUpdate() {
+		if(map!=null) {
+			try {
+				map.suspendNotify();
+				map.setSupressDrawing(true);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}		
+	}
+	
+	private void resumeUpdate() {
+		if(map!=null) {
+			try {
+				map.setSupressDrawing(false);
+				map.refreshMsoLayers();
+				map.resumeNotify();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}		
+	}
+	
+	/*=============================================================
+	 * Inner classes
+	 *============================================================= 
+	 */
+	
+	
 	/**
 	 * Class implementing the IMapControlEvents2Adapter intefaces
 	 * 
 	 * Is used to catch events that is used to draw the tool 
 	 * geometries on the map
 	 * 
-	 *
 	 */
 	class MapControlAdapter extends IMapControlEvents2Adapter {
-
 
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void onFullExtentUpdated(IMapControlEvents2OnFullExtentUpdatedEvent arg0) throws IOException, AutomationException {
-			// set dirty
-			isDirty = true;
+		public void onAfterDraw(IMapControlEvents2OnAfterDrawEvent e) throws IOException, AutomationException {
+			// forward
+			if(e.getViewDrawPhase()==esriViewDrawPhase.esriViewGraphics)
+				update(false);
+		}
+
+		@Override
+		public void onFullExtentUpdated(IMapControlEvents2OnFullExtentUpdatedEvent e) throws IOException, AutomationException {			
 			// update
-			updateSnappable();
-			updateIndexing();
+			update(true);
 		}
 		
 		@Override
-		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent arg0)
+		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent e)
 				throws IOException, AutomationException {
-			// set dirty
-			isDirty = true;
-			// update
-			updateSnappable();
-			updateIndexing();
-
+			// update?
+			update(true);
 		}
 
 		@Override
 		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent arg0)
 				throws IOException, AutomationException {
-			// set dirty
-			isDirty = true;
 			// update
-			updateSnappable();
-			updateIndexing();
+			update(true);
 		}
 		
 	}	
 	
-	public interface SnappingListener {
-		public void onSnappableChange();
-		public void onSnapToChange();
+	class SnappingWork extends AbstractDiskoWork<Void> {
+		
+		Envelope extent = null;
+		List<IFeatureLayer> snapTo = null;
+		
+		public SnappingWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
+			// forward
+			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
+					"Oppdaterer snapping buffer",100,notify);
+			// prepare
+			this.extent = extent;
+			this.snapTo = snapTo;			
+		}
+
+		@Override
+		public Void doWork() {
+			// update indexing
+			try {
+				indexedGeometry.update(extent, snapTo);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// finished
+			return null;
+		}
+
+		@Override
+		public void run() {
+			// set flag to prevent reentry
+			setIsWorking();
+			// suspend for faster execution¨
+			suspendUpdate();			
+			// forward
+			super.run();
+			// is on event dispatch thread?
+			if(SwingUtilities.isEventDispatchThread())
+				done();
+		}
+
+		/**
+		 * done 
+		 * 
+		 * Executed on the Event Dispatch Thread.
+		 * 
+		 */
+		@Override
+		public void done() {
+			try {
+				// resume update
+		        resumeUpdate();
+				// reset flag
+		        setIsNotWorking();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+	        // forward
+	        super.done();
+		}
+	}	
+	
+	/*=============================================================
+	 * Public interfaces
+	 *============================================================= 
+	 */
+	public interface SnapListener {
+		public void onSnapableChanged();
+		public void onSnapToChanged();
 	}
 	
 }

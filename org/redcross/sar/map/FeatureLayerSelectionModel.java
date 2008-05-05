@@ -63,7 +63,7 @@ public abstract class FeatureLayerSelectionModel {
 	 * @throws IOException
 	 * @throws AutomationException
 	 */
-	public void setlayerVisibility(boolean visible, int index) 
+	public void setLayerVisibility(boolean visible, int index) 
 		throws IOException, AutomationException{
 			//System.out.println("setLayerVisibility");
 			IFeatureLayer flayer = layers[index];			
@@ -92,7 +92,7 @@ public abstract class FeatureLayerSelectionModel {
 	 * @throws IOException
 	 * @throws AutomationException
 	 */
-	public void setlayerVisibility(boolean visible, int[] index) 
+	public void setLayerVisibility(boolean visible, int[] index) 
 		throws IOException, AutomationException{
 			//System.out.println("setLayerVisibility");
 			for (int i = 0; i < index.length; i++){

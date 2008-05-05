@@ -221,7 +221,6 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 	 *====================================================
 	 */
 
-
 	protected boolean setEnabled(boolean isEnabled) {
 		// enable?
 		if(isEnabled && !enabled) {

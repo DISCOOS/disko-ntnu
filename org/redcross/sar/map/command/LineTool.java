@@ -1,5 +1,8 @@
 package org.redcross.sar.map.command;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.ISegmentGraphCursor;
@@ -10,7 +13,8 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IDrawDialog;
+import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.LinePanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -18,11 +22,6 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import javax.swing.JPanel;
 
 /**
  * A custom line draw tool.
@@ -43,28 +42,30 @@ public class LineTool extends AbstractDrawTool {
 	/**
 	 * Constructs the LineTool
 	 */
-	public LineTool(IHostToolDialog dialog, boolean isPolygon) throws IOException {
+	public LineTool(IDrawDialog dialog, boolean isPolygon) throws IOException {
 		
 		// forward
-		super(true,(isPolygon ? DrawFeatureType.DRAW_FEATURE_POLYGON :
-			DrawFeatureType.DRAW_FEATURE_POLYLINE));
+		super(true,(isPolygon ? FeatureType.FEATURE_POLYGON :
+			FeatureType.FEATURE_POLYLINE));
 		
 		// prepare abstract class BasicTool
-		cursorPath = "cursors/crosshair.cur"; 
-		caption = "Polylinje"; 
+		caption = "Line " + Utils.getEnumText(featureType); 
 		category = "Commands"; 
-		message = "Tegner en linje mellom hvert valgte punkt"; 
+		message = "Tegner en linje mellom hvert punkt"; 
 		name = "CustomCommands_Ployline"; 
-		toolTip = "PolyLine"; 
+		toolTip = "Polylinje"; 
 		enabled = true;
+		
+		// enable snapping
+		isSnapping = true;
 		
 		// set tool type
 		type = DiskoToolType.LINE_TOOL;
 		
 		// map draw operation
-		onMouseDownAction = DrawActionType.DRAW_BEGIN;
-		onMouseMoveAction = DrawActionType.DRAW_CHANGE;
-		onDblClickAction = DrawActionType.DRAW_FINISH;
+		onMouseDownAction = DrawAction.ACTION_BEGIN;
+		onMouseMoveAction = DrawAction.ACTION_CHANGE;
+		onDblClickAction = DrawAction.ACTION_FINISH;
 		
 		// create last clicked point
 		p1 = new Point();
@@ -78,18 +79,50 @@ public class LineTool extends AbstractDrawTool {
 		this.dialog = (DiskoDialog)dialog;
 		
 		// registrate me in dialog
-		dialog.register((IDrawTool)this, propertyPanel);
+		dialog.register(this);
 		
 	}
 		
+	@Override
+	public void onCreate(Object obj) {
+
+		// forward
+		super.onCreate(obj);
+
+		// has map?
+		if(map!=null) {
+			
+			// get property panel
+			LinePanel panel = (LinePanel)propertyPanel;
+			
+			// release current?
+			if(snapAdapter!=null) {
+				// add listener
+				snapAdapter.removeSnapListener(panel);
+			}
+			
+			// get a snapping adapter from map
+			snapAdapter = map.getSnapAdapter();
+			
+			// register panel?
+			if(snapAdapter!=null) {
+				// add listener
+				snapAdapter.addSnapListener(panel);
+				// update panel
+				panel.onSnapToChanged();
+			}
+		}
+		
+	}
+	
 	@Override
 	public void setAttribute(Object value, String attribute) {
 		super.setAttribute(value, attribute);
 		if("DRAWPOLYGON".equalsIgnoreCase(attribute)) {
 			if((Boolean)value)
-				drawFeatureType=DrawFeatureType.DRAW_FEATURE_POLYGON;
+				featureType=FeatureType.FEATURE_POLYGON;
 			else
-				drawFeatureType=DrawFeatureType.DRAW_FEATURE_POLYLINE;
+				featureType=FeatureType.FEATURE_POLYLINE;
 			return;
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
@@ -101,7 +134,7 @@ public class LineTool extends AbstractDrawTool {
 	@Override
 	public Object getAttribute(String attribute) {
 		if("DRAWPOLYGON".equalsIgnoreCase(attribute)) {
-			return (drawFeatureType==DrawFeatureType.DRAW_FEATURE_POLYGON);
+			return (featureType==FeatureType.FEATURE_POLYGON);
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
 			return searchSubType;
@@ -141,15 +174,18 @@ public class LineTool extends AbstractDrawTool {
 		try {
 
 			// get screen-to-map transformation and try to snap
-			p2 = snapTo(transform(x,y));
-	
+			p2 = snapTo(toMapPoint(x,y));
+			
 			// initialize path geometry?
-			if (pathGeometry == null) {
-				pathGeometry = new Polyline();
-				pathGeometry.addPoint(p2, null, null);
-				rubberBand = new Polyline();
-				rubberBand.addPoint(p2, null, null);
-				rubberBand.addPoint(p2, null, null);
+			if (geoPath == null) {
+				geoPath = new Polyline();
+				geoPath.addPoint(p2, null, null);
+			}
+
+			// initialize rubber geometry?
+			if (geoRubber == null) {
+				geoRubber = new Polyline();
+				geoRubber.addPoint(p2, null, null);
 			}
 			
 			// update tool drawings
@@ -159,7 +195,7 @@ public class LineTool extends AbstractDrawTool {
 			p1 = p2;
 			
 			// update rubber band
-			rubberBand.updatePoint(0,p2);
+			geoRubber.updatePoint(0,p2);
 		
 			// success
 			return true;
@@ -176,12 +212,9 @@ public class LineTool extends AbstractDrawTool {
 		
 		try {
 		
-			// get screen-to-map transformation and try to snap
-			p = snapTo(transform(x,y));
-	
 			// update rubber band
-			if (rubberBand != null) {
-				rubberBand.updatePoint(1, p);
+			if (geoRubber != null) {
+				geoRubber.updatePoint(1, p);
 			}
 			
 			// finished
@@ -209,25 +242,12 @@ public class LineTool extends AbstractDrawTool {
 		return true;
 	}
 
-	@Override
-	public boolean onFinish(int button, int shift, int x, int y) {
-		try {
-			// reset tool
-			reset();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		// always return success
-		return true;
-	}	
-	
-	public JPanel addPropertyPanel() {
+	public IPropertyPanel addPropertyPanel() {
 		// create panel list?
 		if(panels==null)
-			panels = new ArrayList<JPanel>(1);			
+			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		JPanel panel = new LinePanel(Utils.getApp(),this,true);
+		IPropertyPanel panel = new LinePanel(this,true);		
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
@@ -235,11 +255,18 @@ public class LineTool extends AbstractDrawTool {
 		return null;
 	}
 	
-	private void reset() throws IOException {
+	public void reset() {
+		// forward
+		super.reset();
 		// reset point
-		p1 = new Point();
-		p1.setX(0);
-		p1.setY(0);
+		try {
+			p1 = new Point();
+			p1.setX(0);
+			p1.setY(0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void updateGeometry() throws IOException, AutomationException {
@@ -258,19 +285,19 @@ public class LineTool extends AbstractDrawTool {
 			snapTo(p1);
 			
 			// search polyline inside envelope
-			pline1 = (Polyline)snapping.getSnapGeometry();
-			pline2 = (Polyline)snapGeometry;
+			pline1 = (Polyline)snapAdapter.getSnapGeometry();
+			pline2 = (Polyline)geoSnap;
 			
 		}
 
 		// nothing to snap to?
 		if (pline1 == null || pline2 == null) {
 			// add point
-			pathGeometry.addPoint(p2, null, null);
+			geoPath.addPoint(p2, null, null);
 		}
 		else {
 			// densify rubberband, use vertices as input to segment graph
-			Polyline copy = (Polyline)rubberBand.esri_clone();
+			Polyline copy = (Polyline)geoRubber.esri_clone();
 			copy.densify(getSnapTolerance()/10, -1);
 			// greate a geometry bag to hold selected polylines
 			GeometryBag gb = new GeometryBag();
@@ -296,11 +323,11 @@ public class LineTool extends AbstractDrawTool {
 			if (trace != null && trace.getPointCount() > 0) {
 				// add tracepoints to path
 				for (int i = 0; i < trace.getPointCount(); i++ ) {
-					pathGeometry.addPoint(trace.getPoint(i), null, null);
+					geoPath.addPoint(trace.getPoint(i), null, null);
 				}
 			}
 			else {
-				pathGeometry.addPoint(p2, null, null);
+				geoPath.addPoint(p2, null, null);
 			}
 			// reset
 			segmentGraphCursor = null;

@@ -28,10 +28,10 @@ import java.util.Hashtable;
 public class RouteLayer extends AbstractMsoFeatureLayer {
 
 	private static final long serialVersionUID = 1L;
-	private static final double fontSize = 12;
-	private static final double fontOffset = 5;
-	private static final double lineWidth = 1.5;
-	private static final double referenceScale = 50000;
+	private static final double FONT_SIZE = 12;
+	private static final double FONT_OFFSET = 5;
+	private static final double LINE_WIDTH = 1.5;
+	private static final double REFERENCE_SCALE = 50000;
 	
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
@@ -73,14 +73,14 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			double scale = display.getDisplayTransformation().getScaleRatio();
 			
 			// get zoom ratio
-			double zoomRatio = java.lang.Math.min(1.0,referenceScale / scale);
+			double zoomRatio = java.lang.Math.min(1.0,REFERENCE_SCALE / scale);
 			
 			// get text zoom size and offset
-			double zoomFontSize = java.lang.Math.min(fontSize, fontSize*zoomRatio);
-			double zoomFontOffset = java.lang.Math.min(fontOffset, fontOffset*zoomRatio);
+			double zoomFontSize = java.lang.Math.min(FONT_SIZE, FONT_SIZE*zoomRatio);
+			double zoomFontOffset = java.lang.Math.min(FONT_OFFSET, FONT_OFFSET*zoomRatio);
 			
 			// get line zoom width
-			double zoomLineWidth = java.lang.Math.min(lineWidth, lineWidth*zoomRatio);
+			double zoomLineWidth = java.lang.Math.min(LINE_WIDTH, LINE_WIDTH*zoomRatio);
 			
 			// update
 			textSymbol.setSize(zoomFontSize);
@@ -238,7 +238,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			
 			SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
 			lineSymbol.setStyle(esriSimpleLineStyle.esriSLSDash);
-			lineSymbol.setWidth(lineWidth);
+			lineSymbol.setWidth(LINE_WIDTH);
 			lineSymbol.setColor(plannedColor);
 
 			symbols.put(ISearchIf.SearchSubType.LINE, lineSymbol);
@@ -253,7 +253,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			textSymbol.setYOffset(5);
 
 			defaultLineSymbol = new SimpleLineSymbol();
-			defaultLineSymbol.setWidth(lineWidth);
+			defaultLineSymbol.setWidth(LINE_WIDTH);
 			defaultLineSymbol.setColor(plannedColor);
 			
 		} catch (UnknownHostException e) {

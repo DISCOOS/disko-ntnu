@@ -2,8 +2,10 @@ package org.redcross.sar.app;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.image.BufferedImage;
 
 import java.io.File;
@@ -160,7 +162,7 @@ public class Utils {
 		return key;
 	}
 	
-	public static String getSymbolPath(Enum e) {
+	public static String getEnumSymbolPath(Enum e) {
 		if (e != null) {
 			String key = e.getClass().getSimpleName()+"."+e.name()+".symbol";
 			try {
@@ -173,7 +175,7 @@ public class Utils {
 		return null;
 	}
 	
-	public static BufferedImage getSymbol(Enum e) {
+	public static BufferedImage getEnumSymbol(Enum e) {
 		if (e != null) {
 			String key = e.getClass().getSimpleName()+"."+e.name()+".symbol";
 			return getImage(key);
@@ -181,7 +183,7 @@ public class Utils {
 		return null;
 	}
 	
-	public static ImageIcon getIcon(Enum e, String catalog) {
+	public static ImageIcon getEnumIcon(Enum e, String catalog) {
 		if (e != null) {
 			String key = e.getClass().getSimpleName()+"."+e.name()+".icon";
 			return getIcon(key,catalog);
@@ -189,7 +191,7 @@ public class Utils {
 		return null;
 	}
 
-	public static DiskoCustomIcon getIcon(Enum e, String catalog, Color color, float alfa) {
+	public static DiskoCustomIcon getEnumIcon(Enum e, String catalog, Color color, float alfa) {
 		if (e != null) {
 			String key = e.getClass().getSimpleName()+"."+e.name()+".icon";
 			return getIcon(key,catalog,color,alfa);
@@ -197,7 +199,7 @@ public class Utils {
 		return null;
 	}	
 
-	public static String getIconText(Enum e) {
+	public static String getEnumText(Enum e) {
 		if (e != null) {
 			try {
 				Properties props = getProperties();
@@ -373,5 +375,16 @@ public class Utils {
 		}
 		return list;
 	}
-		
+	
+	public static boolean inApp(Component c) {
+		Object[] windows = Window.getWindows();
+		for(int i=0;i<windows.length;i++) {
+			// is component descending from a window in this
+			// application
+			if(SwingUtilities.isDescendingFrom(c, (Component)windows[i]))
+				return true;
+		}
+		return false;
+	}
+	
 }

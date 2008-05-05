@@ -23,6 +23,7 @@ import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.POITool;
+import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -333,7 +334,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		}
 
 		// get task text
-		String text = String.format(match, Utils.getIconText(poi.getType()));
+		String text = String.format(match, Utils.getEnumText(poi.getType()));
 		
 		// any change?
 		isDirty = isDirty || (text!=null && !text.equals(task.getTaskText()));
@@ -391,7 +392,7 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		// get poi panel
 		POIPanel panel = getPOIPanel();
 		// get attributes (isUpdateMode,isNotAreaPoi,no owner,current poi)
-		Object[] attributes = {true,false,null,poi};
+		Object[] attributes = {DrawMode.MODE_REPLACE,false,null,poi};
 		// update layout
 		panel.setTypes(types);
 		panel.setButtonsVisible(false);
@@ -406,8 +407,10 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		// show tool
 		m_wpMessageLog.getApplication().getNavBar().setVisibleButtons(
 				Utils.getListOf(DiskoToolType.POI_TOOL), true, true);
+		/*
 		// buffer changes. use m_tool.apply() to update the mso model
-		m_tool.setBuffered(true);
+		m_tool.setBufferedMode(true);
+		*/
 		// show panel
 		this.setVisible(true);
 		// show map
@@ -422,8 +425,10 @@ public class MessagePOIPanel extends JPanel implements IEditMessageComponentIf
 		// hide num pad
 		NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
 		numPad.setVisible(false);
+		/*
 		// apply change directly to mso model
-		m_tool.setBuffered(false);
+		m_tool.setBufferedMode(false);
+		*/
 		// hide map
         MessageLogPanel.hideMap();
 		// hide me

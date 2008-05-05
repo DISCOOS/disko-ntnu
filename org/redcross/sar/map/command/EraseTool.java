@@ -42,14 +42,14 @@ public class EraseTool extends AbstractDiskoTool {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final int SNAP_TOL_FACTOR = 200;
+	private static final int SNAP_TOL_FACTOR = 100;
 	
 	private Point p = null;
 	
 	public EraseTool() {
 		
 		// prepare BaseTool
-		cursorPath = "cursors/eraser.cur"; 
+		cursorPath = "cursors/erase.cur"; 
 		caption = "Slett"; 
 		category = "Commands"; 
 		message = "Sletter valgt objekt"; 
@@ -84,7 +84,7 @@ public class EraseTool extends AbstractDiskoTool {
 		try {
 			
 			// get clicked point
-			p = transform(x, y);			
+			p = toMapPoint(x, y);			
 			
 			// run later (or else it will freeze on dialog box)
 			SwingUtilities.invokeLater(new Runnable() {

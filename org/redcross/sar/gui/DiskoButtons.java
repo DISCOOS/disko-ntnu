@@ -22,7 +22,7 @@ public class DiskoButtons extends JPanel {
 	private int m_alignment = FlowLayout.LEFT;
 	
 	private Map<String, AbstractButton> m_buttons = null;
-	
+		
 	public DiskoButtons() {
 		// initialize GUI
 		initialize();
@@ -101,7 +101,7 @@ public class DiskoButtons extends JPanel {
 	public void setButtonEnabled(String command, boolean isEnabled) {
 		m_buttons.get(command).setEnabled(isEnabled);
 	}
-	
+
 	public void addActionListener(ActionListener listener) {
 		for(AbstractButton b: m_buttons.values()) {
 			b.addActionListener(listener);

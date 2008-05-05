@@ -284,7 +284,7 @@ public class AttributesPanel extends JPanel {
 			}
 			else if (attribute instanceof AttributeImpl.MsoString) {
 				// get text attribute
-			    component = new TextAttribute(
+			    component = new TextFieldAttribute(
 			    		(AttributeImpl.MsoString)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoCalendar) {

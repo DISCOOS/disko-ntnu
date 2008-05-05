@@ -59,8 +59,17 @@ public class GotoDialog extends DiskoDialog {
 	private GotoPanel getGotoPanel() {
 		if (m_gotoPanel == null) {
 			m_gotoPanel = new GotoPanel();
+			m_gotoPanel.setAutoUpdate(true);
 		}
 		return m_gotoPanel;
+	}
+	
+	public void getClickPoint() {
+		getGotoPanel().getClickPoint();
+	}
+	
+	public void getMovePoint() {
+		getGotoPanel().getMovePoint();
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="23,0"

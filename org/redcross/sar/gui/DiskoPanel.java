@@ -28,6 +28,7 @@ public class DiskoPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private boolean m_borderVisible = true;
 	private Color m_borderColor = Color.GRAY;
 	
 	private JPanel m_headerPanel = null;
@@ -95,7 +96,7 @@ public class DiskoPanel extends JPanel {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getHeaderPanel() {
+	public JPanel getHeaderPanel() {
 		if (m_headerPanel == null) {
 			try {
 				m_headerPanel = new JPanel();
@@ -185,6 +186,14 @@ public class DiskoPanel extends JPanel {
 				&& getCaptionText().length()>0);
 	}
 	
+	public void setHeaderVisible(boolean isVisible) {
+		getHeaderPanel().setVisible(isVisible);
+	}
+	
+	public boolean isHeaderVisible() {
+		return getHeaderPanel().isVisible();
+	}
+	
 	/**
 	 * This method sets the border color
 	 *
@@ -199,6 +208,22 @@ public class DiskoPanel extends JPanel {
 		return m_borderColor;
 	}
 
+	
+	public void setBorderVisible(boolean isVisible) {
+		m_borderVisible = isVisible;
+		if(isVisible) {
+			this.setBorder(new CustomBorder(1,1,1,1,m_borderColor));
+			getHeaderPanel().setBorder(m_bodyComponent!=null ? new CustomBorder(0,0,0,1,m_borderColor) : null); 
+		}
+		else {
+			this.setBorder(null);
+			getHeaderPanel().setBorder(null); 			
+		}
+	}	
+	
+	public boolean isBorderVisible() {
+		return m_borderVisible;
+	}
 	
 	/**
 	 * This method sets the caption colors
@@ -358,15 +383,18 @@ public class DiskoPanel extends JPanel {
 	public boolean doAction(String command) {
 		if(!getButtonsPanel().doAction(command)) {
 			if(m_actions.containsKey(command)) {
-				ActionEvent e = m_actions.get(command);
-				for(ActionListener it: m_listeners) {
-					it.actionPerformed(e);
-				}
+				fireActionEvent(m_actions.get(command));
 				return true;
 			}
 			return false;
 		}
 		return true;
+	}
+	
+	protected void fireActionEvent(ActionEvent e) {
+		for(ActionListener it: m_listeners) {
+			it.actionPerformed(e);
+		}		
 	}
 	
 	private class CustomBorder implements Border {

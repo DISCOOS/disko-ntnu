@@ -59,8 +59,8 @@ public class PositionField extends JPanel {
 	private int m_format = 1; // MGRS
 	
 	private String[] zones = {"32V","33V","32W","33W","34W","35W","36W"};  //  @jve:decl-index=0:
-	private String[] squares = {"KQ","KP","KN","KM","KL",
-								"LQ","LP","LN","LM","LL","LK",
+	private String[] squares = {"KR","KQ","KP","KN","KM","KL",
+								"LR","LQ","LP","LN","LM","LL","LK",
 								"MR","MQ","MP","MN","MM","ML","MK",
 								"NT","NS","NR","NQ","NP","NN","NM","NL","NK",
 								"PA","PV","PU","PT","PS","PR","PQ","PP","PN","PM","PL",
@@ -142,11 +142,11 @@ public class PositionField extends JPanel {
 						break;
 					case 2: // UTM
 						zone = text.subSequence(0, 3).toString();
-						x = text.subSequence(3, 9).toString();
-						y = text.subSequence(11, 17).toString();
+						x = text.subSequence(3, 10).toString();
+						y = text.subSequence(11, 18).toString();
 						getZoneCombo().setSelectedItem(zone);
-						getLatitudeText().setText("00");
-						getLongetudeText().setText("00");
+						getLatitudeText().setText(x);
+						getLongetudeText().setText(y);
 						break;					
 					case 3: // DES
 						String[] split = text.split("E");

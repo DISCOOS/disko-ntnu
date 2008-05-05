@@ -1,10 +1,9 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.FlowLayout;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,49 +12,54 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.border.TitledBorder;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.SnappingAdapter;
-import org.redcross.sar.map.SnappingAdapter.SnappingListener;
-import org.redcross.sar.map.command.IDrawTool;
+import org.redcross.sar.map.SnapAdapter;
+import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
 import com.esri.arcgis.carto.IFeatureLayer;
-import com.esri.arcgis.interop.AutomationException;
 
-public class SnapPanel extends JPanel implements SnappingListener {
+public class SnapPanel extends DiskoPanel implements SnapListener {
 	
 	private static final long serialVersionUID = 1L;
-	private IDrawTool tool = null;
-	private JPanel snapPanel = null;
-	private JPanel snapButtonPanel = null;
-	private JPanel snapSelectionPanel = null;
-	private JSlider snapToleranceSlider = null;
-	private JButton snapAllButton = null;
-	private JButton snapNoneButton = null;
-	private JButton snapApplyButton = null;
-	private JScrollPane scrollPane = null;
+	//private IDrawTool tool = null;
+	private DiskoPanel actionsPanel = null;
+	private DiskoPanel layersPanel = null;
+	private DiskoPanel tolerancePanel = null;
+	private JSlider toleranceSlider = null;
+	private JLabel messageLabel = null;
+	private JPanel selectorPanel = null;
+	private JButton allButton = null;
+	private JButton noneButton = null;
+	private JButton applyButton = null;
+	private JButton cancelButton = null;
 	private HashMap<String,JCheckBox> checkBoxes = null;
 	private HashMap<String,IFeatureLayer> layers = null;
 	private Properties properties = null;
 	private HashMap<String,String> myInterests = null;
-	private SnappingAdapter snapping = null;
+	private SnapAdapter adapter = null;
 	private boolean isSnapToChangeing = false;
 	
-	public SnapPanel(SnappingAdapter adapter) {
+	public SnapPanel() {
+		
+		// forward
+		super("Snapping");
+		
 		// prepare
-		snapping = adapter;
 		checkBoxes = new HashMap<String,JCheckBox>();
 		layers = new HashMap<String,IFeatureLayer>();
 		myInterests = new HashMap<String,String>();
@@ -65,151 +69,211 @@ public class SnapPanel extends JPanel implements SnappingListener {
 		myInterests.put(IMsoFeatureLayer.LayerCode.ROUTE_LAYER.name(),IMsoFeatureLayer.LayerCode.ROUTE_LAYER.name());
 		myInterests.put(IMsoFeatureLayer.LayerCode.FLANK_LAYER.name(),IMsoFeatureLayer.LayerCode.FLANK_LAYER.name());
 		myInterests.put(IMsoFeatureLayer.LayerCode.POI_LAYER.name(),IMsoFeatureLayer.LayerCode.POI_LAYER.name());
-		// add listener
-		snapping.addSnappingListener(this);
 		// initialize gui
 		initialize();
 	}
 	
 	private void initialize() {
 		try {
-			BorderLayout borderLayout = new BorderLayout();
-			borderLayout.setVgap(5);
-			this.setLayout(borderLayout);
-			this.add(getSnapToleranceSlider(), BorderLayout.NORTH);
-			this.add(getScrollPane(), BorderLayout.CENTER);
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			vfl.setHgap(5);
+			vfl.setVgap(5);
+			vfl.setVerticalFill(true);
+			JPanel body = (JPanel)getBodyComponent();
+			body.setPreferredSize(new Dimension(200,150));
+			body.setLayout(vfl);
+			body.add(getActionsPanel());
+			body.add(getTolerancePanel());
+			body.add(getLayersPanel());
+
 		}
 		catch (java.lang.Throwable e) {
 			//  Do Something
+			e.printStackTrace();
 		}
 	}
-		
-	private JPanel getSnapPanel() {
-		if (snapPanel == null) {
-			try {
-				snapPanel = new JPanel();
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setVgap(5);
-				vfl.setHgap(0);
-				vfl.setAlignment(VerticalFlowLayout.TOP);
-				snapPanel.setLayout(vfl);
-				snapPanel.add(getSnapButtonPanel(), BorderLayout.NORTH);
-				snapPanel.setBorder(BorderFactory.createTitledBorder(null, 
-						"Snapp til kartlag", TitledBorder.LEFT, TitledBorder.TOP, 
-						new Font("Tahoma", Font.PLAIN, 11), new Color(0, 70, 213)));
-				snapPanel.add(getSnapSelectionPanel(), BorderLayout.CENTER);
-			} catch (java.lang.Throwable e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return snapPanel;
-	}
-	
-	private JPanel getSnapButtonPanel() {
-		if (snapButtonPanel == null) {
+			
+	private DiskoPanel getActionsPanel() {
+		if (actionsPanel == null) {
 			try {
 				
 				// create layer
-				snapButtonPanel = new JPanel();
-				snapButtonPanel.setLayout(new FlowLayout());
+				actionsPanel = new DiskoPanel("Utfør");
+				actionsPanel.setBodyComponent(null);
 				// create buttons
-				snapAllButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);
-				snapNoneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);
-				snapApplyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
+				allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);
+				noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);
+				applyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				// add action listeners
-				snapAllButton.addActionListener(new java.awt.event.ActionListener() {
+				allButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						checkAll();
 					}
 				});
-				snapNoneButton.addActionListener(new java.awt.event.ActionListener() {
+				noneButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						checkNone();
 					}
 				});
-				snapApplyButton.addActionListener(new java.awt.event.ActionListener() {
+				applyButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						try {
+							// get layers
+							List<IFeatureLayer> list = getSnapToLayers();
 							// is changing
 							isSnapToChangeing = true;
-							// apply snapping
-							snapping.setSnapToLayers(getSnapToLayers());
-						} catch (AutomationException e1) {
+							// apply snapping?
+							if(adapter!=null) adapter.setSnapToLayers(list);
+							// forward
+							fireActionEvent(e);
+						} catch (Exception ex) {
 							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+							ex.printStackTrace();
 						}
 						// finished
 						isSnapToChangeing = false;
 					}
 				});
+				cancelButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						// reset
+						cancel();
+						// forward
+						fireActionEvent(e);
+					}
+				});
 				// add buttons to panel
-				snapButtonPanel.add(snapAllButton);
-				snapButtonPanel.add(snapNoneButton);
-				snapButtonPanel.add(snapApplyButton);
+				actionsPanel.addButton(allButton,"all");
+				actionsPanel.addButton(noneButton,"none");
+				actionsPanel.addButton(applyButton,"apply");
+				actionsPanel.addButton(cancelButton,"cancel");
 				
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		return snapButtonPanel;
+		return actionsPanel;
 	}	
 	
-	private JPanel getSnapSelectionPanel() {
-		if (snapSelectionPanel == null) {
+	public void setSnapAdapter(SnapAdapter adapter) {
+		// release current?
+		if(this.adapter!=null)
+			this.adapter.removeSnapListener(this);
+		// prepare
+		this.adapter = adapter;
+		// register?
+		if(adapter!=null) {
+			// add listener
+			adapter.addSnapListener(this);
+			// update snappable layers
+			onSnapableChanged();
+			// update selected layers 
+			onSnapToChanged();
+		}
+		
+	}
+	
+	public SnapAdapter getSnapAdapter() {
+		return adapter;
+	}
+	
+	@Override
+	public void cancel() {
+		// reload from adapter
+		onSnapableChanged();
+		onSnapToChanged();
+	}
+	
+	private DiskoPanel getLayersPanel() {
+		if (layersPanel == null) {
 			try {
-				snapSelectionPanel = new JPanel();
+				// get body component
+				layersPanel = new DiskoPanel("Snap til lag");
+				JPanel body = ((JPanel)layersPanel.getBodyComponent());
 				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setVgap(0);
+				vfl.setAlignment(VerticalFlowLayout.LEFT);
 				vfl.setHgap(0);
-				vfl.setAlignment(VerticalFlowLayout.TOP);
-				snapSelectionPanel.setLayout(vfl);
+				vfl.setVgap(5);
+				vfl.setVerticalFill(true);
+				body.setLayout(vfl);
+				body.add(getMessageLabel());
+				body.add(getSelectorPanel());
+				// set preferred size
+				layersPanel.setPreferredSize(new Dimension(200,50));
+				// setup
+				showSelector(false);
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		return snapSelectionPanel;
+		return layersPanel;
 	}
 	
-	private JScrollPane getScrollPane() {
-		if (scrollPane == null) {
+	private JLabel getMessageLabel() {
+		if(messageLabel==null) {
+			messageLabel = new JLabel();
+			messageLabel.setVerticalAlignment(SwingConstants.CENTER);
+			messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			messageLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			messageLabel.setVerticalTextPosition(SwingConstants.CENTER);			
+		}
+		return messageLabel;
+	}
+	
+	private JPanel getSelectorPanel() {
+		if(selectorPanel==null) {
+			// create selector panel
+			selectorPanel = new JPanel();
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setVgap(0);
+			vfl.setHgap(0);
+			vfl.setAlignment(VerticalFlowLayout.TOP);
+			selectorPanel.setLayout(vfl);
+			
+		}
+		return selectorPanel;
+	}
+	
+	
+	private DiskoPanel getTolerancePanel() {
+		if (tolerancePanel == null) {
 			try {
-				scrollPane = new JScrollPane(getSnapPanel());
-				scrollPane.setBorder(null);
+				tolerancePanel = new DiskoPanel("Sett toleranse (meter)");
+				tolerancePanel.setBodyComponent(getToleranceSlider());
+				tolerancePanel.setPreferredSize(new Dimension(200, 100));
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		return scrollPane;
+		return tolerancePanel;
 	}
 	
-	private JSlider getSnapToleranceSlider() {
-		if (snapToleranceSlider == null) {
+	private JSlider getToleranceSlider() {
+		if (toleranceSlider == null) {
 			try {
-				snapToleranceSlider = new JSlider();
-				snapToleranceSlider.setOrientation(JSlider.HORIZONTAL);
-				snapToleranceSlider.setMinorTickSpacing(10);
-				snapToleranceSlider.setMajorTickSpacing(50);
-				snapToleranceSlider.setPaintLabels(true);
-				snapToleranceSlider.setPaintTicks(true);
-				snapToleranceSlider.setMaximum(250);
-				snapToleranceSlider.setBorder(BorderFactory.createTitledBorder(null, 
-						"Snapping toleranse", TitledBorder.LEFT, TitledBorder.TOP, 
-						new Font("Tahoma", Font.PLAIN, 11), new Color(0, 70, 213)));
-				
-				snapToleranceSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-					public void stateChanged(javax.swing.event.ChangeEvent e) {
+				toleranceSlider = new JSlider();
+				toleranceSlider.setOrientation(JSlider.HORIZONTAL);
+				toleranceSlider.setMinorTickSpacing(5);
+				toleranceSlider.setMajorTickSpacing(25);
+				toleranceSlider.setPaintLabels(true);
+				toleranceSlider.setPaintTicks(true);
+				toleranceSlider.setMaximum(150);
+				toleranceSlider.addChangeListener(new ChangeListener() {
+					public void stateChanged(ChangeEvent e) {
 						try {
-							// forward
-							snapping.setSnapTolerance(snapToleranceSlider.getValue());
-						} catch (IOException e1) {
-							e1.printStackTrace();
+							// get value
+							int tolerance = toleranceSlider.getValue();
+							// update text
+							getTolerancePanel().setCaptionText("Sett toleranse (" + tolerance + " meter)");
+							// apply
+							if(adapter!=null) adapter.setSnapTolerance(tolerance);
+						} catch (IOException ex) {
+							ex.printStackTrace();
 						}
 					}
 				});
@@ -218,7 +282,7 @@ public class SnapPanel extends JPanel implements SnappingListener {
 				e.printStackTrace();
 			}
 		}
-		return snapToleranceSlider;
+		return toleranceSlider;
 	}
 		
 	private JCheckBox getCheckBox(String name) {
@@ -250,76 +314,19 @@ public class SnapPanel extends JPanel implements SnappingListener {
 	}
 	
 	public boolean addApplyListener(ActionListener listener) {
-		if(snapApplyButton!=null) {
-			snapApplyButton.addActionListener(listener);
+		if(applyButton!=null) {
+			applyButton.addActionListener(listener);
 			return true;
 		}
 		return false;
 	}
 	
 	public boolean removeApplyListener(ActionListener listener) {
-		if(snapApplyButton!=null) {
-			snapApplyButton.removeActionListener(listener);
+		if(applyButton!=null) {
+			applyButton.removeActionListener(listener);
 			return true;
 		}
 		return false;
-	}
-	
-	public IDrawTool getTool() {
-		return tool;
-	}
-
-	public void setTool(IDrawTool tool) {
-		this.tool = tool;
-	}
-	
-	public void setSnapTolerance(int value) {
-		snapToleranceSlider.setValue(value);
-	}
-	
-	public List getSnapToLayers() {
-		ArrayList<IFeatureLayer> snapTo = new ArrayList<IFeatureLayer>();
-		Iterator<JCheckBox> it = checkBoxes.values().iterator();
-		while(it.hasNext()) {
-			JCheckBox cb = it.next();
-			if (cb.isVisible() && cb.isSelected()) {
-				snapTo.add(layers.get(cb.getName()));
-			}
-		}
-		return snapTo;
-	}
-	
-	public void setSnapableLayers(List layers) {
-		//adding checkboxes
-		try {
-			hideAll();
-			this.layers.clear();
-			JPanel panel = getSnapSelectionPanel();
-			for (int i = 0; i < layers.size(); i++) {
-				IFeatureLayer flayer = (IFeatureLayer)layers.get(i);
-				String name = flayer.getName();
-				JCheckBox cb = getCheckBox(name);				
-				if (cb == null) {
-					cb = new JCheckBox();
-					cb.setName(name);
-					panel.add(cb);
-				}
-				// update text
-				cb.setText(getLayerCaption(name));
-						// put combobox
-				checkBoxes.put(name,cb);
-				// put layer
-				this.layers.put(name,flayer);
-				// show box
-				cb.setVisible(true);
-			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	private String getLayerCaption(String name)
@@ -352,17 +359,72 @@ public class SnapPanel extends JPanel implements SnappingListener {
 			}
 		}
 		return properties;
+	}	
+	
+	public void setSnapTolerance(double value) {
+		toleranceSlider.setValue((int)value);
+	}
+	
+	public List<IFeatureLayer> getSnapToLayers() {
+		ArrayList<IFeatureLayer> snapTo = new ArrayList<IFeatureLayer>();
+		Iterator<JCheckBox> it = checkBoxes.values().iterator();
+		while(it.hasNext()) {
+			JCheckBox cb = it.next();
+			if (cb.isVisible() && cb.isSelected()) {
+				snapTo.add(layers.get(cb.getName()));
+			}
+		}
+		return snapTo;
+	}
+	
+	public void setSnapableLayers(List list) {
+		//adding checkboxes
+		try {
+			// initialize
+			hideAll();
+			layers.clear();
+			JCheckBox cb = null;
+			// get layer panels
+			JPanel body = (JPanel)getLayersPanel().getBodyComponent();
+			JPanel selector = (JPanel)body.getComponent(1);
+			// loop over all
+			for (int i = 0; i < list.size(); i++) {
+				IFeatureLayer flayer = (IFeatureLayer)list.get(i);
+				String name = flayer.getName();
+				cb = getCheckBox(name);				
+				if (cb == null) {
+					cb = new JCheckBox();
+					cb.setName(name);
+					selector.add(cb);
+				}
+				// update text
+				cb.setText(getLayerCaption(name));
+						// put combobox
+				checkBoxes.put(name,cb);
+				// put layer
+				layers.put(name,flayer);
+				// show box
+				cb.setVisible(true);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	public void onSnapToChange() {
+	public void onSnapToChanged() {
 		// is not changing?
 		if(!isSnapToChangeing) {
 			// unselect all
 			checkNone();
-			// get panel
-			JPanel panel = getSnapSelectionPanel();
-			// get list
-			List<IFeatureLayer> snapTo = snapping.getSnapToLayers();
+			// get selector panel
+			JPanel selector = (JPanel)((JPanel)getLayersPanel().getBodyComponent()).getComponent(1);
+			// initialize
+			List<IFeatureLayer> snapTo = null;
+			// get list?
+			if(adapter!=null) snapTo = adapter.getSnapToLayers();			
+			// has no layers?
+			if(snapTo==null) return;			
 			// update selection
 			for(int i=0;i<snapTo.size();i++) {
 				IFeatureLayer flayer = snapTo.get(i);
@@ -372,7 +434,7 @@ public class SnapPanel extends JPanel implements SnappingListener {
 					if (cb == null) {
 						cb = new JCheckBox();
 						cb.setName(name);
-						panel.add(cb);
+						selector.add(cb);
 						// update text
 						cb.setText(getLayerCaption(name));
 						// put combobox
@@ -383,10 +445,7 @@ public class SnapPanel extends JPanel implements SnappingListener {
 						cb.setVisible(true);
 					}
 					cb.setSelected(true);
-				} catch (AutomationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -394,14 +453,40 @@ public class SnapPanel extends JPanel implements SnappingListener {
 		}
 	}
 
-	public void onSnappableChange() {
-		try {
-			setSnapTolerance(snapping.getSnapTolerance());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void onSnapableChanged() {
+		// get flag
+		boolean bFlag = adapter!=null ? adapter.isSnappingAllowed() : false;
+		// update gui
+		if(bFlag) {
+			try {
+				if(adapter!=null) 				
+					setSnapTolerance(adapter.getSnapTolerance());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		setSnapableLayers(snapping.getSnappableLayers());
-		
+		// set state
+		getToleranceSlider().setEnabled(bFlag);
+		// update snappable layers?
+		if(adapter!=null) 
+			setSnapableLayers(adapter.getSnapableLayers());
+		// get card layout
+		showSelector(bFlag);
 	}
+	
+	private void showSelector(boolean isVisible) {
+		// get panels
+		getSelectorPanel().setVisible(isVisible);
+		showMessage("<html><center>Snapping er kun mulig på <br> kartskala mindre enn 1:" 
+				+ ((adapter!=null) ? (int)adapter.getMaxSnapScale() : "<nothing>") 
+				+ "</center></html>",!isVisible);
+	}
+	
+	private void showMessage(String text, boolean isVisible) {
+		// get panels
+		getMessageLabel().setText(text);
+		getMessageLabel().setVisible(isVisible);
+	}
+	
 }

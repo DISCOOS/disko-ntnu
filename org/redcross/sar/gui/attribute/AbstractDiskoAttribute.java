@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -20,6 +21,8 @@ import javax.swing.SwingConstants;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -38,6 +41,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	protected JLabel m_captionLabel = null;
 	protected Component m_component = null;
+	protected AbstractButton m_button = null;
 	
 	protected String m_caption = null;
 	protected boolean m_isEditable = false;
@@ -80,6 +84,8 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		this.setAttributeSize(new Dimension(250,25));
 		this.add(getCaptionLabel(),BorderLayout.WEST);
 		this.add(getComponent(),BorderLayout.CENTER);
+		this.add(getButton(), BorderLayout.EAST);
+
 		// add update manager
 		getComponent().addFocusListener(new FocusAdapter() {
 			@Override
@@ -96,6 +102,22 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		
 	}
 					
+	public int getVerticalAlignment() {
+		return getCaptionLabel().getVerticalAlignment();
+	}
+	
+	public int getHorizontalAlignment() {
+		return getCaptionLabel().getHorizontalAlignment();
+	}
+	
+	public void setVerticalAlignment(int alignment) {
+		getCaptionLabel().setVerticalAlignment(alignment);
+	}
+	
+	public void setHorizontalAlignment(int alignment) {
+		getCaptionLabel().setHorizontalAlignment(alignment);
+	}
+	
 	protected JLabel getCaptionLabel() {
 		if(m_captionLabel==null) {
 			m_captionLabel = new JLabel(m_caption);
@@ -173,11 +195,22 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		setAbsoluteSize(getCaptionLabel(), size);				
 	}	
 	
-	public void setEditable(boolean isEditable) {
-		m_isEditable = isEditable;
-		m_component.setEnabled(isEditable);
+	@Override
+	public void setEnabled(boolean isEnabled) {
+		// forward
+		super.setEnabled(isEnabled);
+		// update button
+		getButton().setEnabled(isEnabled && m_isEditable);
+		// forward?
+		if(m_component!=null) m_component.setEnabled(isEnabled && m_isEditable);
 	}
 	
+	public void setEditable(boolean isEditable) {
+		m_isEditable = isEditable;
+		m_component.setEnabled(isEditable && isEnabled());
+		getButton().setEnabled(isEditable && isEnabled());
+	}
+		
 	public boolean isEditable() {
 		return m_isEditable;
 	}
@@ -251,14 +284,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 				attribute instanceof AttributeImpl.MsoTrack);  		
   	}
 
-	@Override
-	public void setEnabled(boolean isEnabled) {
-		// forward
-		super.setEnabled(isEnabled);
-		// forward?
-		if(m_component!=null) m_component.setEnabled(isEnabled);
-	}  	
-	
 	public boolean addDiskoWorkListener(IDiskoWorkListener listener) {
 		return listeners.add(listener);
 	}
@@ -276,6 +301,29 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		getComponent().removeFocusListener(listener);
 	}
 	
+	public void setButton(AbstractButton button, boolean isVisible) {
+		// remove current?
+		if(m_button!=null) this.remove(m_button);
+		// add new?
+		if(button!=null) this.add(button, BorderLayout.EAST);
+		// prepare
+		m_button = button;
+		m_button.setVisible(isVisible);
+	}
+	
+	/**
+	 * This method initializes Button	
+	 * 	
+	 * @return {@link AbstractButton}
+	 */
+	public AbstractButton getButton() {
+		if (m_button == null) {
+			m_button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
+			m_button.setVisible(false);
+		}
+		return m_button;
+	}
+		
 	/*==================================================================
 	 * Abstract public methods
 	 *================================================================== 

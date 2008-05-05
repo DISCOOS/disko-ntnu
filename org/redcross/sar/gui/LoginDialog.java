@@ -11,7 +11,7 @@ import javax.swing.BoxLayout;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.ComboAttribute;
-import org.redcross.sar.gui.attribute.TextAttribute;
+import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
@@ -26,8 +26,8 @@ public class LoginDialog extends DiskoDialog {
 	private JButton cancelButton = null;
 	private JPanel buttonPanel = null;
 
-	private TextAttribute attrUserName = null;
-	private TextAttribute attrPassword = null;
+	private TextFieldAttribute attrUserName = null;
+	private TextFieldAttribute attrPassword = null;
 	private ComboAttribute attrRoles = null;
 	
 	/**
@@ -59,9 +59,9 @@ public class LoginDialog extends DiskoDialog {
 		return allowExit;
 	}
 	
-	public void setVisible(boolean value, boolean exit) {
+	public void setVisible(boolean isVisible, boolean exit) {
 		allowExit = exit;
-		super.setVisible(value);
+		super.setVisible(isVisible);
 	}
 	/**
 	 * This method initializes jContentPane
@@ -140,12 +140,12 @@ public class LoginDialog extends DiskoDialog {
 	/**
 	 * This method initializes UserName attribute
 	 * 	
-	 * @return {@link TextAttribute}
+	 * @return {@link TextFieldAttribute}
 	 */
-	public TextAttribute getUserName() {
+	public TextFieldAttribute getUserName() {
 		if (attrUserName == null) {
 			try {
-				attrUserName = new TextAttribute("username","Brukernavn",70,"",true);
+				attrUserName = new TextFieldAttribute("username","Brukernavn",70,"",true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -156,12 +156,12 @@ public class LoginDialog extends DiskoDialog {
 	/**
 	 * This method initializes Password attribute
 	 * 	
-	 * @return {@link TextAttribute}
+	 * @return {@link TextFieldAttribute}
 	 */
-	public TextAttribute getPassword() {
+	public TextFieldAttribute getPassword() {
 		if (attrPassword == null) {
 			try {
-				attrPassword = new TextAttribute("password","Passord",70,"",true);
+				attrPassword = new TextFieldAttribute("password","Passord",70,"",true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

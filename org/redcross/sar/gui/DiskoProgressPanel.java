@@ -7,10 +7,12 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import javax.swing.JButton;
 
@@ -112,6 +114,12 @@ public class DiskoProgressPanel extends JPanel {
 		}
 		// update progressbar message
 		m_labelMessage.setText(message);
+		Graphics g = m_labelMessage.getGraphics();
+		if(g!=null) {
+			int w = Math.max(g.getFontMetrics().stringWidth(message),100);			
+			SwingUtilities.getRoot(this).setSize(w+10,SwingUtilities.getRoot(this).getHeight());
+		}
+		
 	}
 	
 }

@@ -207,7 +207,7 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 		// update icon
 		if(currentMsoObj!=null) {
 			Enum e = MsoUtils.getType(currentMsoObj,true);
-			getContentPanel().setCaptionIcon(Utils.getIcon(e,"48x48"));			
+			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));			
 			getContentPanel().setCaptionText("<html>Oppgi prioritet for <b>" + 
 					MsoUtils.getMsoObjectName(currentMsoObj,0).toLowerCase() + "</b></html>");
 			getPriorityList().setEnabled(true);

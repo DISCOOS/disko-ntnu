@@ -44,7 +44,7 @@ public class ScaleCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				ScaleDialog scaleDialog = (ScaleDialog)dialog;
 				scaleDialog.onLoad((IDiskoMap)obj);
-				scaleDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, true);			
+				scaleDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, true, true);			
 			}
 		}
 		catch(Exception e) {

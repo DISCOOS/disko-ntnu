@@ -138,7 +138,6 @@ public class MapStatusBar extends JPanel {
 			}
 			else {
 				mouseOverLabel.setEmpty();
-
 			}
 		}
 		catch(Exception e) {

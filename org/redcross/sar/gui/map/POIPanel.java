@@ -2,16 +2,16 @@ package org.redcross.sar.gui.map;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
@@ -34,18 +34,17 @@ import com.borland.jbcl.layout.VerticalFlowLayout;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-public class POIPanel extends JPanel implements IMsoUpdateListenerIf, 
-										IMsoLayerEventListener {
+public class POIPanel extends DiskoPanel implements 
+				IMsoUpdateListenerIf,  IMsoLayerEventListener,
+				IPropertyPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private IDiskoApplication app = null;
 	private POITool tool = null;
 	private JTextArea txtArea = null;
-	private JPanel coordPanel = null;
-	private JPanel northPanel = null;
+	private JPanel optionsPanel = null;
 	private GotoPanel gotoPanel = null;
-	private DiskoPanel buttonsPanel = null;
+	private DiskoPanel actionsPanel = null;
 	private JButton cancelButton = null;
 	private JButton applyButton = null;
 	private POITypePanel poiTypePanel = null;
@@ -56,14 +55,21 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 
 	public POIPanel(POITool tool, boolean isVertical) {
+		// forward
+		this("Tegne linje",tool,isVertical);
+	}
+	
+	public POIPanel(String caption, POITool tool, boolean isVertical) {
+		
+		// forward
+		super(caption);
 		
 		// prepare
-		this.app = Utils.getApp();
 		this.tool = tool;
 		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI);
 		
 		// add listeners
-		app.getMsoModel().getEventManager().addClientUpdateListener(this);
+		Utils.getApp().getMsoModel().getEventManager().addClientUpdateListener(this);
 		
 		// set layout information
 		this.isVertical = isVertical;
@@ -77,31 +83,44 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	 *
 	 */
 	private void initialize() {
-		try {
-			// remove all from container
-			removeAll();
-			// build container
-			if(isVertical) {
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				vfl.setHgap(5);
-				vfl.setVgap(5);
-				this.setPreferredSize(new Dimension(200,450));
-				this.setLayout(vfl);
-				this.add(getButtonsPanel());
-				this.add(getNorthPanel());
-			}
-			else {
-				BorderLayout bl = new BorderLayout();
-				bl.setHgap(5);
-				bl.setVgap(5);
-				this.setLayout(bl);
-				this.add(getButtonsPanel(),BorderLayout.NORTH);				
-				this.add(getNorthPanel(),BorderLayout.CENTER);
-			}
+		// prepare
+		((JPanel)getBodyComponent()).setPreferredSize(new Dimension(200,450));
+		// forward
+		this.setup();
+		// hide header
+		setHeaderVisible(false);				
+	}
+	
+	/**
+	 * This method applies setup
+	 *
+	 */
+	private void setup() {
+	
+		// get body panel
+		JPanel panel = (JPanel)getBodyComponent();
+		
+		// remove panels from pane
+		panel.removeAll();
+		
+		// build container
+		if(isVertical) {
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			vfl.setHgap(5);
+			vfl.setVgap(0);
+			panel.setLayout(vfl);
+			panel.add(Box.createRigidArea(new Dimension(5,5)));
+			panel.add(getActionsPanel());
+			panel.add(getOptionsPanel());
 		}
-		catch (java.lang.Throwable e) {
-			e.printStackTrace();
+		else {
+			BorderLayout bl = new BorderLayout();
+			bl.setHgap(5);
+			bl.setVgap(5);
+			panel.setLayout(bl);
+			panel.add(getActionsPanel(),BorderLayout.NORTH);				
+			panel.add(getOptionsPanel(),BorderLayout.CENTER);
 		}
 	}
 
@@ -135,6 +154,8 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon");
 			gotoPanel.setGotoButtonVisible(false);
+			gotoPanel.setPreferredSize(new Dimension(200, 125));			
+			
 		}
 		return gotoPanel;
 	}
@@ -179,7 +200,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	}
 	
 	public boolean isButtonsVisible() {
-		return getButtonsPanel().isVisible();
+		return getActionsPanel().isVisible();
 	}
 	
 	public void setRemarksVisible(boolean isVisible) {
@@ -191,7 +212,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	}
 	
 	public void setButtonsVisible(boolean isVisible) {
-		getButtonsPanel().setVisible(isVisible);
+		getActionsPanel().setVisible(isVisible);
 	}
 	
 	public IPOIIf getCurrentPOI() {
@@ -237,10 +258,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 				// revert
 				setCurrentPOI(getCurrentPOI());
 			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(app.getFrame(),
-						"Ugyldig koordinat format", null, 
-						JOptionPane.WARNING_MESSAGE);
-				ex.printStackTrace();
+				Utils.showWarning("Ugyldig koordinat format");
 			}
 
 		} else {
@@ -260,6 +278,7 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 	public POITypePanel getTypePanel() {
 		if (poiTypePanel == null) {
 			poiTypePanel = new POITypePanel();
+			poiTypePanel.setPreferredSize(new Dimension(200, 100));			
 		}
 		return poiTypePanel;
 	}
@@ -274,27 +293,29 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 			txtArea = new JTextArea();
 			txtArea.setLineWrap(true);
 			txtArea.setRows(5);
+			txtArea.setPreferredSize(new Dimension(200, 100));			
 		}
 		return txtArea;
 	}
 
 	/**
-	 * This method initializes centerPanel	
+	 * This method initializes OptionsPanel	
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getCoordPanel() {
-		if (coordPanel == null) {
+	private JPanel getOptionsPanel() {
+		if (optionsPanel == null) {
 			try {
 
 				// create panel
-				coordPanel = new JPanel();
+				optionsPanel = new JPanel();
+
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		coordPanel.removeAll();
+		optionsPanel.removeAll();
 		if(isVertical) {
 			
 			// create flow layout
@@ -303,25 +324,27 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 			vfl.setHgap(0);
 			vfl.setVgap(5);
 			// set flow layout
-			coordPanel.setLayout(vfl); 
+			optionsPanel.setLayout(vfl); 
+			// set preferred size
+			optionsPanel.setPreferredSize(new Dimension(200,350));
 			// add components
-			coordPanel.add(getGotoPanel());
-			coordPanel.add(getTypePanel());
-			coordPanel.add(getTextAreaPanel());			
+			optionsPanel.add(getGotoPanel());
+			optionsPanel.add(getTypePanel());
+			optionsPanel.add(getTextAreaPanel());
 		}
 		else {
 			// create flow layout
 			BorderLayout bl = new BorderLayout();
 			bl.setHgap(5);
-			bl.setVgap(0);
+			bl.setVgap(5);
 			// set flow layout
-			coordPanel.setLayout(bl); 
+			optionsPanel.setLayout(bl); 
 			// add components
-			coordPanel.add(getGotoPanel(),BorderLayout.WEST);
-			coordPanel.add(getTypePanel(),BorderLayout.CENTER);
-			coordPanel.add(getTextAreaPanel(),BorderLayout.EAST);						
+			optionsPanel.add(getGotoPanel(),BorderLayout.WEST);
+			optionsPanel.add(getTypePanel(),BorderLayout.CENTER);
+			optionsPanel.add(getTextAreaPanel(),BorderLayout.EAST);						
 		}
-		return coordPanel;
+		return optionsPanel;
 	}
 
 	/**
@@ -341,39 +364,19 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 		return textAreaPanel;
 	}
 
-	/**
-	 * This method initializes northPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getNorthPanel() {
-		if (northPanel == null) {
-			try {
-				BorderLayout borderLayout = new BorderLayout();
-				northPanel = new JPanel();
-				northPanel.setLayout(borderLayout);
 
+	private DiskoPanel getActionsPanel() {
+		if (actionsPanel == null) {
+			try {
+				actionsPanel = new DiskoPanel("Utfør");
+				actionsPanel.addButton(getApplyButton(),"apply");
+				actionsPanel.addButton(getCancelButton(),"cancel");
+				actionsPanel.setBodyComponent(null);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		northPanel.removeAll();
-		northPanel.add(getCoordPanel(), BorderLayout.CENTER);
-		return northPanel;
-	}
-
-	private JPanel getButtonsPanel() {
-		if (buttonsPanel == null) {
-			try {
-				buttonsPanel = new DiskoPanel("Utfør");
-				buttonsPanel.addButton(getApplyButton(),"apply");
-				buttonsPanel.addButton(getCancelButton(),"cancel");
-				buttonsPanel.setBodyComponent(null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return buttonsPanel;
+		return actionsPanel;
 	}
 
 	public JButton getCancelButton() {
@@ -479,4 +482,20 @@ public class POIPanel extends JPanel implements IMsoUpdateListenerIf,
 			setCurrentPOI(null);
 		}
 	}
+
+	public void addActionListener(ActionListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeActionListener(ActionListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void update() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

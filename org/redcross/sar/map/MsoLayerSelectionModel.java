@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.OperationAreaMaskLayer;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.ILayer;
@@ -33,7 +34,10 @@ public class MsoLayerSelectionModel extends FeatureLayerSelectionModel {
 		selected = new boolean[msoLayers.size()];
 		for (int i = 0; i < selected.length; i++) {
 			layers[i] = msoLayers.get(i);
-			selected[i] = true;
+			if(layers[i] instanceof OperationAreaMaskLayer)
+				selected[i] = false;
+			else
+				selected[i] = true;				
 		}
 	}
 	

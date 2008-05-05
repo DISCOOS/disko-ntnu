@@ -37,10 +37,17 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.gui.map.DrawDialog;
+import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.MapFilterBar;
 import org.redcross.sar.gui.map.MapStatusBar;
+import org.redcross.sar.gui.map.SnapDialog;
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.command.IDrawTool;
+import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
@@ -67,21 +74,39 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private static final double pixelSize = 0.00254/dpi; // pixels per meter
 	private static final double zoomRatio = 1.25;
 	
+	private static final double MAX_DRAW_SCALE = 50000;
+	private static final double MAX_SNAP_SCALE = 50000;
+	
+	// properties
 	private String mxdDoc = null;
 	private IMsoModelIf msoModel = null;
 	private IDiskoMapManager mapManager = null;
-	private MsoLayerSelectionModel msoLayerSelectionModel = null;
-	private WMSLayerSelectionModel wmsLayerSelectionModel = null;
-	private DefaultMapLayerSelectionModel defaultMapLayerSelectionModel = null;
 	private IDiskoTool currentTool = null;
 	private boolean supressDrawing = false;
 	private boolean isNotifySuspended = false;
+	private boolean isEditSupportInstalled = false;
+	
+	// lists
+	private MsoLayerSelectionModel msoLayerSelectionModel = null;
+	private WMSLayerSelectionModel wmsLayerSelectionModel = null;
+	private DefaultMapLayerSelectionModel defaultMapLayerSelectionModel = null;
 	protected EnumSet<IMsoFeatureLayer.LayerCode> myLayers = null;
 	protected EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private List<AbstractMsoFeatureLayer> msoLayers = null;
 	private HashMap<String,Runnable> refreshStack = null;
+	
+	// components
 	private MapStatusBar mapStatusBar = null;
-	private MapFilterBar mapFilterBar = null;
+	private DrawDialog drawDialog = null;
+	private ElementDialog elementDialog = null;
+	private SnapDialog snapDialog = null;
+
+	// adapters
+	private DrawAdapter drawAdapter = null;
+	private SnapAdapter snapAdapter = null;
+	
+	// elements
+	private DrawFrame drawFrame = null;
 	
 	private long previous = 0;
 	
@@ -106,12 +131,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	}
 
 	private void initialize() throws IOException, AutomationException {
+		
+		// prepare
 		setName("diskoMap");
 		setShowScrollbars(false);
-		setBorderStyle(com.esri.arcgis.controls.esriControlsBorderStyle.esriNoBorder);
 		setBorder(null);
+		setBorderStyle(com.esri.arcgis.controls.esriControlsBorderStyle.esriNoBorder);
 
-		//setDocumentFilename(mxdDoc);
+		// load mxd document
 		loadMxFile(mxdDoc, null, null);
 
 		// initialize layers
@@ -158,9 +185,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				if(mapStatusBar!=null) {
 					mapStatusBar.reset();
 				}
+				// update draw element?
+				if(drawFrame!=null) {
+					drawFrame.setActiveView(getActiveView());
+				}
 			}
 			public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
         		throws java.io.IOException, AutomationException {
+				
 				// update status panel?
 				if(mapStatusBar==null) {
 					// stop timer?
@@ -178,6 +210,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						}
 					}
 				}		
+				
 			}
 			
 		});
@@ -426,11 +459,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 	}
 	
-	public List getMsoLayers() {
-		return msoLayers;
+	public List<IMsoFeatureLayer> getMsoLayers() {
+		return new ArrayList<IMsoFeatureLayer>(msoLayers);
 	}
 
-	public List getMsoLayers(IMsoManagerIf.MsoClassCode classCode) {
+	public List<IMsoFeatureLayer> getMsoLayers(IMsoManagerIf.MsoClassCode classCode) {
 		ArrayList<IMsoFeatureLayer> result = new ArrayList<IMsoFeatureLayer>();
 		for (int i = 0; i < msoLayers.size(); i++) {
 			IMsoFeatureLayer msoFeatureLayer = (IMsoFeatureLayer)msoLayers.get(i);
@@ -451,6 +484,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return null;
 	}
 
+	public boolean isDrawingSupressed() {
+		return supressDrawing;
+	}
+	
 	public void setSupressDrawing(boolean supress) {
 		supressDrawing = supress;
 	}
@@ -489,6 +526,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		else {
 			// not a disko tool...
 			currentTool = null;
+		}
+		// forward to draw adapter?
+		if(isEditSupportInstalled()) {
+			if(currentTool instanceof IDrawTool)
+				getDrawAdapter().setDrawTool((IDrawTool)currentTool);
 		}
 	}
 
@@ -1039,6 +1081,16 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return false;
 	}
 	
+	
+	@Override
+	public ITool getCurrentTool() throws IOException, AutomationException {
+		// forward?
+		if(currentTool==null)
+			return super.getCurrentTool();
+		else
+			return (ITool)currentTool;
+	}
+
 	public void refresh() throws IOException, AutomationException {
 		
 		// consume?
@@ -1197,18 +1249,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	}
 	*/
 	
-	public List getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException {
+	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException {
 		List<IMsoFeature> features = new ArrayList<IMsoFeature>();
-		List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
-		for (int i = 0; i < layers.size(); i++) {
-			IMsoFeatureLayer flayer = layers.get(i);
-			if (flayer!=null) {
-	 			// try to get feature
-				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-				IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
-				// found?
-				if(msoFeature!=null){
-					features.add(msoFeature);
+		if(msoObj!=null) {
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
+			for (int i = 0; i < layers.size(); i++) {
+				IMsoFeatureLayer flayer = layers.get(i);
+				if (flayer!=null) {
+		 			// try to get feature
+					MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
+					IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
+					// found?
+					if(msoFeature!=null){
+						features.add(msoFeature);
+					}
 				}
 			}
 		}
@@ -1268,28 +1322,75 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// return selection count
 		return count;
 	}
+	
+	public double getScale() {
+		try {
+			return getScale((IBasicMap)getActiveView().getFocusMap());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		return 0;
+	}
+	
+	public double getMaxDrawScale() {
+		return MAX_DRAW_SCALE;
+	}
+	
+	public boolean isDrawAllowed() {
+		try {
+			return isEditSupportInstalled() && (MAX_DRAW_SCALE >= getScale());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return false;
+	}
+	
+	public double getMaxSnapScale() {
+		return MAX_SNAP_SCALE;
+	}
+	
+	public boolean isSnapAllowed() {
+		try {
+			return isEditSupportInstalled() && (MAX_SNAP_SCALE >= getScale());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return false;
+	}
 
-	public List getSnappableLayers() throws IOException, AutomationException {
+	public List<IFeatureLayer> getSnappableLayers() throws IOException, AutomationException {
 		IMap focusMap = getActiveView().getFocusMap();
 		double scale = getScale((IBasicMap)focusMap);
 		ArrayList<IFeatureLayer> layers = new ArrayList<IFeatureLayer>();
-		// loop over all layers
-		for (int i = 0; i < focusMap.getLayerCount(); i++) {
-			// get layer
-			ILayer layer = focusMap.getLayer(i);
-			// is a feature layer?
-			if (layer instanceof IFeatureLayer) {
-				// get shapetype
-				IFeatureLayer flayer = (IFeatureLayer) layer;
-				if (isSnappable(flayer,scale)) {
-					layers.add(flayer);
+		// for scales beyond MAX_SNAP_SCALE, allowing for snapping does not make sence because 
+		// drawing is typically done at much lower scales. furthermore, allowing scales beyond
+		// MAX_SNAP_SCALE will reduce system performance because of a very large number of indexes features
+		// must be buffered. Ultimately, the application may become unresponsive for a very long time
+		// halting the system progres.
+		if(MAX_SNAP_SCALE>=scale) {
+			// loop over all layers
+			for (int i = 0; i < focusMap.getLayerCount(); i++) {
+				// get layer
+				ILayer layer = focusMap.getLayer(i);
+				// is a feature layer?
+				if (layer instanceof IFeatureLayer) {
+					// get shapetype
+					IFeatureLayer flayer = (IFeatureLayer) layer;
+					if (isSnappable(flayer,scale)) {
+						layers.add(flayer);
+					}
 				}
-			}
-			else if (layer instanceof GroupLayer) {
-				// cast to group layer
-				GroupLayer glayer = (GroupLayer) layer;
-				// forward
-				getSnappableInGroupLayer(layers, glayer, scale);
+				else if (layer instanceof GroupLayer) {
+					// cast to group layer
+					GroupLayer glayer = (GroupLayer) layer;
+					// forward
+					getSnappableInGroupLayer(layers, glayer, scale);
+				}
 			}
 		}
 		return layers;
@@ -1324,7 +1425,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				shapeType == esriGeometryType.esriGeometryPolygon  ||
 				shapeType == esriGeometryType.esriGeometryBag) {
 			
-			if (layer.isVisible() && scale > layer.getMaximumScale() &&
+			if (	layer.isVisible() && 
+					scale > layer.getMaximumScale() &&
 					scale < layer.getMinimumScale()) {
 				return true;
 			}
@@ -1359,5 +1461,108 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return panel;
 		
 	}
+	
+	public boolean isEditSupportInstalled() {
+		return isEditSupportInstalled;
+	}
+	
+	public void installEditSupport() {
+		// install?
+		if(!isEditSupportInstalled) {
+			// set flag
+			isEditSupportInstalled = true;
+			// initialize draw adapter
+			getDrawAdapter();
+			getSnapAdapter();
+		}
+	}
+	
+	public DrawFrame getDrawFrame() {
+		// not supported?
+		if(!isEditSupportInstalled) return null;
+		// initialize?
+		if(drawFrame==null) {
+			try {
+				// create new frame
+				drawFrame = new DrawFrame(getActiveView());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
+		return drawFrame;
+	}
+	
+	public DrawAdapter getDrawAdapter() {
+		// not supported?
+		if(!isEditSupportInstalled) return null;
+		// initialize?
+		if(drawAdapter == null) {
+			// create draw adapter
+			drawAdapter = new DrawAdapter(Utils.getApp());
+			// register objects
+			drawAdapter.register(this);
+		}
+		return drawAdapter;
+	}
+	
+	public DrawDialog getDrawDialog() {
+		// not supported?
+		if(!isEditSupportInstalled) return null;
+		// initialize?
+		if(drawDialog == null) {
+			
+			// get draw dialog
+	        NavBar navBar = Utils.getApp().getNavBar();
+			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
+			drawDialog.setLocationRelativeTo(this,DiskoDialog.POS_WEST, true, true);
+
+		}
+		return drawDialog;
+	}
+	
+	public ElementDialog getElementDialog() {
+		// not supported?
+		if(!isEditSupportInstalled) return null;
+		// initialize?
+		if (elementDialog == null) {
+			
+			// create
+			elementDialog = new ElementDialog(Utils.getApp().getFrame());
+			elementDialog.setLocationRelativeTo(this,DiskoDialog.POS_EAST, false, true);
+
+		}
+		return elementDialog;
+	}	
+	
+	public SnapAdapter getSnapAdapter() {
+		// not supported?
+		if(!isEditSupportInstalled) return null;
+		// initialize?
+		if(snapAdapter == null) {
+			try {
+				snapAdapter = new SnapAdapter();
+				snapAdapter.register(this);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return snapAdapter;
+	}
+	
+	public SnapDialog getSnapDialog() {
+		// not supported?
+		if(!isEditSupportInstalled) return null;
+		// initialize?
+		if(snapDialog == null) {
+			
+			// create new snap dialog
+	        snapDialog = new SnapDialog(Utils.getApp().getFrame());
+	        snapDialog.setLocationRelativeTo(this,DiskoDialog.POS_WEST, true, true);
+
+		}
+		return snapDialog;
+	}	
 	
 }

@@ -6,12 +6,11 @@ package org.redcross.sar.map.command;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.JPanel;
-
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.map.FreeHandPanel;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IDrawDialog;
+import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -48,63 +47,94 @@ public class FreeHandTool extends AbstractDrawTool {
 	/**
 	 * Constructs the FreeHandTool
 	 */
-	public FreeHandTool(IHostToolDialog dialog, boolean isPolygon) throws IOException {
+	public FreeHandTool(IDrawDialog dialog, boolean isPolygon) throws IOException {
 		
 		// forward
-		super(true,(isPolygon ? DrawFeatureType.DRAW_FEATURE_POLYGON :
-			DrawFeatureType.DRAW_FEATURE_POLYLINE));
+		super(true,(isPolygon ? FeatureType.FEATURE_POLYGON :
+			FeatureType.FEATURE_POLYLINE));
 		
 		// initialize abstract class BasicTool
-		cursorPath = "cursors/crosshair.cur"; 
-		caption = "Frihåndstegning"; 
+		caption = "Frihånd " + Utils.getEnumText(featureType); 
 		category = "Commands"; 
 		message = "Tegner en frihåndsstrek"; 
 		name = "CustomCommands_FreeHand"; 
-		toolTip = "Frihåndstegning"; 
+		toolTip = "Frihånd"; 
 		enabled = true;
+		
+		// enable snapping 
+		isSnapping = true;
 		
 		// set tool type
 		type = DiskoToolType.FREEHAND_TOOL;
 		
 		// map draw operation
-		onMouseDownAction = DrawActionType.DRAW_BEGIN;
-		onMouseMoveAction = DrawActionType.DRAW_CHANGE;
-		onMouseUpAction = DrawActionType.DRAW_FINISH;
+		onMouseDownAction = DrawAction.ACTION_BEGIN;
+		onMouseMoveAction = DrawAction.ACTION_CHANGE;
+		onMouseUpAction = DrawAction.ACTION_FINISH;
 		
 		// create initial point 
 		p1 = new Point();
 		p1.setX(0);
 		p1.setY(0);
-		
+
 		// create default property panel
 		propertyPanel = addPropertyPanel();
 		
 		// save dialog
 		this.dialog = (DiskoDialog)dialog;
-		
+				
 		// registrate me in dialog
-		dialog.register((IDrawTool)this, propertyPanel);		
+		dialog.register(this);		
 		
 	}
+	
+	
 	
 	@Override
-	public boolean activate(boolean allow) {
+	public void onCreate(Object obj) {
+
 		// forward
-		boolean flag = super.activate(allow);
-		// update modes in panel
-		((FreeHandPanel)getPropertyPanel()).updateModes();
-		// return state
-		return flag;
+		super.onCreate(obj);
+
+		// has map?
+		if(map!=null) {
+			
+			// get property panel
+			FreeHandPanel panel = (FreeHandPanel)propertyPanel;
+			
+			// release current?
+			if(snapAdapter!=null) {
+				// add listener
+				snapAdapter.removeSnapListener(panel);
+			}
+			
+			// get a snapping adapter from map
+			snapAdapter = map.getSnapAdapter();
+			
+			// register freehand panel?
+			if(snapAdapter!=null) {
+				// add listener
+				snapAdapter.addSnapListener(panel);
+				// update panel
+				panel.onSnapToChanged();
+			}
+		}
+		
 	}
-	
+
+
+
 	@Override
 	public void setAttribute(Object value, String attribute) {
 		super.setAttribute(value, attribute);
 		if("DRAWPOLYGON".equalsIgnoreCase(attribute)) {
 			if((Boolean)value)
-				drawFeatureType=DrawFeatureType.DRAW_FEATURE_POLYGON;
+				featureType=FeatureType.FEATURE_POLYGON;
 			else
-				drawFeatureType=DrawFeatureType.DRAW_FEATURE_POLYLINE;
+				featureType=FeatureType.FEATURE_POLYLINE;
+			// update caption
+			caption = "Frihånd " + "(" 
+					+ Utils.getEnumText(featureType) + ")";
 			return;
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
@@ -116,7 +146,7 @@ public class FreeHandTool extends AbstractDrawTool {
 	@Override
 	public Object getAttribute(String attribute) {
 		if("DRAWPOLYGON".equalsIgnoreCase(attribute)) {
-			return (drawFeatureType==DrawFeatureType.DRAW_FEATURE_POLYGON);
+			return (featureType==FeatureType.FEATURE_POLYGON);
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
 			return searchSubType;
@@ -128,8 +158,8 @@ public class FreeHandTool extends AbstractDrawTool {
 	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
 		// forward
 		super.setMsoDrawData(msoOwner, msoObject, msoClassCode);
-		// forward
-		((FreeHandPanel)getPropertyPanel()).setMsoObject((msoObject!=null ? msoObject : msoOwner));
+		// select mso object
+		((FreeHandPanel)getPropertyPanel()).setMsoObject((msoOwner!=null ? msoOwner : msoObject));
 	}
 
 	@Override
@@ -156,14 +186,17 @@ public class FreeHandTool extends AbstractDrawTool {
 		try {
 
 			// get screen-to-map transformation and try to snap
-			p2 = snapTo(transform(x,y));
+			p2 = snapTo(toMapPoint(x,y));
 	
 			// initialize path geometry?
-			if (pathGeometry == null) {
-				pathGeometry = new Polyline();
-				pathGeometry.addPoint(p2, null, null);
-				rubberBand = new Polyline();
-				rubberBand.addPoint(p2, null, null);
+			if (geoPath == null) {
+				geoPath = new Polyline();
+				geoPath.addPoint(p2, null, null);
+			}
+			// initialize rubber geometry?
+			if (geoRubber == null) {
+				geoRubber = new Polyline();
+				geoRubber.addPoint(p2, null, null);
 			}
 			
 			// update drawn geometry
@@ -173,7 +206,7 @@ public class FreeHandTool extends AbstractDrawTool {
 			p1 = p2;
 			
 			// update rubber band
-			rubberBand.updatePoint(0,p2);
+			geoRubber.updatePoint(0,p2);
 			
 			// success
 			return true;
@@ -193,8 +226,8 @@ public class FreeHandTool extends AbstractDrawTool {
 		
 			try {
 	
-				// get screen-to-map transformation and try to snap
-				p2 = snapTo(transform(x,y));
+				// get snapped point
+				p2 = p;
 
 				// update drawn geometry
 				updateGeometry();
@@ -229,37 +262,31 @@ public class FreeHandTool extends AbstractDrawTool {
 	}
 
 	@Override
-	public boolean onFinish(int button, int shift, int x, int y) {
-		try {
-			// reset tool
-			reset();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		// always return success
-		return true;
-	}	
-	
-	@Override
-	public JPanel addPropertyPanel() {
+	public IPropertyPanel addPropertyPanel() {
 		// create panel list?
 		if(panels==null)
-			panels = new ArrayList<JPanel>(1);			
+			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		JPanel panel = new FreeHandPanel(Utils.getApp(),this,true);
+		IPropertyPanel panel = new FreeHandPanel(this,true);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
 		}
 		return null;
 	}
-	
-	private void reset() throws IOException {
+		
+	public void reset() {
+		// forward
+		super.reset();
 		// reset point
-		p1 = new Point();
-		p1.setX(0);
-		p1.setY(0);
+		try {
+			p1 = new Point();
+			p1.setX(0);
+			p1.setY(0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}	
 
 	private void updateGeometry() throws IOException, AutomationException {
@@ -278,19 +305,19 @@ public class FreeHandTool extends AbstractDrawTool {
 				snapTo(p1);
 				
 				// search polyline inside envelope
-				pline1 = (Polyline)snapping.getSnapGeometry();
-				pline2 = (Polyline)snapGeometry;
+				pline1 = (Polyline)snapAdapter.getSnapGeometry();
+				pline2 = (Polyline)geoSnap;
 				
 			}
 			
 			// nothing to snap onto?
 			if (pline1 == null || pline2 == null) {
 				// add to geometry
-				pathGeometry.addPoint(p2, null, null);
+				geoPath.addPoint(p2, null, null);
 			}
 			else {
 				// densify rubberband, use vertices as input to segment graph
-				Polyline copy = (Polyline)rubberBand.esri_clone();
+				Polyline copy = (Polyline)geoRubber.esri_clone();
 				copy.densify(getSnapTolerance()/10, -1);
 				// greate a geometry bag to hold selected polylines
 				GeometryBag gb = new GeometryBag();
@@ -316,11 +343,11 @@ public class FreeHandTool extends AbstractDrawTool {
 				if (trace != null && trace.getPointCount() > 0) {
 					// add tracepoints to path
 					for (int i = 0; i < trace.getPointCount(); i++ ) {
-						pathGeometry.addPoint(trace.getPoint(i), null, null);
+						geoPath.addPoint(trace.getPoint(i), null, null);
 					}
 				}
 				else {
-					pathGeometry.addPoint(p2, null, null);
+					geoPath.addPoint(p2, null, null);
 				}
 				// reset
 				segmentGraphCursor = null;
@@ -343,7 +370,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		}
 		return false;
 	}
-
+	
 	/* ==================================================
 	 * Inner classes
 	 * ==================================================
@@ -378,4 +405,5 @@ public class FreeHandTool extends AbstractDrawTool {
 			tool.searchSubType = this.searchSubType;
 		}
 	}
+
 }

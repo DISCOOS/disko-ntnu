@@ -1,62 +1,66 @@
 package org.redcross.sar.gui.map;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
+import javax.swing.SwingConstants;
 
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.attribute.CheckBoxAttribute;
+import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.SnappingAdapter;
+import org.redcross.sar.map.SnapAdapter;
+import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.command.LineTool;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.util.MsoUtils;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
-public class LinePanel extends JPanel {
+public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListener {
 
 	private static final long serialVersionUID = 1L;
-	private IDiskoApplication app = null;
+
 	private LineTool tool = null;
-	private JPanel northPanel = null;
-	private JPanel objectPanel = null;
-	private JPanel minStepPanel = null;
-	private JPanel maxStepPanel = null;
-	private JPanel buttonPanel = null;
+	private DiskoPanel optionsPanel = null;
+	private DiskoPanel actionsPanel = null;
 	private JButton snapToButton = null;
 	private JButton applyButton = null;
 	private JButton cancelButton = null;
-	private boolean isVertical = true;
-	private JLabel objectLabel = null;
-	private JTextField objectText = null;
-	private JLabel minStepTextLabel = null;
-	private JLabel maxStepTextLabel = null;
-	private JCheckBox snapToCheckBox = null;
-	private JCheckBox constraintsCheckBox = null;
-	private JTextField minStepText = null;
-	private JTextField maxStepText = null;
+	private CheckBoxAttribute snapToAttr = null;
+	private TextFieldAttribute minStepAttr = null;
+	private TextFieldAttribute maxStepAttr = null;
+	private CheckBoxAttribute constraintAttr = null;
 	
-	public LinePanel(IDiskoApplication app, LineTool tool, boolean isVertical) {
+	private boolean isVertical = true;
+	
+	private List<ActionListener> listeners = null;
+	
+	public LinePanel(LineTool tool, boolean isVertical) {
+		// forward
+		this("Tegne linje",tool,isVertical);
+	}
+	
+	public LinePanel(String caption, LineTool tool, boolean isVertical) {
+		
+		// forward
+		super(caption);
 		
 		// prepare
-		this.app = app;
 		this.tool = tool;
+		this.listeners = new ArrayList<ActionListener>();
 		
 		// set layout information
 		this.isVertical = isVertical;
@@ -70,62 +74,70 @@ public class LinePanel extends JPanel {
 	 *
 	 */
 	private void initialize() {
-		try {
-			// remove all from container
-			removeAll();
-			// build container
-			if(isVertical) {
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				vfl.setHgap(0);
-				vfl.setVgap(5);
-				this.setLayout(vfl);
-				this.add(getNorthPanel());
-				this.add(getButtonPanel());
-			}
-			else {
-				BorderLayout bl = new BorderLayout();
-				bl.setHgap(5);
-				bl.setVgap(0);
-				this.setLayout(bl);
-				this.add(getNorthPanel(),BorderLayout.CENTER);
-				this.add(getButtonPanel(),BorderLayout.EAST);				
-			}
-		}
-		catch (java.lang.Throwable e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void cancel() {
+		// prepare
+		((JPanel)getBodyComponent()).setPreferredSize(new Dimension(200,200));
 		// forward
-		tool.cancel();
+		this.setup();
+		// hide header
+		setHeaderVisible(false);
+		// hide borders
+		setBorderVisible(false);
 	}
-	
-	private void snapTo() {
-		// get adapter
-		SnappingAdapter snapping = tool.getSnappingAdapter();
-		if(snapping==null || !snapping.isSnapReady()) {
-			Utils.showWarning("Du må først velge lag å snappe til");
+		
+	/**
+	 * This method applies setup
+	 *
+	 */
+	private void setup() {
+		
+		// get body panel
+		JPanel panel = (JPanel)getBodyComponent();
+		// remove panels from pane
+		panel.removeAll();
+		
+		// build container
+		if(isVertical) {
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			vfl.setHgap(5);
+			vfl.setVgap(5);
+			// update
+			panel.setLayout(vfl);
+			panel.add(getActionsPanel());
+			panel.add(getOptionsPanel());
 		}
 		else {
-			// force update mode
-			tool.setUpdateMode(true);
+			BorderLayout bl = new BorderLayout();
+			bl.setHgap(5);
+			bl.setVgap(5);
+			// update
+			panel.setLayout(bl);
+			panel.add(getActionsPanel(),BorderLayout.EAST);				
+			panel.add(getOptionsPanel(),BorderLayout.CENTER);
+		}
+	}
+	
+	private void doSnapTo() {
+		// get adapter
+		SnapAdapter snapping = tool.getSnapAdapter();
+		// validate
+		if(isSnappingAvailable(snapping)) {
+			// force snapping on selected object
 			tool.doSnapTo();
 		}
 	}
 	
 	private void apply() {
 		// forward
-		tool.apply();
+		tool.apply(true);
 	}
 	
 	public void setVertical(boolean isVertical) {
 		// is changed?
 		if(this.isVertical != isVertical) {
 			this.isVertical = isVertical;
-			// initialize gui
-			initialize();
+			// setup gui
+			setup();
 		}
 	}
 	
@@ -133,119 +145,134 @@ public class LinePanel extends JPanel {
 		return isVertical;
 	}
 	
-	public void reset() {
-		getObjectText().setText("<velg eller tegn nytt>");
+	public void cancel() {
 		tool.cancel();
 	}
 
-	public void updateModes() {
-		getSnapToCheckBox().setSelected(tool.isSnapToMode());
-		getConstraintsCheckBox().setSelected(tool.isConstrainMode());
-		getMinStepText().setText(String.valueOf(tool.getMinStep()));
-		getMaxStepText().setText(String.valueOf(tool.getMaxStep()));
+	public void update() {
+		getSnapToAttr().setValue(tool.isSnapToMode());
+		getConstraintAttr().setValue(tool.isConstrainMode());
+		getMinStepAttr().setValue(String.valueOf(tool.getMinStep()));
+		getMaxStepAttr().setValue(String.valueOf(tool.getMaxStep()));
 	}
 		
+	/*
+	public void setVisible(boolean isVisible) {
+		// forward
+		super.setVisible(isVisible);
+		// has draw tool?
+		if(tool!=null) {
+			// buffer changes if draw dialog is visible. 
+			// if buffered, use tool.apply() to update the mso model
+			tool.setBufferedMode(isVisible());
+		}
+	}
+	*/
+	
 	public boolean isButtonsVisible() {
-		return getButtonPanel().isVisible();
+		return getActionsPanel().isVisible();
 	}
 	
 	public void setButtonsVisible(boolean isVisible) {
-		getButtonPanel().setVisible(isVisible);
+		getActionsPanel().setVisible(isVisible);
 	}
 	
+	private boolean isSnappingAvailable(SnapAdapter snapping) {
+		// assume available
+		boolean bFlag = true;
+		// adapter available?
+		if(snapping==null) {
+			// notify 
+			Utils.showWarning("Snapping er ikke tilgjengelig");
+			// reset flag
+			bFlag = false;
+		}
+		else if(!snapping.isSnapReady()) {
+			// notify
+			Utils.showWarning("Du må først velge lag å snappe til");
+			// reset flag
+			bFlag = false;
+		}
+		// finished
+		return bFlag;		
+	}
+	
+	
 	/**
-	 * This method initializes northPanel	
+	 * This method initializes optionsPanel	
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getNorthPanel() {
-		if (northPanel == null) {
+	private DiskoPanel getOptionsPanel() {
+		if (optionsPanel == null) {
 			try {
 				VerticalFlowLayout vfl = new VerticalFlowLayout();
 				vfl.setVgap(5);
-				vfl.setHgap(0);
+				vfl.setHgap(5);
 				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				northPanel = new JPanel();
-				northPanel.setBorder(BorderFactory.createTitledBorder(
-						null, "Frihåndstegning", TitledBorder.DEFAULT_JUSTIFICATION, 
-						TitledBorder.DEFAULT_POSITION, 
-						new Font("Tahoma", Font.PLAIN, 12), 
-						new Color(0, 70, 213)));
-				northPanel.setLayout(vfl);
+				optionsPanel = new DiskoPanel("Alternativer");				
+				JPanel panel = (JPanel)optionsPanel.getBodyComponent();
+				panel.setPreferredSize(new Dimension(200, 150));
+				panel.setLayout(vfl);
+				panel.add(getSnapToAttr());
+				panel.add(getConstraintAttr());
+				panel.add(getMinStepAttr());
+				panel.add(getMaxStepAttr());
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		northPanel.removeAll();
-		northPanel.add(getObjectPanel(), null);
-		northPanel.add(new JSeparator(JSeparator.HORIZONTAL), null);
-		northPanel.add(getSnapToCheckBox(), null);
-		northPanel.add(new JSeparator(JSeparator.HORIZONTAL), null);
-		northPanel.add(getConstraintsCheckBox(), null);
-		northPanel.add(getMinStepPanel(), null);
-		northPanel.add(getMaxStepPanel(), null);
-		return northPanel;
+		return optionsPanel;
 	}
 	
-
-	private JPanel getObjectPanel() {
-		if(objectPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			objectPanel = new JPanel();
-			objectPanel.setLayout(bl);
-			objectLabel = new JLabel("Objekt");
-			objectLabel.setLabelFor(getMinStepText());
-			objectPanel.add(objectLabel,BorderLayout.WEST);
-			objectPanel.add(getObjectText(),BorderLayout.EAST);
-		}
-		return objectPanel;
-	}	
-	
-	private JTextField getObjectText() {
-		if(objectText == null) {
-			objectText = new JTextField("<velg eller tegn nytt>");
-			objectText.setToolTipText("Valgt objekt");
-			objectText.setEditable(false);
-			objectText.setPreferredSize(new Dimension(200,20));
-			objectText.setBorder(null);
-		}
-		return objectText;
-	}	
-
-	private JCheckBox getSnapToCheckBox() {
-		if(snapToCheckBox == null) {
-			snapToCheckBox = new JCheckBox("Bruk snapping");
-			snapToCheckBox.setToolTipText("Snapper automatisk linje " +
-					"til valgte snappelag");
-			snapToCheckBox.addItemListener(new ItemListener() {
+	private CheckBoxAttribute getSnapToAttr() {
+		if(snapToAttr == null) {
+			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",150,false,true);
+			Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
+			snapToAttr.setPreferredSize(new Dimension(200,dim.height));
+			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
+			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
+			snapToAttr.setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.NORMAL),true);
+			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
 
 				public void itemStateChanged(ItemEvent e) {
 				    if (e.getStateChange() == ItemEvent.DESELECTED)
 				    	tool.setSnapToMode(false);
 				    else {
 				    	// get snapping adapter
-				    	SnappingAdapter snapping = tool.getSnappingAdapter();
-				    	// valid?
-				    	if(snapping!=null && snapping.isSnapReady())
+				    	SnapAdapter snapping = tool.getSnapAdapter();
+				    	// validate
+				    	if(isSnappingAvailable(snapping)) {
+					    	// update
 				    		tool.setSnapToMode(true);
+				    	}
 				    	else {
-				    		snapToCheckBox.setSelected(false);
-				    		Utils.showWarning("Du må først velge lag å snappe til");
+				    		// reset flag
+				    		snapToAttr.getCheckBox().setSelected(false);
 				    	}
 				    }
 				}
 				
 			});
+			snapToAttr.getButton().setActionCommand("editsnap");
+			snapToAttr.getButton().addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					// forward
+					doAction(e);					
+				}
+				
+			});
 		}
-		return snapToCheckBox;
+		return snapToAttr;
 	}
 	
-	private JCheckBox getConstraintsCheckBox() {
-		if(constraintsCheckBox == null) {
-			constraintsCheckBox = new JCheckBox("Begrens avstand");
-			constraintsCheckBox.setToolTipText("Begrenser avstand mellom punkter på en linje");
-			constraintsCheckBox.addItemListener(new ItemListener() {
+	private CheckBoxAttribute getConstraintAttr() {
+		if(constraintAttr == null) {
+			constraintAttr = new CheckBoxAttribute("constaint","Begrens avstand",150,true,true);
+			constraintAttr.setToolTipText("Begrenser avstand mellom punkter på en linje");
+			constraintAttr.getCheckBox().addItemListener(new ItemListener() {
 
 				public void itemStateChanged(ItemEvent e) {
 
@@ -254,90 +281,88 @@ public class LinePanel extends JPanel {
 					
 					// update
 				    tool.setConstrainMode(mode);
-				    getMinStepText().setEnabled(mode);
-				    getMaxStepText().setEnabled(mode);
+				    getMinStepAttr().setEnabled(mode);
+				    getMaxStepAttr().setEnabled(mode);
 				    
 				}
 				
 			});
 		}
-		return constraintsCheckBox;
+		return constraintAttr;
 	}	
 	
-	private JPanel getMinStepPanel() {
-		if(minStepPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			minStepPanel = new JPanel();
-			minStepPanel.setLayout(bl);
-			minStepTextLabel = new JLabel("Minimum avstand");
-			minStepTextLabel.setLabelFor(getMinStepText());
-			minStepPanel.add(minStepTextLabel,BorderLayout.WEST);
-			minStepPanel.add(getMinStepText(),BorderLayout.EAST);
+	private TextFieldAttribute getMinStepAttr() {
+		if(minStepAttr == null) {
+			minStepAttr = new TextFieldAttribute("min","Minium avstand",150,"10",true);
+			minStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
+			minStepAttr.setToolTipText("Minimum avstand mellom to punktet");
+			minStepAttr.getTextField().addFocusListener(new FocusAdapter() {
+
+				@Override
+				public void focusLost(FocusEvent e) {
+					// forward
+					super.focusLost(e);
+					// get value as string
+					String value = (String)minStepAttr.getValue();
+					// set value
+					tool.setMinStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
+				}
+				
+			});
 		}
-		return minStepPanel;
+		return minStepAttr;
 	}	
 	
-	private JTextField getMinStepText() {
-		if(minStepText == null) {
-			minStepText = new JTextField("0");
-			minStepText.setToolTipText("Minimum avstand mellom to punktet");
-			minStepText.setPreferredSize(new Dimension(100,20));
-			minStepText.setDocument(new NumericDocument(-1,0,false));
+	private TextFieldAttribute getMaxStepAttr() {
+		if(maxStepAttr == null) {
+			maxStepAttr = new TextFieldAttribute("max","Maximum avstand",150,"100",true);
+			maxStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
+			maxStepAttr.setToolTipText("Maximum avstand mellom to punktet");
+			maxStepAttr.getTextField().addFocusListener(new FocusAdapter() {
+
+				@Override
+				public void focusLost(FocusEvent e) {
+					// forward
+					super.focusLost(e);
+					// get value as string
+					String value = (String)maxStepAttr.getValue();
+					// set value
+					tool.setMaxStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
+				}
+				
+			});
 		}
-		return minStepText;
+		return maxStepAttr;
 	}	
-	
-	private JPanel getMaxStepPanel() {
-		if(maxStepPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			maxStepPanel = new JPanel();
-			maxStepPanel.setLayout(bl);
-			maxStepTextLabel = new JLabel("Maksimum avstand");
-			maxStepTextLabel.setLabelFor(getMaxStepText());
-			maxStepPanel.add(maxStepTextLabel,BorderLayout.WEST);
-			maxStepPanel.add(getMaxStepText(),BorderLayout.EAST);
-		}
-		return maxStepPanel;
-	}	
-	
-	private JTextField getMaxStepText() {
-		if(maxStepText == null) {
-			maxStepText = new JTextField("0");
-			maxStepText.setToolTipText("Maksimum avstand mellom to punktet");
-			maxStepText.setPreferredSize(new Dimension(100,20));
-			maxStepText.setDocument(new NumericDocument(-1,0,false));
-		}
-		return maxStepText;
-	}	
-	
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
+
+
+	private DiskoPanel getActionsPanel() {
+		if (actionsPanel == null) {
 			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setHgap(0);
-				fl.setVgap(0);
-				fl.setAlignment(FlowLayout.RIGHT);
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(fl);
-				buttonPanel.add(getApplyButton());
-				buttonPanel.add(getSnapToButton());
-				buttonPanel.add(getCancelButton());
+				actionsPanel = new DiskoPanel("Utfør");
+				actionsPanel.addButton(getSnapToButton(),"snapto");
+				actionsPanel.addButton(getApplyButton(),"apply");
+				actionsPanel.addButton(getCancelButton(),"cancel");
+				actionsPanel.setBodyComponent(null);
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return buttonPanel;
+		return actionsPanel;
 	}
-
+	
 	public JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
 				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				cancelButton.setActionCommand("cancel");
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
 						// forward
 						cancel();
+						// forward
+						doAction(e);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -352,10 +377,12 @@ public class LinePanel extends JPanel {
 			try {
 				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 				applyButton.setActionCommand("finish");
-				applyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
+				applyButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
 						// forward
 						apply();
+						// forward
+						doAction(e);						
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -371,10 +398,12 @@ public class LinePanel extends JPanel {
 			try {
 				snapToButton = DiskoButtonFactory.createButton("MAP.SNAPTO",ButtonSize.NORMAL);
 				snapToButton.setActionCommand("snapTo");
-				snapToButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
+				snapToButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
 						// forward
-						snapTo();
+						doSnapTo();
+						// forward
+						doAction(e);						
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -383,30 +412,35 @@ public class LinePanel extends JPanel {
 		}
 		return snapToButton;
 	}	
-		
+	
 	public void setMsoObject(IMsoObjectIf msoObject) {
 		// consume?
 		if (tool.getMap() == null) return;
-		// reset?
-		if (msoObject==null) {
-			reset();
-		}
-		else {
-			// get area
-			IMsoObjectIf parent = MsoUtils.getGeoDataParent(msoObject);
-			// get object name
-			if(parent!=msoObject) {
-				// get name
-				String name = MsoUtils.getMsoObjectName(parent, 1);
-				name += " - " + MsoUtils.getMsoObjectName(msoObject, 1);
-				// update label
-				getObjectText().setText(name);				
-			}
-			else {
-				String name = MsoUtils.getMsoObjectName(msoObject, 1);
-				// update label
-				getObjectText().setText(name);				
-			}
+	}
+	
+	public void addActionListener(ActionListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeActionListener(ActionListener listener) {
+		listeners.remove(listener);
+		getActionsPanel().removeActionListener(listener);
+	}
+	
+	private void doAction(ActionEvent e) {
+		for(ActionListener it: listeners) {
+			it.actionPerformed(e);
 		}
 	}
+	
+	public void onSnapToChanged() {
+		// get adapter
+		SnapAdapter adapter = tool.getSnapAdapter();
+		// enable auto snapping check?
+		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
+	}
+
+	public void onSnapableChanged() {}
+	
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -34,8 +34,14 @@ import java.util.ResourceBundle;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JToolTip;
+import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 /**
@@ -167,6 +173,16 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			UIManager.put("Viewport.font",DEFAULT_PLAIN_MEDIUM_FONT);
 
 //			UIManager.put("ScrollBar.width", 30);
+			
+			// Because DISCO and ArcGIS Objects are mixing heavyweight (AWT.*) 
+			// and lightweight (Swing.*) component, default lightweight behaviors
+			// must be turned off. If not, components JPopup and JTooltips
+			// will be shown below ArcGIS AWT components (MapBean etc.		
+			// IMPORTANT: Do not put ArcGIS components which is implemented using
+			// AWT in a JScrollPane. This will not work correctly. Instead, 
+			// use an AWT ScrollPane.
+			JPopupMenu.setDefaultLightWeightPopupEnabled(false);			
+			ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);						
 
 		}
 		catch (Exception e)
@@ -226,7 +242,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			this.getMsoModel().getModelDriver().setDiskoApplication(this);
 			// show the login dialog
 			final LoginDialog loginDialog = getUIFactory().getLoginDialog();
-			loginDialog.setLocationRelativeTo((JComponent)getFrame().getContentPane(),LoginDialog.POS_CENTER,false);         
+			loginDialog.setLocationRelativeTo((JComponent)getFrame().getContentPane(),LoginDialog.POS_CENTER,false, true);         
 			diskoReport = new DiskoReport(this);
 			java.awt.EventQueue.invokeLater(new Runnable() {public void 
 				run() {

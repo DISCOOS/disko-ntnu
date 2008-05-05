@@ -377,3 +377,18 @@ MESSAGELOG.name = Sambandslogg
 TASKS.name = Oppgaver
 UNIT.name = Enheter
 
+#===============================
+# DISKO Draw API
+#===============================
+
+FeatureType.FEATURE_POINT.text=Punkt
+FeatureType.FEATURE_POLYLINE.text=Polylinje
+FeatureType.FEATURE_POLYGON.text=Polygon
+
+DrawMode.MODE_UNDEFINED.text=Udefinert
+DrawMode.MODE_CREATE.text=Opprett
+DrawMode.MODE_REPLACE.text=Erstatt
+DrawMode.MODE_APPEND.text=Legg til
+DrawMode.MODE_CONTINUE.text=Fortsett
+DrawMode.MODE_DELETE.text=Slett
+DrawMode.MODE_SNAPTO.text=Snap til

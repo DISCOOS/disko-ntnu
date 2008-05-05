@@ -1,19 +1,15 @@
 package org.redcross.sar.map.command;
 
-import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-
-import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.PositionPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -37,10 +33,10 @@ public class PositionTool extends AbstractDrawTool {
 	public PositionTool(IHostToolDialog dialog) throws IOException {
 
 		// forward
-		super(true,DrawFeatureType.DRAW_FEATURE_POINT);
+		super(true,FeatureType.FEATURE_POINT);
 		
 		// prepare abstract class BasicTool
-		cursorPath = "cursors/crosshair.cur"; 
+		cursorPath = "cursors/create.cur"; 
 		caption = "Posisjon"; 
 		category = "Commands"; 
 		message = "Setter posisjon til valgt enhet"; 
@@ -52,11 +48,8 @@ public class PositionTool extends AbstractDrawTool {
 		type = DiskoToolType.POSITION_TOOL;		
 
 		// map draw operation
-		onMouseDownAction = DrawActionType.DRAW_BEGIN;
-		onMouseUpAction = DrawActionType.DRAW_FINISH;
-		
-		// get current application
-		IDiskoApplication app = Utils.getApp();
+		onMouseDownAction = DrawAction.ACTION_BEGIN;
+		onMouseUpAction = DrawAction.ACTION_FINISH;
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
@@ -73,7 +66,7 @@ public class PositionTool extends AbstractDrawTool {
 		propertyPanel = addPropertyPanel();
 		
 		// registrate me in dialog
-		dialog.register((IDrawTool)this, propertyPanel);
+		dialog.register(this);
 		
 	}
 
@@ -90,7 +83,7 @@ public class PositionTool extends AbstractDrawTool {
 				
 				// add layer listener
 				IMsoFeatureLayer msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-				Iterator<JPanel> it = panels.iterator();
+				Iterator<IPropertyPanel> it = panels.iterator();
 				while(it.hasNext()) {
 					msoLayer.addDiskoLayerEventListener((PositionPanel)it.next());
 				}
@@ -110,7 +103,7 @@ public class PositionTool extends AbstractDrawTool {
 			// validate
 			if(validate()) {
 				// update
-				p = transform(x, y);
+				p = toMapPoint(x, y);
 				p.setSpatialReferenceByRef(map.getSpatialReference());
 				getPositionPanel().updatePosition(p);
 				return true;
@@ -218,12 +211,12 @@ public class PositionTool extends AbstractDrawTool {
 	}
 	
 	@Override
-	public JPanel addPropertyPanel() {
+	public IPropertyPanel addPropertyPanel() {
 		// create panel list?
 		if(panels==null)
-			panels = new ArrayList<JPanel>(1);			
+			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		JPanel panel = new PositionPanel(this,true);
+		IPropertyPanel panel = new PositionPanel(this,true);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;

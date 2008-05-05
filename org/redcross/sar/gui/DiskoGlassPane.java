@@ -14,12 +14,17 @@ import java.awt.Point;
 import java.awt.event.AWTEventListener; 
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent; 
 
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+
+import org.redcross.sar.app.Utils;
 
 /** 
  * GlassPane tutorial 
@@ -56,7 +61,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
  
     public DiskoGlassPane(JFrame frame) { 
     	// forward
-        super(null); 
+        super(); 
         // prepare
         this.m_frame = frame; 
         // initialize GUI
@@ -64,8 +69,16 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
     } 
     
     private void initialize() {
+    	// make transparent
     	this.setOpaque(false);
+    	// set glass pane cursor
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        // ensures that focus is not lost when locked
+        this.setInputVerifier( new InputVerifier() {
+        	public boolean verify(JComponent c){
+        		return !m_isLocked;
+        	}
+        });
     }
  
     public void setPoint(Point point) { 
@@ -83,6 +96,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
             this.addFocusListener(new FocusAdapter() {
             	@Override
                 public void focusGained(FocusEvent e) {
+            		// if
             		m_progressDialog.getProgressPanel().getCancelButton().requestFocusInWindow();
                 }
             });    		
@@ -90,13 +104,22 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
     	return m_progressDialog;
     }
  
-    public void eventDispatched(AWTEvent event) { 
-        if (event instanceof MouseEvent) { 
-            MouseEvent me = (MouseEvent) event; 
-            if (!SwingUtilities.isDescendingFrom(me.getComponent(), m_frame)) { 
-                return; 
-            } 
-            if (me.getID() == MouseEvent.MOUSE_EXITED && me.getComponent() == m_frame) { 
+    public void eventDispatched(AWTEvent e) { 
+        if (e instanceof KeyEvent) { 
+        	// dispatch event
+        	KeyEvent ke = (KeyEvent)e; 
+        	// belongs to this application?
+            if (!Utils.inApp(ke.getComponent())) return; 
+            // consume?
+            if(m_isLocked) ke.consume();
+        }
+        else if (e instanceof MouseEvent) { 
+            MouseEvent me = (MouseEvent)e; 
+        	// belongs to this application?
+            if (!Utils.inApp(me.getComponent())) return; 
+            // consume?
+            if(m_isLocked) me.consume();
+            else if (me.getID() == MouseEvent.MOUSE_EXITED && me.getComponent() == m_frame) { 
                 m_point = null; 
             } else { 
                 MouseEvent converted = SwingUtilities.convertMouseEvent(me.getComponent(), me, m_frame.getGlassPane()); 
@@ -136,40 +159,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	        g2.dispose();
         }
     }    
-	
-    /*
-    public void setVisible(boolean isVisible) {
-    	// get current state
-        boolean oldVisible = isVisible();
-        // force visible is locked
-        super.setVisible(isVisible || m_isLocked);
-        // get root pane
-        JRootPane rootPane = SwingUtilities.getRootPane(this);
-        // any change?
-        if (rootPane != null && isVisible() != oldVisible) {
-        	// allow to lock?
-            if (isVisible && m_isLocked) {
-                Component focusOwner = KeyboardFocusManager.
-                        getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-                if (focusOwner != null &&
-                        SwingUtilities.isDescendingFrom(focusOwner, rootPane)) {
-                    m_recentFocusOwner = focusOwner;
-                }
-                rootPane.getLayeredPane().setVisible(false);
-                requestFocusInWindow();
-            } else {
-            	// show layerd pane
-                rootPane.getLayeredPane().setVisible(true);
-                // do cleanup?
-                if (m_recentFocusOwner != null) {
-                    m_recentFocusOwner.requestFocusInWindow();
-                }
-                m_recentFocusOwner = null;
-            }
-        }
-    }	
-    */
-    
+
     public boolean isLocked() {
 		return m_isLocked;
 	}
@@ -190,11 +180,8 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	                        SwingUtilities.isDescendingFrom(focusOwner, rootPane)) {
 	                    m_recentFocusOwner = focusOwner;
 	                }
-	                //rootPane.getLayeredPane().setVisible(false);
 	                requestFocusInWindow();
 	            } else {
-	            	// show layerd pane
-	                //rootPane.getLayeredPane().setVisible(true);
 	                // do cleanup?
 	                if (m_recentFocusOwner != null) {
 	                    m_recentFocusOwner.requestFocusInWindow();
@@ -207,6 +194,18 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 		}
 		setVisible(isLocked);
 		return bFlag;
+	}
+	
+	@Override
+	public void setVisible(boolean isVisible) {
+		// forward
+        super.setVisible(isVisible);
+        /*/ get root pane
+        JRootPane rootPane = SwingUtilities.getRootPane(this);
+        // any change?
+        if (rootPane != null)
+			rootPane.getLayeredPane().setVisible(!isVisible);
+		*/
 	}
 	
 }

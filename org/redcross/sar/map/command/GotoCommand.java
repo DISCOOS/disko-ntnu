@@ -45,12 +45,20 @@ public class GotoCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				GotoDialog gotoDialog = (GotoDialog)dialog;
 				gotoDialog.onLoad((IDiskoMap)obj);
-				gotoDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false);			
+				gotoDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false, true);			
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void onClick() {
+		// forward
+		super.onClick();
+		// update panel
+		((GotoDialog)dialog).getClickPoint();
 	}	
 	
 }

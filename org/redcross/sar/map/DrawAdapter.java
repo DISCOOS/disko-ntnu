@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.IMsoLayerEventListener;
@@ -27,6 +28,9 @@ import org.redcross.sar.gui.map.ElementPanel;
 import org.redcross.sar.gui.map.ElementPanel.ElementEvent;
 import org.redcross.sar.map.command.IDrawTool;
 import org.redcross.sar.map.command.SelectFeatureTool;
+import org.redcross.sar.map.command.IDrawTool.DrawMode;
+import org.redcross.sar.map.command.IDrawTool.FeatureType;
+import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
@@ -48,8 +52,15 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
 
+import com.esri.arcgis.controls.IMapControlEvents2Adapter;
+import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
+import com.esri.arcgis.display.IDisplay;
+import com.esri.arcgis.display.esriScreenCache;
 import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.geometry.IGeometry;
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.interop.AutomationException;
+import com.esri.arcgis.systemUI.ITool;
 
 /**
  * @author kennetgu
@@ -59,13 +70,6 @@ public class DrawAdapter implements
 	IMsoUpdateListenerIf, IMsoLayerEventListener, 
 	ElementPanel.IElementEventListener, IDiskoWorkListener {
 
-	public enum DrawMode {
-		UNDEFINED,
-		CREATE,
-		APPEND,
-		REPLACE
-	}
-	
 	private boolean isWorking = false;
 	private boolean isSelecting = false;
 	
@@ -76,10 +80,13 @@ public class DrawAdapter implements
 	private IMsoModelIf msoModel = null;
 	private IDiskoApplication app = null;
 	
-	private IMsoObjectIf currentMsoOwn = null;
-	private IMsoObjectIf currentMsoObj = null;
-	//private IMsoFeature currentMsoFeature = null;
+	private IMsoObjectIf msoOwner = null;
+	private IMsoObjectIf msoObject = null;
+	private MsoClassCode msoCode = null;
 	
+	private IEnvelope geoFrame = null;
+	
+	private DrawFrame drawFrame = null;
 	private DrawDialog drawDialog = null;
 	private ElementDialog elementDialog = null;	
 		
@@ -87,6 +94,8 @@ public class DrawAdapter implements
 	
 	private EnumSet<MsoClassCode> myInterests = null;	
 
+	private MapControlAdapter mapListener = null;
+	
 	private ArrayList<IDrawAdapterListener> drawListeners = null;
 	private ArrayList<IDiskoWorkListener> workListeners = null;
 	
@@ -98,9 +107,10 @@ public class DrawAdapter implements
 		this.msoModel = app.getMsoModel();
 		this.drawListeners = new ArrayList<IDrawAdapterListener> ();
 		this.workListeners = new ArrayList<IDiskoWorkListener>();
+		this.mapListener = new MapControlAdapter();
 		
 		// set draw mode
-		drawMode = DrawMode.UNDEFINED;
+		drawMode = DrawMode.MODE_UNDEFINED;
 		
 		// add listeners
 		msoModel.getEventManager().addClientUpdateListener(this);
@@ -132,6 +142,9 @@ public class DrawAdapter implements
 	
 	public void register(DiskoMap map) {
 		
+		// is not supporting this?
+		if(!map.isEditSupportInstalled()) return;
+		
 		// initialize
 		Iterator<LayerCode> it = null;
 		
@@ -140,9 +153,16 @@ public class DrawAdapter implements
 			it = getMyLayers().iterator();
 			while(it.hasNext()) {
 				IMsoFeatureLayer msoLayer = this.map.getMsoLayer(it.next());
-				if(msoLayer!=null)
-					msoLayer.removeDiskoLayerEventListener(this);
-			}			
+				if(msoLayer!=null) msoLayer.removeDiskoLayerEventListener(this);
+			}	
+			// remove current listener
+			try {
+				this.map.removeIMapControlEvents2Listener(mapListener);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		
 		// register?
@@ -154,14 +174,38 @@ public class DrawAdapter implements
 				if(msoLayer!=null)
 					msoLayer.addDiskoLayerEventListener(this);
 			}
+			// add listener to used to draw tool geometries
+			try {
+				map.addIMapControlEvents2Listener(mapListener);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
 		}		
-		// set draw mode
-		enterMode(DrawMode.UNDEFINED);
+		
 		// save map
 		this.map = map;
+		
+		// register draw frame
+		register(map.getDrawFrame());
+		
+		// register draw dialog
+		register(map.getDrawDialog());
+		
+		// register element dialog
+		register(map.getElementDialog());
+		
+		// set draw mode
+		SetDrawMode(DrawMode.MODE_UNDEFINED);
+		
 	}
 	
-	public void register(ElementDialog dialog) {
+	private void register(DrawFrame frame) {
+		// save frame
+		this.drawFrame = frame;
+	}
+	
+	private void register(ElementDialog dialog) {
 		// unregister?
 		if(this.elementDialog!=null) {
 			this.elementDialog.getElementPanel().removeElementListener(this);
@@ -173,7 +217,7 @@ public class DrawAdapter implements
 		this.elementDialog = dialog;
 	}
 	
-	public void register(DrawDialog dialog) {
+	private void register(DrawDialog dialog) {
 		// unregister?
 		if(this.drawDialog!=null) {
 			this.drawDialog.removeDiskoWorkEventListener(this);
@@ -181,8 +225,6 @@ public class DrawAdapter implements
 		// register?
 		if(dialog!=null)
 			dialog.addDiskoWorkEventListener(this);
-		// set draw mode
-		enterMode(DrawMode.UNDEFINED);
 		// save dialog
 		this.drawDialog = dialog;
 	}
@@ -205,99 +247,426 @@ public class DrawAdapter implements
 		
 	public DrawMode getDrawMode() {
 		return drawMode;
+	}	
+	
+	public DrawDialog getDrawDialog() {
+		return drawDialog;
 	}
-
+	
+	public DrawFrame getDrawFrame() {
+		return drawFrame;
+	}
+	
 	public Enum getElement() {
 		return element;
 	}
 	
 	public IMsoObjectIf getMsoObject() {
-		return currentMsoObj;
+		return msoObject;
 	}
 	
 	public IMsoObjectIf getMsoOwner() {
-		return currentMsoOwn;
+		return msoOwner;
 	}
 	
-	private void enterMode(DrawMode drawMode) {
-		// get old draw mode
-		DrawMode oldDrawMode = this.drawMode;
-		// is draw dialog registered?
-		if(drawDialog==null) {
-			// enter undefined mode
-			this.drawMode=DrawMode.UNDEFINED;
-		}
-		else {
-			// resume mode first?
-			if(!DrawMode.CREATE.equals(this.drawMode)) resumeMode();
-			// enter mode
-			this.drawMode=drawMode;
-		}
-		// notify
-		fireOnDrawModeChange(drawMode,oldDrawMode, currentMsoObj);			
+	public MsoClassCode getMsoClassCode() {
+		return msoCode;
 	}
 	
-	private void finish(DrawMode mode, IMsoObjectIf msoObject) {
-		suspendUpdate();
+	private void reset() throws AutomationException, IOException {
+		// prepare for work
 		setIsWorking();
-		try {
-			map.setSelected(msoObject, true);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		currentMsoObj = msoObject;
-		currentMsoOwn = (msoObject == null) ? null : MsoUtils.getOwningArea(msoObject);
-		fireOnDrawFinished(mode, msoObject);
-		resumeMode();
-		setIsNotWorking();
-		resumeUpdate();
-	}
-	
-	private void reset() {
 		suspendUpdate();
-		setIsWorking();
-		try {
-			map.setSelected(currentMsoObj, false);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		currentMsoObj = null;
-		currentMsoOwn = null;
+		// clear any selections
+		if(map.isSelected(msoObject)>0) map.setSelected(msoObject, false);
+		// reset mso draw data
+		setMsoDrawData(null,null,msoCode);
+		// resume old mode
 		resumeMode();
-		setIsNotWorking();
+		// reset active tool?
+		if((currentTool!=null)) getActiveTool().reset();
+		// finalize work
 		resumeUpdate();
+		setIsNotWorking();
 	}	
 	
 	private void resumeMode() {
 		
-		// get old draw mode
-		DrawMode oldDrawMode = this.drawMode;
-		
-		// only possible if draw dialog is registered
-		if(drawDialog==null) return;
-
-		// get flag
-		boolean isUpdateMode = false;
-				
 		try {
-			isUpdateMode = DrawMode.REPLACE.equals(drawMode) 
-				&& (currentMsoObj == null ? false : map.isSelected(currentMsoObj) > 0);
+			
+			// get old draw mode
+			DrawMode oldDrawMode = this.drawMode;
+			
+			// only possible if draw dialog is registered
+			if(drawDialog==null) return;
+	
+			// change state
+			change(drawMode);
+	
+			// update tools
+			drawDialog.setAttribute(drawMode, "SETDRAWMODE");
+			
+			// notify
+			fireOnDrawModeChange(drawMode,oldDrawMode, msoObject);	
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}		
-				
-		// update tools
-		drawDialog.setAttribute(isUpdateMode, "ISUPDATEMODE");
+
 		
-		// resume to legal state
-		drawMode = DrawMode.CREATE; //isUpdateMode ? ((currentMsoObj instanceof IRouteIf) ? DrawMode.REPLACE : DrawMode.APPEND) : DrawMode.CREATE;
+	}
+
+	private void SetDrawMode(DrawMode drawMode) {
 		
+		// get old draw mode
+		DrawMode oldDrawMode = this.drawMode;
+		
+		// is draw dialog registered?
+		if(drawDialog==null) {
+			// enter undefined mode
+			change(DrawMode.MODE_UNDEFINED);
+		}
+		else {
+			// infer mode from current state
+			change(drawMode);
+		}
+		// forward
+		updateFrame(true);
 		// notify
-		fireOnDrawModeChange(drawMode,oldDrawMode, currentMsoObj);	
+		fireOnDrawModeChange(drawMode,oldDrawMode, msoObject);			
+	}
+
+	private void change(DrawMode mode) {
 		
+		// set working
+		setIsWorking();
+		
+		try {
+			
+			// get flag
+			boolean isInferable = (msoObject!=null) ? map.isSelected(msoObject)>0 : (msoOwner!=null); 
+			
+			// infer mode from user selection and feasible draw modes?
+			if(isInferable) {
+				// get inferred mode
+				if(DrawMode.MODE_CREATE.equals(mode)) {
+					drawMode = (msoObject != null) ? DrawMode.MODE_REPLACE 
+							: (msoOwner != null) ? DrawMode.MODE_APPEND : mode;
+				}
+				else if(DrawMode.MODE_REPLACE.equals(mode)) {
+					drawMode = (msoObject == null) ? DrawMode.MODE_CREATE : mode;
+				}
+				else if(DrawMode.MODE_CONTINUE.equals(mode)) {
+					drawMode = (msoObject == null) ? DrawMode.MODE_CREATE : mode;
+				}
+				else if(DrawMode.MODE_APPEND.equals(mode)) {
+					drawMode = (msoOwner == null) ? DrawMode.MODE_CREATE : mode;
+				}
+			}
+			else
+				// return to default
+				drawMode = DrawMode.MODE_CREATE;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			// return to default
+			drawMode = DrawMode.MODE_UNDEFINED;
+		}		
+		try {
+			// constrain mso hooks?
+			if(DrawMode.MODE_UNDEFINED.equals(drawMode) ||
+					DrawMode.MODE_CREATE.equals(drawMode) || 
+					DrawMode.MODE_APPEND.equals(drawMode)) {
+				// clear selection?
+				if(msoObject!=null && map.isSelected(msoObject)>0) {
+					// clear selection
+					map.setSelected(msoObject, false);
+					// reset hooks
+					msoObject = null;
+				}
+				// clear selection?
+				if(msoOwner!=null && map.isSelected(msoOwner)>0) {
+					// clear selection
+					map.setSelected(msoOwner, false);
+					// reset hooks
+					msoOwner = null;
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// set not working
+		setIsNotWorking();
+		
+	}
+	
+	
+	private void setMsoDrawData(IMsoObjectIf msoObj, IMsoObjectIf msoOwn, MsoClassCode code) {
+		// get frame update flag
+		boolean isDirty = (msoOwner!=msoOwn);
+		// set data
+		msoObject = msoObj;
+		msoOwner = msoOwn;
+		msoCode = code;
+		// update frame?
+		if(isDirty) {
+			if(getFrame()) {
+				try {
+					drawFrame(true);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			}
+		}
+	}
+	
+	private boolean getFrame() {
+
+		// get dirty flag
+		boolean isDirty = (geoFrame!=null);
+
+		try {
+						
+			// reset frame
+			geoFrame = null;
+			
+            // forward?
+			if(msoOwner!=null) {			
+				// parse
+				if(msoOwner instanceof IAreaIf) {
+					// initialize frame
+					IEnvelope frame = null;
+					// cast to IAreaIf
+					IAreaIf area = (IAreaIf)msoOwner;
+					// get geometry bag of all lines
+					IGeometry geoArea = MapUtil.getEsriGeometryBag(
+							area.getAreaGeodata().getClone(),
+			        		MsoClassCode.CLASSCODE_ROUTE, 
+			        		map.getSpatialReference());
+					// get geometry bag of all points
+					IGeometry geoPOI = MapUtil.getEsriGeometryBag(
+							area.getAreaPOIs(), 
+							map.getSpatialReference());
+					// create frame
+					if(geoArea!=null) {
+						frame = geoArea.getEnvelope();
+					}
+					if(geoPOI!=null) {
+						if(frame==null)
+							frame = geoArea.getEnvelope();
+						else
+							frame.union(geoPOI.getEnvelope());
+					}
+					// set new frame
+					geoFrame = frame;
+				}
+			}
+			
+			// update dirty flag
+			isDirty = isDirty || (geoFrame!=null);		
+					
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		// finished
+		return isDirty;
+		
+	}	
+	
+	public void setFrame(IEnvelope e) throws AutomationException, IOException {
+		// update
+		geoFrame = (e!=null) ? e.getEnvelope() : null;	
+		// refresh
+		drawFrame(false);
+	}
+	
+	private void drawFrame(boolean refresh) throws IOException, AutomationException {
+		
+		try {
+			// has frame?
+			if(geoFrame!=null) {
+				// get screen display and start drawing on it
+				IDisplay display = drawFrame.display(); map.getActiveView().getScreenDisplay();
+				// refresh?
+				if(!refresh)
+					display.startDrawing(display.getHDC(),(short) esriScreenCache.esriNoScreenCache);
+				// get frame to invalidate
+				//IEnvelope invalidate = drawElement.getFrame();				
+				// expand?
+				double d = display.getDisplayTransformation().fromPoints(15);
+				// get next frame
+				IEnvelope frame = MapUtil.expand(d,d,false,geoFrame.getEnvelope());
+				// forward
+				updateFrame(false);							
+				// set text and frame
+				drawFrame.setFrame(frame);
+				// update invalidation rectangle?
+				if(!refresh) display.finishDrawing();
+				// activate frame
+				drawFrame.activate();
+			}
+			else {
+				// hide?
+				if(refresh) drawFrame.deactivate();
+			}
+			// forward?
+			if(refresh) refreshDrawFrame();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}	
+	
+	private void updateFrame(boolean redraw) {
+		// is installed?
+		
+		try {
+			// initialize
+			String undef = "<" + Utils.getEnumText(DrawMode.MODE_UNDEFINED) + ">";
+			String caption = undef;
+			boolean isCreateMode = false;
+			boolean isPointFeature = (!isToolActive()) ? false 
+					: FeatureType.FEATURE_POINT.equals(getActiveTool().getFeatureType());
+			// parse state
+			if(DrawMode.MODE_CREATE.equals(drawMode)) {
+				drawFrame.clearSelectedIcon();
+				caption = Utils.getEnumText(DrawMode.MODE_CREATE) + " " + (msoCode != null 
+						? Utils.getEnumText(msoCode): undef);
+				// prepare to hide illegal icons
+				isCreateMode = true;
+			}
+			else if(DrawMode.MODE_REPLACE.equals(drawMode)) {
+				drawFrame.setSelectedIcon("replace", true);
+				caption = Utils.getEnumText(DrawMode.MODE_REPLACE) + " " + (msoObject != null 
+						? MsoUtils.getMsoObjectName(msoObject, 1) : undef);
+			}
+			else if(DrawMode.MODE_CONTINUE.equals(drawMode)) {
+				drawFrame.setSelectedIcon("continue", true);					
+				caption = Utils.getEnumText(DrawMode.MODE_CONTINUE) + " på " 
+						+ (msoObject != null ? MsoUtils.getMsoObjectName(msoObject, 1) : undef);
+			}
+			else if(DrawMode.MODE_APPEND.equals(drawMode)) {
+				drawFrame.setSelectedIcon("append", true);					
+				caption = Utils.getEnumText(DrawMode.MODE_APPEND) + " "+ (msoCode != null 
+						? Utils.getEnumText(msoCode): undef);
+			}
+			// update caption text
+			drawFrame.setText(caption);
+			// update visible icons
+			drawFrame.setIconVisible("replace", !isCreateMode);
+			drawFrame.setIconVisible("append", !isCreateMode && !isPointFeature);
+			drawFrame.setIconVisible("continue", !isCreateMode && !isPointFeature);
+			// forward?
+			if(redraw) refreshDrawFrame();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}						
+	}
+	
+	public void refreshDrawFrame() throws AutomationException, IOException {
+		if(!(map.isDrawingSupressed() || map.isNotifySuspended())) 
+			drawFrame.refresh();
+	}
+	
+	public boolean onMouseDown(int button, int shift, IPoint p) {
+		try {
+			// do a hit test
+			String name = drawFrame.hitIcon(p.getX(), p.getY(), 1);
+			// is a icon hit?
+			return (name!=null && !name.isEmpty());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return false;
+	}
+	
+	public boolean onMouseUp(int button, int shift, IPoint p) {
+		try {
+			// do a hit test
+			String name = drawFrame.hitIcon(p.getX(), p.getY(), 1);
+			// is a icon hit?
+			if(name!=null && !name.isEmpty()) {
+				// execute command
+				if("cancel".equalsIgnoreCase(name)) {
+					// forward?
+					if((currentTool!=null)) getActiveTool().cancel();
+					// finished
+					return true;
+				}
+				else if("finish".equalsIgnoreCase(name)) {
+					// forward?
+					if((currentTool!=null)) getActiveTool().apply();
+					// finished
+					return true;
+				}
+				else if("replace".equalsIgnoreCase(name)) {
+					// change mode
+					SetDrawMode(DrawMode.MODE_REPLACE);
+					// forward
+					if((currentTool!=null)) getActiveTool().setAttribute(drawMode,"SETDRAWMODE");
+					// finished
+					return true;
+				}
+				else if("continue".equalsIgnoreCase(name)) {
+					// change mode
+					SetDrawMode(DrawMode.MODE_CONTINUE);
+					// forward
+					if((currentTool!=null)) getActiveTool().setAttribute(drawMode,"SETDRAWMODE");
+					// finished
+					return true;
+				}
+				else if("append".equalsIgnoreCase(name)) {
+					// change mode
+					SetDrawMode(DrawMode.MODE_APPEND);
+					// forward
+					if((currentTool!=null)) getActiveTool().setAttribute(drawMode,"SETDRAWMODE");
+					// finished
+					return true;
+				}
+				else if("delete".equalsIgnoreCase(name)) {
+					// change mode
+					SetDrawMode(DrawMode.MODE_DELETE);
+					// forward
+					if((currentTool!=null)) getActiveTool().setAttribute(drawMode,"SETDRAWMODE");
+					// finished
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return false;
+	}	
+	
+	public boolean finish() {
+		// TODO: in case of future use...
+		return false;
+	}
+	
+	public boolean cancel() {
+		boolean bFlag = false;
+		try {
+			// forward
+			reset();
+			// deactive
+			drawFrame.deactivate();
+			// success
+			bFlag = true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return bFlag;
 	}
 	
 	private void fireOnWorkChange(Object worker, IMsoObjectIf msoObj, Object data) {
@@ -385,8 +754,9 @@ public class DrawAdapter implements
 		// forward?
 		if(elementDialog!=null) {
 			elementDialog.getElementPanel().msoObjectDeleted(msoObject, mask);
-			if(currentMsoObj==msoObject)
-				reset();
+			if(msoObject==msoObject) {
+				cancel();
+			}
 		}
 	}	
 	
@@ -399,15 +769,22 @@ public class DrawAdapter implements
 		// consume?
 		if(isWorking()) return;
 		
-		// reset current objects
-		currentMsoObj = null;
-		currentMsoOwn = null;
+		// set working
+		setIsWorking();
+		
+		// forward
+		setMsoDrawData(null,null,null);
+		
+		// forward
+		if((currentTool!=null)) getActiveTool().reset();
 		
 		// update this
 		try {
 			
 			// initialize to current
 			Enum type = element;
+			IMsoObjectIf msoObject = this.msoObject;
+			IMsoObjectIf msoOwner = this.msoOwner;
 			
 			// get mso layer
 			IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
@@ -431,38 +808,38 @@ public class DrawAdapter implements
 				IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
 				
 				// save current selected object
-				currentMsoObj = (msoFeature == null) ? null : msoFeature.getMsoObject();
+				msoObject = (msoFeature == null) ? null : msoFeature.getMsoObject();
 				
 				// get owner
-				currentMsoOwn = (currentMsoObj == null) ? null : MsoUtils.getOwningArea(currentMsoObj);
+				msoOwner = (msoObject == null) ? null : MsoUtils.getOwningArea(msoObject);
 				
 				// dispatch type of object
-				if (currentMsoObj instanceof IOperationAreaIf) {
+				if (msoObject instanceof IOperationAreaIf) {
 					// get type
 					type = MsoClassCode.CLASSCODE_OPERATIONAREA;
 				}
-				else if (currentMsoObj instanceof ISearchAreaIf) {
+				else if (msoObject instanceof ISearchAreaIf) {
 					// get type
 					type = MsoClassCode.CLASSCODE_SEARCHAREA;
 				}
-				else if (currentMsoObj instanceof IRouteIf) {
+				else if (msoObject instanceof IRouteIf) {
 					// initialize
-					type = SearchSubType.PATROL;
+					type = MsoClassCode.CLASSCODE_ROUTE;
 					// get owning area
-					IAreaIf area = (IAreaIf)currentMsoOwn;
+					IAreaIf area = (IAreaIf)msoOwner;
 					// found area?
 					if(area!=null) {
 						// get sub type
-						type = MsoUtils.getType(currentMsoObj,true);
+						type = MsoUtils.getType(msoObject,true);
 					}
 				}
-				else if (currentMsoObj instanceof IPOIIf) {
+				else if (msoObject instanceof IPOIIf) {
 					
 					// initialize
 					type = MsoClassCode.CLASSCODE_POI;
 					
 					// get poi
-					IPOIIf poi = (IPOIIf)currentMsoObj;
+					IPOIIf poi = (IPOIIf)msoObject;
 					
 					// get poi type
 					IPOIIf.POIType poiType = poi.getType();
@@ -478,7 +855,7 @@ public class DrawAdapter implements
 						type = SearchSubType.PATROL;
 						
 						// get owning area
-						IAreaIf area = (IAreaIf)currentMsoOwn;
+						IAreaIf area = (IAreaIf)msoOwner;
 						
 						// get flag
 						isAreaPOI = (area!=null);
@@ -493,7 +870,7 @@ public class DrawAdapter implements
 						}
 					}
 				}
-				else if(currentMsoObj instanceof IUnitIf) {
+				else if(msoObject instanceof IUnitIf) {
 					// get type
 					type = MsoClassCode.CLASSCODE_UNIT;
 				}
@@ -504,21 +881,22 @@ public class DrawAdapter implements
 			if (elementList.getSelectedValue()!=type)
 				elementList.setSelectedValue(type, false);				
 			else force = true;
-			if(elementDialog.getObjectList().getSelectedValue()!=currentMsoOwn)
-				elementDialog.getObjectList().setSelectedValue(currentMsoOwn, false);				
+			if(elementDialog.getObjectList().getSelectedValue()!=msoOwner)
+				elementDialog.getObjectList().setSelectedValue(msoOwner, false);				
 			else force = true;
-			if(elementDialog.getPartList().getSelectedValue()!=currentMsoObj)
-				elementDialog.getPartList().setSelectedValue(currentMsoObj, false);				
+			if(elementDialog.getPartList().getSelectedValue()!=msoObject)
+				elementDialog.getPartList().setSelectedValue(msoObject, false);				
 			else force = true;			
 			// force setup?
-			if(force)
-				setup(type);
+			if(force) setup(type,msoObject,msoOwner,msoOwner!=null);
 			// reset flag
 			isSelecting = false;
-		} catch (RuntimeException e1) {
+		} catch (RuntimeException ex) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			ex.printStackTrace();
 		}		
+		// set not working
+		setIsNotWorking();		
 	}	
 	
 	public boolean nextElement() {
@@ -570,63 +948,79 @@ public class DrawAdapter implements
 		if(elementList != null && elementList.getSelectedValue()!=element)
 			elementList.setSelectedValue(element, true);
 		else
-			setup(element);
+			setup(element,msoObject,msoOwner,true);
 		
 		// success
 		return true;
 		
 	}
 	
-	private void setup(Enum element) {
+	private void setup(Enum element, IMsoObjectIf msoObj, IMsoObjectIf msoOwn, boolean setTool) {
 		
 		// only possible is draw dialog is registered
 		if(drawDialog==null) return;
 		
 		try {
 		
+			// initialize
+			MsoClassCode code = null;
+			Object[] attributes = null;
+			DrawMode mode = DrawMode.MODE_UNDEFINED;
+			IDrawTool defaultTool = null;
+			
 			// get nav bar
 	        NavBar navBar = app.getNavBar();
 	        
 			// dispatch element
 			if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(element)) {
 				// reset current?
-				if(currentMsoObj!=null){
-					if(!MsoClassCode.CLASSCODE_OPERATIONAREA.equals(currentMsoObj.getMsoClassCode())){
+				if(msoObj!=null){
+					if(!MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObj.getMsoClassCode())){
 						reset();
 					}
 				}				
-				// get attributes
-				Object[] attributes = {currentMsoObj instanceof IOperationAreaIf,currentMsoObj};
+				// set flag
+				boolean isReplaceMode = msoObj instanceof IOperationAreaIf;
 				// set draw mode
-				enterMode((Boolean)attributes[0] ? DrawMode.REPLACE : DrawMode.CREATE);
-				// setup tools
-				drawDialog.setToolSet(MsoClassCode.CLASSCODE_OPERATIONAREA,attributes);
-				setDefaultTool(navBar.getFreeHandTool());
+				mode = (isReplaceMode ? DrawMode.MODE_REPLACE : DrawMode.MODE_CREATE);
+				// get attributes
+				Object[] attr = {mode,msoObj};
+				// update
+				attributes = attr;
+				// set class code
+				code = MsoClassCode.CLASSCODE_OPERATIONAREA;
+				// select default tool
+				defaultTool = navBar.getFreeHandTool();
 			}
 			else if (MsoClassCode.CLASSCODE_SEARCHAREA.equals(element)) {
 				// reset current?
-				if(currentMsoObj!=null){
-					if(!MsoClassCode.CLASSCODE_SEARCHAREA.equals(currentMsoObj.getMsoClassCode())){
+				if(msoObj!=null){
+					if(!MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObj.getMsoClassCode())){
 						reset();
 					}
 				}
-				// get attributes
-				Object[] attributes = {currentMsoObj instanceof ISearchAreaIf,currentMsoObj};
+				// set flag
+				boolean isReplaceMode = msoObj instanceof ISearchAreaIf;
 				// set draw mode
-				enterMode((Boolean)attributes[0] ? DrawMode.REPLACE : DrawMode.CREATE);
-				// setup tools
-				drawDialog.setToolSet(MsoClassCode.CLASSCODE_SEARCHAREA,attributes);
-				setDefaultTool(navBar.getFreeHandTool());
+				mode = (isReplaceMode ? DrawMode.MODE_REPLACE : DrawMode.MODE_CREATE);
+				// get attributes
+				Object[] attr = {mode,msoObj};
+				// update attribute
+				attributes = attr;
+				// set class code
+				code = MsoClassCode.CLASSCODE_SEARCHAREA;
+				// select default tool
+				defaultTool = navBar.getFreeHandTool();
 			}
 			else if (MsoClassCode.CLASSCODE_ROUTE.equals(element)) {
 				// reset current?
-				if(currentMsoObj!=null){
-					if(!MsoClassCode.CLASSCODE_ROUTE.equals(currentMsoObj.getMsoClassCode())){
+				if(msoObj!=null){
+					if(!MsoClassCode.CLASSCODE_ROUTE.equals(msoObj.getMsoClassCode())){
 						reset();
 					}
 				}
 				// get owning area
-				IAreaIf area = (IAreaIf)currentMsoOwn;
+				IAreaIf area = (IAreaIf)msoOwn;
 				// initialize with default value
 				SearchSubType type = SearchSubType.PATROL;
 				// get current type?
@@ -642,25 +1036,30 @@ public class DrawAdapter implements
 						type == SearchSubType.LINE || 
 						type == SearchSubType.MARINE ||
 						type == SearchSubType.URBAN);
-				// get attributes
-				Object[] attributes = {currentMsoObj instanceof IRouteIf,drawPolygon,type,currentMsoObj,area};
+				// set flag
+				boolean isReplaceMode = msoObj instanceof IRouteIf;
 				// set draw mode
-				enterMode((Boolean)attributes[0] ? DrawMode.REPLACE : DrawMode.CREATE);
-				// forward
-				drawDialog.setToolSet(MsoClassCode.CLASSCODE_ROUTE, attributes);
-				setDefaultTool(navBar.getFreeHandTool());
+				mode = (isReplaceMode ? DrawMode.MODE_REPLACE : DrawMode.MODE_CREATE);
+				// get attributes
+				Object[] attr = {mode,drawPolygon,type,msoObj,area};
+				// update attributes
+				attributes = attr;
+				// set class code
+				code = MsoClassCode.CLASSCODE_ROUTE;
+				// select default tool
+				defaultTool = navBar.getFreeHandTool();
 			}
 			else if(element instanceof SearchSubType) {
 				// reset current?
-				if(currentMsoOwn!=null){
-					if(!MsoClassCode.CLASSCODE_AREA.equals(currentMsoOwn.getMsoClassCode())){
+				if(msoOwn!=null){
+					if(!MsoClassCode.CLASSCODE_AREA.equals(msoOwn.getMsoClassCode())){
 						reset();
 					}
 				}
 				// get requested sub type
 				SearchSubType type = (SearchSubType)element;
 				// get owning area
-				IAreaIf area = (IAreaIf)currentMsoOwn;
+				IAreaIf area = (IAreaIf)msoOwn;
 				// get current type?
 				if(area!=null) {
 					// is search sub type?
@@ -676,52 +1075,62 @@ public class DrawAdapter implements
 						type == SearchSubType.MARINE ||
 						type == SearchSubType.URBAN);
 				// get update mode
-				boolean isUpdateMode = (currentMsoOwn instanceof IAreaIf || currentMsoObj instanceof IRouteIf);
-				// get attributes
-				Object[] attributes = {isUpdateMode, drawPolygon,type,currentMsoOwn,currentMsoObj};
-				// get draw mode
-				DrawMode drawMode = (isUpdateMode ? 
-						((currentMsoObj instanceof IRouteIf) ? 
-								DrawMode.REPLACE : DrawMode.APPEND) : DrawMode.CREATE);
+				boolean isReplaceMode = (msoOwn instanceof IAreaIf || msoObj instanceof IRouteIf);
 				// set draw mode
-				enterMode(drawMode);
-				// forward
-				drawDialog.setToolSet(MsoClassCode.CLASSCODE_ROUTE, attributes);
+				mode = (isReplaceMode ? ((msoObj instanceof IRouteIf) ? 
+								DrawMode.MODE_REPLACE : DrawMode.MODE_APPEND) : DrawMode.MODE_CREATE);
+				// get attributes
+				Object[] attr = {mode, drawPolygon,type,msoOwn,msoObj};
+				// update attributes
+				attributes = attr;
+				// set class code
+				code = MsoClassCode.CLASSCODE_ROUTE;
 				// select default tool
-				setDefaultTool(currentMsoObj instanceof IPOIIf ? navBar.getPOITool() : navBar.getFreeHandTool());
-				
+				defaultTool = (msoObj instanceof IPOIIf ? navBar.getPOITool() : navBar.getFreeHandTool());				
 			}
 			else if (MsoClassCode.CLASSCODE_POI.equals(element)) {
 				// reset current?
-				if(currentMsoObj!=null){
-					if(!MsoClassCode.CLASSCODE_POI.equals(currentMsoObj.getMsoClassCode())){
+				if(msoObj!=null){
+					if(!MsoClassCode.CLASSCODE_POI.equals(msoObj.getMsoClassCode())){
 						reset();
 					}
 				}
 				// get owning area
-				IAreaIf area = (IAreaIf)currentMsoOwn;
+				IAreaIf area = (IAreaIf)msoOwn;
 				// has area?
 				boolean isAreaPOI = (area!=null);
-				// get attributes
-				Object[] attributes = {currentMsoObj instanceof IPOIIf,isAreaPOI,currentMsoOwn,currentMsoObj};
+				// get flag
+				boolean isReplaceMode = msoObj instanceof IPOIIf;
 				// set draw mode
-				enterMode((Boolean)attributes[0] ? DrawMode.REPLACE : DrawMode.CREATE);
-				// setup tools
-				drawDialog.setToolSet(MsoClassCode.CLASSCODE_POI,attributes);
-				setDefaultTool(navBar.getPOITool());
+				mode = (isReplaceMode ? DrawMode.MODE_REPLACE : DrawMode.MODE_CREATE);
+				// get attributes
+				Object[] attr = {mode,isAreaPOI,msoOwn,msoObj};
+				// update attributes
+				attributes = attr;
+				// set class code
+				code = MsoClassCode.CLASSCODE_POI;
+				// select default tool
+				defaultTool = navBar.getPOITool();
 			}
 			else if (MsoClassCode.CLASSCODE_UNIT.equals(element)) {
 				// reset current?
-				if(currentMsoObj!=null){
-					if(!MsoClassCode.CLASSCODE_UNIT.equals(currentMsoObj.getMsoClassCode())){
+				if(msoObj!=null){
+					if(!MsoClassCode.CLASSCODE_UNIT.equals(msoObj.getMsoClassCode())){
 						reset();
 					}
 				}
+				// get flag
+				boolean isReplaceMode = msoObj instanceof IUnitIf;
+				// set draw mode
+				mode = (isReplaceMode ? DrawMode.MODE_REPLACE : DrawMode.MODE_CREATE);
 				// get attributes
-				Object[] attributes = {currentMsoObj instanceof IUnitIf,currentMsoObj};
-				// setup tools
-				drawDialog.setToolSet(MsoClassCode.CLASSCODE_UNIT,attributes);
-				setDefaultTool(navBar.getPositionTool());
+				Object[] attr = {mode,msoObj};
+				// update attributes
+				attributes = attr;
+				// set class code
+				code = MsoClassCode.CLASSCODE_UNIT;
+				// select default tool
+				defaultTool = navBar.getPositionTool();
 			}			
 			else {
 				// forward
@@ -730,10 +1139,22 @@ public class DrawAdapter implements
 				element = null;
 			}
 			// notify?
-			if(element!=null)
-				fireOnElementChange(element,currentMsoObj);
+			if(element!=null) {
+				// set mso draw data
+				setMsoDrawData(msoObj, msoOwn, code);
+				// set drawmode
+				SetDrawMode(mode);
+				// setup tools
+				drawDialog.setToolSet(code,attributes);
+				// select default tool?
+				if(setTool) setDefaultTool(defaultTool);
+				// notify
+				fireOnElementChange(element,msoObj);
+			}
 			// save element
 			this.element = element;
+			// set tool active?
+			//if(map.isEditSupportInstalled()) getDrawDialog().setActiveTool(getActiveTool());
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -741,13 +1162,38 @@ public class DrawAdapter implements
 				
 	}
 	
+	public IDrawTool getActiveTool() {
+		return currentTool;
+	}
+	
+	public void setDrawTool(IDrawTool tool) {
+		// any change?
+		if(currentTool!=tool) {
+			// update hook
+			currentTool = tool;
+			// update draw frame?
+			if(tool!=null && map.isEditSupportInstalled()) updateFrame(drawFrame.isActive());
+		}
+	}
+	
+	private boolean isToolActive() {
+		return (currentTool!=null) ? currentTool.isActive() : false;
+	}
+	
 	private void setDefaultTool(IDrawTool tool) {
 		// is selecting?
-		if(!isSelecting && tool!=null) {
+		if(tool!=null) {
+			// get current tool
+			ITool mapTool = null;
+			try {
+				mapTool = map.getCurrentTool();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+}
 			// activate directly?
-			if(currentTool==null || !currentTool.getType().equals(tool.getType())) {
-				currentTool = tool;
-				drawDialog.setActiveTool(currentTool);				
+			if(mapTool==null || !mapTool.equals(tool.getType())) {
+				drawDialog.setActiveTool(tool);				
 			}
 		}
 	}
@@ -781,7 +1227,7 @@ public class DrawAdapter implements
 				// get element
 				Enum element = (Enum)e.getElement();
 				// force setup
-				setup(element);
+				setup(element,msoObject,msoOwner,true);
 			}
 			
 		}	
@@ -882,21 +1328,22 @@ public class DrawAdapter implements
 				Enum element = null;					
 				IEnvelope extent = null;
 				IMsoObjectIf msoSelect = null;
+				IMsoObjectIf msoOwner = this.msoOwner;
 				
-				// get mso object
-				currentMsoObj = (IMsoObjectIf)e.getElement();
+				// get selected mso object
+				IMsoObjectIf msoObject = (IMsoObjectIf)e.getElement();
 				
 				// is area?
-				if(currentMsoObj instanceof IAreaIf) {
+				if(msoObject instanceof IAreaIf) {
 					
-					// save as owner
-					currentMsoOwn = currentMsoObj;
+					// replace current owner with this
+					msoOwner = msoObject;
 					
 					// reset object
-					currentMsoObj = null;
+					msoObject = null;
 					
 					// cast to IAreaIf
-					IAreaIf area = (IAreaIf)currentMsoOwn;
+					IAreaIf area = (IAreaIf)msoOwner;
 					
 					// get all routes
 					Collection<IMsoObjectIf> c = area.getAreaGeodataItems();
@@ -928,14 +1375,14 @@ public class DrawAdapter implements
 				}
 				else {
 					// set selection
-					msoSelect = currentMsoObj;
-					extent = map.getMsoObjectExtent(currentMsoObj);
+					msoSelect = msoObject;
+					extent = map.getMsoObjectExtent(msoObject);
 					// get element
-					element = (currentMsoObj==null) ? null : currentMsoObj.getMsoClassCode();
+					element = (msoObject==null) ? null : msoObject.getMsoClassCode();
 				}
 				
 				// forward
-				setup(element);
+				setup(element,msoObject,msoOwner,true);
 				
 				// expand extent
 				extent = MapUtil.expand(1.25, extent);
@@ -977,6 +1424,7 @@ public class DrawAdapter implements
 			Runnable r = new Runnable() {
 
 				public void run() {
+					
 					// prompt user
 				int ans = JOptionPane.showConfirmDialog(app.getFrame(),
 				                "Dette vil slette valgt objekt. Vil du fortsette?",
@@ -995,10 +1443,14 @@ public class DrawAdapter implements
 								MsoUtils.deleteAssignment(assignment);
 							else
 								MsoUtils.deleteArea(area);
+							// cleanup
+							cancel();
 						}
 						else {
 							// do a general delete
 							if(MsoUtils.delete(msoObject)) {
+								// do cleanup
+								cancel();
 								// notify change?
 								fireOnWorkChange(this, msoObject, null);
 							}
@@ -1007,8 +1459,7 @@ public class DrawAdapter implements
 								JOptionPane.showMessageDialog(app.getFrame(),
 						                "Sletting kunne utføres",
 						                "Feilmelding", JOptionPane.OK_OPTION);
-							}
-								
+							}								
 						}
 					}
 				}
@@ -1031,6 +1482,8 @@ public class DrawAdapter implements
 			try {
 				// clear current selected
 				map.clearSelected();
+				// select next object
+				map.setSelected(msoObject, true);
 			} catch (AutomationException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -1043,8 +1496,12 @@ public class DrawAdapter implements
 			// allow reentry
 			setIsNotWorking();
 		}
+		// update mso draw data
+		setMsoDrawData(msoObject, (msoObject == null) ? null : MsoUtils.getOwningArea(msoObject), msoCode);
 		// notify
-		finish(drawMode,msoObject);
+		fireOnDrawFinished(drawMode, msoObject);
+		// resume old mode
+		resumeMode();
 		// forward
 		fireOnWorkChange(e);
 	}
@@ -1112,6 +1569,27 @@ public class DrawAdapter implements
 		public void onDrawFinished(DrawMode mode, IMsoObjectIf msoObject);
 		public void onElementChange(Enum element, IMsoObjectIf msoObject);
 	}
+	
+	/**
+	 * Class implementing the IMapControlEvents2Adapter intefaces
+	 * 
+	 * Is used to catch events that is used to draw the tool 
+	 * geometries on the map
+	 * 
+	 *
+	 */
+	class MapControlAdapter extends IMapControlEvents2Adapter {
 
+		private static final long serialVersionUID = 1L;
+		
+		@Override
+		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent e) throws IOException, AutomationException {
+			// forward
+			super.onExtentUpdated(e);
+			// forward
+			drawFrame(true);
+		}
+
+	}
 	
 }

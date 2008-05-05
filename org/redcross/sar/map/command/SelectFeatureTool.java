@@ -118,63 +118,37 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 				// loop over all features in search extent
 				while(f!=null) {
 					// is mso feature?
-					if (f instanceof IMsoFeature) {
-						
-						// selection allowed?
-						//if(ff == null & (l.isEnabled() || l.isEditing())) {
-						
-						// only features on enabled or editing layers are selectable
-						//if(l.isEnabled() || l.isEditing()) {
-						
-							// get first minimum distance
-							double d = getMinimumDistance(f,p);
-							// has valid distance?						
-							if(d>-1) {
-								int shapeType = f.getFeatureType();
-								// save found feature?
-								if((min==-1 || (d<min) || shapeType==esriGeometryType.esriGeometryPoint) && (d<max)) {
-									// initialize
-									min = d;
-									ff = (IMsoFeature)f; fl = l;							
-								}
+					if (f instanceof IMsoFeature) {						
+						// get first minimum distance
+						double d = getMinimumDistance(f,p);
+						// has valid distance?						
+						if(d>-1) {
+							int shapeType = f.getFeatureType();
+							// save found feature?
+							if((min==-1 || (d<min) || shapeType==esriGeometryType.esriGeometryPoint) && (d<max)) {
+								// initialize
+								min = d;
+								ff = (IMsoFeature)f; fl = l;							
 							}
-							else {
-								// save found feature
-								ff = (IMsoFeature)f; fl = l;
-							}
-						//}
+						}
+						else {
+							// save found feature
+							ff = (IMsoFeature)f; fl = l;
+						}
 					}
 					// get next feature
 					f = c.nextFeature();
 				}
 			}
 		}
-		// found?
+		// anything found?
 		if(ff!=null && fl!=null) {
-			/*
-			// is map in edit mode?
-			boolean isEditing = map.isEditing();
-			//valid feature?
-			if(!ff.isEditing() && isEditing) {
-				// notify with beep
-				Toolkit.getDefaultToolkit().beep();
-				// show in edit warning
-				//Utils.showWarning("Du kan kun velge kartobjekter som er i endremodus");
-
-				doWork = false;
-				
-			}
-			else
-			*/ 
+			// is layer not enabled?
 			if(!fl.isEnabled()) {
 				// notify with beep
 				Toolkit.getDefaultToolkit().beep();
-				// show disable warning
-				//Utils.showWarning(MsoUtils.getMsoObjectName(ff.getMsoObject(), 1)
-				//		+ " kan ikke velges fordi kartlaget ikket er valgbart");
-				
+				// reset flag
 				doWork = false;
-
 			}
 		}
 		else {
@@ -260,22 +234,18 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		public Boolean doWork() {
 		
 			try {
-				boolean isDirty = false;
 				// forward to map
 				if(msoFeature==null) {
 					if(map.getSelectionCount(true)>0) {
 						map.clearSelected();
-						isDirty = true;
 					}
 				}
 				else {
 					if(map.getSelectionCount(false)>0) {
 						map.clearSelected();			
-						isDirty = true;
 					}
 					if(map.isSelected(msoFeature.getMsoObject())==0) {
 						map.setSelected(msoFeature.getMsoObject(),true);
-						isDirty = true;
 					}
 				}
 				// success

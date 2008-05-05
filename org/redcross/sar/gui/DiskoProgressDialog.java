@@ -5,6 +5,8 @@ package org.redcross.sar.gui;
 
 import javax.swing.JFrame;
 
+import org.redcross.sar.app.Utils;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,7 +43,7 @@ public class DiskoProgressDialog extends DiskoDialog {
 		this.setResizable(false);
 		this.setContentPane(getProgressPanel());
 		this.setPreferredSize(new Dimension(100,45));
-		this.setLocationRelativeTo(frame.getRootPane().getLayeredPane(), DiskoDialog.POS_CENTER, true);
+		this.setLocationRelativeTo(frame.getLayeredPane(), DiskoDialog.POS_CENTER, false, true);
 		// set cancel button status
 		getProgressPanel().setButtonVisible(cancel);
 		// apply layout

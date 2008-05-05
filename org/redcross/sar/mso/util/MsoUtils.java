@@ -453,7 +453,7 @@ public class MsoUtils {
 					if(it.next() == operationArea)
 						break;			
 				}
-				name += " " + i;
+				name += " " + (i+1);
 			}
 		}
 		return name; 
@@ -494,7 +494,7 @@ public class MsoUtils {
 			name = Utils.translate(route.getMsoClassCode());
 			// include status text?
 			if(include)
-				name += " " + route.getAreaSequenceNumber();
+				name += " " + (route.getAreaSequenceNumber()+1);
 		}
 		return name;
 	}
@@ -505,7 +505,7 @@ public class MsoUtils {
 			name = Utils.translate(track.getMsoClassCode());
 			// include status text?
 			if(include)
-				name += " " + track.getAreaSequenceNumber();
+				name += " " + (track.getAreaSequenceNumber()+1);
 		}
 		return name;
 	}
@@ -524,7 +524,7 @@ public class MsoUtils {
 						type == IPOIIf.POIType.VIA || 
 						type == IPOIIf.POIType.STOP);
 				if (isAreaPoi)
-					name += " " + poi.getAreaSequenceNumber();
+					name += " " + (poi.getAreaSequenceNumber()+1);
 			}			
 		}
 		return name;

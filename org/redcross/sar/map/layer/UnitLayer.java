@@ -195,7 +195,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 			for(int i=0;i<types.length;i++) {
 		 		try {
 		 			PictureMarkerSymbol pictureSymbol = new PictureMarkerSymbol();
-		 			String path = Utils.getSymbolPath(types[i]);
+		 			String path = Utils.getEnumSymbolPath(types[i]);
 		 			File file = new File(path);
 		 			if(file.exists()) {
 			 			pictureSymbol.createMarkerSymbolFromFile(

@@ -1,7 +1,5 @@
 package org.redcross.sar.gui.map;
 
-import javax.swing.JPanel;
-
 import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.command.IHostDiskoTool;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
@@ -18,7 +16,7 @@ public interface IHostToolDialog {
 	
 	public void setActiveTool(IDiskoTool tool);
 	
-	public void register(IDiskoTool tool, JPanel panel);
+	public void register(IDiskoTool tool);
 
 	public void setup();
 	

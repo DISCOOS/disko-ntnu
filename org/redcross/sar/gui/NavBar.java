@@ -225,8 +225,7 @@ public class NavBar extends JPanel {
 	public LineTool getLineTool() {
 		if (lineTool == null) {
 			try {
-				lineTool = new LineTool((IHostToolDialog)
-						getDrawHostTool().getDialog(),false);
+				lineTool = new LineTool(getDrawHostTool().getDialog(),false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -238,8 +237,7 @@ public class NavBar extends JPanel {
 	public FreeHandTool getFreeHandTool() {
 		if (freeHandTool == null) {
 			try {
-				freeHandTool = new FreeHandTool((IHostToolDialog)
-						getDrawHostTool().getDialog(),false);
+				freeHandTool = new FreeHandTool(getDrawHostTool().getDialog(),false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -918,11 +916,11 @@ public class NavBar extends JPanel {
 		if (command != null) {
 			button.addActionListener(new NavActionListener(command));
 		}
-		DiskoCustomIcon icon = new DiskoCustomIcon(Utils.getIcon(e,"48x48"));
+		DiskoCustomIcon icon = new DiskoCustomIcon(Utils.getEnumIcon(e,"48x48"));
 		if (icon != null) {
 			button.setIcon(icon);
 		}
-		button.setToolTipText(Utils.getIconText(e));
+		button.setToolTipText(Utils.getEnumText(e));
 	}
 	
 	public List<Enum<?>> getEnabledButtons(boolean isEnabled){

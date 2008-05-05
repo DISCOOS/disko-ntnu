@@ -21,6 +21,7 @@ import org.redcross.sar.gui.map.PositionPanel;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.PositionTool;
+import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -334,7 +335,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		// get position panel 
 		PositionPanel panel = getPositionPanel();
 		// get attributes
-		Object[] attributes = {true,unit};
+		Object[] attributes = {DrawMode.MODE_REPLACE,unit};
 		// use horizontal layout
 		panel.setVertical(false);	
 		panel.setVisible(true);
@@ -354,8 +355,10 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		// show tool
 		m_wpMessageLog.getApplication().getNavBar().setVisibleButtons(
 				Utils.getListOf(DiskoToolType.POSITION_TOOL), true, true);
+		/*
 		// buffer changes. use m_tool.apply() to update the mso model
-		m_tool.setBuffered(true);
+		m_tool.setBufferedMode(true);
+		*/
 		// show this panel
 		this.setVisible(true);
 		// show map over log

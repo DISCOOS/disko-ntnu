@@ -3,7 +3,11 @@ package org.redcross.sar.map;
 import java.io.IOException;
 import java.util.List;
 
+import org.redcross.sar.gui.map.DrawDialog;
+import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.MapStatusBar;
+import org.redcross.sar.gui.map.SnapDialog;
+import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -11,6 +15,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.carto.FeatureLayer;
+import com.esri.arcgis.carto.IFeatureLayer;
+import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.Point;
@@ -21,13 +27,13 @@ public interface IDiskoMap {
 	
 	public void setActiveTool(ITool tool, boolean allow) throws IOException, AutomationException;
 	
-	public List getMsoLayers();
+	public List<IMsoFeatureLayer> getMsoLayers();
 	
-	public List getMsoLayers(IMsoManagerIf.MsoClassCode classCode);
+	public List<IMsoFeatureLayer> getMsoLayers(IMsoManagerIf.MsoClassCode classCode);
 	
 	public IMsoFeatureLayer getMsoLayer(IMsoFeatureLayer.LayerCode layerCode);
 	
-	public List getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
+	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
 	
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
@@ -170,9 +176,10 @@ public interface IDiskoMap {
 	
 	public boolean isNotifySuspended();
 	
+	public boolean isDrawingSupressed();		
 	public void setSupressDrawing(boolean supress);
 	
-	public List getSnappableLayers() throws IOException, AutomationException;
+	public List<IFeatureLayer> getSnappableLayers() throws IOException, AutomationException;
 	
 	public void setMapStatusBar(MapStatusBar buddy);
 	public MapStatusBar getMapStatusBar();
@@ -180,5 +187,26 @@ public interface IDiskoMap {
 	public Point getClickPoint();
 	
 	public Point getMovePoint();
+
+	public double getScale();
+	
+	public double getMaxSnapScale();	
+	public boolean isSnapAllowed();
+	
+	public double getMaxDrawScale();
+	public boolean isDrawAllowed();
+		
+	public void addIMapControlEvents2Listener(IMapControlEvents2Adapter listener) throws IOException, AutomationException;
+	public void removeIMapControlEvents2Listener(IMapControlEvents2Adapter listener) throws IOException, AutomationException;
+	
+	public boolean isEditSupportInstalled();
+	public void installEditSupport();
+	public DrawAdapter getDrawAdapter();	
+	public DrawDialog getDrawDialog();
+	public DrawFrame getDrawFrame();
+	public ElementDialog getElementDialog();	
+	public SnapAdapter getSnapAdapter();
+	public SnapDialog getSnapDialog();		
+	
 		
 }

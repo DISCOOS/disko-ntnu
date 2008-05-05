@@ -60,7 +60,7 @@ public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 	private ImageIcon getIcon(Enum e) {
 		ImageIcon icon = (ImageIcon)icons.get(e);
 		if (icon == null) {
-			icon = Utils.getIcon(e,catalog);
+			icon = Utils.getEnumIcon(e,catalog);
 			icons.put(e, icon);
 		}
 		return icon;

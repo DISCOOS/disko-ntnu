@@ -42,7 +42,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	
 	// GUI components
 	protected DiskoMap map = null;
-	protected DiskoDialog dialog = null;
+	protected DrawDialog dialog = null;
 	protected AbstractButton button = null;
 	
 	/**
@@ -71,12 +71,12 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
 			public void mousePressed(MouseEvent e) {
 				// start show/hide
-				dialog.doShow(!dialog.isVisible(), 250);				
+				dialog.setVisibleDelay(!dialog.isVisible(), 250);				
 			}
 
 			public void mouseReleased(MouseEvent e) {
 				// stop show if not shown already
-				dialog.cancelShow();				
+				dialog.cancelSetVisible();				
 			}
 			
 			public void mouseEntered(MouseEvent e) {}
@@ -86,10 +86,9 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
 		// create draw dialog
 		dialog = new DrawDialog(app.getFrame());
-		dialog.setIsToggable(false);
 
 		// register me as host tool
-		((DrawDialog)dialog).setHostTool(this);
+		dialog.setHostTool(this);
 		
 		// do not show dialog first time onClick is invoked
 		showDirect = false; 
@@ -101,9 +100,8 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		try {
 			if (obj instanceof IDiskoMap) {
 				map = (DiskoMap)obj;
-				DrawDialog drawDialog = (DrawDialog)dialog;
-				drawDialog.onLoad(map);
-				drawDialog.setLocationRelativeTo(map, DiskoDialog.POS_WEST, true);
+				dialog.register(map);
+				dialog.setLocationRelativeTo(map, DiskoDialog.POS_WEST, true, true);
 				if(button!=null && button.getIcon() instanceof DiskoCustomIcon) {
 					DiskoCustomIcon icon = (DiskoCustomIcon)button.getIcon();
 					icon.setMarked(true);
@@ -180,7 +178,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		return true;
 	}
 
-	public DiskoDialog getDialog() {
+	public DrawDialog getDialog() {
 		return dialog;
 	}
 
@@ -345,7 +343,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			tool.showDirect = this.showDirect;
 			tool.showDialog = this.showDialog;
 			// forward
-			((DrawDialog)dialog).setActiveTool(this.tool);
+			dialog.setActiveTool(this.tool);
 		}
 	}
 }

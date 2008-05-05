@@ -14,11 +14,11 @@ import org.redcross.sar.mso.data.IAttributeIf;
  * @author kennetgu
  *
  */
-public class TextAttribute extends AbstractDiskoAttribute {
+public class TextFieldAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public TextAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
+	public TextFieldAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
 		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
@@ -27,7 +27,7 @@ public class TextAttribute extends AbstractDiskoAttribute {
 		load();		
 	}
 	
-	public TextAttribute(String name, String caption, int width, String value, boolean isEditable) {
+	public TextFieldAttribute(String name, String caption, int width, String value, boolean isEditable) {
 		// forward
 		super(name,caption,width,value,isEditable);
 	}
@@ -51,6 +51,10 @@ public class TextAttribute extends AbstractDiskoAttribute {
 	 * Public methods
 	 *================================================================== 
 	 */
+	
+	public JTextField getTextField() {
+		return (JTextField)m_component;
+	}
 	
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;

@@ -34,7 +34,6 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 
 		// create dialog
 		dialog = new ElementDialog(Utils.getApp().getFrame());
-		dialog.setIsToggable(false);
 		showDirect = true; // shows dialog first time onClick is invoked
 		
 		// add listener
@@ -47,7 +46,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		try {
 			if (obj instanceof JComponent) {
 				ElementDialog elementDialog = (ElementDialog)dialog;
-				elementDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false);			
+				elementDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false, true);			
 			}
 		}
 		catch (Exception e) {
@@ -57,7 +56,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 	
 	public void onElementChange(Enum element) {
 		// update toggle button
-		button.setIcon(Utils.getIcon(element,"48x48"));
+		button.setIcon(Utils.getEnumIcon(element,"48x48"));
 		button.setToolTipText(Utils.translate(element));
 	}
 

@@ -8,6 +8,7 @@ import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.carto.IMap;
 
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.OperationAreaMaskLayer;
 
 public class DefaultMapLayerSelectionModel extends FeatureLayerSelectionModel {
 
@@ -44,7 +45,10 @@ public class DefaultMapLayerSelectionModel extends FeatureLayerSelectionModel {
 		selected = new boolean[defaultMapLayers.size()];
 		for (int i = 0; i < selected.length; i++) {
 			layers[i] = defaultMapLayers.get(i);
-			selected[i] = true;
+			if(layers[i] instanceof OperationAreaMaskLayer)
+				selected[i] = false;
+			else
+				selected[i] = true;				
 		}
 	}
 }

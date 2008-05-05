@@ -11,7 +11,6 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IDisplay;
-import com.esri.arcgis.display.RgbColor;
 import com.esri.arcgis.display.SimpleFillSymbol;
 import com.esri.arcgis.display.TransparencyDisplayFilter;
 import com.esri.arcgis.geometry.ISpatialReference;
@@ -33,6 +32,12 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 		createSymbols();
 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 		loadObjects(cmdPost.getOperationAreaListItems().toArray());
+		try {
+			setVisible(false);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 

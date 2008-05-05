@@ -4,7 +4,7 @@ import no.cmr.tools.Log;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.AttributesPanel;
-import org.redcross.sar.gui.attribute.TextAttribute;
+import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -234,9 +234,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	m_editAssignmentPanel.setMinimumSize(new Dimension(150,60));
     	
     	// add attributes
-    	m_editAssignmentPanel.addAttribute(new TextAttribute("Assignment",
+    	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Assignment",
     			m_wpMessageLog.getText("AssignmentLabel.text"),150,"<velg oppdrag>",false));
-    	m_editAssignmentPanel.addAttribute(new TextAttribute("Time",
+    	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Time",
     			m_wpMessageLog.getText("AssignedTimeLabel.text"),150,"<velg oppdrag>",true));    	
 
         m_cardsPanel.add(m_editAssignmentPanel, EDIT_ASSIGNMENT_ID);
@@ -546,10 +546,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 	    	// create?
     		if(m_selectedPanel.getAttributeCount()==0) {
 	    		// add attributes (this should only occure once)
-    			m_selectedPanel.addAttribute(new TextAttribute("Assignment",
+    			m_selectedPanel.addAttribute(new TextFieldAttribute("Assignment",
     					m_wpMessageLog.getText("AssignmentLabel.text"),150,
     					MsoUtils.getAssignmentName(selected, 1),false));
-    			m_selectedPanel.addAttribute(new TextAttribute("Priority",
+    			m_selectedPanel.addAttribute(new TextFieldAttribute("Priority",
     					m_wpMessageLog.getText("PriorityLabel.text"),150,
     					selected.getPriorityText(),false));
     			m_selectedPanel.addAttribute(selected.getRemarksAttribute(),

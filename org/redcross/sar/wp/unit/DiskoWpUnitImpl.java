@@ -618,7 +618,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_overviewTabPane.setEnabled(false);
 			m_importCalloutButton.setSelected(true);
 			m_importCalloutDialog.setLocationRelativeTo(m_contentsPanel,
-					DiskoDialog.POS_CENTER, true);	
+					DiskoDialog.POS_CENTER, true, true);	
 			m_importCalloutDialog.setVisible(true);
 		}
 		else {

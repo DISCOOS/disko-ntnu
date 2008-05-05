@@ -51,6 +51,10 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
+	public JCheckBox getCheckBox() {
+		return ((JCheckBox)m_component);
+	}
+	
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}

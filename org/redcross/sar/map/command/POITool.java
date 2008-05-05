@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.IOException;
 
-import javax.swing.JPanel;
-
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -46,14 +45,14 @@ public class POITool extends AbstractDrawTool {
 	public POITool(IHostToolDialog dialog) throws IOException {
 
 		// forward
-		super(true,DrawFeatureType.DRAW_FEATURE_POINT);
+		super(true,FeatureType.FEATURE_POINT);
 		
 		// prepare abstract class BasicTool
-		cursorPath = "cursors/crosshair.cur"; 
-		caption = "Punkt"; 
+		cursorPath = "cursors/create.cur"; 
+		caption = Utils.getEnumText(FeatureType.FEATURE_POINT); 
 		category = "Commands"; 
-		message = "Tegner en punkt av interesse"; 
-		name = "CustomCommands_Erase"; 
+		message = "Tegner en punkt"; 
+		name = "CustomCommands_Point"; 
 		toolTip = "Punkt"; 
 		enabled = true;
 		
@@ -61,8 +60,8 @@ public class POITool extends AbstractDrawTool {
 		type = DiskoToolType.POI_TOOL;		
 
 		// map draw operation
-		onMouseDownAction = DrawActionType.DRAW_BEGIN;
-		onMouseUpAction = DrawActionType.DRAW_FINISH;
+		onMouseDownAction = DrawAction.ACTION_BEGIN;
+		onMouseUpAction = DrawAction.ACTION_FINISH;
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
@@ -79,7 +78,7 @@ public class POITool extends AbstractDrawTool {
 		propertyPanel = addPropertyPanel();
 		
 		// registrate me in dialog
-		dialog.register((IDrawTool)this, propertyPanel);
+		dialog.register(this);
 		
 	}
 
@@ -95,7 +94,7 @@ public class POITool extends AbstractDrawTool {
 				
 				// add layer listener
 				IMsoFeatureLayer msoLayer =  map.getMsoLayer(IMsoFeatureLayer.LayerCode.POI_LAYER);
-				Iterator<JPanel> it = panels.iterator();
+				Iterator<IPropertyPanel> it = panels.iterator();
 				while(it.hasNext()) {
 					msoLayer.addDiskoLayerEventListener((POIPanel)it.next());
 				}
@@ -115,7 +114,7 @@ public class POITool extends AbstractDrawTool {
 			// validate
 			if(validate(msoObject==null)) {
 				// update
-				p = transform(x, y);
+				p = toMapPoint(x, y);
 				p.setSpatialReferenceByRef(map.getSpatialReference());
 				getPOIPanel().updatePOIField(p);
 				return true;
@@ -344,7 +343,7 @@ public class POITool extends AbstractDrawTool {
 		super.setAttribute(value, attribute);
 		if("POITYPES".equalsIgnoreCase(attribute)) {
 			poiTypes = (POIType[])value;
-			Iterator<JPanel> it = panels.iterator();
+			Iterator<IPropertyPanel> it = panels.iterator();
 			while(it.hasNext()) {
 				// forward
 				((POIPanel)it.next()).setTypes(poiTypes);
@@ -387,12 +386,12 @@ public class POITool extends AbstractDrawTool {
 	}
 	
 	@Override
-	public JPanel addPropertyPanel() {
+	public IPropertyPanel addPropertyPanel() {
 		// create panel list?
 		if(panels==null)
-			panels = new ArrayList<JPanel>(1);			
+			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		JPanel panel = new POIPanel(this,true);
+		IPropertyPanel panel = new POIPanel(this,true);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;

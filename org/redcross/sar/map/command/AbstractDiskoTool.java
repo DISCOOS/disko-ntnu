@@ -2,8 +2,20 @@ package org.redcross.sar.map.command;
 
 import com.esri.arcgis.controls.BaseTool;
 import com.esri.arcgis.display.IDisplayTransformation;
-import com.esri.arcgis.geodatabase.*;
-import com.esri.arcgis.geometry.*;
+import com.esri.arcgis.geodatabase.IFeatureClass;
+import com.esri.arcgis.geodatabase.IFeatureCursor;
+import com.esri.arcgis.geodatabase.ISpatialFilter;
+import com.esri.arcgis.geodatabase.SpatialFilter;
+import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
+import com.esri.arcgis.geometry.GeometryBag;
+import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.geometry.IGeometry;
+import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.IProximityOperator;
+import com.esri.arcgis.geometry.IRelationalOperator;
+import com.esri.arcgis.geometry.Point;
+import com.esri.arcgis.geometry.Polygon;
+import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
@@ -12,6 +24,7 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -37,7 +50,6 @@ import java.util.Properties;
 import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
@@ -59,7 +71,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	// GUI components
 	protected DiskoMap map = null;
 	protected DiskoDialog dialog = null;
-	protected JPanel propertyPanel = null;
+	protected IPropertyPanel propertyPanel = null;
 	protected AbstractButton button = null;
 
 	// types
@@ -69,7 +81,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	private int workCount = 0;
 	
 	// objects
-	protected ArrayList<JPanel> panels = null;
+	protected ArrayList<IPropertyPanel> panels = null;
 	private ArrayList<IDiskoWorkListener> listeners = null;
 	
 	/**
@@ -85,6 +97,13 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 *===============================================
 	 */
 
+	/**
+	 * Returns the tool active state
+	 */
+	public boolean isActive() {
+		return isActive;
+	}
+	
 	/**
 	 * Returns the disko tool type
 	 */
@@ -293,7 +312,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 * @throws IOException
 	 * @throws AutomationException
 	 */
-	protected Point transform(int x, int y) throws IOException, AutomationException {
+	protected Point toMapPoint(int x, int y) throws IOException, AutomationException {
 		return (Point)getTransform().toMapPoint(x,y);
 	}
 
@@ -304,7 +323,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 * @throws IOException
 	 * @throws AutomationException
 	 */
-	protected Point2D toScreen(Point p) throws IOException, AutomationException {
+	protected Point2D fromMapPoint(Point p) throws IOException, AutomationException {
 		int x[] = {0};
 		int y[] = {0};
 		getTransform().fromMapPoint(p, x, y);
@@ -527,12 +546,12 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return;
 	}
 
-	public JPanel addPropertyPanel() {
+	public IPropertyPanel addPropertyPanel() {
 		// override this if needed
 		return null;
 	}
 
-	public boolean removePropertyPanel(JPanel panel) {
+	public boolean removePropertyPanel(IPropertyPanel panel) {
 		// has panels?
 		if(panels!=null) {
 			return panels.remove(panel);			
@@ -540,7 +559,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return false;
 	}		
 	
-	public boolean setPropertyPanel(JPanel panel) {
+	public boolean setPropertyPanel(IPropertyPanel panel) {
 		// has panels?
 		if(panels!=null) {
 			// in array?
@@ -551,7 +570,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return (propertyPanel == panel);			
 	}
 	
-	public JPanel getPropertyPanel() {
+	public IPropertyPanel getPropertyPanel() {
 		return propertyPanel;		
 	}
 
@@ -614,17 +633,17 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	public class DiskoToolState implements IDiskoToolState {
 
 		// flags
-		private boolean isActive = false;
-		private boolean showDirect = false;
-		private boolean showDialog = false;
+		protected boolean isActive = false;
+		protected boolean showDirect = false;
+		protected boolean showDialog = false;
 
 		// mso objects and draw information
-		private IMsoObjectIf msoOwner = null;
-		private IMsoObjectIf msoObject = null;
-		private IMsoManagerIf.MsoClassCode msoClassCode = null;
+		protected IMsoObjectIf msoOwner = null;
+		protected IMsoObjectIf msoObject = null;
+		protected IMsoManagerIf.MsoClassCode msoClassCode = null;
 		
 		// other objects
-		private JPanel propertyPanel = null;
+		protected IPropertyPanel propertyPanel = null;
 		
 		// create state
 		public DiskoToolState(AbstractDiskoTool tool) {

@@ -426,7 +426,6 @@ public class ElementPanel extends DiskoPanel {
 
 	private void fireOnElementSelected(ElementEvent e)
     {
-		int j = 0;
     	// notify listeners
         for (int i = 0; i < listeners.size(); i++){
             listeners.get(i).onElementSelected(e);

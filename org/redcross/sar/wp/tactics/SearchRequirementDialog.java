@@ -633,7 +633,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			getContentPanel().setCaptionIcon(Utils.getIcon(e,"48x48"));
+			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));
 			getContentPanel().setCaptionText("<html>Krav til <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getTabbedPane().setEnabled(true);
