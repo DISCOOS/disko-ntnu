@@ -30,7 +30,6 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 	}
 
 	private void initialize() {
-		loadProperties("properties");						
         m_states = new States(this);
         layoutComponent(m_states);
 	}

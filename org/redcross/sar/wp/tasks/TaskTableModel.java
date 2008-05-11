@@ -143,7 +143,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
     @Override
     public String getColumnName(int column)
     {
-    	return m_wpTasks.getText("TableHeader" + column + ".text");
+    	return m_wpTasks.getBundleText("TableHeader" + column + ".text");
     }
 
 	public Object getValueAt(int row, int column)
@@ -286,7 +286,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 
 	        	// Show own item
 	        	JMenuItem showOwnItem = new JMenuItem();
-	        	showOwnItem.setText(m_wpTasks.getText("OwnTasksMenuItem.text"));
+	        	showOwnItem.setText(m_wpTasks.getBundleText("OwnTasksMenuItem.text"));
 	        	showOwnItem.addActionListener(new ActionListener()
 	        	{
 					public void actionPerformed(ActionEvent arg0)
@@ -347,7 +347,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 
 	        	// Show all item
 	        	JMenuItem showAllItem = new JMenuItem();
-	        	showAllItem.setText(m_wpTasks.getText("AllRolesMenuItem.text"));
+	        	showAllItem.setText(m_wpTasks.getBundleText("AllRolesMenuItem.text"));
 	        	showAllItem.addActionListener(new ActionListener()
 	        	{
 					@SuppressWarnings("null")

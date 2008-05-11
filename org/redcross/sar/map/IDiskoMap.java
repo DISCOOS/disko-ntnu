@@ -3,6 +3,7 @@ package org.redcross.sar.map;
 import java.io.IOException;
 import java.util.List;
 
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.MapStatusBar;
@@ -19,11 +20,19 @@ import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
-public interface IDiskoMap {
+public interface IDiskoMap extends IDiskoWorkListener {
+	
+	public enum CoordinateFormat {
+		FORMAT_UTM,
+		FORMAT_MGRS,
+		FORMAT_DEG,
+		FORMAT_DES
+	}
 	
 	public void setActiveTool(ITool tool, boolean allow) throws IOException, AutomationException;
 	
@@ -99,9 +108,9 @@ public interface IDiskoMap {
 	
 	public int isSelected(IMsoObjectIf msoObj) throws AutomationException, IOException;
 	
-	public List setSelected(IMsoObjectIf msoObject, boolean selected) throws IOException, AutomationException;
+	public List<IMsoFeatureLayer> setSelected(IMsoObjectIf msoObject, boolean selected) throws IOException, AutomationException;
 	
-	public List clearSelected() throws IOException, AutomationException;
+	public List<IMsoFeatureLayer> clearSelected() throws IOException, AutomationException;
 
 	public int getSelectionCount(boolean update) throws IOException, AutomationException;
 	
@@ -154,12 +163,6 @@ public interface IDiskoMap {
 	public void refresh() throws IOException,
 			AutomationException;
 	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#refreshSelection(com.esri.arcgis.geometry.IEnvelope)
-	 */
-	public void refreshSelection(Object obj, IEnvelope extent) throws IOException,
-			AutomationException;
-	
 	public void refreshMsoLayers() throws IOException, AutomationException;
 	
 	public void refreshMsoLayers(IEnvelope extent) throws IOException, AutomationException;
@@ -171,9 +174,8 @@ public interface IDiskoMap {
 		AutomationException;
 	
 	public void suspendNotify();	
-	
-	public void resumeNotify();	
-	
+	public void consumeNotify();	
+	public void resumeNotify();		
 	public boolean isNotifySuspended();
 	
 	public boolean isDrawingSupressed();		
@@ -206,7 +208,21 @@ public interface IDiskoMap {
 	public DrawFrame getDrawFrame();
 	public ElementDialog getElementDialog();	
 	public SnapAdapter getSnapAdapter();
-	public SnapDialog getSnapDialog();		
+	public SnapDialog getSnapDialog();
 	
-		
+	public boolean isInitMode();
+	public void setInitMode(boolean isInitMode);
+	
+	public IEnvelope getExtent() throws IOException, AutomationException;
+	public void setExtent(IEnvelope e) throws IOException, AutomationException;
+	
+	public ISpatialReference getSpatialReference() throws IOException, AutomationException;
+	
+	public void addDiskoWorkEventListener(IDiskoWorkListener listener);
+	public void removeDiskoWorkEventListener(IDiskoWorkListener listener);
+	
+	public IEnvelope getDirtyExtent();
+	
+	public boolean isRefreshPending();
+			
 }

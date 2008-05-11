@@ -10,6 +10,7 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.RouteFeature;
@@ -42,10 +43,10 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 	private SimpleLineSymbol defaultLineSymbol = null;
 	private TextSymbol textSymbol = null;
 
- 	public RouteLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+ 	public RouteLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE,
  				LayerCode.ROUTE_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPolyline);
+ 				esriGeometryType.esriGeometryPolyline, eventStack);
  		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
@@ -134,40 +135,20 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 							} 
 						}
 												
-						/*
-						// is layer in edit mode?
-						if (isEditing) {
-							// is editing feature?
-							if(feature.isEditing()) {
-								// is feature selected?
-								if (feature.isSelected()) {
-									lineSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-								}
-							}
-							else {
-								// disable all other features
-								lineSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}								
+						// is enabled?
+						if(isEnabled) {
+							// is selected
+	 	 					if (feature.isSelected()){
+								lineSymbol.setColor(selectionColor);
+								textSymbol.setColor(selectionColor);
+	 	 					}
+	 	 					
 						}
 						else {
-						*/
-							// is enabled?
-							if(isEnabled) {
-								// is selected
-		 	 					if (feature.isSelected()){
-									lineSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-		 	 					}
-		 	 					
-							}
-							else {
-								// disable all features
-								lineSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}
-						//}
+							// disable all features
+							lineSymbol.setColor(disabledColor);
+							textSymbol.setColor(disabledColor);
+						}
 						
 						// draw on display
 						if (geom instanceof Polyline) {
@@ -194,6 +175,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 						lineSymbol.setColor(saveLineColor);
 						textSymbol.setColor(saveTextColor);
 					}
+					feature.setDirty(false);
 				}
 			}
 			isDirty = false;

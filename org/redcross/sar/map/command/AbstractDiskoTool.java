@@ -23,7 +23,7 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
@@ -72,6 +72,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	protected DiskoMap map = null;
 	protected DiskoDialog dialog = null;
 	protected IPropertyPanel propertyPanel = null;
+	protected IPropertyPanel defaultPropertyPanel = null;
 	protected AbstractButton button = null;
 
 	// types
@@ -117,7 +118,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	public boolean isHosted() {
 		// is the dialog is a host dialog, then
 		// the tool must be hosted
-		return (dialog instanceof IHostToolDialog);
+		return (dialog instanceof IToolCollection);
 	}
 	
 	/**
@@ -125,9 +126,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 */
 	public IHostDiskoTool getHostTool() {
 		// is hosted?
-		if (dialog instanceof IHostToolDialog) {
+		if (dialog instanceof IToolCollection) {
 			// return current host tool
-			return ((IHostToolDialog)dialog).getHostTool();
+			return ((IToolCollection)dialog).getHostTool();
 		}
 		return null;
 	}
@@ -471,7 +472,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		DiskoWorkEvent e = new DiskoWorkEvent(this,
 				null,null,null,DiskoWorkEventType.TYPE_CHANGE);
     	// forward
-    	fireOnWorkCancel(e);
+    	fireOnWorkChange(e);
     }
 	
     protected void fireOnWorkChange(DiskoWorkEvent e)
@@ -559,15 +560,27 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return false;
 	}		
 	
+	public IPropertyPanel getDefaultPropertyPanel() {
+		return defaultPropertyPanel;
+	}
+	
+	public boolean setDefaultPropertyPanel() {
+		return setPropertyPanel(defaultPropertyPanel);
+	}
+	
 	public boolean setPropertyPanel(IPropertyPanel panel) {
 		// has panels?
 		if(panels!=null) {
 			// in array?
 			if(panels.contains(panel)) {
+				// set as default?
+				if(propertyPanel==null)
+					defaultPropertyPanel = panel;
+				// save hook
 				propertyPanel = panel;
 			}
 		}
-		return (propertyPanel == panel);			
+		return (panel!=null && propertyPanel == panel);			
 	}
 	
 	public IPropertyPanel getPropertyPanel() {

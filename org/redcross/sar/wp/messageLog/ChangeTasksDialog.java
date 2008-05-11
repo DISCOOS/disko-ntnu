@@ -223,14 +223,14 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 
 		if(type == TaskSubType.FINDING)
 		{
-			String taskText = String.format(m_wpMessageLog.getText("TaskSubType.FINDING.text"),
-					m_wpMessageLog.getText("Finding.text"));
+			String taskText = String.format(m_wpMessageLog.getBundleText("TaskSubType.FINDING.text"),
+					m_wpMessageLog.getBundleText("Finding.text"));
 			task.setTaskText(taskText);
 			//task.getSourceClassText()
 		}
 		else
 		{
-			task.setTaskText(m_wpMessageLog.getText("TaskSubType." + type.name() + ".text"));
+			task.setTaskText(m_wpMessageLog.getBundleText("TaskSubType." + type.name() + ".text"));
 		}
 
 		switch(type)
@@ -420,12 +420,12 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 		String buttonText = null;
 		if(type == TaskSubType.FINDING)
 		{
-			String findingType = m_wpMessageLog.getText("Finding.text");
-			buttonText = String.format(m_wpMessageLog.getText("TaskSubType.FINDING.text"), findingType);
+			String findingType = m_wpMessageLog.getBundleText("Finding.text");
+			buttonText = String.format(m_wpMessageLog.getBundleText("TaskSubType.FINDING.text"), findingType);
 		}
 		else
 		{
-			buttonText = m_wpMessageLog.getText("TaskSubType." + type.name() + ".text");
+			buttonText = m_wpMessageLog.getBundleText("TaskSubType." + type.name() + ".text");
 		}
 		JToggleButton button = 	DiskoButtonFactory.createToggleButton(
 				buttonText,buttonText,null,ButtonSize.LONG, 50,0);
@@ -453,27 +453,27 @@ public class ChangeTasksDialog extends DiskoDialog implements IEditMessageCompon
 		switch(taskType)
 		{
 		case TRANSPORT:
-			if(taskText.equals(m_wpMessageLog.getText("TaskSubType.SEND_TRANSPORT.text")))
+			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.SEND_TRANSPORT.text")))
 			{
 				return TaskSubType.SEND_TRANSPORT;
 			}
 		case RESOURCE:
-			if(taskText.equals(m_wpMessageLog.getText("TaskSubType.GET_TEAM.text")))
+			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.GET_TEAM.text")))
 			{
 				return TaskSubType.GET_TEAM;
 			}
-			if(taskText.equals(m_wpMessageLog.getText("TaskSubType.CREATE_ASSIGNMENT.text")))
+			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.CREATE_ASSIGNMENT.text")))
 			{
 				return TaskSubType.CREATE_ASSIGNMENT;
 			}
 		case INTELLIGENCE:
-			if(taskText.equals(m_wpMessageLog.getText("TaskSubType.CONFIRM_INTELLIGENCE.text")))
+			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.CONFIRM_INTELLIGENCE.text")))
 			{
 				return TaskSubType.CONFIRM_INTELLIGENCE;
 			}
 			try
 			{
-				if(taskText.split(":")[0].equals(m_wpMessageLog.getText("TaskSubType.FINDING.text").split(":")[0]))
+				if(taskText.split(":")[0].equals(m_wpMessageLog.getBundleText("TaskSubType.FINDING.text").split(":")[0]))
 				{
 					return TaskSubType.FINDING;
 				}

@@ -3,6 +3,8 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.Internationalization;
@@ -39,7 +41,6 @@ public class UnitTypeDialog extends DiskoDialog
 	private JPanel m_contentsPanel;
 	private JButton m_okButton;
 	private JButton m_cancelButton;
-	//private EnumSet<UnitType> m_listValues;
 	private JList m_typeList;
 
 	private static UnitType m_type;
@@ -64,7 +65,7 @@ public class UnitTypeDialog extends DiskoDialog
 		// Labels
 		//m_contentsPanel.add(new JLabel(m_wpUnit.getText("CreateNewUnit.text")));
 		//m_contentsPanel.add(Box.createRigidArea(new Dimension(10, 20)));
-		m_contentsPanel.add(new JLabel(m_wpUnit.getText("ChooseUnitType.text")));
+		m_contentsPanel.add(new JLabel(m_wpUnit.getBundleText("ChooseUnitType.text")));
 
 		// List
 		m_typeList = new JList();
@@ -136,7 +137,7 @@ public class UnitTypeDialog extends DiskoDialog
 		{
 			UnitType type = (UnitType)value;
 
-			ImageIcon icon = Utils.getEnumIcon(type,"48x48");
+			ImageIcon icon = DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(type),"48x48");
 			this.setIcon(icon);
 
 			String text = Internationalization.translate(type);

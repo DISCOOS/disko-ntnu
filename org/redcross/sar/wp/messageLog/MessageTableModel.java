@@ -163,7 +163,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                 {
     				int unconfirmed = message.getUnconfirmedReceivers().size();
     				int count = unconfirmed + message.getConfirmedReceivers().size();
-                    return String.format(m_wpModule.getText("BroadcastLabel.text"),(count-unconfirmed),count);
+                    return String.format(m_wpModule.getBundleText("BroadcastLabel.text"),(count-unconfirmed),count);
                 } else
                 {
                     ICommunicatorIf receiver = message.getSingleReceiver();
@@ -189,7 +189,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         			{
         			case TEXT:
         			{
-        				lineText = String.format(m_wpModule.getText("ListItemText.text"),
+        				lineText = String.format(m_wpModule.getBundleText("ListItemText.text"),
         						line.getLineText());
         			}
         			break;
@@ -211,7 +211,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     							String x = mgrs.subSequence(5, 10).toString();
     							String y = mgrs.subSequence(10, 15).toString();
     							// get text
-    							lineText = String.format(m_wpModule.getText("ListItemPOI.text"),
+    							lineText = String.format(m_wpModule.getBundleText("ListItemPOI.text"),
     									unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
     						}
     						catch (Exception e) {
@@ -237,7 +237,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         							String x = mgrs.subSequence(5, 10).toString();
         							String y = mgrs.subSequence(10, 15).toString();
         							// get text
-        							lineText = String.format(m_wpModule.getText("ListItemFinding.text"),
+        							lineText = String.format(m_wpModule.getBundleText("ListItemFinding.text"),
         									type, zone, square, x, y);
         						}
         						catch (Exception e) {
@@ -250,21 +250,21 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         			case ASSIGNED:
         			{
         				IAssignmentIf assignment = line.getLineAssignment();
-        				lineText = String.format(m_wpModule.getText("ListItemAssigned.text"),
+        				lineText = String.format(m_wpModule.getBundleText("ListItemAssigned.text"),
         						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
         			}
         			break;
         			case STARTED:
         			{
         				IAssignmentIf assignment = line.getLineAssignment();
-        				lineText = String.format(m_wpModule.getText("ListItemStarted.text"),
+        				lineText = String.format(m_wpModule.getBundleText("ListItemStarted.text"),
         						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
         			}
         			break;
         			case COMPLETE:
         			{
         				IAssignmentIf assignment = line.getLineAssignment();
-        				lineText = String.format(m_wpModule.getText("ListItemCompleted.text"),
+        				lineText = String.format(m_wpModule.getBundleText("ListItemCompleted.text"),
         						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
         			}
         			break;
@@ -286,18 +286,18 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                             IPOIIf poi = line.getLinePOI();
                             if (poi != null && poi.getType() == POIType.SILENT_WITNESS)
                             {
-                                taskString = String.format(m_wpModule.getText("TaskSubType.FINDING.text"),
-                                        m_wpModule.getText("SilentWitness.text"));
+                                taskString = String.format(m_wpModule.getBundleText("TaskSubType.FINDING.text"),
+                                        m_wpModule.getBundleText("SilentWitness.text"));
                             } else
                             {
-                                taskString = String.format(m_wpModule.getText("TaskSubType.FINDING.text"),
-                                        m_wpModule.getText("Finding.text"));
+                                taskString = String.format(m_wpModule.getBundleText("TaskSubType.FINDING.text"),
+                                        m_wpModule.getBundleText("Finding.text"));
                             }
                         } else
                         {
                             // Set task finding to finding if no message line added
-                            taskString = String.format(m_wpModule.getText("TaskSubType.FINDING.text"),
-                                    m_wpModule.getText("Finding.text"));
+                            taskString = String.format(m_wpModule.getBundleText("TaskSubType.FINDING.text"),
+                                    m_wpModule.getBundleText("Finding.text"));
                         }
                         taskBuilder.append(taskString);
                     } else
@@ -326,17 +326,17 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         switch (column)
         {
             case 0:
-                return m_wpModule.getText("Number.text");
+                return m_wpModule.getBundleText("Number.text");
             case 1:
-                return m_wpModule.getText("DTG.text");
+                return m_wpModule.getBundleText("DTG.text");
             case 2:
-                return m_wpModule.getText("From.text");
+                return m_wpModule.getBundleText("From.text");
             case 3:
-                return m_wpModule.getText("To.text");
+                return m_wpModule.getBundleText("To.text");
             case 4:
-                return m_wpModule.getText("MessageLines.text");
+                return m_wpModule.getBundleText("MessageLines.text");
             case 5:
-                return m_wpModule.getText("Tasks.text");
+                return m_wpModule.getBundleText("Tasks.text");
         }
         return null;
     }

@@ -10,7 +10,7 @@
 package org.redcross.sar.mso;
 
 import no.cmr.tools.Log;
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoPropertyFactory;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.modelDriver.ModelDriver;
 import org.redcross.sar.modelDriver.SarModelDriver;
@@ -60,10 +60,8 @@ public class MsoModelImpl implements IMsoModelIf
         m_msoManager = new MsoManagerImpl(m_msoEventManager);
         m_commitManager = new CommitManager(this);
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
-        m_modelDriver = System.getProperty("integrate.sara", "false").equalsIgnoreCase("true") ||
-                Utils.getProperties().getProperty("integrate.sara", "false").equalsIgnoreCase("true") ?
+        m_modelDriver = DiskoPropertyFactory.getText("integrate.sara").equalsIgnoreCase("true") ?
                 new SarModelDriver() : new ModelDriver();
-//        m_modelDriver =  new ModelDriver(); // when testing;
     }
 
     public IMsoManagerIf getMsoManager()

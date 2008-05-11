@@ -22,6 +22,7 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	protected boolean isSelected = false;
 	protected boolean isVisible = true; 
 	protected boolean isEditing = false;
+	protected boolean isDirty = false;
 	
 	public AbstractMsoFeature() {}
 	
@@ -34,9 +35,14 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	}
 
 	public void setMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
-		this.msoObject = msoObject;
-		if (msoObject != null) {
-			msoGeometryChanged();
+		if(this.msoObject != msoObject) {
+			// update
+			this.msoObject = msoObject;
+			// forward
+			if (msoObject != null)
+				msoGeometryChanged();
+			else
+				isDirty = true;
 		}
 	}
 	
@@ -45,11 +51,14 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	}
 
 	public void msoGeometryChanged() throws IOException, AutomationException {
-		// TODO Auto-generated method stub
+		isDirty = (getShape()!=null);
 	}
 	
-	public void setSelected(boolean selected) {
-		isSelected = selected;
+	public void setSelected(boolean isSelected) {
+		if(this.isSelected!=isSelected) {
+			this.isSelected = isSelected;
+			isDirty = true;
+		}
 	}
 	
 	public boolean isSelected() {
@@ -61,18 +70,11 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	}
 
 	public void setVisible(boolean isVisible) {
-		this.isVisible=isVisible;
+		if(this.isVisible!=isVisible) {
+			this.isVisible=isVisible;
+			isDirty = true;
+		}
 	}
-	
-	/*
-	public boolean isEditing() {
-		return isEditing;
-	}
-	
-	public void setEditing(boolean isEditing) {
-		this.isEditing = isEditing;
-	}
-	*/
 	
 	public Object getGeodata() {
 		return null;
@@ -98,6 +100,7 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	}
 
 	public void setShapeByRef(IGeometry geom) throws IOException, AutomationException {
+		isDirty = true;
 	}
 
 	public int getFeatureType() throws IOException, AutomationException {
@@ -147,15 +150,27 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	}
 	
 	public void setSpatialReference(ISpatialReference srs) throws IOException, AutomationException {
-		this.srs = srs;
-		if (msoObject != null) {
-			msoGeometryChanged();
+		if(this.srs!=srs) {
+			this.srs = srs;
+			if (msoObject != null)
+				msoGeometryChanged();
+			else
+				isDirty = true;
 		}
 	}
 
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException {
 		return srs;
 	}
+	
+	public boolean isDirty() {
+		return isDirty;
+	}
+	
+	public void setDirty(boolean isDirty) {
+		this.isDirty = isDirty;
+	}
+	
 	
 }
 

@@ -13,7 +13,8 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.map.IDrawDialog;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.map.IDrawToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.LinePanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -42,22 +43,19 @@ public class LineTool extends AbstractDrawTool {
 	/**
 	 * Constructs the LineTool
 	 */
-	public LineTool(IDrawDialog dialog, boolean isPolygon) throws IOException {
+	public LineTool(IDrawToolCollection dialog, boolean isPolygon) throws IOException {
 		
 		// forward
 		super(true,(isPolygon ? FeatureType.FEATURE_POLYGON :
 			FeatureType.FEATURE_POLYLINE));
 		
 		// prepare abstract class BasicTool
-		caption = "Line " + Utils.getEnumText(featureType); 
+		caption = DiskoEnumFactory.getText(featureType); 
 		category = "Commands"; 
 		message = "Tegner en linje mellom hvert punkt"; 
 		name = "CustomCommands_Ployline"; 
 		toolTip = "Polylinje"; 
 		enabled = true;
-		
-		// enable snapping
-		isSnapping = true;
 		
 		// set tool type
 		type = DiskoToolType.LINE_TOOL;
@@ -123,6 +121,9 @@ public class LineTool extends AbstractDrawTool {
 				featureType=FeatureType.FEATURE_POLYGON;
 			else
 				featureType=FeatureType.FEATURE_POLYLINE;
+			// update caption
+			caption = DiskoEnumFactory.getText(featureType);
+			// finished
 			return;
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
@@ -173,8 +174,9 @@ public class LineTool extends AbstractDrawTool {
 		
 		try {
 
-			// get screen-to-map transformation and try to snap
-			p2 = snapTo(toMapPoint(x,y));
+			// get next point. This point is already snapped 
+			// by the abstract class is snapping is on.
+			p2 = p;
 			
 			// initialize path geometry?
 			if (geoPath == null) {
@@ -272,7 +274,7 @@ public class LineTool extends AbstractDrawTool {
 	private void updateGeometry() throws IOException, AutomationException {
 		
 		// any change?
-		if (p1.returnDistance(p2) == 0) return;
+		if (p1.returnDistance(p2) == 0 || !isDrawing()) return;
 
 		// initialize
 		Polyline pline1 = null;
@@ -281,7 +283,7 @@ public class LineTool extends AbstractDrawTool {
 		// try to snap?
 		if(isSnapToMode()) {
 
-			// forward
+			// only update snap geometry
 			snapTo(p1);
 			
 			// search polyline inside envelope
@@ -294,6 +296,8 @@ public class LineTool extends AbstractDrawTool {
 		if (pline1 == null || pline2 == null) {
 			// add point
 			geoPath.addPoint(p2, null, null);
+			// replace rubber
+			geoRubber = (Polyline)geoPath.esri_clone();	
 		}
 		else {
 			// densify rubberband, use vertices as input to segment graph
@@ -331,6 +335,8 @@ public class LineTool extends AbstractDrawTool {
 			}
 			// reset
 			segmentGraphCursor = null;
+			// mark change
+			setDirty();			
 		}
 	}
 	

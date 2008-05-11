@@ -99,7 +99,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 				m_contentsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 				m_createdPanel = new JPanel();
-				m_createdLabel = new JLabel(m_wp.getText("ChangeDTGDialogCreated.text"));
+				m_createdLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogCreated.text"));
 				m_createdLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_createdPanel.add(m_createdLabel);
 				m_createdTextField = new JTextField(6);
@@ -108,7 +108,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 				m_contentsPanel.add(m_createdPanel);
 
 				m_timePanel = new JPanel();
-				m_timeLabel = new JLabel(m_wp.getText("ChangeDTGDialogTime.text"));
+				m_timeLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogTime.text"));
 				m_timeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_timePanel.add(m_timeLabel);
 				m_timeTextField = new JFormattedTextField();
@@ -160,7 +160,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 		catch (IllegalMsoArgumentException e1)
 		{
 			ErrorDialog error = new ErrorDialog(m_wp.getApplication().getFrame());
-			error.showError(m_wp.getText("InvalidDTG.header"), m_wp.getText("InvalidDTG.details"));
+			error.showError(m_wp.getBundleText("InvalidDTG.header"), m_wp.getBundleText("InvalidDTG.details"));
 			fireOnWorkCancel();
 		}
 	}

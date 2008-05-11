@@ -7,7 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Iterator;
@@ -19,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JSlider;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
@@ -28,14 +26,13 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DefaultMapLayerSelectionModel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MsoLayerSelectionModel;
 import org.redcross.sar.map.WMSLayerSelectionModel;
-import org.redcross.sar.map.command.TocCommand;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
@@ -65,7 +62,6 @@ public class TocDialog extends DiskoDialog {
 	private JLabel labelWMSLayers = null;
 	private JLabel labelDefMapLayers = null;
 	private IDiskoMap map = null;
-	private Properties properties = null;
 	private HashMap<String,String> myInterests = null;
 	private HashMap<String,JCheckBox> checkBoxes = null;
 	private HashMap<JCheckBox,ILayer> layers = null;
@@ -435,7 +431,7 @@ public class TocDialog extends DiskoDialog {
 	   // search for mso layers
 	   for(int i=0;i<myInterests.size();i++){
 		   if(myInterests.containsKey(name)){
-			   return getProperties().getProperty("Layer."+name); 
+				return DiskoEnumFactory.getText("LayerCode."+name+".text",null); 
 		   }		   
 	   }	   
 	   // remove any suffix	   
@@ -444,22 +440,6 @@ public class TocDialog extends DiskoDialog {
 		   return name.substring(pos+1);
 	   }	   
 	   return name;
-   }
-   
-   public Properties getProperties()
-   {
-      if (properties == null)
-      {
-         try
-         {
-            properties = Utils.loadProperties("properties");
-         }
-         catch (Exception ex)
-         {
-            ex.printStackTrace();
-         }
-      }
-      return properties;
    }
    
 	public void onLayerChanged(MsoLayerEvent e) throws IOException, AutomationException {

@@ -180,12 +180,12 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     {
         m_unitInfoPanel = new LogisticsInfoPanel(UNIT_INFO_PANEL_TOP_ELEMENTS, UNIT_INFO_PANEL_CENTER_ELEMENTS, UNIT_INFO_PANEL_BUTTONS);
         m_infoPanel.add(m_unitInfoPanel, UNIT_PANEL_NAME);
-        m_unitInfoPanel.setHeaders(new String[]{m_wpModule.getText("UnitInfoPanel_hdr_0.text"),
-                m_wpModule.getText("UnitInfoPanel_hdr_1.text"),
-                m_wpModule.getText("UnitInfoPanel_hdr_2.text"),
-                m_wpModule.getText("UnitInfoPanel_hdr_3.text"),
-                m_wpModule.getText("UnitInfoPanel_hdr_4.text"),
-                m_wpModule.getText("UnitInfoPanel_hdr_5.text")});
+        m_unitInfoPanel.setHeaders(new String[]{m_wpModule.getBundleText("UnitInfoPanel_hdr_0.text"),
+                m_wpModule.getBundleText("UnitInfoPanel_hdr_1.text"),
+                m_wpModule.getBundleText("UnitInfoPanel_hdr_2.text"),
+                m_wpModule.getBundleText("UnitInfoPanel_hdr_3.text"),
+                m_wpModule.getBundleText("UnitInfoPanel_hdr_4.text"),
+                m_wpModule.getBundleText("UnitInfoPanel_hdr_5.text")});
 
         m_unitInfoPanel.setButtons(
         		new String[]{"GENERAL.EDIT","GENERAL.PRINT"},
@@ -196,12 +196,12 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     {
         m_assignmentInfoPanel = new LogisticsInfoPanel(ASSIGNMENT_INFO_PANEL_TOP_ELEMENTS, ASSIGNMENT_INFO_PANEL_CENTER_ELEMENTS, ASSIGNMENT_INFO_PANEL_BUTTONS);
         m_infoPanel.add(m_assignmentInfoPanel, ASSIGNMENT_PANEL_NAME);
-        m_assignmentInfoPanel.setHeaders(new String[]{m_wpModule.getText("AsgInfoPanel_hdr_0.text"),
-                m_wpModule.getText("AsgInfoPanel_hdr_1.text"),
-                m_wpModule.getText("AsgInfoPanel_hdr_2.text"),
-                m_wpModule.getText("AsgInfoPanel_hdr_3.text"),
-                m_wpModule.getText("AsgInfoPanel_hdr_4.text"),
-                m_wpModule.getText("AsgInfoPanel_hdr_5.text")});
+        m_assignmentInfoPanel.setHeaders(new String[]{m_wpModule.getBundleText("AsgInfoPanel_hdr_0.text"),
+                m_wpModule.getBundleText("AsgInfoPanel_hdr_1.text"),
+                m_wpModule.getBundleText("AsgInfoPanel_hdr_2.text"),
+                m_wpModule.getBundleText("AsgInfoPanel_hdr_3.text"),
+                m_wpModule.getBundleText("AsgInfoPanel_hdr_4.text"),
+                m_wpModule.getBundleText("AsgInfoPanel_hdr_5.text")});
         m_assignmentInfoPanel.setButtons(
         		new String[]{"GENERAL.EDIT",          
                 "GENERAL.PRINT",
@@ -284,7 +284,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private void setupUnitAssignmentPanel()
     {
         JLabel hl = m_unitAssignmentsPanel.getHeaderLabel();
-        hl.setText(MessageFormat.format(m_wpModule.getText("AsgListInfoPanel_hdr.text"),
+        hl.setText(MessageFormat.format(m_wpModule.getBundleText("AsgListInfoPanel_hdr.text"),
                 UnitTableModel.getSelectedAssignmentText(m_wpModule, m_displayedUnitSelection).toLowerCase(),
                 m_displayedUnit.getUnitNumber()));
         m_unitAssignmentsPanel.setSelectedUnit(m_displayedUnit);

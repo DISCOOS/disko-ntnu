@@ -8,7 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
@@ -64,7 +65,7 @@ public class IconListCellRenderer extends JLabel implements ListCellRenderer {
 			}
 		}
 		else if(value instanceof Enum) { 
-			text = Utils.translate(value);
+			text = DiskoEnumFactory.getText((Enum)value);
 			e = (Enum)value;
 		}
 
@@ -100,7 +101,7 @@ public class IconListCellRenderer extends JLabel implements ListCellRenderer {
 		}
 		else {
 			// get icon
-			icon = Utils.getEnumIcon(e,catalog);
+			icon = DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),catalog);
 			// found icon?
 			if(icon!=null) {
 				icons.put(e,icon);

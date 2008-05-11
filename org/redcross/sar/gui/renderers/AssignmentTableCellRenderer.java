@@ -5,7 +5,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -25,7 +25,7 @@ public class AssignmentTableCellRenderer extends JLabel implements
 			setText(MsoUtils.getAssignmentName(assignment,1));
 		}
 		else if (column == 2) {
-			setText(Utils.translate(assignment.getStatus()));
+			setText(DiskoEnumFactory.getText(assignment.getStatus()));
 		}
 		else {
 			setText(null);

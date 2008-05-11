@@ -1,11 +1,14 @@
 package org.redcross.sar.map.command;
 
 import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -17,6 +20,7 @@ import org.redcross.sar.thread.DiskoWorkPool;
 
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.IFeatureCursor;
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriGeometryType;
 
@@ -49,6 +53,23 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		
+		// add global keyevent listener
+		Utils.getApp().getKeyEventDispatcher().addKeyListener(
+				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// can process event?
+				if(map!=null && map.isVisible()) {
+					// forward
+					doSelectFeatureWork(null);
+					// consume event
+					e.consume();
+				}
+				
+			}
+		});		
+		
 	}
 
 	public void onCreate(Object obj) {
@@ -75,24 +96,59 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			p.setY(y); 
 			transform(p);
 			
-			// invoke later
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					try {
-						// forward
-						selectFromPoint();
+			// get position in map units
+			IPoint p = toMapPoint(x,y);
+			
+			// forward to draw adapter?
+			if(!map.isEditSupportInstalled() || !map.getDrawAdapter().onMouseDown(button,shift,p)){
+			
+				// invoke later
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							// forward
+							selectFromPoint();
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+						}
 					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}
-			});
+				});
+				
+			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+
+	@Override
+	public void onMouseUp(int button, int shift, int x, int y) {
+		
+		// is working?
+		if(isWorking()) return;
+		
+		try {
+		
+			// transform to map coordinates
+			p.setX(x);
+			p.setY(y); 
+			transform(p);
+			
+			// get position in map units
+			IPoint p = toMapPoint(x,y);
+			
+			// forward to draw adapter?
+			if(map.isEditSupportInstalled())
+				map.getDrawAdapter().onMouseUp(button,shift,p);
+			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void selectFromPoint() throws Exception  {
 		
 		// initialize
@@ -110,7 +166,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		// search for feature
 		for (int i = 0; i < layers.size(); i++) {
 			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
-			if(l.isSelectable()) {
+			if(l.isSelectable() && l.isVisible()) {
 				// get features in search extent
 				MsoFeatureClass fc = (MsoFeatureClass)l.getFeatureClass();
 				IFeatureCursor c = search(fc, p,max);
@@ -225,7 +281,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		
 		SelectFeatureWork(DiskoMap map,IMsoFeature msoFeature) 
 									throws Exception {
-			super(false);
+			super(true);
 			this.map = map;
 			this.msoFeature = msoFeature;
 		}
@@ -233,6 +289,9 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		@Override
 		public Boolean doWork() {
 		
+			// suspend events
+			map.suspendNotify();
+			
 			try {
 				// forward to map
 				if(msoFeature==null) {
@@ -254,6 +313,8 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
+			// resume events
+			map.resumeNotify();
 			
 			// failed
 			return false;

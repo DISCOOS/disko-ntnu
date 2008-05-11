@@ -71,6 +71,7 @@ public class RouteFeature extends AbstractMsoFeature {
 			geometry = null;
 		}
         asgStatus = getAssignmentStatus(getOwningArea(route));
+		super.msoGeometryChanged();
 	}
 	
 	public Object getGeodata() {

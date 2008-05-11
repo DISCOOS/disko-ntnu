@@ -6,7 +6,7 @@ import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
-public interface IHostToolDialog {
+public interface IToolCollection {
 	
 	public IHostDiskoTool getHostTool();
 	
@@ -32,13 +32,20 @@ public interface IHostToolDialog {
 	
 	public void setMsoDrawData(IDiskoTool tool);
 	
-	public void setMsoDrawData(IMsoObjectIf msoOwner, 
-			IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode);
+	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode);
 	
 	public void setAttribute(Object value, String attribute);
 	
 	public Object getAttribute(DiskoToolType type, String attribute);
 	
 	public void setAttribute(DiskoToolType type, Object value, String attribute);
+	
+	public void setBatchUpdate(boolean isBatchUpdate);
 
+	public void enableTools(boolean isEnabled);
+	
+	public void enableToolType(DiskoToolType type);
+	
+	public void getToolCaption();
+	
 }

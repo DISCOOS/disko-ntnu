@@ -613,7 +613,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
     public void rearrangeAsgPrioritiesAfterStatusChange(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus oldStatus)
     {
-        if (anAssignment.getStatus() == IAssignmentIf.AssignmentStatus.ALLOCATED || oldStatus == IAssignmentIf.AssignmentStatus.ALLOCATED)
+        if (anAssignment.getStatus() == IAssignmentIf.AssignmentStatus.QUEUED || oldStatus == IAssignmentIf.AssignmentStatus.QUEUED)
         {
             rearrangeAsgPriorities();
         }
@@ -621,7 +621,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
     public void rearrangeAsgPrioritiesAfterReferenceChange(IAssignmentIf anAssignment)
     {
-        if (anAssignment.getStatus() == IAssignmentIf.AssignmentStatus.ALLOCATED)
+        if (anAssignment.getStatus() == IAssignmentIf.AssignmentStatus.QUEUED)
         {
             rearrangeAsgPriorities();
         }
@@ -695,14 +695,14 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
         try
         {
-            newAssignment.setStatusAndOwner(IAssignmentIf.AssignmentStatus.ALLOCATED, this); // Will be added with latest prioritySequence
+            newAssignment.setStatusAndOwner(IAssignmentIf.AssignmentStatus.QUEUED, this); // Will be added with latest prioritySequence
         }
         catch (IllegalOperationException e)
         {
             return false;
         }
         int newPrioritySequence = beforeAssignment != null &&
-                beforeAssignment.getStatus() == IAssignmentIf.AssignmentStatus.ALLOCATED &&
+                beforeAssignment.getStatus() == IAssignmentIf.AssignmentStatus.QUEUED &&
                 beforeAssignment.getOwningUnit() == this ? beforeAssignment.getPrioritySequence() : Integer.MAX_VALUE;
 
         // move forwards in list if not last

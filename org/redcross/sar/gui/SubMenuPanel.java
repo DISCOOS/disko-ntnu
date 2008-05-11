@@ -9,17 +9,14 @@ import java.util.Hashtable;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.wp.IDiskoWp;
 import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
@@ -125,13 +122,9 @@ public class SubMenuPanel extends JPanel {
 				cancelButton.setIcon(new DiskoCustomIcon(cancelButton.getIcon(),Color.RED,0.4f));
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						/*String msg = "Dette vil slette allt som er gjort til nå."+
-						"Vil du allikevel avbryte?";
-						if (showYesNoDialog(msg) == 0) {*/
-							IDiskoWp wp = (IDiskoWp)app.getCurrentRole().getCurrentDiskoWpModule();
-				    		// forward
-							wp.cancel();
-						//}
+						IDiskoWp wp = (IDiskoWp)app.getCurrentRole().getCurrentDiskoWpModule();
+			    		// forward
+						wp.cancel();
 					}
 				});
 			} catch (java.lang.Throwable e) {

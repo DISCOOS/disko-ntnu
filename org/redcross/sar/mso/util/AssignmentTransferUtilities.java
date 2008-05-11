@@ -44,7 +44,7 @@ public class AssignmentTransferUtilities
         switch (oldStatus)
         {
             case READY:
-            case ALLOCATED:
+            case QUEUED:
                 firstLineType = IMessageLineIf.MessageLineType.ASSIGNED;
                 break;
             case ASSIGNED:
@@ -136,7 +136,7 @@ public class AssignmentTransferUtilities
             case PAUSED:
             case WORKING:
             case PENDING:
-                if (aStatus == IAssignmentIf.AssignmentStatus.ALLOCATED)
+                if (aStatus == IAssignmentIf.AssignmentStatus.QUEUED)
                 {
                     return true;
                 } else if (aStatus == IAssignmentIf.AssignmentStatus.ASSIGNED)
@@ -189,7 +189,7 @@ public class AssignmentTransferUtilities
 
         if (newStatus == currentStatus && newUnit == currentUnit)
         {
-            return newStatus == IAssignmentIf.AssignmentStatus.ALLOCATED;     // Can drop on the same in order to change priority
+            return newStatus == IAssignmentIf.AssignmentStatus.QUEUED;     // Can drop on the same in order to change priority
         }
 
         switch (currentStatus)
@@ -200,7 +200,7 @@ public class AssignmentTransferUtilities
                 return newUnit == null && newStatus == IAssignmentIf.AssignmentStatus.READY;
             case READY:
                 return newUnit != null && IAssignmentIf.ACTIVE_SET.contains(newStatus) && AssignmentTransferUtilities.unitCanAccept(newUnit, newStatus);
-            case ALLOCATED:
+            case QUEUED:
             case ASSIGNED:
                 return newUnit == null ? newStatus == IAssignmentIf.AssignmentStatus.READY : (IAssignmentIf.ACTIVE_SET.contains(newStatus) && AssignmentTransferUtilities.unitCanAccept(newUnit, newStatus));
             case EXECUTING:

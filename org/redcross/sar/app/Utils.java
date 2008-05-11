@@ -1,14 +1,10 @@
 package org.redcross.sar.app;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
-import java.awt.image.BufferedImage;
 
-import java.io.File;
 import java.io.FileInputStream;
 
 import java.util.ArrayList;
@@ -17,15 +13,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.gui.DiskoCustomIcon;
 import org.redcross.sar.gui.ErrorDialog;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 
 /**
@@ -35,213 +27,10 @@ import org.redcross.sar.thread.DiskoProgressMonitor;
  */
 public class Utils {
 
-	private static Properties properties = null;
+	//private static Properties properties = null;
 	private static ErrorDialog errorDialog = null;
 	private static ProgressMonitor progressMonitor = null;
 	private static IDiskoApplication diskoApp = null;
-
-	/**
-	 * Load the properties in a file with the given name
-	 * @param fileName The name (path) of the file
-	 * @return 
-	 * @throws Exception
-	 */
-	public static Properties loadProperties(String fileName) throws Exception {
-		Properties prop = new Properties();
-		FileInputStream in = new FileInputStream(fileName);
-		prop.load(in);
-		in.close();
-		return prop;
-	}
-
-	/**
-	 * Get the default properties
-	 * @return 
-	 * @throws Exception
-	 */
-	public static Properties getProperties() {
-		if (properties == null) {
-			try {
-				properties = loadProperties("properties");
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return properties;
-	}
-	
-	public static String getProperty(String key) {
-		return getProperties().getProperty(key);
-	}
-
-	public static String setProperty(String key, String value) {
-		String old = getProperties().getProperty(key);
-		getProperties().setProperty(key,value);
-		return old;
-	}
-
-	/**
-	 * Create a image 
-	 * @param path The path to the image
-	 * @param name A name to identify the icon
-	 * @return A ImageIcon
-	 * @throws Exception
-	 */
-	public static BufferedImage createImage(String path) 
-	throws Exception {
-		BufferedImage bi = null;
-		if (path != null) {
-			File file = new File(path);
-			if (file.exists()) {
-				java.net.URL imgURL = file.toURI().toURL();
-				bi = ImageIO.read(imgURL);
-			}
-		}
-		else
-		{
-			// create default image
-			bi = new BufferedImage(40, 40, BufferedImage.TYPE_INT_RGB);
-			java.awt.Graphics2D g2 = bi.createGraphics();
-			java.awt.Color col = new java.awt.Color(255, 0, 0);
-			g2.setColor(col);
-			g2.fill3DRect(0, 0, 30, 30, true);
-		}
-		return bi;
-	}
-	
-	/**
-	 * Create a image 
-	 * @param path The path to the saved image
-	 * @param format Image save format 
-	 * @throws Exception
-	 */
-	public static void saveImage(BufferedImage image, String path, String format) 
-	throws Exception {
-		if (path != null) {
-			File file = new File(path);
-			if (file.exists()) {
-				saveImage(image,file,format);
-			}
-		}
-	}
-	
-	/**
-	 * Create a image 
-	 * @param file The file to save image in
-	 * @param format Image save format 
-	 * @throws Exception
-	 */
-	public static void saveImage(BufferedImage image, File file, String format) 
-	throws Exception {
-		if (file != null) {
-			if (file.exists()) {
-				ImageIO.write(image, format, file);
-			}
-		}
-	}
-	
-	public static String translate(Object obj) {
-		if (obj == null) {
-			return "";
-		}
-		Properties props = getProperties();
-		String key = null;
-		if (obj instanceof Enum) {
-			Enum e = (Enum)obj;
-			key = e.getClass().getSimpleName()+"."+e.name()+".text";
-			return (props != null ? props.getProperty(key, e.name()) : e.name());
-		}
-		String str = obj.toString();
-		key = str+".text";
-		return props.getProperty(key, str);
-	}
-
-	public static String getKey(Enum e, String suffix) {
-		String key = e.getClass().getSimpleName()+"."+e.name()+"."+suffix;		
-		return key;
-	}
-	
-	public static String getEnumSymbolPath(Enum e) {
-		if (e != null) {
-			String key = e.getClass().getSimpleName()+"."+e.name()+".symbol";
-			try {
-				Properties props = getProperties();
-				return props != null ? props.getProperty(key) : null;
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}			
-		}
-		return null;
-	}
-	
-	public static BufferedImage getEnumSymbol(Enum e) {
-		if (e != null) {
-			String key = e.getClass().getSimpleName()+"."+e.name()+".symbol";
-			return getImage(key);
-		}
-		return null;
-	}
-	
-	public static ImageIcon getEnumIcon(Enum e, String catalog) {
-		if (e != null) {
-			String key = e.getClass().getSimpleName()+"."+e.name()+".icon";
-			return getIcon(key,catalog);
-		}
-		return null;
-	}
-
-	public static DiskoCustomIcon getEnumIcon(Enum e, String catalog, Color color, float alfa) {
-		if (e != null) {
-			String key = e.getClass().getSimpleName()+"."+e.name()+".icon";
-			return getIcon(key,catalog,color,alfa);
-		}
-		return null;
-	}	
-
-	public static String getEnumText(Enum e) {
-		if (e != null) {
-			try {
-				Properties props = getProperties();
-				String key = e.getClass().getSimpleName()+"."+e.name()+".text";
-				return props != null ? props.getProperty(key) : null;
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-		return null;
-	}
-
-	public static ImageIcon getIcon(String key, String catalog) {
-		try {
-			Properties props = getProperties();
-			return props != null ? DiskoIconFactory.getIcon(props.getProperty(key), catalog) : null;
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		return null;
-	}
-
-	public static BufferedImage getImage(String key) {
-		try {
-			Properties props = getProperties();
-			return props != null ? createImage(props.getProperty(key)) : null;
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		return null;
-	}
-	
-	public static DiskoCustomIcon getIcon(String key, String catalog, Color color, float alfa) {
-		try {
-			Properties props = getProperties();
-			return props != null ? new DiskoCustomIcon(
-					DiskoIconFactory.getIcon(props.getProperty(key), catalog),color,alfa) : null;
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		return null;
-	}	
 
 	public static ErrorDialog getErrorDialog(Frame owner) {
 		// update

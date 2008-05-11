@@ -108,7 +108,7 @@ public class MapStatusBar extends JPanel {
 	private JLabel getSelectedLabel() {
 		if (selectedLabel == null) {
 			selectedLabel = new BarItem("Objekt","","",
-					"<velg>",false,
+					"<velg>",true,
 					BarItemType.BAR_ITEM_SELECTED);
 		}
 		return selectedLabel;

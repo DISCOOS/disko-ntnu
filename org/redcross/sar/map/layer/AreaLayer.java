@@ -9,9 +9,9 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
@@ -40,10 +40,10 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleLineSymbol defaultLineSymbol = null;
 	private TextSymbol textSymbol = null;
 
- 	public AreaLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+ 	public AreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(MsoClassCode.CLASSCODE_AREA,
  				LayerCode.AREA_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryBag);
+ 				esriGeometryType.esriGeometryBag,eventStack);
  		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
@@ -114,41 +114,21 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 						IColor saveLineColor = lineSymbol.getColor();
 						IColor saveTextColor = textSymbol.getColor();
 						
-						/*
-						// is layer in edit mode?
-						if (isEditing) {
-							// is editing feature?
-							if(feature.isEditing()) {
-								// is feature selected?
-								if (feature.isSelected()) {
-									lineSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-								}
-							}
-							else {
-								// disable all other features
-								lineSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}								
+						// is enabled?
+						if(isEnabled) {
+							// is selected
+	 	 					if (feature.isSelected()){
+								lineSymbol.setColor(selectionColor);
+								textSymbol.setColor(selectionColor);
+	 	 					}
+	 	 					else
+	 	 						lineSymbol.setColor(color);
 						}
 						else {
-							*/
-							// is enabled?
-							if(isEnabled) {
-								// is selected
-		 	 					if (feature.isSelected()){
-									lineSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-		 	 					}
-		 	 					else
-		 	 						lineSymbol.setColor(color);
-							}
-							else {
-								// disable all features
-								lineSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}
-						//}
+							// disable all features
+							lineSymbol.setColor(disabledColor);
+							textSymbol.setColor(disabledColor);
+						}
 												
 						for (int j = 0; j < geomBag.getGeometryCount(); j++) {
 							IGeometry geom = geomBag.getGeometry(j);
@@ -165,9 +145,10 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 						lineSymbol.setColor(saveLineColor);
 						textSymbol.setColor(saveTextColor);
 					}
+					feature.setDirty(false);
 				}
+				isDirty = false;
 			}
-			isDirty = false;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

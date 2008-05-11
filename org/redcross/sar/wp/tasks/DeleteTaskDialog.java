@@ -60,11 +60,11 @@ public class DeleteTaskDialog extends DiskoDialog
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 
-		JLabel headerLabel = new JLabel(m_wpTasks.getText("DeleteTask.text"));
+		JLabel headerLabel = new JLabel(m_wpTasks.getBundleText("DeleteTask.text"));
 		gbc.gridwidth = 2;
 		m_contentsPanel.add(headerLabel, gbc);
 
-		JLabel taskLabel = new JLabel(m_wpTasks.getText("Task.text"));
+		JLabel taskLabel = new JLabel(m_wpTasks.getBundleText("Task.text"));
 		gbc.gridwidth = 1;
 		gbc.gridy++;
 		m_contentsPanel.add(taskLabel, gbc);
@@ -76,7 +76,7 @@ public class DeleteTaskDialog extends DiskoDialog
 		gbc.gridx++;
 		m_contentsPanel.add(m_taskTextField, gbc);
 
-		JLabel descriptionLabel = new JLabel(m_wpTasks.getText("TaskDescription.text"));
+		JLabel descriptionLabel = new JLabel(m_wpTasks.getBundleText("TaskDescription.text"));
 		gbc.gridx--;
 		gbc.gridy++;
 		m_contentsPanel.add(descriptionLabel, gbc);

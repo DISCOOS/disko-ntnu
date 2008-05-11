@@ -1,11 +1,14 @@
 package org.redcross.sar.wp;
 
+import java.awt.event.ActionListener;
 import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.JButton;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 
 
@@ -25,12 +28,7 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
 
     private void initialize()
     {
-        loadProperties("properties");
         defineSubMenu();
-
-//        DiskoMap map = getMap();
-//        map.setIsEditable(true);
-//        layoutComponent(map);
     }
 
     public DiskoMap getMap()
@@ -55,7 +53,8 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
         {
             try
             {
-                m_situationButton = createNormalButton("Situasjon", new java.awt.event.ActionListener()
+                m_situationButton = DiskoButtonFactory.createButton("Situasjon","",null,ButtonSize.NORMAL);
+                m_situationButton.addActionListener(new ActionListener()
                 {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {

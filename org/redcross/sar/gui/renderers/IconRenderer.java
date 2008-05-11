@@ -1,6 +1,6 @@
 package org.redcross.sar.gui.renderers;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.wp.logistics.UnitTableModel;
@@ -16,13 +16,12 @@ import java.awt.Image;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Properties;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -51,9 +50,6 @@ public class IconRenderer implements Icon
 
     // Selection flag
     private boolean m_isSelected;
-
-    protected static Properties m_iconProperties;
-
 
     public IconRenderer(Image anIconImage, boolean isLocatedLeft, String anIconText, int aWidth, int aHeight, float aResizeFactor, boolean isMultiple, boolean hasBorder, boolean isSelected)
     {
@@ -234,22 +230,6 @@ public class IconRenderer implements Icon
         g.translate(-x, -y);   //Restore graphics object
     }
 
-    protected static Properties getProperties()
-    {
-        if (m_iconProperties == null)
-        {
-            try
-            {
-                m_iconProperties = Utils.getProperties();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-        return m_iconProperties;
-    }
-
     public boolean isSelectable()
     {
         return false;
@@ -269,15 +249,6 @@ public class IconRenderer implements Icon
 
         private void initImageMap()
         {
-            String[] unitIconNames = new String[]{
-                    "UNIT.CMDPOST", 
-                    "UNIT.TEAM",
-                    "UNIT.DOG",
-                    "UNIT.AIRCRAFT",  
-                    "UNIT.BOAT", 
-                    "UNIT.VEHICLE"
-                    
-            };
             IUnitIf.UnitType[] unitTypes = new IUnitIf.UnitType[]{
                     IUnitIf.UnitType.CP,
                     IUnitIf.UnitType.TEAM,
@@ -313,13 +284,15 @@ public class IconRenderer implements Icon
             }
             */
             
-            for (int i = 0; i < unitIconNames.length; i++)
+            for (int i = 0; i < unitTypes.length; i++)
             {
                 try
                 {
-                    String iconName = unitIconNames[i];
-                    Image image = DiskoIconFactory.getIcon(iconName, "48x48").getImage();
-                    m_images.put(unitTypes[i], image);
+                	ImageIcon icon = DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(unitTypes[i]), "48x48");
+                	if(icon!=null) {
+	                    Image image = icon.getImage();
+	                    m_images.put(unitTypes[i], image);
+                	}
                 }
                 catch (Exception e)
                 {
@@ -390,15 +363,7 @@ public class IconRenderer implements Icon
 
         private void initImageMap()
         {
-            String[] searchIconNames = new String[]{
-                    "SEARCH.LINE",
-                    "SEARCH.PATROL",
-                    "SEARCH.URBAN", 
-                    "SEARCH.SHORELINE", 
-                    "SEARCH.WATER", 
-                    "SEARCH.AIR", 
-                    "SEARCH.DOG"
-            };
+
             ISearchIf.SearchSubType[] assignmentTypes = new ISearchIf.SearchSubType[]{
                     ISearchIf.SearchSubType.LINE,
                     ISearchIf.SearchSubType.PATROL,
@@ -409,18 +374,12 @@ public class IconRenderer implements Icon
                     ISearchIf.SearchSubType.DOG
             };
 
-            for (int i = 0; i < searchIconNames.length; i++)
+            for (int i = 0; i < assignmentTypes.length; i++)
             {
-                String iconName = searchIconNames[i];
-                try
-                {
-                    Image image = DiskoIconFactory.getIcon(iconName, "48x48").getImage();
+            	ImageIcon icon = DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(assignmentTypes[i]), "48x48");
+            	if(icon!=null) {
+                    Image image = icon.getImage();
                     m_searchImages.put(assignmentTypes[i], image);
-                }
-                catch (Exception e)
-                {
-                    System.out.println("Icon not found " + getProperties().getProperty(iconName) + " :" + iconName);
-                    //e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
 

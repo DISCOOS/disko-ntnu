@@ -3,7 +3,7 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.SearchAreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -37,10 +37,10 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol selectionSymbol = null;
 	private TextSymbol textSymbol = null;
  	
- 	public SearchAreaLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+ 	public SearchAreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA, 
  				LayerCode.SEARCH_AREA_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPolygon);
+ 				esriGeometryType.esriGeometryPolygon, eventStack);
  		createSymbols();
  		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 		loadObjects(cmdPost.getSearchAreaListItems().toArray());
@@ -86,49 +86,24 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 					Polygon polygon = (Polygon)feature.getShape();
 					if (polygon != null) {
 						IColor saveTextColor = textSymbol.getColor();
-						/*
-						// is layer in edit mode?
-						if (isEditing) {
-							// is editing feature?
-							if(feature.isEditing()) {
-								// is feature selected?
-								if (feature.isSelected()) {
-		 	 						display.setSymbol(selectionSymbol);
-									textSymbol.setColor(selectionSymbol.getOutline().getColor());	 	 						
-								}
-								else {
-									// do not select feature
-									display.setSymbol(defaultSymbol);
-									textSymbol.setColor(saveTextColor);										
-								}
-							}
-							else {
-								// disable all other features
-								display.setSymbol(disabledSymbol);							
-								textSymbol.setColor(disabledSymbol.getOutline().getColor());
-							}								
+						// is enabled?
+						if(isEnabled) {
+							// is selected
+	 	 					if (feature.isSelected()){
+	 	 						// select feature
+	 	 						display.setSymbol(selectionSymbol);
+								textSymbol.setColor(selectionSymbol.getOutline().getColor());	 	 						
+	 	 					}
+	 	 					else {
+	 	 						display.setSymbol(defaultSymbol);
+								textSymbol.setColor(saveTextColor);	 	 						
+	 	 					}
 						}
 						else {
-						*/
-							// is enabled?
-							if(isEnabled) {
-								// is selected
-		 	 					if (feature.isSelected()){
-		 	 						// select feature
-		 	 						display.setSymbol(selectionSymbol);
-									textSymbol.setColor(selectionSymbol.getOutline().getColor());	 	 						
-		 	 					}
-		 	 					else {
-		 	 						display.setSymbol(defaultSymbol);
-									textSymbol.setColor(saveTextColor);	 	 						
-		 	 					}
-							}
-							else {
-								// disable all features
-								display.setSymbol(disabledSymbol);							
-								textSymbol.setColor(disabledSymbol.getOutline().getColor());
-							}
-						//}
+							// disable all features
+							display.setSymbol(disabledSymbol);							
+							textSymbol.setColor(disabledSymbol.getOutline().getColor());
+						}
 						
 						// draw 
 						display.drawPolygon(polygon);
@@ -141,6 +116,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 						textSymbol.setColor(saveTextColor);
 						
 					}
+					feature.setDirty(false);
  				}
 			}
 			isDirty = false;

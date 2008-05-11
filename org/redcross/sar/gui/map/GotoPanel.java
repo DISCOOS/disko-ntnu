@@ -11,6 +11,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.IDiskoMap.CoordinateFormat;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
@@ -42,7 +43,7 @@ public class GotoPanel extends DiskoPanel {
 	private IDiskoMap m_map = null;
 	
 	private boolean m_isAutoUpdate = false;
-	
+		
 	private final IMapControlEvents2Adapter m_mouseAdapter = new IMapControlEvents2Adapter() {
 
 		private static final long serialVersionUID = 1L;
@@ -268,14 +269,14 @@ public class GotoPanel extends DiskoPanel {
 	private JTabbedPane getTabbedPane() {
 		if (m_tabbedPane == null) {
 			m_tabbedPane = new JTabbedPane();
-			m_tabbedPane.addTab(null, DiskoIconFactory.getIcon("FORMAT.MGRS","32x32"), 
-					getMGRSPanel(), Utils.getProperty("IconEnum.COORDINATE.text"));
-			m_tabbedPane.addTab(null, DiskoIconFactory.getIcon("FORMAT.UTM","32x32"), 
-					getUTMPanel(), Utils.getProperty("IconEnum.FORMAT.text"));
-			m_tabbedPane.addTab(null, DiskoIconFactory.getIcon("FORMAT.DES","32x32"), 
-					getDESPanel(), Utils.getProperty("IconEnum.FORMAT.text"));
-			m_tabbedPane.addTab(null, DiskoIconFactory.getIcon("FORMAT.DEG","32x32"), 
-					getDEGPanel(), Utils.getProperty("IconEnum.FORMAT.text"));
+			m_tabbedPane.addTab(null, DiskoButtonFactory.getIcon(CoordinateFormat.FORMAT_MGRS,"32x32"), 
+					getMGRSPanel(), DiskoButtonFactory.getTooltip(CoordinateFormat.FORMAT_MGRS));
+			m_tabbedPane.addTab(null, DiskoButtonFactory.getIcon(CoordinateFormat.FORMAT_UTM,"32x32"), 
+					getUTMPanel(), DiskoButtonFactory.getTooltip(CoordinateFormat.FORMAT_UTM));
+			m_tabbedPane.addTab(null, DiskoButtonFactory.getIcon(CoordinateFormat.FORMAT_DES,"32x32"), 
+					getDESPanel(), DiskoButtonFactory.getTooltip(CoordinateFormat.FORMAT_DES));
+			m_tabbedPane.addTab(null, DiskoButtonFactory.getIcon(CoordinateFormat.FORMAT_DEG,"32x32"), 
+					getDEGPanel(), DiskoButtonFactory.getTooltip(CoordinateFormat.FORMAT_DEG));
 			m_tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 			m_tabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
 			m_tabbedPane.addChangeListener(new ChangeListener() {

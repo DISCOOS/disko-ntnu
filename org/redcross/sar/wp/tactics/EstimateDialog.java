@@ -11,12 +11,12 @@ import java.util.EnumSet;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -215,7 +215,8 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));
+			getContentPanel().setCaptionIcon(
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Estimer tidsforbruk for <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getEtaAttribute().setEnabled(true);

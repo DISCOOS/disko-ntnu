@@ -81,7 +81,7 @@ public class MessageLineTableModel extends AbstractTableModel
 			{
 			case TEXT:
 			{
-				lineText = String.format(m_wpMessageLog.getText("ListItemText.text"),
+				lineText = String.format(m_wpMessageLog.getBundleText("ListItemText.text"),
 						line.getLineText());
 			}
 			break;
@@ -103,7 +103,7 @@ public class MessageLineTableModel extends AbstractTableModel
 						String x = mgrs.subSequence(5, 10).toString();
 						String y = mgrs.subSequence(10, 15).toString();
 						// get text
-						lineText = String.format(m_wpMessageLog.getText("ListItemPOI.text"),
+						lineText = String.format(m_wpMessageLog.getBundleText("ListItemPOI.text"),
 								unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
 					}
 					catch (Exception e) {
@@ -129,7 +129,7 @@ public class MessageLineTableModel extends AbstractTableModel
 							String x = mgrs.subSequence(5, 10).toString();
 							String y = mgrs.subSequence(10, 15).toString();
 							// get text
-							lineText = String.format(m_wpMessageLog.getText("ListItemFinding.text"),
+							lineText = String.format(m_wpMessageLog.getBundleText("ListItemFinding.text"),
 									type, zone, square, x, y);
 						}
 						catch (Exception e) {
@@ -142,7 +142,7 @@ public class MessageLineTableModel extends AbstractTableModel
 			case ASSIGNED:
 			{
 				IAssignmentIf assignment = line.getLineAssignment();
-				lineText = String.format(m_wpMessageLog.getText("ListItemAssigned.text"),
+				lineText = String.format(m_wpMessageLog.getBundleText("ListItemAssigned.text"),
 						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
 
 			}
@@ -150,14 +150,14 @@ public class MessageLineTableModel extends AbstractTableModel
 			case STARTED:
 			{
 				IAssignmentIf assignment = line.getLineAssignment();
-				lineText = String.format(m_wpMessageLog.getText("ListItemStarted.text"),
+				lineText = String.format(m_wpMessageLog.getBundleText("ListItemStarted.text"),
 						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
 			}
 			break;
 			case COMPLETE:
 			{
 				IAssignmentIf assignment = line.getLineAssignment();
-				lineText = String.format(m_wpMessageLog.getText("ListItemCompleted.text"),
+				lineText = String.format(m_wpMessageLog.getBundleText("ListItemCompleted.text"),
 						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
 			}
 			break;

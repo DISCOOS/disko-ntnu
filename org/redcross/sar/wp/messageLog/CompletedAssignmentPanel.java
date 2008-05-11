@@ -32,7 +32,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 		super(wp);
 
 		m_editAssignmentPanel.getAttribute("Time").setCaption(
-				 m_wpMessageLog.getText("CompletedTimeLabel.text") + ": ");
+				 m_wpMessageLog.getBundleText("CompletedTimeLabel.text") + ": ");
 		
 	}
 
@@ -97,18 +97,18 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			// If unit has assigned or started assignment, ask user if this is completed
 			if(!AssignmentTransferUtilities.unitCanAccept(unit, AssignmentStatus.FINISHED))
 			{
-				Utils.showWarning(m_wpMessageLog.getText("CanNotCompleteError.header"),
-						String.format(m_wpMessageLog.getText("CanNotCompleteError.details"), 
+				Utils.showWarning(m_wpMessageLog.getBundleText("CanNotCompleteError.header"),
+						String.format(m_wpMessageLog.getBundleText("CanNotCompleteError.details"), 
 								MsoUtils.getMsoObjectName(unit,1), MsoUtils.getMsoObjectName(assignment,1)));
 				this.hideComponent();
 				return;
 			}
 
-			Object[] options = {m_wpMessageLog.getText("yes.text"), m_wpMessageLog.getText("no.text")};
+			Object[] options = {m_wpMessageLog.getBundleText("yes.text"), m_wpMessageLog.getBundleText("no.text")};
 			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
-					String.format(m_wpMessageLog.getText("UnitCompletedAssignment.text"), 
+					String.format(m_wpMessageLog.getBundleText("UnitCompletedAssignment.text"), 
 							MsoUtils.getMsoObjectName(unit,1), MsoUtils.getMsoObjectName(assignment,1)),
-					m_wpMessageLog.getText("UnitCompletedAssignment.header"),
+					m_wpMessageLog.getBundleText("UnitCompletedAssignment.header"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
 					null,

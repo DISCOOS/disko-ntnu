@@ -7,6 +7,8 @@ import javax.swing.JComponent;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.ElementPanel.ElementEvent;
@@ -56,8 +58,8 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 	
 	public void onElementChange(Enum element) {
 		// update toggle button
-		button.setIcon(Utils.getEnumIcon(element,"48x48"));
-		button.setToolTipText(Utils.translate(element));
+		button.setIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(element),"48x48"));
+		button.setToolTipText(DiskoEnumFactory.getTooltip(element));
 	}
 
 	public void onElementCenterAt(ElementEvent e) { /* Not in use */ }

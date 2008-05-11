@@ -1,6 +1,10 @@
 package org.redcross.sar.map.command;
 
 import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -18,6 +22,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAreaListIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.mso.data.IOperationAreaListIf;
 import org.redcross.sar.mso.data.IRouteIf;
@@ -32,6 +37,8 @@ import org.redcross.sar.thread.DiskoWorkPool;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geometry.Point;
+import com.esri.arcgis.geometry.esriGeometryType;
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * A custom draw tool.
@@ -44,7 +51,14 @@ public class EraseTool extends AbstractDiskoTool {
 	
 	private static final int SNAP_TOL_FACTOR = 100;
 	
+	// geometries
 	private Point p = null;
+	
+	// flags
+	private boolean isMouseOverIcon = false;
+
+	// counters
+	protected long previous = 0;
 	
 	public EraseTool() {
 		
@@ -62,6 +76,55 @@ public class EraseTool extends AbstractDiskoTool {
 
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+	
+		// add global keyevent listener
+		Utils.getApp().getKeyEventDispatcher().addKeyListener(
+				KeyEvent.KEY_PRESSED, KeyEvent.VK_DELETE, new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// can process event?
+				if(map!=null && map.isVisible()) {
+					// get selected elements
+					List<IMsoFeature> list = null;
+					try {
+						list = map.getMsoSelection();
+					} catch (AutomationException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					// any selections?
+					if(list.size()>0)  {
+						// get feature
+						final IMsoFeature msoFeature = list.get(0);
+						// run later (or else it will freeze on the message box)
+						SwingUtilities.invokeLater(new Runnable() {							
+							public void run() {
+								
+								try {
+									
+									// try to get feature
+									eraseFeature(msoFeature);
+									
+								}
+								catch(Exception e) {
+									e.printStackTrace();
+								}
+							}
+						});
+						// consume event
+						e.consume();
+					}
+				}
+				
+			}
+			// has 
+		});
+		
+		
 		
 	}
 	
@@ -70,11 +133,47 @@ public class EraseTool extends AbstractDiskoTool {
 		if(isWorking()) return;
 		// is valid map?
 		if (obj instanceof IDiskoMap) {
+			
+			// unregister?
+			if(map!=null) {
+				removeDiskoWorkEventListener(map);
+			}
+			
+			// update hook
 			map = (DiskoMap)obj;
+			
+			// add map as work listener
+			addDiskoWorkEventListener(map);
+					
 		}
+		// forward
 		super.onCreate(obj);
 	}
+	
+	@Override
+	public void onMouseMove(int button, int shift, int x, int y) {
 
+		// get tic
+		long tic = Calendar.getInstance().getTimeInMillis();
+		
+		// consume?
+		if(tic-previous<250) return;
+		
+		// update tic
+		previous = tic;
+		
+		try {	
+			// transform to map coordinates
+			p = toMapPoint(x, y);			
+			// get flag
+			isMouseOverIcon = (map.isEditSupportInstalled()) ? map.getDrawFrame().hitIcon(p.getX(), p.getY(), 1)!=null : false;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+	}	
+	
 	@Override
 	public void onMouseUp(int button, int shift, int x, int y) {
 
@@ -83,128 +182,120 @@ public class EraseTool extends AbstractDiskoTool {
 
 		try {
 			
-			// get clicked point
+			// transform to map coordinates
 			p = toMapPoint(x, y);			
 			
-			// run later (or else it will freeze on dialog box)
-			SwingUtilities.invokeLater(new Runnable() {
-				
-				public void run() {
+			// forward to draw adapter?
+			if(!map.isEditSupportInstalled() ||  !map.getDrawAdapter().onMouseUp(button,shift,p)) {			
+				// run later (or else it will freeze on dialog box)
+				SwingUtilities.invokeLater(new Runnable() {
 					
-					try {
+					public void run() {
 						
-						// try to get feature
-						IMsoFeature msoFeature = selectFromPoint();
-						
-						// found?
-						if(msoFeature!=null) {
-							// forward
-							eraseFeature(msoFeature);
-						}
-						
-						/*
-
-						// get mso layers
-						List layers = map.getMsoLayers();
-						
-						// loop over all layers and delete all selected features
-						for (int i = 0; i < layers.size(); i++) {
+						try {
 							
-							// get current layer
-							IMsoFeatureLayer layer = (IMsoFeatureLayer)layers.get(i);
+							// try to get feature
+							IMsoFeature msoFeature = selectFromPoint();
 							
-							// get selected items
-							List selected = layer.getSelected();
-							
-							for (int j = 0; j < selected.size(); j++) {
-								msoFeature = (IMsoFeature)selected.get(j);
-								if (msoFeature.isSelected())  {
-									// forward
-									eraseFeature(msoFeature);
-								}
+							// found?
+							if(msoFeature!=null) {
+								// forward
+								eraseFeature(msoFeature);
 							}
+							
 						}
-						*/
+						catch(Exception e) {
+							e.printStackTrace();
+						}
 					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}
-			});
+				});
+			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 		
 	}
+	
+	@Override
+	public int getCursor() {
+		// show default?
+		if(isMouseOverIcon)
+			return 0;
+		else {
+			return super.getCursorFromLocation("cursors/erase.cur");
+		}	
+	}
 
 	private boolean eraseFeature(IMsoFeature msoFeature) {
+		// initialize
+		int index = 0;
+		// get mso object
+		IMsoObjectIf msoObj = msoFeature.getMsoObject();
+		// get default value
+		String message = "Objektet <" + MsoUtils.getMsoObjectName(msoObj, 1) + "> kan ikke slettes";		
 		// get mso class code
-		IMsoManagerIf.MsoClassCode msoClassCode = msoFeature.getMsoObject().getMsoClassCode();
+		IMsoManagerIf.MsoClassCode msoClassCode = msoObj.getMsoClassCode();
 		// choose delete operations
 		if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {
-			// notfiy user
-			int ans = JOptionPane.showConfirmDialog(
-				Utils.getApp().getFrame(),
-	            "Dette vil slette valgt operasjonsområde. Vil du fortsette?",
-	            "Bekreft sletting",
-	            JOptionPane.YES_NO_OPTION,
-	            JOptionPane.QUESTION_MESSAGE);
-			if(ans == JOptionPane.YES_OPTION) { 
-				// create erase worker task and execute?
-				return doEraseWork(1,msoFeature);
-			}
+			// set work index
+			index = 1;
+			// get message
+			message = "Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
 		}
 		else if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA) {
-			// notfiy user
-			int ans = JOptionPane.showConfirmDialog(
-				Utils.getApp().getFrame(),
-	            "Dette vil slette valgt søkeområde. Vil du fortsette?",
-	            "Bekreft sletting",
-	            JOptionPane.YES_NO_OPTION,
-	            JOptionPane.QUESTION_MESSAGE);
-			if(ans == JOptionPane.YES_OPTION) { 
-				// create erase worker task and execute
-				return doEraseWork(2,msoFeature);
-			}
+			// set work index
+			index = 2;
+			// get message
+			message = "Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
 		}
 		else if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_AREA) {
-			// notfiy user
-			int ans = JOptionPane.showConfirmDialog(
-				Utils.getApp().getFrame(),
-	            "Dette vil slette valgt søketeig. Vil du fortsette?",
-	            "Bekreft sletting",
-	            JOptionPane.YES_NO_OPTION,
-	            JOptionPane.QUESTION_MESSAGE);
-			if(ans == JOptionPane.YES_OPTION) { 
-				// create erase worker task and execute
-				return doEraseWork(3,msoFeature);									}
+			// set work index
+			index = 3;
+			// get message
+			message = "Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
 		}					
 		else if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE) {
-			// notfiy user
-			int ans = JOptionPane.showConfirmDialog(
-				Utils.getApp().getFrame(),
-	            "Dette vil slette valg rute fra oppdrag. Vil du fortsette?",
-	            "Bekreft slettingt",
-	            JOptionPane.YES_NO_OPTION,
-	            JOptionPane.QUESTION_MESSAGE);
-			if(ans == JOptionPane.YES_OPTION) { 
-				// create erase worker task and execute
-				return doEraseWork(4,msoFeature);									}
+			// set work index
+			index = 3;
+			// get owning area
+			IAreaIf area = MsoUtils.getOwningArea(msoObj);
+			// get message
+			message = "Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + " fra " 
+	            + MsoUtils.getMsoObjectName(area, 1) + ". Vil du fortsette?";
 		}					
 		else if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_POI) {
-			// notfiy user
-			int ans = JOptionPane.showConfirmDialog(
-				Utils.getApp().getFrame(),
-	            "Dette vil slette valgt veipunkt. Vil du fortsette?",
-	            "Bekreft sletting",
-	            JOptionPane.YES_NO_OPTION,
-	            JOptionPane.QUESTION_MESSAGE);
+			// set work index
+			index = 4;
+			// get owning area
+			IAreaIf area = MsoUtils.getOwningArea(msoObj);
+			// has area?
+			if(area!=null)
+				// get message
+				message = "Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + " fra " 
+		            + MsoUtils.getMsoObjectName(area, 1) + ". Vil du fortsette?";
+			else
+				// get message
+				message = "Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
+			
+		}					
+		// notfiy user
+		if(index>0) {
+			int ans = JOptionPane.showConfirmDialog( Utils.getApp().getFrame(),
+	            message, "Bekreft sletting", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			// delete?
 			if(ans == JOptionPane.YES_OPTION) { 
 				// create erase worker task and execute
-				return doEraseWork(5,msoFeature);									}
-		}					
+				return doEraseWork(index,msoFeature);									
+			}
+		}
+		else {			
+			JOptionPane.showMessageDialog(Utils.getApp().getFrame(),
+		            message, "Begrensning", JOptionPane.QUESTION_MESSAGE);
+		}
+		// do not delete
 		return false;
+
 	}
 	
 	private IMsoFeature selectFromPoint() throws Exception  {
@@ -236,8 +327,9 @@ public class EraseTool extends AbstractDiskoTool {
 						double d = getMinimumDistance(f,p);
 						// has valid distance?						
 						if(d>-1) {
+							int shapeType = f.getFeatureType();
 							// save found feature?
-							if((min==-1 || (d<min)) && (d<max)) {
+							if((min==-1 || (d<min) || shapeType==esriGeometryType.esriGeometryPoint) && (d<max)) {
 								// initialize
 								min = d;
 								ff = (IMsoFeature)f; fl = l;							
@@ -253,33 +345,19 @@ public class EraseTool extends AbstractDiskoTool {
 				}
 			}
 		}
-		// found?
+		
+
+		// anything found?
 		if(ff!=null && fl!=null) {
-			/*
-			// is map in edit mode?
-			boolean isEditing = map.isEditing();
-			//valid feature?
-			if(!ff.isEditing() && isEditing) {
-				// notify with beep
-				Toolkit.getDefaultToolkit().beep();
-				// show in edit warning
-				Utils.showWarning("Du kan kun slette kartobjekter som er i endremodus");
-				// clear selection
-				ff = null;
-				
-			}
-			else */
-			
+			// is layer not enabled?
 			if(!fl.isEnabled()) {
 				// notify with beep
 				Toolkit.getDefaultToolkit().beep();
 				// show disable warning
 				Utils.showWarning(MsoUtils.getMsoObjectName(ff.getMsoObject(), 1)
-						+ " kan kan ikke slettes");
-				
+						+ " kan kan ikke slettes");				
 				// clear selection
 				ff = null;
-
 			}
 		}
 		else {
@@ -396,7 +474,7 @@ public class EraseTool extends AbstractDiskoTool {
 				
 				// notify disko work listeners?
 				if(workDone) { 
-					fireOnWorkCancel();
+					fireOnWorkChange();
 				}	
 			}
 			catch(Exception e) {

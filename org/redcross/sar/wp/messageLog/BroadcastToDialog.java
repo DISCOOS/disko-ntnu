@@ -199,7 +199,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 	{
 		int numReceivers = m_selectedCommuicators.size();
 		int numConfirmedReceivers = m_confirmedCommunicators.size();
-		String messageText = m_wpMessageLog.getText("BroadcastStatusLabel.text");
+		String messageText = m_wpMessageLog.getBundleText("BroadcastStatusLabel.text");
 		m_confirmationStatusLabel.setText(String.format(messageText, numConfirmedReceivers, numReceivers));
 	}
 
@@ -266,7 +266,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 
 		m_buttonGroup = new ButtonGroup();
 
-		String text = m_wpMessageLog.getText("SelectionButton.text");
+		String text = m_wpMessageLog.getBundleText("SelectionButton.text");
 		m_selectionButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
 		m_selectionButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_selectionButton.addActionListener(new ActionListener()
@@ -284,7 +284,7 @@ public class BroadcastToDialog extends DiskoDialog implements IEditMessageCompon
 		m_buttonGroup.add(m_selectionButton);
 		m_buttonRowPanel.add(m_selectionButton);
 
-		text = m_wpMessageLog.getText("ConfirmButton.text");
+		text = m_wpMessageLog.getBundleText("ConfirmButton.text");
 		m_confirmButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
 		m_confirmButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_confirmButton.addActionListener(new ActionListener()

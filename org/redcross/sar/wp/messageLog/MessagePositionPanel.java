@@ -1,24 +1,27 @@
 package org.redcross.sar.wp.messageLog;
 
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.DrawDialog;
+import org.redcross.sar.gui.map.GotoPanel;
 import org.redcross.sar.gui.map.PositionPanel;
-import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.PositionTool;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
@@ -38,16 +41,21 @@ import org.redcross.sar.util.mso.Track;
  *
  * @author thomasl
  */
-public class MessagePositionPanel extends JPanel implements IEditMessageComponentIf
+public class MessagePositionPanel extends DiskoPanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
-	protected JButton m_okButton = null;
+	protected JPanel m_actionsPanel = null;
+	protected JButton m_finishButton = null;
 	protected JButton m_centerAtButton = null;
 	protected JButton m_cancelButton = null;
-	protected IDiskoWpMessageLog m_wpMessageLog = null;
-	protected PositionTool m_tool = null;
 	protected PositionPanel m_positionPanel = null;
+	protected GotoPanel m_gotoPanel = null;
+	protected DiskoPanel m_unitsPanel = null;
+	
+	protected IDiskoWpMessageLog m_wp = null;
+	
+	protected PositionTool m_tool = null;
 
 	private int isWorking = 0;
 	
@@ -58,89 +66,172 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	public MessagePositionPanel(IDiskoWpMessageLog wp)
 	{
 		// prepare
-		m_wpMessageLog = wp;
-		m_tool = m_wpMessageLog.getApplication().getNavBar().getPositionTool();
+		m_wp = wp;
+		m_tool = wp.getApplication().getNavBar().getPositionTool();
+		
 		// initialize gui
 		initialize();
 	}
 
 	private void initialize()
 	{
-		this.setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		initContents(gbc);
-		initButtons(gbc);
+		// hide borders
+		setBorderVisible(false);
+		
+		// hide me
+		setVisible(false);
 
-		// hide
-		this.setVisible(false);
-		m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog().setVisible(false);		
-        MessageLogPanel.hideMap();
-               
+		// hide map
+        MessageLogPanel.hideMap();		
+        
+		// turn off vertical scrollbar
+		setScrollBarPolicies(
+				JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		// set layout
+		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
+		
+		// add empty border
+		setBodyBordrer(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+		// add components (BorderLayout is default)
+		addBodyComponent(getUnitsPanel());
+		addBodyComponent(Box.createHorizontalStrut(5));
+		addBodyComponent(getGotoPanel());
+		addBodyComponent(Box.createHorizontalStrut(5));
+		addBodyComponent(getActionsPanel());
+		
+	}
+	
+	private JPanel getActionsPanel() {
+		if(m_actionsPanel==null) {
+			// create panel
+			m_actionsPanel = new JPanel();
+			// set layout manager on y-axis
+			m_actionsPanel.setLayout(new BoxLayout(m_actionsPanel,BoxLayout.Y_AXIS));
+			// add buttons
+			m_actionsPanel.add(getCancelButton());
+			m_actionsPanel.add(getCenterAtButton());
+			m_actionsPanel.add(getFinishButton());
+		}
+		return m_actionsPanel;
+	
+	}
+	
+	private JButton getFinishButton() {
+		if(m_finishButton==null) {
+			// create button
+			m_finishButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+			// add action listener
+			m_finishButton.addActionListener(new ActionListener() {
+				/**
+				 * Add/update POI in current message
+				 */
+				public void actionPerformed(ActionEvent e){
+					if(applyPosition())
+						MessageLogBottomPanel.showListPanel();				
+				}
+			});
+
+		}
+		return m_finishButton;
+	
+	}
+	
+	private JButton getCenterAtButton() {
+		if(m_centerAtButton==null) {
+			// create button
+			m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
+			// add action listener
+			m_centerAtButton.addActionListener(new ActionListener() {
+				/**
+				 * Center map at position
+				 */
+				public void actionPerformed(ActionEvent e){
+					centerAtPosition(true);
+				}
+			});
+
+		}
+		return m_centerAtButton;
+	
 	}
 
-	private void initContents(GridBagConstraints gbc) {
-		gbc.gridheight = 3;
-		this.add(getPositionPanel(),gbc);
+	private JButton getCancelButton() {
+		if(m_cancelButton==null) {
+			// create button
+			m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+			// add action listener
+			m_cancelButton.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					// cancel any changes
+					revertPosition();
+					// return to list view
+					MessageLogBottomPanel.showListPanel();
+				}
+			});
+		}
+		return m_cancelButton;
+	
 	}	
 	
-	private void initButtons(GridBagConstraints gbc)
-	{
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.gridx++;
-		
-		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
-		m_okButton.addActionListener(new ActionListener()
-		{
-			/**
-			 * Add/update POI in current message
-			 */
-			public void actionPerformed(ActionEvent e)
-			{
-				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
-				numPad.setVisible(false);
-				if(applyPosition())
-					MessageLogBottomPanel.showListPanel();
-			}
-		});
-		this.add(m_okButton, gbc);
+	/**
+	 * This method initializes PositionPanel	
+	 * 	
+	 * @return javax.swing.JPanel
+	 */
+	private PositionPanel getPositionPanel() {
+		if(m_positionPanel==null) {
 
-
-		gbc.gridy = 1;		
-		m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
-		m_centerAtButton.addActionListener(new ActionListener()
-		{
-			/**
-			 * Center at current poi if exists
-			 */
-			public void actionPerformed(ActionEvent e)
-			{
-				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
-				numPad.setVisible(false);
-				centerAtPosition(true);
-			}
-		});
-		this.add(m_centerAtButton, gbc);
-		
-		gbc.gridy = 2;		
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
-				numPad.setVisible(false);
-				revertPosition();
-				MessageLogBottomPanel.showListPanel();
-			}
-		});
-		this.add(m_cancelButton, gbc);
-
+			// create a poi panel and register it with a tool
+			m_positionPanel = (PositionPanel)m_tool.addPropertyPanel();
+			
+		}
+		return m_positionPanel;
+	
 	}
+	
+	/**
+	 * This method initializes GotoPanel	
+	 * 	
+	 * @return javax.swing.JPanel
+	 */
+	private GotoPanel getGotoPanel() {
+		if (m_gotoPanel == null) {
+			// get from position panel
+			m_gotoPanel = getPositionPanel().getGotoPanel();
+			// get hide goto button			
+			m_gotoPanel.setGotoButtonVisible(false);
+			// turn off vertical scrollbar
+			m_gotoPanel.setScrollBarPolicies(
+					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			// set preferred size of body component
+			m_gotoPanel.setPreferredSize(new Dimension(275,125));
+		}
+		return m_gotoPanel;
+	}
+	
+	/**
+	 * This method initializes UnitsPanel	
+	 * 	
+	 * @return javax.swing.JPanel
+	 */
+	private DiskoPanel getUnitsPanel() {
+		if (m_unitsPanel == null) {
+			// get from position panel
+			m_unitsPanel = getPositionPanel().getUnitsPanel();
+			// turn off vertical scrollbar
+			m_unitsPanel.setScrollBarPolicies(
+					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			// set preferred size of body component
+			m_unitsPanel.setPreferredSize(new Dimension(200,125));
+		}
+		return m_unitsPanel;
+	}	
+	
 
 	private boolean isWorking() {
 		return (isWorking>0);
@@ -180,7 +271,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		if(unit!=null) {
 			
 			// suspend update events
-			m_wpMessageLog.getMsoModel().suspendClientUpdate();
+			m_wp.getMsoModel().suspendClientUpdate();
 			
 			try {
 				
@@ -216,7 +307,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 						
 						// has no track?
 						if(track==null) {
-							track = m_wpMessageLog.getMsoModel().getMsoManager().createTrack();
+							track = m_wp.getMsoModel().getMsoManager().createTrack();
 							unit.setTrack(track);
 						}
 						
@@ -276,7 +367,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 			}
 			
 			// resume update events
-			m_wpMessageLog.getMsoModel().resumeClientUpdate();
+			m_wp.getMsoModel().resumeClientUpdate();
 
 		}
 		else {
@@ -326,53 +417,45 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	 */
 	public void showComponent()
 	{
-		// do not show dialog in map
-		m_tool.setShowDialog(false);
-		// center map at position of current unit
-		IUnitIf unit = centerAtPosition(true);
-		// get draw tool dialog
-		DrawDialog dialog = (DrawDialog)m_tool.getDialog();
-		// get position panel 
-		PositionPanel panel = getPositionPanel();
-		// get attributes
-		Object[] attributes = {DrawMode.MODE_REPLACE,unit};
-		// use horizontal layout
-		panel.setVertical(false);	
-		panel.setVisible(true);
-		panel.setButtonsVisible(false);
-		panel.setUnitsVisible(true);
-		// load all units?
-		if(unit==null) 
-			panel.loadUnits();
-		else
-			panel.loadSingleUnitOnly(unit);
-
-		// make it the active property panel
-		m_tool.setPropertyPanel(panel);
-		// set tool active
-		dialog.setActiveTool(m_tool);
-		dialog.setToolSet(MsoClassCode.CLASSCODE_UNIT, attributes);
-		// show tool
-		m_wpMessageLog.getApplication().getNavBar().setVisibleButtons(
-				Utils.getListOf(DiskoToolType.POSITION_TOOL), true, true);
-		/*
-		// buffer changes. use m_tool.apply() to update the mso model
-		m_tool.setBufferedMode(true);
-		*/
-		// show this panel
-		this.setVisible(true);
-		// show map over log
-		MessageLogPanel.showMap();
+		try {
+			// do not show dialog in map
+			m_tool.setShowDialog(false);
+			// center map at position of current unit
+			IUnitIf unit = centerAtPosition(true);			
+			// load all units?
+			if(unit==null) 
+				getPositionPanel().loadUnits();
+			else
+				getPositionPanel().loadSingleUnitOnly(unit);
+			// set it the active property panel
+			m_tool.setPropertyPanel(getPositionPanel());
+			// update tool attributes
+			m_tool.setMsoDrawData(null, unit, MsoClassCode.CLASSCODE_UNIT);
+			m_tool.setDrawMode(DrawMode.MODE_REPLACE);
+			// set tool active
+			m_wp.getMap().setActiveTool(m_tool,true);
+			// show tool
+			m_wp.getApplication().getNavBar()
+				.setVisibleButtons(Utils.getListOf(DiskoToolType.POSITION_TOOL), true, true);
+			// show this panel
+			this.setVisible(true);
+			// show map over log
+			MessageLogPanel.showMap();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void hideComponent()
 	{
 		// hide tool
-		m_wpMessageLog.getApplication().getNavBar().setVisibleButtons(
-				Utils.getListOf(DiskoToolType.POSITION_TOOL), false, true);
+		m_wp.getApplication().getNavBar()
+			.setVisibleButtons(Utils.getListOf(DiskoToolType.POSITION_TOOL), false, true);
 		// hide num pad
-		NumPadDialog numPad = m_wpMessageLog.getApplication().getUIFactory().getNumPadDialog();
-		numPad.setVisible(false);
+		m_wp.getApplication().getUIFactory().getNumPadDialog().setVisible(false);
+		// resume default tool property panel 
+		m_tool.setDefaultPropertyPanel();
 		// hide map
         MessageLogPanel.hideMap();
 		// hide me
@@ -422,7 +505,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	 */
 	public IDiskoWpMessageLog getWP()
 	{
-		return m_wpMessageLog;
+		return m_wp;
 	}
 
 	/**
@@ -430,7 +513,7 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 	 */
 	public void setMapTool()
 	{
-		IDiskoMap map = m_wpMessageLog.getMap();
+		IDiskoMap map = m_wp.getMap();
 		try
 		{
 			map.setActiveTool(m_tool,true);
@@ -474,19 +557,21 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 			{
 				try
 				{
-                	IDiskoMap map = m_wpMessageLog.getMap();
+                	IDiskoMap map = m_wp.getMap();
+                	map.suspendNotify();
 					map.setSelected(unit, isSelected);
 					if(isSelected)
 						map.centerAtMsoObject(unit);
-					map.refreshSelection(unit, map.getSelectionExtent());
+					map.refreshMsoLayers();
+                	map.resumeNotify();
 				}
-				catch (AutomationException e1)
+				catch (AutomationException ex)
 				{
-					e1.printStackTrace();
+					ex.printStackTrace();
 				}
-				catch (IOException e1)
+				catch (IOException ex)
 				{
-					e1.printStackTrace();
+					ex.printStackTrace();
 				}
 			}
 		}
@@ -494,17 +579,4 @@ public class MessagePositionPanel extends JPanel implements IEditMessageComponen
 		return unit;
 	}
 	
-	private PositionPanel getPositionPanel() {
-		if(m_positionPanel==null) {
-
-			// create panel
-			m_positionPanel = (PositionPanel)m_tool.addPropertyPanel();
-			m_positionPanel.setPreferredSize(new Dimension(600,200));
-			// set horizontal flow
-			m_positionPanel.setVertical(true);
-			
-		}
-		return m_positionPanel;
-	
-	}		
 }

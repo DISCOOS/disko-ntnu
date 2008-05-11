@@ -8,18 +8,26 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoPropertyFactory;
+import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIListIf;
 import org.redcross.sar.mso.data.IRouteIf;
+import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ITrackIf;
+import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
+import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
 import com.esri.arcgis.carto.CompositeGraphicsLayer;
@@ -53,6 +61,7 @@ import com.esri.arcgis.geometry.IGeographicCoordinateSystem;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.IPolygon;
+import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.ISpatialReferenceFactory2;
 import com.esri.arcgis.geometry.Point;
@@ -75,7 +84,7 @@ public class MapUtil {
 	
 	public static Workspace getWorkspace() throws AutomationException, IOException {
 		if (workspace == null) {
-			String dbPath = Utils.getProperty("Database.path");
+			String dbPath = DiskoPropertyFactory.getText("Database.path");
 			FileGDBWorkspaceFactory factory = new FileGDBWorkspaceFactory();
 			workspace = (Workspace) factory.openFromFile(dbPath, 0);
 		}
@@ -316,7 +325,7 @@ public class MapUtil {
 						// get geodata
 						IGeodataIf geodata = ((ITrackIf)mso).getGeodata();
 						// convert to a polyline
-						//geo = getEsriPolyline((Track)geodata, srs);
+						geo = getEsriPolyline((Track)geodata, srs);
 					}
 					// add?
 					if(geo!=null) 
@@ -334,7 +343,6 @@ public class MapUtil {
 		return getPolygon(esriPolyline);
 	}
 	
-	
 	public static Polyline getEsriPolyline(Route route, ISpatialReference srs) 
 			throws IOException, AutomationException {
 		Polyline esriPolyline = new Polyline();
@@ -342,6 +350,30 @@ public class MapUtil {
 		Iterator iter = vertices.iterator();
 		while(iter.hasNext()) {
 			GeoPos pos = (GeoPos)iter.next();
+			Point2D.Double pnt2D = pos.getPosition();
+			Point p = new Point();
+			p.setX(pnt2D.getX());
+			p.setY(pnt2D.getY());
+			esriPolyline.addPoint(p, null, null);
+		}
+		esriPolyline.setSpatialReferenceByRef(getGeographicCS());
+		esriPolyline.project(srs);
+		return esriPolyline;
+	}
+	
+	public static Polygon getEsriPolygon(Track track, ISpatialReference srs) 
+		throws IOException, AutomationException {
+		Polyline esriPolyline = getEsriPolyline(track, srs);
+		return getPolygon(esriPolyline);
+	}
+
+	public static Polyline getEsriPolyline(Track track, ISpatialReference srs) 
+		throws IOException, AutomationException {
+		Polyline esriPolyline = new Polyline();
+		Collection<TimePos> vertices = track.getTrackTimePos();
+		Iterator<TimePos> iter = vertices.iterator();
+		while(iter.hasNext()) {
+			TimePos pos = iter.next();
 			Point2D.Double pnt2D = pos.getPosition();
 			Point p = new Point();
 			p.setX(pnt2D.getX());
@@ -1227,7 +1259,7 @@ public class MapUtil {
 	    pLayer.setName(name);
 	    
 	    // make cache
-	    pLayer.setCached(true);
+	    //pLayer.setCached(true);
 	    
 	    // hide
 	    pLayer.setVisible(false);
@@ -1238,6 +1270,166 @@ public class MapUtil {
 	    // return graphics layer
 	    return pCGLayer;
 
+	}	
+	
+	public static String getDrawText(IMsoObjectIf msoObj, MsoClassCode code, DrawMode mode) {
+		// initialize
+		String undef = "<" + DiskoEnumFactory.getText(DrawMode.MODE_UNDEFINED) + ">";
+		// parse state
+		if(DrawMode.MODE_CREATE.equals(mode)) {
+			return DiskoEnumFactory.getText(DrawMode.MODE_CREATE) + " " + (code != null 
+					? DiskoEnumFactory.getText(code): undef);
+		}
+		else if(DrawMode.MODE_REPLACE.equals(mode)) {
+			return DiskoEnumFactory.getText(DrawMode.MODE_REPLACE) + " " + (msoObj != null 
+					? MsoUtils.getMsoObjectName(msoObj, 1) : undef);
+		}
+		else if(DrawMode.MODE_CONTINUE.equals(mode)) {
+			return DiskoEnumFactory.getText(DrawMode.MODE_CONTINUE) + " på " 
+					+ (msoObj != null ? MsoUtils.getMsoObjectName(msoObj, 1) : undef);
+		}
+		else if(DrawMode.MODE_APPEND.equals(mode)) {
+			return DiskoEnumFactory.getText(DrawMode.MODE_APPEND) + " "+ (code != null 
+					? DiskoEnumFactory.getText(code): undef);
+		}
+		return undef;		
+	}
+	
+	public static IEnvelope getMsoEnvelope(IMsoObjectIf msoObj, IDiskoMap map) throws AutomationException, IOException {
+		// parse
+		if(msoObj instanceof IOperationAreaIf) {
+			// forward
+			return getOperationAreaEnvelope((IOperationAreaIf)msoObj, map);
+		}
+		else if(msoObj instanceof ISearchAreaIf) {
+			// forward
+			return getSearchAreaEnvelope((ISearchAreaIf)msoObj, map);
+		}
+		else if(msoObj instanceof IAreaIf) {
+			// get forward
+			return MapUtil.getAreaEnvelope((IAreaIf)msoObj,map);
+		}
+		else if(msoObj instanceof IRouteIf) {
+			// get forward
+			return MapUtil.getRouteEnvelope((IRouteIf)msoObj,map);
+		}
+		else if(msoObj instanceof ITrackIf) {
+			// get forward
+			return MapUtil.getTrackEnvelope((ITrackIf)msoObj,map);
+		}
+		else if(msoObj instanceof IPOIIf) {
+			// get forward
+			return MapUtil.getPOIEnvelope((IPOIIf)msoObj,map);
+		}
+		else if(msoObj instanceof IUnitIf) {
+			// get forward
+			return MapUtil.getPOIEnvelope((IPOIIf)msoObj,map);
+		}
+		// failed!
+		return null;
+				
+	}
+	
+	public static IEnvelope getOperationAreaEnvelope(IOperationAreaIf area, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// get geometry bag of all lines
+		IGeometry geoArea = 
+			MapUtil.getEsriPolygon(area.getGeodata(),map.getSpatialReference());
+		// create frame
+		if(geoArea!=null)
+			frame = geoArea.getEnvelope();								
+		// finished
+		return frame;
+	}	
+	
+	public static IEnvelope getSearchAreaEnvelope(ISearchAreaIf area, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// get geometry bag of all lines
+		IGeometry geoArea = 
+			MapUtil.getEsriPolygon(area.getGeodata(),map.getSpatialReference());
+		// create frame
+		if(geoArea!=null)
+			frame = geoArea.getEnvelope();								
+		// finished
+		return frame;
+	}	
+		
+	public static IEnvelope getAreaEnvelope(IAreaIf area, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// get geometry bag of all lines
+		IGeometry geoArea = getEsriGeometryBag(
+				area.getAreaGeodata().getClone(),
+        		MsoClassCode.CLASSCODE_ROUTE, 
+        		map.getSpatialReference());
+		// get geometry bag of all points
+		IGeometry geoPOI = getEsriGeometryBag(
+				area.getAreaPOIs(), 
+				map.getSpatialReference());
+		// create frame
+		if(geoArea!=null) {
+			frame = geoArea.getEnvelope();
+		}
+		if(geoPOI!=null) {
+			if(frame==null)
+				frame = geoArea.getEnvelope();
+			else
+				frame.union(geoPOI.getEnvelope());
+		}
+		// finished
+		return frame;
+	}
+
+	public static IEnvelope getRouteEnvelope(IRouteIf route, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// convert to a polyline
+		IPolyline p = getEsriPolyline(route.getGeodata(), map.getSpatialReference());
+		// create frame
+		if(p!=null)
+			frame = p.getEnvelope();								
+		// finished
+		return frame;
+	}	
+	
+	public static IEnvelope getTrackEnvelope(ITrackIf track, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// convert to a polyline
+		IPolyline p = getEsriPolyline(track.getGeodata(), map.getSpatialReference());
+		// create frame
+		if(p!=null)
+			frame = p.getEnvelope();								
+		// finished
+		return frame;
+	}
+	
+	public static IEnvelope getPOIEnvelope(IPOIIf poi, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// get polyline
+		IPoint p = MapUtil.getEsriPoint(poi.getPosition(),map.getSpatialReference());
+		if(map.isEditSupportInstalled())
+			frame = MapUtil.getEnvelope(p, map.getSnapAdapter().getSnapTolerance());
+		else
+			frame = MapUtil.getEnvelope(p, 100);
+		// finished
+		return frame;
+	}	
+	
+	public static IEnvelope getUnitEnvelope(IUnitIf unit, IDiskoMap map) throws AutomationException, IOException {
+		// initialize frame
+		IEnvelope frame = null;
+		// get polyline
+		IPoint p = MapUtil.getEsriPoint(unit.getPosition(),map.getSpatialReference());
+		if(map.isEditSupportInstalled())
+			frame = MapUtil.getEnvelope(p, map.getSnapAdapter().getSnapTolerance());
+		else
+			frame = MapUtil.getEnvelope(p, 100);
+		// finished
+		return frame;
 	}	
 	
 }

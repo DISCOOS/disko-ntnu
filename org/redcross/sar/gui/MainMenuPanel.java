@@ -2,13 +2,11 @@ package org.redcross.sar.gui;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Dimension;
 import java.util.Hashtable;
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
@@ -16,9 +14,7 @@ import com.borland.jbcl.layout.VerticalFlowLayout;
 import javax.swing.BorderFactory;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 public class MainMenuPanel extends JPanel {

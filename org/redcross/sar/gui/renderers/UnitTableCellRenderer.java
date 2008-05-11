@@ -7,7 +7,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -60,7 +61,7 @@ public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 	private ImageIcon getIcon(Enum e) {
 		ImageIcon icon = (ImageIcon)icons.get(e);
 		if (icon == null) {
-			icon = Utils.getEnumIcon(e,catalog);
+			icon = DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),catalog);
 			icons.put(e, icon);
 		}
 		return icon;

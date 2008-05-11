@@ -36,10 +36,7 @@ public interface IMsoFeature extends IFeature {
 	
 	public void setVisible(boolean isVisible);
 	
-	/*
-	public boolean isEditing();
+	public boolean isDirty();
+	public void setDirty(boolean isDirty);
 	
-	public void setEditing(boolean isEditing);
-	*/
-			
 }

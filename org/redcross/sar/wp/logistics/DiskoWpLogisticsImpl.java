@@ -30,27 +30,29 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 
     public DiskoWpLogisticsImpl(IDiskoRole role) throws IllegalClassFormatException
     {
+    	// forward role to abstract class
         super(role);
+        
+        // initialize GUI
         initialize();
-        if (false)
-        {
-//        	BuildTestData.createUnits(getMsoModel());
-//            BuildTestData.createUnitsAndAssignments(getMsoModel());
-            //BuildTestData.createMessages(getMsoModel());
-        }
+        
     }
 
     private void initialize()
     {
-        loadProperties("properties");
+
+        // attach class resource bundle
         assignWpBundle(IDiskoWpLogistics.class);
 
+        // get logistic panel. This panel implements the gui
         m_logisticsPanel = new LogisticsPanel(this);
+        
+        // add panel as main wp component
         layoutComponent(m_logisticsPanel.getPanel());
 
-        // ensure that spesific layers are selectable
+        // ensure that wp spesific layers are selectable
         m_logisticsPanel.setLayersSelectable();
-        
+              
     }
 
     public void activated()
@@ -99,7 +101,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
     }
     
 	public String getCaption() {
-		return getText("Caption");
+		return getBundleText("Caption");
 	}
 	
     /* (non-Javadoc)
@@ -125,7 +127,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (options == null)
         {
-            options = new String[]{getText("yes.text"), "Nei"};
+            options = new String[]{getBundleText("yes.text"), "Nei"};
         }
         IUnitIf owningUnit = anAssignment.getOwningUnit();
         IAssignmentIf.AssignmentStatus sourceStatus = anAssignment.getStatus();
@@ -133,7 +135,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         String question;
         if (owningUnit == aTargetUnit)
         {
-            if (aTargetStatus == IAssignmentIf.AssignmentStatus.ALLOCATED && sourceStatus == aTargetStatus)
+            if (aTargetStatus == IAssignmentIf.AssignmentStatus.QUEUED && sourceStatus == aTargetStatus)
             {
                 question = "confirm_assignmentTransfer_q4.text";
             } else
@@ -149,11 +151,11 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         }
 
         String unitNumber = aTargetUnit != null ? aTargetUnit.getUnitNumber() : "";
-        question = getText(question);
+        question = getBundleText(question);
 
         int n = JOptionPane.showOptionDialog(m_logisticsPanel.getPanel(),
                 MessageFormat.format(question, anAssignment.getNumber(), Internationalization.translate(aTargetStatus), unitNumber),
-                getText("confirm_assignmentTransfer.header"),
+                getBundleText("confirm_assignmentTransfer.header"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
@@ -162,7 +164,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 
     public void showTransferWarning()
     {
-        showWarning(getText("transfer_warning.text"));
+        showWarning(getBundleText("transfer_warning.text"));
     }
 
 	public void afterOperationChange()
@@ -186,7 +188,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 				getMsoModel().suspendClientUpdate();
 				
 				// allocate assignment to unit?
-		        if (aStatus == AssignmentStatus.ALLOCATED){
+		        if (aStatus == AssignmentStatus.QUEUED){
 		        	bSuccess = aUnit.addAllocatedAssignment(anAssignment, null);
 		        } 
 		        else {

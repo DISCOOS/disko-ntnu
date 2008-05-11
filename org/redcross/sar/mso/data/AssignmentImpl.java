@@ -198,7 +198,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
         m_status.setValue(aStatus);
 
-        if (aStatus == AssignmentStatus.ALLOCATED)
+        if (aStatus == AssignmentStatus.QUEUED)
         {
             setPrioritySequence(Integer.MAX_VALUE);
         }
@@ -576,7 +576,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public boolean hasBeenAllocated()
     {
-        return getStatus().ordinal() >= AssignmentStatus.ALLOCATED.ordinal();
+        return getStatus().ordinal() >= AssignmentStatus.QUEUED.ordinal();
     }
 
     public boolean hasBeenAssigned()
@@ -611,11 +611,11 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public void verifyAllocatable(AssignmentStatus newStatus, IUnitIf aUnit, boolean unassignIfPossible) throws IllegalOperationException
     {
         // todo Test on type of assigment compared to type of unit.
-        if (!AssignmentTransferUtilities.assignmentCanChangeToStatus(this, AssignmentStatus.ALLOCATED, aUnit))
+        if (!AssignmentTransferUtilities.assignmentCanChangeToStatus(this, AssignmentStatus.QUEUED, aUnit))
         {
             throw new IllegalOperationException("Assignment " + this + " cannot change status to ALLOCATED.");
         }
-        if (getStatus() == AssignmentStatus.ALLOCATED && !unassignIfPossible)
+        if (getStatus() == AssignmentStatus.QUEUED && !unassignIfPossible)
         {
             throw new IllegalOperationException("Assignment " + this + " is already allocated to another unit and cannot be reallocated.");
         }

@@ -1,7 +1,6 @@
 package org.redcross.sar.gui.renderers;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 
 import java.awt.Component;
 import java.util.ResourceBundle;
@@ -38,13 +37,7 @@ public class SimpleListCellRenderer extends JLabel implements ListCellRenderer
                                                   int index, boolean isSelected, boolean cellHasFocus)
     {
 
-    	String displayText = null;
-        displayText = Internationalization.translate(bundle, value);
-        if (bundle == null || displayText == null)
-        {
-            displayText = Utils.translate(value);
-        }
-        setText(displayText);
+        setText(DiskoStringFactory.translate(value,bundle));
         if (isSelected)
         {
             setBackground(list.getSelectionBackground());

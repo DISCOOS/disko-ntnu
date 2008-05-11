@@ -7,11 +7,12 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.MsoLayerEventStack;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.POIFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
@@ -38,10 +39,10 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	private TextSymbol textSymbol = null;
 	private Hashtable<POIType, IDisplayName> symbols = null;
 
- 	public POILayer(IMsoModelIf msoModel, ISpatialReference srs) {
+ 	public POILayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_POI,
  				LayerCode.POI_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPoint);
+ 				esriGeometryType.esriGeometryPoint, eventStack);
  		symbols = new Hashtable<POIType, IDisplayName>();
  		createSymbols();
  		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
@@ -120,41 +121,19 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	 						// double the size
 	 						size = size*2; 
 	 					}
-	 						
-						
-						/*
-						// is layer in edit mode?
-						if (isEditing) {
-							// is editing feature?
-							if(feature.isEditing()) {
-								// is feature selected?
-								if (feature.isSelected()) {
-									markerSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-								}
-							}
-							else {
-								// disable all other features
-								markerSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}								
+						// is enabled?
+						if(isEnabled) {
+							// is selected?
+	 	 					if (feature.isSelected()){
+	 	 						markerSymbol.setColor(selectionColor);
+	 	 						textSymbol.setColor(selectionColor);
+	 	 					}
 						}
 						else {
-						*/
-							// is enabled?
-							if(isEnabled) {
-								// is selected?
-		 	 					if (feature.isSelected()){
-		 	 						markerSymbol.setColor(selectionColor);
-		 	 						textSymbol.setColor(selectionColor);
-		 	 					}
-							}
-							else {
-								// disable all features
-								markerSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}
-						//}
+							// disable all features
+							markerSymbol.setColor(disabledColor);
+							textSymbol.setColor(disabledColor);
+						}
 						
 						markerSymbol.setSize(size);
 						display.setSymbol((ISymbol)markerSymbol);
@@ -163,7 +142,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 						// draw label?
 						if(isTextShown) {
 							display.setSymbol(textSymbol);
-							String text = Utils.translate(poi.getType());
+							String text = DiskoEnumFactory.getText(poi.getType());
 							String remark = poi.getRemarks();
 							// replace with comment?
 							if (remark != null) {
@@ -179,6 +158,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 						textSymbol.setColor(saveTextColor);
 						
 					}
+					feature.setDirty(false);
  				}
 			}
 			isDirty = false;

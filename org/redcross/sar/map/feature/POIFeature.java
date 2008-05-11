@@ -24,12 +24,12 @@ public class POIFeature extends AbstractMsoFeature {
 		if (srs == null) return;
 		IPOIIf poi = (IPOIIf)msoObject;
 		pos = poi.getPosition();
+		geometry = null;
 		if (pos != null) {
 			geometry = MapUtil.getEsriPoint(pos, srs);
 		}
-		else {
-			geometry = null;
-		}
+		super.msoGeometryChanged();
+
 	}
 	
 	public int getGeodataCount() {

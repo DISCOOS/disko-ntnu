@@ -28,6 +28,7 @@ public class OperationAreaFeature extends AbstractMsoFeature {
 		else {
 			geometry = null;
 		}
+		super.msoGeometryChanged();
 	}
 	
 	public int getGeodataCount() {

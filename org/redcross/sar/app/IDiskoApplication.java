@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import javax.swing.JFrame;
 
+import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.gui.SysBar;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -40,12 +41,6 @@ public interface IDiskoApplication {
 	public JFrame getFrame();
 	
 	/**
-	 * Get the properties.
-	 * @return
-	 */
-	public Properties getProperties();
-	
-	/**
 	 * Get a property whith the given name.
 	 * @param key The name of the property
 	 * @return A property with the given name
@@ -59,9 +54,18 @@ public interface IDiskoApplication {
     * @return A property with the given name
     *
     */
-
    public String getProperty(String key,String defaultValue);
-	/**
+	
+   /**
+    * Set a property whith the given name.
+    * @param key The name of the property
+    * @param The given value
+    * @return Set a property with the given name
+    *
+    */
+   public boolean setProperty(String key, String value);
+   
+   /**
 	 * Return a reference to the UIFactory class. This class contains
 	 * methods to create GUI component for this application
 	 * @return A reference to the UIFactory
@@ -144,5 +148,10 @@ public interface IDiskoApplication {
 	boolean isLocked();
 	
 	public boolean setLocked(boolean isLocked);
+	
+	boolean isLoading();
+	
+	public DiskoKeyEventDispatcher getKeyEventDispatcher();
+
     
 }

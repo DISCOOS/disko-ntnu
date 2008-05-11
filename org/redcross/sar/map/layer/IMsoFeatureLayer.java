@@ -11,6 +11,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.Selector;
 
 import com.esri.arcgis.carto.IFeatureLayer;
+import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
 public interface IMsoFeatureLayer extends IFeatureLayer {
@@ -34,47 +35,38 @@ public interface IMsoFeatureLayer extends IFeatureLayer {
 	
 	public int clearSelected() throws AutomationException, IOException;
 	
-	public List getSelected() throws AutomationException, IOException;
+	public List<IMsoFeature> getSelected() throws AutomationException, IOException;
 	
-	public List getSelectedMsoObjects() throws AutomationException, IOException;
+	public List<IMsoObjectIf> getSelectedMsoObjects() throws AutomationException, IOException;
 	
 	public int getSelectionCount(boolean update) throws IOException, AutomationException;
 	
-	public void addDiskoLayerEventListener(IMsoLayerEventListener listener);
+	public void addMsoLayerEventListener(IMsoLayerEventListener listener);
 	
-	public void removeDiskoLayerEventListener(IMsoLayerEventListener listener);
+	public void removeMsoLayerEventListener(IMsoLayerEventListener listener);
 	
 	public IMsoModelIf getMsoModel();
 	
 	public boolean isDirty();
 	
-	/*
-	public List startEdit(IMsoObjectIf msoObject) throws IOException, AutomationException;
-	
-	public List stopEdit(IMsoObjectIf msoObject) throws IOException, AutomationException;
-	
-	public int getEditCount(boolean update) throws IOException, AutomationException;
-	
-	public ArrayList<IMsoFeature> getEditing() throws AutomationException, IOException;
-	
-	public boolean isEditing();
-	*/
+	public boolean isDirty(boolean deep);
 	
 	public boolean isEnabled();
 	
 	public void setEnabled(boolean isEnabled);
 	
 	public void suspendNotify();	
-	
-	public void resumeNotify();	
-	
+	public void consumeNotify();
+	public void resumeNotify();		
 	public boolean isNotifySuspended();
+	
+	public IEnvelope getVisibleFeaturesExtent();
 	
 	public void setVisibleFeatures(boolean isVisible);
 	
 	public void setVisibleFeatures(IMsoObjectIf msoObj, boolean match, boolean others);
 	
-	public void setVisibleFeatures(List msoObjs, boolean match, boolean others);
+	public void setVisibleFeatures(List<IMsoObjectIf> msoObjs, boolean match, boolean others);
 	
 	public int getVisibleFeatureCount(boolean update) throws AutomationException, IOException;
 	
@@ -91,5 +83,7 @@ public interface IMsoFeatureLayer extends IFeatureLayer {
 	public boolean isTextShown();
 	
 	public void setTextShown(boolean isVisible);
+	
+	public IEnvelope getDirtyExtent() throws AutomationException, IOException;
 	
 }

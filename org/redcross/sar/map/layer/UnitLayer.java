@@ -2,14 +2,15 @@ package org.redcross.sar.map.layer;
 
 import com.esri.arcgis.display.*;
 import com.esri.arcgis.geometry.IGeometry;
-import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.MsoLayerEventStack;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoSymbolFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.UnitFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -19,7 +20,6 @@ import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -38,10 +38,10 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 	private Hashtable<UnitType, PictureMarkerSymbol> symbols = null;
 	private TextSymbol textSymbol = null;
 
- 	public UnitLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+ 	public UnitLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT,
  				LayerCode.UNIT_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPoint);
+ 				esriGeometryType.esriGeometryPoint, eventStack);
  		symbols = new Hashtable<UnitType, PictureMarkerSymbol>();
  		createSymbols();
  		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
@@ -63,7 +63,6 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 			if (display == null || !this.isVisible) {
 				return;
 			}
-
 			
 			// get scale
 			double scale = display.getDisplayTransformation().getScaleRatio();
@@ -107,39 +106,19 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 						// get unit text
 						String text = MsoUtils.getUnitName(msoUnit,true);
 						
-						/*
-						// is layer in edit mode?
-						if (isEditing) {
-							// is editing feature?
-							if(feature.isEditing()) {
-								// is feature selected?
-								if (feature.isSelected()) {
-									//pictureSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-								}
-							}
-							else {
-								// disable all other features
-								//pictureSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}								
+						// is enabled?
+						if(isEnabled) {
+							// is selected
+	 	 					if (feature.isSelected()){
+	 	 						//pictureSymbol.setColor(selectionColor);
+								textSymbol.setColor(selectionColor);
+	 	 					}
 						}
 						else {
-						*/
-							// is enabled?
-							if(isEnabled) {
-								// is selected
-		 	 					if (feature.isSelected()){
-		 	 						//pictureSymbol.setColor(selectionColor);
-									textSymbol.setColor(selectionColor);
-		 	 					}
-							}
-							else {
-								// disable all features
-								//pictureSymbol.setColor(disabledColor);
-								textSymbol.setColor(disabledColor);
-							}
-						//}
+							// disable all features
+							//pictureSymbol.setColor(disabledColor);
+							textSymbol.setColor(disabledColor);
+						}
 						
 						// draw on display
 						if (geom instanceof Point) {
@@ -160,6 +139,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 						//pictureSymbol.setColor(savePictureColor);
 						textSymbol.setColor(saveTextColor);
 					}
+					feature.setDirty(false);
 				}
 			}
 			isDirty = false;
@@ -183,29 +163,16 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 			RgbColor redColor = new RgbColor();
 			redColor.setRed(255);
 
-			/*
-			SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
-			lineSymbol.setStyle(esriSimpleLineStyle.esriSLSDash);
-			lineSymbol.setWidth(lineWidth);
-			lineSymbol.setColor(redColor);
-			*/
-
 			UnitType types[] = UnitType.values();
 			
 			for(int i=0;i<types.length;i++) {
 		 		try {
 		 			PictureMarkerSymbol pictureSymbol = new PictureMarkerSymbol();
-		 			String path = Utils.getEnumSymbolPath(types[i]);
+		 			String path = DiskoSymbolFactory.getPath(DiskoEnumFactory.getSymbol(types[i]));
 		 			File file = new File(path);
 		 			if(file.exists()) {
 			 			pictureSymbol.createMarkerSymbolFromFile(
 			 					esriIPictureType.esriIPictureBitmap, file.getAbsolutePath());
-			 			/*RgbColor color = new RgbColor();
-			 			color.setBlue(128);
-			 			color.setGreen(128);
-			 			color.setRed(0);
-			 			pictureSymbol.setBackgroundColor(color);
-			 			pictureSymbol.setBitmapTransparencyColor(color);*/
 		 			}
 					symbols.put(types[i], pictureSymbol);
 		 		}

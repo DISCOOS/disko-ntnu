@@ -108,7 +108,7 @@ public class ChangeToDialog extends DiskoDialog
 	private void initButtons()
 	{
 		m_buttonGroup = new ButtonGroup();
-		String text = m_wpMessageLog.getText("NonBroadcastButton.text");
+		String text = m_wpMessageLog.getBundleText("NonBroadcastButton.text");
 		m_nonBroadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
 		//m_nonBroadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
 		m_nonBroadcastButton.addActionListener(new ActionListener()
@@ -128,7 +128,7 @@ public class ChangeToDialog extends DiskoDialog
 		m_buttonGroup.add(m_nonBroadcastButton);
 		m_contentsPanel.add(m_nonBroadcastButton);
 		
-		text = m_wpMessageLog.getText("BroadcastButton.text");
+		text = m_wpMessageLog.getBundleText("BroadcastButton.text");
 		m_broadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
 		//m_broadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
 		m_broadcastButton.addActionListener(new ActionListener()

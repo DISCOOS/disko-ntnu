@@ -42,6 +42,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -381,7 +382,7 @@ public class LogisticsPanel implements
     {
         m_wpModule.getMsoEventManager().addClientUpdateListener(this);
         IMsoFeatureLayer msoLayer = m_map.getMsoLayer(LayerCode.AREA_LAYER);
-        msoLayer.addDiskoLayerEventListener(this);
+        msoLayer.addMsoLayerEventListener(this);
     }
 
     private void setPanelSizes()
@@ -454,8 +455,8 @@ public class LogisticsPanel implements
 
     public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException
     {
-        IMsoFeatureLayer msoLayer = (IMsoFeatureLayer) e.getSource();
-        java.util.List selection = msoLayer.getSelected();
+    	if(!e.isFinal()) return;
+        List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
         if (selection != null && selection.size() > 0)
         {
             IMsoFeature msoFeature = (IMsoFeature) selection.get(0);

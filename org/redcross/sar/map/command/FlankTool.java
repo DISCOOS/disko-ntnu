@@ -12,7 +12,7 @@ import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.FlankPanel;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.feature.FlankFeature;
@@ -45,7 +45,7 @@ public class FlankTool extends AbstractDiskoTool {
 	/**
 	 * Constructs the FlankTool
 	 */
-	public FlankTool(IHostToolDialog dialog) throws IOException, AutomationException {
+	public FlankTool(IToolCollection dialog) throws IOException, AutomationException {
 
 		// forward
 		super();

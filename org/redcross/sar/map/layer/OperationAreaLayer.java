@@ -3,6 +3,7 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -30,10 +31,10 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol disabledSymbol = null;
 	private SimpleFillSymbol selectionSymbol = null;
  	
- 	public OperationAreaLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+ 	public OperationAreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA, 
  				LayerCode.OPERATION_AREA_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPolygon);
+ 				esriGeometryType.esriGeometryPolygon, eventStack);
  		createSymbols();
  		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 		loadObjects(cmdPost.getOperationAreaListItems().toArray());
@@ -73,42 +74,23 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
  				if(select(feature) && feature.isVisible()){
  					Polygon polygon = (Polygon)feature.getShape();
  	 				if (polygon != null) {	 		
- 	 					/*
-						// is layer in edit mode?
-						if (isEditing) {
-							// is editing feature?
-							if(feature.isEditing()) {
-								// is feature selected?
-								if (feature.isSelected())
-									// select feature 
-									display.setSymbol(selectionSymbol);							
-								else
-									// do no select feature
-									display.setSymbol(defaultSymbol);
-							}
-							else
-								// disable all other features
-								display.setSymbol(disabledSymbol);							
+						// is enabled?
+						if(isEnabled) {
+							// is selected?
+	 	 					if (feature.isSelected())
+								// select feature 
+								display.setSymbol(selectionSymbol);							
+	 	 					else
+								// do no select feature
+								display.setSymbol(defaultSymbol);									
 						}
 						else {
-						*/
-							// is enabled?
-							if(isEnabled) {
-								// is selected?
-		 	 					if (feature.isSelected())
-									// select feature 
-									display.setSymbol(selectionSymbol);							
-		 	 					else
-									// do no select feature
-									display.setSymbol(defaultSymbol);									
-							}
-							else {
-								// disable all other features
-								display.setSymbol(disabledSymbol);							
-							}
-						//}
+							// disable all other features
+							display.setSymbol(disabledSymbol);							
+						}
  	 					display.drawPolygon(polygon);
  	 				}
+					feature.setDirty(false);
  				}
  			}
  			isDirty = false;

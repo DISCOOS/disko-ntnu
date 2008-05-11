@@ -1,11 +1,14 @@
 package org.redcross.sar.wp;
 
+import java.awt.event.ActionListener;
 import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.JButton;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 
 /**
@@ -25,12 +28,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
 
     private void initialize()
     {
-        loadProperties("properties");
         defineSubMenu();
-
-//        DiskoMap map = getMap();
-//        map.setIsEditable(true);
-//        layoutComponent(map);
     }
 
     public DiskoMap getMap()
@@ -57,8 +55,8 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
         {
             try
             {
-                m_tidsplanButton = createNormalButton("Tidsplan", new java.awt.event.ActionListener()
-                {
+                m_tidsplanButton = DiskoButtonFactory.createButton("Tidsplan","",null,ButtonSize.NORMAL);
+                m_tidsplanButton.addActionListener(new ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
                     }
@@ -79,8 +77,8 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
         {
             try
             {
-                m_grovplanButton = createNormalButton("Grovplan", new java.awt.event.ActionListener()
-                {
+                m_grovplanButton = DiskoButtonFactory.createButton("Grov plan","",null,ButtonSize.NORMAL);
+                m_grovplanButton.addActionListener(new ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent e)
                     {
                     }

@@ -79,6 +79,7 @@ public class FlankFeature extends AbstractMsoFeature {
 				geometry = geomBag;
 			}
 		}
+		super.msoGeometryChanged();		
 	}
 
 	public Object getGeodata() {

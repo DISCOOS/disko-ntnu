@@ -124,7 +124,6 @@ public class LoginDialog extends DiskoDialog {
 		if (cancelButton == null) {
 			try {
 				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL);
-				//cancelButton.setPreferredSize(new Dimension(100, 50));
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						fireOnWorkCancel();

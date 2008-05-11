@@ -35,7 +35,6 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	}
 
 	private void initialize() {
-		loadProperties("properties");						
         m_routeCost = new RouteCostPanel(this);
         layoutComponent(m_routeCost);
 	}

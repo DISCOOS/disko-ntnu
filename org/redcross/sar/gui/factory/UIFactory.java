@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import org.redcross.sar.app.IDiskoApplication;
@@ -33,10 +32,6 @@ public class UIFactory {
 	private NumPadDialog numPadDialog = null;
 	private MapOptionDialog mapOptionDialog = null;
 	private TaskDialog taskDialog = null;
-	
-	private Dimension largeButtonSize = null;
-	private Dimension normalButtonSize = null;
-	private Dimension smallButtonSize = null;
 	
 	public UIFactory(IDiskoApplication app) {
 		this.app = app;
@@ -184,28 +179,5 @@ public class UIFactory {
 		}
 		return mainPanel;
 	}
-	
-	/**
-	 * Gets the default size of large buttons use in the Disko application
-	 * @return
-	 */
-	public Dimension getLargeButtonSize() {
-		if (largeButtonSize == null) {
-			int width  = 50; // default width
-			int height = 50; // default height
-			String widthProp  = app.getProperty("Button.Large.width");
-			String heightProp = app.getProperty("Button.Large.height");
-			if (widthProp != null && heightProp != null) {
-				try {
-					width  = Integer.parseInt(widthProp);
-					height = Integer.parseInt(heightProp);
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-				}
-			}
-			largeButtonSize = new Dimension(width, height);
-		}
-		return largeButtonSize;
-	}	
 
 }

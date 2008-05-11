@@ -40,6 +40,7 @@ public class AreaFeature extends AbstractMsoFeature {
         geoList = area.getAreaGeodata().getClone();
         geometry = MapUtil.getEsriGeometryBag(geoList,MsoClassCode.CLASSCODE_ROUTE, srs);
         asgStatus = getAssignmentStatus(area);
+		super.msoGeometryChanged();
 	}
 
 	public Object getGeodata() {

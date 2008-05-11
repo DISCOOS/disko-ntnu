@@ -455,19 +455,7 @@ public class ElementPanel extends DiskoPanel {
             listeners.get(i).onElementDelete(e);
         }
     }
-	
-	
-	private void reset() {
-		// set flag
-		listsAreChangeing = true; 
-		// clear selection
-		getTypeList().clearSelection();
-		getObjectList().clearSelection();
-		getPartList().clearSelection();
-		// set flag
-		listsAreChangeing = false; 		
-	}
-	
+		
 	private void loadTypes() {
 		// get values
 		ISearchIf.SearchSubType[] values = ISearchIf.SearchSubType.values();
@@ -852,102 +840,6 @@ public class ElementPanel extends DiskoPanel {
 		}
 	}	
 	
-	/*
-	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
-		IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
-		List selection = msoLayer.getSelected();
-		if (selection != null && selection.size() > 0) {
-			// initialize
-			JList list = null;
-			ElementType type = null;
-			// set flag
-			listsAreChangeing = true; 
-			// get mso object
-			IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
-			IMsoObjectIf msoObject = msoFeature.getMsoObject();
-			// select class
-			if(msoObject!=null) {
-				// get list and element type
-				type = ElementType.CLASS;
-				list = getTypeList();
-				// get class code
-				MsoClassCode code = msoObject.getMsoClassCode();
-				// dispatch class code
-				if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
-						MsoClassCode.CLASSCODE_SEARCHAREA.equals(code)) {
-					// selected element class
-					typeList.setSelectedValue(code,true);
-				}
-				else if(MsoClassCode.CLASSCODE_AREA.equals(code) ||
-						MsoClassCode.CLASSCODE_ROUTE.equals(code) ||
-						MsoClassCode.CLASSCODE_TRACK.equals(code)) {
-					// get search sub type
-					Enum subType = MsoUtils.getType(msoObject,true);
-					// selected element class
-					if(subType==null)
-						typeList.setSelectedValue(SearchSubType.PATROL,true);
-					else
-						typeList.setSelectedValue(subType,true);
-				}
-				else if(MsoClassCode.CLASSCODE_POI.equals(code)) {
-					// get type
-					POIType poiType = ((IPOIIf)msoObject).getType();
-					// is area poi?
-					boolean isAreaPOI = (poiType.equals(POIType.START) ||
-							poiType.equals(POIType.VIA) || 
-							poiType.equals(POIType.STOP));
-					// is standalone poi?
-					if(isAreaPOI) {
-						// get search sub type
-						Enum subType = MsoUtils.getType(msoObject,true);
-						// selected element class
-						if(subType==null)
-							typeList.setSelectedValue(SearchSubType.PATROL,true);
-						else
-							typeList.setSelectedValue(subType,true);
-					}
-					else {
-						typeList.setSelectedValue(MsoClassCode.CLASSCODE_POI,true);
-					}
-				}					
-			}
-			// contained in objects?
-			if(objects.contains(msoObject)) {
-				// get list and element type
-				type = ElementType.OBJECT;
-				list = getObjectList();		
-				list.setSelectedValue(msoObject, true);
-			}
-			else {
-				// get owner
-				IMsoObjectIf msoOwner = MsoUtils.getOwningArea(msoObject); 
-				// owner contained in objects?
-				if(objects.contains(msoOwner)) {
-					// get list and element type
-					type = ElementType.OBJECT;
-					list = getObjectList();		
-					list.setSelectedValue(msoOwner, true);
-					// object contained in parts?
-					if(parts.contains(msoObject)) {
-						// get list and element type
-						type = ElementType.PART;
-						list = getPartList();		
-						list.setSelectedValue(msoObject, true);
-					}
-				}
-			}
-			// reset flag
-			listsAreChangeing = false; 
-			// notify
-			fireOnElementSelected(new ElementEvent(list,
-					msoObject,ElementEventType.SELECTED,type));
-		}
-		else {
-			reset();
-		}
-	}
-	*/
-	
 	private class ButtonPanel extends JPanel {
 		
 		private static final long serialVersionUID = 1L;
@@ -985,7 +877,8 @@ public class ElementPanel extends DiskoPanel {
 		public JButton getEditButton() {
 			if (editButton == null) {
 				try {
-					editButton = DiskoButtonFactory.createButton("GENERAL.EDIT",ButtonSize.NORMAL);
+					editButton = DiskoButtonFactory.createButton(
+							(ElementType.PART.equals(type) ? "GENERAL.EQUAL" : "GENERAL.PLUS"), ButtonSize.NORMAL);
 					editButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {

@@ -1,31 +1,30 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
+import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.command.PositionTool;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -40,27 +39,37 @@ import com.borland.jbcl.layout.VerticalFlowLayout;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-public class PositionPanel extends JPanel implements 
-					IMsoUpdateListenerIf, IMsoLayerEventListener,
-					IPropertyPanel {
+public class PositionPanel extends DiskoPanel implements IPropertyPanel,
+					IMsoUpdateListenerIf, IMsoLayerEventListener {
 
 	private static final long serialVersionUID = 1L;
+	
 	private PositionTool tool = null;
+	
 	private IMsoModelIf msoModel;
-	private JList unitList = null;
-	private JPanel coordPanel = null;
-	private JPanel northPanel = null;
-	private GotoPanel gotoPanel = null;
-	private JPanel buttonPanel = null;
+	private DiskoPanel captionPanel = null;	
+	private DiskoPanel actionsPanel = null;	
+	private JPanel optionsPanel = null;	
 	private JButton applyButton = null;
 	private JButton cancelButton = null;
-	private JScrollPane listScrollPane = null;
-	private boolean isVertical = true;
+	private GotoPanel gotoPanel = null;
+	private DiskoPanel unitsPanel = null;
+	private JList unitList = null;
+	
 	private boolean isSingleUnitOnly = false;
 	
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	
-	public PositionPanel(PositionTool tool, boolean isVertical) {
+	public PositionPanel(PositionTool tool) {
+		// forward
+		this("Plassér enhet",tool);
+	}
+	
+	
+	public PositionPanel(String caption,PositionTool tool) {
+		
+		// forward
+		super(caption);
 		
 		// prepare
 		this.tool = tool;
@@ -69,9 +78,6 @@ public class PositionPanel extends JPanel implements
 		
 		// add listeners
 		this.msoModel.getEventManager().addClientUpdateListener(this);
-		
-		// set layout information
-		this.isVertical = isVertical;
 		
 		// initialize gui
 		initialize();
@@ -86,108 +92,80 @@ public class PositionPanel extends JPanel implements
 	 *
 	 */
 	private void initialize() {
-		try {
-			// remove all from container
-			removeAll();
-			// build container
-			if(isVertical) {
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				vfl.setHgap(0);
-				vfl.setVgap(5);
-				vfl.setVerticalFill(true);
-				vfl.setHorizontalFill(true);
-				this.setPreferredSize(new Dimension(200,450));
-				this.setLayout(vfl);
-				this.add(getNorthPanel());
-				this.add(getButtonPanel());
-			}
-			else {
-				BorderLayout bl = new BorderLayout();
-				bl.setHgap(5);
-				bl.setVgap(0);
-				this.setLayout(bl);
-				this.add(getNorthPanel(),BorderLayout.CENTER);
-				this.add(getButtonPanel(),BorderLayout.EAST);				
-			}
-		}
-		catch (java.lang.Throwable e) {
-			e.printStackTrace();
-		}
+		
+		// set preferred body size
+		setPreferredBodySize(new Dimension(200,450));
+		
+		// hide header and borders
+		setHeaderVisible(false);
+		setBorderVisible(false);
+		
+		// get body panel
+		JPanel panel = (JPanel)getBodyComponent();
+		
+		// build container
+		VerticalFlowLayout vfl = new VerticalFlowLayout();
+		vfl.setAlignment(VerticalFlowLayout.LEFT);
+		vfl.setHgap(5);
+		vfl.setVgap(0);
+		panel.setLayout(vfl);
+		panel.add(Box.createRigidArea(new Dimension(5,5)));
+		panel.add(getCaptionPanel());
+		panel.add(Box.createRigidArea(new Dimension(5,5)));
+		panel.add(getActionsPanel());
+		panel.add(getOptionsPanel());
 	}
 
-	
-	public void cancel() {
-		// has revert data?
-		if (getCurrentPosition() != null) {
+	public DiskoPanel getCaptionPanel() {
+		if (captionPanel == null) {
 			try {
-				// revert
-				setCurrentPosition(getCurrentPosition());
-			} catch (Exception ex) {
-				// consume any exceptions
-			}
-
-		} else {
-			// revert
-			setCurrentPosition(null);
-		}		
-		// forward
-		tool.cancel();
-	}
-	
-	private void apply() {
-		// coordinates
-		Point point = null;
-		try {
-			point = getGotoPanel().getPositionField().getPoint();
-		} catch (Exception ex) {
-			Utils.showWarning("Ugyldig format. Sjekk koordinater og prøv igjen");
-		}
-		// add or move poi?
-		if (tool.getCurrentUnit() == null) {
-			Utils.showWarning("Du må først velge en enhet");
-		} else {
-			tool.setPositionAt(point);
-			// forward
-			tool.apply();
-		}		
-	}
-	
-	public void setVertical(boolean isVertical) {
-		// is changed?
-		if(this.isVertical != isVertical) {
-			this.isVertical = isVertical;
-			// initialize gui
-			initialize();
-		}
-	}
-	
-	public boolean isVertical() {
-		return isVertical;
-	}
-	
-	public void reset() {
-		tool.cancel();
-		getGotoPanel().getPositionField().setText(null);
-		if(getUnitList().getModel().getSize()>0)
-			getUnitList().setSelectedIndex(-1);
-	}
-
-	/**
-	 * This method initializes listScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getListScrollPane() {
-		if (listScrollPane == null) {
-			try {
-				listScrollPane = new JScrollPane(getUnitList());
-				listScrollPane.setWheelScrollingEnabled(true);
+				captionPanel = new DiskoPanel(MapUtil.getDrawText(null, null, null));
+				captionPanel.setBodyComponent(null);
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return listScrollPane;
+		return captionPanel;
+	}
+
+	public DiskoPanel getActionsPanel() {
+		if (actionsPanel == null) {
+			try {
+				actionsPanel = new DiskoPanel("Utfør");
+				actionsPanel.addButton(getApplyButton(),"apply");
+				actionsPanel.addButton(getCancelButton(),"cancel");
+				actionsPanel.setBodyComponent(null);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return actionsPanel;
+	}
+
+	/**
+	 * This method initializes OptionsPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getOptionsPanel() {
+		if (optionsPanel == null) {
+			// create panel
+			optionsPanel = new JPanel();
+			// create flow layout
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			vfl.setHgap(0);
+			vfl.setVgap(5);
+			// set flow layout
+			optionsPanel.setLayout(vfl); 
+			// set preferred size
+			optionsPanel.setPreferredSize(new Dimension(200,350));
+			// add components
+			optionsPanel.add(getGotoPanel());
+			optionsPanel.add(getUnitsPanel());
+		}
+		return optionsPanel;
 	}
 	
 	/**
@@ -202,6 +180,101 @@ public class PositionPanel extends JPanel implements
 		}
 		return gotoPanel;
 	}
+	
+	/**
+	 * This method initializes fieldPanel	
+	 * 	
+	 * @return GotoPanel
+	 */
+	public DiskoPanel getUnitsPanel() {
+		if (unitsPanel == null) {
+			// create
+			unitsPanel = new DiskoPanel("Velg enhet");
+			// replace body compontent
+			unitsPanel.setBodyComponent(getUnitList());
+			// set preferred body size
+			unitsPanel.setPreferredBodySize(new Dimension(200,200));
+		}
+		return unitsPanel;
+	}
+	
+	/**
+	 * This method initializes unitComboBox	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	public JList getUnitList() {
+		if (unitList == null) {
+            unitList = new JList();
+            unitList.setVisibleRowCount(0);
+            unitList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
+            unitList.setModel(new DefaultComboBoxModel());
+            // add listener
+            unitList.addListSelectionListener(new ListSelectionListener() {
+
+				public void valueChanged(ListSelectionEvent e) {
+
+					// is value adjusting?
+					if(e.getValueIsAdjusting()) return;
+
+					// get unit name
+					IUnitIf unit = (IUnitIf)unitList.getSelectedValue();
+					
+					// is unit selected?
+					if(unit==null ) {
+						// reset panel
+						reset();
+						// disable options panel
+						getOptionsPanel().setEnabled(false);
+					}
+					else {
+						// select unit
+						setCurrentUnit(unit);
+						// enable poi panel?
+						getOptionsPanel().setEnabled(unit!=null);						
+					}
+				}
+            	
+            });
+		}
+		return unitList;
+	}
+
+	public JButton getCancelButton() {
+		if (cancelButton == null) {
+			try {
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+				cancelButton.setActionCommand("cancel");
+				cancelButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						// forward
+						cancel();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return cancelButton;
+	}
+	
+	private JButton getApplyButton() {
+		if (applyButton == null) {
+			try {
+				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
+				applyButton.setActionCommand("finish");
+				applyButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						// forward
+						apply();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return applyButton;
+	}	
 	
 	public boolean isSingleUnitOnly() {
 		return isSingleUnitOnly;
@@ -242,24 +315,52 @@ public class PositionPanel extends JPanel implements
 		isSingleUnitOnly = false;
 	}
 
+
+	public void cancel() {
+		// has revert data?
+		if (getCurrentPosition() != null) {
+			try {
+				// revert
+				setCurrentPosition(getCurrentPosition());
+			} catch (Exception ex) {
+				// consume any exceptions
+			}
+
+		} else {
+			// revert
+			setCurrentPosition(null);
+		}		
+		// forward
+		tool.cancel();
+	}
+	
+	private void apply() {
+		// coordinates
+		Point point = null;
+		try {
+			point = getGotoPanel().getPositionField().getPoint();
+		} catch (Exception ex) {
+			Utils.showWarning("Ugyldig format. Sjekk koordinater og prøv igjen");
+		}
+		// add or move poi?
+		if (tool.getCurrentUnit() == null) {
+			Utils.showWarning("Du må først velge en enhet");
+		} else {
+			tool.setPositionAt(point);
+			// forward
+			tool.apply();
+		}		
+	}
+	
+	public void reset() {
+		tool.cancel();
+		getGotoPanel().getPositionField().setText(null);
+		if(getUnitList().getModel().getSize()>0)
+			getUnitList().setSelectedIndex(-1);
+	}
+	
 	public void updatePosition(Point p) {
 		getGotoPanel().getPositionField().setPoint(p);
-	}
-	
-	public boolean isUnitsVisible() {
-		return getUnitList().isVisible();
-	}
-	
-	public boolean isButtonsVisible() {
-		return getButtonPanel().isVisible();
-	}
-	
-	public void setUnitsVisible(boolean isVisible) {
-		getUnitList().setVisible(isVisible);
-	}
-	
-	public void setButtonsVisible(boolean isVisible) {
-		getButtonPanel().setVisible(isVisible);
 	}
 	
 	public Position getCurrentPosition() {
@@ -287,171 +388,19 @@ public class PositionPanel extends JPanel implements
 		}		
 		// set tool unit
 		tool.setCurrentUnit((IUnitIf)getUnitList().getSelectedValue());
+		// update caption
+		//getCaptionPanel().setCaptionText(MsoUtils.getMsoObjectName(unit, 0));
+
 	}	
 	
-	
-	/**
-	 * This method initializes unitComboBox	
-	 * 	
-	 * @return javax.swing.JComboBox	
+	/* ===========================================
+	 * IMsoUpdateListenerIf implementation
+	 * ===========================================
 	 */
-	public JList getUnitList() {
-		if (unitList == null) {
-            unitList = new JList();
-            unitList.setVisibleRowCount(0);
-            unitList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
-            unitList.setModel(new DefaultComboBoxModel());
-            // add listener
-            unitList.addListSelectionListener(new ListSelectionListener() {
 
-				public void valueChanged(ListSelectionEvent e) {
-
-					// is value adjusting?
-					if(e.getValueIsAdjusting()) return;
-
-					// get unit name
-					IUnitIf unit = (IUnitIf)unitList.getSelectedValue();
-					
-					// is unit selected?
-					if(unit==null ) {
-						// reset panel
-						reset();
-						// disable poi panel
-						getCoordPanel().setEnabled(false);
-					}
-					else {
-						// select unit
-						setCurrentUnit(unit);
-						// enable poi panel?
-						getCoordPanel().setEnabled(unit!=null);						
-					}
-				}
-            	
-            });
-		}
-		return unitList;
-	}
-	
-	/**
-	 * This method initializes centerPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getCoordPanel() {
-		if (coordPanel == null) {
-			try {
-
-				// create panel
-				coordPanel = new JPanel();
-
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		coordPanel.removeAll();
-		if(isVertical) {
-			
-			// create flow layout
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
-			vfl.setHgap(0);
-			vfl.setVgap(5);
-			vfl.setVerticalFill(true);
-			vfl.setHorizontalFill(true);
-			// set flow layout
-			coordPanel.setLayout(vfl); 
-			// add components
-			coordPanel.add(getGotoPanel());
-			coordPanel.add(getListScrollPane());			
-		}
-		else {
-			// create flow layout
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(0);
-			// set flow layout
-			coordPanel.setLayout(bl); 
-			// add components
-			coordPanel.add(getGotoPanel(),BorderLayout.WEST);
-			coordPanel.add(getListScrollPane(),BorderLayout.CENTER);
-		}
-		return coordPanel;
-	}
-
-	/**
-	 * This method initializes northPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getNorthPanel() {
-		if (northPanel == null) {
-			try {
-				BorderLayout borderLayout = new BorderLayout();
-				northPanel = new JPanel();
-				northPanel.setLayout(borderLayout);
-
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		northPanel.removeAll();
-		northPanel.add(getCoordPanel(), BorderLayout.CENTER);
-		return northPanel;
-	}
-
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			try {
-				buttonPanel = new JPanel();
-				FlowLayout fl = new FlowLayout();
-				fl.setHgap(0);
-				fl.setVgap(0);
-				fl.setAlignment(FlowLayout.RIGHT);
-				buttonPanel.setLayout(fl);
-				buttonPanel.add(getApplyButton());
-				buttonPanel.add(getCancelButton());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return buttonPanel;
-	}
-
-	public JButton getCancelButton() {
-		if (cancelButton == null) {
-			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				cancelButton.setActionCommand("cancel");
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						cancel();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return cancelButton;
-	}
-	
-	private JButton getApplyButton() {
-		if (applyButton == null) {
-			try {
-				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
-				applyButton.setActionCommand("finish");
-				applyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						apply();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return applyButton;
-	}
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+		return myInterests.contains(aMsoObject.getMsoClassCode());
+	}	
 
 	public void handleMsoUpdateEvent(Update e) {
 		// get flags
@@ -516,43 +465,37 @@ public class PositionPanel extends JPanel implements
 			setCurrentUnit(null);
 	}	
 	
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
-		return myInterests.contains(aMsoObject.getMsoClassCode());
-	}	
-	
+	/* ===========================================
+	 * IMsoLayerEventListener implementation
+	 * ===========================================
+	 */
+
 	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
-		if (tool.getMap() == null) {
-			return;
-		}
-		IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
-		List selection = msoLayer.getSelected();
+		if (tool.getMap() == null || !e.isFinal()) return; 
+		com.esri.arcgis.geometry.Point point = null;
+		List<IMsoFeature> selection = e.getSelected();
 		if (selection != null && selection.size() > 0) {
 			IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
 			IMsoObjectIf msoObject = msoFeature.getMsoObject();
-			IUnitIf unit = (IUnitIf)msoObject;
-			tool.setCurrentUnit(unit);
-			getUnitList().setSelectedValue(unit, true);
-			com.esri.arcgis.geometry.Point point = 
-				(com.esri.arcgis.geometry.Point)msoFeature.getShape();
-			getGotoPanel().getPositionField().setPoint(point);
+			if(msoObject instanceof IUnitIf) {
+				IUnitIf unit = (IUnitIf)msoObject;
+				tool.setCurrentUnit(unit);
+				getUnitList().setSelectedValue(unit, true);
+				point = (com.esri.arcgis.geometry.Point)msoFeature.getShape();
+			}
 		}
-		else {
-			reset();
-		}
+		getGotoPanel().getPositionField().setPoint(point);
 	}
+	
+	/* ===========================================
+	 * IPropertyPanel implementation
+	 * ===========================================
+	 */
 
-	public void addActionListener(ActionListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void update() { /*NOP*/ }
+	
+	public void addActionListener(ActionListener listener) { /*NOP*/ }
+	public void removeActionListener(ActionListener listener) { /*NOP*/ }
 
-	public void removeActionListener(ActionListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void update() {
-		// TODO Auto-generated method stub
-		
-	}
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

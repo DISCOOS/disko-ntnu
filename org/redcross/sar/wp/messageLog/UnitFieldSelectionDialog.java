@@ -175,9 +175,9 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 					}
 					else
 					{
-						Utils.showWarning(m_wp.getText("NonexistingUnitErrorMessage.text"),
+						Utils.showWarning(m_wp.getBundleText("NonexistingUnitErrorMessage.text"),
 								m_unitTypeField.getText() + " " + m_unitNumberField.getText() +
-								" " + m_wp.getText("NonexistingUnitErrorDetails.text"));
+								" " + m_wp.getBundleText("NonexistingUnitErrorDetails.text"));
 					}
 				}
 			});
@@ -405,7 +405,7 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 			{
 				int unconfirmed = message.getUnconfirmedReceivers().size();
 				int count = unconfirmed + message.getConfirmedReceivers().size();
-				m_unitTypeField.setText(String.format(m_wp.getText("BroadcastLabel.text"),
+				m_unitTypeField.setText(String.format(m_wp.getBundleText("BroadcastLabel.text"),
 						(count-unconfirmed),count));
 				m_unitNumberField.setText("");
 			}

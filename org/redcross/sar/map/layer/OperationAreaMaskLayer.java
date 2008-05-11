@@ -3,6 +3,7 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaMaskFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -25,10 +26,10 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol fill = null;
 	private TransparencyDisplayFilter filter = null;
 	
-	public OperationAreaMaskLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+	public OperationAreaMaskLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
 		super(IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA,
 				LayerCode.OPERATION_AREA_MASK_LAYER, msoModel, srs,
-				esriGeometryType.esriGeometryPolygon);
+				esriGeometryType.esriGeometryPolygon, eventStack);
 		createSymbols();
 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 		loadObjects(cmdPost.getOperationAreaListItems().toArray());
@@ -64,6 +65,7 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 	 					display.drawPolygon(polygon);
 	 					display.setFilterByRef(null);
 	 				}
+					feature.setDirty(false);
  				}
  			}
  			isDirty = false;

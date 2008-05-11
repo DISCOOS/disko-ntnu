@@ -9,15 +9,15 @@ import java.util.Map;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.event.MsoLayerEvent.MsoLayerEventType;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.EventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -52,46 +52,40 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	protected boolean isCached = false;
 	protected boolean isValid, isVisible = true;
 	protected boolean isSelectable = true;
-	protected boolean isEditing = false;
 	protected boolean isEnabled = true, isOldEnabled = true;
-	protected boolean isNotifySuspended = true;
+	protected int notifySuspended = 0;
 	protected int selectionCount = 0;
 	protected int visibleCount = 0;
 	protected int editCount = 0;
 	protected double maximumScale, minimumScale = 0;
-	protected boolean showTips, isDirty = false;	
-	protected ArrayList<IMsoLayerEventListener> listeners = null;
-	protected MsoLayerEvent msoLayerEvent = null;
+	protected boolean showTips = false, isDirty = false;	
 	protected IMsoModelIf msoModel = null;
 	protected EnumSet<MsoClassCode> myInterests = null;
-	protected HashMap<MsoLayerEventType,MsoLayerEvent> suspendedEvents = null;
+	protected MsoLayerEventStack eventStack = null;
 	protected Map<Integer,Selector<IMsoObjectIf>> selectors = null;
 	protected boolean isTextShown = true;
 
 	public AbstractMsoFeatureLayer(MsoClassCode classCode, 
 			LayerCode layerCode, IMsoModelIf msoModel, 
-			ISpatialReference srs, int shapeType) {
+			ISpatialReference srs, int shapeType, 
+			MsoLayerEventStack eventStack) {
 
-		// initialize objects
+		// prepare
 		this.classCode = classCode;
 		this.layerCode = layerCode;
 		this.msoModel = msoModel;
 		this.srs = srs;
 		this.selectors = new HashMap<Integer,Selector<IMsoObjectIf>>(); 
+		this.eventStack = eventStack;
 
 		featureClass = new MsoFeatureClass(shapeType);
-		name = Utils.translate(layerCode);
+		name = DiskoEnumFactory.getText(layerCode);
 
 		// event handling
-		listeners = new ArrayList<IMsoLayerEventListener>();
-		msoLayerEvent = new MsoLayerEvent(this,MsoLayerEventType.SELECTION_CHANGED_EVENT);
-		suspendedEvents = new HashMap<MsoLayerEventType,MsoLayerEvent>(1);		
 		myInterests = EnumSet.of(classCode);
-		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
-		msoEventManager.addClientUpdateListener(this);
+		msoModel.getEventManager().addClientUpdateListener(this);
 
 	}
-
 
 	protected boolean addInterestIn(MsoClassCode classCode) {
 		if(!myInterests.contains(classCode)) {
@@ -135,22 +129,18 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			if (createdObject && msoFeature == null && isFeature) {
 				msoFeature = createMsoFeature(msoObj);
 				msoFC.addFeature(msoFeature);
-				if (msoFeature.getShape() != null) {
-					isDirty = true;
-				}
 			}
 			// is object modified?
 			if ( (addedReference || removedReference || modifiedObject) 
 					&& msoFeature != null && msoFeature.geometryIsChanged(msoObj)) {
 				msoFeature.msoGeometryChanged();
-				isDirty = true;
-			}
-			
+			}			
 			// delete object?
 			if ((deletedObject) && msoFeature != null && isFeature) {
 				msoFC.removeFeature(msoFeature);
-				isDirty = true;
 			}
+			// update dirty flag
+			isDirty = isDirty || isFeatureDirty(msoFeature);			
 			
 		} catch (AutomationException e1) {
 			// TODO Auto-generated catch block
@@ -177,6 +167,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 				IMsoObjectIf msoObj = (IMsoObjectIf)objects[i];
 				IMsoFeature msoFeature = createMsoFeature(msoObj);
 				msoFC.addFeature(msoFeature);
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -187,47 +178,36 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		}
 	}
 
-	public void addDiskoLayerEventListener(IMsoLayerEventListener listener) {
-		if (listeners.indexOf(listener) == -1) {
-			listeners.add(listener);
+	public void addMsoLayerEventListener(IMsoLayerEventListener listener) {
+		if (eventStack!=null) {
+			eventStack.addMsoLayerEventListener(listener);
 		}
 	}
 
-	public void removeDiskoLayerEventListener(IMsoLayerEventListener listener) {
-		listeners.remove(listener);
-	}
-
-	protected void fireOnSelectionChanged() {
-		try {
-			if(isNotifySuspended) {
-				suspendedEvents.put(MsoLayerEventType.SELECTION_CHANGED_EVENT, msoLayerEvent);
-			}
-			else {
-				for (int i = 0; i < listeners.size(); i++) {
-					listeners.get(i).onSelectionChanged(msoLayerEvent);
-				}
-			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void removeMsoLayerEventListener(IMsoLayerEventListener listener) {
+		if (eventStack!=null) {
+			eventStack.removeMsoLayerEventListener(listener);
 		}
 	}
 
+	protected void fireOnSelectionChanged(MsoLayerEventType type) {
+		if (eventStack!=null) {
+			eventStack.push(this, type);
+		}
+	}
+	
 	public void setSelected(IMsoFeature msoFeature, boolean selected) {
+		if(msoFeature==null) return;
 		if (!msoFeature.isSelected() && selected) {
 			selectionCount++;
-			isDirty = true;
 			msoFeature.setSelected(true);
-			fireOnSelectionChanged();
+			fireOnSelectionChanged(MsoLayerEventType.SELECTED_EVENT);
 		} else if (msoFeature.isSelected() && !selected) {
 			selectionCount--;
-			isDirty = true;
 			msoFeature.setSelected(false);
-			fireOnSelectionChanged();
+			fireOnSelectionChanged(MsoLayerEventType.DESELECTED_EVENT);
 		}
+		isDirty = isDirty || isFeatureDirty(msoFeature);			
 	}
 
 	public int clearSelected() throws AutomationException, IOException {
@@ -238,39 +218,41 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 				selectionCount--;
 				count++;
 				feature.setSelected(false);
+				isDirty = isDirty || isFeatureDirty(feature);			
 			}
 		}
+		selectionCount = 0;
 		if(count>0) {
-			isDirty = true;
-			fireOnSelectionChanged();
+			fireOnSelectionChanged(MsoLayerEventType.DESELECTED_EVENT);
 		}
 		return count;
 	}
 
-	public List getSelected() throws AutomationException, IOException {
+	public List<IMsoFeature> getSelected() throws AutomationException, IOException {
 		ArrayList<IMsoFeature> selection = new ArrayList<IMsoFeature>();
 		for (int i = 0; i < featureClass.featureCount(null); i++) {
 			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
 			if (feature.isSelected()) {
 				selection.add(feature);
 			}
+			isDirty = isDirty || isFeatureDirty(feature);			
 		}
 		return selection;
 	}
 
-	public List getSelectedMsoObjects() throws AutomationException, IOException {
+	public List<IMsoObjectIf> getSelectedMsoObjects() throws AutomationException, IOException {
 		ArrayList<IMsoObjectIf> selection = new ArrayList<IMsoObjectIf>();
 		for (int i = 0; i < featureClass.featureCount(null); i++) {
 			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
 			if (feature.isSelected()) {
 				selection.add(feature.getMsoObject());
 			}
+			isDirty = isDirty || isFeatureDirty(feature);			
 		}
 		return selection;
 	}
 
 	public int getSelectionCount(boolean update) throws IOException, AutomationException {
-		int count = selectionCount;
 		if(update) {
 			// reset
 			selectionCount = 0;
@@ -283,9 +265,8 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					if(msoFeature.isSelected()) 
 						selectionCount++;
 				}
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}			
-			// dirty?
-			isDirty = isDirty || (count!=selectionCount);
 		}
 		// return count
 		return selectionCount;
@@ -296,7 +277,38 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	}
 
 	public boolean isDirty() {
-		return isDirty;
+		return isDirty(true);
+	}
+	
+	public boolean isDirty(boolean deep) {
+		// is dirty?
+		if(isDirty) return true;
+		// look at children
+		try {
+			// get count
+			int count = featureClass.featureCount(null);
+			// loop over all features
+			for (int i = 0; i < count; i++) {
+				// get mso feature
+				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				// is not filtered and is visible?
+				if(isFeatureDirty(msoFeature)) {
+					// is dirty?
+					if(msoFeature.isDirty()) {
+						isDirty = true; 
+						return true; 
+					}
+				}			
+			}
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// is not dirty
+		return false;
 	}
 
 	public String getName() throws IOException, AutomationException {
@@ -305,6 +317,8 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 	public void setName(String name) throws IOException, AutomationException {
 		this.name = name;
+		isDirty = true; 
+
 	}
 
 	public IMsoManagerIf.MsoClassCode getClassCode() {
@@ -323,16 +337,19 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return minimumScale;
 	}
 
-	public void setMinimumScale(double arg0) throws IOException, AutomationException {
-		minimumScale = arg0;
+	public void setMinimumScale(double scale) throws IOException, AutomationException {
+		minimumScale = scale;
+		isDirty = true; 
+
 	}
 
 	public double getMaximumScale() throws IOException, AutomationException {
 		return maximumScale;
 	}
 
-	public void setMaximumScale(double arg0) throws IOException, AutomationException {
-		maximumScale = arg0;
+	public void setMaximumScale(double scale) throws IOException, AutomationException {
+		maximumScale = scale;
+		isDirty = true;
 	}
 
 	public boolean isVisible() throws IOException, AutomationException {
@@ -340,28 +357,30 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	}
 
 	public void setVisible(boolean isVisible) throws IOException, AutomationException {
-		isDirty = isDirty || (this.isVisible != isVisible);
-		this.isVisible = isVisible;
+		if(this.isVisible != isVisible) {
+			this.isVisible = isVisible;
+			isDirty = true;
+		}
 	}
 
 	public boolean isShowTips() throws IOException, AutomationException {
 		return showTips;
 	}
 
-	public void setShowTips(boolean arg0) throws IOException, AutomationException {
-		showTips = arg0;
+	public void setShowTips(boolean isShowTips) throws IOException, AutomationException {
+		this.showTips = isShowTips;
 	}
 
 	public boolean isCached() throws IOException, AutomationException {
 		return isCached;
 	}
 
-	public void setCached(boolean arg0) throws IOException, AutomationException {
-		isCached = arg0;
+	public void setCached(boolean isCached) throws IOException, AutomationException {
+		this.isCached = isCached;
 	}
 
 	public void setSpatialReferenceByRef(ISpatialReference srs)
-	throws IOException, AutomationException {
+		throws IOException, AutomationException {
 		this.srs = srs;
 	}
 
@@ -375,6 +394,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 	public void setExtent(IEnvelope extent) {
 		this.extent = extent;
+		isDirty = true;
 	}
 
 	public IUID getID() throws IOException, AutomationException {
@@ -402,7 +422,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	}
 
 	public String ILayerGeneralProperties_getLayerDescription()
-	throws IOException, AutomationException {
+		throws IOException, AutomationException {
 		return null;
 	}
 
@@ -410,7 +430,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	}
 
 	public String getTipText(double arg0, double arg1, double arg2)
-	throws IOException, AutomationException {
+		throws IOException, AutomationException {
 		return null;
 	}
 
@@ -473,182 +493,86 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		this.isSelectable = isSelectable;
 	}
 
-	/*
-	public boolean isEditing() {
-		return isEditing;
-	}
 
-	public int getEditCount(boolean update) throws IOException, AutomationException {
-		int count = editCount;
-		if(update) {
-			// reset
-			editCount = 0;
-			// loop over all features
-			for (int i = 0; i < featureClass.featureCount(null); i++) {
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
-				// set editing
-				if(msoFeature!=null){
-					// change to editing?
-					if(msoFeature.isEditing()) 
-						editCount++;
-				}
-			}			
-			// dirty?
-			isDirty = isDirty || (count!=editCount);
-		}
-		// return count
-		return editCount;
-	}
-
-	public List startEdit(IMsoObjectIf msoObj) throws IOException, AutomationException {
-		
-		// is not editing?
-		if(!isEditing) {
-			// save old state
-			isOldEnabled = isEnabled;
-		}
-		
-		// enable
-		setEnabled(true);
-		
-		// set edit flag
-		setEditing(true);
-		
-		// set object edit state?
-		if(msoObj!=null) {
-			MsoFeatureClass msoFC = (MsoFeatureClass)getFeatureClass();
-			IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
-			// set editing
-			if(msoFeature!=null){
-				// change to editing?
-				if(!msoFeature.isEditing()) {
-					msoFeature.setEditing(true);
-					editCount++;
-					isDirty = true;				
-				}
-			}
-		}
-		
-		/* no abstract references to mso objects are defined in this abstract class.
-		 * However, classes that extends this abstract class may have mso features that
-		 * reference other mso objects that belongs to yet another mso feature layer. The
-		 * AreaLayer is one such example where each area has a poi list. These poi
-		 * must also be marked as isEditing. Thus AreaLayer must override this method
-		 * in the following manner:
-		 * 
-		 * 1. Override startEditing(*)
-		 * 2. In the overridden method, call super.startEditing(*) to invoke this method first
-		 * 3. Then, collect any referenced objects
-		 * 4. The overridden method return the list of any referenced mso objects
-		 */
-	/*
-		return null;
-	}
-
-	public List stopEdit(IMsoObjectIf msoObj) throws IOException, AutomationException {
-
-		// restore old
-		setEnabled(isOldEnabled);
-
-		// update edit count
-		getEditCount(true);
-
-		// stop all edits?
-		if(msoObj==null) {
-			// loop over all features
-			for (int i = 0; i < featureClass.featureCount(null); i++) {
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
-				// set editing
-				if(msoFeature!=null){
-					// change to not editing?
-					if(msoFeature.isEditing()) {
-						msoFeature.setEditing(false);
-						editCount--;
-						isDirty = true;				
-					}
-				}
-			}
-		}
-		else {
-			MsoFeatureClass msoFC = (MsoFeatureClass)getFeatureClass();
-			IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
-			// set editing
-			if(msoFeature!=null){
-				// change to not editing?
-				if(msoFeature.isEditing()) {
-					msoFeature.setEditing(false);
-					editCount--;
-					isDirty = true;				
-				}
-			}
-		}
-		
-		// are all edits stopped?
-		setEditing(editCount != 0);
-
-		/* no abstract references to mso objects are defined in this abstract class.
-		 * However, classes that extends this abstract class may have mso features that
-		 * reference other mso objects that belongs to yet another mso feature layer. The
-		 * AreaLayer is one such example where each area has a poi list. These poi
-		 * must also be marked as isEditing. Thus AreaLayer must override this method
-		 * in the following manner:
-		 * 
-		 * 1. Override stopEdit(*)
-		 * 2. In the overridden method, call super.stopEdit(*) to invoke this method first
-		 * 3. Then, collect any referenced objects
-		 * 4. The overridden method return the list of any referenced mso objects
-		 */
-
-	/*
-		return null;
-	}	
-
-	public ArrayList<IMsoFeature> getEditing() throws AutomationException, IOException {
-		ArrayList<IMsoFeature> edits = new ArrayList<IMsoFeature>();
-		for (int i = 0; i < featureClass.featureCount(null); i++) {
-			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
-			if (feature.isEditing()) {
-				edits.add(feature);
-			}
-		}
-		return edits;
-	}
-
-	*/
-	
 	public boolean isEnabled() {
 		return this.isEnabled;
 	}
 
 	public void setEnabled(boolean isEnabled) {
-		// only allowed if not editing
-		if(!isEditing) {
-			isDirty = isDirty || (this.isEnabled != isEnabled);
+		// any change?
+		if(this.isEnabled != isEnabled) {
 			this.isEnabled = isEnabled;
+			isDirty = true;
 		}
 	}
 
-	private void setEditing(boolean isEditing) {
-		// only allowed if not editing
-		isDirty = isDirty || (this.isEditing != isEditing);
-		this.isEditing = isEditing;
-	}
-	
+	public boolean isNotifySuspended() {
+		return notifySuspended>0;
+	}	
+
 	public void suspendNotify() {
-		isNotifySuspended = true;
+		// increment
+		notifySuspended++;
 	}
 
 	public void resumeNotify() {
-		try {
-			if(suspendedEvents.containsKey(MsoLayerEventType.SELECTION_CHANGED_EVENT)) {
-				for (int i = 0; i < listeners.size(); i++) {
-					listeners.get(i).onSelectionChanged(msoLayerEvent);
+		// decrement?
+		if(notifySuspended>1)
+			notifySuspended--;
+		// only resume on last decrement
+		if(notifySuspended==1){
+			try {
+				// clear count
+				notifySuspended = 0;
+				// has event stack?
+				if (eventStack!=null) {
+					eventStack.fire(this);
 				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			// clear suspended events
-			suspendedEvents.clear();
-			// clear flag
-			isNotifySuspended = false;
+		}
+	}
+	
+	public void consumeNotify() {
+		/*/ decrement?
+		if(notifySuspended>0)
+			notifySuspended--;
+		// only resume on last decrement
+		if(notifySuspended==0){
+		*/
+			// clear stack
+			eventStack.consume(this);
+		//}
+		
+	}
+	
+	public IEnvelope getVisibleFeaturesExtent() {
+
+		try {
+			
+			// initialize
+			IEnvelope extent = null;
+
+			// get feature count
+			int count = featureClass.featureCount(null);
+
+			// loop over all features and hide all other planned searches
+			for (int i = 0; i < count; i++) {
+				// get feature
+				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				// is visible?
+				if(msoFeature.isVisible()) {
+					if(extent==null)
+						extent = msoFeature.getExtent();
+					else
+						extent.union(msoFeature.getExtent());
+				}
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
+			}
+			// finished!
+			return extent;
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -656,12 +580,9 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	public boolean isNotifySuspended() {
-		return isNotifySuspended;
+		return null;
 	}	
-
+	
 	public void setVisibleFeatures(boolean isVisible) {
 
 		try {
@@ -676,13 +597,12 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 				// make visible
 				if(!msoFeature.isVisible() && isVisible) {
 					visibleCount++;
-					isDirty = true;
 					msoFeature.setVisible(true);
 				} else if(msoFeature.isVisible() && !isVisible) {
 					visibleCount--;
-					isDirty = true;
 					msoFeature.setVisible(false);
 				}
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -711,11 +631,9 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					// make visible
 					if(!msoFeature.isVisible() && match) {
 						visibleCount++;
-						isDirty = true;
 						msoFeature.setVisible(true);
 					} else if(msoFeature.isVisible() && !match) {
 						visibleCount--;
-						isDirty = true;
 						msoFeature.setVisible(false);
 					}
 				}
@@ -723,14 +641,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					// make visible
 					if(!msoFeature.isVisible() && others) {
 						visibleCount++;
-						isDirty = true;
 						msoFeature.setVisible(true);
 					} else if(msoFeature.isVisible() && !others) {
 						visibleCount--;
-						isDirty = true;
 						msoFeature.setVisible(false);
 					}
 				}
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -741,7 +658,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		}		
 	}
 
-	public void setVisibleFeatures(List msoObjs, boolean match, boolean others) {
+	public void setVisibleFeatures(List<IMsoObjectIf> msoObjs, boolean match, boolean others) {
 
 		try {
 
@@ -757,11 +674,9 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					// make visible
 					if(!msoFeature.isVisible() && match) {
 						visibleCount++;
-						isDirty = true;
 						msoFeature.setVisible(true);
 					} else if(msoFeature.isVisible() && !match) {
 						visibleCount--;
-						isDirty = true;
 						msoFeature.setVisible(false);
 					}
 				}
@@ -769,14 +684,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					// make visible
 					if(!msoFeature.isVisible() && others) {
 						visibleCount++;
-						isDirty = true;
 						msoFeature.setVisible(true);
 					} else if(msoFeature.isVisible() && !others) {
 						visibleCount--;
-						isDirty = true;
 						msoFeature.setVisible(false);
 					}
 				}
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -801,6 +715,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					if(msoFeature.isVisible()) 
 						visibleCount++;
 				}
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}			
 
 		}
@@ -855,5 +770,28 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setTextShown(boolean isVisible) {
 		isTextShown = isVisible;
 	}
-
+	
+	public IEnvelope getDirtyExtent() throws AutomationException, IOException {
+		// initialize
+		IEnvelope extent = null;
+		// check deep dirty state
+		int count = featureClass.featureCount(null);
+		for (int i = 0; i < count; i++) {
+			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+			if (feature.isDirty()) {
+				if(extent==null)
+					extent = feature.getExtent();
+				else
+					extent.union(feature.getExtent());
+			}
+			isDirty = isDirty || isFeatureDirty(feature); 				
+		}
+		return extent;
+	}
+	
+	private boolean isFeatureDirty(IMsoFeature msoFeature) {
+		return (msoFeature!=null && select(msoFeature) 
+				&& msoFeature.isVisible() && msoFeature.isDirty());
+	}
+	
 }

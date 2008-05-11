@@ -9,37 +9,24 @@ import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import javax.swing.AbstractButton;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoButtons;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.attribute.CheckBoxAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderers.IconListCellRenderer;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.SnapAdapter;
 import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.command.FreeHandTool;
-import org.redcross.sar.mso.data.IAreaIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IOperationAreaIf;
-import org.redcross.sar.mso.data.IPOIIf;
-import org.redcross.sar.mso.data.ISearchAreaIf;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
@@ -48,6 +35,7 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 	private static final long serialVersionUID = 1L;
 	
 	private FreeHandTool tool = null;
+	private DiskoPanel captionPanel = null;
 	private DiskoPanel actionsPanel = null;
 	private DiskoPanel optionsPanel = null;
 	private JButton snapToButton = null;
@@ -58,15 +46,8 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 	private TextFieldAttribute maxStepAttr = null;
 	private CheckBoxAttribute constraintAttr = null;
 	
-	private boolean listAreChangeing = false;
-	
-	private DiskoPanel partsPanel = null;
-	private JList partsList = null;
-	private DiskoButtons drawModeButtonsPanel = null;
-	
 	private boolean isVertical = true;
 	
-	private List<IMsoObjectIf> parts = null;
 	private List<ActionListener> listeners = null;
 		
 	
@@ -82,7 +63,6 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 		
 		// prepare
 		this.tool = tool;
-		this.parts = new ArrayList<IMsoObjectIf>();
 		this.listeners = new ArrayList<ActionListener>();
 		
 		// set layout information
@@ -126,8 +106,9 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 			vfl.setHgap(5);
 			vfl.setVgap(5);
 			panel.setLayout(vfl);
+			panel.add(getCaptionPanel());
 			panel.add(getActionsPanel());
-			panel.add(getPartsPanel());
+			//panel.add(getPartsPanel());
 			panel.add(getOptionsPanel());
 		}
 		else {
@@ -135,9 +116,10 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 			bl.setHgap(5);
 			bl.setVgap(5);
 			panel.setLayout(bl);
+			panel.add(getCaptionPanel(),BorderLayout.NORTH);				
 			panel.add(getActionsPanel(),BorderLayout.WEST);				
-			panel.add(getPartsPanel(),BorderLayout.CENTER);
-			panel.add(getOptionsPanel(),BorderLayout.EAST);
+			//panel.add(getPartsPanel(),BorderLayout.CENTER);
+			panel.add(getOptionsPanel(),BorderLayout.CENTER);//,BorderLayout.EAST);
 		}
 	}
 	
@@ -173,26 +155,6 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 		tool.cancel();
 	}
 
-	public void update() {
-		getSnapToAttr().setValue(tool.isSnapToMode());
-		getConstraintAttr().setValue(tool.isConstrainMode());
-		getMinStepAttr().setValue(String.valueOf(tool.getMinStep()));
-		getMaxStepAttr().setValue(String.valueOf(tool.getMaxStep()));
-	}
-	
-	/*
-	public void setVisible(boolean isVisible) {
-		// forward
-		super.setVisible(isVisible);
-		// has draw tool?
-		if(tool!=null) {
-			// buffer changes if draw dialog is visible. 
-			// if buffered, use tool.apply() to update the mso model
-			tool.setBufferedMode(isVisible());
-		}
-	}
-	*/
-		
 	public boolean isButtonsVisible() {
 		return getActionsPanel().isVisible();
 	}
@@ -358,6 +320,18 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 		return maxStepAttr;
 	}	
 
+	private DiskoPanel getCaptionPanel() {
+		if (captionPanel == null) {
+			try {
+				captionPanel = new DiskoPanel(MapUtil.getDrawText(null, null, null));
+				captionPanel.setBodyComponent(null);
+				
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return captionPanel;
+	}
 
 	private DiskoPanel getActionsPanel() {
 		if (actionsPanel == null) {
@@ -435,162 +409,21 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 		}
 		return snapToButton;
 	}	
-	
-	/**
-	 * This method initializes partPanel
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	public DiskoPanel getPartsPanel() {
-		if (partsPanel == null) {
-			try {
-				partsPanel = new DiskoPanel("Velg del");
-				partsPanel.setPreferredSize(new Dimension(200, 150));
-				JPanel body = (JPanel)partsPanel.getBodyComponent();
-				BorderLayout bl = new BorderLayout();
-				bl.setVgap(5);
-				bl.setHgap(5);
-				body.setLayout(bl);
-				body.add(getPartsList(),BorderLayout.CENTER);
-				body.add(getDrawModeButtonsPanel(),BorderLayout.SOUTH);
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return partsPanel;
-	}
-	
-	/**
-	 * This method initializes partsList	
-	 * 	
-	 * @return javax.swing.JList
-	 */
-	public JList getPartsList() {
-		if (partsList == null) {
-			// create list
-			partsList = new JList();
-			partsList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
-			partsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
-			partsList.setVisibleRowCount(3);
-            // add listener
-			partsList.addListSelectionListener(new ListSelectionListener() {
-
-				public void valueChanged(ListSelectionEvent e) {
-					
-					// is value adjusting?
-					if(e.getValueIsAdjusting()) return;
-					
-					// consume?
-					if(listAreChangeing) return;
-					
-				}
-				
-			});            
-		}
-		return partsList;
-	}
-	
-	/**
-	 * This method initializes drawModeButtonsPanel
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	public JPanel getDrawModeButtonsPanel() {
-		if (drawModeButtonsPanel == null) {
-			try {
-				drawModeButtonsPanel = new DiskoButtons();
-				AbstractButton button = DiskoButtonFactory.createButton("GENERAL.STAR",ButtonSize.NORMAL);
-				button.setToolTipText("Tegn nytt objekt");
-				drawModeButtonsPanel.addButton(button, "create");
-				button = DiskoButtonFactory.createButton("GENERAL.EQUAL",ButtonSize.NORMAL);
-				button.setToolTipText("Erstatt valgt objekt");
-				drawModeButtonsPanel.addButton(button, "replace");
-				button = DiskoButtonFactory.createButton("GENERAL.PLUS",ButtonSize.NORMAL);
-				button.setToolTipText("Legg til ny del");
-				drawModeButtonsPanel.addButton(button, "append");
-				button = DiskoButtonFactory.createButton("GENERAL.CONTINUE",ButtonSize.NORMAL);
-				button.setToolTipText("Fortsett på valgt del");
-				drawModeButtonsPanel.addButton(button, "concat");
-				button = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
-						
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return drawModeButtonsPanel;
-	}	
-	
-	private void loadParts(IMsoObjectIf msoObject) {
-		
-		// initialize data
-		Object[] data = null;
-		
-		// clear buffer
-		parts.clear();
-
-		// has selected item?
-		if(msoObject!=null) {
-		
-			// get command post
-			ICmdPostIf cp = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
-	
-			// has command post?
-			if(cp!=null) {
-				// set current type
-				if(msoObject instanceof IOperationAreaIf || 
-						msoObject instanceof ISearchAreaIf ||
-						msoObject instanceof IPOIIf) {
-					// has no parts
-					getPartsList().setEnabled(false);
-				}	
-				else if(msoObject instanceof IAreaIf) {
-					// get area
-					IAreaIf area = (IAreaIf)msoObject;
-					// get geodata items
-					Collection<IMsoObjectIf> c = area.getAreaGeodataItems();
-					// get data?
-					if(!c.isEmpty()) {
-						data = c.toArray();
-						parts.addAll(c);
-					}
-					// parts
-					getPartsList().setEnabled(true);
-				}
-			}
-		}
-		else {
-			// has no parts
-			getPartsList().setEnabled(false);			
-		}	
-		// set flag
-		listAreChangeing = true;
-		// update model
-		if(data==null) {
-			getPartsList().setModel(new DefaultListModel());
-		}
-		else {
-			getPartsList().setListData(data);
-		}
-		// reset flag
-		listAreChangeing = false;
-	}
-	
 		
 	public void setMsoObject(IMsoObjectIf msoObject) {		
 		// consume?
 		if (tool == null || tool.getMap() == null) return;
-		// forward
-		loadParts(msoObject);
-	}
-	
-	public void addActionListener(ActionListener listener) {
-		listeners.add(listener);
-	}
-	
-	public void removeActionListener(ActionListener listener) {
-		listeners.remove(listener);
-		getActionsPanel().removeActionListener(listener);
+		try {
+			// update caption
+			if(tool.getMap().isEditSupportInstalled())
+				getCaptionPanel().setCaptionText(tool.getMap().getDrawFrame().getText());
+			else 
+				getCaptionPanel().setCaptionText(MapUtil.getDrawText(msoObject, 
+						tool.getMsoClassCode(), tool.getDrawMode())); 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void doAction(ActionEvent e) {
@@ -607,6 +440,28 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 	}
 
 	public void onSnapableChanged() {}
+	
+	/* ===========================================
+	 * IPropertyPanel implementation
+	 * ===========================================
+	 */
+
+	public void update() {
+		getSnapToAttr().setValue(tool.isSnapToMode());
+		getConstraintAttr().setValue(tool.isConstrainMode());
+		getMinStepAttr().setValue(String.valueOf(tool.getMinStep()));
+		getMaxStepAttr().setValue(String.valueOf(tool.getMaxStep()));
+	}	
+	
+	public void addActionListener(ActionListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeActionListener(ActionListener listener) {
+		listeners.remove(listener);
+		getActionsPanel().removeActionListener(listener);
+	}
+	
 
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

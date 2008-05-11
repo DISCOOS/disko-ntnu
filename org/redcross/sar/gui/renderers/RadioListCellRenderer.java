@@ -6,7 +6,7 @@ import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.ListCellRenderer;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 
 public class RadioListCellRenderer extends JRadioButton implements ListCellRenderer {
 
@@ -20,7 +20,7 @@ public class RadioListCellRenderer extends JRadioButton implements ListCellRende
 	public Component getListCellRendererComponent(JList list, Object value,
 			int index, boolean isSelected, boolean cellHasFocus) {
 		
-		setText(Utils.translate(value));
+		setText(DiskoStringFactory.translate(value));
 		setSelected(isSelected);
 		setBackground(list.getBackground());
 		setForeground(list.getForeground());

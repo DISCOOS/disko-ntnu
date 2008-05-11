@@ -20,9 +20,11 @@ import javax.swing.JToggleButton;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.DrawHostTool;
 import org.redcross.sar.map.command.ElementCommand;
@@ -261,7 +263,7 @@ public class NavBar extends JPanel {
 	public FlankTool getFlankTool() {
 		if (flankTool == null) {
 			try {
-				flankTool = new FlankTool((IHostToolDialog)
+				flankTool = new FlankTool((IToolCollection)
 						getDrawHostTool().getDialog());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -322,7 +324,7 @@ public class NavBar extends JPanel {
 	public POITool getPOITool() {
 		if (puiTool == null) {
 			try {
-				puiTool = new POITool((IHostToolDialog)
+				puiTool = new POITool((IToolCollection)
 						getDrawHostTool().getDialog());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -335,7 +337,7 @@ public class NavBar extends JPanel {
 	public PositionTool getPositionTool() {
 		if (positionTool == null) {
 			try {
-				positionTool = new PositionTool((IHostToolDialog)
+				positionTool = new PositionTool((IToolCollection)
 						getDrawHostTool().getDialog());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -916,11 +918,13 @@ public class NavBar extends JPanel {
 		if (command != null) {
 			button.addActionListener(new NavActionListener(command));
 		}
-		DiskoCustomIcon icon = new DiskoCustomIcon(Utils.getEnumIcon(e,"48x48"));
+		DiskoCustomIcon icon = 
+			new DiskoCustomIcon(DiskoIconFactory.getIcon(
+					DiskoEnumFactory.getIcon(e),"48x48"));
 		if (icon != null) {
 			button.setIcon(icon);
 		}
-		button.setToolTipText(Utils.getEnumText(e));
+		button.setToolTipText(DiskoEnumFactory.getText(e,"tooltip"));
 	}
 	
 	public List<Enum<?>> getEnabledButtons(boolean isEnabled){
@@ -956,7 +960,7 @@ public class NavBar extends JPanel {
 			if(command instanceof IDiskoTool) {
 				IDiskoTool tool = (IDiskoTool)command;
 				if(tool.isHosted()) {
-					((IHostToolDialog)tool.getDialog())
+					((IToolCollection)tool.getDialog())
 						.setEnabled(tool.getType(), isEnabled);
 					// buttons of hosted tools should not 
 					// NEVER be shown on the navbar!
@@ -1005,7 +1009,7 @@ public class NavBar extends JPanel {
 			if(command instanceof IDiskoTool) {
 				IDiskoTool tool = (IDiskoTool)command;
 				if(tool.isHosted()) {
-					((IHostToolDialog)tool.getDialog())
+					((IToolCollection)tool.getDialog())
 						.setVisible(tool.getType(), isVisible);
 					// buttons of hosted tools should not 
 					// NEVER be shown on the navbar!
@@ -1021,7 +1025,7 @@ public class NavBar extends JPanel {
 		// get draw host
 		IHostDiskoTool host = (IHostDiskoTool)commands.get(DiskoToolType.DRAW_HOST_TOOL);
 		// update
-		((IHostToolDialog)host.getDialog()).setup();
+		((IToolCollection)host.getDialog()).setup();
 	}
 	
 	public void switchIcon(String command, int index){
@@ -1111,7 +1115,7 @@ public class NavBar extends JPanel {
 					if(tool.isHosted()) {
 						// override
 						buttonState.m_isVisible = 
-							((IHostToolDialog)tool.getDialog())
+							((IToolCollection)tool.getDialog())
 								.getVisible(tool.getType());
 					}
 					// put to command hashtable?
@@ -1146,7 +1150,7 @@ public class NavBar extends JPanel {
 					// is a hosted tool?
 					if(tool.isHosted()) {
 						// transfer state to draw dialog
-						((IHostToolDialog)tool.getDialog())
+						((IToolCollection)tool.getDialog())
 							.setVisible(tool.getType(),button.isVisible());
 						// buttons of hosted tools should not 
 						// NEVER be shown on the navbar!

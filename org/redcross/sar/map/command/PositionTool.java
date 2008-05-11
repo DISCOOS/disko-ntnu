@@ -8,7 +8,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.PositionPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -17,6 +17,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.Point;
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * A custom draw tool.
@@ -30,7 +31,7 @@ public class PositionTool extends AbstractDrawTool {
 	/**
 	 * Constructs the DrawTool
 	 */
-	public PositionTool(IHostToolDialog dialog) throws IOException {
+	public PositionTool(IToolCollection dialog) throws IOException {
 
 		// forward
 		super(true,FeatureType.FEATURE_POINT);
@@ -85,7 +86,7 @@ public class PositionTool extends AbstractDrawTool {
 				IMsoFeatureLayer msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
 				Iterator<IPropertyPanel> it = panels.iterator();
 				while(it.hasNext()) {
-					msoLayer.addDiskoLayerEventListener((PositionPanel)it.next());
+					msoLayer.addMsoLayerEventListener((PositionPanel)it.next());
 				}
 				
 			}
@@ -102,10 +103,16 @@ public class PositionTool extends AbstractDrawTool {
 						
 			// validate
 			if(validate()) {
-				// update
-				p = toMapPoint(x, y);
-				p.setSpatialReferenceByRef(map.getSpatialReference());
+
+				//p.setSpatialReferenceByRef(map.getSpatialReference());
+				
+				// update panel
 				getPositionPanel().updatePosition(p);
+				
+				// forward
+				updateGeometry();				
+				
+				// finished
 				return true;
 			}
 			
@@ -216,13 +223,26 @@ public class PositionTool extends AbstractDrawTool {
 		if(panels==null)
 			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		IPropertyPanel panel = new PositionPanel(this,true);
+		IPropertyPanel panel = new PositionPanel(this);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
 		}
 		return null;
 	}
+	
+	private void updateGeometry() throws IOException, AutomationException {
+
+		// has new line been found?
+		if (p!=null && isDrawing()) {
+		
+			// update 
+			geoPoint = p;
+			
+			// mark change
+			setDirty();
+		}		
+	}		
 	
 	@Override
 	public IDiskoToolState save() {

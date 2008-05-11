@@ -549,10 +549,10 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		if(m_currentMessage != null && (m_currentMessage != aMessage) && m_messageDirty)
 		{
 
-			Object[] options = {m_wpMessageLog.getText("yes.text"), m_wpMessageLog.getText("no.text")};
+			Object[] options = {m_wpMessageLog.getBundleText("yes.text"), m_wpMessageLog.getBundleText("no.text")};
 			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
-					m_wpMessageLog.getText("DirtyMessageWarning.text"),
-					m_wpMessageLog.getText("DirtyMessageWarning.header"),
+					m_wpMessageLog.getBundleText("DirtyMessageWarning.text"),
+					m_wpMessageLog.getBundleText("DirtyMessageWarning.header"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
 					null,
@@ -605,7 +605,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 			{
 				int unconfirmed = m_currentMessage.getUnconfirmedReceivers().size();
 				int count = unconfirmed + m_currentMessage.getConfirmedReceivers().size();
-				m_toLabel.setText(String.format(m_wpMessageLog.getText("BroadcastLabel.text"),
+				m_toLabel.setText(String.format(m_wpMessageLog.getBundleText("BroadcastLabel.text"),
 						(count-unconfirmed),count));
 			}
 			else
@@ -712,14 +712,14 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	public static boolean validateMessage() {
 		// has any data to commit?
 		if(m_currentMessage == null) {
-			Utils.showWarning(m_wpMessageLog.getText("NoMessageData.header"),
-					m_wpMessageLog.getText("NoMessageData.text"));
+			Utils.showWarning(m_wpMessageLog.getBundleText("NoMessageData.header"),
+					m_wpMessageLog.getBundleText("NoMessageData.text"));
 			return false;
 		}
 		// has lines?
 		if(m_currentMessage != null && m_currentMessage.getLines().length==0) {
-			Utils.showWarning(m_wpMessageLog.getText("NoMessageLines.header"),
-					m_wpMessageLog.getText("NoMessageLines.text"));
+			Utils.showWarning(m_wpMessageLog.getBundleText("NoMessageLines.header"),
+					m_wpMessageLog.getBundleText("NoMessageLines.text"));
 			return false;
 		}
 		// is valid
@@ -806,8 +806,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 				// apply limits
 				if(isConfirmed && m_currentMessage.getUnconfirmedReceivers().size() > 0){
 					// If broadcast all units have to confirm to get confirmed status
-					Utils.showWarning(m_wpMessageLog.getText("UnconfirmedUnitsExists.header"),
-							m_wpMessageLog.getText("UnconfirmedUnitsExists.text"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("UnconfirmedUnitsExists.header"),
+							m_wpMessageLog.getBundleText("UnconfirmedUnitsExists.text"));
 					// keep current status
 					status = m_currentMessage.getStatus();
 				}
@@ -880,7 +880,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     		m_changeTasksButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
     		m_changeTasksButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     		m_changeTasksButton.setIcon(DiskoIconFactory.getIcon("GENERAL.TASKS","48x48"));
-    		m_changeTasksButton.setToolTipText(m_wpMessageLog.getText("TasksButton.text"));
+    		m_changeTasksButton.setToolTipText(m_wpMessageLog.getBundleText("TasksButton.text"));
     		m_changeTasksButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -918,7 +918,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     		m_changeFromButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
     		m_changeFromButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     		m_changeFromButton.setIcon(DiskoIconFactory.getIcon("COM.FROM","48x48"));
-    		m_changeFromButton.setToolTipText(m_wpMessageLog.getText("FromButton.text"));
+    		m_changeFromButton.setToolTipText(m_wpMessageLog.getBundleText("FromButton.text"));
     		m_changeFromButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent arg0)
@@ -970,7 +970,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     		m_changeToButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
     		m_changeToButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     		m_changeToButton.setIcon(DiskoIconFactory.getIcon("COM.TO","48x48"));
-    		m_changeToButton.setToolTipText(m_wpMessageLog.getText("ToButton.text"));
+    		m_changeToButton.setToolTipText(m_wpMessageLog.getBundleText("ToButton.text"));
     		m_changeToButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -1026,7 +1026,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
     	m_deleteButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
     	m_deleteButton.setIcon(DiskoIconFactory.getIcon("GENERAL.DELETE","48x48"));
-    	m_deleteButton.setToolTipText(m_wpMessageLog.getText("DeleteButton.text"));
+    	m_deleteButton.setToolTipText(m_wpMessageLog.getBundleText("DeleteButton.text"));
 		m_deleteButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1076,8 +1076,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 				}
 				else
 				{
-					Utils.showWarning(m_wpMessageLog.getText("CanNotDeleteMessageLine.header"),
-							m_wpMessageLog.getText("CanNotDeleteMessageLine.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("CanNotDeleteMessageLine.header"),
+							m_wpMessageLog.getBundleText("CanNotDeleteMessageLine.details"));
 				}
 			}
 		});
@@ -1090,7 +1090,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_listButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_listButton.setIcon(DiskoIconFactory.getIcon("GENERAL.LIST","48x48"));
-		m_listButton.setToolTipText(m_wpMessageLog.getText("ListButton.text"));
+		m_listButton.setToolTipText(m_wpMessageLog.getBundleText("ListButton.text"));
 		m_listButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1117,7 +1117,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_startButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_startButton.setIcon(DiskoIconFactory.getIcon("STATUS.STARTED","48x48"));
-		m_startButton.setToolTipText(m_wpMessageLog.getText("StartedButton.text"));
+		m_startButton.setToolTipText(m_wpMessageLog.getBundleText("StartedButton.text"));
 		m_startButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1126,20 +1126,20 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 				if(getCurrentMessage(true).isBroadcast())
 				{
-					Utils.showWarning(m_wpMessageLog.getText("StartedError.header"),
-							m_wpMessageLog.getText("StartedError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("StartedError.header"),
+							m_wpMessageLog.getBundleText("StartedError.details"));
 				}
 				else if(isSenderCommandPost())
 				{
 					// Not possible to assign when receiver is CP
-					Utils.showWarning(m_wpMessageLog.getText("SenderCommandPostError.header"),
-							m_wpMessageLog.getText("SenderCommandPostError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("SenderCommandPostError.header"),
+							m_wpMessageLog.getBundleText("SenderCommandPostError.details"));
 				}
 				else if(!isAssignmentOperationLegal())
 				{
 					// Require certain message status
-					Utils.showWarning(m_wpMessageLog.getText("MessageTaskOperationError.header"),
-							m_wpMessageLog.getText("MessageTaskOperationError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
+							m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
 				}
 				else
 				{
@@ -1160,7 +1160,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_assignButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_assignButton.setIcon(DiskoIconFactory.getIcon("STATUS.ASSIGNED","48x48"));
-		m_assignButton.setToolTipText(m_wpMessageLog.getText("AssignedButton.text"));
+		m_assignButton.setToolTipText(m_wpMessageLog.getBundleText("AssignedButton.text"));
 		m_assignButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1170,20 +1170,20 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 				if(getCurrentMessage(true).isBroadcast())
 				{
 					// Only legal if message isn't broadcast
-					Utils.showWarning(m_wpMessageLog.getText("AssignmentError.header"),
-							m_wpMessageLog.getText("AssignmentError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("AssignmentError.header"),
+							m_wpMessageLog.getBundleText("AssignmentError.details"));
 				}
 				else if(isReceiverCommandPost())
 				{
 					// Not possible to assign when receiver is CP
-					Utils.showWarning(m_wpMessageLog.getText("ReceiverCommandPostError.header"),
-							m_wpMessageLog.getText("ReceiverCommandPostError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("ReceiverCommandPostError.header"),
+							m_wpMessageLog.getBundleText("ReceiverCommandPostError.details"));
 				}
 				else if(!isAssignmentOperationLegal())
 				{
 					// Require certain message status
-					Utils.showWarning(m_wpMessageLog.getText("MessageTaskOperationError.header"),
-							m_wpMessageLog.getText("MessageTaskOperationError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
+							m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
 				}
 				else
 				{
@@ -1205,7 +1205,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_completedButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_completedButton.setIcon(DiskoIconFactory.getIcon("STATUS.FINISHED","48x48"));
-		m_completedButton.setToolTipText(m_wpMessageLog.getText("CompletedButton.text"));
+		m_completedButton.setToolTipText(m_wpMessageLog.getBundleText("CompletedButton.text"));
 		m_completedButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1217,24 +1217,24 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 					// de-select button
 					m_completedButton.setSelected(false);
 					// not possible to assign when message is a broadcast
-					Utils.showWarning(m_wpMessageLog.getText("CompletedError.header"),
-							m_wpMessageLog.getText("CompletedError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("CompletedError.header"),
+							m_wpMessageLog.getBundleText("CompletedError.details"));
 				}
 				else if(isSenderCommandPost())
 				{
 					// de-select button
 					m_completedButton.setSelected(false);
 					// Not possible to assign when receiver is CP
-					Utils.showWarning(m_wpMessageLog.getText("ReceiverCommandPostError.header"),
-							m_wpMessageLog.getText("ReceiverCommandPostError.details"));					
+					Utils.showWarning(m_wpMessageLog.getBundleText("ReceiverCommandPostError.header"),
+							m_wpMessageLog.getBundleText("ReceiverCommandPostError.details"));					
 				}
 				else if(!isAssignmentOperationLegal())
 				{
 					// de-select button
 					m_completedButton.setSelected(false);
 					// Require certain message status
-					Utils.showWarning(m_wpMessageLog.getText("MessageTaskOperationError.header"),
-							m_wpMessageLog.getText("MessageTaskOperationError.details"));
+					Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
+							m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
 				}
 				else
 				{
@@ -1346,8 +1346,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 					catch(IllegalOperationException e)
 					{
 						line.deleteObject();
-						Utils.showWarning(m_wpMessageLog.getText("CanNotAssignError.header"),
-								String.format(m_wpMessageLog.getText("CanNotAssignError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
+						Utils.showWarning(m_wpMessageLog.getBundleText("CanNotAssignError.header"),
+								String.format(m_wpMessageLog.getBundleText("CanNotAssignError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
 					}
 					break;
 				case STARTED:
@@ -1362,8 +1362,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 					catch(IllegalOperationException e)
 					{
 						line.deleteObject();
-						Utils.showWarning(m_wpMessageLog.getText("CanNotStartError.header"),
-								String.format(m_wpMessageLog.getText("CanNotStartError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
+						Utils.showWarning(m_wpMessageLog.getBundleText("CanNotStartError.header"),
+								String.format(m_wpMessageLog.getBundleText("CanNotStartError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
 					}
 					break;
 				case COMPLETE:
@@ -1378,8 +1378,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 					catch(IllegalOperationException e)
 					{
 						line.deleteObject();
-						Utils.showWarning(m_wpMessageLog.getText("CanNotCompleteError.header"),
-								String.format(m_wpMessageLog.getText("CanNotCompleteError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
+						Utils.showWarning(m_wpMessageLog.getBundleText("CanNotCompleteError.header"),
+								String.format(m_wpMessageLog.getBundleText("CanNotCompleteError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
 					}
 					break;
 				default:
@@ -1398,7 +1398,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_poiButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_poiButton.setIcon(DiskoIconFactory.getIcon("THEME.INCIDENT","48x48"));
-		m_poiButton.setToolTipText(m_wpMessageLog.getText("POIButton.text"));
+		m_poiButton.setToolTipText(m_wpMessageLog.getBundleText("POIButton.text"));
 		m_poiButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1422,7 +1422,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_positionButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_positionButton.setIcon(DiskoIconFactory.getIcon("MAP.POSITION","48x48"));
-		m_positionButton.setToolTipText(m_wpMessageLog.getText("PositionButton.text"));
+		m_positionButton.setToolTipText(m_wpMessageLog.getBundleText("PositionButton.text"));
 		m_positionButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1446,7 +1446,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	{
 		m_textButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_textButton.setIcon(DiskoIconFactory.getIcon("GENERAL.ABC","48x48"));
-		m_textButton.setToolTipText(m_wpMessageLog.getText("TextButton.text"));
+		m_textButton.setToolTipText(m_wpMessageLog.getBundleText("TextButton.text"));
 		m_textButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)

@@ -10,20 +10,20 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.Internationalization;
 
-public class POITypePanel extends DiskoPanel {
+public class POITypesPanel extends DiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private JList typeList = null;
 
-	public POITypePanel() {
+	public POITypesPanel() {
 		
 		// initialize gui
 		initialize();
 		
 	}
 
-	public POITypePanel(String caption) {
+	public POITypesPanel(String caption) {
 		
 		// initialize gui
 		initialize();

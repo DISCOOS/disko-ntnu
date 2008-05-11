@@ -223,7 +223,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
         switch (aSelectorIndex)
         {
             case 0:
-                return IAssignmentIf.AssignmentStatus.ALLOCATED;
+                return IAssignmentIf.AssignmentStatus.QUEUED;
             case 1:
                 return IAssignmentIf.AssignmentStatus.ASSIGNED;
             case 2:
@@ -250,7 +250,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
 
     public static String getSelectedAssignmentText(IDiskoWpModule aWpModule, int aSelectorIndex)
     {
-        return aWpModule.getText(MessageFormat.format("UnitTable_hdr_{0}.text", aSelectorIndex + 1));
+        return aWpModule.getBundleText(MessageFormat.format("UnitTable_hdr_{0}.text", aSelectorIndex + 1));
     }
 
     void buildTable()
@@ -279,7 +279,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
     @Override
     public String getColumnName(int column)
     {
-        return m_wpModule.getText(MessageFormat.format("UnitTable_hdr_{0}.text", column));
+        return m_wpModule.getBundleText(MessageFormat.format("UnitTable_hdr_{0}.text", column));
     }
 
     @Override
@@ -740,7 +740,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
 
         private JRadioButtonMenuItem buttonWithAction(String aText, final int aColumn, final int aKeyIndex)
         {
-            String labelText = m_wpModule.getText(aText);
+            String labelText = m_wpModule.getBundleText(aText);
             AbstractAction action = new AbstractAction(labelText)
             {
                 public void actionPerformed(ActionEvent e)
@@ -768,8 +768,8 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
                 m_unitSelections.put(aCommand, c);
             }
 
-            m_selectAll = createMenuItem(false, m_wpModule.getText("UnitTable_menu_selectAll.text"), "SelectAll");
-            m_deselectAll = createMenuItem(false, m_wpModule.getText("UnitTable_menu_deselectAll.text"), "DeselectAll");
+            m_selectAll = createMenuItem(false, m_wpModule.getBundleText("UnitTable_menu_selectAll.text"), "SelectAll");
+            m_deselectAll = createMenuItem(false, m_wpModule.getBundleText("UnitTable_menu_deselectAll.text"), "DeselectAll");
         }
 
         private JMenuItem createMenuItem(boolean makeCheckBox, String aText, String aCommand)

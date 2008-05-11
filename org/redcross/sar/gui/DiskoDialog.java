@@ -140,7 +140,7 @@ public class DiskoDialog extends JDialog
 			// loop over all layers
 			Iterator<IMsoFeatureLayer.LayerCode> it = myLayers.iterator();
 			while(it.hasNext()) {
-				map.getMsoLayer(it.next()).addDiskoLayerEventListener(this);
+				map.getMsoLayer(it.next()).addMsoLayerEventListener(this);
 			}
 		}
 		// initialize ui
@@ -377,12 +377,11 @@ public class DiskoDialog extends JDialog
 	}
 
 	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
+		if (!e.isFinal()) return; 
 		// initialize
 		IMsoObjectIf msoObj = null;
 		IMsoFeature msoFeature = null;
-		// get selection list
-		IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
-		List selection = msoLayer.getSelected();
+		List<IMsoFeature> selection = e.getSelected();
 		// select new?
 		if (selection != null && selection.size() > 0) {
 			// get feature

@@ -16,7 +16,9 @@ public class MsoCompareName implements Comparator<IMsoObjectIf> {
 		// get names
 		String s1 = MsoUtils.getMsoObjectName(m1, options);
 		String s2 = MsoUtils.getMsoObjectName(m2, options);
-		// compare and return
+		s1 = (s1==null) ? "" : s1;
+		s2 = (s2==null) ? "" : s2;
+		// compare and return?
 		return s1.compareTo(s2);
 	}
 

@@ -7,8 +7,9 @@ import java.io.IOException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.IHostToolDialog;
+import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -23,6 +24,7 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
 import com.esri.arcgis.geometry.Point;
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * A custom draw tool.
@@ -42,14 +44,13 @@ public class POITool extends AbstractDrawTool {
 	/**
 	 * Constructs the DrawTool
 	 */
-	public POITool(IHostToolDialog dialog) throws IOException {
+	public POITool(IToolCollection dialog) throws IOException {
 
 		// forward
 		super(true,FeatureType.FEATURE_POINT);
 		
 		// prepare abstract class BasicTool
-		cursorPath = "cursors/create.cur"; 
-		caption = Utils.getEnumText(FeatureType.FEATURE_POINT); 
+		caption = DiskoEnumFactory.getText(FeatureType.FEATURE_POINT); 
 		category = "Commands"; 
 		message = "Tegner en punkt"; 
 		name = "CustomCommands_Point"; 
@@ -96,7 +97,7 @@ public class POITool extends AbstractDrawTool {
 				IMsoFeatureLayer msoLayer =  map.getMsoLayer(IMsoFeatureLayer.LayerCode.POI_LAYER);
 				Iterator<IPropertyPanel> it = panels.iterator();
 				while(it.hasNext()) {
-					msoLayer.addDiskoLayerEventListener((POIPanel)it.next());
+					msoLayer.addMsoLayerEventListener((POIPanel)it.next());
 				}
 				
 			}
@@ -113,10 +114,16 @@ public class POITool extends AbstractDrawTool {
 			
 			// validate
 			if(validate(msoObject==null)) {
-				// update
-				p = toMapPoint(x, y);
-				p.setSpatialReferenceByRef(map.getSpatialReference());
+								
+				//p.setSpatialReferenceByRef(map.getSpatialReference());
+				
+				// update panel
 				getPOIPanel().updatePOIField(p);
+				
+				// forward
+				updateGeometry();				
+				
+				// finished
 				return true;
 			}
 			
@@ -176,8 +183,8 @@ public class POITool extends AbstractDrawTool {
 				if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {
 					// notify?
 					if(isAreaPOI) {
-						Utils.showWarning(Utils.getProperty(poiType.toString()) 
-								+ " punkter kan bare legges til oppdrag");
+						Utils.showWarning(DiskoEnumFactory.getText(poiType) 
+								+ " kan bare legges til oppdrag");
 						// do not add point
 						bDoWork = false;
 					}
@@ -186,7 +193,7 @@ public class POITool extends AbstractDrawTool {
 					// notify?
 					if(isAreaPOI) {
 						// notify
-						Utils.showWarning(Utils.getProperty(poiType.toString()) 
+						Utils.showWarning(DiskoEnumFactory.getText(poiType) 
 								+ " punkter kan bare legges til oppdrag");
 						// do not add point
 						bDoWork = false;
@@ -207,7 +214,7 @@ public class POITool extends AbstractDrawTool {
 									if (areaPOIs.get(i).getType() == poiType) {
 										// notify
 										Utils.showWarning("Det finnes allerede et " 
-												+ Utils.getProperty(poiType.toString()) 
+												+ DiskoEnumFactory.getText(poiType) 
 												+ " punkt");
 										// do not add pui
 										bDoWork = false;
@@ -221,7 +228,7 @@ public class POITool extends AbstractDrawTool {
 					// invalid poi?
 					if(isAreaPOI) {
 						// notify
-						Utils.showWarning(Utils.getProperty(poiType.toString()) 
+						Utils.showWarning(DiskoEnumFactory.getText(poiType) 
 								+ " punkter kan bare legges til søkeoppdrag");
 						// do not add point
 						bDoWork = false;
@@ -263,7 +270,7 @@ public class POITool extends AbstractDrawTool {
 		}
 		else {
 			panel.getGotoPanel().reset();
-			panel.getTypePanel().reset();			
+			panel.getTypesPanel().reset();			
 			panel.setRemarks(null);
 		}
 	}
@@ -287,6 +294,8 @@ public class POITool extends AbstractDrawTool {
 			panel.setPOIType(null);
 			panel.setRemarks(null);			
 		}
+		// forward
+		panel.setMsoObject((msoOwner!=null ? msoOwner : msoObject));
 	}
 
 	public void addPOIAt(Point p,POIType type,String remarks) {
@@ -391,13 +400,27 @@ public class POITool extends AbstractDrawTool {
 		if(panels==null)
 			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		IPropertyPanel panel = new POIPanel(this,true);
+		IPropertyPanel panel = new POIPanel(this);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
 		}
 		return null;
 	}
+	
+	private void updateGeometry() throws IOException, AutomationException {
+
+		// has new line been found?
+		if (p!=null && isDrawing()) {
+		
+			// update 
+			geoPoint = p;
+			
+			// mark change
+			setDirty();
+			
+		}		
+	}	
 	
 	@Override
 	public IDiskoToolState save() {
@@ -425,10 +448,6 @@ public class POITool extends AbstractDrawTool {
 		private POIType type = null;
 		private POIType[] types = null;
 		private String remarks = null;
-		private boolean isVertical = false;
-		private boolean isButtonsVisible = false;
-		private boolean isTypesVisible = false;
-		private boolean isRemarksVisible = false;
 		private SearchSubType searchSubType = null;
 		
 		// create state
@@ -442,10 +461,6 @@ public class POITool extends AbstractDrawTool {
 			types = poiTypes;
 			type = tool.getPOIPanel().getPOIType();
 			remarks = tool.getPOIPanel().getRemarks();
-			isVertical = tool.getPOIPanel().isVertical();
-			isButtonsVisible = tool.getPOIPanel().isButtonsVisible();
-			isTypesVisible = tool.getPOIPanel().isTypesVisible();
-			isRemarksVisible = tool.getPOIPanel().isRemarksVisible();
 			searchSubType = tool.searchSubType;
 		}
 		
@@ -454,10 +469,6 @@ public class POITool extends AbstractDrawTool {
 			tool.setAttribute(types,"POITYPES");
 			tool.getPOIPanel().setPOIType(type);
 			tool.getPOIPanel().setRemarks(remarks);
-			tool.getPOIPanel().setVertical(isVertical);
-			tool.getPOIPanel().setButtonsVisible(isButtonsVisible);
-			tool.getPOIPanel().setTypesVisible(isTypesVisible);
-			tool.getPOIPanel().setRemarksVisible(isRemarksVisible);
 			tool.getPOIPanel().updatePOIField(p);
 			tool.searchSubType = searchSubType;
 		}

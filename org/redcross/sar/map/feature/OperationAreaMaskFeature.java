@@ -26,6 +26,7 @@ public class OperationAreaMaskFeature extends AbstractMsoFeature {
 	public void msoGeometryChanged() throws IOException, AutomationException {
 		IOperationAreaIf opArea = (IOperationAreaIf)msoObject;
 		polygon = opArea.getGeodata();
+		geometry = null;
 		if (polygon != null) {
 			Polygon poly = MapUtil.getEsriPolygon(polygon, srs);
 			extent = poly.getEnvelope().getEnvelope(); // a copy
@@ -40,13 +41,8 @@ public class OperationAreaMaskFeature extends AbstractMsoFeature {
 				outerPoly.addPoint(env.getLowerLeft(), null, null);
 				geometry = outerPoly.difference(poly);
 			}
-			else 
-				geometry = null;
-				
 		}
-		else {
-			geometry = null;
-		}
+		super.msoGeometryChanged();
 	}
 	
 	public Object getGeodata() {

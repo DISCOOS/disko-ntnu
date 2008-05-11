@@ -12,6 +12,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.models.AssignmentTableModel;
 //import org.redcross.sar.gui.models.AssignmentTableModel.EditAction;
 import org.redcross.sar.gui.renderers.AssignmentTableCellRenderer;
@@ -92,7 +93,7 @@ public class AssignmentTable extends JTable {
 			rowFilters = new Hashtable<AssignmentStatus, RowFilter<?, ?>>();
 			AssignmentStatus[] values = AssignmentStatus.values();
 			for (int i = 0; i < values.length; i++) {
-				rowFilters.put(values[i], RowFilter.regexFilter(".*"+Utils.translate(values[i])+".*"));
+				rowFilters.put(values[i], RowFilter.regexFilter(".*"+DiskoEnumFactory.getText(values[i])+".*"));
 			}
 		}
 		tableRowSorter.setRowFilter((RowFilter)rowFilters.get(obj));

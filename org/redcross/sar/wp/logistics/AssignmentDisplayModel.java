@@ -223,9 +223,9 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
                 m_selectableSelector = IAssignmentIf.READY_SELECTOR;
                 m_selectableStatus = IAssignmentIf.AssignmentStatus.READY;
                 break;
-            case ALLOCATED:
+            case QUEUED:
                 m_selectableSelector = IAssignmentIf.ALLOCATED_SELECTOR;
-                m_selectableStatus = IAssignmentIf.AssignmentStatus.ALLOCATED;
+                m_selectableStatus = IAssignmentIf.AssignmentStatus.QUEUED;
                 break;
             case ASSIGNED:
                 m_selectableSelector = IAssignmentIf.ASSIGNED_SELECTOR;
@@ -305,7 +305,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
             m_model = aModel;
 
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.READY));
-            addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.ALLOCATED));
+            addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.QUEUED));
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.ASSIGNED));
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.EXECUTING));
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.FINISHED));

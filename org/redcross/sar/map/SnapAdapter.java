@@ -51,7 +51,7 @@ public class SnapAdapter {
 	private IndexedGeometry indexedGeometry = null;
 	
 	// map control listener
-	private MapControlAdapter listener = null;
+	private MapControlAdapter mapAdapter = null;
 	
 	// listeners
 	private ArrayList<SnapListener> listeners = null;
@@ -70,7 +70,7 @@ public class SnapAdapter {
 	
 	public SnapAdapter() {
 		// prepare
-		this.listener = new MapControlAdapter();
+		this.mapAdapter = new MapControlAdapter();
 		this.listeners = new ArrayList<SnapListener>();
 		this.indexedGeometry = new IndexedGeometry();
 		try {
@@ -107,12 +107,12 @@ public class SnapAdapter {
 		
 		// remove old listener?
 		if(this.map!=null) {
-			this.map.removeIMapControlEvents2Listener(listener);
+			this.map.removeIMapControlEvents2Listener(mapAdapter);
 		}
 		// register
 		this.map = map;
 		// add listener to get snapping change events
-		map.addIMapControlEvents2Listener(listener);
+		map.addIMapControlEvents2Listener(mapAdapter);
 		// set dirty
 		isDirty = true;
 		// update

@@ -27,11 +27,12 @@ import java.awt.event.FocusEvent;
 import java.util.Collection;
 import java.util.EnumSet;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.models.HypothesisListModel;
 import org.redcross.sar.gui.renderers.HypothesisListCellRenderer;
@@ -117,7 +118,7 @@ public class HypothesisDialog extends DiskoDialog {
 			getCmdPost().getHypothesisListItems();
 		DefaultListModel model = new DefaultListModel();
 		for(IHypothesisIf h:c) {
-			model.addElement(Utils.translate(IMsoManagerIf
+			model.addElement(DiskoEnumFactory.getText(IMsoManagerIf
 					.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
 		}
 		hypothesisList.setModel(model);
@@ -125,13 +126,13 @@ public class HypothesisDialog extends DiskoDialog {
 	
 	private void addHypothesis(IHypothesisIf h) {
 		DefaultListModel model = (DefaultListModel)hypothesisList.getModel();
-		model.addElement(Utils.translate(IMsoManagerIf
+		model.addElement(DiskoEnumFactory.getText(IMsoManagerIf
 				.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
 	}
 	
 	private void removeHypothesis(IHypothesisIf h) {
 		DefaultListModel model = (DefaultListModel)hypothesisList.getModel();
-		model.removeElement(Utils.translate(IMsoManagerIf
+		model.removeElement(DiskoEnumFactory.getText(IMsoManagerIf
 				.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
 	}
 	
@@ -152,16 +153,16 @@ public class HypothesisDialog extends DiskoDialog {
 	}
 	
 	private String getHypothesisName(IHypothesisIf h) {
-		return h!=null ? Utils.translate(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null;
+		return h!=null ? DiskoEnumFactory.getText(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null;
 	}
 	
 	private void createlabels() {
 		labels = new String[5];
-		labels[0] = Utils.translate("PRIMARY_SEARCH_AREA");
-		labels[1] = Utils.translate("SECONDARY_SEARCH_AREA");
-		labels[2] = Utils.translate("PRIORITY3_SEARCH_AREA");
-		labels[3] = Utils.translate("PRIORITY4_SEARCH_AREA");
-		labels[4] = Utils.translate("PRIORITY5_SEARCH_AREA");
+		labels[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA.text");
+		labels[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA.text");
+		labels[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA.text");
+		labels[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA.text");
+		labels[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA.text");
 	}
 
 	public IHypothesisIf getSelectedHypothesis() {
@@ -175,7 +176,7 @@ public class HypothesisDialog extends DiskoDialog {
 			// update gui?
 			if (gui) {
 				// get hypothesis name
-				String name = Utils.translate(IMsoManagerIf
+				String name = DiskoEnumFactory.getText(IMsoManagerIf
 						.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+hypothesis.getNumber();
 				// update all
 				getHypothesisList().setSelectedValue(name, true);

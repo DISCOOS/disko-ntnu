@@ -8,8 +8,9 @@ import java.util.ArrayList;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.map.FreeHandPanel;
-import org.redcross.sar.gui.map.IDrawDialog;
+import org.redcross.sar.gui.map.IDrawToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -47,22 +48,19 @@ public class FreeHandTool extends AbstractDrawTool {
 	/**
 	 * Constructs the FreeHandTool
 	 */
-	public FreeHandTool(IDrawDialog dialog, boolean isPolygon) throws IOException {
+	public FreeHandTool(IDrawToolCollection dialog, boolean isPolygon) throws IOException {
 		
 		// forward
 		super(true,(isPolygon ? FeatureType.FEATURE_POLYGON :
 			FeatureType.FEATURE_POLYLINE));
 		
 		// initialize abstract class BasicTool
-		caption = "Frihånd " + Utils.getEnumText(featureType); 
+		caption = "Frihånd (" + DiskoEnumFactory.getText(featureType) + ")"; 
 		category = "Commands"; 
 		message = "Tegner en frihåndsstrek"; 
 		name = "CustomCommands_FreeHand"; 
 		toolTip = "Frihånd"; 
 		enabled = true;
-		
-		// enable snapping 
-		isSnapping = true;
 		
 		// set tool type
 		type = DiskoToolType.FREEHAND_TOOL;
@@ -133,8 +131,8 @@ public class FreeHandTool extends AbstractDrawTool {
 			else
 				featureType=FeatureType.FEATURE_POLYLINE;
 			// update caption
-			caption = "Frihånd " + "(" 
-					+ Utils.getEnumText(featureType) + ")";
+			caption = "Frihånd (" + DiskoEnumFactory.getText(featureType) + ")";
+			// finished
 			return;
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
@@ -185,8 +183,9 @@ public class FreeHandTool extends AbstractDrawTool {
 		
 		try {
 
-			// get screen-to-map transformation and try to snap
-			p2 = snapTo(toMapPoint(x,y));
+			// get next point. This point is already snapped 
+			// by the abstract class is snapping is on.
+			p2 = p;
 	
 			// initialize path geometry?
 			if (geoPath == null) {
@@ -226,7 +225,8 @@ public class FreeHandTool extends AbstractDrawTool {
 		
 			try {
 	
-				// get snapped point
+				// get next point. This point is already snapped 
+				// by the abstract class if snapping is on
 				p2 = p;
 
 				// update drawn geometry
@@ -292,7 +292,7 @@ public class FreeHandTool extends AbstractDrawTool {
 	private void updateGeometry() throws IOException, AutomationException {
 
 		// has new line been found?
-		if (p1.returnDistance(p2) != 0 && isDrawing) {
+		if (p1.returnDistance(p2) != 0 && isDrawing()) {
 		
 			// initialize
 			Polyline pline1 = null;
@@ -301,7 +301,7 @@ public class FreeHandTool extends AbstractDrawTool {
 			// try to snap?
 			if(isSnapToMode()) {
 
-				// forward
+				// only update snap geometry
 				snapTo(p1);
 				
 				// search polyline inside envelope
@@ -314,6 +314,8 @@ public class FreeHandTool extends AbstractDrawTool {
 			if (pline1 == null || pline2 == null) {
 				// add to geometry
 				geoPath.addPoint(p2, null, null);
+				// replace rubber
+				geoRubber = geoPath;
 			}
 			else {
 				// densify rubberband, use vertices as input to segment graph
@@ -352,6 +354,8 @@ public class FreeHandTool extends AbstractDrawTool {
 				// reset
 				segmentGraphCursor = null;
 			}
+			// mark change
+			setDirty();			
 		}		
 	}
 	

@@ -16,6 +16,7 @@ import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.UnitTable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -207,7 +208,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private UnitTable getUnitTable() {
 		if (unitTable == null) {
 			try {
-				unitTable = new UnitTable(msoModel,"48x48");
+				unitTable = new UnitTable(msoModel,"32x32");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -244,7 +245,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 				int ans = JOptionPane.NO_OPTION;
 				
 				// check if assignment is allocated
-				if(assignment.getStatus()==AssignmentStatus.ALLOCATED) {
+				if(assignment.getStatus()==AssignmentStatus.QUEUED) {
 					
 					// prompt user
 					ans = prompt(MessageBoxType.MESSAGE_CLEAR);
@@ -317,7 +318,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 					ans = prompt(MessageBoxType.MESSAGE_ALLOCATE);
 				}				
 				// check if assignment is already allocated
-				else if(AssignmentStatus.ALLOCATED.equals(currentAssignment.getStatus())) {
+				else if(AssignmentStatus.QUEUED.equals(currentAssignment.getStatus())) {
 					// get flag
 					if(!unit.equals(currentAssignment.getOwningUnit())) {
 						// prompt user
@@ -344,14 +345,14 @@ public class UnitSelectionDialog extends DiskoDialog {
     					if(reallocate) {
 	                        // change status and owner (will raise 
 	                    	// illegal operation is not possible)
-	                    	currentAssignment.setStatusAndOwner(AssignmentStatus.ALLOCATED, unit);
+	                    	currentAssignment.setStatusAndOwner(AssignmentStatus.QUEUED, unit);
     					}
     					else {
     						// has assignment to unit
-    						unit.addUnitAssignment(currentAssignment, AssignmentStatus.ALLOCATED);
+    						unit.addUnitAssignment(currentAssignment, AssignmentStatus.QUEUED);
     					}
     					// notify
-    					fireOnWorkChange(getAllocateButton(),currentAssignment,AssignmentStatus.ALLOCATED);
+    					fireOnWorkChange(getAllocateButton(),currentAssignment,AssignmentStatus.QUEUED);
     					// finished working
     					setIsNotWorking();
     					// hide me
@@ -509,7 +510,8 @@ public class UnitSelectionDialog extends DiskoDialog {
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));
+			getContentPanel().setCaptionIcon(
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Legg <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + 
 					"</b> i kø til en enhet i listen" + (currentAssignment instanceof ISearchIf ? 

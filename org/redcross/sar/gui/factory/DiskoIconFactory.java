@@ -10,20 +10,48 @@ import javax.swing.ImageIcon;
 
 import org.redcross.sar.gui.DiskoCustomIcon;
 
+/**
+ * Read only Disko icon factory used to create Disko L&F icons.
+ * 
+ * Resource(s) are used to store icon file paths. 
+ * 
+ * To facilitate resource customization (file paths) this 
+ * class wraps the BasicDiskoFactory. The follwing resource types are
+ * supported:
+ *  
+ * java.util.Properties (not localized)
+ * java.util.ResourceBundle (localized)
+ * 
+ * The resource dominance - which resource is used when equal keys 
+ * are present - is as follows:
+ * 
+ * 1. try passed custom resource
+ * 2. if key not found -> try default icons resource
+ * 3. if key not found -> try enums resource (DiskoEnumFactory)
+ * 4. if key not found -> try installed resources
+ * 5. if all this fails -> a default icon is returned 
+ * 
+ * 
+ * @author kennetgu
+ *
+ */
+
 public class DiskoIconFactory {
 
 	private final static String m_path = "icons";	
-	private final static ResourceBundle m_bundle = 
-		ResourceBundle.getBundle("org.redcross.sar.gui.factory.icons");
+	private final static BasicDiskoFactory m_basic = 
+		new BasicDiskoFactory();
+	private final static ResourceBundle m_default = 
+		ResourceBundle.getBundle("files/icons");
 	
 	public static ImageIcon getIcon(String icon, String catalog) {
 		return getIcon(icon,catalog,null);
 	}
 	
-	public static ImageIcon getIcon(String icon, String catalog,ResourceBundle bundle) {
+	public static ImageIcon getIcon(String icon, String catalog, Object resource) {
 		if (icon != null && !icon.isEmpty()) {
 			// forward
-			return createImageIcon(icon,getIconPath(icon,catalog,bundle));
+			return createImageIcon(icon,getPath(icon,catalog,resource));
 		}
 		return null;
 	}
@@ -34,11 +62,11 @@ public class DiskoIconFactory {
 	}
 	
 	public static DiskoCustomIcon getIcon(
-			String icon, String catalog, Color color, float alfa, ResourceBundle bundle) {
+			String icon, String catalog, Color color, float alfa, Object resource) {
 		if (icon != null && !icon.isEmpty()) {
 			// forward
 			return new DiskoCustomIcon(createImageIcon(icon, 
-					getIconPath(icon,catalog,bundle)),color,alfa);
+					getPath(icon,catalog,resource)),color,alfa);
 		}
 		return null;
 	}
@@ -77,45 +105,52 @@ public class DiskoIconFactory {
 		return null;
 	}
 	
-	public static String getIconPath(String icon, String catalog,ResourceBundle bundle) {
-		// get path
-		if (isPath(icon) || icon.endsWith(".icon")) {
+	public static String getPath(
+			String icon, String catalog) {
+		return getPath(icon,catalog);
+	}
+	
+	public static String getPath(
+			String icon, String catalog, Object resource) {
+		
+		// is path?
+		if (m_basic.isPath(icon)) {
 			return icon;
 		}
 		else {
 			// get key
-			String key = getKey(icon,"icon");			
-			// initialize icon file icon
+			String key = (!icon.endsWith(".icon")) ? m_basic.getKey(icon,"icon") : icon;
+			// initialize
 			String filename = null;
-			// try custom bundle?
-			if(bundle!=null && bundle.containsKey(key)) 
-				filename = bundle.getString(key);
-			// try factory bundle?
-			if((filename==null || filename.isEmpty()) && m_bundle.containsKey(key))
-				filename = m_bundle.getString(key);
+			// try default bundle?
+			if(m_default.containsKey(key))
+				filename = m_default.getString(key);
+			// get from passed resource?
+			if((filename==null || filename.isEmpty()))
+				filename = DiskoEnumFactory.getText(key,resource);
+			// found filename?
+			if((filename==null || filename.isEmpty())) {
+				// get from installed resource
+				filename = m_basic.getTextFromInstalled(key);	
+			}
 			// found?
 			if(filename!=null && !filename.isEmpty())
+				// use relative path!
 				return m_path + "/" + catalog + "/" + filename;
 		}
 		// failure
 		return null;
 	}
 	
-	private static boolean isPath(String icon) {
-		try {
-		if (icon != null) {
-			return (new File(icon)).exists();
+	public static Object getResourceFromKey(String key) { 
+		if(m_default.containsKey(key)) {
+			return m_default;
 		}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return false;
+		return m_basic.getResourceFromKey(key);
 	}
 	
-	private static String getKey(String icon, String suffix) {
-		String key = icon+"."+suffix;		
-		return key;
+	public static BasicDiskoFactory getBasicFactory() {
+		return m_basic;
 	}
-	
 	
 }

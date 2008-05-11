@@ -4,6 +4,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -19,7 +20,7 @@ public class AssignmentTableStringConverter extends TableStringConverter {
 				text = MsoUtils.getAssignmentName(assignment,1);
 			}
 			else if (column == 2) {
-				text = Utils.translate(assignment.getStatus());
+				text = DiskoEnumFactory.getText(assignment.getStatus());
 			}
 			return text;
 		} 

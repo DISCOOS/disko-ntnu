@@ -97,7 +97,7 @@ public class MapFilterBar extends ToggableTabPane {
 		if(isTabSelected(0))
 			status.addAll(EnumSet.range(AssignmentStatus.EMPTY,AssignmentStatus.READY));
 		if(isTabSelected(1))
-			status.addAll(EnumSet.range(AssignmentStatus.ALLOCATED,AssignmentStatus.ASSIGNED));
+			status.addAll(EnumSet.range(AssignmentStatus.QUEUED,AssignmentStatus.ASSIGNED));
 		if(isTabSelected(2))
 			status.add(AssignmentStatus.FINISHED);
 		if(isTabSelected(3))

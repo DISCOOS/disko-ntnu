@@ -1,5 +1,6 @@
 package org.redcross.sar.gui;
 
+import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
@@ -7,6 +8,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.models.UnitTableModel;
 import org.redcross.sar.gui.renderers.DiskoTableHeaderCellRenderer;
 import org.redcross.sar.gui.renderers.UnitTableCellRenderer;
@@ -17,8 +19,6 @@ import org.redcross.sar.mso.data.AbstractUnit;
 public class UnitTable extends JTable {
 
 	private static final long serialVersionUID = 1L;
-	
-	private static final int ROW_HEIGHT = 50;
 	
 	private TableRowSorter<UnitTableModel> tableRowSorter = null;
 	
@@ -37,12 +37,13 @@ public class UnitTable extends JTable {
 		setRowSorter(tableRowSorter);		
 		
 		// prepare table
-		setRowHeight(ROW_HEIGHT);
+		setRowHeight(getRowHeight(catalog));
 		setShowHorizontalLines(false);
 		setShowVerticalLines(false);
 		setRowSelectionAllowed(true);
 		setCellSelectionEnabled(true);
 		setColumnSelectionAllowed(false);
+		setFillsViewportHeight(true);
 		setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
@@ -65,6 +66,14 @@ public class UnitTable extends JTable {
         	
         });
         
+	}
+	
+	private int getRowHeight(String catalog) {
+		Icon icon = DiskoIconFactory.getIcon("GENERAL.EMPTY", catalog);
+		if(icon!=null) {
+			return icon.getIconHeight()+2;
+		}
+		else return 20;
 	}
 	
 }

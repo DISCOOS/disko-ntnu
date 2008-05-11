@@ -22,6 +22,7 @@ import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.SnapAdapter;
 import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.command.LineTool;
@@ -34,6 +35,7 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 	private static final long serialVersionUID = 1L;
 
 	private LineTool tool = null;
+	private DiskoPanel captionPanel = null;
 	private DiskoPanel optionsPanel = null;
 	private DiskoPanel actionsPanel = null;
 	private JButton snapToButton = null;
@@ -75,7 +77,7 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 	 */
 	private void initialize() {
 		// prepare
-		((JPanel)getBodyComponent()).setPreferredSize(new Dimension(200,200));
+		setPreferredBodySize(new Dimension(200,200));
 		// forward
 		this.setup();
 		// hide header
@@ -103,6 +105,7 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 			vfl.setVgap(5);
 			// update
 			panel.setLayout(vfl);
+			panel.add(getCaptionPanel());
 			panel.add(getActionsPanel());
 			panel.add(getOptionsPanel());
 		}
@@ -112,6 +115,7 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 			bl.setVgap(5);
 			// update
 			panel.setLayout(bl);
+			panel.add(getCaptionPanel(),BorderLayout.NORTH);				
 			panel.add(getActionsPanel(),BorderLayout.EAST);				
 			panel.add(getOptionsPanel(),BorderLayout.CENTER);
 		}
@@ -149,26 +153,6 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 		tool.cancel();
 	}
 
-	public void update() {
-		getSnapToAttr().setValue(tool.isSnapToMode());
-		getConstraintAttr().setValue(tool.isConstrainMode());
-		getMinStepAttr().setValue(String.valueOf(tool.getMinStep()));
-		getMaxStepAttr().setValue(String.valueOf(tool.getMaxStep()));
-	}
-		
-	/*
-	public void setVisible(boolean isVisible) {
-		// forward
-		super.setVisible(isVisible);
-		// has draw tool?
-		if(tool!=null) {
-			// buffer changes if draw dialog is visible. 
-			// if buffered, use tool.apply() to update the mso model
-			tool.setBufferedMode(isVisible());
-		}
-	}
-	*/
-	
 	public boolean isButtonsVisible() {
 		return getActionsPanel().isVisible();
 	}
@@ -335,6 +319,18 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 		return maxStepAttr;
 	}	
 
+	private DiskoPanel getCaptionPanel() {
+		if (captionPanel == null) {
+			try {
+				captionPanel = new DiskoPanel(MapUtil.getDrawText(null, null, null));
+				captionPanel.setBodyComponent(null);
+				
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return captionPanel;
+	}
 
 	private DiskoPanel getActionsPanel() {
 		if (actionsPanel == null) {
@@ -413,18 +409,20 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 		return snapToButton;
 	}	
 	
-	public void setMsoObject(IMsoObjectIf msoObject) {
+	public void setMsoObject(IMsoObjectIf msoObject) {		
 		// consume?
-		if (tool.getMap() == null) return;
-	}
-	
-	public void addActionListener(ActionListener listener) {
-		listeners.add(listener);
-	}
-	
-	public void removeActionListener(ActionListener listener) {
-		listeners.remove(listener);
-		getActionsPanel().removeActionListener(listener);
+		if (tool == null || tool.getMap() == null) return;
+		try {
+			// update caption
+			if(tool.getMap().isEditSupportInstalled())
+				getCaptionPanel().setCaptionText(tool.getMap().getDrawFrame().getText());
+			else 
+				getCaptionPanel().setCaptionText(MapUtil.getDrawText(msoObject, 
+						tool.getMsoClassCode(), tool.getDrawMode())); 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void doAction(ActionEvent e) {
@@ -441,6 +439,28 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 	}
 
 	public void onSnapableChanged() {}
+
+	/* ===========================================
+	 * IPropertyPanel implementation
+	 * ===========================================
+	 */
+
+	public void update() {
+		getSnapToAttr().setValue(tool.isSnapToMode());
+		getConstraintAttr().setValue(tool.isConstrainMode());
+		getMinStepAttr().setValue(String.valueOf(tool.getMinStep()));
+		getMaxStepAttr().setValue(String.valueOf(tool.getMaxStep()));
+	}
+		
+	public void addActionListener(ActionListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeActionListener(ActionListener listener) {
+		listeners.remove(listener);
+		getActionsPanel().removeActionListener(listener);
+	}
+	
 	
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

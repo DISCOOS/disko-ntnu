@@ -111,7 +111,7 @@ public interface IDiskoWpModule {
      * @param aKey Lookup key
      * @return The international text
      */
-    public String getText(String aKey);
+    public String getBundleText(String aKey);
 
     public void addTickEventListener(ITickEventListenerIf listener);
 

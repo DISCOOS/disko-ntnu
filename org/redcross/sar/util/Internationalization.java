@@ -1,14 +1,12 @@
 package org.redcross.sar.util;
 
 import no.cmr.tools.Log;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IUnitIf;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: vinjar
@@ -89,9 +87,6 @@ public class Internationalization
         }
         if (obj instanceof Enum)
         {
-            Enum e = (Enum) obj;
-            String key = e.getClass().getSimpleName() + "." + e.name() + ".text";
-
             return getEnumText(aBundle, (Enum) obj);
         }
         return getBundleText(aBundle, obj.toString()+ ".text");
@@ -172,13 +167,5 @@ public class Internationalization
     {
         ResourceBundle bundle = getBundle(anEnum);
         return translate(bundle, anEnum);
-    }
-
-    public static void main(String[] args)
-    {
-        System.out.println(translate(IUnitIf.UnitStatus.PAUSED));
-        System.out.println(translate(IAssignmentIf.AssignmentStatus.ABORTED));
-        System.out.println(translate(IUnitIf.UnitStatus.INITIALIZING));
-        System.out.println(translate(IMsoManagerIf.MsoClassCode.CLASSCODE_ENVIRONMENT));
     }
 }

@@ -193,12 +193,12 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	
 	public void setPrimarMxdDoc(String mxddoc){
 		this.primarMxdDoc = mxddoc;
-		app.getProperty("MxdDocument.path",mxddoc);
+		app.setProperty("MxdDocument.path", mxddoc);
 	}
 	
 	public void setSecondaryMxdDoc(String mxddoc){
 		this.secondaryMxdDoc = mxddoc;		
-		app.getProperty("MxdDocument.secondary.path",mxddoc);
+		app.setProperty("MxdDocument.secondary.path",mxddoc);
 	}
 	
 	@SuppressWarnings("unchecked")

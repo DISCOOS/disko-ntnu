@@ -27,7 +27,7 @@ public class AssignedAssignmentPanel extends AbstractAssignmentPanel
 		super(wp);
 
 		 m_editAssignmentPanel.getAttribute("Time").setCaption(
-				 m_wpMessageLog.getText("AssignedTimeLabel.text") + ": ");
+				 m_wpMessageLog.getBundleText("AssignedTimeLabel.text") + ": ");
 	}
 
 	/**
@@ -89,8 +89,8 @@ public class AssignedAssignmentPanel extends AbstractAssignmentPanel
 		}
 		else
 		{
-			Utils.showWarning(m_wpMessageLog.getText("CanNotAssignError.header"),
-					String.format(m_wpMessageLog.getText("CanNotAssignError.details"), 
+			Utils.showWarning(m_wpMessageLog.getBundleText("CanNotAssignError.header"),
+					String.format(m_wpMessageLog.getBundleText("CanNotAssignError.details"), 
 							unit.getTypeAndNumber(), ""));
 		}
 	}

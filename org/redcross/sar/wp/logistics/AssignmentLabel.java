@@ -129,7 +129,7 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
     public void setAssignment(IAssignmentIf anAssignment)
     {
         m_assignment = anAssignment;
-        if (m_assignment.getStatus() == IAssignmentIf.AssignmentStatus.ALLOCATED)
+        if (m_assignment.getStatus() == IAssignmentIf.AssignmentStatus.QUEUED)
         {
             setText(MessageFormat.format("{0}: {1} {2}", anAssignment.getPrioritySequence(), Integer.toString(anAssignment.getNumber()),
                             anAssignment.getTypeText()));

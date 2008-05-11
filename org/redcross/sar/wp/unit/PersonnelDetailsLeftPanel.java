@@ -105,8 +105,8 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		topPanel.add(m_topLabel, BorderLayout.CENTER);
 		
 		m_changeStatusButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
-		m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("AlertedButton.icon"),"48x48"));
-		m_changeStatusButton.setToolTipText(m_wpUnit.getText("AlertedButton.text"));
+		m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getBundleText("AlertedButton.icon"),"48x48"));
+		m_changeStatusButton.setToolTipText(m_wpUnit.getBundleText("AlertedButton.text"));
 		m_changeStatusButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -121,19 +121,19 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						{
 						case ON_ROUTE:
 							m_currentPersonnel = PersonnelUtilities.callOutPersonnel(m_currentPersonnel);
-							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("AlertedButton.icon"),"48x48"));
-							m_changeStatusButton.setToolTipText(m_wpUnit.getText("AlertedButton.text"));
+							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getBundleText("AlertedButton.icon"),"48x48"));
+							m_changeStatusButton.setToolTipText(m_wpUnit.getBundleText("AlertedButton.text"));
 							updateFieldContents();
 							break;
 						case ARRIVED:
 							PersonnelUtilities.arrivedPersonnel(m_currentPersonnel);
-							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("ArrivedButton.icon"),"48x48"));
-							m_changeStatusButton.setToolTipText(m_wpUnit.getText("ArrivedButton.text"));
+							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getBundleText("ArrivedButton.icon"),"48x48"));
+							m_changeStatusButton.setToolTipText(m_wpUnit.getBundleText("ArrivedButton.text"));
 							break;
 						case RELEASED:
 							PersonnelUtilities.releasePersonnel(m_currentPersonnel);
-							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getText("ReleasedButton.icon"),"48x48"));
-							m_changeStatusButton.setToolTipText(m_wpUnit.getText("ReleasedButton.text"));
+							m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getBundleText("ReleasedButton.icon"),"48x48"));
+							m_changeStatusButton.setToolTipText(m_wpUnit.getBundleText("ReleasedButton.text"));
 						}
 					}
 					catch(Exception e) {

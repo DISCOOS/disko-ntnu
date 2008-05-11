@@ -9,7 +9,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -19,16 +18,39 @@ import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
 
 /**
- * Creates buttons
+ * Read only Disko button factory used to create Disko L&F buttons.
  * 
- * @author thomasl
+ * Resource(s) are used to populate text, icon and tooltip. 
+ * 
+ * To facilitate resource customization (icon, text and tooltip) this 
+ * class wraps the BasicDiskoFactory. The follwing resource types are
+ * supported:
+ *  
+ * java.util.Properties (not localized)
+ * java.util.ResourceBundle (localized)
+ * 
+ * The resource dominance - which resource is used when equal keys 
+ * are present - is as follows:
+ * 
+ * 1. try passed custom resource
+ * 2. if key not found -> try default buttons resource
+ * 3. if key not found -> try enums resource (DiskoEnumFactory)
+ * 4. if key not found -> try installed resources
+ * 5. if all this fails -> button property is set to null 
+ * 
+ * 
+ * @author kennetgu
+ *
  */
+
 public class DiskoButtonFactory
 {
-	private final static ResourceBundle m_bundle = 
-		ResourceBundle.getBundle("org.redcross.sar.gui.factory.buttons");
-	
-	private final static Font BUTTON_FONT = new Font("DiskoButtonFactoryFont", Font.PLAIN, 12);
+	private final static BasicDiskoFactory m_basic = 
+		new BasicDiskoFactory();
+	private final static ResourceBundle m_default = 
+		ResourceBundle.getBundle("files/buttons");	
+	private final static Font BUTTON_FONT = 
+		new Font("DiskoButtonFactoryFont", Font.PLAIN, 12);
 	
 	private static Dimension smallSize = null;
 	private static Dimension normalSize = null;
@@ -108,7 +130,7 @@ public class DiskoButtonFactory
 	 * Creates a JButton based on size and name argument
 	 */	
 	public static JButton createButton(
-			String name, ButtonSize size, int dx, int dy, ResourceBundle bundle)
+			String name, ButtonSize size, int dx, int dy, Object resource)
 	{
 		// create button
 		JButton button = createButton(size,dx,dy);
@@ -117,7 +139,7 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// forward
-		setIconAndText(button,name,catalog,bundle);
+		setIconTextTooltip(button,name,catalog,resource);
 		
 		// return button
 		return button;
@@ -134,7 +156,7 @@ public class DiskoButtonFactory
 	 * Creates a JToggleButton based on size and name arguments
 	 */	
 	public static JToggleButton createToggleButton(
-			String name, ButtonSize size, int dx, int dy, ResourceBundle bundle)
+			String name, ButtonSize size, int dx, int dy, Object resource)
 	{
 		// create button
 		JToggleButton button = createToggleButton(size,dx,dy);
@@ -143,7 +165,7 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// forward
-		setIconAndText(button,name,catalog,bundle);
+		setIconTextTooltip(button,name,catalog,resource);
 				
 		// return button
 		return button;
@@ -160,7 +182,7 @@ public class DiskoButtonFactory
 	 * Creates a JButton based on size and name argument
 	 */	
 	public static JButton createButton(
-			Enum e, ButtonSize size, int dx, int dy, ResourceBundle bundle)
+			Enum e, ButtonSize size, int dx, int dy, Object resource)
 	{
 		// create button
 		JButton button = createButton(size,dx,dy);
@@ -169,7 +191,7 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// forward
-		setIconAndText(button,e,catalog, bundle);
+		setIconTextTooltip(button,e,catalog, resource);
 		
 		// return button
 		return button;
@@ -186,7 +208,7 @@ public class DiskoButtonFactory
 	 * Creates a JToggleButton based on size and name arguments
 	 */	
 	public static JToggleButton createToggleButton(
-			Enum e, ButtonSize size, int dx, int dy, ResourceBundle bundle)
+			Enum e, ButtonSize size, int dx, int dy, Object resource)
 	{
 		// create button
 		JToggleButton button = createToggleButton(size,dx,dy);
@@ -195,7 +217,7 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// forward
-		setIconAndText(button,e,catalog, bundle);
+		setIconTextTooltip(button,e,catalog, resource);
 				
 		// return button
 		return button;
@@ -255,7 +277,7 @@ public class DiskoButtonFactory
 			button.setText(text);
 		
 		// set tooltip text
-		button.setToolTipText(text);
+		button.setToolTipText(tooltip);
 		
 		// return button
 		return button;
@@ -274,7 +296,7 @@ public class DiskoButtonFactory
 	 * Creates a JButton based on size and communicator arguments
 	 */
 	public static JButton createButton(
-			ICommunicatorIf communicator, ButtonSize size,int dx,int dy, ResourceBundle bundle)
+			ICommunicatorIf communicator, ButtonSize size,int dx,int dy, Object resource)
 	{
 		// get button of correct size
 		JButton button = createButton(size,dx,dy);
@@ -283,7 +305,7 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// apply icon
-		setIconAndText(button,communicator,catalog,bundle);
+		setIconTextTooltip(button,communicator,catalog,resource);
 		
 		// return button
 		return button;
@@ -301,7 +323,7 @@ public class DiskoButtonFactory
 	 * Creates a JToggleButton based on size and communicator arguments
 	 */
 	public static JToggleButton createToggleButton(
-			ICommunicatorIf communicator, ButtonSize size,int dx,int dy, ResourceBundle bundle)
+			ICommunicatorIf communicator, ButtonSize size,int dx,int dy, Object resource)
 	{
 		// get toggle button of correct size
 		JToggleButton button = createToggleButton(size,dx,dy);
@@ -310,7 +332,7 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// apply icon
-		setIconAndText(button,communicator,catalog,bundle);		
+		setIconTextTooltip(button,communicator,catalog,resource);		
 		
 		// return button
 		return button;
@@ -328,13 +350,13 @@ public class DiskoButtonFactory
 	 * Creates a JButton based on size and assignment arguments
 	 */
 	public static JButton createButton(
-			IAssignmentIf assignment, ButtonSize size,int dx,int dy, ResourceBundle bundle)
+			IAssignmentIf assignment, ButtonSize size,int dx,int dy, Object resource)
 	{
 		// get button of correct size
 		JButton button = createButton(size,dx,dy);
 		
 		// forward
-		setIconAndText(button,assignment);
+		setIconTextTooltip(button,assignment);
 		
 		// return button
 		return button;
@@ -353,13 +375,13 @@ public class DiskoButtonFactory
 	 * Creates a JToggleButton based on size and assignment arguments
 	 */
 	public static JToggleButton createToggleButton(
-			IAssignmentIf assignment, ButtonSize size,int dx,int dy, ResourceBundle bundle)
+			IAssignmentIf assignment, ButtonSize size,int dx,int dy, Object resource)
 	{
 		// get toggle button of correct size
 		JToggleButton button = createToggleButton(size,dx,dy);
 		
 		// forward
-		setIconAndText(button,assignment);
+		setIconTextTooltip(button,assignment);
 		
 		// return button
 		return button;
@@ -383,8 +405,8 @@ public class DiskoButtonFactory
 			// get custom size?
 			if(dx!=0 || dy!=0) {
 				// get heigth and width
-				int width  = parseInt(m_bundle.getString("BUTTON."+size.name()+".width"),50)+dx;
-				int height = parseInt(m_bundle.getString("BUTTON."+size.name()+".height"),50)+dy;
+				int width  = parseInt(m_default.getString("BUTTON."+size.name()+".width"),50)+dx;
+				int height = parseInt(m_default.getString("BUTTON."+size.name()+".height"),50)+dy;
 				// return dimension
 				return new Dimension(width, height);
 			}
@@ -402,8 +424,8 @@ public class DiskoButtonFactory
 			// create?
 			if(smallSize==null) {
 				// get heigth and width
-				int width  = parseInt(m_bundle.getString("BUTTON.SMALL.width"),50);
-				int height = parseInt(m_bundle.getString("BUTTON.SMALL.height"),50);
+				int width  = parseInt(m_default.getString("BUTTON.SMALL.width"),50);
+				int height = parseInt(m_default.getString("BUTTON.SMALL.height"),50);
 				smallSize = new Dimension(width, height);
 			}
 			return smallSize;
@@ -412,8 +434,8 @@ public class DiskoButtonFactory
 			// create?
 			if(normalSize==null) {
 				// get heigth and width
-				int width  = parseInt(m_bundle.getString("BUTTON.NORMAL.width"),50);
-				int height = parseInt(m_bundle.getString("BUTTON.NORMAL.height"),50);
+				int width  = parseInt(m_default.getString("BUTTON.NORMAL.width"),50);
+				int height = parseInt(m_default.getString("BUTTON.NORMAL.height"),50);
 				normalSize = new Dimension(width, height);
 			}
 			return normalSize;			
@@ -422,8 +444,8 @@ public class DiskoButtonFactory
 			// create?
 			if(longSize==null) {
 				// get heigth and width
-				int width  = parseInt(m_bundle.getString("BUTTON.LONG.width"),50);
-				int height = parseInt(m_bundle.getString("BUTTON.LONG.height"),50);
+				int width  = parseInt(m_default.getString("BUTTON.LONG.width"),50);
+				int height = parseInt(m_default.getString("BUTTON.LONG.height"),50);
 				longSize = new Dimension(width, height);
 			}
 			return longSize;
@@ -463,33 +485,30 @@ public class DiskoButtonFactory
 	}
 	
 	public static void setIcon(
-			AbstractButton button, String name, String catalog, ResourceBundle bundle) {
+			AbstractButton button, String name, String catalog, Object resource) {
 			
 		// forward
-		button.setIcon(getIcon(name+".icon", catalog, bundle));
+		button.setIcon(getIcon(m_basic.getKey(name,"icon"), catalog, resource));
 		
 	}
 	
-	public static void setIconAndText(
+	public static void setIconTextTooltip(
 			AbstractButton button, String name, String catalog) {
-		setIconAndText(button, name,catalog,null);
+		setIconTextTooltip(button, name,catalog,null);
 	}
 	
-	public static void setIconAndText(
-			AbstractButton button, String name, String catalog, ResourceBundle bundle) {
+	public static void setIconTextTooltip(
+			AbstractButton button, String name, String catalog, Object resource) {
 
-		// get text
-		String text = getText(name+".text",bundle);
-		
 		// set tooltip text
-		button.setToolTipText(text);
+		button.setToolTipText(getText(m_basic.getKey(name,"tooltip"),resource));
 		
 		// get get icon
-		button.setIcon(getIcon(name+".icon",catalog, bundle));
+		button.setIcon(getIcon(m_basic.getKey(name,"icon"),catalog,resource));
 
 		// set button text?
 		if(button.getIcon()==null) 
-			button.setText(text);
+			button.setText(getText(m_basic.getKey(name,"text"),resource));
 		
 	}
 		
@@ -497,33 +516,30 @@ public class DiskoButtonFactory
 		setIcon(button,e,catalog,null);
 	}
 	
-	public static void setIcon(AbstractButton button, Enum e, String catalog, ResourceBundle bundle) {
+	public static void setIcon(AbstractButton button, Enum e, String catalog, Object resource) {
 		
 		// get get icon
-		button.setIcon(getIcon(getKey(e,"icon"),catalog,bundle));
+		button.setIcon(getIcon(m_basic.getKey(e,"icon"),catalog,resource));
 
 	}
 	
-	public static void setIconAndText(
+	public static void setIconTextTooltip(
 			AbstractButton button, Enum e, String catalog) {
-		setIconAndText(button,e,catalog,null);
+		setIconTextTooltip(button,e,catalog,null);
 	}
 	
-	public static void setIconAndText(
-			AbstractButton button, Enum e, String catalog, ResourceBundle bundle) {
-		
-		// get text
-		String text = getText(getKey(e,"text"),bundle);
+	public static void setIconTextTooltip(
+			AbstractButton button, Enum e, String catalog, Object resource) {
 		
 		// set tooltip text
-		button.setToolTipText(text);
+		button.setToolTipText(getTooltip(e,resource));
 		
 		// get get icon
-		button.setIcon(getIcon(getKey(e,"icon"),catalog,bundle));
+		button.setIcon(getIcon(e,catalog,resource));
 
 		// set button text?
 		if(button.getIcon()==null) 
-			button.setText(text);
+			button.setText(getText(e,resource));
 		
 	}
 	
@@ -532,49 +548,54 @@ public class DiskoButtonFactory
 	}
 	
 	public static void setIcon(
-			AbstractButton button, ICommunicatorIf communicator,String catalog, ResourceBundle bundle) {
+			AbstractButton button, ICommunicatorIf communicator,String catalog, Object resource) {
 		// update text and icon
 		if(communicator instanceof ICmdPostIf){
 			// set button icon from unit type
-			setIcon(button,UnitType.CP, catalog,bundle);
+			setIcon(button,UnitType.CP, catalog,resource);
 		}
 		else if(communicator instanceof IUnitIf) {
 			// cast to IUnitIf
 			IUnitIf unit = ((IUnitIf)communicator);
 			// set button icon from unit type
-			setIcon(button,unit.getType(), catalog,bundle);
+			setIcon(button,unit.getType(), catalog,resource);
 		}		
 	}
 	
-	public static void setIconAndText(AbstractButton button, ICommunicatorIf communicator,String catalog) {
-		setIconAndText(button,communicator,catalog,null);
+	public static void setIconTextTooltip(AbstractButton button, ICommunicatorIf communicator,String catalog) {
+		setIconTextTooltip(button,communicator,catalog,null);
 	}
 	
-	public static void setIconAndText(
-			AbstractButton button, ICommunicatorIf communicator,String catalog, ResourceBundle bundle) {
+	public static void setIconTextTooltip(
+			AbstractButton button, ICommunicatorIf communicator,String catalog, Object resource) {
 		// initialize
 		String name = null;
+		UnitType type = null;
 		// update text and icon
 		if(communicator instanceof ICmdPostIf){
 			// cast to ICmdPostIf
 			ICmdPostIf cmdPost = ((ICmdPostIf)communicator);			
+			// get type
+			type = UnitType.CP;
 			// set button icon from unit type
-			setIcon(button,UnitType.CP,catalog,bundle);
+			setIcon(button,type,catalog,resource);
 			// command post name
 			name = cmdPost.getCallSign();
 		}
 		else if(communicator instanceof IUnitIf) {
 			// cast to IUnitIf
 			IUnitIf unit = ((IUnitIf)communicator);
+			// get type
+			type = unit.getType();
 			// set button icon from unit type
-			setIcon(button,unit.getType(), catalog,bundle);
+			setIcon(button,type, catalog,resource);
 			// get name
 			name = MsoUtils.getUnitName(unit, true);
 		}		
 		// set text?
 		if(button.getIcon()==null)
 			button.setText(name);
-		// set tooltip 
+		// set tooltip
 		button.setToolTipText(name);
 	}	
 	
@@ -583,7 +604,7 @@ public class DiskoButtonFactory
 		button.setIcon(new IconRenderer.AssignmentIcon(assignment, false, null));		
 	}
 	
-	public static void setIconAndText(AbstractButton button, IAssignmentIf assignment) {
+	public static void setIconTextTooltip(AbstractButton button, IAssignmentIf assignment) {
 		
 		// apply icon
 		button.setIcon(new IconRenderer.AssignmentIcon(assignment, false, null));
@@ -600,36 +621,31 @@ public class DiskoButtonFactory
 		
 	}
 	
-	private static String getText(String key, ResourceBundle bundle) {
-		// initialize
-		String text = null;
-		// try custom bundle?
-		if(bundle!=null && bundle.containsKey(key))
-			text = bundle.getString(key);
-		// try factory bundle?
-		if(text==null && m_bundle.containsKey(key))
-			text = m_bundle.getString(key);
-		// try Utils?
-		if(text==null)
-			text = Utils.getProperty(key);
+	public static String getText(String key, Object resource) {
+		// try custom resource
+		String text = m_basic.getText(key, resource);
+		// try default bundle?
+		if((text==null || text.isEmpty()) && m_default.containsKey(key)) {
+			text = m_default.getString(key);
+		}
+		// try enum factory?
+		if((text==null || text.isEmpty())) {
+			text = DiskoEnumFactory.getText(key, resource);
+		}
+		// try installed bundles?
+		if((text==null || text.isEmpty()) )
+			// get from installed resource
+			text = m_basic.getTextFromInstalled(key);	
 		// return best effort
 		return text;
 	}
 	
-	private static Icon getIcon(String key, String catalog, ResourceBundle bundle) {
+	public static Icon getIcon(String key, String catalog, Object resource) {
 		// initialize
 		Icon icon = null;
-		String name = null;
-		// try custom bundle?
-		if(bundle!=null && bundle.containsKey(key))
-			name = bundle.getString(key);
-		// try factory bundle?
-		if((name==null || name.isEmpty()) && m_bundle.containsKey(key))
-			name = m_bundle.getString(key);
-		// try Utils?
-		if(name==null || name.isEmpty())
-			name = Utils.getProperty(key);
-		// icon name?
+		// forward		
+		String name = getText(key, resource);
+		// found icon name?
 		if(name!=null && !name.isEmpty()) {
 			// try to get from icon factory
 			icon = DiskoIconFactory.getIcon(name, catalog);
@@ -645,10 +661,40 @@ public class DiskoButtonFactory
 			e.printStackTrace();
 		}
 		return value;
+	}	
+	
+	public static Object getResourceFromKey(String key) { 
+		if(m_default.containsKey(key)) {
+			return m_default;
+		}
+		return m_basic.getResourceFromKey(key);
 	}
 	
-	private static String getKey(Enum e, String suffix) {
-		String key = e.getClass().getSimpleName()+"."+e.name()+"."+suffix;		
-		return key;
+	public static BasicDiskoFactory getBasicFactory() {
+		return m_basic;
+	}
+	
+	public static String getText(Enum e) {
+		return getText(e, null);
+	}
+	
+	public static String getTooltip(Enum e) {
+		return getTooltip(e, null);
+	}
+	
+	public static Icon getIcon(Enum e, String catalog) {
+		return getIcon(e,catalog,null);
+	}
+	
+	public static String getText(Enum e, Object resource) {
+		return getText(m_basic.getKey(e, "text"),resource);
+	}
+	
+	public static String getTooltip(Enum e, Object resource) {
+		return getText(m_basic.getKey(e, "tooltip"),resource);
+	}
+	
+	public static Icon getIcon(Enum e, String catalog, Object resource) {
+		return getIcon(m_basic.getKey(e, "icon"),catalog,resource);
 	}
 }

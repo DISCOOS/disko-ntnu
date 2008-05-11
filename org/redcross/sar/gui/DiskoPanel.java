@@ -3,9 +3,11 @@ package org.redcross.sar.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -16,6 +18,7 @@ import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -315,6 +318,36 @@ public class DiskoPanel extends JPanel {
 	
 	public Component getBodyComponent() {
 		return m_bodyComponent;
+	}
+	
+	public void setPreferredBodySize(Dimension dimension) {
+		if(m_bodyComponent instanceof JComponent)
+			((JComponent)m_bodyComponent).setPreferredSize(dimension);
+	}
+	
+	public void setBodyLayout(LayoutManager manager) {
+		if(m_bodyComponent instanceof JComponent)
+			((JComponent)m_bodyComponent).setLayout(manager);
+	}
+		
+	public void setBodyBordrer(Border border) {
+		if(m_bodyComponent instanceof JComponent)
+			((JComponent)m_bodyComponent).setBorder(border);
+	}
+	
+	public void addBodyComponent(Component c) {
+		if(m_bodyComponent instanceof JComponent)
+			((JComponent)m_bodyComponent).add(c);
+	}
+	
+	public void addBodyComponent(Component c, int property) {
+		if(m_bodyComponent instanceof JComponent)
+			((JComponent)m_bodyComponent).add(c,property);
+	}
+	
+	public void addBodyComponent(Component c, Object property) {
+		if(m_bodyComponent instanceof JComponent)
+			((JComponent)m_bodyComponent).add(c,property);
 	}
 	
 	public void setBodyComponent(Component body) {

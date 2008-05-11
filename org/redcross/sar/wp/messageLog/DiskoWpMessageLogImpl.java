@@ -9,7 +9,6 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -29,14 +28,22 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     }
 
     private void initialize()
-    {
-        loadProperties("properties");
+    {        
+        // load class resource bundle
         assignWpBundle(IDiskoWpMessageLog.class);
 
+        // get message log panel. This panel implements the gui
         m_logPanel = new MessageLogPanel(this);
+        
+        // add the panel as main wp component
         layoutComponent(m_logPanel.getPanel());
         
+        // ensure tha wp spesific layers are selectable 
         m_logPanel.setLayersSelectable();
+        
+		// install draw support in map 
+		getMap().installEditSupport();        
+        
     }
 	
     @Override
@@ -94,7 +101,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		// prevent reentry
 		if(isWorking()) {
 			// notify
-			Utils.showWarning(getText("Working.header"), getText("Working.text"));
+			Utils.showWarning(getBundleText("Working.header"), getBundleText("Working.text"));
 			// do not allow to deactivate
 			return false;
 		}
@@ -103,11 +110,11 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		if(MessageLogBottomPanel.isMessageDirty()) {
 							
 			// prompt user
-			String[] options = {getText("DirtyMessageWarning.commit"),
-					getText("DirtyMessageWarning.rollback"),getText("DirtyMessageWarning.cancel")};
+			String[] options = {getBundleText("DirtyMessageWarning.commit"),
+					getBundleText("DirtyMessageWarning.rollback"),getBundleText("DirtyMessageWarning.cancel")};
 			int ans = JOptionPane.showOptionDialog(getApplication().getFrame(),
-						getText("DirtyMessageWarning.text"),
-						getText("DirtyMessageWarning.header"), JOptionPane.YES_NO_CANCEL_OPTION, 
+						getBundleText("DirtyMessageWarning.text"),
+						getBundleText("DirtyMessageWarning.header"), JOptionPane.YES_NO_CANCEL_OPTION, 
 		                JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
 			
 			// select action
@@ -137,7 +144,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     @Override
 	public String getCaption()
     {
-        return getText("Caption");
+        return getBundleText("Caption");
     }
 
     /* (non-Javadoc)

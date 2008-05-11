@@ -108,7 +108,7 @@ public class RouteCostPanel extends JPanel
 		m_wp = wp;
 		m_plannedAreaLayer = (AreaLayer) getMap().getMsoLayer(IMsoFeatureLayer.LayerCode.AREA_LAYER);
 		//listeners
-		m_plannedAreaLayer.addDiskoLayerEventListener(this);
+		m_plannedAreaLayer.addMsoLayerEventListener(this);
 		initialize();
 	}
 
@@ -322,11 +322,9 @@ public class RouteCostPanel extends JPanel
 	public void onSelectionChanged(MsoLayerEvent e)
 	throws IOException, AutomationException {
 		try {
-			IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
-			List selection = msoLayer.getSelected();
+			List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
 			if (selection != null && selection.size() > 0) {
-				IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
-				m_currentMsoObj = msoFeature.getMsoObject();
+				m_currentMsoObj = selection.get(0);
 				if(m_currentMsoObj instanceof IRouteIf){
 					IAreaIf area = MsoUtils.getOwningArea(m_currentMsoObj);
 					if(area!=null) {

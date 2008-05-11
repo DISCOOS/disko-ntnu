@@ -1,6 +1,5 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -18,9 +17,8 @@ import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.command.POITool;
-import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
@@ -34,32 +32,31 @@ import com.borland.jbcl.layout.VerticalFlowLayout;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-public class POIPanel extends DiskoPanel implements 
-				IMsoUpdateListenerIf,  IMsoLayerEventListener,
-				IPropertyPanel {
+public class POIPanel extends DiskoPanel implements IPropertyPanel,
+				IMsoUpdateListenerIf,  IMsoLayerEventListener{
 
 	private static final long serialVersionUID = 1L;
 	
 	private POITool tool = null;
+	
+	private DiskoPanel captionPanel = null;	
+	private DiskoPanel actionsPanel = null;
 	private JTextArea txtArea = null;
 	private JPanel optionsPanel = null;
 	private GotoPanel gotoPanel = null;
-	private DiskoPanel actionsPanel = null;
 	private JButton cancelButton = null;
 	private JButton applyButton = null;
-	private POITypePanel poiTypePanel = null;
+	private POITypesPanel poiTypesPanel = null;
 	private DiskoPanel textAreaPanel = null;
-	
-	private boolean isVertical = true;
 	
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 
-	public POIPanel(POITool tool, boolean isVertical) {
+	public POIPanel(POITool tool) {
 		// forward
-		this("Tegne linje",tool,isVertical);
+		this("Opprette punkt",tool);
 	}
 	
-	public POIPanel(String caption, POITool tool, boolean isVertical) {
+	public POIPanel(String caption, POITool tool) {
 		
 		// forward
 		super(caption);
@@ -71,9 +68,6 @@ public class POIPanel extends DiskoPanel implements
 		// add listeners
 		Utils.getApp().getMsoModel().getEventManager().addClientUpdateListener(this);
 		
-		// set layout information
-		this.isVertical = isVertical;
-		
 		// initialize gui
 		initialize();
 	}
@@ -83,65 +77,35 @@ public class POIPanel extends DiskoPanel implements
 	 *
 	 */
 	private void initialize() {
-		// prepare
-		((JPanel)getBodyComponent()).setPreferredSize(new Dimension(200,450));
-		// forward
-		this.setup();
-		// hide header
-		setHeaderVisible(false);				
-	}
-	
-	/**
-	 * This method applies setup
-	 *
-	 */
-	private void setup() {
-	
+		
+		// set preferred body size
+		setPreferredBodySize(new Dimension(200,450));
+		
+		// hide header and borders
+		setHeaderVisible(false);
+		setBorderVisible(false);
+		
 		// get body panel
 		JPanel panel = (JPanel)getBodyComponent();
 		
-		// remove panels from pane
-		panel.removeAll();
-		
 		// build container
-		if(isVertical) {
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
-			vfl.setHgap(5);
-			vfl.setVgap(0);
-			panel.setLayout(vfl);
-			panel.add(Box.createRigidArea(new Dimension(5,5)));
-			panel.add(getActionsPanel());
-			panel.add(getOptionsPanel());
-		}
-		else {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			panel.setLayout(bl);
-			panel.add(getActionsPanel(),BorderLayout.NORTH);				
-			panel.add(getOptionsPanel(),BorderLayout.CENTER);
-		}
-	}
-
-	public void setVertical(boolean isVertical) {
-		// is changed?
-		if(this.isVertical != isVertical) {
-			this.isVertical = isVertical;
-			// initialize gui
-			initialize();
-		}
-	}
-	
-	public boolean isVertical() {
-		return isVertical;
+		VerticalFlowLayout vfl = new VerticalFlowLayout();
+		vfl.setAlignment(VerticalFlowLayout.LEFT);
+		vfl.setHgap(5);
+		vfl.setVgap(0);
+		panel.setLayout(vfl);
+		panel.add(Box.createRigidArea(new Dimension(5,5)));
+		panel.add(getCaptionPanel());
+		panel.add(Box.createRigidArea(new Dimension(5,5)));
+		panel.add(getActionsPanel());
+		panel.add(getOptionsPanel());
 	}
 	
 	public void reset() {
 		tool.cancel();
 		getTextArea().setText(null);
 		getGotoPanel().reset();
-		getTypePanel().reset();
+		getTypesPanel().reset();
 		tool.setCurrentPOI(null);
 	}
 
@@ -160,20 +124,152 @@ public class POIPanel extends DiskoPanel implements
 		return gotoPanel;
 	}
 	
+	/**
+	 * This method initializes TypesPanel	
+	 * 	
+	 * @return {@link POITypesPanel}	
+	 */
+	public POITypesPanel getTypesPanel() {
+		if (poiTypesPanel == null) {
+			poiTypesPanel = new POITypesPanel();
+			poiTypesPanel.setPreferredSize(new Dimension(200, 100));			
+		}
+		return poiTypesPanel;
+	}
+
+	/**
+	 * This method initializes txtArea	
+	 * 	
+	 * @return javax.swing.JTextArea	
+	 */
+	private JTextArea getTextArea() {
+		if (txtArea == null) {
+			txtArea = new JTextArea();
+			txtArea.setLineWrap(true);
+			txtArea.setRows(5);
+			txtArea.setPreferredSize(new Dimension(200, 100));			
+		}
+		return txtArea;
+	}
+
+	/**
+	 * This method initializes OptionsPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getOptionsPanel() {
+		if (optionsPanel == null) {
+			// create panel
+			optionsPanel = new JPanel();
+			// create flow layout
+			VerticalFlowLayout vfl = new VerticalFlowLayout();
+			vfl.setAlignment(VerticalFlowLayout.LEFT);
+			vfl.setHgap(0);
+			vfl.setVgap(5);
+			// set flow layout
+			optionsPanel.setLayout(vfl); 
+			// set preferred size
+			optionsPanel.setPreferredSize(new Dimension(200,350));
+			// add components
+			optionsPanel.add(getGotoPanel());
+			optionsPanel.add(getTypesPanel());
+			optionsPanel.add(getTextAreaPanel());
+		}
+		return optionsPanel;
+	}
+
+	/**
+	 * This method initializes textAreaScrollPane	
+	 * 	
+	 * @return javax.swing.JScrollPane	
+	 */
+	public DiskoPanel getTextAreaPanel() {
+		if (textAreaPanel == null) {
+			try {
+				textAreaPanel = new DiskoPanel("Merknader");
+				textAreaPanel.setBodyComponent(getTextArea());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return textAreaPanel;
+	}
+
+	public DiskoPanel getCaptionPanel() {
+		if (captionPanel == null) {
+			try {
+				captionPanel = new DiskoPanel(MapUtil.getDrawText(null, null, null));
+				captionPanel.setBodyComponent(null);
+				
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return captionPanel;
+	}
+
+	public DiskoPanel getActionsPanel() {
+		if (actionsPanel == null) {
+			try {
+				actionsPanel = new DiskoPanel("Utfør");
+				actionsPanel.addButton(getApplyButton(),"apply");
+				actionsPanel.addButton(getCancelButton(),"cancel");
+				actionsPanel.setBodyComponent(null);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return actionsPanel;
+	}
+
+	public JButton getCancelButton() {
+		if (cancelButton == null) {
+			try {
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+				cancelButton.setActionCommand("cancel");
+				cancelButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						cancel();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return cancelButton;
+	}
+	
+	private JButton getApplyButton() {
+		if (applyButton == null) {
+			try {
+				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
+				applyButton.setActionCommand("finish");
+				applyButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						// forward
+						apply();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return applyButton;
+	}	
 	public POIType[] getTypes() {
-		return getTypePanel().getTypes();
+		return getTypesPanel().getTypes();
 	}
 	
 	public void setTypes(POIType[] types) {
-		getTypePanel().setTypes(types);
+		getTypesPanel().setTypes(types);
 	}
 
 	public POIType getPOIType() {
-		return getTypePanel().getPOIType();
+		return getTypesPanel().getPOIType();
 	}
 	
 	public void setPOIType(POIType type) {
-		getTypePanel().setPOIType(type);		
+		getTypesPanel().setPOIType(type);		
 	}
 	
 	public String getRemarks() {
@@ -189,30 +285,6 @@ public class POIPanel extends DiskoPanel implements
 	
 	public void updatePOIField(Point p) {
 		getGotoPanel().getPositionField().setPoint(p);
-	}
-	
-	public boolean isRemarksVisible() {
-		return getTextAreaPanel().isVisible();
-	}
-
-	public boolean isTypesVisible() {
-		return getTypePanel().isVisible();
-	}
-	
-	public boolean isButtonsVisible() {
-		return getActionsPanel().isVisible();
-	}
-	
-	public void setRemarksVisible(boolean isVisible) {
-		getTextAreaPanel().setVisible(isVisible);
-	}
-
-	public void setTypesVisible(boolean isVisible) {
-		getTypePanel().setVisible(isVisible);
-	}
-	
-	public void setButtonsVisible(boolean isVisible) {
-		getActionsPanel().setVisible(isVisible);
 	}
 	
 	public IPOIIf getCurrentPOI() {
@@ -269,151 +341,31 @@ public class POIPanel extends DiskoPanel implements
 		tool.cancel();
 	}
 
-	
-	/**
-	 * This method initializes POITypePanel	
-	 * 	
-	 * @return {@link POITypePanel}	
+	public void setMsoObject(IMsoObjectIf msoObject) {		
+		// consume?
+		if (tool == null || tool.getMap() == null) return;
+		try {
+			// update caption
+			if(tool.getMap().isEditSupportInstalled())
+				getCaptionPanel().setCaptionText(tool.getMap().getDrawFrame().getText());
+			else 
+				getCaptionPanel().setCaptionText(MapUtil.getDrawText(msoObject, 
+						tool.getMsoClassCode(), tool.getDrawMode())); 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+		
+	/* ===========================================
+	 * IMsoUpdateListenerIf implementation
+	 * ===========================================
 	 */
-	public POITypePanel getTypePanel() {
-		if (poiTypePanel == null) {
-			poiTypePanel = new POITypePanel();
-			poiTypePanel.setPreferredSize(new Dimension(200, 100));			
-		}
-		return poiTypePanel;
-	}
 
-	/**
-	 * This method initializes txtArea	
-	 * 	
-	 * @return javax.swing.JTextArea	
-	 */
-	private JTextArea getTextArea() {
-		if (txtArea == null) {
-			txtArea = new JTextArea();
-			txtArea.setLineWrap(true);
-			txtArea.setRows(5);
-			txtArea.setPreferredSize(new Dimension(200, 100));			
-		}
-		return txtArea;
-	}
-
-	/**
-	 * This method initializes OptionsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getOptionsPanel() {
-		if (optionsPanel == null) {
-			try {
-
-				// create panel
-				optionsPanel = new JPanel();
-
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		optionsPanel.removeAll();
-		if(isVertical) {
-			
-			// create flow layout
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
-			vfl.setHgap(0);
-			vfl.setVgap(5);
-			// set flow layout
-			optionsPanel.setLayout(vfl); 
-			// set preferred size
-			optionsPanel.setPreferredSize(new Dimension(200,350));
-			// add components
-			optionsPanel.add(getGotoPanel());
-			optionsPanel.add(getTypePanel());
-			optionsPanel.add(getTextAreaPanel());
-		}
-		else {
-			// create flow layout
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			// set flow layout
-			optionsPanel.setLayout(bl); 
-			// add components
-			optionsPanel.add(getGotoPanel(),BorderLayout.WEST);
-			optionsPanel.add(getTypePanel(),BorderLayout.CENTER);
-			optionsPanel.add(getTextAreaPanel(),BorderLayout.EAST);						
-		}
-		return optionsPanel;
-	}
-
-	/**
-	 * This method initializes textAreaScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private DiskoPanel getTextAreaPanel() {
-		if (textAreaPanel == null) {
-			try {
-				textAreaPanel = new DiskoPanel("Merknader");
-				textAreaPanel.setBodyComponent(getTextArea());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return textAreaPanel;
-	}
-
-
-	private DiskoPanel getActionsPanel() {
-		if (actionsPanel == null) {
-			try {
-				actionsPanel = new DiskoPanel("Utfør");
-				actionsPanel.addButton(getApplyButton(),"apply");
-				actionsPanel.addButton(getCancelButton(),"cancel");
-				actionsPanel.setBodyComponent(null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return actionsPanel;
-	}
-
-	public JButton getCancelButton() {
-		if (cancelButton == null) {
-			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				cancelButton.setActionCommand("cancel");
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						cancel();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return cancelButton;
-	}
-	
-	private JButton getApplyButton() {
-		if (applyButton == null) {
-			try {
-				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
-				applyButton.setActionCommand("finish");
-				applyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						apply();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return applyButton;
-	}
-
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+		return myInterests.contains(aMsoObject.getMsoClassCode());
+	}		
+		
 	public void handleMsoUpdateEvent(Update e) {
 		// get flags
 		int mask = e.getEventTypeMask();
@@ -461,41 +413,31 @@ public class POIPanel extends DiskoPanel implements
 		}
 	}	
 	
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
-		return myInterests.contains(aMsoObject.getMsoClassCode());
-	}		
-	
-	
+	/* ===========================================
+	 * IMsoLayerEventListener implementation
+	 * ===========================================
+	 */
+
 	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
-		if (tool.getMap() == null) {
-			return;
-		}
-		IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)e.getSource();
-		List selection = msoLayer.getSelected();
+		if (tool.getMap() == null || !e.isFinal()) return; 
+		IPOIIf poi = null;
+		List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
 		if (selection != null && selection.size() > 0) {
-			IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
-			IMsoObjectIf msoObject = msoFeature.getMsoObject();
-			IPOIIf poi = (IPOIIf)msoObject;
-			setCurrentPOI(poi);
+			IMsoObjectIf msoObj = selection.get(0);
+			if(msoObj instanceof IPOIIf)
+				poi =(IPOIIf)msoObj;
 		}
-		else {
-			setCurrentPOI(null);
-		}
+		setCurrentPOI(poi);
 	}
 
-	public void addActionListener(ActionListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
+	/* ===========================================
+	 * IPropertyPanel implementation
+	 * ===========================================
+	 */
 
-	public void removeActionListener(ActionListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void update() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void update() { /*NOP*/ }
+	
+	public void addActionListener(ActionListener listener) { /*NOP*/ }
+	public void removeActionListener(ActionListener listener) { /*NOP*/ }
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

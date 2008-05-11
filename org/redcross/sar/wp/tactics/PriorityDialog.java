@@ -11,12 +11,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.RadioListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -134,11 +135,11 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 				priorityList = new JList();
 				priorityList.setCellRenderer(new RadioListCellRenderer());
 				Object[] listData = new Object[5];
-				listData[0] = Utils.translate("PRIMARY_SEARCH_AREA");
-				listData[1] = Utils.translate("SECONDARY_SEARCH_AREA");
-				listData[2] = Utils.translate("PRIORITY3_SEARCH_AREA");
-				listData[3] = Utils.translate("PRIORITY4_SEARCH_AREA");
-				listData[4] = Utils.translate("PRIORITY5_SEARCH_AREA");
+				listData[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA.text");
+				listData[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA.text");
+				listData[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA.text");
+				listData[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA.text");
+				listData[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA.text");
 				
 				priorityList.setListData(listData);
 				priorityList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -207,7 +208,8 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 		// update icon
 		if(currentMsoObj!=null) {
 			Enum e = MsoUtils.getType(currentMsoObj,true);
-			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));			
+			getContentPanel().setCaptionIcon(
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));			
 			getContentPanel().setCaptionText("<html>Oppgi prioritet for <b>" + 
 					MsoUtils.getMsoObjectName(currentMsoObj,0).toLowerCase() + "</b></html>");
 			getPriorityList().setEnabled(true);

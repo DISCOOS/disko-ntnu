@@ -14,6 +14,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.models.POITableModel;
@@ -185,7 +186,7 @@ public class DescriptionDialog extends DiskoDialog {
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Punktvis beskrivelse av <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getPoiTable().setEnabled(true);

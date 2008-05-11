@@ -30,6 +30,7 @@ import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -633,7 +634,8 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		// update icon
 		if(currentAssignment!=null) {
 			Enum e = MsoUtils.getType(currentAssignment,true);
-			getContentPanel().setCaptionIcon(Utils.getEnumIcon(e,"48x48"));
+			getContentPanel().setCaptionIcon(
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Krav til <b>" + 
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
 			getTabbedPane().setEnabled(true);

@@ -2,8 +2,6 @@ package org.redcross.sar.gui.map;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,10 +22,12 @@ import javax.swing.event.ChangeListener;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.SnapAdapter;
 import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
@@ -36,7 +36,7 @@ import com.esri.arcgis.carto.IFeatureLayer;
 public class SnapPanel extends DiskoPanel implements SnapListener {
 	
 	private static final long serialVersionUID = 1L;
-	//private IDrawTool tool = null;
+
 	private DiskoPanel actionsPanel = null;
 	private DiskoPanel layersPanel = null;
 	private DiskoPanel tolerancePanel = null;
@@ -49,7 +49,6 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 	private JButton cancelButton = null;
 	private HashMap<String,JCheckBox> checkBoxes = null;
 	private HashMap<String,IFeatureLayer> layers = null;
-	private Properties properties = null;
 	private HashMap<String,String> myInterests = null;
 	private SnapAdapter adapter = null;
 	private boolean isSnapToChangeing = false;
@@ -334,7 +333,7 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 		// search for mso layers
 		for(int i=0;i<myInterests.size();i++){
 			if(myInterests.containsKey(name)){
-				return getProperties().getProperty("Layer."+name); 
+				return DiskoEnumFactory.getText("LayerCode."+name+".text",null); 
 			}		   
 		}	   
 		// remove any suffix	   
@@ -345,22 +344,6 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 		return name;
 	}
 
-	private Properties getProperties()
-	{
-		if (properties == null)
-		{
-			try
-			{
-				properties = Utils.loadProperties("properties");
-			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-		return properties;
-	}	
-	
 	public void setSnapTolerance(double value) {
 		toleranceSlider.setValue((int)value);
 	}

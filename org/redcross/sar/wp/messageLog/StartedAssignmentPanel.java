@@ -34,7 +34,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		super(wp);
 
 		m_editAssignmentPanel.getAttribute("Time").setCaption(
-				 m_wpMessageLog.getText("StartedTimeLabel.text") + ": ");
+				 m_wpMessageLog.getBundleText("StartedTimeLabel.text") + ": ");
 
 	}
 
@@ -101,17 +101,17 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 					AssignmentTransferUtilities.assignmentCanChangeToStatus(assignment, 
 							AssignmentStatus.EXECUTING, unit)))
 			{
-				Utils.showWarning(m_wpMessageLog.getText("CanNotStartError.header"),
-						String.format(m_wpMessageLog.getText("CanNotStartError.details"), 
+				Utils.showWarning(m_wpMessageLog.getBundleText("CanNotStartError.header"),
+						String.format(m_wpMessageLog.getBundleText("CanNotStartError.details"), 
 								MsoUtils.getMsoObjectName(unit,1), MsoUtils.getMsoObjectName(assignment,1)));
 				this.hideComponent();
 				return;
 			}
 			
-			Object[] options = {m_wpMessageLog.getText("yes.text"), m_wpMessageLog.getText("no.text")};
+			Object[] options = {m_wpMessageLog.getBundleText("yes.text"), m_wpMessageLog.getBundleText("no.text")};
 			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
-					String.format(m_wpMessageLog.getText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),
-					m_wpMessageLog.getText("UnitStartedAssignment.header"),
+					String.format(m_wpMessageLog.getBundleText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),
+					m_wpMessageLog.getBundleText("UnitStartedAssignment.header"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
 					null,

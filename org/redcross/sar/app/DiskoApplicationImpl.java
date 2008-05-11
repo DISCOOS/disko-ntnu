@@ -3,10 +3,11 @@ package org.redcross.sar.app;
 import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoGlassPane;
+import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.LoginDialog;
 import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.OperationPanel;
 import org.redcross.sar.gui.SysBar;
+import org.redcross.sar.gui.factory.DiskoPropertyFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
@@ -22,6 +23,7 @@ import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
@@ -34,12 +36,10 @@ import java.util.ResourceBundle;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.JToolTip;
-import javax.swing.MenuElement;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -75,15 +75,19 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	private static final String OPERATION_CREATED_TITLE = "OPERATION.CREATED.HEADER";
 
 	private static final long serialVersionUID = 1L;
+	
 	private IDiskoRole currentRole = null;
 	private Hashtable<String, IDiskoRole> roles = null;
 	private DiskoModuleLoader moduleLoader = null;
-	private Properties properties = null;
 	private UIFactory uiFactory = null;
 	private IDiskoMapManager mapManager = null;
 	private MsoModelImpl m_msoModel = null;
-	private boolean waitingForNewOp=false;
 	private DiskoReport diskoReport = null;
+	private DiskoKeyEventDispatcher keyEventDispatcher = null;
+	
+	// flags
+	private boolean isLoading = false;
+	private boolean waitingForNewOp=false;
 	
 	/**
 	 * The main method.
@@ -172,7 +176,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			UIManager.put("Tree.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("Viewport.font",DEFAULT_PLAIN_MEDIUM_FONT);
 
-//			UIManager.put("ScrollBar.width", 30);
+			UIManager.put("ScrollBar.width", 25);
 			
 			// Because DISCO and ArcGIS Objects are mixing heavyweight (AWT.*) 
 			// and lightweight (Swing.*) component, default lightweight behaviors
@@ -242,9 +246,13 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			this.getMsoModel().getModelDriver().setDiskoApplication(this);
 			// show the login dialog
 			final LoginDialog loginDialog = getUIFactory().getLoginDialog();
-			loginDialog.setLocationRelativeTo((JComponent)getFrame().getContentPane(),LoginDialog.POS_CENTER,false, true);         
+			loginDialog.setLocationRelativeTo((JComponent)getFrame().getContentPane(),LoginDialog.POS_CENTER,false, true);
+			// prepare reporting
 			diskoReport = new DiskoReport(this);
-			java.awt.EventQueue.invokeLater(new Runnable() {public void 
+			// set loading bit
+			setLoading(true);
+			// show login
+			SwingUtilities.invokeLater(new Runnable() {public void 
 				run() {
 					loginDialog.setVisible(true,true);
 				}}); 
@@ -271,6 +279,21 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			e.printStackTrace();
 		}
 	}
+	
+	public DiskoKeyEventDispatcher getKeyEventDispatcher() {
+		if(keyEventDispatcher==null) {
+			// create new
+			keyEventDispatcher=new DiskoKeyEventDispatcher();
+			// pass through events from classes
+			keyEventDispatcher.addPassed(JTextArea.class);
+			keyEventDispatcher.addPassed(JTextField.class);
+			// add to current KeyboardFocusManager
+			KeyboardFocusManager.getCurrentKeyboardFocusManager()
+								.addKeyEventDispatcher(keyEventDispatcher);
+		}
+		return keyEventDispatcher;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.app.IDiskoApplication#getCurrentRole()
@@ -302,8 +325,21 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	}
 	
 	public boolean setLocked(boolean isLocked) {
+		getKeyEventDispatcher().setEnabled(!(isLocked || isLoading()));
 		return ((DiskoGlassPane)getFrame().getGlassPane()).setLocked(isLocked);
 	}
+	
+	public boolean isLoading() {
+		return isLoading;
+	}
+	
+	private void setLoading(boolean isLoading) {
+		// update
+		this.isLoading = isLoading;
+		// disable global dispatcher?
+		getKeyEventDispatcher().setEnabled(!(isLoading || isLocked()));
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.app.IDiskoApplication#getUIFactory()
@@ -624,38 +660,25 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		return moduleLoader;
 	}
 
-	public Properties getProperties()
-	{
-		if (properties == null)
-		{
-			try
-			{
-				properties = Utils.loadProperties("properties");
-			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-		return properties;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getProperty(java.lang.String)
-	 */
 	public String getProperty(String key)
 	{
-		return getProperties().getProperty(key);
+		return DiskoPropertyFactory.getText(key);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getProperty(java.lang.String)
-	 */
 	public String getProperty(String key, String defaultvalue)
 	{
-		return getProperties().getProperty(key, defaultvalue);
+		String value = getProperty(key);
+		if(value==null || value.isEmpty())
+			value = defaultvalue;
+		return value;
 	}
 
+	public boolean setProperty(String key, String value)
+	{
+		return DiskoPropertyFactory.setText(key,value);
+	}
+
+	
 	private void doInitiateModelDriver(long millisToWait, boolean choose, boolean prompt) {
 		try {
 			DiskoWorkPool.getInstance().schedule(new InitiateModelDriver(millisToWait,true,false));
@@ -811,6 +834,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 					"Kobler til aksjon",100,true,false);
 			// save
 			m_opID = opID;
+			// set loading bit
+			setLoading(true);
 		}
 
 		/**
@@ -867,6 +892,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 					if(currentRole==null)
 						doSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
 				}
+				// set loading false
+				setLoading(false);				
 				// finished
 				return;
 			}

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -413,17 +415,17 @@ public class MsoUtils {
 		if(assignment!=null) {
 			if(assignment instanceof ISearchIf) {
 				ISearchIf search = (ISearchIf)assignment;
-				name = Utils.translate(search.getSubType()); 
+				name = DiskoEnumFactory.getText(search.getSubType()); 
 			}
 			else {
-				name = Utils.translate(assignment.getType());
+				name = DiskoEnumFactory.getText(assignment.getType());
 			}
 			// include number?
 			if(options >0)
 				name += " " + assignment.getNumber();
 			// include status text?
 			if(options >1)
-				name += " - " + Utils.translate(assignment.getStatus());
+				name += " - " + DiskoEnumFactory.getText(assignment.getStatus());
 		}
 		return name;
 	}
@@ -431,10 +433,10 @@ public class MsoUtils {
 	public static String getUnitName(IUnitIf unit, boolean include) {
 		String name = "<Unknown>";
 		if(unit!=null) {
-			name = Utils.translate(unit.getType()) + " " + unit.getNumber();
+			name = DiskoEnumFactory.getText(unit.getType()) + " " + unit.getNumber();
 			// include status text?
 			if(include)
-				name += " - " + Utils.translate(unit.getStatus());
+				name += " - " + DiskoEnumFactory.getText(unit.getStatus());
 		}
 		return name;
 	}
@@ -442,7 +444,7 @@ public class MsoUtils {
 	public static String getOperationAreaName(IOperationAreaIf operationArea, boolean include) {
 		String name = "<Unknown>";
 		if(operationArea!=null) {
-			name = Utils.translate(MsoClassCode.CLASSCODE_OPERATIONAREA);
+			name = DiskoEnumFactory.getText(MsoClassCode.CLASSCODE_OPERATIONAREA);
 			if(include) {
 				int i = 0;
 				IMsoModelIf model = MsoModelImpl.getInstance();
@@ -463,11 +465,11 @@ public class MsoUtils {
 		String name = "<Unknown>";
 		if(searchArea!=null) {
 			switch(searchArea.getPriority()) {
-			case 0: name = Utils.translate("PRIMARY_SEARCH_AREA"); break;
-			case 1: name = Utils.translate("SECONDARY_SEARCH_AREA"); break;
-			case 2: name = Utils.translate("PRIORITY3_SEARCH_AREA"); break;
-			case 3: name = Utils.translate("PRIORITY4_SEARCH_AREA"); break;
-			case 4: name = Utils.translate("PRIORITY5_SEARCH_AREA"); break;
+			case 0: name = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA.text"); break;
+			case 1: name = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA.text"); break;
+			case 2: name = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA.text"); break;
+			case 3: name = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA.text"); break;
+			case 4: name = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA.text"); break;
 			}
 		}
 		return name;
@@ -482,7 +484,7 @@ public class MsoUtils {
 				name = getAssignmentName(assignment, options);
 			}
 			else {
-				name = Utils.translate(IMsoManagerIf.MsoClassCode.CLASSCODE_AREA);
+				name = DiskoEnumFactory.getText(IMsoManagerIf.MsoClassCode.CLASSCODE_AREA);
 			}
 		}
 		return name;
@@ -491,7 +493,7 @@ public class MsoUtils {
 	public static String getRouteName(IRouteIf route, boolean include) {
 		String name = "<Unknown>";
 		if(route!=null) {
-			name = Utils.translate(route.getMsoClassCode());
+			name = DiskoEnumFactory.getText(route.getMsoClassCode());
 			// include status text?
 			if(include)
 				name += " " + (route.getAreaSequenceNumber()+1);
@@ -502,7 +504,7 @@ public class MsoUtils {
 	public static String getTrackName(ITrackIf track, boolean include) {
 		String name = "<Unknown>";
 		if(track!=null) {
-			name = Utils.translate(track.getMsoClassCode());
+			name = DiskoEnumFactory.getText(track.getMsoClassCode());
 			// include status text?
 			if(include)
 				name += " " + (track.getAreaSequenceNumber()+1);
@@ -515,7 +517,7 @@ public class MsoUtils {
 		String name = "<Unknown>";
 		
 		if(poi!=null) {
-			name = Utils.translate(poi.getType()); 			
+			name = DiskoEnumFactory.getText(poi.getType()); 			
 
 			// include status text?
 			if(include) {
@@ -568,7 +570,7 @@ public class MsoUtils {
 				return getTrackName((ITrackIf)msoObj, true);			
 		}
 		else if(msoObj!=null)
-			return Utils.translate(msoObj.getMsoClassCode());
+			return DiskoEnumFactory.getText(msoObj.getMsoClassCode());
 		else
 			return "<null>";
 		

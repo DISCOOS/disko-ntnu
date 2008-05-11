@@ -27,6 +27,7 @@ import com.esri.arcgis.display.IDisplay;
 import com.esri.arcgis.display.IScreenDisplay;
 import com.esri.arcgis.display.esriScreenCache;
 import com.esri.arcgis.display.esriSimpleLineStyle;
+import com.esri.arcgis.geometry.Envelope;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
@@ -80,11 +81,11 @@ public class DrawFrame {
 		getGroupElement().addElement(getFrameElement());
 		getGroupElement().addElement(getTextBoxElement());
 		getGroupElement().addElement(getTextElement());
-		getGroupElement().addElement(addIcon("cancel",DiskoIconFactory.getIconPath("GENERAL.CANCEL", "24x24", null)));
-		getGroupElement().addElement(addIcon("finish",DiskoIconFactory.getIconPath("GENERAL.FINISH", "24x24", null)));
-		getGroupElement().addElement(addIcon("replace",DiskoIconFactory.getIconPath("GENERAL.EQUAL", "24x24", null)));
-		getGroupElement().addElement(addIcon("continue",DiskoIconFactory.getIconPath("GENERAL.CONTINUE", "24x24", null)));
-		getGroupElement().addElement(addIcon("append",DiskoIconFactory.getIconPath("GENERAL.PLUS", "24x24", null)));
+		getGroupElement().addElement(addIcon("cancel",DiskoIconFactory.getPath("GENERAL.CANCEL", "24x24", null)));
+		getGroupElement().addElement(addIcon("finish",DiskoIconFactory.getPath("GENERAL.FINISH", "24x24", null)));
+		getGroupElement().addElement(addIcon("replace",DiskoIconFactory.getPath("GENERAL.EQUAL", "24x24", null)));
+		getGroupElement().addElement(addIcon("continue",DiskoIconFactory.getPath("GENERAL.CONTINUE", "24x24", null)));
+		getGroupElement().addElement(addIcon("append",DiskoIconFactory.getPath("GENERAL.PLUS", "24x24", null)));
 		//getGroupElement().addElement(addIcon("delete",DiskoIconFactory.getIconPath("GENERAL.DELETE", "24x24", null)));
 		getGroupElement().addElement(getIconBoxElement());				
 		
@@ -215,10 +216,14 @@ public class DrawFrame {
 		}
 		return groupElement;
 	}
+
+	public String getText() throws AutomationException, UnknownHostException, IOException {
+		return getTextElement().getText();		
+	}
 	
 	public void setText(String text) throws AutomationException, UnknownHostException, IOException {
 		// set dirty union
-		setDirtyUnion(getTextBoxElement());
+		setDirtyRegion(getTextBoxElement());
 		// prepare
 		getTextElement().setText(text);
 		// forward?
@@ -229,29 +234,19 @@ public class DrawFrame {
 		getTextElement().isDirty();
 		getTextBoxElement().isDirty();
 		// set dirty union?
-		setDirtyUnion(getTextBoxElement());
+		setDirtyRegion(getTextBoxElement());
 	}
 	
 	public void setFrame(IEnvelope e) throws AutomationException, UnknownHostException, IOException {
-		// set dirty union
-		setDirtyUnion(getFrameElement());
-		// set frame size
-		getFrameElement().setGeometry(e);
-		// forward?
-		if(display()!=null) {
-			update(e);		
-		}
-		// set dirty
-		getFrameElement().isDirty();
-		// set dirty union?
-		setDirtyUnion(getFrameElement());
-		// add icons to dirty area
-		for(IconElement it : orderIcons) {
-			if(it.isVisible())
-				setDirtyUnion(it);
-		}
-		
+		// forward
+		update(e,getText());
 	}
+	
+	public IEnvelope getExtent() throws AutomationException, UnknownHostException, IOException {
+		// set frame size
+		IGeometry g = getGroupElement().getGeometry();
+		return (g!=null) ? g.getEnvelope() : null;
+	}	
 	
 	public IEnvelope getFrame() throws AutomationException, UnknownHostException, IOException {
 		// set frame size
@@ -261,8 +256,13 @@ public class DrawFrame {
 	
 	public void update(IEnvelope frame, String text) throws AutomationException, UnknownHostException, IOException {
 		// set dirty unions
-		setDirtyUnion(getTextBoxElement());
-		setDirtyUnion(getFrameElement());		
+		setDirtyRegion(getTextBoxElement());
+		setDirtyRegion(getFrameElement());		
+		// add icons to dirty area
+		for(IconElement it : orderIcons) {
+			if(it.isVisible())
+				setDirtyRegion(it);
+		}
 		// set frame size
 		getFrameElement().setGeometry(frame);
 		// update
@@ -276,16 +276,18 @@ public class DrawFrame {
 		getFrameElement().isDirty();		
 		getTextBoxElement().isDirty();
 		// set dirty unions
-		setDirtyUnion(getTextBoxElement());
-		setDirtyUnion(getFrameElement());		
+		setDirtyRegion(getTextBoxElement());
+		setDirtyRegion(getFrameElement());		
 		// add icons to dirty area
 		for(IconElement it : orderIcons) {
 			if(it.isVisible())
-				setDirtyUnion(it);
+				setDirtyRegion(it);
 		}
 	}
 	
 	public void draw() throws AutomationException, IOException {
+		// reset area
+		dirtyArea = null;
 		// get current screen display 
 		IDisplay display = display();
 		// start drawing operation
@@ -294,6 +296,16 @@ public class DrawFrame {
 		groupElement.draw(display, null);
 		// finished
 		display.finishDrawing();
+	}
+	
+	public boolean isDirtyAreaDisjointWith(IEnvelope e) throws AutomationException, IOException {
+		if(isDirty()) {
+			if(dirtyArea instanceof Envelope) {
+				return ((Envelope)dirtyArea).disjoint(e);
+			}
+		}
+		// is disjoint
+		return true;
 	}
 	
 	public boolean isDirty() {
@@ -369,7 +381,7 @@ public class DrawFrame {
 		// set dirty
 		box.isDirty();
 		// forward
-		setDirtyUnion(box);
+		setDirtyRegion(box);
 		
 	}
 	
@@ -467,6 +479,8 @@ public class DrawFrame {
 				// show layer
 				((IGraphicsLayer)container).activate(display());				
 				((ILayer)container).setVisible(true);
+				// set dirty
+				setDirtyRegion(getGroupElement());				
 				// success
 				return true;
 			}
@@ -479,6 +493,8 @@ public class DrawFrame {
 		// any change?
 		if(isActive) {
 			if(container!=null) {
+				// set dirty
+				setDirtyRegion(getGroupElement());
 				// reselect icon?
 				if(selectedIcon!=null) setIconBorder(selectedIcon, false);
 				// reset flag
@@ -532,6 +548,8 @@ public class DrawFrame {
 				if(display()!=null) {
 					update(getFrame());		
 				}
+				// forward
+				setDirtyRegion(icon);				
 			}
 			// make invisible?
 			if(icon.isVisible() && !isVisible) {
@@ -543,9 +561,9 @@ public class DrawFrame {
 				if(display()!=null) {
 					update(getFrame());		
 				}				
+				// forward
+				setDirtyRegion(icon);				
 			}
-			// set dirty union?
-			if(isDirty) setDirtyUnion(icon);
 		}
 		// state
 		return isDirty;
@@ -602,19 +620,19 @@ public class DrawFrame {
 		}
 		else if(!isSelected && isIconBoxActive) {
 			// forward
-			setDirtyUnion(iconBox);
+			setDirtyRegion(iconBox);
 			// reset flag
 			isIconBoxActive = false;
 		}
 	}
 
-	private void setDirtyUnion(IElement element) throws AutomationException, IOException {
+	private void setDirtyRegion(IElement element) throws AutomationException, IOException {
 		// get geometry
 		IGeometry g = element.getGeometry();
 		// add to dirty area?
 		if(dirtyArea!=null)
-			dirtyArea.union(MapUtil.expand(1.1,g.getEnvelope()));
+			dirtyArea.union(MapUtil.expand(1.25,g.getEnvelope()));
 		else
-			dirtyArea = MapUtil.expand(1.1,g.getEnvelope());
+			dirtyArea = MapUtil.expand(1.25,g.getEnvelope());
 	}
 }

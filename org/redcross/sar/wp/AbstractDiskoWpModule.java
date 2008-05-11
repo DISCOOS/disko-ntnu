@@ -12,13 +12,14 @@ import org.redcross.sar.gui.MainPanel;
 import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.gui.SubMenuPanel;
 import org.redcross.sar.gui.NavBar.NavState;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -29,23 +30,20 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.util.Internationalization;
 
+import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
-
-import java.awt.Dimension;
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.AbstractButton;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -56,12 +54,11 @@ import javax.swing.SwingUtilities;
  * @author geira
  */
 public abstract class AbstractDiskoWpModule 
-			implements IDiskoWpModule, IMsoUpdateListenerIf {
+			implements IDiskoWpModule, IMsoUpdateListenerIf, IDiskoWorkListener {
 	
 	private IDiskoRole role = null;
     private IDiskoMap map = null;
     private boolean hasSubMenu = false;
-    private Properties properties = null;
     private NavState m_navState = null;
     private boolean isNavBarSetupNeeded = true;
     private ArrayList<IDiskoWorkListener> listeners = null;
@@ -174,6 +171,8 @@ public abstract class AbstractDiskoWpModule
                 map = manager.getMapInstance(mapLayers);
                 // hide map
                 ((DiskoMap)map).setVisible(false);
+                // add disko work listener
+                map.addDiskoWorkEventListener(this);
             }
             catch (Exception e)
             {
@@ -227,35 +226,6 @@ public abstract class AbstractDiskoWpModule
         return hasSubMenu;
     }
 
-    public Properties getProperties()
-    {
-        return properties;
-    }
-
-    public String getProperty(String key)
-    {
-        String value = properties != null ?
-                properties.getProperty(key) : null;
-        if (value == null)
-        {
-            //try application properties
-            value = getApplication().getProperty(key);
-        }
-        return value;
-    }
-
-    public void loadProperties(String fileName)
-    {
-        try
-        {
-            properties = Utils.loadProperties("properties");
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-    }
-
     public void addDiskoWorkEventListener(IDiskoWorkListener listener)
     {
         if (listeners.indexOf(listener) == -1)
@@ -268,6 +238,18 @@ public abstract class AbstractDiskoWpModule
     {
         listeners.remove(listener);
     }
+
+	public void onWorkCancel(DiskoWorkEvent e) {
+		fireOnWorkCancel(e);
+	}
+	
+	public void onWorkFinish(DiskoWorkEvent e) {
+		fireOnWorkFinish(e);
+	}
+
+	public void onWorkChange(DiskoWorkEvent e) {
+		fireOnWorkChange(e);
+	}
 
     protected void fireOnWorkChange(Object worker, IMsoObjectIf msoObj, Object data)
     {
@@ -307,6 +289,9 @@ public abstract class AbstractDiskoWpModule
     
     protected void fireOnWorkCancel(DiskoWorkEvent e)
     {
+    	// consume?
+    	if(e.getSource()!=this) return;
+    	
     	// is active?
     	if(isActive) {
     			    	
@@ -331,6 +316,10 @@ public abstract class AbstractDiskoWpModule
     
     protected void fireOnWorkFinish(DiskoWorkEvent e)
     {
+
+    	// consume?
+    	if(e.getSource()!=this) return;
+    		
     	// is active?
     	if(isActive) {
     		
@@ -373,7 +362,51 @@ public abstract class AbstractDiskoWpModule
 
 				public void run() {
 		        	try {
-						getMap().refreshMsoLayers();
+		        		if(getMap().isInitMode()) {
+		        			// reset flag
+		        			getMap().setInitMode(false);
+		        			// initialize
+		        			IEnvelope e = null;
+		        			// get layer
+		        			IMsoFeatureLayer l = getMap().getMsoLayer(LayerCode.OPERATION_AREA_LAYER);
+		        			// get extent?
+		        			if(l!=null) {
+		        				e = l.getVisibleFeaturesExtent();
+		        			}
+		        			else {
+			        			// get layer
+			        			l = getMap().getMsoLayer(LayerCode.SEARCH_AREA_LAYER);
+			        			// get extent?
+			        			if(l!=null) {
+			        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
+			        				else e = l.getVisibleFeaturesExtent();
+			        			} 
+			        			else {
+				        			// get layer
+				        			l = getMap().getMsoLayer(LayerCode.AREA_LAYER);
+				        			// get extent?
+				        			if(l!=null) {
+				        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
+				        				else e = l.getVisibleFeaturesExtent();
+				        			}
+				        			else {
+					        			// get layer
+					        			l = getMap().getMsoLayer(LayerCode.ROUTE_LAYER);
+					        			// get extent?
+					        			if(l!=null) {
+					        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
+					        				else e = l.getVisibleFeaturesExtent();
+					        			}				        				
+				        			}
+			        			}
+		        			}
+		        			// set extent?
+		        			if(e!=null) getMap().setExtent(MapUtil.expand(1.25,e));
+		        		}
+		        		else {
+		        			// refresh any dirty layers
+		        			getMap().refreshMsoLayers();
+		        		}
 					} catch (AutomationException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -440,7 +473,7 @@ public abstract class AbstractDiskoWpModule
     
     public void setFrameText(String text)
     {
-        String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + getProperty(getName() + ".name") +"> - ";
+        String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + DiskoStringFactory.getText(getName() + ".name") +"> - ";
         String o = "<Aksjon: " + getApplication().getMsoModel().getModelDriver().getActiveOperationName() + ">";
         if (text != null) {
             s += text + " - " + o;
@@ -454,7 +487,7 @@ public abstract class AbstractDiskoWpModule
 	public void showWarning(String key)
     {
 		// Internationalization
-		String msg = getText(key); 
+		String msg = getBundleText(key); 
 		// forward
         Utils.showWarning(msg,getApplication().getFrame());
     }
@@ -479,6 +512,7 @@ public abstract class AbstractDiskoWpModule
         hasSubMenu = true;
     }
 
+    /*
     protected JButton createNormalButton(String aText, java.awt.event.ActionListener aListener)
     {
         return createButton(aText, DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL), aListener);
@@ -500,7 +534,8 @@ public abstract class AbstractDiskoWpModule
         }
         return createdButton;
     }
-
+	*/
+    
     public IMsoModelIf getMsoModel()
     {
         return getApplication().getMsoModel();
@@ -521,7 +556,7 @@ public abstract class AbstractDiskoWpModule
     	return getMsoManager().getCmdPost();
     }
 
-    public String getText(String aKey)
+    public String getBundleText(String aKey)
     {
         return Internationalization.getFullBundleText(wpBundle,aKey);
     }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.FlankFeature;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -27,10 +28,10 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 	private LineFillSymbol blueFill = null;
 	private LineFillSymbol redFill  = null;
 	
-	public FlankLayer(IMsoModelIf msoModel, ISpatialReference srs) {
+	public FlankLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
 		super(IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE,
 				LayerCode.FLANK_LAYER, msoModel, srs, 
-				esriGeometryType.esriGeometryPolygon);
+				esriGeometryType.esriGeometryPolygon,eventStack);
 		createSymbols();
 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 		loadObjects(cmdPost.getAreaListItems().toArray());
@@ -63,6 +64,7 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 						display.setSymbol(blueFill);
 						display.drawPolygon((IPolygon)rightFlanks.get(j));
 					}
+					feature.setDirty(false);					
 				}
 			}
 			isDirty = false;

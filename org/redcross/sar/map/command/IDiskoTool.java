@@ -84,6 +84,10 @@ public interface IDiskoTool extends ITool {
 	
 	public boolean setPropertyPanel(IPropertyPanel panel);
 	
+	public boolean setDefaultPropertyPanel();
+	
+	public IPropertyPanel getDefaultPropertyPanel();
+	
 	public IPropertyPanel getPropertyPanel();
 	
 	public IPropertyPanel addPropertyPanel();

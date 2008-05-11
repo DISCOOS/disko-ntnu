@@ -80,7 +80,7 @@ public class MessageLogPanel
 				if(m_wpModule.isActive() && m_tablePanel!=null) {
 					// get button
 					final JToggleButton b = (JToggleButton)e.getSource();
-					// show or hide map?
+	            	// toggle
 					if(b.isSelected()){
 						// run after this event has returned to ensure that the map 
 						// is drawn in DiskoMap without bugged output
@@ -92,11 +92,10 @@ public class MessageLogPanel
 							}							
 						});
 					}
-					else {
-						// hide map
-			            CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+					else {						
+			        	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
 			            cards.show(m_tablePanel, LOG_ID);
-			        }							
+			        }					
 				}
 				
 			}

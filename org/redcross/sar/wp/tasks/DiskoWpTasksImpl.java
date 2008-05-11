@@ -82,7 +82,6 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     private void initialize()
     {
-        loadProperties("properties");
         assignWpBundle(IDiskoWpTasks.class);
 
         m_contentsPanel = new JPanel(new BorderLayout());
@@ -143,13 +142,13 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     @Override
     public String getCaption()
     {
-        return getText("Caption");
+        return getBundleText("Caption");
     }
 
     private void initButtons()
     {
-    	String text = getText("NewButton.text");
-    	Icon icon = DiskoIconFactory.createImageIcon("NEW",getText("NewButton.icon"));
+    	String text = getBundleText("NewButton.text");
+    	Icon icon = DiskoIconFactory.createImageIcon("NEW",getBundleText("NewButton.icon"));
     	m_newButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_newButton.addActionListener(new ActionListener()
         {
@@ -160,8 +159,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_newButton, true);
         
-        text = getText("ChangeButton.text");
-        icon = DiskoIconFactory.createImageIcon("EDIT",getText("ChangeButton.icon"));
+        text = getBundleText("ChangeButton.text");
+        icon = DiskoIconFactory.createImageIcon("EDIT",getBundleText("ChangeButton.icon"));
         m_changeButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_changeButton.addActionListener(new ActionListener()
         {
@@ -172,8 +171,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_changeButton, true);
 
-        text = getText("DeleteButton.text");
-        icon = DiskoIconFactory.createImageIcon("DELETE",getText("DeleteButton.icon"));
+        text = getBundleText("DeleteButton.text");
+        icon = DiskoIconFactory.createImageIcon("DELETE",getBundleText("DeleteButton.icon"));
         m_deleteButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_deleteButton.addActionListener(new ActionListener()
         {
@@ -184,8 +183,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_deleteButton, true);
 
-        text = getText("PerformedButton.text");
-        icon = DiskoIconFactory.createImageIcon("DELETE",getText("PerformedButton.icon"));
+        text = getBundleText("PerformedButton.text");
+        icon = DiskoIconFactory.createImageIcon("DELETE",getBundleText("PerformedButton.icon"));
         m_performedButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
         m_performedButton.addActionListener(new ActionListener()
         {
@@ -269,10 +268,10 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     {
     	if(getMsoModel().hasUncommitedChanges())
     	{
-    		Object[] dialogOptions = {getText("Yes.text"), getText("No.text")};
+    		Object[] dialogOptions = {getBundleText("Yes.text"), getBundleText("No.text")};
     		int n = JOptionPane.showOptionDialog(this.getApplication().getFrame(),
-    				getText("UncommittedChanges.text"),
-    				getText("UncommittedChanges.header"),
+    				getBundleText("UncommittedChanges.text"),
+    				getBundleText("UncommittedChanges.header"),
     				JOptionPane.YES_NO_OPTION,
     				JOptionPane.QUESTION_MESSAGE,
     				null,
@@ -331,8 +330,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             if (m_currentTask.getStatus() == TaskStatus.FINISHED)
             {
                 ErrorDialog error = new ErrorDialog(this.getApplication().getFrame());
-                error.showError(this.getText("CanNotDeleteTaskError.header"),
-                        this.getText("CanNotDeleteTaskError.text"));
+                error.showError(this.getBundleText("CanNotDeleteTaskError.header"),
+                        this.getBundleText("CanNotDeleteTaskError.text"));
             } else
             {
                 hideDialogs();

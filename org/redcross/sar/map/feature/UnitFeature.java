@@ -30,6 +30,7 @@ public class UnitFeature extends AbstractMsoFeature {
 		else {
 			geometry = null;
 		}
+		super.msoGeometryChanged();		
 	}
 	
 	public Object getGeodata() {

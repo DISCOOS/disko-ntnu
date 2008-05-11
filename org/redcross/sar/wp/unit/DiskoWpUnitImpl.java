@@ -116,7 +116,6 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private void initialize()
 	{
 		// Properties
-		loadProperties("properties");
 		assignWpBundle(IDiskoWpUnit.class);
 
 		// Main panels
@@ -179,20 +178,20 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 					if(!m_newUnit)
 					{
 						m_unitDetailsLeftPanel.setUnit(null);
-						m_leftMessageLabel.setText(getText("SelectUnit.text"));
+						m_leftMessageLabel.setText(getBundleText("SelectUnit.text"));
 						layout = (CardLayout)m_leftPanel.getLayout();
 						layout.show(m_leftPanel, MESSAGE_VIEW_ID);
 						m_leftViewId = MESSAGE_VIEW_ID;
-						m_bottomMessageLabel.setText(getText("SelectUnit.text"));
+						m_bottomMessageLabel.setText(getBundleText("SelectUnit.text"));
 						layout = (CardLayout)m_bottomPanel.getLayout();
 						layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
 					}
 					break;
 				case 2:
-					m_leftMessageLabel.setText(getText("SelectCallOut.text"));
+					m_leftMessageLabel.setText(getBundleText("SelectCallOut.text"));
 					layout = (CardLayout)m_leftPanel.getLayout();
 					layout.show(m_leftPanel, MESSAGE_VIEW_ID);
-					m_bottomMessageLabel.setText(getText("SelectCallOut.text"));
+					m_bottomMessageLabel.setText(getBundleText("SelectCallOut.text"));
 					layout = (CardLayout)m_bottomPanel.getLayout();
 					layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
 					m_leftViewId = MESSAGE_VIEW_ID;
@@ -255,7 +254,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		//m_personnelOverviewTable.setTableHeader(null);
 		
 		JScrollPane personnelOverviewScrollPane = new JScrollPane(m_personnelOverviewTable);
-		m_overviewTabPane.addTab(getText("Personnel.text"), personnelOverviewScrollPane);
+		m_overviewTabPane.addTab(getBundleText("Personnel.text"), personnelOverviewScrollPane);
 		
 		// Unit
 		UnitOverviewTableModel unitModel = new UnitOverviewTableModel(this);
@@ -279,7 +278,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_unitOverviewTable.setTableHeader(null);
 
 		JScrollPane unitOverviewScrollPane = new JScrollPane(m_unitOverviewTable);
-		m_overviewTabPane.addTab(getText("Unit.text"), unitOverviewScrollPane);
+		m_overviewTabPane.addTab(getBundleText("Unit.text"), unitOverviewScrollPane);
 		
 		// Call-out
 		CalloutOverviewTableModel calloutModel = new CalloutOverviewTableModel(this);
@@ -295,13 +294,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_calloutOverviewTable.setTableHeader(null);
 		
 		JScrollPane OverviewScrollPane = new JScrollPane(m_calloutOverviewTable);
-		m_overviewTabPane.addTab(getText("CallOut.text"), OverviewScrollPane);
+		m_overviewTabPane.addTab(getBundleText("CallOut.text"), OverviewScrollPane);
 	}
 	
 	private void initButtons()
 	{
-		String text = getText("NewPersonnelButton.text");
-		Icon icon = DiskoIconFactory.createImageIcon("NEW_PERSONNEL", getText("NewPersonnelButton.icon")); 
+		String text = getBundleText("NewPersonnelButton.text");
+		Icon icon = DiskoIconFactory.createImageIcon("NEW_PERSONNEL", getBundleText("NewPersonnelButton.icon")); 
 		m_newPersonnelButton = DiskoButtonFactory.createButton(null,text,icon,ButtonSize.NORMAL);
 		m_newPersonnelButton.addActionListener(new ActionListener()
 		{
@@ -312,8 +311,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		});
 		layoutButton(m_newPersonnelButton);
 		
-		text = getText("NewUnitButton.text");
-		icon = DiskoIconFactory.createImageIcon("NEW_UNIT", getText("NewUnitButton.icon")); 
+		text = getBundleText("NewUnitButton.text");
+		icon = DiskoIconFactory.createImageIcon("NEW_UNIT", getBundleText("NewUnitButton.icon")); 
 		m_newUnitButton = DiskoButtonFactory.createButton(null,text,icon,ButtonSize.NORMAL);
 		m_newUnitButton.addActionListener(new ActionListener()
 		{
@@ -324,8 +323,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		});
 		layoutButton(m_newUnitButton);
 		
-		text = getText("ImportCalloutButton.text");
-		icon = DiskoIconFactory.createImageIcon("IMPORT_CALLOUT", getText("ImportCalloutButton.icon")); 
+		text = getBundleText("ImportCalloutButton.text");
+		icon = DiskoIconFactory.createImageIcon("IMPORT_CALLOUT", getBundleText("ImportCalloutButton.icon")); 
 		m_importCalloutButton = DiskoButtonFactory.createButton(null,text,icon,ButtonSize.NORMAL);
 		m_importCalloutButton.addActionListener(new ActionListener()
 		{
@@ -350,7 +349,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	@Override
 	public String getCaption()
 	{
-		return getText("Caption");
+		return getBundleText("Caption");
 	}
 	
 	@Override
@@ -377,7 +376,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		// prevent reentry
 		if(isWorking()) {
 			// notify
-			Utils.showWarning(getText("Working.header"), getText("Working.text"));
+			Utils.showWarning(getBundleText("Working.header"), getBundleText("Working.text"));
 			// do not allow to deactivate
 			return false;
 		}
@@ -386,11 +385,11 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		if(isChanged()) {
 							
 			// prompt user
-			String[] options = {getText("DirtyMessageWarning.commit"),
-					getText("DirtyMessageWarning.rollback"),getText("DirtyMessageWarning.cancel")};
+			String[] options = {getBundleText("DirtyMessageWarning.commit"),
+					getBundleText("DirtyMessageWarning.rollback"),getBundleText("DirtyMessageWarning.cancel")};
 			int ans = JOptionPane.showOptionDialog(getApplication().getFrame(),
-						getText("DirtyMessageWarning.text"),
-						getText("DirtyMessageWarning.header"), JOptionPane.YES_NO_CANCEL_OPTION, 
+						getBundleText("DirtyMessageWarning.text"),
+						getBundleText("DirtyMessageWarning.header"), JOptionPane.YES_NO_CANCEL_OPTION, 
 		                JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
 			
 			// select action
@@ -555,7 +554,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			
 			m_personnelLeftDetailsPanel.setPersonnel(null);
 			m_personnelLeftDetailsPanel.updateFieldContents();
-			m_personnelLeftDetailsPanel.setTopLabelText("(" + this.getText("New.text") + ")");
+			m_personnelLeftDetailsPanel.setTopLabelText("(" + this.getBundleText("New.text") + ")");
 			
 			m_newPersonnel = true;
 			m_newPersonnelButton.setSelected(true);
@@ -581,13 +580,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_overviewTabPane.setSelectedIndex(1);
 			
 			// Show message in left and bottom panels
-			m_leftMessageLabel.setText(this.getText("SelectUnitType.text"));
+			m_leftMessageLabel.setText(this.getBundleText("SelectUnitType.text"));
 			CardLayout layout = (CardLayout)m_leftPanel.getLayout();
 			layout.show(m_leftPanel, MESSAGE_VIEW_ID);
 			
 			m_leftViewId = MESSAGE_VIEW_ID;
 			
-			m_bottomMessageLabel.setText(this.getText("SelectUnitType.text"));
+			m_bottomMessageLabel.setText(this.getBundleText("SelectUnitType.text"));
 			layout = (CardLayout)m_bottomPanel.getLayout();
 			layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
 			
@@ -639,11 +638,11 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			if(personnel != null)
 			{
 				//  Confirm delete
-				String[] options = {this.getText("Delete.text"), this.getText("Cancel.text")};
+				String[] options = {this.getBundleText("Delete.text"), this.getBundleText("Cancel.text")};
 				int n = JOptionPane.showOptionDialog(
 						this.getApplication().getFrame(),
-						this.getText("DeletePersonnel.text"),
-						this.getText("DeletePersonnel.header"),
+						this.getBundleText("DeletePersonnel.text"),
+						this.getBundleText("DeletePersonnel.header"),
 						JOptionPane.YES_NO_OPTION,
 						JOptionPane.QUESTION_MESSAGE,
 						null,
@@ -663,8 +662,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 					{
 						//  Can not delete personnel, give error message
 						ErrorDialog error = new ErrorDialog(this.getApplication().getFrame());
-						error.showError(this.getText("CanNotDeletePersonnel.header"),
-								this.getText("CanNotDeletePersonnel.details"));
+						error.showError(this.getBundleText("CanNotDeletePersonnel.header"),
+								this.getBundleText("CanNotDeletePersonnel.details"));
 					}					
 				}
 			}
@@ -676,11 +675,11 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			if(unit != null)
 			{
 				//  Confirm delete
-				String[] options = {this.getText("Delete.text"), this.getText("Cancel.text")};
+				String[] options = {this.getBundleText("Delete.text"), this.getBundleText("Cancel.text")};
 				int n = JOptionPane.showOptionDialog(
 						this.getApplication().getFrame(),
-						this.getText("DeleteUnit.text"),
-						this.getText("DeleteUnit.header"),
+						this.getBundleText("DeleteUnit.text"),
+						this.getBundleText("DeleteUnit.header"),
 						JOptionPane.YES_NO_OPTION,
 						JOptionPane.QUESTION_MESSAGE,
 						null,
@@ -698,8 +697,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 					catch(IllegalOperationException e)
 					{
 						ErrorDialog error = new ErrorDialog(this.getApplication().getFrame());
-						error.showError(this.getText("CanNotDeleteUnit.header"),
-								this.getText("CanNotDeleteUnit.details"));
+						error.showError(this.getBundleText("CanNotDeleteUnit.header"),
+								this.getBundleText("CanNotDeleteUnit.details"));
 					}
 				}
 			}
@@ -895,7 +894,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 					setUnit(clickedUnit);
 					setLeftView(UNIT_VIEW_ID);
 					
-					m_bottomMessageLabel.setText(getText("SelectUnitPersonnel.text"));
+					m_bottomMessageLabel.setText(getBundleText("SelectUnitPersonnel.text"));
 				}
 				else if(clickCount == 1)
 				{
@@ -905,7 +904,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 						setUnit(clickedUnit);
 						setLeftView(UNIT_VIEW_ID);
 						
-						m_bottomMessageLabel.setText(getText("SelectUnitPersonnel.text"));
+						m_bottomMessageLabel.setText(getBundleText("SelectUnitPersonnel.text"));
 					}
 				}
 				break;
@@ -1074,7 +1073,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				CardLayout layout = (CardLayout)m_leftPanel.getLayout();
 				layout.show(m_leftPanel, UNIT_VIEW_ID);
 				
-				m_bottomMessageLabel.setText(this.getText("AddPersonnel.text"));
+				m_bottomMessageLabel.setText(this.getBundleText("AddPersonnel.text"));
 				layout = (CardLayout)m_bottomPanel.getLayout();
 				layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
 			}
