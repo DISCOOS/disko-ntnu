@@ -45,7 +45,7 @@ public class DiskoEnumFactory {
 	private final static BasicDiskoFactory m_basic = 
 		new BasicDiskoFactory();
 	private final static ResourceBundle m_default = 
-		ResourceBundle.getBundle("files/enums");
+		ResourceBundle.getBundle("resources/enums");
 	
 	public static String getTooltip(Enum e) {
 		return getText(e,"tooltip",null);
@@ -97,7 +97,7 @@ public class DiskoEnumFactory {
 		// get key
 		String key = m_basic.getKey(e, suffix);
 		// only update disko properties anonymously
-		return m_basic.setText(key, value, false, true, m_default, "files/disko");
+		return m_basic.setText(key, value, false, true, m_default, "resources/disko");
 	}
 	
 	public static boolean setText(Enum e, String suffix, String value, Object resource) {
@@ -113,7 +113,7 @@ public class DiskoEnumFactory {
 			// did not fly, try again with disko properties
 			if(!setText(e, suffix, value)) {
 				// still not success, finally try enums
-				return m_basic.setText(key, value, true, true, m_default, "files/disko");
+				return m_basic.setText(key, value, true, true, m_default, "resources/disko");
 			}
 		}
 		// failure!

@@ -42,7 +42,7 @@ public class DiskoIconFactory {
 	private final static BasicDiskoFactory m_basic = 
 		new BasicDiskoFactory();
 	private final static ResourceBundle m_default = 
-		ResourceBundle.getBundle("files/icons");
+		ResourceBundle.getBundle("resources/icons");
 	
 	public static ImageIcon getIcon(String icon, String catalog) {
 		return getIcon(icon,catalog,null);

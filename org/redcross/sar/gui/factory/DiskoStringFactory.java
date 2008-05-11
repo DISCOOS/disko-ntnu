@@ -14,7 +14,7 @@ public class DiskoStringFactory {
 	private final static BasicDiskoFactory m_basic = 
 		new BasicDiskoFactory();
 	private final static ResourceBundle m_default = 
-		ResourceBundle.getBundle("files/strings");
+		ResourceBundle.getBundle("resources/strings");
 	
 	public static String translate(Object value) {
 		return translate(value,null);

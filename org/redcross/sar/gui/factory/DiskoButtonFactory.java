@@ -48,7 +48,7 @@ public class DiskoButtonFactory
 	private final static BasicDiskoFactory m_basic = 
 		new BasicDiskoFactory();
 	private final static ResourceBundle m_default = 
-		ResourceBundle.getBundle("files/buttons");	
+		ResourceBundle.getBundle("resources/buttons");	
 	private final static Font BUTTON_FONT = 
 		new Font("DiskoButtonFactoryFont", Font.PLAIN, 12);
 	

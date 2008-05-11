@@ -10,7 +10,7 @@ public class DiskoSymbolFactory {
 	private final static BasicDiskoFactory m_basic = 
 		new BasicDiskoFactory();
 	private final static ResourceBundle m_default = 
-		ResourceBundle.getBundle("files/symbols");
+		ResourceBundle.getBundle("resources/symbols");
 	
 	public static BufferedImage getSymbol(String symbol) {
 		return getSymbol(symbol,null);

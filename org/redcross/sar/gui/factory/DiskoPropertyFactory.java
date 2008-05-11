@@ -6,7 +6,7 @@ public class DiskoPropertyFactory {
 
 	private final static BasicDiskoFactory m_basic = 
 		new BasicDiskoFactory();
-	private final static Properties m_default = m_basic.load("files/disko.properties");
+	private final static Properties m_default = m_basic.load("resources/disko.properties");
 	
 	public static String getText(String key) {
 		return getText(key,null);
@@ -29,7 +29,7 @@ public class DiskoPropertyFactory {
 		
 	public static boolean setText(String key, String value) {
 		// only update disko properties anonymously
-		return m_basic.setText(key, value, false, true, m_default, "files/disko");
+		return m_basic.setText(key, value, false, true, m_default, "resources/disko");
 	}
 	
 	public static boolean setText(String key, String value, Object resource) {
@@ -43,7 +43,7 @@ public class DiskoPropertyFactory {
 			// did not fly, try again with disko properties
 			if(!setText(key, value)) {
 				// still not success, finally try enums
-				return m_basic.setText(key, value, true, true, m_default, "files/disko");
+				return m_basic.setText(key, value, true, true, m_default, "resources/disko");
 			}
 		}
 		// failure!
