@@ -416,7 +416,7 @@ public class FreeHandPanel extends DiskoPanel implements IPropertyPanel, SnapLis
 		try {
 			// update caption
 			if(tool.getMap().isEditSupportInstalled())
-				getCaptionPanel().setCaptionText(tool.getMap().getDrawFrame().getText());
+				getCaptionPanel().setCaptionText(tool.getMap().getDrawAdapter().getDescription());
 			else 
 				getCaptionPanel().setCaptionText(MapUtil.getDrawText(msoObject, 
 						tool.getMsoClassCode(), tool.getDrawMode())); 

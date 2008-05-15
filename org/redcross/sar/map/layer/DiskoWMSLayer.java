@@ -27,6 +27,7 @@ public class DiskoWMSLayer {
 		//IWMSGroupLayer wmsMapLayer;
 		
 		WMSMapLayer wmsMapLayer = new WMSMapLayer();
+		
 		// create and configure wms connection name
 	    // this is used to store the connection properties
 		WMSConnectionName connName = new WMSConnectionName();

@@ -33,7 +33,7 @@ public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
 			if (column == 0) {
 				IUnitIf unit = (IUnitIf)value;
 				setIcon(getIcon(unit.getType()));
-				setText(MsoUtils.getUnitName(unit, true));
+				setText(MsoUtils.getUnitName(unit, false));
 				setToolTipText(MsoUtils.getUnitName(unit, true));
 			}
 			else if (column > 0 && column < 3) {

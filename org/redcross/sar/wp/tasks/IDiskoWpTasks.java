@@ -7,5 +7,12 @@ public interface IDiskoWpTasks extends IDiskoWpModule
 {
     public final static String bundleName = "org.redcross.sar.wp.tasks.tasks";
 
+	public enum TaskActionType {
+		NEW_TASK,
+		EDIT_TASK,
+		DELETE_TASK,
+		TASK_FINISHED
+    }    
+	
     public void setCurrentTask(ITaskIf task);
 }

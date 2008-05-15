@@ -3,6 +3,7 @@ package org.redcross.sar.map;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
@@ -60,6 +61,7 @@ import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeographicCoordinateSystem;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.IPointCollection;
 import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
@@ -1023,7 +1025,6 @@ public class MapUtil {
 		try {
 			// initialize group geometry
 			IPoint p = new Point();
-			p.setSpatialReferenceByRef(getGeographicCS());
 			p.setX(x);
 			p.setY(y);
 			return p;
@@ -1323,7 +1324,7 @@ public class MapUtil {
 		}
 		else if(msoObj instanceof IUnitIf) {
 			// get forward
-			return MapUtil.getPOIEnvelope((IPOIIf)msoObj,map);
+			return MapUtil.getUnitEnvelope((IUnitIf)msoObj,map);
 		}
 		// failed!
 		return null;
@@ -1431,5 +1432,128 @@ public class MapUtil {
 		// finished
 		return frame;
 	}	
+	
+	public static boolean addPointsAfter(IPoint p, Polyline source, Polyline path) throws AutomationException, IOException {
+		
+		// initialize
+		boolean iB[] = null;
+		int iP[] = null;
+		int iS[] = null;
+						
+		// cut source polyline at point p
+		source.splitAtPoint(p, true, false, iB, iP, iS);
+		
+		// was source split?
+		if(iB.length>0) {
+			
+			// continue to add subsequent segment end-points to path
+			for(int i = iS[0];i<iB.length;i++) {
+				// reach
+				path.addPoint(source.getSegment(i).getFromPoint(), null, null);			
+			}
+			
+			// success
+			return false;
+			
+		}
+		// failed
+		return false;		
+	}
+
+	public static boolean addPointsBetween(IPoint p1, IPoint p2, Polyline source, Polyline path) throws AutomationException, IOException {
+		
+		// initialize
+		IPoint s1 = new Point();
+		IPoint s2 = new Point();
+		double dL1[] = {0};
+		double dT1[] = {0};
+		boolean bR1[] = {false};
+		double dL2[] = {0};
+		double dT2[] = {0};
+		boolean bR2[] = {false};
+				
+		// get information about nearest points
+		source.queryPointAndDistance(esriSegmentExtension.esriNoExtension,p1,false,s1,dL1,dT1,bR1);
+		source.queryPointAndDistance(esriSegmentExtension.esriNoExtension,p2,false,s2,dL2,dT2,bR2);
+		
+		// calculate orientation
+		boolean revert = (dL2[0]<dL1[0]);		
+		
+		// calculate min and max length along the curve (range)
+		double min = (revert ? dL2[0] : dL1[0]);
+		double max = (revert ? dL1[0] : dL2[0]);
+		
+		// get point count
+		int count = source.getPointCount();
+		
+		// has points?
+		if(count>0) {
+		
+			// initalize distance
+			double d = 0; 
+			
+			// initialize flag
+			boolean inside = false;
+			
+			// initialize collection
+			List<IPoint> points = new ArrayList<IPoint>();
+			
+			// get first point as IProximityOperator
+			IProximityOperator p = (IProximityOperator)source.getPoint(0);
+			
+			// add all point between p1 and p2
+			for(int i = 1; i<count; i++) {
+				
+				// get point
+				IPoint it = source.getPoint(i);
+				
+				// calculate distance along curve from last point
+				d += p.returnDistance(it);
+				
+				// update point
+				p = (IProximityOperator)it;
+				
+				// start to add points?
+				if(d >= min) inside = true;
+				
+				// stop to add points?
+				if(d > max) break;
+				
+				// add point?
+				if(inside) {
+					// reverted order?
+					if(revert) 
+						points.add(0,it); 
+					else 
+						points.add(it);				
+				}
+			}
+			
+			// add points
+			if(points.size()>0) {
+				for(IPoint it : points) {
+					path.addPoint(it,null,null);
+				}
+				// success
+				return true;
+			}
+		}
+		
+		// failure!
+		return false;
+		
+	}
+
+	/* This method can be uses to algebraically compare X,Y positions.
+	 * 
+	 * IMPORTANT! This method does not take coordinate system and
+	 * projections into account. Thus, if the two points are projected 
+	 * with different coordinate systems, the comparison is undefined!
+	 * 
+	 */
+	
+	public static boolean is2DEqual(IPoint p1, IPoint p2) throws AutomationException, IOException {
+		return (p1.getX()==p2.getX() && p1.getY()==p2.getY());
+	}
 	
 }

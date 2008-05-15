@@ -1,6 +1,5 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -14,7 +13,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
 import org.redcross.sar.app.IDiskoApplication;

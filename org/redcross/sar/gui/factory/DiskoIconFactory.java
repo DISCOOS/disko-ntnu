@@ -114,12 +114,16 @@ public class DiskoIconFactory {
 			String icon, String catalog, Object resource) {
 		
 		// is path?
-		if (m_basic.isPath(icon)) {
+		if (BasicDiskoFactory.isPath(icon)) {
 			return icon;
+		}
+		// is relative path?
+		else if(BasicDiskoFactory.isPath(m_path + "/" + catalog + "/" + icon)) {
+			return m_path + "/" + catalog + "/" + icon;
 		}
 		else {
 			// get key
-			String key = (!icon.endsWith(".icon")) ? m_basic.getKey(icon,"icon") : icon;
+			String key = (!icon.endsWith(".icon")) ? BasicDiskoFactory.getKey(icon,"icon") : icon;
 			// initialize
 			String filename = null;
 			// try default bundle?

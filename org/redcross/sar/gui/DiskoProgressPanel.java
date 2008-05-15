@@ -5,6 +5,7 @@ package org.redcross.sar.gui;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -115,10 +116,18 @@ public class DiskoProgressPanel extends JPanel {
 		// update progressbar message
 		m_labelMessage.setText(message);
 		Graphics g = m_labelMessage.getGraphics();
-		if(g!=null) {
+		Component c = SwingUtilities.getRoot(this);
+		if(g!=null && message!=null) {
 			int w = Math.max(g.getFontMetrics().stringWidth(message),100);			
-			SwingUtilities.getRoot(this).setSize(w+10,SwingUtilities.getRoot(this).getHeight());
+			c.setSize(w+10,SwingUtilities.getRoot(this).getHeight());
 		}
+		else {
+			c.setSize(75,SwingUtilities.getRoot(this).getHeight());
+			
+		}
+		// update position
+		if(c instanceof DiskoDialog)
+			((DiskoDialog)c).snapTo();
 		
 	}
 	

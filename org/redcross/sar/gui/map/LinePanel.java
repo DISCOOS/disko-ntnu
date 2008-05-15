@@ -415,7 +415,7 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 		try {
 			// update caption
 			if(tool.getMap().isEditSupportInstalled())
-				getCaptionPanel().setCaptionText(tool.getMap().getDrawFrame().getText());
+				getCaptionPanel().setCaptionText(tool.getMap().getDrawAdapter().getDescription());
 			else 
 				getCaptionPanel().setCaptionText(MapUtil.getDrawText(msoObject, 
 						tool.getMsoClassCode(), tool.getDrawMode())); 

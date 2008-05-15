@@ -396,6 +396,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return min;
 	}
 	
+	/*
 	protected void updateMsoObject(IMsoFeature msoFeature, IGeometry geom) throws IOException, AutomationException {
 		
 		// get mso object
@@ -434,6 +435,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			msoOperationArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));						
 		}
 	}
+	*/
 
 	protected void fireOnWorkFinish() {
 		// create event
@@ -526,6 +528,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 	
 	protected void resumeUpdate() {
+		// start with notifying all mso listeners
+		Utils.getApp().getMsoModel().resumeClientUpdate();
+		// allow map to update
 		if(map!=null) {
 			try {
 				map.setSupressDrawing(false);
@@ -536,7 +541,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 				e.printStackTrace();
 			}
 		}		
-		Utils.getApp().getMsoModel().resumeClientUpdate();
 	}
 	
 	public Object getAttribute(String attribute) {

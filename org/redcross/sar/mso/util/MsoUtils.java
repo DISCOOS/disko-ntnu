@@ -425,25 +425,41 @@ public class MsoUtils {
 				name += " " + assignment.getNumber();
 			// include status text?
 			if(options >1)
-				name += " - " + DiskoEnumFactory.getText(assignment.getStatus());
+				name += " (" + DiskoEnumFactory.getText(assignment.getStatus()) + ")";
 		}
 		return name;
 	}
 
+	public static String getAssignmentStatusText(IAssignmentIf assignment) {
+		String name = "<Unknown>";
+		if(assignment!=null) {
+			name = DiskoEnumFactory.getText(assignment.getStatus());
+		}
+		return name;
+	}
+	
 	public static String getUnitName(IUnitIf unit, boolean include) {
 		String name = "<Unknown>";
 		if(unit!=null) {
 			name = DiskoEnumFactory.getText(unit.getType()) + " " + unit.getNumber();
 			// include status text?
 			if(include)
-				name += " - " + DiskoEnumFactory.getText(unit.getStatus());
+				name += " (" + (DiskoEnumFactory.getText(unit.getStatus())) + ")";
 		}
 		return name;
 	}
 	
-	public static String getOperationAreaName(IOperationAreaIf operationArea, boolean include) {
+	public static String getUnitStatusText(IUnitIf unit) {
 		String name = "<Unknown>";
-		if(operationArea!=null) {
+		if(unit!=null) {
+			name = DiskoEnumFactory.getText(unit.getStatus());
+		}
+		return name;
+	}
+	
+	public static String getOperationAreaName(IOperationAreaIf area, boolean include) {
+		String name = "<Unknown>";
+		if(area!=null) {
 			name = DiskoEnumFactory.getText(MsoClassCode.CLASSCODE_OPERATIONAREA);
 			if(include) {
 				int i = 0;
@@ -452,13 +468,29 @@ public class MsoUtils {
 				Iterator<IOperationAreaIf> it = c.iterator();
 				while(it.hasNext()) {
 					i++;
-					if(it.next() == operationArea)
+					if(it.next() == area)
 						break;			
 				}
-				name += " " + (i+1);
+				name.concat(String.valueOf(getOperationNumber(area)));
 			}
 		}
 		return name; 
+	}
+	
+	public static int getOperationNumber(IOperationAreaIf operationArea) {
+		if(operationArea!=null) {
+			int i = 0;
+			IMsoModelIf model = MsoModelImpl.getInstance();
+			Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
+			Iterator<IOperationAreaIf> it = c.iterator();
+			while(it.hasNext()) {
+				i++;
+				if(it.next() == operationArea)
+					break;			
+			}
+			return (i+1);
+		}
+		return 0; 
 	}
 	
 	public static String getSearchAreaName(ISearchAreaIf searchArea) {
@@ -519,13 +551,17 @@ public class MsoUtils {
 		if(poi!=null) {
 			name = DiskoEnumFactory.getText(poi.getType()); 			
 
-			// include status text?
+			// include sequence number?
 			if(include) {
 				IPOIIf.POIType type = poi.getType();
-				boolean isAreaPoi = (type == IPOIIf.POIType.START || 
-						type == IPOIIf.POIType.VIA || 
-						type == IPOIIf.POIType.STOP);
-				if (isAreaPoi)
+				boolean isNumberedPoi = (
+						type == POIType.FINDING || 
+						type == POIType.GENERAL || 
+						type == POIType.INTELLIGENCE || 
+						type == POIType.SILENT_WITNESS || 
+						type == POIType.OBSERVATION || 
+						type == POIType.VIA);
+				if (isNumberedPoi)
 					name += " " + (poi.getAreaSequenceNumber()+1);
 			}			
 		}
@@ -541,7 +577,7 @@ public class MsoUtils {
 		if (msoObj instanceof ISearchAreaIf) 
 			return getSearchAreaName((ISearchAreaIf)msoObj);
 		else if(msoObj instanceof IAreaIf)
-			return getAssignmentName(((IAreaIf)msoObj).getOwningAssignment(), options);
+			return getAreaName((IAreaIf)msoObj,options);
 		else if(msoObj instanceof IAssignmentIf) {
 			return getAssignmentName((IAssignmentIf)msoObj, options);
 		}
@@ -707,6 +743,84 @@ public class MsoUtils {
 	public static void sortByName(IMsoObjectIf[] data, int options) {
 		compareNames.setOptions(options);
 		Arrays.sort(data, compareNames);
+	}
+	
+	public static int compare(IMsoObjectIf m1, IMsoObjectIf m2, int options) {
+		// handle combinations of null
+		if(m1==null && m2==null) return 0;
+		if(m1==null && m2!=null) return -1;
+		if(m1!=null && m2==null) return 1;
+		// initialize
+		String s1 = null;
+		String s2 = null;
+		MsoClassCode code = m1.getMsoClassCode();
+		// is of not of same class?
+		if(!m2.getMsoClassCode().equals(code)) {
+			// get names with no additional information
+			s1 = DiskoEnumFactory.getText(m1.getMsoClassCode());
+			s2 = DiskoEnumFactory.getText(m2.getMsoClassCode());
+			s1 = (s1==null) ? "" : s1;
+			s2 = (s2==null) ? "" : s2;
+			// compare mso class names
+			return s1.compareTo(s2);
+		}
+		// get names with no additional information
+		s1 = getMsoObjectName(m1, 0);
+		s2 = getMsoObjectName(m2, 0);
+		// get difference
+		int d = s1.compareTo(s2);
+		// direct name compare is enough?
+		if(options==0) return d;
+		// are names different?
+		if(d!=0) return d;
+		// continue to compare sequence numbers
+		if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code)) 
+			return compare((IOperationAreaIf)m1,(IOperationAreaIf)m2);
+		if (MsoClassCode.CLASSCODE_SEARCHAREA.equals(code))
+			return 0;
+		if(MsoClassCode.CLASSCODE_AREA.equals(code)) { 
+			return compare(((IAreaIf)m1).getOwningAssignment(),
+					((IAreaIf)m2).getOwningAssignment());
+		}
+		if(MsoClassCode.CLASSCODE_ASSIGNMENT.equals(code)) {
+			return compare((IAssignmentIf)m1,(IAssignmentIf)m2);
+		}
+		if(MsoClassCode.CLASSCODE_POI.equals(code)) {
+			return compare(((IPOIIf)m1).getAreaSequenceNumber(), 
+					((IPOIIf)m2).getAreaSequenceNumber());
+		}
+		if(MsoClassCode.CLASSCODE_UNIT.equals(code))
+			return compare(((IUnitIf)m1).getNumber(), ((IUnitIf)m2).getNumber());
+		if(MsoClassCode.CLASSCODE_ROUTE.equals(code)) {
+			return compare(((IRouteIf)m1).getAreaSequenceNumber(), 
+					((IRouteIf)m2).getAreaSequenceNumber());
+		}
+		if(MsoClassCode.CLASSCODE_ROUTE.equals(code)) {
+			return compare(((ITrackIf)m1).getAreaSequenceNumber(), 
+					((ITrackIf)m2).getAreaSequenceNumber());
+		}
+		// compare not supported, is equal by default
+		return 0;
+	}
+
+	public static int compare(IOperationAreaIf a1,IOperationAreaIf a2) {
+		return compare(getOperationNumber((IOperationAreaIf)a1),
+				getOperationNumber((IOperationAreaIf)a2));		
+	}
+	
+	public static int compare(IAssignmentIf a1, IAssignmentIf a2) {
+		// handle combinations of null
+		if(a1==null && a2==null) return 0;
+		if(a1==null && a2!=null) return -1;
+		if(a1!=null && a2==null) return 1;
+		// compare numbers
+		return compare(a1.getNumber(),a2.getNumber());		
+	}
+	
+	private static int compare(int a, int b) {
+		if(a==b) return 0;
+		else if(a<b) return -1;
+		else return 1;
 	}
 	
 }

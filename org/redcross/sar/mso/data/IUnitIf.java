@@ -4,9 +4,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.util.mso.TimePos;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;

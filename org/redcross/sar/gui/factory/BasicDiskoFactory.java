@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -133,10 +134,10 @@ public class BasicDiskoFactory {
 		return false;
 	}	
 	
-	protected boolean isPath(String object) {
+	protected static boolean isPath(String name) {
 		try {
-			if (object != null) {
-				return (new File(object)).exists();
+			if (name != null) {
+				return ((new File(name)).exists());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -144,7 +145,7 @@ public class BasicDiskoFactory {
 		return false;
 	}
 
-	protected boolean createFile(String filename) {
+	protected static boolean createFile(String filename) {
 		try {
 			if (filename != null) {
 				// create object
@@ -163,16 +164,17 @@ public class BasicDiskoFactory {
 	}
 	
 	
-	protected String getKey(Enum e, String suffix) {
+	protected static String getKey(Enum e, String suffix) {
 		return getKey(e.getClass().getSimpleName()+"."+e.toString(),suffix);
 	}
 	
 	
-	protected String getKey(String prefix, String suffix) {
+	protected static String getKey(String prefix, String suffix) {
 		return prefix + ((suffix!=null && !suffix.isEmpty()) ? "."+suffix : null);
 	}
 
 	protected String getText(String key, Object resource) {
+		if(key==null || key.isEmpty()) return null;
 		// translate
 		if(resource instanceof ResourceBundle) {
 			// cast to resource bundle
@@ -277,7 +279,7 @@ public class BasicDiskoFactory {
 	 * @return 
 	 * @throws Exception
 	 */
-	protected Properties load(String fileName) {
+	protected static Properties load(String fileName) {
 		try {
 			if(isPath(fileName)) {
 				Properties prop = new Properties();
@@ -318,5 +320,24 @@ public class BasicDiskoFactory {
 		// failure
 		return false;
 	}	
+	
+	public static ResourceBundle getBundle(Class c) {
+        
+		if (c == null) return null;
+
+        String bundleName = "";
+        try {
+            Field f = c.getField("bundleName");
+            bundleName = (String)f.get(null);
+            return ResourceBundle.getBundle(bundleName);
+        }
+        catch (Exception ex) {/*NOP*/}
+        // not found;
+        return null;
+    }
+
+    public static ResourceBundle getBundle(Enum e) {
+        return getBundle(e.getClass().getDeclaringClass());
+    }	
 	
 }

@@ -29,7 +29,6 @@ import org.redcross.sar.util.mso.DTG;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -76,7 +75,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	private static final String ASSIGNED_PANEL_ID = "ASSIGNED_PANEL";
 	private static final String STARTED_PANEL_ID = "STARTED_PANEL";
 	private static final String COMPLETED_PANEL_ID = "COMPLETED_PANEL";
-	private static final String LIST_PANEL_ID = "LIST_PANEL";
+	private static final String SHOW_ASSIGNMENT_LIST_PANEL_ID = "SHOW_ASSIGNMENT_LIST_PANEL";
 
 	private static IDiskoWpMessageLog m_wpMessageLog;
 
@@ -346,7 +345,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	{
     		m_messageListPanel = new MessageLinePanel(m_wpMessageLog);
     		m_editComponents.add(m_messageListPanel);
-    		m_cardsPanel.add(m_messageListPanel, LIST_PANEL_ID);
+    		m_cardsPanel.add(m_messageListPanel, SHOW_ASSIGNMENT_LIST_PANEL_ID);
     	}
     	return m_messageListPanel;
     }
@@ -522,21 +521,21 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	m_buttonRow = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 0));
     	m_buttonGroup = new ButtonGroup();
 
-    	createChangeDTGButton();
-        createChangeFromButton();
-        createChangeToButton();
-        createTextButton();
-        createPositionButton();
-        createPOIButton();
-        createAssignedButton();
-        createStartedButton();
-        createCompletedButton();
-        createListButton();
-        createDeleteButton();
-        createChangeTasksButton();
-        createCancelButton();
-        createWaitEndButton();
-        createFinishedButton();
+    	getChangeDTGButton();
+        getChangeFromButton();
+        getChangeToButton();
+        getTextButton();
+        getPositionButton();
+        getPOIButton();
+        getAssignedButton();
+        getStartedButton();
+        getCompletedButton();
+        getListButton();
+        getDeleteButton();
+        getChangeTasksButton();
+        getCancelButton();
+        getWaitEndButton();
+        getFinishedButton();
     }
 
     /**
@@ -726,11 +725,11 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		return true;			
 	}
 	
-	private JButton createWaitEndButton()
+	private JButton getWaitEndButton()
     {
     	if(m_waitEndStatusButton == null)
     	{
-    		m_waitEndStatusButton = DiskoButtonFactory.createButton("IconEnum.WAIT",ButtonSize.NORMAL);
+    		m_waitEndStatusButton = DiskoButtonFactory.createButton("GENERAL.WAIT",ButtonSize.NORMAL);
     				    				
     		m_waitEndStatusButton.addActionListener(new ActionListener()
     		{
@@ -770,7 +769,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_waitEndStatusButton;
     }
 
-    private JButton createFinishedButton()
+    private JButton getFinishedButton()
     {
     	if(m_finishedStatusButton == null)
     	{
@@ -844,7 +843,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		return true;    	
     }
     
-    private JToggleButton createChangeDTGButton()
+    private JToggleButton getChangeDTGButton()
     {
     	m_changeDTGButton = DiskoButtonFactory.createToggleButton("FORMAT.DTG",ButtonSize.NORMAL);
     	m_changeDTGButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
@@ -873,7 +872,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_changeDTGButton;
     }
 
-    private JToggleButton  createChangeTasksButton()
+    private JToggleButton  getChangeTasksButton()
     {
     	if(m_changeTasksButton == null)
     	{
@@ -911,7 +910,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_changeTasksButton;
     }
 
-    private JToggleButton  createChangeFromButton()
+    private JToggleButton  getChangeFromButton()
     {
     	if(m_changeFromButton == null)
     	{
@@ -963,7 +962,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_changeFromButton;
     }
 
-    private JToggleButton  createChangeToButton()
+    private JToggleButton  getChangeToButton()
     {
     	if(m_changeToButton == null)
     	{
@@ -996,7 +995,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_changeToButton;
     }
 
-    private JButton createCancelButton()
+    private JButton getCancelButton()
     {
     	if(m_cancelStatusButton == null)
     	{
@@ -1022,7 +1021,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	return m_cancelStatusButton;
     }
 
-    private void createDeleteButton()
+    private void getDeleteButton()
 	{
     	m_deleteButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
     	m_deleteButton.setIcon(DiskoIconFactory.getIcon("GENERAL.DELETE","48x48"));
@@ -1086,7 +1085,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_deleteButton);
 	}
 
-	private void createListButton()
+	private void getListButton()
 	{
 		m_listButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_listButton.setIcon(DiskoIconFactory.getIcon("GENERAL.LIST","48x48"));
@@ -1102,7 +1101,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 				if(m_currentMessage!=null && m_currentMessage.getLines().length>0) {
 					// get panel
 					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-					layout.show(m_cardsPanel, LIST_PANEL_ID);
+					layout.show(m_cardsPanel, SHOW_ASSIGNMENT_LIST_PANEL_ID);
 					// show component
 					m_messageListPanel.showComponent();
 				}
@@ -1113,7 +1112,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_listButton);
 	}
 
-	private void createStartedButton()
+	private void getStartedButton()
 	{
 		m_startButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_startButton.setIcon(DiskoIconFactory.getIcon("STATUS.STARTED","48x48"));
@@ -1156,7 +1155,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_startButton);
 	}
 
-	private void createAssignedButton()
+	private void getAssignedButton()
 	{
 		m_assignButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_assignButton.setIcon(DiskoIconFactory.getIcon("STATUS.ASSIGNED","48x48"));
@@ -1201,7 +1200,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_assignButton);
 	}
 	
-	private void createCompletedButton()
+	private void getCompletedButton()
 	{
 		m_completedButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_completedButton.setIcon(DiskoIconFactory.getIcon("STATUS.FINISHED","48x48"));
@@ -1394,7 +1393,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		}
 	}
 
-	private void createPOIButton()
+	private void getPOIButton()
 	{
 		m_poiButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_poiButton.setIcon(DiskoIconFactory.getIcon("THEME.INCIDENT","48x48"));
@@ -1418,7 +1417,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_poiButton);
 	}
 
-	private void createPositionButton()
+	private void getPositionButton()
 	{
 		m_positionButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_positionButton.setIcon(DiskoIconFactory.getIcon("MAP.POSITION","48x48"));
@@ -1442,7 +1441,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		m_buttonRow.add(m_positionButton);
 	}
 
-	private void createTextButton()
+	private void getTextButton()
 	{
 		m_textButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 		m_textButton.setIcon(DiskoIconFactory.getIcon("GENERAL.ABC","48x48"));

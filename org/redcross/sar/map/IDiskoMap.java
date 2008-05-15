@@ -17,6 +17,7 @@ import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.carto.IFeatureLayer;
+import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
@@ -44,134 +45,55 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
 	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
-	 */
-	public MsoLayerSelectionModel getMsoLayerSelectionModel()
-			throws IOException, AutomationException;
-	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
-	 */
-	public void setMsoLayerSelectionModel()
-			throws IOException, AutomationException;
-	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
-	 */
-	public WMSLayerSelectionModel getWMSLayerSelectionModel()
-			throws IOException, AutomationException;
-	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
-	 */
-	public void setWMSLayerSelectionModel()
-			throws IOException, AutomationException;
-	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
-	 */
-	public DefaultMapLayerSelectionModel getDefaultMapLayerSelectionModel()
-			throws IOException, AutomationException;
-	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
-	 */
-	public void setDefaultMapLayerSelectionModel()
-			throws IOException, AutomationException;
+	public MsoLayerSelectionModel getMsoLayerSelectionModel() throws IOException, AutomationException;
+	public WMSLayerSelectionModel getWMSLayerSelectionModel() throws IOException, AutomationException;	
+	public DefaultMapLayerSelectionModel getDefaultMapLayerSelectionModel() throws IOException, AutomationException;	
+	public void setWMSLayerSelectionModel() throws IOException, AutomationException;
+	public void setMsoLayerSelectionModel() throws IOException, AutomationException;
+	public void setDefaultMapLayerSelectionModel() throws IOException, AutomationException;
 	
 	public IDiskoMapManager getMapManager();
-
+	
 	public List<IFeature> getSelection() throws IOException, AutomationException;
-	
 	public List<IMsoFeature> getMsoSelection() throws IOException, AutomationException;
-	
 	public IEnvelope getSelectionExtent() throws IOException, AutomationException;
 
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#setSelected(java.lang.String, java.lang.String, java.lang.Object)
-	 */
-	public void setSelected(String layerName, String fieldName, Object value)
-			throws IOException, AutomationException;
+	public void setSelected(String layerName, String fieldName, Object value) throws IOException, AutomationException;
+	public void setSelected(FeatureLayer layer, String fieldName, Object value) throws IOException, AutomationException;
+	public void setSelected(FeatureLayer layer, String whereclause) throws IOException, AutomationException;	
 
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#setSelected(com.esri.arcgis.carto.FeatureLayer, java.lang.String, java.lang.Object)
-	 */
-	public void setSelected(FeatureLayer layer, String fieldName, Object value)
-			throws IOException, AutomationException;
-
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#setSelected(com.esri.arcgis.carto.FeatureLayer, java.lang.String)
-	 */
-	public void setSelected(FeatureLayer layer, String whereclause)
-			throws IOException, AutomationException;
-	
 	public int isSelected(IMsoObjectIf msoObj) throws AutomationException, IOException;
-	
-	public List<IMsoFeatureLayer> setSelected(IMsoObjectIf msoObject, boolean selected) throws IOException, AutomationException;
-	
-	public List<IMsoFeatureLayer> clearSelected() throws IOException, AutomationException;
-
-	public int getSelectionCount(boolean update) throws IOException, AutomationException;
-	
+	public int getSelectionCount(boolean update) throws IOException, AutomationException;	
 	public int getMsoSelectionCount(boolean update) throws IOException, AutomationException;
+	public List<IMsoFeatureLayer> setSelected(IMsoObjectIf msoObject, boolean selected) throws IOException, AutomationException;	
+	public List<IMsoFeatureLayer> clearSelected() throws IOException, AutomationException;
 	
 	public void centerAtPosition(Position p) throws IOException, AutomationException;
-	
 	public void centerAtSelected () throws IOException, AutomationException;
-
 	public void centerAtFeature(IFeature feature) throws IOException, AutomationException;
-	
 	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
 	
 	public void zoomToSelected () throws IOException, AutomationException;
-	
 	public void zoomToSelected (double ratio) throws IOException, AutomationException;
-	
 	public void zoomToFeature(IFeature feature) throws IOException, AutomationException;
-	
 	public void zoomToFeature(IFeature feature, double ratio) throws IOException, AutomationException;
-
 	public void zoomToMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
-	
 	public void zoomToMsoObject(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException;
-	
-	/*public void startEdit(IMsoObjectIf msoObject, boolean selectIt) throws IOException, AutomationException;
-	
-	public void stopEdit(IMsoObjectIf msoObject) throws IOException, AutomationException;
-	
-	public boolean isEditing();
-	*/
 	
 	public IEnvelope getMsoObjectExtent(IMsoObjectIf msoObj) throws IOException, AutomationException;
 	
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#getFeatureLayer(java.lang.String)
-	 */
-	public FeatureLayer getFeatureLayer(String name) throws IOException,
-			AutomationException;
+	public FeatureLayer getFeatureLayer(String name) throws IOException, AutomationException;
 
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#refreshLayer(com.esri.arcgis.geometry.IEnvelope)
-	 */
-	public void refreshLayer(Object obj, IEnvelope extent) throws IOException,
-			AutomationException;
-
-	/* (non-Javadoc)
-	 * @see org.redcross.sar.map.IDiskoMap#refresh()
-	 */
-	public void refresh() throws IOException,
-			AutomationException;
+	public void refresh() throws IOException, AutomationException;
+	public void refreshGraphics(Object data, IEnvelope extent) throws IOException,  AutomationException;
+	public void refreshGeography(Object data, IEnvelope extent) throws IOException,  AutomationException;
 	
+	public void refreshMapBase() throws IOException, AutomationException;	
+	public void refreshMapBase(IEnvelope extent) throws IOException, AutomationException;	
 	public void refreshMsoLayers() throws IOException, AutomationException;
-	
-	public void refreshMsoLayers(IEnvelope extent) throws IOException, AutomationException;
-	
-	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode classCodet) throws IOException,
-		AutomationException;
-	
-	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode classCode, IEnvelope extent) throws IOException,
-		AutomationException;
+	public void refreshMsoLayers(IEnvelope extent) throws IOException, AutomationException;	
+	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode code) throws IOException, AutomationException;
+	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode code, IEnvelope extent) throws IOException, AutomationException;	
 	
 	public void suspendNotify();	
 	public void consumeNotify();	
@@ -224,5 +146,17 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	public IEnvelope getDirtyExtent();
 	
 	public boolean isRefreshPending();
-			
+	
+	public boolean isVisible();
+	public void setVisible(boolean isVisible);
+
+	public ILayer getMapBase();
+	public int getMapBaseIndex();
+	public int getMapBaseCount();
+	public int toggleMapBase();
+	public int setMapBase(int index);
+	
+	public boolean loadMxdDoc();
+	public boolean isMxdDocLoaded();
+	
 }

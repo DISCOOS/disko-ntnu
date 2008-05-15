@@ -1,7 +1,5 @@
 package org.redcross.sar.app;
 
-import java.util.Properties;
-
 import javax.swing.JFrame;
 
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;

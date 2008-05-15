@@ -42,7 +42,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private final static String EMPTY_PANEL_NAME = "EmptyPanel";
     private final static String UNIT_PANEL_NAME = "UnitPanel";
     private final static String ASSIGNMENT_PANEL_NAME = "AssignmentPanel";
-    private final static String ASSIGNMENT_LIST_PANEL_NAME = "AssignmentList";
+    private final static String ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME = "AssignmentList";
     private final static String ASG_RESULT = "AsgResult";
     private final static String ASG_RETURN = "AsgReturn";
     private final static String ASG_PRINT = "AsgPrint";
@@ -50,12 +50,12 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private final static String UNIT_PRINT = "UnitPrint";
     private final static String UNIT_CHANGE = "UnitChange";
 
-    private final static int ASSIGNMENT_INFO_PANEL_TOP_ELEMENTS = 5;
-    private final static int ASSIGNMENT_INFO_PANEL_CENTER_ELEMENTS = 1;
+    private final static int ASSIGNMENT_INFO_PANEL_TOP_MANAGE_ELEMENTSS = 5;
+    private final static int ASSIGNMENT_INFO_PANEL_CENTER_MANAGE_ELEMENTSS = 1;
     private final static int ASSIGNMENT_INFO_PANEL_BUTTONS = 4;
 
-    private final static int UNIT_INFO_PANEL_TOP_ELEMENTS = 4;
-    private final static int UNIT_INFO_PANEL_CENTER_ELEMENTS = 2;
+    private final static int UNIT_INFO_PANEL_TOP_MANAGE_ELEMENTSS = 4;
+    private final static int UNIT_INFO_PANEL_CENTER_MANAGE_ELEMENTSS = 2;
     private final static int UNIT_INFO_PANEL_BUTTONS = 2;
 
     private IDiskoWpLogistics m_wpModule;
@@ -120,7 +120,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
                 }
                 renderAssignment();
             }
-        } else if (ASSIGNMENT_LIST_PANEL_NAME.equals(m_displayedPanelName))
+        } else if (ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME.equals(m_displayedPanelName))
         {
             renderAssignmentList();
         } else if (UNIT_PANEL_NAME.equals(m_displayedPanelName))
@@ -178,7 +178,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 
     private void initUnitInfoPanel()
     {
-        m_unitInfoPanel = new LogisticsInfoPanel(UNIT_INFO_PANEL_TOP_ELEMENTS, UNIT_INFO_PANEL_CENTER_ELEMENTS, UNIT_INFO_PANEL_BUTTONS);
+        m_unitInfoPanel = new LogisticsInfoPanel(UNIT_INFO_PANEL_TOP_MANAGE_ELEMENTSS, UNIT_INFO_PANEL_CENTER_MANAGE_ELEMENTSS, UNIT_INFO_PANEL_BUTTONS);
         m_infoPanel.add(m_unitInfoPanel, UNIT_PANEL_NAME);
         m_unitInfoPanel.setHeaders(new String[]{m_wpModule.getBundleText("UnitInfoPanel_hdr_0.text"),
                 m_wpModule.getBundleText("UnitInfoPanel_hdr_1.text"),
@@ -194,7 +194,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 
     private void initAssignmentInfoPanel()
     {
-        m_assignmentInfoPanel = new LogisticsInfoPanel(ASSIGNMENT_INFO_PANEL_TOP_ELEMENTS, ASSIGNMENT_INFO_PANEL_CENTER_ELEMENTS, ASSIGNMENT_INFO_PANEL_BUTTONS);
+        m_assignmentInfoPanel = new LogisticsInfoPanel(ASSIGNMENT_INFO_PANEL_TOP_MANAGE_ELEMENTSS, ASSIGNMENT_INFO_PANEL_CENTER_MANAGE_ELEMENTSS, ASSIGNMENT_INFO_PANEL_BUTTONS);
         m_infoPanel.add(m_assignmentInfoPanel, ASSIGNMENT_PANEL_NAME);
         m_assignmentInfoPanel.setHeaders(new String[]{m_wpModule.getBundleText("AsgInfoPanel_hdr_0.text"),
                 m_wpModule.getBundleText("AsgInfoPanel_hdr_1.text"),
@@ -219,7 +219,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         JLabel hl = m_unitAssignmentsPanel.getHeaderLabel();
         hl.setHorizontalAlignment(SwingConstants.CENTER);
         hl.setPreferredSize(new Dimension(40, 40));
-        m_infoPanel.add(scrollpane, ASSIGNMENT_LIST_PANEL_NAME);
+        m_infoPanel.add(scrollpane, ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME);
     }
 
     void setAssignment(IAssignmentIf anAssignment, boolean shallReturnToList)
@@ -278,7 +278,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         m_displayedUnitSelection = aSelectionIndex;
         setupUnitAssignmentPanel();
         renderAssignmentList();
-        showPanel(ASSIGNMENT_LIST_PANEL_NAME);
+        showPanel(ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME);
     }
 
     private void setupUnitAssignmentPanel()
@@ -399,7 +399,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         {
             System.out.println("Trykk 4: " + command + m_displayedAsssignment.getNumber());
             renderAssignmentList();
-            showPanel(ASSIGNMENT_LIST_PANEL_NAME);
+            showPanel(ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME);
         } else if (command.equalsIgnoreCase(ASG_PRINT))
         {
         	// has assignment to print?

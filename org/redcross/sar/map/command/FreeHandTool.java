@@ -6,7 +6,6 @@ package org.redcross.sar.map.command;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.map.FreeHandPanel;
@@ -61,9 +60,12 @@ public class FreeHandTool extends AbstractDrawTool {
 		name = "CustomCommands_FreeHand"; 
 		toolTip = "Frihånd"; 
 		enabled = true;
-		
+				
 		// set tool type
 		type = DiskoToolType.FREEHAND_TOOL;
+		
+		// show draw frame when appropriate
+		isShowDrawFrame = true;
 		
 		// map draw operation
 		onMouseDownAction = DrawAction.ACTION_BEGIN;
@@ -291,72 +293,71 @@ public class FreeHandTool extends AbstractDrawTool {
 
 	private void updateGeometry() throws IOException, AutomationException {
 
-		// has new line been found?
-		if (p1.returnDistance(p2) != 0 && isDrawing()) {
-		
-			// initialize
-			Polyline pline1 = null;
-			Polyline pline2 = null;
-			
-			// try to snap?
-			if(isSnapToMode()) {
+		// any change?
+		if (p1.returnDistance(p2) == 0 || !isDrawing()) return;
 
-				// only update snap geometry
-				snapTo(p1);
-				
-				// search polyline inside envelope
-				pline1 = (Polyline)snapAdapter.getSnapGeometry();
-				pline2 = (Polyline)geoSnap;
-				
-			}
+		// initialize
+		Polyline pline1 = null;
+		Polyline pline2 = null;
+		
+		// try to snap?
+		if(isSnapToMode()) {
+
+			// only update snap geometry
+			snapTo(p1);
 			
-			// nothing to snap onto?
-			if (pline1 == null || pline2 == null) {
-				// add to geometry
-				geoPath.addPoint(p2, null, null);
-				// replace rubber
-				geoRubber = geoPath;
+			// search polyline inside envelope
+			pline1 = (Polyline)snapAdapter.getSnapGeometry();
+			pline2 = (Polyline)geoSnap;
+			
+		}
+
+		// nothing to snap to?
+		if (pline1 == null || pline2 == null) {
+			// add point
+			geoPath.addPoint(p2, null, null);
+			// replace rubber
+			geoRubber = (Polyline)geoPath.esri_clone();	
+		}
+		else {
+			// densify rubberband, use vertices as input to segment graph
+			Polyline copy = (Polyline)geoRubber.esri_clone();
+			copy.densify(getSnapTolerance()/10, -1);
+			// greate a geometry bag to hold selected polylines
+			GeometryBag gb = new GeometryBag();
+			if (pline1 != null) {
+				gb.addGeometry(pline1, null, null);
+			}
+			if (pline2 != null) {
+				gb.addGeometry(pline2, null, null);
+			}
+			// create the segment graph
+			SegmentGraph segmentGraph = new SegmentGraph();
+			segmentGraph.load(gb, false, true);
+			ISegmentGraphCursor segmentGraphCursor = segmentGraph.getCursor(p1);
+	
+			// tracing the segmnet graph
+			for (int i = 0; i < copy.getPointCount(); i++) {
+				IPoint p = copy.getPoint(i);
+				if (!segmentGraphCursor.moveTo(p)) {
+					segmentGraphCursor.finishMoveTo(p);
+				}
+			}
+			Polyline trace = (Polyline)segmentGraphCursor.getCurrentTrace();
+			if (trace != null && trace.getPointCount() > 0) {
+				// add tracepoints to path
+				for (int i = 0; i < trace.getPointCount(); i++ ) {
+					geoPath.addPoint(trace.getPoint(i), null, null);
+				}
 			}
 			else {
-				// densify rubberband, use vertices as input to segment graph
-				Polyline copy = (Polyline)geoRubber.esri_clone();
-				copy.densify(getSnapTolerance()/10, -1);
-				// greate a geometry bag to hold selected polylines
-				GeometryBag gb = new GeometryBag();
-				if (pline1 != null) {
-					gb.addGeometry(pline1, null, null);
-				}
-				if (pline2 != null) {
-					gb.addGeometry(pline2, null, null);
-				}
-				// create the segment graph
-				SegmentGraph segmentGraph = new SegmentGraph();
-				segmentGraph.load(gb, false, true);
-				ISegmentGraphCursor segmentGraphCursor = segmentGraph.getCursor(p1);
-		
-				// tracing the segmnet graph
-				for (int i = 0; i < copy.getPointCount(); i++) {
-					IPoint p = copy.getPoint(i);
-					if (!segmentGraphCursor.moveTo(p)) {
-						segmentGraphCursor.finishMoveTo(p);
-					}
-				}
-				Polyline trace = (Polyline)segmentGraphCursor.getCurrentTrace();
-				if (trace != null && trace.getPointCount() > 0) {
-					// add tracepoints to path
-					for (int i = 0; i < trace.getPointCount(); i++ ) {
-						geoPath.addPoint(trace.getPoint(i), null, null);
-					}
-				}
-				else {
-					geoPath.addPoint(p2, null, null);
-				}
-				// reset
-				segmentGraphCursor = null;
+				geoPath.addPoint(p2, null, null);
 			}
-			// mark change
-			setDirty();			
-		}		
+			// reset
+			segmentGraphCursor = null;
+		}
+		// mark change
+		setDirty();			
 	}
 	
 	@Override

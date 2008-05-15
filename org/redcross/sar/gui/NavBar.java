@@ -1030,14 +1030,13 @@ public class NavBar extends JPanel {
 	
 	public void switchIcon(String command, int index){
 		if(command.equalsIgnoreCase("maptoggle")){
-			//System.out.println("spennende...");
 			AbstractButton ab = this.getButton(DiskoCommandType.MAP_TOGGLE_COMMAND);
-			ImageIcon icon;
-			if(index==0)
-				icon = new ImageIcon(app.getProperty("DiskoCommandType.MAP_TOGGLE_COMMAND.icon"));
+			if(index==1)
+				ab.setIcon(DiskoIconFactory.getIcon(
+						DiskoEnumFactory.getIcon(DiskoCommandType.MAP_TOGGLE_COMMAND), "48x48"));
 			else 
-				icon = new ImageIcon(app.getProperty("DiskoCommandType.MAP_TOGGLE_COMMAND_2.icon"));
-			ab.setIcon(icon);			
+				ab.setIcon(DiskoIconFactory.getIcon(
+						DiskoEnumFactory.getText("DiskoCommandType.MAP_TOGGLE_COMMAND_2.icon",null), "48x48"));			
 		}
 	}
 	

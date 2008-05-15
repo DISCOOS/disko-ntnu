@@ -11,7 +11,6 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.DiskoPanel;
 import org.redcross.sar.gui.UnitTable;
@@ -127,14 +126,14 @@ public class UnitSelectionDialog extends DiskoDialog {
 			try {
 				contentPanel = new DiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = DiskoButtonFactory.createButton("IconEnum.ALLOCATED",ButtonSize.NORMAL);
+				AbstractButton button = DiskoButtonFactory.createButton("GENERAL.ALLOCATED",ButtonSize.NORMAL);
 				button.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						allocate();
 					}
 				});
 				contentPanel.addButton(button, "allocated");
-				button = DiskoButtonFactory.createButton("IconEnum.CANCELED",ButtonSize.NORMAL);
+				button = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
 				button.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						clear();
@@ -166,7 +165,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private JButton getAllocateButton() {
 		if (allocateButton == null) {
 			try {
-				allocateButton = DiskoButtonFactory.createButton("IconEnum.ALLOCATED",ButtonSize.NORMAL);
+				allocateButton = DiskoButtonFactory.createButton("STATUS.ASSIGNED",ButtonSize.NORMAL);
 				allocateButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						allocate();
@@ -187,7 +186,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 	private JButton getReclaimButton() {
 		if (reclaimButton == null) {
 			try {
-				reclaimButton = DiskoButtonFactory.createButton("IconEnum.CANCELED",ButtonSize.NORMAL);
+				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
 				reclaimButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						clear();

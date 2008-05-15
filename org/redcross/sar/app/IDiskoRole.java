@@ -83,7 +83,7 @@ public interface IDiskoRole {
 	 * Return a list of all IDiskoWpModules loaded for this IDiskoRole
 	 * @return A list of IDiskoWpModules
 	 */
-	public List getDiskoWpModules();
+	public List<IDiskoWpModule> getDiskoWpModules();
 	
 	/**
 	 * Get a reference to the DiskoApplication.

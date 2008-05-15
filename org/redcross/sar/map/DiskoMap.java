@@ -22,10 +22,12 @@ import java.util.List;
 import com.esri.arcgis.beans.map.MapBean;
 import com.esri.arcgis.carto.*;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
+import com.esri.arcgis.controls.IMapControlEvents2OnAfterScreenDrawEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMapReplacedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMouseDownEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMouseMoveEvent;
+import com.esri.arcgis.controls.IMapControlEvents2OnViewRefreshedEvent;
 import com.esri.arcgis.controls.esriControlsBorderStyle;
 import com.esri.arcgis.geodatabase.IEnumIDs;
 import com.esri.arcgis.geodatabase.IFeature;
@@ -61,9 +63,10 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.thread.DiskoMapProgressor;
+import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.util.mso.Position;
 
 /**
@@ -90,6 +93,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private int supressDrawing = 0;
 	private int notifySuspended = 0;
 	private boolean isEditSupportInstalled = false;
+	private int currentBase = 0;
 	
 	// lists
 	private MsoLayerSelectionModel msoLayerSelectionModel = null;
@@ -112,9 +116,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private HashMap<String,Runnable> refreshStack = null;
 	private MsoLayerEventStack msoLayerEventStack = null;
 	
+	// progress monitoring
+	private DiskoMapProgressor progressor = null;
+	
 	// adapters
 	private DrawAdapter drawAdapter = null;
 	private SnapAdapter snapAdapter = null;
+	private ControlEventsAdapter ctrlAdapter = null;
+	private MapCompEventsAdapter compAdapter = null;
 	
 	// elements
 	private DrawFrame drawFrame = null;
@@ -124,7 +133,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	// mouse tracking
 	private long previous = 0;		
-	private Timer update = null;	
+	private Timer tracker = null;	
 	private Point movePoint = null;
 	private Point clickPoint = null;
 
@@ -132,20 +141,26 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	/**
 	 * Default constructor
 	 */
-	public DiskoMap(String mxdDoc, IDiskoMapManager mapManager, 
+	public DiskoMap(IDiskoMapManager mapManager, 
 			IMsoModelIf msoModel, EnumSet<IMsoFeatureLayer.LayerCode> myLayers)
 			throws IOException, AutomationException {
 		
 		// prepare
-		this.mxdDoc = mxdDoc;
 		this.mapManager = mapManager;
 		this.msoModel = msoModel;
 		this.myLayers = myLayers;
 		this.msoLayerEventStack = new MsoLayerEventStack();
 		this.workListeners = new ArrayList<IDiskoWorkListener>();
+		this.ctrlAdapter = new ControlEventsAdapter();
+		this.tracker = new MapTracker();
+		this.progressor = new DiskoMapProgressor(this);
+		this.compAdapter = new MapCompEventsAdapter();
 		
 		// initialize GUI
 		initialize();
+		
+		// load map
+		loadMxdDoc(mapManager.getMxdDoc(),true);		
 	}
 
 	private void initialize() throws IOException, AutomationException {
@@ -155,183 +170,40 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		setBorder(null);
 		setBorderStyle(esriControlsBorderStyle.esriNoBorder);
 		setShowScrollbars(false);
-		suppressResizeDrawing(true, 0);
+		suppressResizeDrawing(true, 0);		
 
-		// load mxd document
-		loadMxFile(mxdDoc, null, null);
-
-		// initialize layers
-        initLayers();
+		// set disko map progress
+		getTrackCancel().setCheckTime(250);
+		getTrackCancel().setProgressor(progressor);
 		
+        // listen to mso client event update events
+		msoModel.getEventManager().addClientUpdateListener(this);
+                
 		// listen to do actions when the map is loaded
-		addIMapControlEvents2Listener(new IMapControlEvents2Adapter() {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
-				// update status panel?
-				if(mapStatusBar!=null) {
-					clickPoint.setX(e.getMapX());
-					clickPoint.setY(e.getMapY());
-					mapStatusBar.onMouseDown(clickPoint);
-				}
-			}
-			@Override
-			public void onMouseMove(IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
-				// update status panel?
-				if(mapStatusBar==null) {
-					// stop timer?
-					if(update.isRunning())
-						update.stop();					
-				}
-				else {
-					// get tic
-					long tic = Calendar.getInstance().getTimeInMillis();
-					if(tic-previous>190) {
-						previous = tic;
-						movePoint.setX(e.getMapX());
-						movePoint.setY(e.getMapY());
-						// start timer?
-						if(!update.isRunning()) {
-							update.start();
-						}
-					}
-				}		
-			}
-			public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
-                   	throws java.io.IOException, AutomationException {
-				initLayers();
-				// update status panel?
-				if(mapStatusBar!=null) {
-					mapStatusBar.reset();
-				}
-				// update draw element?
-				if(drawFrame!=null) {
-					drawFrame.setActiveView(getActiveView());
-				}
-			}
-			public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
-        		throws java.io.IOException, AutomationException {
-				
-				// update status panel?
-				if(mapStatusBar==null) {
-					// stop timer?
-					if(update.isRunning())
-						update.stop();					
-				}
-				else {
-					// get tic
-					long tic = Calendar.getInstance().getTimeInMillis();
-					if(tic-previous>150) {
-						previous = tic;
-						// start timer?
-						if(!update.isRunning()) {
-							update.start();
-						}
-					}
-				}		
-				
-			}
-			
-		});
+		addIMapControlEvents2Listener(ctrlAdapter);
 
-		/* =============================================================
-		 * IMPORTANT: This is a important hack, do not remove!
-		 * 
-		 * Without this hack, the system will hang under certain
-		 * conditions. The problem is an deadlock and is located in 
-		 * ArcGIS Engine.
-		 * 
-		 * It can be reprodused in the following way: 
-		 * 
-		 * 1. Comment out both occurences of suppressResizeDrawing() below
-		 * 2. Switch to the work prosess "MessageLog"
-		 * 3. Toggle NavButton on, the map is shown (cardlayout toggle)
-		 * 4. Toggle NavButton off, the map should no be hidden
-		 * 5. BUT: The system hangs with the map partial resized and still 
-		 * 	  shown. If the debug command "Run -> Suspend" is selected 
-		 * 	  and the AWT thread is inspected in debug view you will see 
-		 * 	  that the system hangs in call to a class i ArcGIS engine. 
-		 * 	  More spesific; during the creation of a ESRI Point. 
-		 * 
-		 * 		This Point creation is an result of a event sequence invoked 
-		 * 	  when preparing to draw the table which now should be known 
-		 *    instead of the map.
-		 *    
-		 * PROBABLE CAUSE: Then the NavButton is toggled, the NavBar is
-		 * hidden before the cardlayout is toggled. The reason for this: the 
-		 * actionlistener registered on button NavButton by MainMenuPanel is
-		 * registered before the actionlistener used in MessageLogPanel to
-		 * toggle the cardlayout on m_tablePanel. Because the NavBar is hidden, 
-		 * a resize of the MapControl in DiskoMap is executed just before the 
-		 * cardlayout toggle (which hides the map). Since a resize results in a
-		 * repaint of the map, and resize operations on the MapBean is 
-		 * done on another thread than the event dispatch thread (EDT), an 
-		 * potential concurrency issue (deadlock) now waiting to happend. 
-		 * 		This is what probably happens: The combination of a resize
-		 * of the MapControl, and hidding it using cardlayout, which then 
-		 * invoces an asynchronous repaint in the MapControl, ultimately 
-		 * resulting in deadlock (a concurrency issue) when the new point 
-		 * is created on EDT. 
-		 * 		The solution below works probably because it changes the 
-		 * order of events, compared to earlier, and thus prevents the deadlock.
-		 * 
-		 * =============================================================
-		 */
+		// listen for component events
+		addComponentListener(compAdapter);
 		
-		addComponentListener(new ComponentAdapter() {
-
-			@Override
-			public void componentResized(ComponentEvent arg0) {
-				try {
-					if(isVisible()) {
-						// turn off
-						suppressResizeDrawing(false, 0);
-						// turn on
-						suppressResizeDrawing(true, 0);
-					}
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-				
-			}
-
-		});
-
 		// create refresh stack
 		refreshStack = new HashMap<String,Runnable>();
 		
-		// create timer to prevent flickering of mouse pointer over map
-		update = new Timer(50, new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				// notify?
-				if(mapStatusBar!=null) {
-					try {
-						mapStatusBar.onMouseMove(movePoint);
-						mapStatusBar.setScale(getMapScale());
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}				
-			}
-			
-		});
-		
-		// one shot and start at once
-		update.setRepeats(false);
-		update.setInitialDelay(0);
+		// create timer to reduce flickering of mouse pointer over map
+		tracker = new MapTracker();
 		
 		// create points for last click and move events
-		clickPoint = new Point();		
-		movePoint = new Point();		
-		clickPoint.setSpatialReferenceByRef(getSpatialReference());
+		movePoint = new Point();
 		movePoint.setSpatialReferenceByRef(getSpatialReference());
+		clickPoint = new Point();
+		clickPoint.setSpatialReferenceByRef(getSpatialReference());
 		
 	}
 	
 	private void initLayers() throws java.io.IOException, AutomationException {
+		
+		// forward
+		if(!isMxdDocLoaded()) return;
+		
 		// add custom layers
 		IMap focusMap = getActiveView().getFocusMap();
 		ISpatialReference srs = getSpatialReference();
@@ -387,27 +259,49 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					myInterests.add(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 			}
 		}
+		
+		// create a the mso group layer
+		GroupLayer msoGroup = new GroupLayer();
+		msoGroup.setName("MSO_GROUP_LAYER");
+		msoGroup.setCached(true);
+		
+		// add to focus map
+		focusMap.addLayer(msoGroup);
 
-		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
-		msoEventManager.addClientUpdateListener(this);
-
+		// add mso layers to group
 		for (int i = 0; i < msoLayers.size(); i++) {
-			IFeatureLayer layer = (IFeatureLayer)msoLayers.get(i);
-			focusMap.addLayer(layer);
-			layer.setCached(true);
+			msoGroup.add((ILayer)msoLayers.get(i));
 		}
 
-		// set all featurelayers not selectabel
+		// init all layers
 		for (int i = 0; i < focusMap.getLayerCount(); i++) {
-			ILayer layer = focusMap.getLayer(i);
-			if (layer instanceof IFeatureLayer) {
-				IFeatureLayer flayer = (IFeatureLayer)layer;
-				if (!(flayer instanceof IMsoFeatureLayer)) {
-					flayer.setSelectable(false);
-				}
+			initLayer(focusMap.getLayer(i));
+		}
+		
+	}	
+	
+	private void initLayer(ILayer l) throws AutomationException, IOException {
+		if (l instanceof IFeatureLayer) {
+			IFeatureLayer f = (IFeatureLayer)l;
+			if (!(f instanceof IMsoFeatureLayer)) {
+				f.setSelectable(false);
 			}
 		}
-	}	
+		else if(l instanceof ILayerStatus) {
+			// add the disko step processor to this layer
+			((ILayerStatus)l).setStepProgressor(progressor);
+		}
+		else if(l instanceof GroupLayer) {
+			// cast to group layer
+			GroupLayer g = (GroupLayer)l;
+			// loop over all layers
+			for (int i = 0; i < g.getCount(); i++) {
+				initLayer(g.getLayer(i));
+			}
+			
+		}
+		
+	}
 	
 	public void handleMsoUpdateEvent(Update e) {
 		
@@ -439,11 +333,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			extent = (extent==null ? getExtent() : extent);
 			// refresh layer(s)
 			if(count==1)
-				refreshLayer(msoLayer, extent);
+				refreshGraphics(msoLayer, extent);
 			else if(count > 1)
-				refreshLayer(null, extent);
-			else if(drawFrame!=null) 
-				drawFrame.refresh();
+				refreshGraphics(null, extent);
+			else 
+				refreshDrawFrame();
 						
 		} catch (AutomationException e1) {
 			e1.printStackTrace();
@@ -998,79 +892,17 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			return (ITool)currentTool;
 	}
 
-	public void refresh() throws IOException, AutomationException {
-		
-		// consume?
-		if(isDrawing() || isDrawingSupressed()) return;
-		
-		// create object
-		Runnable r = new Runnable() {
-			public void run() {
-				try {
-					// hide
-					setVisible(false);
-					// refresh view
-					getActiveView().refresh();
-					// show
-					setVisible(true);
-				} catch (AutomationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		};
-		SwingUtilities.invokeLater(r);
-	}
-
-	public void refreshLayer(final Object obj, final IEnvelope extent) {
-		// consume?
-		if(isDrawing() || isDrawingSupressed()) return;
-		// get key
-		String key = String.valueOf(obj);
-		// not in stack?
-		if (!refreshStack.containsKey(key)) {
-			//System.out.println("L:A:"+key);
-			// create object
-			Runnable r = new Runnable() {
-				public void run() {
-					try {				
-						// get key
-						String key = String.valueOf(obj);
-						// refresh view
-						getActiveView().partialRefresh(esriViewDrawPhase.esriViewGraphics, obj, extent);
-						// is draw frame enabled?
-						if(isEditSupportInstalled()) {
-							// draw directly onto map?
-							if(obj==null || !drawFrame.isDirty()) 
-								drawFrame.draw();
-							else
-								drawFrame.refresh();
-						}
-						// remove from stack
-						refreshStack.remove(key);
-					} catch (AutomationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			};
-			refreshStack.put(key, r);
-			SwingUtilities.invokeLater(r);
-		}
-	}
-
-	public boolean isRefreshPending() {
-		return (refreshStack.size()>0);
+	public void refreshMapBase() throws IOException, AutomationException {
+		// forward
+		refresh(esriViewDrawPhase.esriViewGeography, null, getExtent());
 	}
 	
-	public void refreshMsoLayers() throws IOException,
-		AutomationException {
+	public void refreshMapBase(IEnvelope extent)  throws IOException, AutomationException {
+		// forward
+		refresh(esriViewDrawPhase.esriViewGeography, null, extent);
+	}
+	
+	public void refreshMsoLayers() throws IOException, AutomationException {
 		// forward
 		refreshMsoLayers(getExtent());
 	}
@@ -1102,6 +934,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		int count = 0;
 		boolean isDirtyExtent = (extent == null);
 		IMsoFeatureLayer msoLayer = null;
+		
 		// loop over layers
 		for (IMsoFeatureLayer it : layers) {
 			if (it.isVisible() && it.isDirty()) {
@@ -1118,18 +951,102 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			}
 		}
 		
-		// limit extent to active view extent?
-		if(extent!=null)
-			extent.intersect(getExtent());
-		else
-			extent = getExtent();
-		
 		// refresh layer(s)
 		if(count==1)
-			refreshLayer(msoLayer, extent);
+			refreshGraphics(msoLayer, extent);
 		else if(count > 1)
-			refreshLayer(null, extent);
+			refreshGraphics(null, extent);
+		else
+			refreshDrawFrame();			
+	
+	}
 
+	public void refresh() throws IOException, AutomationException {
+		
+		// consume?
+		if(isDrawing() || isDrawingSupressed()) return;
+		
+		// create object
+		Runnable r = new Runnable() {
+			public void run() {
+				try {
+					// hide
+					setVisible(false);
+					// refresh view
+					getActiveView().refresh();
+					// show
+					setVisible(true);
+				} catch (AutomationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		SwingUtilities.invokeLater(r);
+	}
+
+	public void refreshGeography(final Object data, final IEnvelope extent) {
+		// forward
+		refresh(esriViewDrawPhase.esriViewGeography,data,extent);
+	}
+	
+	public void refreshGraphics(final Object data, final IEnvelope extent) {
+		// forward
+		refresh(esriViewDrawPhase.esriViewGraphics,data,extent);
+	}
+	
+	private void refresh(final int phase, final Object data, final IEnvelope extent) {
+		// consume?
+		if(isDrawing() || isDrawingSupressed()) return;
+		// get key
+		String key = phase + "." + String.valueOf(data);
+		// not in stack?
+		if (!refreshStack.containsKey(key)) {
+			//System.out.println("L:A:"+key);
+			// create object
+			Runnable r = new Runnable() {
+				public void run() {
+					try {				
+						// get key
+						String key = phase + "." + String.valueOf(data);
+						// refresh view
+						getActiveView().partialRefresh(phase, data, extent);
+						// is draw frame enabled?
+						if(isEditSupportInstalled()) {
+							// draw directly onto map?
+							if(data==null || !drawFrame.isDirty()) 
+								drawFrame.draw();
+							else
+								drawFrame.refresh();
+						}
+						// remove from stack
+						refreshStack.remove(key);
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			refreshStack.put(key, r);
+			SwingUtilities.invokeLater(r);
+		}
+	}
+	
+	private void refreshDrawFrame() {
+		// is draw frame enabled?
+		if(isEditSupportInstalled()) {
+			drawFrame.refresh();
+		}		
+	}
+
+	public boolean isRefreshPending() {
+		return (refreshStack.size()>0);
 	}
 	
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException {
@@ -1329,9 +1246,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				}
 			}
 			// nested groups?
-			else if (layer instanceof GroupLayer) {
+			else if (l instanceof GroupLayer) {
 				// cast to group layer
-				GroupLayer glayer = (GroupLayer) layer;
+				GroupLayer glayer = (GroupLayer) l;
 				// forward
 				getSnappableInGroupLayer(layers, glayer, scale);
 			}			
@@ -1570,4 +1487,402 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}   
 		return extent;
     }
+
+	public int getMapBaseIndex() {
+		return currentBase;
+	}
+
+	public ILayer getMapBase() {
+		try {
+			return getLayer(getMapManager().getMapBase(currentBase));
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed!
+		return null;
+	}
+	
+	public int getMapBaseCount() {
+		return getMapManager().getMapBaseCount();
+	}
+
+	/**
+	 * Set base map layer
+	 * 
+	 * @param index 1-based base map layer index.
+	 */
+	
+	public int setMapBase(int index) {
+		
+		// get current base layer count
+		int count = getMapBaseCount();
+		
+		// not allowed?
+		if(count==0 || getMapBaseIndex()==index) return 0;
+
+		try {
+			
+			// loop over all map base layers
+			for(int i=0; i<count;i++) {
+				// get next base layer
+				ILayer l = getLayer(getMapManager().getMapBase(i+1));
+				// found?
+				if(l!=null) {
+					// force cached?
+					if(!l.isCached()) l.setCached(true);
+					// update visible state
+					l.setVisible(i==(index-1));
+				}
+			}
+			
+			// update current index
+			currentBase = index;
+			
+			// return next base layer index
+			return index;
+			
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return 0;
+	}
+
+	public int toggleMapBase() {
+		// toogle upwards
+		int index = (currentBase<getMapBaseCount()) ? currentBase + 1 : 1;
+		// forward
+		return setMapBase(index);
+	}
+	
+	private ILayer getLayer(String name)
+			throws IOException, AutomationException {
+		// get map in focus
+		IMap m = getActiveView().getFocusMap();
+		for (int i = 0; i < m.getLayerCount(); i++) {
+			ILayer layer = m.getLayer(i);
+			if (layer.getName().equalsIgnoreCase(name)) {
+				return layer;
+			}
+		}
+		return null;
+	}
+	
+	public boolean isMxdDocLoaded() {
+		try {
+			return getDocumentFilename()!=null && !getDocumentFilename().isEmpty();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return false;
+	}
+	
+	@Override
+	public void setVisible(boolean isVisible) {
+		// only show map if a document is loaded
+		super.setVisible(isVisible && isMxdDocLoaded());
+	}
+
+	public boolean checkMxdDoc(String mxddoc) {
+		try {
+			// forward
+			return checkMxFile(mxddoc);
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failure
+		return false;
+	}
+
+	public boolean loadMxdDoc() {
+		// forward
+		return loadMxdDoc(mapManager.getMxdDoc(),false);
+	}
+
+	private boolean loadMxdDoc(String mxdDoc, boolean force) {
+
+		// initialize flag
+		boolean bFlag = false;
+		
+		try {
+			
+			// allowed?
+			if(isVisible() || force) {
+			
+				// hide map
+				setVisible(false);
+				
+				// load document?
+				if(!getDocumentFilename().equals(mxdDoc)) { 
+					// validate document
+					if(checkMxFile(mxdDoc)) {
+						// load document
+						loadMxFile(mxdDoc, null, null);
+						// set mxd document
+						this.mxdDoc = mxdDoc;
+						// set default base layer
+						setMapBase(1);
+						// initalize mso layers for the newly loaded map document
+						initLayers();						
+						// success
+						bFlag = true;
+					}
+				}
+				
+				// show again
+				setVisible(true);
+				
+			}			
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// finished
+		return bFlag;
+		
+	}
+	
+	class ControlEventsAdapter extends IMapControlEvents2Adapter {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void onViewRefreshed(IMapControlEvents2OnViewRefreshedEvent arg0) throws IOException, AutomationException {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						if (DiskoMap.this.isVisible() && !DiskoProgressMonitor.getInstance().isInAction()) {
+							DiskoMap.this.getTrackCancel().getProgressor().show();
+						}
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});			
+			//System.out.println(toString() + ":: onViewRefreshed");
+		}
+
+		@Override
+		public void onAfterScreenDraw(IMapControlEvents2OnAfterScreenDrawEvent arg0) throws IOException, AutomationException {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						DiskoMap.this.getTrackCancel().getProgressor().hide();
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});			
+			//System.out.println(toString() + ":: onAfterScreenDraw");
+		}
+
+		@Override
+		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
+			// update status panel?
+			if(mapStatusBar!=null) {
+				clickPoint.setX(e.getMapX());
+				clickPoint.setY(e.getMapY());
+				mapStatusBar.onMouseDown(clickPoint);
+			}
+		}
+		
+		@Override
+		public void onMouseMove(IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
+			// update status panel?
+			if(mapStatusBar==null) {
+				// stop timer?
+				if(tracker.isRunning())
+					tracker.stop();					
+			}
+			else {
+				// get tic
+				long tic = Calendar.getInstance().getTimeInMillis();
+				if(tic-previous>190) {
+					previous = tic;
+					movePoint.setX(e.getMapX());
+					movePoint.setY(e.getMapY());
+					// start timer?
+					if(!tracker.isRunning()) {
+						tracker.start();
+					}
+				}
+			}		
+		}
+		
+		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
+               	throws java.io.IOException, AutomationException {
+			// update status panel?
+			if(mapStatusBar!=null) {
+				mapStatusBar.reset();
+			}
+			// update draw element?
+			if(drawFrame!=null) {
+				drawFrame.setActiveView(getActiveView());
+			}
+		}
+		
+		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
+    		throws java.io.IOException, AutomationException {
+			
+			// update status panel?
+			if(mapStatusBar==null) {
+				// stop timer?
+				if(tracker.isRunning())
+					tracker.stop();					
+			}
+			else {
+				// get tic
+				long tic = Calendar.getInstance().getTimeInMillis();
+				if(tic-previous>150) {
+					previous = tic;
+					// start timer?
+					if(!tracker.isRunning()) {
+						tracker.start();
+					}
+				}
+			}		
+			
+		}
+		
+	}
+	
+	class MapCompEventsAdapter extends ComponentAdapter {
+
+		@Override
+		public void componentShown(ComponentEvent arg0) {
+			// load mxd document?
+			if(!mapManager.getMxdDoc().endsWith(mxdDoc)) {
+				// load default mxd document later
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						loadMxdDoc();
+					}
+				});					
+			}
+		}
+
+		/* =============================================================
+		 * IMPORTANT: This is a critical hack, do not remove!
+		 * 
+		 * Without this hack, the system will hang under certain
+		 * conditions. The problem is an deadlock and is located in 
+		 * ArcGIS Engine.
+		 * 
+		 * It can be reprodused in the following way: 
+		 * 
+		 * 1. Comment out both occurences of suppressResizeDrawing() below
+		 * 2. Switch to the work prosess "MessageLog"
+		 * 3. Toggle NavButton on, the map is shown (cardlayout toggle)
+		 * 4. Toggle NavButton off, the map should no be hidden
+		 * 5. BUT: The system hangs with the map partial resized and still 
+		 * 	  shown. If the debug command "Run -> Suspend" is selected 
+		 * 	  and the AWT thread is inspected in debug view you will see 
+		 * 	  that the system hangs in call to a class i ArcGIS engine. 
+		 * 	  More spesific; during the creation of a ESRI Point. 
+		 * 
+		 * 		This Point creation is an result of a event sequence invoked 
+		 * 	  when preparing to draw the table which now should be known 
+		 *    instead of the map.
+		 *    
+		 * PROBABLE CAUSE: Then the NavButton is toggled, the NavBar is
+		 * hidden before the cardlayout is toggled. The reason for this: the 
+		 * actionlistener registered on button NavButton by MainMenuPanel is
+		 * registered before the actionlistener used in MessageLogPanel to
+		 * toggle the cardlayout on m_tablePanel. Because the NavBar is hidden, 
+		 * a resize of the MapControl in DiskoMap is executed just before the 
+		 * cardlayout toggle (which hides the map). Since a resize results in a
+		 * repaint of the map, and resize operations on the MapBean is 
+		 * done on another thread than the event dispatch thread (EDT), an 
+		 * potential concurrency issue (deadlock) now waiting to happend. 
+		 * 		This is what probably happens: The combination of a resize
+		 * of the MapControl, and hidding it using cardlayout, which then 
+		 * invoces an asynchronous repaint in the MapControl, ultimately 
+		 * resulting in deadlock (a concurrency issue) when the new point 
+		 * is created on EDT. 
+		 * 		The solution below works probably because it changes the 
+		 * order of events, compared to earlier, and thus prevents the deadlock.
+		 * 
+		 * =============================================================
+		 */
+		
+		@Override
+		public void componentResized(ComponentEvent arg0) {
+			try {
+				if(isVisible()) {
+					// turn off
+					suppressResizeDrawing(false, 0);
+					// turn on
+					suppressResizeDrawing(true, 0);
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+
+	}
+	
+	class MapTracker extends Timer {
+		
+		private static final long serialVersionUID = 1L;
+		
+		MapTracker() {
+			
+			// forward
+			super(50, new ActionListener() {
+	
+				public void actionPerformed(ActionEvent arg0) {
+					// notify?
+					if(mapStatusBar!=null) {
+						try {
+							mapStatusBar.onMouseMove(movePoint);
+							mapStatusBar.setScale(getMapScale());
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+						}
+					}				
+				}});
+			
+			// one shot and start at once
+			setRepeats(false);
+			setInitialDelay(0);
+			
+		}		
+	}	
+	
+	
 }

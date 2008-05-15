@@ -14,6 +14,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -28,8 +29,10 @@ import javax.swing.border.BevelBorder;
 import javax.swing.AbstractButton;
 
 import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.CustomMapData;
 import org.redcross.sar.map.DiskoMapManagerImpl;
@@ -70,15 +73,14 @@ public class MapOptionDialog extends DiskoDialog {
 	private JLabel labelHeadType = null;
 	private JLabel labelStatus = null;
 	
-	private ButtonGroup bgPrimar = new ButtonGroup();
-	private ButtonGroup bgSecond = new ButtonGroup();
-	private ArrayList<MapSourceInfo> mapSourceList = new ArrayList<MapSourceInfo>();
+	private ButtonGroup bgCurrent = new ButtonGroup();
+	private List<MapSourceInfo> mapSourceList = new ArrayList<MapSourceInfo>();
 	
 	
 	public MapOptionDialog(IDiskoApplication app){
 		super(app.getFrame());
 		this.app = app;
-		this.currentMxd = app.getDiskoMapManager().getCurrentMxd();	
+		this.currentMxd = app.getDiskoMapManager().getMxdDoc();	
 		initalize();
 	}
 	
@@ -281,7 +283,7 @@ public class MapOptionDialog extends DiskoDialog {
 				
 				//Gets a list of availble mxd docs
 				DiskoMapManagerImpl manager = (DiskoMapManagerImpl) app.getDiskoMapManager();
-				mapSourceList = manager.getMapsTable();
+				mapSourceList = manager.getMapsInfo();
 				
 				MapSourceInfo mapInfo = new MapSourceInfo();
 				Dimension dCb = new Dimension(30,16);
@@ -335,37 +337,11 @@ public class MapOptionDialog extends DiskoDialog {
 					JPanel row = new JPanel(fl);
 					
 					JCheckBox cbPrimar = new JCheckBox();	
-					cbPrimar.setSelected(mapInfo.getPrimarMap());
+					cbPrimar.setSelected(mapInfo.isCurrent());
 					cbPrimar.setPreferredSize(dCb);
-					/*
-					cbPrimar.addActionListener(new java.awt.event.ActionListener() {
-						public void actionPerformed(java.awt.event.ActionEvent e) {
-							try{
-								setPrimaryMxd(mxd);								
-							}catch(IOException ioe){
-								ioe.printStackTrace();
-							}							
-						}
-					});
-					*/
-					bgPrimar.add(cbPrimar);
+					bgCurrent.add(cbPrimar);
 					row.add(cbPrimar);
-					
-					JCheckBox cbSecond = new JCheckBox();
-					cbSecond.setPreferredSize(dCb);
-					cbSecond.setSelected(mapInfo.getSecondaryMap());
-					
-					/*
-					cbSecond.addActionListener(new java.awt.event.ActionListener() {
-						public void actionPerformed(java.awt.event.ActionEvent e) {							
-							setSecondaryMxd(mxd); 							
-						}
-					});
-					*/
-					
-					bgSecond.add(cbSecond);
-					row.add(cbSecond);
-					
+										
 					JLabel mxdPath = new JLabel(mapInfo.getMxdPath());
 					mxdPath.setPreferredSize(dMxdPath);
 					row.add(mxdPath);
@@ -388,18 +364,14 @@ public class MapOptionDialog extends DiskoDialog {
 		return mapInfoPanel;
 	}
 	
-	private void setPrimaryMxd(String mxd) throws IOException{
-		DiskoMapManagerImpl manager = (DiskoMapManagerImpl) app.getDiskoMapManager();
-		//System.out.println("mxd: " + mxd);
-		manager.setPrimarMxdDoc(mxd);
-		//manager.toggleMap();
-		manager.setMap();
+	private boolean setMxdDoc(String mxd){
+		// set new mxd document
+		if(app.getDiskoMapManager().setMxdDoc(mxd)) {
+			return app.getDiskoMapManager().loadMxdDoc();
+		}
+		// failed
+		return false;
 	}
-	
-	private void setSecondaryMxd(String mxd){
-		DiskoMapManagerImpl manager = (DiskoMapManagerImpl) app.getDiskoMapManager();
-		manager.setSecondaryMxdDoc(mxd);
-	}	
 	
 	/**
 	 * This method initializes finishButton	
@@ -414,6 +386,7 @@ public class MapOptionDialog extends DiskoDialog {
 				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 				finishButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
+						
 						//System.out.println("actionPerformed(): finish"); 
 						//checks if active tab is addData
 						
@@ -441,39 +414,28 @@ public class MapOptionDialog extends DiskoDialog {
 							//System.out.println("FinishButton: add data");
 						}
 						else if(jTabbedMapPane.getSelectedIndex() == 0){
-							AbstractButton abstractButton = (AbstractButton) e.getSource();
-							MapSourceInfo map = new MapSourceInfo();
-							//loop igjennom cb og sett primær og sekundær kart.
-							int j = 0;
-							for (Enumeration<AbstractButton> enumerator = bgPrimar.getElements(); enumerator.hasMoreElements();){
-								//System.out.println("test: " + j + ", element: " );	
+							// initialize
+							int i = 0;
+							// loop over all check boxes
+							for (Enumeration<AbstractButton> enumerator = bgCurrent.getElements(); enumerator.hasMoreElements();){
+								// is selected?
 								if (enumerator.nextElement().isSelected()){
-									//System.out.println("isSelecta_gangsta");
-									map = mapSourceList.get(j);
-									map.setPrimarMap(true);
-									try{
-										setPrimaryMxd(map.getMxdPath());
-										//System.out.println("Nytt primær kart satt: " + map.getMxdPath());
-									}catch(IOException ioe){
-										ioe.printStackTrace();
+									// get document
+									String mxddoc = mapSourceList.get(i).getMxdDoc();
+									// forward
+									if(!setMxdDoc(mxddoc)) {
+										// notify!
+										Utils.showWarning(String.format(DiskoStringFactory.getText("WARNING.MAPSETFAILED.text"),mxddoc));
+										// cancel finish
+										return ;
 									}
+									else break;
 								}	
-								j=j+1;
-							}
-							int k = 0;
-							for (Enumeration<AbstractButton> enumerator_2 = bgSecond.getElements(); enumerator_2.hasMoreElements();){
-								if (enumerator_2.nextElement().isSelected()){
-									map = mapSourceList.get(k);
-									map.setSecondaryMap(true);
-									setSecondaryMxd(map.getMxdPath());
-									//System.out.println("Nytt sekundær kart satt: " + map.getMxdPath());
-								}
-								k = k+1;								
-							}							
-							
+								// get next element
+								i++;
+							}	
 						}
-						else
-							//System.out.println("FinishButton: ingen action");
+						// finished, hide dialog
 						setVisible(false);
 					}
 				});

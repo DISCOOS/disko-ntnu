@@ -149,7 +149,7 @@ public class Internationalization
      *
      * It is assumed  that the enum is defined in declaring class or interface that has a defined properties-file. See {@link #getBundle(Class)}.
      */
-    private static ResourceBundle getBundle(Enum anEnum)
+    public static ResourceBundle getBundle(Enum anEnum)
     {
         return getBundle(anEnum.getClass().getDeclaringClass());
     }

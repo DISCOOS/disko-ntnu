@@ -185,6 +185,8 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 	}
 	
 	private void activateTool(IDrawTool tool) {
+		// no change?
+		if(m_activeTool==tool) return;
 		// save
 		m_activeTool = tool;
 		// toggle tool button on draw dialog if not selected

@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -25,7 +26,7 @@ import org.redcross.sar.thread.DiskoProgressEvent.DiskoProgressEventType;
  */
 public class DiskoProgressMonitor {
 	   
-	private static int PAUSE_MILLIS = 10;
+	private static int PAUSE_MILLIS = 500;
 	
 	private static DiskoProgressMonitor m_this;
 	
@@ -209,8 +210,11 @@ public class DiskoProgressMonitor {
 	public synchronized void setNote(String note){
 		// update
 		m_note = note;
-		// forward?
+		// notify?
 		if(m_isInAction>0) {
+			// update progress panel
+			update();			
+			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);
 		}
 	}
@@ -314,40 +318,34 @@ public class DiskoProgressMonitor {
 			// cancel thread
 			m_worker.cancel();
 			// reset pointer  
-			m_worker = null; // (execute can only be invoked used once per instance)
+			m_worker = null; // (execute can only be invoked once per instance)
 		}
-		// ensure that dialog is closed
-		if(SwingUtilities.isEventDispatchThread())
-			setVisible(false);
-		else {
-			try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						try {
-							setVisible(false);					
-						}
-						catch(Exception e) {
-							e.printStackTrace();
-						}
-					}
-				});
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
+		// forward
+		setVisible(false);
 	}
 	
 	private void update() {
-		// prepate progress bar
-		if(getIntermediate()) {
-			getProgressPanel().setLimits(m_min, m_max, true);
+		// valid?
+		if(m_isInAction>0) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						// prepate progress bar
+						if(getIntermediate()) {
+							getProgressPanel().setLimits(m_min, m_max, true);
+						}
+						else {
+							getProgressPanel().setLimits(0, 0, false);
+						}
+						// update progress 
+						getProgressPanel().setProgress(m_progress,m_note,m_note);			
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
 		}
-		else {
-			getProgressPanel().setLimits(0, 0, false);
-		}
-		// update progress 
-		getProgressPanel().setProgress(m_progress,m_note,m_note);			
 	}
 	
 	public synchronized boolean isVisible() {
@@ -355,38 +353,45 @@ public class DiskoProgressMonitor {
 		return getGlassPane().isVisible() && getProgressDialog().isVisible();
 	}
 	
-	private synchronized void setVisible(boolean isVisible) {
-		// prepare?
-		if(isVisible) {
-			update();
-		}
-		getGlassPane().setVisible(isVisible);
-		getProgressDialog().setVisible(isVisible);				
+	public void setProgressLocationAt(final JComponent c) { 
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				getGlassPane().setProgressLocationAt(c);
+			}
+		});		
+	}
+
+	
+	private synchronized void setVisible(final boolean isVisible) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					// prepare?
+					if(isVisible) {
+						update();
+					}
+					getGlassPane().setVisible(isVisible);
+					getProgressDialog().setVisible(isVisible);				
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 	
 	private void fireUpdateProgressEvent(final DiskoProgressEventType type) {
-		if(!SwingUtilities.isEventDispatchThread()) {
-			try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						try {
-							// get event
-							fireProgressEvent(new DiskoProgressEvent(this,type));
-						}
-						catch(Exception e) {
-							e.printStackTrace();
-						}
-					}
-				});
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					// get event
+					fireProgressEvent(new DiskoProgressEvent(this,type));
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
 			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		else {
-			// get event
-			fireProgressEvent(new DiskoProgressEvent(this,type));
-		}
+		});
 	}
 	
 	private void fireProgressEvent(DiskoProgressEvent e) {

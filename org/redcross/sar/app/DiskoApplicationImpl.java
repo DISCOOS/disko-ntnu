@@ -31,7 +31,6 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.swing.JComponent;

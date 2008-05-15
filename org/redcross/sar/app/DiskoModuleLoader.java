@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -98,15 +100,18 @@ public class DiskoModuleLoader {
 				if(((Element) child).hasAttribute("isDefault")) {
 					isDefault = Boolean.valueOf(((Element) child).getAttribute("isDefault"));
 				}
-				Class cla = classLoader.loadClass(className);
+				Class cls = classLoader.loadClass(className);
+				String message = DiskoStringFactory.getText(Utils.getPackageName(cls)+".name");
+				message = String.format(DiskoStringFactory.getText("PROGRESS.STARTUP.CLASS.text"),message);
+				DiskoProgressMonitor.getInstance().setNote(message);
 				Object[] args = {rolle};
-				Object obj = cla.getConstructors()[0].newInstance(args);
+				Object obj = cls.getConstructors()[0].newInstance(args);
 				if (obj instanceof IDiskoWpModule) {
 					IDiskoWpModule module = (IDiskoWpModule)obj;
 					rolle.addDiskoWpModule(module,isDefault);
 				}
 				else {
-					throw new Exception("Wrong class");
+					throw new Exception("Unsupported class was found");
 				}
 			}
 		}

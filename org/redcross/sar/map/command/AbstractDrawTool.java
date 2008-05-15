@@ -9,6 +9,8 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Calendar;
 
+import javax.swing.SwingUtilities;
+
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
@@ -86,13 +88,15 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	private boolean isDirty = false;			// true:=change is pending
 	private boolean isConstrainMode = true;		// true:=limit line length to [min,max]
 	private boolean isWorkPoolMode = true;		// true:=execute work in work pool
-	private boolean isMouseOverIcon = false;	// true:=mouse is over icon
-	private boolean isShowDrawFrame = false;	// true:= and edit is supported by map, an draw frame is shown
 	
 	
 	// temporary flags
 	private boolean doSnapTo = false;			// true:=force a snap operation on active draw geometry
 	private boolean isBatchUpdate = true;		// true:=a batch is executing, this inhibit setGeometries 
+	private boolean isMouseOverIcon = false;	// true:=mouse is over icon
+	
+	// protected flags
+	protected boolean isShowDrawFrame = false;	// true:= and edit is supported by map, an draw frame is shown
 	
 	// state
 	protected DrawMode drawMode = DrawMode.MODE_CREATE;
@@ -225,8 +229,12 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			public void keyPressed(KeyEvent e) {
 				// can process event?
 				if(map!=null && map.isVisible() && isActive()) {
-					// forward
-					cancel();
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							// forward
+							cancel();
+						}
+					});					
 				}
 				
 			}
@@ -379,17 +387,26 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			
 			// get screen-to-map transformation and try to snap
 			p = snapTo(toMapPoint(x,y));
+			
 			// get flag
 			isMouseOverIcon = isShowDrawFrame && (drawFrame!=null) 
 									? drawFrame.hitIcon(p.getX(), p.getY(), 1)!=null : false;
+			
+			// only forward to extenders of this class if 
+			// drawing or mouse not over draw fram icon
+			if(!isMouseOverIcon || isDrawing)
+				onAction(onMouseMoveAction,button,shift,x,y);		
+			else {
+				// reset snap geometry
+				geoSnap = null;
+				// force a refresh
+				refresh();
+			}
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		// forward to extenders of this class
-		onAction(onMouseMoveAction,button,shift,x,y);		
 		
 		// is not moving any more
 		isMoving = false;
@@ -407,6 +424,10 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				p = snapTo(p);
 				// forward
 				onAction(onMouseUpAction, button, shift, x, y);
+				// reset snap geometry
+				geoSnap = null;
+				// force a refresh
+				refresh();
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -530,14 +551,14 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	
 	public void reset() {
 		try {
+			// refresh draw geometries
+			refresh();
 			// rest draw geometries
 			p = null;
 			geoPath = null;
 			geoRubber = null;
 			geoPoint = null;
 			geoSnap = null;
-			// refresh draw geometries
-			refresh();
 			// set flags
 			isDrawing = false;
 			isMoving = false;
@@ -610,9 +631,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// forward
 		super.deactivate();
 				
-		// set flag 
-		isActive = false;
-		
 		// forward
 		try {
 			refresh();
@@ -991,8 +1009,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			bFlag = true;
 		}
 		try {
-			// forward
-			if (map.isEditSupportInstalled()) 
+			// forward?
+			if(map.isEditSupportInstalled() && map.isVisible())
 				if(drawAdapter.cancel()) drawAdapter.refreshFrame();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -1401,20 +1419,15 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			// set flags
 			isDrawing = false;
 			
-			// set dirty falg
-			isDirty = true;
+			// forward?
+			if(isDirty) 
+				prepareDrawFrame();
+			else
+				reset();
 			
-			// update both draw frame and geometries? 
-			if(isShowDrawFrame && drawAdapter!=null) {
-				// reapply mso frame;
-				drawAdapter.setMsoFrame();
-				// forward
-				drawAdapter.setFrameUnion(getGeoEnvelope());
-				// forward
-				drawAdapter.prepareFrame(true);
-			}
 			// draw geometries only
 			refresh();	
+			
 			// reset last invalid area
 			lastInvalidArea = null;
 			
@@ -1424,6 +1437,18 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		}
 		// reset working flag
 		setIsNotWorking();
+	}
+	
+	protected void prepareDrawFrame() throws AutomationException, IOException {
+		// update both draw frame and geometries? 
+		if(isShowDrawFrame && drawAdapter!=null) {
+			// reapply mso frame;
+			drawAdapter.setMsoFrame();
+			// forward
+			drawAdapter.setFrameUnion(getGeoEnvelope());
+			// forward
+			drawAdapter.prepareFrame(true);
+		}		
 	}
 	
 	private IEnvelope getGeoEnvelope() throws AutomationException, IOException {
@@ -1967,7 +1992,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	public class DrawToolState extends AbstractDiskoTool.DiskoToolState {
 
 		// flags
-		private boolean isActive = false;
 		private boolean isDrawing = false;
 		private boolean isMoving = false;
 		private boolean isDirty = false;
@@ -2001,7 +2025,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		
 		public void save(AbstractDrawTool tool) {
 			super.save((AbstractDiskoTool)tool);
-			this.isActive = tool.isActive;
 			this.isDrawing = tool.isDrawing;
 			this.isMoving = tool.isMoving;
 			this.isShowDrawFrame = tool.isShowDrawFrame;
@@ -2021,7 +2044,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		
 		public void load(AbstractDrawTool tool) {
 			super.load((AbstractDiskoTool)tool);
-			tool.isActive = this.isActive;
 			tool.isDrawing = this.isDrawing;
 			tool.isMoving = this.isMoving;
 			tool.isShowDrawFrame = this.isShowDrawFrame;

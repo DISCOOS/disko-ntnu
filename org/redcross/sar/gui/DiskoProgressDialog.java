@@ -4,8 +4,7 @@
 package org.redcross.sar.gui;
 
 import javax.swing.JFrame;
-
-import org.redcross.sar.app.Utils;
+import javax.swing.Timer;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,9 +14,13 @@ import java.awt.event.ActionListener;
  * @author kennetgu
  *
  */
-public class DiskoProgressDialog extends DiskoDialog {
+public class DiskoProgressDialog extends DiskoDialog implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
+	
+	private boolean buffer = false;
+	private DelayAction delay = new DelayAction();
+	
 
 	private DiskoProgressPanel m_progressPanel = null;
 
@@ -71,6 +74,38 @@ public class DiskoProgressDialog extends DiskoDialog {
 		return m_progressPanel;
 	}
 	
+	
+	@Override
+	public void setVisible(boolean isVisible) {
+		if(isVisible()!=isVisible) {
+			super.setVisible(buffer);
+			buffer = isVisible;
+			delay.start();
+		}
+		else delay.stop();
+
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		super.setVisible(buffer);
+	}		
+	
+	class DelayAction extends Timer{
+		
+		private static final long serialVersionUID = 1L;
+		
+		DelayAction() {
+			
+			// forward
+			super(0, DiskoProgressDialog.this);
+			
+			// one shot and start at once
+			this.setRepeats(false);
+			this.setInitialDelay(0);
+			
+		}
+
+	}	
 	
 
 }

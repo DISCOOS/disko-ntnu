@@ -31,7 +31,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.output.DiskoReport;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
-import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsTaskType;
+import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -168,7 +168,7 @@ public class ListDialog extends DiskoDialog {
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
 			try {
-				makeReadyButton = DiskoButtonFactory.createButton(TacticsTaskType.MAKE_READY_TASK,ButtonSize.NORMAL);
+				makeReadyButton = DiskoButtonFactory.createButton(TacticsActionType.MAKE_READY,ButtonSize.NORMAL);
 				makeReadyButton.setEnabled(false);
 				makeReadyButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -190,7 +190,7 @@ public class ListDialog extends DiskoDialog {
 	private JButton getPrintButton() {
 		if (printButton == null) {
 			try {
-				printButton = DiskoButtonFactory.createButton(TacticsTaskType.PRINT_TASK,ButtonSize.NORMAL);
+				printButton = DiskoButtonFactory.createButton(TacticsActionType.PRINT_SELECTED,ButtonSize.NORMAL);
 				printButton.setEnabled(false);
 				report = app.getDiskoReport();
 				printButton.addActionListener(new java.awt.event.ActionListener() {

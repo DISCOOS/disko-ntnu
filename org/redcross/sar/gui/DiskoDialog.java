@@ -83,15 +83,15 @@ public class DiskoDialog extends JDialog
 				setVisible(false);
 			}
 			public void componentMoved(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 			public void componentResized(ComponentEvent arg0) {
 				setFixedSize();
-				setPosition();
+				snapTo(false);
 			}
 			public void componentShown(ComponentEvent arg0) {
 				setFixedSize();
-				setPosition();
+				snapTo(false);
 			}
 		});        
 		// initialize ui
@@ -124,13 +124,13 @@ public class DiskoDialog extends JDialog
 				setVisible(false);		
 			}
 			public void componentMoved(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 			public void componentResized(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 			public void componentShown(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 		});		
 		if(myInterests!=null && myInterests.size()>0) {
@@ -232,9 +232,10 @@ public class DiskoDialog extends JDialog
 	@Override 
 	public void setVisible(boolean isVisible) {
 		// forward
-		super.setVisible(isVisible);
+		if(super.isVisible()!=isVisible)
+			super.setVisible(isVisible);
 		// update
-		setPosition();
+		snapTo(false);
 	}
 	
 	public void setVisibleDelay(boolean isVisible, int millisToShow) {
@@ -260,23 +261,29 @@ public class DiskoDialog extends JDialog
 				setVisible(false);		
 			}
 			public void componentMoved(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 			public void componentResized(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 			public void componentShown(ComponentEvent arg0) {
-				setPosition();
+				snapTo(false);
 			}
 		});
-		setPosition();
+		snapTo(false);
 	}
 	
-	private void setPosition() {
+	public void snapTo() {
+		// forward
+		snapTo(true);
+	}
+		
+	private void snapTo(boolean update) {
+		
 		// position not defined?
 		if (buddyComponent == null || !buddyComponent.isShowing()) return;
 		// initialize size?
-		if (width == -1 || height == -1) {
+		if (update || width == -1 || height == -1) {
 			width  = getWidth() !=0 ? getWidth() : -1;
 			height = getHeight() !=0 ? getHeight() : -1;
 		}

@@ -96,7 +96,7 @@ public class HypothesisDialog extends DiskoDialog {
 			loadHypotheses();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 

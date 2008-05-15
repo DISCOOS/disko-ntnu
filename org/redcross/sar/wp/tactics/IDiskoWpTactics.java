@@ -6,18 +6,18 @@ public interface IDiskoWpTactics extends IDiskoWp {
 	
     public final static String bundleName = "org.redcross.sar.wp.tactics.tactics";
     
-	public enum TacticsTaskType {
-		ELEMENT_TASK,
-		LIST_TASK,
-		MISSON_TASK,
-		HYPOTHESIS_TASK,
-		PRIORITY_TASK,
-		REQUIREMENT_TASK,
-		ESTIMATE_TASK,
-		DESCRIPTION_TASK,
-		UNIT_TASK,
-		MAKE_READY_TASK,
-		MAKE_DRAFT_TASK,
-		PRINT_TASK
+	public enum TacticsActionType {
+		MANAGE_ELEMENTS,
+		SHOW_ASSIGNMENT_LIST,
+		SHOW_MISSION,
+		SET_HYPOTHESIS,
+		SET_PRIORITY,
+		SET_REQUIREMENT,
+		SHOW_ESTIMATES,
+		SHOW_DESCRIPTION,
+		ENQUEUE_TO_UNIT,
+		MAKE_READY,
+		CHANGE_TO_DRAFT,
+		PRINT_SELECTED
     }
 }

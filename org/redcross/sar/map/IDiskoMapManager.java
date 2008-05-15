@@ -5,13 +5,32 @@ import java.util.List;
 
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 
+import com.esri.arcgis.controls.MapControl;
+
 public interface IDiskoMapManager {
 
-	public IDiskoMap getMapInstance(EnumSet<IMsoFeatureLayer.LayerCode> myLayers);
+	public int installMxdDocs();
+	
+	public int getInstallMxdDocCount();
+	
+	public String getMxdDoc();
+	public boolean setMxdDoc(String mxdDoc);
+	public boolean loadMxdDoc();
+	
+	public IDiskoMap createMap(EnumSet<IMsoFeatureLayer.LayerCode> myLayers);
 
-	public List getMaps();
+	public IDiskoMap getCurrentMap();
 	
-	public String getCurrentMxd();
+	public List<IDiskoMap> getMaps();
+	public List<MapSourceInfo> getMapsInfo();
+	public IDiskoMap getPrintMap();	
 	
-	public IDiskoMap getPrintMap();
+	public int getMapBaseCount();
+	public int toggleMapBase();
+	public String getMapBase(int index);
+	
+	public boolean checkMxdDoc(String mxddoc, boolean keep);
+	public MapControl getTmpMap(String mxddoc, boolean keep);
+	
+	
 }

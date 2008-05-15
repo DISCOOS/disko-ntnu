@@ -13,13 +13,7 @@ public class MsoCompareName implements Comparator<IMsoObjectIf> {
 	}
 	
 	public int compare(IMsoObjectIf m1, IMsoObjectIf m2) {
-		// get names
-		String s1 = MsoUtils.getMsoObjectName(m1, options);
-		String s2 = MsoUtils.getMsoObjectName(m2, options);
-		s1 = (s1==null) ? "" : s1;
-		s2 = (s2==null) ? "" : s2;
-		// compare and return?
-		return s1.compareTo(s2);
+		return MsoUtils.compare(m1,m2,options);
 	}
 
 }

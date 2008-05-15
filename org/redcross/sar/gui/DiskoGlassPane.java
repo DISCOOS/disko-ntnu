@@ -54,6 +54,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	private static final long serialVersionUID = 1L;
 
 	private final JFrame m_frame; 
+	
     private Point m_point = new Point(); 
     private Component m_recentFocusOwner;
     private boolean m_isLocked = false;
@@ -199,13 +200,14 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	@Override
 	public void setVisible(boolean isVisible) {
 		// forward
-        super.setVisible(isVisible);
-        /*/ get root pane
-        JRootPane rootPane = SwingUtilities.getRootPane(this);
-        // any change?
-        if (rootPane != null)
-			rootPane.getLayeredPane().setVisible(!isVisible);
-		*/
+        super.setVisible(isVisible || m_isLocked);
+	}
+	
+	public void setProgressLocationAt(JComponent c) {
+		if(c!=null)
+			getProgressDialog().setLocationRelativeTo(c, DiskoDialog.POS_CENTER, false, true);
+		else
+			getProgressDialog().setLocationRelativeTo(m_frame.getLayeredPane(), DiskoDialog.POS_CENTER, false, true);
 	}
 	
 }

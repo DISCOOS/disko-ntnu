@@ -2,8 +2,6 @@ package org.redcross.sar.gui.factory;
 
 import java.util.ResourceBundle;
 
-import org.redcross.sar.util.Internationalization;
-
 /**
  * Read only Disko enum-to-property (text) factory.
  * <br>
@@ -69,13 +67,23 @@ public class DiskoEnumFactory {
 	
 	public static String getText(Enum e, String suffix, Object resource) {
 		// get key
-		String text = getText(m_basic.getKey(e, suffix),resource);
+		String text = getText(BasicDiskoFactory.getKey(e, suffix),resource);
 		// try get enum text from resource bundle assosiated with the enums declaring class?
-		if((text==null || text.isEmpty()) && suffix!=null && suffix.equals("text")) {
-			text = Internationalization.translate(e);
+		if((text==null || text.isEmpty()) && suffix!=null) {
+			text = translate(e,suffix);
 		}
 		// return best effort
 		return text;
+	}
+	
+	private static String translate(Enum e, String suffix) {
+		// search for bundle
+		ResourceBundle bundle = BasicDiskoFactory.getBundle(e);
+		// try to get value from resoures?
+		if(bundle!=null)
+			return getText(BasicDiskoFactory.getKey(e, suffix),bundle);
+		// failed
+		return null;
 	}
 		
 	public static String getText(String key, Object resource) {
@@ -95,7 +103,7 @@ public class DiskoEnumFactory {
 	
 	public static boolean setText(Enum e, String suffix, String value) {
 		// get key
-		String key = m_basic.getKey(e, suffix);
+		String key = BasicDiskoFactory.getKey(e, suffix);
 		// only update disko properties anonymously
 		return m_basic.setText(key, value, false, true, m_default, "resources/disko");
 	}
@@ -107,7 +115,7 @@ public class DiskoEnumFactory {
 	
 	public static boolean setText(Enum e, String suffix, String value, Object resource, String filename) {
 		// get key
-		String key = m_basic.getKey(e, suffix);
+		String key = BasicDiskoFactory.getKey(e, suffix);
 		// forward 
 		if(!m_basic.setText(key, value, false, true, resource,filename)) {
 			// did not fly, try again with disko properties
@@ -122,7 +130,7 @@ public class DiskoEnumFactory {
 	
 	public static Object getResourceFromEnum(Enum e, String suffix) { 
 		// get key
-		String key = m_basic.getKey(e, suffix);
+		String key = BasicDiskoFactory.getKey(e, suffix);
 		// try default
 		if(m_default.containsKey(key)) {
 			return m_default;

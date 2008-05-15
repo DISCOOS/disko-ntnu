@@ -459,8 +459,7 @@ public class LogisticsPanel implements
         List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
         if (selection != null && selection.size() > 0)
         {
-            IMsoFeature msoFeature = (IMsoFeature) selection.get(0);
-            IMsoObjectIf msoObject = msoFeature.getMsoObject();
+            IMsoObjectIf msoObject = selection.get(0);
             if (msoObject instanceof IAreaIf)
             {
             	IAreaIf area = MsoUtils.getOwningArea(msoObject);

@@ -11,7 +11,6 @@ import org.redcross.sar.gui.MainMenuPanel;
 import org.redcross.sar.gui.SubMenuPanel;
 import org.redcross.sar.gui.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -22,7 +21,6 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -37,7 +35,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.Calendar;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -147,9 +144,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     private void initButtons()
     {
-    	String text = getBundleText("NewButton.text");
-    	Icon icon = DiskoIconFactory.createImageIcon("NEW",getBundleText("NewButton.icon"));
-    	m_newButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
+
+		Enum key = TaskActionType.NEW_TASK;
+		m_newButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
         m_newButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent arg0)
@@ -159,9 +156,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_newButton, true);
         
-        text = getBundleText("ChangeButton.text");
-        icon = DiskoIconFactory.createImageIcon("EDIT",getBundleText("ChangeButton.icon"));
-        m_changeButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
+		key = TaskActionType.EDIT_TASK;
+		m_changeButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
         m_changeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -171,9 +167,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_changeButton, true);
 
-        text = getBundleText("DeleteButton.text");
-        icon = DiskoIconFactory.createImageIcon("DELETE",getBundleText("DeleteButton.icon"));
-        m_deleteButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
+		key = TaskActionType.DELETE_TASK;
+		m_deleteButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
         m_deleteButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -183,9 +178,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         });
         layoutButton(m_deleteButton, true);
 
-        text = getBundleText("PerformedButton.text");
-        icon = DiskoIconFactory.createImageIcon("DELETE",getBundleText("PerformedButton.icon"));
-        m_performedButton = DiskoButtonFactory.createButton(text,text,icon,ButtonSize.NORMAL);
+		key = TaskActionType.TASK_FINISHED;
+		m_performedButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
         m_performedButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)

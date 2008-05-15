@@ -23,6 +23,7 @@ import com.esri.arcgis.carto.IGraphicsLayer;
 import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.carto.SymbolBackground;
 import com.esri.arcgis.carto.TextElement;
+import com.esri.arcgis.carto.esriViewDrawPhase;
 import com.esri.arcgis.display.IDisplay;
 import com.esri.arcgis.display.IScreenDisplay;
 import com.esri.arcgis.display.esriScreenCache;
@@ -47,7 +48,6 @@ public class DrawFrame {
 	
 	private Map<String,IconElement> nameIcons = null;
 	private List<IconElement> orderIcons = null;
-	//private Map<IconElement,Boolean> visibleIcons = null;
 	
 	private IActiveView activeView = null;
 	private IGraphicsContainer container = null;
@@ -57,6 +57,11 @@ public class DrawFrame {
 	
 	private IEnvelope dirtyArea = null;
 	
+	private String pendingText = null;
+	private IEnvelope pendingFrame = null;
+	private boolean pendingRefresh = false;
+	
+	
 	public DrawFrame(IActiveView activeView) throws IOException, UnknownHostException {
 
 		// forward
@@ -65,7 +70,6 @@ public class DrawFrame {
 		// prepare
 		this.nameIcons = new HashMap<String, IconElement>();
 		this.orderIcons = new ArrayList<IconElement>();
-		//this.visibleIcons = new HashMap<IconElement,Boolean>();
 		
 		// forward
 		setActiveView(activeView);
@@ -222,6 +226,13 @@ public class DrawFrame {
 	}
 	
 	public void setText(String text) throws AutomationException, UnknownHostException, IOException {
+		
+		// set as pending?
+		if(!isActive) {
+			pendingText = text;
+			return;
+		}
+		
 		// set dirty union
 		setDirtyRegion(getTextBoxElement());
 		// prepare
@@ -238,6 +249,11 @@ public class DrawFrame {
 	}
 	
 	public void setFrame(IEnvelope e) throws AutomationException, UnknownHostException, IOException {
+		// set as pending?
+		if(!isActive) {
+			pendingFrame = e;
+			return;
+		}
 		// forward
 		update(e,getText());
 	}
@@ -255,6 +271,12 @@ public class DrawFrame {
 	}
 	
 	public void update(IEnvelope frame, String text) throws AutomationException, UnknownHostException, IOException {
+		// set as pending?
+		if(!isActive) {
+			pendingText = text;
+			pendingFrame = frame;
+			return;
+		}
 		// set dirty unions
 		setDirtyRegion(getTextBoxElement());
 		setDirtyRegion(getFrameElement());		
@@ -314,21 +336,19 @@ public class DrawFrame {
 	
 	public void refresh() {
 		// refresh group?
-		if(isDirty()) {
-			Runnable r = new Runnable() {
-				public void run() {
-					try {
-						// only refresh this group inside the dirty area
-						activeView.partialRefresh(8, container, dirtyArea);
-						// reset area
-						dirtyArea = null;
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			};
-			SwingUtilities.invokeLater(r);
+		if(isDirty()) { 
+			try {
+				// only refresh this group inside the dirty area
+				activeView.partialRefresh(esriViewDrawPhase.esriViewGraphics, container, dirtyArea);
+				// reset area
+				dirtyArea = null;
+			} catch (AutomationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -473,9 +493,17 @@ public class DrawFrame {
 			// remove element from current container?
 			if(container!=null) {
 				// set flag
-				isActive = true;
+				isActive = true;				
+				// update any pending changes
+				if(pendingFrame!=null && !pendingFrame.isEmpty()) 
+					setFrame(pendingFrame);
+				if(pendingText!=null) 
+					setText(pendingText);
+				// reset
+				pendingText = null;
+				pendingFrame = null;
 				// reselect icon?
-				if(selectedIcon!=null) setIconBorder(selectedIcon, true);
+				if(selectedIcon!=null) setIconBorder(selectedIcon, true);				
 				// show layer
 				((IGraphicsLayer)container).activate(display());				
 				((ILayer)container).setVisible(true);
@@ -494,7 +522,10 @@ public class DrawFrame {
 		if(isActive) {
 			if(container!=null) {
 				// set dirty
-				setDirtyRegion(getGroupElement());
+				setDirtyRegion(getFrameElement());
+				setDirtyRegion(getTextBoxElement());
+				for(IElement it: orderIcons)
+					setDirtyRegion(it);
 				// reselect icon?
 				if(selectedIcon!=null) setIconBorder(selectedIcon, false);
 				// reset flag
@@ -544,12 +575,6 @@ public class DrawFrame {
 				isDirty = true;
 				// set flag
 				icon.setVisible(true);
-				// forward?
-				if(display()!=null) {
-					update(getFrame());		
-				}
-				// forward
-				setDirtyRegion(icon);				
 			}
 			// make invisible?
 			if(icon.isVisible() && !isVisible) {
@@ -557,12 +582,15 @@ public class DrawFrame {
 				isDirty = true;
 				// set flag
 				icon.setVisible(false);
+			}
+			// update?
+			if(isDirty && isActive) {
 				// forward?
 				if(display()!=null) {
 					update(getFrame());		
-				}				
+				}
 				// forward
-				setDirtyRegion(icon);				
+				setDirtyRegion(icon);								
 			}
 		}
 		// state
@@ -627,12 +655,18 @@ public class DrawFrame {
 	}
 
 	private void setDirtyRegion(IElement element) throws AutomationException, IOException {
-		// get geometry
-		IGeometry g = element.getGeometry();
-		// add to dirty area?
-		if(dirtyArea!=null)
-			dirtyArea.union(MapUtil.expand(1.25,g.getEnvelope()));
-		else
-			dirtyArea = MapUtil.expand(1.25,g.getEnvelope());
+		// only if active!
+		if(isActive) {
+			// get geometry
+			IGeometry g = element.getGeometry();
+			// has geometry?
+			if(!g.isEmpty()) {
+				// add to dirty area?
+				if(dirtyArea!=null)
+					dirtyArea.union(MapUtil.expand(1.25,g.getEnvelope()));
+				else
+					dirtyArea = MapUtil.expand(1.25,g.getEnvelope());
+			}
+		}
 	}
 }

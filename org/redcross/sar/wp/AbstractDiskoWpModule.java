@@ -105,7 +105,7 @@ public abstract class AbstractDiskoWpModule
         getMap();
         
 		// initialize timers
-        initTickTimer();
+        //initTickTimer();
         
     }
 
@@ -135,7 +135,7 @@ public abstract class AbstractDiskoWpModule
         getMap();
         
         // initialize timer
-		initTickTimer();
+		//initTickTimer();
     }
     
 	private static EnumSet<IMsoFeatureLayer.LayerCode> getDefaultMapLayers() {	
@@ -168,7 +168,7 @@ public abstract class AbstractDiskoWpModule
             	// get map manager
                 IDiskoMapManager manager = role.getApplication().getDiskoMapManager();
                 // initialize map
-                map = manager.getMapInstance(mapLayers);
+                map = manager.createMap(mapLayers);
                 // hide map
                 ((DiskoMap)map).setVisible(false);
                 // add disko work listener
@@ -702,8 +702,8 @@ public abstract class AbstractDiskoWpModule
 	
 	public void resumeUpdate() {
 		Utils.getApp().getMsoModel().resumeClientUpdate();
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
+		//SwingUtilities.invokeLater(new Runnable() {
+		//	public void run() {
 				if(map!=null) {
 					try {
 						map.setSupressDrawing(false);
@@ -714,8 +714,8 @@ public abstract class AbstractDiskoWpModule
 						e.printStackTrace();
 					}
 				}		
-			}			
-		});
+		//	}			
+		//});
 	}
 	
 	public boolean isWorking() {

@@ -1,9 +1,9 @@
 package org.redcross.sar.map.command;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
-import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
 
 public class MapToggleCommand extends AbstractDiskoCommand {
@@ -37,7 +37,10 @@ public class MapToggleCommand extends AbstractDiskoCommand {
 	@Override
 	public void onClick() {
 		try {
-			((DiskoMapManagerImpl)map.getMapManager()).toggleMap();
+			// forward
+			map.getMapManager().toggleMapBase();
+			// toggle nav bar icon
+			Utils.getApp().getNavBar().switchIcon("maptoggle", map.getMapBaseIndex());
 		}
 		catch (Exception e) {
 			e.printStackTrace();

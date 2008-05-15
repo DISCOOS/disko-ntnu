@@ -289,9 +289,6 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		@Override
 		public Boolean doWork() {
 		
-			// suspend events
-			map.suspendNotify();
-			
 			try {
 				// forward to map
 				if(msoFeature==null) {
@@ -313,8 +310,6 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-			// resume events
-			map.resumeNotify();
 			
 			// failed
 			return false;

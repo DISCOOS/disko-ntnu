@@ -207,7 +207,7 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 		if (unitList == null) {
             unitList = new JList();
             unitList.setVisibleRowCount(0);
-            unitList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
+            unitList.setCellRenderer(new IconListCellRenderer(0,"32x32"));
             unitList.setModel(new DefaultComboBoxModel());
             // add listener
             unitList.addListSelectionListener(new ListSelectionListener() {

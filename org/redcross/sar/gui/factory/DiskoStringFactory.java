@@ -30,6 +30,7 @@ public class DiskoStringFactory {
 	}
 	
 	public static String getText(String key, Object resource) {
+		if(key==null || key.isEmpty()) return null;
 		// try custom resource
 		String text = m_basic.getText(key, resource);
 		// try disko properties?

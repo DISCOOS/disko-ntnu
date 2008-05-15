@@ -284,6 +284,8 @@ public class DrawAdapter implements
 		// prepare for work
 		setIsWorking();
 		suspendUpdate();
+		// clear dirty bit
+		isDirty = false;
 		// clear any selections
 		if(map.isSelected(msoObject)>0) 
 			map.setSelected(msoObject, false);
@@ -349,7 +351,6 @@ public class DrawAdapter implements
 		
 		// set working
 		setIsWorking();
-		
 		
 		/* =====================================
 		 * 1. Infer mode from state values
@@ -468,7 +469,7 @@ public class DrawAdapter implements
 			e.printStackTrace();
 		}
 		
-		// forward
+		// forward?
 		prepareFrame(true);
 		
 		// setup tools
@@ -597,38 +598,22 @@ public class DrawAdapter implements
 				isDirty = false;
 			}
 			
-			// initialize
-			String undef = "<" + DiskoEnumFactory.getText(DrawMode.MODE_UNDEFINED) + ">";
-			String caption = undef;
+			// get flag
 			boolean isDrawAllowed = map.isDrawAllowed();
-			if(!isDrawAllowed) {
-				caption = "Zoom inn";
-			}
-			else {
+			// get icon selection
+			if(isDrawAllowed) {
 				// parse state
-				if(isCreateMode()) {
+				if(isCreateMode())
 					drawFrame.clearSelectedIcon();
-					caption = DiskoEnumFactory.getText(DrawMode.MODE_CREATE) + " " + (msoCode != null 
-							? DiskoEnumFactory.getText(element): undef);
-				}
-				else if(isReplaceMode()) {
+				else if(isReplaceMode())
 					drawFrame.setSelectedIcon("replace", true);
-					caption = DiskoEnumFactory.getText(DrawMode.MODE_REPLACE) + " " + (msoObject != null 
-							? MsoUtils.getMsoObjectName(msoObject, 1) : undef);
-				}
-				else if(isContinueMode()) {
+				else if(isContinueMode())
 					drawFrame.setSelectedIcon("continue", true);					
-					caption = DiskoEnumFactory.getText(DrawMode.MODE_CONTINUE) + " på " 
-							+ (msoObject != null ? MsoUtils.getMsoObjectName(msoObject, 1) : undef);
-				}
-				else if(isAppendMode()) {
+				else if(isAppendMode()) 
 					drawFrame.setSelectedIcon("append", true);					
-					caption = DiskoEnumFactory.getText(DrawMode.MODE_APPEND) + " "+ (msoCode != null 
-							? DiskoEnumFactory.getText(msoCode): undef);
-				}
 			}
 			// update caption text
-			drawFrame.setText(caption);
+			drawFrame.setText(getDescription());
 			// update visible icons
 			drawFrame.setIconVisible("cancel", isDrawAllowed);
 			drawFrame.setIconVisible("finish", isDrawAllowed);
@@ -641,6 +626,36 @@ public class DrawAdapter implements
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}						
+	}
+	
+	public String getDescription() {
+		// initialize
+		String undef = "<" + DiskoEnumFactory.getText(DrawMode.MODE_UNDEFINED) + ">";
+		String caption = undef;
+		boolean isDrawAllowed = map.isDrawAllowed();
+		if(!isDrawAllowed) {
+			caption = "Zoom inn";
+		}
+		else {
+			// parse state
+			if(isCreateMode()) {
+				caption = DiskoEnumFactory.getText(DrawMode.MODE_CREATE) + " " + (msoCode != null 
+						? DiskoEnumFactory.getText(element): undef);
+			}
+			else if(isReplaceMode()) {
+				caption = DiskoEnumFactory.getText(DrawMode.MODE_REPLACE) + " " + (msoObject != null 
+						? MsoUtils.getMsoObjectName(msoObject, 1) : undef);
+			}
+			else if(isContinueMode()) {
+				caption = DiskoEnumFactory.getText(DrawMode.MODE_CONTINUE) + " på " 
+						+ (msoObject != null ? MsoUtils.getMsoObjectName(msoObject, 1) : undef);
+			}
+			else if(isAppendMode()) {
+				caption = DiskoEnumFactory.getText(DrawMode.MODE_APPEND) + " "+ (msoCode != null 
+						? DiskoEnumFactory.getText(msoCode): undef);
+			}
+		}
+		return caption;	
 	}
 	
 	public boolean isUndefinedMode() {
@@ -759,12 +774,15 @@ public class DrawAdapter implements
 	public boolean cancel() {
 		boolean bFlag = false;
 		try {
+			// success
+			// deactive?
+			if(map.isEditSupportInstalled() && map.isVisible()) {
+				// deactivate 
+				drawFrame.deactivate();
+			}
+			bFlag = true;
 			// forward
 			reset();
-			// deactive
-			drawFrame.deactivate();
-			// success
-			bFlag = true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -21,7 +21,7 @@ public class UnitlogReportParams {
 	public final static String CO_LEADER_NAME = "CoLeaderName";
 	public final static String CO_LEADER_TELEPHONE = "CoLeaderTelephone";
 	
-	public final static String PERSONELL_LIST = "PersonellList";//not in use. Made for sending an array to printReport
+	public final static String PERSONELL_SHOW_ASSIGNMENT_LIST = "PersonellList";//not in use. Made for sending an array to printReport
 	public final static String KEY_PERSON_NAME_PREFIX = "PersonName";
 	public final static String KEY_PERSON_TELE_PREFIX = "PersonTele";
 	public int maxPersonsInPrint = 10;
@@ -31,12 +31,12 @@ public class UnitlogReportParams {
 	public final static String KEY_UNIT_PREFIX = "Unit";
 	public int maxCallSignsInPrint = 8;
 	
-	public final static String ASSIGNMENTS_LIST = "AssignmentsList";//not in use. Made for sending an array to printReport
+	public final static String ASSIGNMENTS_SHOW_ASSIGNMENT_LIST = "AssignmentsList";//not in use. Made for sending an array to printReport
 	public final static String KEY_ASSIGNMENT_PREFIX = "Assignment";
 	public final static String KEY_ASSIGNMENT_STATUS_PREFIX = "AssignmentStatus";
 	public int maxAssignmentsInPrint = 8;
 	
-	public final static String PERSONELL_RELEASED_LIST = "PersonellReleasedList";//not in use. Made for sending an array to printReport
+	public final static String PERSONELL_RELEASED_SHOW_ASSIGNMENT_LIST = "PersonellReleasedList";//not in use. Made for sending an array to printReport
 	public final static String KEY_RELEASED_PREFIX = "Released";
 	public int maxReleasedInPrint = 8;
 	

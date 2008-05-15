@@ -7,6 +7,7 @@ import java.util.List;
 import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.carto.IMap;
 import com.esri.arcgis.carto.WMSMapLayer;
+import com.esri.arcgis.carto.esriViewDrawPhase;
 import com.esri.arcgis.interop.AutomationException;
 
 public class WMSLayerSelectionModel {
@@ -94,7 +95,7 @@ public class WMSLayerSelectionModel {
 			//System.out.println("setLayerVisibility");
 			WMSMapLayer wmslayer = layers[index];			
 			wmslayer.setVisible(visible);
-			map.refreshLayer(wmslayer, map.getExtent());
+			map.refresh(esriViewDrawPhase.esriViewGeography, wmslayer, map.getExtent());
 	}		
 	
 	/**
@@ -109,7 +110,7 @@ public class WMSLayerSelectionModel {
 			for (int i = 0; i < layers.length; i++){
 				WMSMapLayer flayer = layers[i];			
 				flayer.setVisible(visible);
-				map.refreshLayer(flayer, map.getExtent());
+				map.refresh(esriViewDrawPhase.esriViewGeography, flayer, map.getExtent());
 			}
 	}	
 	
@@ -127,7 +128,7 @@ public class WMSLayerSelectionModel {
 				int idx = index[i];
 				WMSMapLayer flayer = layers[idx];			
 				flayer.setVisible(visible);
-				map.refreshLayer(flayer, map.getExtent());
+				map.refresh(esriViewDrawPhase.esriViewGeography, flayer, map.getExtent());
 			}
 			
 	}	
