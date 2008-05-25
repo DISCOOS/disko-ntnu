@@ -8,28 +8,23 @@ import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 
-import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.util.Internationalization;
 
 /**
+ * <p>
  * Read only Disko icon factory used to create Disko L&F icons.
- * 
+ * <p>
  * Resource(s) are used to store icon file paths. 
- * 
- * To facilitate resource customization (file paths) this 
- * class wraps the BasicDiskoFactory. The follwing resource types are
- * supported:
- *  
- * java.util.Properties (not localized)
- * java.util.ResourceBundle (localized)
- * 
+ * <p>
  * The resource dominance - which resource is used when equal keys 
  * are present - is as follows:
- * 
- * 1. try passed custom resource
- * 2. if key not found -> try default icons resource
- * 3. if key not found -> try enums resource (DiskoEnumFactory)
- * 4. if key not found -> try installed resources
- * 5. if all this fails -> a default icon is returned 
+ * <p>
+ * 1. try passed custom resource<br>
+ * 2. if key not found -> try default icons resource<br>
+ * 3. if key not found -> try enums resource (DiskoEnumFactory)<br>
+ * 4. if key not found -> try installed resource (Internationalization)<br>
+ * 5. if all this fails -> a default icon is returned <br>
  * 
  * 
  * @author kennetgu
@@ -39,8 +34,7 @@ import org.redcross.sar.gui.DiskoCustomIcon;
 public class DiskoIconFactory {
 
 	private final static String m_path = "icons";	
-	private final static BasicDiskoFactory m_basic = 
-		new BasicDiskoFactory();
+
 	private final static ResourceBundle m_default = 
 		ResourceBundle.getBundle("resources/icons");
 	
@@ -56,16 +50,16 @@ public class DiskoIconFactory {
 		return null;
 	}
 
-	public static DiskoCustomIcon getIcon(
+	public static DiskoIcon getIcon(
 			String icon, String catalog, Color color, float alfa) {
 		return getIcon(icon,catalog,color,alfa,null);
 	}
 	
-	public static DiskoCustomIcon getIcon(
+	public static DiskoIcon getIcon(
 			String icon, String catalog, Color color, float alfa, Object resource) {
 		if (icon != null && !icon.isEmpty()) {
 			// forward
-			return new DiskoCustomIcon(createImageIcon(icon, 
+			return new DiskoIcon(createImageIcon(icon, 
 					getPath(icon,catalog,resource)),color,alfa);
 		}
 		return null;
@@ -113,29 +107,29 @@ public class DiskoIconFactory {
 	public static String getPath(
 			String icon, String catalog, Object resource) {
 		
-		// is path?
-		if (BasicDiskoFactory.isPath(icon)) {
+		// is an absoulte path?
+		if (BasicDiskoFactory.fileExist(icon)) {
 			return icon;
 		}
-		// is relative path?
-		else if(BasicDiskoFactory.isPath(m_path + "/" + catalog + "/" + icon)) {
+		// is a relative path?
+		else if(BasicDiskoFactory.fileExist(m_path + "/" + catalog + "/" + icon)) {
 			return m_path + "/" + catalog + "/" + icon;
 		}
 		else {
-			// get key
-			String key = (!icon.endsWith(".icon")) ? BasicDiskoFactory.getKey(icon,"icon") : icon;
 			// initialize
-			String filename = null;
+			String filename = BasicDiskoFactory.getText(icon, resource);
+			// get default icon key
+			String key = (!icon.endsWith(".icon")) ? BasicDiskoFactory.getKey(icon,"icon") : icon;
 			// try default bundle?
-			if(m_default.containsKey(key))
+			if((filename==null || filename.isEmpty()) && m_default.containsKey(key))
 				filename = m_default.getString(key);
-			// get from passed resource?
+			// get from enum resource?
 			if((filename==null || filename.isEmpty()))
 				filename = DiskoEnumFactory.getText(key,resource);
 			// found filename?
-			if((filename==null || filename.isEmpty())) {
-				// get from installed resource
-				filename = m_basic.getTextFromInstalled(key);	
+			if(filename==null || filename.isEmpty()) {
+				// get from installed resources
+				filename = Internationalization.getText(key);	
 			}
 			// found?
 			if(filename!=null && !filename.isEmpty())
@@ -144,17 +138,5 @@ public class DiskoIconFactory {
 		}
 		// failure
 		return null;
-	}
-	
-	public static Object getResourceFromKey(String key) { 
-		if(m_default.containsKey(key)) {
-			return m_default;
-		}
-		return m_basic.getResourceFromKey(key);
-	}
-	
-	public static BasicDiskoFactory getBasicFactory() {
-		return m_basic;
-	}
-	
+	}	
 }

@@ -8,7 +8,7 @@ public interface IHostDiskoTool {
 
 	public IDiskoTool getTool();
 	
-	public void setTool(IDiskoTool tool);
+	public void setTool(IDiskoTool tool, boolean activate);
 	
 	public void onClick();
 	

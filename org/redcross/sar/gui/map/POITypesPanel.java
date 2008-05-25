@@ -4,26 +4,29 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.Internationalization;
 
-public class POITypesPanel extends DiskoPanel {
+public class POITypesPanel extends DefaultDiskoPanel {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final String SELECTION_ENABLED = "Velg type punkt";
+	private static final String SELECTION_DISABLED = "Endring er ikke lov";
 
 	private JList typeList = null;
 
 	public POITypesPanel() {
-		
-		// initialize gui
-		initialize();
-		
+		this("");
 	}
 
 	public POITypesPanel(String caption) {
+		
+		// forward
+		super(caption,false,false);
 		
 		// initialize gui
 		initialize();
@@ -39,7 +42,7 @@ public class POITypesPanel extends DiskoPanel {
 	 */
 	private void initialize() {
 		try {
-			this.setCaptionText("Velg type punkt");
+			this.setCaptionText(SELECTION_ENABLED);
 			this.setBodyComponent(getTypeList());
 		}
 		catch(Exception e) {
@@ -53,7 +56,7 @@ public class POITypesPanel extends DiskoPanel {
 			getTypeList().setSelectedIndex(0);
 	}
 
-	public POIType[] getTypes() {
+	public POIType[] getPOITypes() {
 		ListModel model = getTypeList().getModel();
 		POIType[] types = new POIType[model.getSize()];
 		for (int i = 0; i < model.getSize(); i++) {
@@ -62,7 +65,7 @@ public class POITypesPanel extends DiskoPanel {
 		return types;
 	}
 	
-	public void setTypes(POIType[] poiTypes) {
+	public void setPOITypes(POIType[] poiTypes) {
 		DefaultListModel model = new DefaultListModel();
 		POIType current = (POIType)getTypeList().getSelectedValue();
 		if(poiTypes!=null) {
@@ -79,13 +82,18 @@ public class POITypesPanel extends DiskoPanel {
 	}
 
 	public POIType getPOIType() {
+		// ensure selected?
+		if(getTypeList().getModel().getSize()>0 && getTypeList().getSelectedIndex()==-1)
+			getTypeList().setSelectedIndex(0);
+		// return selected value
 		return (POIType)getTypeList().getSelectedValue();
 	}
 	
 	public void setPOIType(POIType type) {
-		if((POIType)getTypeList().getSelectedValue()!=type) {
+		if(type==null)
+			getTypeList().setSelectedIndex(-1);
+		else
 			getTypeList().setSelectedValue(type,true);
-		}
 	}
 	
 	/**
@@ -102,5 +110,14 @@ public class POITypesPanel extends DiskoPanel {
 		return typeList;
 	}
 
+	public boolean isSelectionAllowed() {
+		return getTypeList().isEnabled();
+	}
+	
+	public void setSelectionAllowed(boolean isAllowed) {
+		getTypeList().setEnabled(isAllowed);
+		setCaptionText(isAllowed ? SELECTION_ENABLED : SELECTION_DISABLED);
+	}
+	
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

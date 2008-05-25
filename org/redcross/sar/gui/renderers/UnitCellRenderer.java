@@ -12,14 +12,14 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
-public class UnitTableCellRenderer extends JLabel implements TableCellRenderer {
+public class UnitCellRenderer extends JLabel implements TableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
 
 	private Hashtable<Enum<?>, ImageIcon> icons = null;
 	private String catalog = "48x48";
 
-	public UnitTableCellRenderer(String catalog) {
+	public UnitCellRenderer(String catalog) {
 		// prepare
 		this.catalog = catalog;
 		this.icons = new Hashtable<Enum<?>, ImageIcon>();

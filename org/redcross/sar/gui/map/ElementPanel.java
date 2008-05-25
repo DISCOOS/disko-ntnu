@@ -25,7 +25,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
@@ -44,7 +44,7 @@ import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 
-public class ElementPanel extends DiskoPanel {
+public class ElementPanel extends DefaultDiskoPanel {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -89,7 +89,7 @@ public class ElementPanel extends DiskoPanel {
 	public ElementPanel() {
 
 		// set caption
-		super("Elementer");
+		super("Elementer",false,false);
 		
 		// prepare
 		this.msoModel = Utils.getApp().getMsoModel();
@@ -106,6 +106,7 @@ public class ElementPanel extends DiskoPanel {
 	}
 
 	private void initialize() {
+		// set lists panel
 		setBodyComponent(getListsPanel());		
 	}
 	
@@ -354,7 +355,6 @@ public class ElementPanel extends DiskoPanel {
             partList = new JList();
             partList.setCellRenderer(new IconListCellRenderer(1,"32x32"));
             partList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
-            //partList.setPreferredSize(new Dimension(180, 430));
             // add listener
             partList.addListSelectionListener(new ListSelectionListener() {
 
@@ -788,12 +788,15 @@ public class ElementPanel extends DiskoPanel {
 			data.add(msoObject);
 			// set flag
 			listsAreChangeing = true;
+			// get selected
+			IMsoObjectIf msoSelected = (IMsoObjectIf)list.getSelectedValue();
 			// set data
 			list.setListData(data.toArray());
+			// select?
+			if(msoSelected!=null)
+				list.setSelectedValue(msoSelected, true);
 			// reset flag
 			listsAreChangeing = false;
-			// select
-			list.setSelectedValue(msoObject, true);
 		}
 	}
 	
@@ -827,8 +830,6 @@ public class ElementPanel extends DiskoPanel {
 			listsAreChangeing = true;
 			// set data
 			list.setListData(data.toArray());
-			// reset flag
-			listsAreChangeing = false;
 			// reselect?
 			if(msoSelected!=null && msoObject!=msoSelected)
 				list.setSelectedValue(msoSelected, true);
@@ -836,6 +837,8 @@ public class ElementPanel extends DiskoPanel {
 				// select first in list
 				list.setSelectedIndex(0);
 			}
+			// reset flag
+			listsAreChangeing = false;
 				
 		}
 	}	

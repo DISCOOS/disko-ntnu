@@ -6,13 +6,12 @@ import java.awt.event.ActionListener;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
 
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.UnitTable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -48,11 +47,11 @@ public class UnitSelectionDialog extends DiskoDialog {
 	
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private UnitTable unitTable = null;
 
 	private IAssignmentIf currentAssignment = null;
-	private JButton allocateButton = null;
+	private JButton assignButton = null;
 	private JButton reclaimButton = null;
 
 	public UnitSelectionDialog(IDiskoWpModule wp) {
@@ -121,61 +120,48 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = DiskoButtonFactory.createButton("GENERAL.ALLOCATED",ButtonSize.NORMAL);
-				button.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						allocate();
-					}
-				});
-				contentPanel.addButton(button, "allocated");
-				button = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
-				button.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						clear();
-					}
-				});
-				contentPanel.addButton(button, "canceled");				
-				button = DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL);
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// hide me!
-						setVisible(false);						
-					}					
-				});
-				contentPanel.addButton(button,"cancel");
+				contentPanel = new DefaultDiskoPanel("",false,true);
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));		
+				contentPanel.insertButton("finish", getAssignButton(), "assign");
+				contentPanel.insertButton("finish", getReclaimButton(), "reclaim");				
 				contentPanel.setBodyComponent(getUnitTable());
+				contentPanel.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("assign".equalsIgnoreCase(cmd))
+							assign();
+						else if("reclaim".equalsIgnoreCase(cmd))
+							reclaim();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();
+					}
+					
+				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
 	}
-
 	
 	/**
 	 * This method initializes allocateButton	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getAllocateButton() {
-		if (allocateButton == null) {
+	private JButton getAssignButton() {
+		if (assignButton == null) {
 			try {
-				allocateButton = DiskoButtonFactory.createButton("STATUS.ASSIGNED",ButtonSize.NORMAL);
-				allocateButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						allocate();
-					}
-				});
+				assignButton = DiskoButtonFactory.createButton("STATUS.ASSIGNED",ButtonSize.NORMAL);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return allocateButton;
+		return assignButton;
 	}
 	
 	/**
@@ -187,18 +173,13 @@ public class UnitSelectionDialog extends DiskoDialog {
 		if (reclaimButton == null) {
 			try {
 				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
-				reclaimButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						clear();
-					}
-				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return reclaimButton;
-	}
-
+	}	
+	
 	/**
 	 * This method initializes unitTable
 	 *
@@ -219,8 +200,27 @@ public class UnitSelectionDialog extends DiskoDialog {
 	 * clear operation
 	 *
 	 */
-	private void clear() {
+	public boolean cancel() {
+		if(isWorking()) return false;
+		setIsWorking();
+		setMsoObject(currentMsoObj);
+		getContentPanel().setDirty(false);
+		setIsNotWorking();
+		return false;		
+	}
+	
+	/** 
+	 * reclaim allocated assignments
+	 *
+	 */
+	public boolean reclaim() {
 
+		if(isWorking()) return false;
+		setIsWorking();
+		
+		// initialize
+		boolean bFlag = false;
+		
 		// get selected row
 		int row = unitTable.convertRowIndexToModel(unitTable.getSelectedRow());
 
@@ -253,19 +253,14 @@ public class UnitSelectionDialog extends DiskoDialog {
 					if(ans == JOptionPane.YES_OPTION) {
 		                try
 		                {
-		            		// notify
-		            		setIsWorking();
 		                    // change status and owner (will raise 
 		                	// illegal operation is not possible)
 		            		assignment.setStatusAndOwner(
 		                			AssignmentStatus.READY, null);	
 							// notify
-							fireOnWorkChange(getReclaimButton(),
-									assignment,AssignmentStatus.READY);
-							// finished working
-							setIsNotWorking();
+							fireOnWorkChange(assignment,AssignmentStatus.READY);
 							// success!
-							return;
+							bFlag = true;
 		                }
 		                catch (IllegalOperationException e) {
 							// prompt user
@@ -284,18 +279,24 @@ public class UnitSelectionDialog extends DiskoDialog {
 			prompt(MessageBoxType.MESSAGE_UNIT_MISSING);
 		}
 
-		// is working
-		setIsWorking();
-		
-		// clear selection
-		getUnitTable().clearSelection();
+		// clear selection?
+		if(bFlag)
+			getUnitTable().clearSelection();
 
-		// finished working
 		setIsNotWorking();
-		
+		getContentPanel().setDirty(false);
+
+		// finished
+		return bFlag;
 	}
 
-	private boolean allocate() {
+	public boolean assign() {
+		
+		if(isWorking()) return false;
+		setIsWorking();
+		
+		// initialize
+		boolean bFlag = false;
 		
 		// get selected unit
 		IUnitIf unit = getSelectedUnit();		
@@ -338,8 +339,6 @@ public class UnitSelectionDialog extends DiskoDialog {
 					
                     try
                     {
-                		// is working
-                		setIsWorking();
     					// reallocate?
     					if(reallocate) {
 	                        // change status and owner (will raise 
@@ -351,19 +350,13 @@ public class UnitSelectionDialog extends DiskoDialog {
     						unit.addUnitAssignment(currentAssignment, AssignmentStatus.QUEUED);
     					}
     					// notify
-    					fireOnWorkChange(getAllocateButton(),currentAssignment,AssignmentStatus.QUEUED);
-    					// finished working
-    					setIsNotWorking();
-    					// hide me
-    					setVisible(false);
+    					fireOnWorkChange(currentAssignment,AssignmentStatus.QUEUED);
     					// success!
-    					return true;
+    					bFlag =  true;
                     }
                     catch (IllegalOperationException e) {
     					// prompt user
     					prompt(MessageBoxType.MESSAGE_INVALID_STATUS);
-    					// finished working
-    					setIsNotWorking();
                     }										
 				}
 			}
@@ -377,14 +370,16 @@ public class UnitSelectionDialog extends DiskoDialog {
 			prompt(MessageBoxType.MESSAGE_UNIT_MISSING);
 		}
 		
-		// is working
-		setIsWorking();
-		
-		// clear selection
-		getUnitTable().clearSelection();
+		// clear selection?
+		if(bFlag)
+			getUnitTable().clearSelection();
 
 		// finished working
 		setIsNotWorking();
+		
+		// hide me?
+		if(bFlag)
+			setVisible(false);
 		
 		// finished
 		return false;
@@ -515,13 +510,13 @@ public class UnitSelectionDialog extends DiskoDialog {
 					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + 
 					"</b> i kø til en enhet i listen" + (currentAssignment instanceof ISearchIf ? 
 							"    (<i>mannskapsbehov</i>: <b>" + ((ISearchIf)currentAssignment).getPlannedPersonnel() + "</b>)</html>" : "</html>"));
-			getAllocateButton().setEnabled(true);
+			getAssignButton().setEnabled(true);
 			getReclaimButton().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må velge et oppdrag før du kan legge det til køen til enhet");
-			getAllocateButton().setEnabled(false);
+			getAssignButton().setEnabled(false);
 			getReclaimButton().setEnabled(false);
 		}		
 		// get current assigned unit

@@ -14,7 +14,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-public class EditActionTableCellEditor extends AbstractCellEditor implements
+public class EditActionCellEditor extends AbstractCellEditor implements
 		TableCellEditor, TableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
@@ -23,7 +23,7 @@ public class EditActionTableCellEditor extends AbstractCellEditor implements
 	private JButton copyButton = null;
 	private EnumSet<IAssignmentIf.AssignmentStatus> editable = null;
 
-	public EditActionTableCellEditor() {
+	public EditActionCellEditor() {
 		editable = EnumSet.of(IAssignmentIf.AssignmentStatus.DRAFT);
 		editable.add(IAssignmentIf.AssignmentStatus.READY);
 		editable.add(IAssignmentIf.AssignmentStatus.EMPTY);

@@ -12,7 +12,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.POIPanel;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -35,9 +35,6 @@ public class POITool extends AbstractDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
-	// point of interest data
-	private POIType[] poiTypes = null;
-	
 	// search type data
 	private SearchSubType searchSubType = null;
 	
@@ -60,6 +57,9 @@ public class POITool extends AbstractDrawTool {
 		// set tool type
 		type = DiskoToolType.POI_TOOL;		
 
+		// show draw frame when appropriate
+		isShowDrawFrame = true;
+		
 		// map draw operation
 		onMouseDownAction = DrawAction.ACTION_BEGIN;
 		onMouseUpAction = DrawAction.ACTION_FINISH;
@@ -82,31 +82,6 @@ public class POITool extends AbstractDrawTool {
 		dialog.register(this);
 		
 	}
-
-	@Override
-	public void onCreate(Object obj) {
-		// forward
-		super.onCreate(obj);
-		
-		try {
-
-			// is map valid?
-			if (map!=null) {
-				
-				// add layer listener
-				IMsoFeatureLayer msoLayer =  map.getMsoLayer(IMsoFeatureLayer.LayerCode.POI_LAYER);
-				Iterator<IPropertyPanel> it = panels.iterator();
-				while(it.hasNext()) {
-					msoLayer.addMsoLayerEventListener((POIPanel)it.next());
-				}
-				
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}			
-	}
 	
 	public boolean onFinish(int button, int shift, int x, int y) {
 		
@@ -115,11 +90,6 @@ public class POITool extends AbstractDrawTool {
 			// validate
 			if(validate(msoObject==null)) {
 								
-				//p.setSpatialReferenceByRef(map.getSpatialReference());
-				
-				// update panel
-				getPOIPanel().updatePOIField(p);
-				
 				// forward
 				updateGeometry();				
 				
@@ -136,25 +106,14 @@ public class POITool extends AbstractDrawTool {
 	}
 	
 	@Override
-	public boolean activate(boolean allow) {
-		
-		// forward
-		boolean bflag = super.activate(allow);
-		
-		try {
-			// update poi point
-			Point p = map.getClickPoint();
-			if(p.isEmpty())
-				p = map.getMovePoint();
-			getPOIPanel().updatePOIField(p);
+	public boolean finish() {
+		// validate
+		if(validate(msoObject==null)) {
+			// forward
+			return super.finish();			
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// return flag
-		return bflag;
-		
+		// failure
+		return false;
 	}
 
 	private boolean validate(boolean bAddPOI) {
@@ -180,7 +139,7 @@ public class POITool extends AbstractDrawTool {
 					(poiType == IPOIIf.POIType.VIA) || (poiType == IPOIIf.POIType.STOP);
 				
 				// dispatch type
-				if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {
+				if (msoCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {
 					// notify?
 					if(isAreaPOI) {
 						Utils.showWarning(DiskoEnumFactory.getText(poiType) 
@@ -189,7 +148,7 @@ public class POITool extends AbstractDrawTool {
 						bDoWork = false;
 					}
 				}
-				else if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA) {
+				else if (msoCode == IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA) {
 					// notify?
 					if(isAreaPOI) {
 						// notify
@@ -199,11 +158,11 @@ public class POITool extends AbstractDrawTool {
 						bDoWork = false;
 					}
 				}
-				else if (msoClassCode == IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE) {
+				else {
 					// check for area?
 					if(isAreaPOI) {
 						// add new area?
-						if (msoOwner != null) {
+						if (msoOwner instanceof IAreaIf) {
 							// check for START and STOP duplicates?
 							if(poiType != IPOIIf.POIType.VIA) {
 								// get poi list
@@ -222,16 +181,13 @@ public class POITool extends AbstractDrawTool {
 								}
 							}
 						}
-					}
-				}
-				else {
-					// invalid poi?
-					if(isAreaPOI) {
-						// notify
-						Utils.showWarning(DiskoEnumFactory.getText(poiType) 
-								+ " punkter kan bare legges til søkeoppdrag");
-						// do not add point
-						bDoWork = false;
+						else if(msoOwner!=null) {
+							// notify
+							Utils.showWarning(DiskoEnumFactory.getText(poiType) 
+									+ " punkter kan bare legges til søkeoppdrag");
+							// do not add point
+							bDoWork = false;
+						}
 					}
 				}
 			}
@@ -249,97 +205,59 @@ public class POITool extends AbstractDrawTool {
 		
 	}
 
+	/* ==================================================
+	 * Public methods (override with care) 
+	 * ==================================================
+	 */
+	
 	public POIPanel getPOIPanel() {
 		return (POIPanel)propertyPanel;
 	}
 	
-	public IPOIIf getCurrentPOI() {
+	public IPOIIf getPOI() {
 		if(msoObject instanceof IPOIIf)
 			return (IPOIIf)msoObject;
 		else
 			return null;
 	}
 	
-	public void setCurrentPOI(IPOIIf msoPOI) {
-		msoObject = msoPOI;
-		POIPanel panel = (POIPanel)getPropertyPanel();
-		if(msoPOI!=null) {
-			panel.getGotoPanel().getPositionField().setPosition(msoPOI.getPosition());
-			panel.setPOIType(msoPOI.getType());
-			panel.setRemarks(msoPOI.getRemarks());
-		}
-		else {
-			panel.getGotoPanel().reset();
-			panel.getTypesPanel().reset();			
-			panel.setRemarks(null);
-		}
+	public void setPOI(IPOIIf msoPOI) {
+		// forward
+		setMsoData(msoOwner,msoPOI,msoCode);
 	}
 	
 	@Override
-	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
-		// forward
-		super.setMsoDrawData(msoOwner, msoObject, msoClassCode);
-		// get panel
-		POIPanel panel = ((POIPanel)getPropertyPanel());
-		// update comments and type
-		if(msoObject instanceof IPOIIf) {
-			// cast to IPOIIf
-			IPOIIf poi = (IPOIIf)msoObject;
-			// update panel
-			panel.setPOIType(poi.getType());
-			panel.setRemarks(poi.getRemarks());
-		}
-		else {
-			// update panel
-			panel.setPOIType(null);
-			panel.setRemarks(null);			
-		}
-		// forward
-		panel.setMsoObject((msoOwner!=null ? msoOwner : msoObject));
-	}
-
-	public void addPOIAt(Point p,POIType type,String remarks) {
-		// update dialog
-		getPOIPanel().setPOIType(type);
-		getPOIPanel().setRemarks(remarks);
-		// validate
-		if(validate(true)) {
-			try {
-				// reset mso object (this forces the creation of an new POI)
-				msoObject = null;
-				// update point
-				this.p = (Point)p.esri_clone();
-				// forward
-				doFinishWork();
+	public void setMsoData(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, MsoClassCode msoCode) {
+		try {
+			
+			// update tool point
+			if(msoObj instanceof IPOIIf) {
+				IPOIIf msoPOI = (IPOIIf)msoObj;
+				setPoint(MapUtil.getEsriPoint(msoPOI.getPosition(), map.getSpatialReference()));
 			}
-			catch(Exception e) {
-				e.printStackTrace();
+			else {
+				setPoint(null);
 			}
-		}
-	}
-	
-	public void movePOIAt(Point p,POIType type,String remarks) {
-		// update dialog
-		getPOIPanel().setPOIType(type);
-		getPOIPanel().setRemarks(remarks);
-		// validate
-		if(validate(false)) {
-			try {
-				// update point
-				this.p = (Point)p.esri_clone();
-				// forward
-				doFinishWork();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
+			
+			// forward
+			super.setMsoData(msoOwn, msoObj, msoCode);
+			
+			// forward
+			getPOIPanel().setMsoObject(msoObj);
+			
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
 	@Override
 	public Object getAttribute(String attribute) {
 		if("POITYPES".equalsIgnoreCase(attribute)) {
-			return poiTypes;
+			return getPOIPanel().getPOITypes();
 		}
 		if("SEARCHSUBTYPE".equalsIgnoreCase(attribute)) {
 			return searchSubType;
@@ -351,11 +269,11 @@ public class POITool extends AbstractDrawTool {
 	public void setAttribute(Object value, String attribute) {
 		super.setAttribute(value, attribute);
 		if("POITYPES".equalsIgnoreCase(attribute)) {
-			poiTypes = (POIType[])value;
+			POIType[] types = (POIType[])value;
 			Iterator<IPropertyPanel> it = panels.iterator();
 			while(it.hasNext()) {
 				// forward
-				((POIPanel)it.next()).setTypes(poiTypes);
+				((POIPanel)it.next()).setPOITypes(types);
 			}
 			return;
 		}
@@ -366,32 +284,40 @@ public class POITool extends AbstractDrawTool {
 	}
 	
 	@Override
-	public boolean doPrepare() {
-		// get panel
-		POIPanel panel = ((POIPanel)getPropertyPanel());
-		// is poi?
-		if(msoObject instanceof IPOIIf) {
-			// cast to IPOIIf
-			IPOIIf poi = (IPOIIf)msoObject; 
-			// update dialog
-			poi.setType(panel.getPOIType());
-			poi.setRemarks(panel.getRemarks());			
-			// is owner search assignment?
-			if(msoOwner instanceof IAreaIf) {
-				// get owning assignment
-				IAssignmentIf assignment = ((IAreaIf)msoOwner).getOwningAssignment();
-				// is search assignment?
-				if(assignment instanceof ISearchIf) {
-					// cast to ISearchIf
-					ISearchIf search = (ISearchIf)assignment; 
-					// update?
-					if(searchSubType!=null && !searchSubType.equals(search.getSubType()))
-						search.setSubType(searchSubType);
-				}
-			}
-		}
+	public boolean doPrepare(IMsoObjectIf msoObj, boolean isDefined) {
 		// forward
-		return super.doPrepare();
+		if(super.doPrepare(msoObj,isDefined)) {
+			// handle this?
+			if(!isDefined) { 
+				// get panel
+				POIPanel panel = ((POIPanel)getPropertyPanel());
+				// is poi?
+				if(msoObj instanceof IPOIIf) {
+					// cast to IPOIIf
+					IPOIIf poi = (IPOIIf)msoObj; 
+					// update dialog
+					poi.setType(panel.getPOIType());
+					poi.setRemarks(panel.getRemarks());
+				}
+				// is owner search assignment?
+				if(msoObj instanceof IAreaIf) {
+					// get owning assignment
+					IAssignmentIf assignment = ((IAreaIf)msoObj).getOwningAssignment();
+					// is search assignment?
+					if(assignment instanceof ISearchIf) {
+						// cast to ISearchIf
+						ISearchIf search = (ISearchIf)assignment; 
+						// update?
+						if(searchSubType!=null && !searchSubType.equals(search.getSubType()))
+							search.setSubType(searchSubType);
+					}
+				}	
+			}
+			// finished
+			return true;
+		}
+		// failed
+		return false;
 	}
 	
 	@Override
@@ -416,8 +342,8 @@ public class POITool extends AbstractDrawTool {
 			// update 
 			geoPoint = p;
 			
-			// mark change
-			setDirty();
+			// forward
+			setDirty(true);
 			
 		}		
 	}	
@@ -448,6 +374,7 @@ public class POITool extends AbstractDrawTool {
 		private POIType type = null;
 		private POIType[] types = null;
 		private String remarks = null;
+		private boolean isDirty = false;
 		private SearchSubType searchSubType = null;
 		
 		// create state
@@ -458,19 +385,22 @@ public class POITool extends AbstractDrawTool {
 		
 		public void save(POITool tool) {
 			super.save((AbstractDiskoTool)tool);
-			types = poiTypes;
+			searchSubType = tool.searchSubType;
+			types = tool.getPOIPanel().getPOITypes();
 			type = tool.getPOIPanel().getPOIType();
 			remarks = tool.getPOIPanel().getRemarks();
-			searchSubType = tool.searchSubType;
+			isDirty = tool.getPOIPanel().isDirty();
 		}
 		
 		public void load(POITool tool) {
 			super.load((AbstractDiskoTool)tool);
-			tool.setAttribute(types,"POITYPES");
-			tool.getPOIPanel().setPOIType(type);
-			tool.getPOIPanel().setRemarks(remarks);
-			tool.getPOIPanel().updatePOIField(p);
+			tool.getPOIPanel().setChangeable(false);
 			tool.searchSubType = searchSubType;
+			tool.getPOIPanel().setPOIType(type);
+			tool.getPOIPanel().setPOITypes(types);
+			tool.getPOIPanel().setRemarks(remarks);
+			tool.getPOIPanel().setChangeable(true);
+			tool.getPOIPanel().setDirty(isDirty);
 		}
 	}
 }

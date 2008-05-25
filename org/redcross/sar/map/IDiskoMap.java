@@ -6,8 +6,11 @@ import java.util.List;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.ElementDialog;
+import org.redcross.sar.gui.map.MapFilterBar;
 import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.gui.map.SnapDialog;
+import org.redcross.sar.map.command.DrawAdapter;
+import org.redcross.sar.map.command.IDiskoTool;
 import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -21,10 +24,12 @@ import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.IPolygon;
+import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
-import com.esri.arcgis.systemUI.ITool;
 
 public interface IDiskoMap extends IDiskoWorkListener {
 	
@@ -35,7 +40,8 @@ public interface IDiskoMap extends IDiskoWorkListener {
 		FORMAT_DES
 	}
 	
-	public void setActiveTool(ITool tool, boolean allow) throws IOException, AutomationException;
+	public IDiskoTool getActiveTool();
+	public boolean setActiveTool(IDiskoTool tool, int options) throws IOException, AutomationException;
 	
 	public List<IMsoFeatureLayer> getMsoLayers();
 	
@@ -68,6 +74,16 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	public List<IMsoFeatureLayer> setSelected(IMsoObjectIf msoObject, boolean selected) throws IOException, AutomationException;	
 	public List<IMsoFeatureLayer> clearSelected() throws IOException, AutomationException;
 	
+	public void flashSelected();
+	public void flashPoint(IPoint p);
+	public void flashPosition(Position p);
+	public void flashEnvelope(IEnvelope extent);
+	public void flashPolygon(IPolygon p);
+	public void flashPolyline(IPolyline p);
+	public void flashFeature(IFeature feature);
+	public void flashMsoObject(IMsoObjectIf msoObject);
+	
+	public void centerAt(IPoint p) throws IOException, AutomationException;
 	public void centerAtPosition(Position p) throws IOException, AutomationException;
 	public void centerAtSelected () throws IOException, AutomationException;
 	public void centerAtFeature(IFeature feature) throws IOException, AutomationException;
@@ -105,8 +121,14 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	
 	public List<IFeatureLayer> getSnappableLayers() throws IOException, AutomationException;
 	
-	public void setMapStatusBar(MapStatusBar buddy);
+	public boolean isNorthBarVisible();
+	public void setNorthBarVisible(boolean isVisible);
+	
+	public boolean isSouthBarVisible();
+	public void setSouthBarVisible(boolean isVisible);
+
 	public MapStatusBar getMapStatusBar();
+	public MapFilterBar getMapFilterBar();
 	
 	public Point getClickPoint();
 	
@@ -158,5 +180,8 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	
 	public boolean loadMxdDoc();
 	public boolean isMxdDocLoaded();
+	
+	public void showProgressor(boolean autocancel);
+	public void hideProgressor();
 	
 }

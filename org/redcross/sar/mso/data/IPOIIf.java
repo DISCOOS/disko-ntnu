@@ -15,11 +15,11 @@ public interface IPOIIf extends IMsoObjectIf
         GENERAL,
         FINDING,
         SILENT_WITNESS,
+        INTELLIGENCE,
+        OBSERVATION,
         START,
         STOP,
-        VIA,
-        INTELLIGENCE,
-        OBSERVATION
+        VIA
     }
 
     /*-------------------------------------------------------------------------------------------

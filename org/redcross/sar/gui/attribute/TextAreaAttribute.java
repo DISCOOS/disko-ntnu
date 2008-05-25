@@ -6,6 +6,8 @@ package org.redcross.sar.gui.attribute;
 import java.awt.Component;
 
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -41,6 +43,20 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 		if(m_component==null) {
 			JTextArea area = new JTextArea();
 			area.setEditable(m_isEditable);
+			area.getDocument().addDocumentListener(new DocumentListener() {
+
+				public void changedUpdate(DocumentEvent e) { change(); }
+
+				public void insertUpdate(DocumentEvent e) { change(); }
+
+				public void removeUpdate(DocumentEvent e) { change(); }
+				
+				private void change() {
+					if(isWorking()) return;
+					fireOnWorkChange();
+				}
+				
+			});
 			// save the component
 			m_component = area;			
 		}

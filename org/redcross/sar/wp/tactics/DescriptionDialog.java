@@ -5,18 +5,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import javax.swing.AbstractButton;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.models.POITableModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -30,7 +26,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class DescriptionDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JTable poiTable = null;
 	private IDiskoWpModule wp = null;
 	private POITableModel tableModel = null;
@@ -63,7 +59,7 @@ public class DescriptionDialog extends DiskoDialog {
 			this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 
@@ -85,14 +81,12 @@ public class DescriptionDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
+				contentPanel = new DefaultDiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = contentPanel.addButton(
-						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
-				button.addActionListener(new ActionListener() {
+				contentPanel.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						// hide me!
 						setVisible(false);						
@@ -159,6 +153,7 @@ public class DescriptionDialog extends DiskoDialog {
 	public int setMsoObject(IMsoObjectIf msoObj) {
 		int state = 0;
 		if(isWorking()) return state;
+		setIsWorking();
 		// get area
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
@@ -174,10 +169,17 @@ public class DescriptionDialog extends DiskoDialog {
 			// reset assignment
 			currentAssignment = null;
 		}
+		
 		// set current area
 		getPOITableModel().setArea(area);
+
+		// reset state 
+		setIsNotWorking();
+		getContentPanel().setDirty(false);
+		
 		// forward
 		setup();
+		
 		// success
 		return state;
 	}	

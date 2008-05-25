@@ -21,7 +21,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.GotoPanel;
 import org.redcross.sar.gui.map.PositionPanel;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.PositionTool;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
@@ -41,7 +41,7 @@ import org.redcross.sar.util.mso.Track;
  *
  * @author thomasl
  */
-public class MessagePositionPanel extends DiskoPanel implements IEditMessageComponentIf
+public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -51,7 +51,7 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 	protected JButton m_cancelButton = null;
 	protected PositionPanel m_positionPanel = null;
 	protected GotoPanel m_gotoPanel = null;
-	protected DiskoPanel m_unitsPanel = null;
+	protected DefaultDiskoPanel m_unitsPanel = null;
 	
 	protected IDiskoWpMessageLog m_wp = null;
 	
@@ -65,6 +65,9 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 	 */
 	public MessagePositionPanel(IDiskoWpMessageLog wp)
 	{
+		// forward
+		super("",false,false);
+		
 		// prepare
 		m_wp = wp;
 		m_tool = wp.getApplication().getNavBar().getPositionTool();
@@ -75,7 +78,8 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 
 	private void initialize()
 	{
-		// hide borders
+		// hide header and borders
+		setHeaderVisible(false);
 		setBorderVisible(false);
 		
 		// hide me
@@ -93,14 +97,14 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
 		
 		// add empty border
-		setBodyBordrer(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
 		// add components (BorderLayout is default)
-		addBodyComponent(getUnitsPanel());
-		addBodyComponent(Box.createHorizontalStrut(5));
-		addBodyComponent(getGotoPanel());
-		addBodyComponent(Box.createHorizontalStrut(5));
-		addBodyComponent(getActionsPanel());
+		addBodyChild(getUnitsPanel());
+		addBodyChild(Box.createHorizontalStrut(5));
+		addBodyChild(getGotoPanel());
+		addBodyChild(Box.createHorizontalStrut(5));
+		addBodyChild(getActionsPanel());
 		
 	}
 	
@@ -218,7 +222,7 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 	 * 	
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getUnitsPanel() {
+	private DefaultDiskoPanel getUnitsPanel() {
 		if (m_unitsPanel == null) {
 			// get from position panel
 			m_unitsPanel = getPositionPanel().getUnitsPanel();
@@ -265,7 +269,7 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 		PositionPanel panel = getPositionPanel();
 		
 		// get current unit			
-		IUnitIf unit = panel.getCurrentUnit();
+		IUnitIf unit = panel.getUnit();
 		
 		// has unit?
 		if(unit!=null) {
@@ -276,7 +280,7 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 			try {
 				
 				// get point
-				Position p = panel.getGotoPanel().getPositionField().getPosition();
+				Position p = panel.getPosition();
 							
 				// add or move poi?
 				if(p!=null) {
@@ -294,7 +298,7 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 						m_tool.setWorkPoolMode(false);				
 						
 						// update tool
-						m_tool.setCurrentUnit(unit);				
+						m_tool.setUnit(unit);				
 						
 						// get current message, create if not exist
 						IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
@@ -401,8 +405,8 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 			{
 				IUnitIf unit = line.getLineUnit();
 				Position p = line.getLinePosition();
-				getPositionPanel().setCurrentUnit(unit);
-				getPositionPanel().setCurrentPosition(p);
+				getPositionPanel().setUnit(unit);
+				getPositionPanel().setPosition(p);
 			}
 		}
 	}
@@ -426,14 +430,14 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 			if(unit==null) 
 				getPositionPanel().loadUnits();
 			else
-				getPositionPanel().loadSingleUnitOnly(unit);
+				getPositionPanel().loadUnit(unit);
 			// set it the active property panel
 			m_tool.setPropertyPanel(getPositionPanel());
 			// update tool attributes
-			m_tool.setMsoDrawData(null, unit, MsoClassCode.CLASSCODE_UNIT);
+			m_tool.setMsoData(null, unit, MsoClassCode.CLASSCODE_UNIT);
 			m_tool.setDrawMode(DrawMode.MODE_REPLACE);
 			// set tool active
-			m_wp.getMap().setActiveTool(m_tool,true);
+			m_wp.getMap().setActiveTool(m_tool,0);
 			// show tool
 			m_wp.getApplication().getNavBar()
 				.setVisibleButtons(Utils.getListOf(DiskoToolType.POSITION_TOOL), true, true);
@@ -481,7 +485,7 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 				// get current message line
 				IUnitIf unit = messageLine.getLineUnit();
 				// forward
-				getPositionPanel().setCurrentUnit(unit);
+				getPositionPanel().setUnit(unit);
 			}
 		}
 		catch(Exception e){}
@@ -514,9 +518,8 @@ public class MessagePositionPanel extends DiskoPanel implements IEditMessageComp
 	public void setMapTool()
 	{
 		IDiskoMap map = m_wp.getMap();
-		try
-		{
-			map.setActiveTool(m_tool,true);
+		try {
+			map.setActiveTool(m_tool,0);
 		}
 		catch (AutomationException e)
 		{

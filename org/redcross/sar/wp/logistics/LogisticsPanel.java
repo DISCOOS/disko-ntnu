@@ -5,7 +5,7 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.map.MapStatusBar;
-import org.redcross.sar.gui.renderers.DiskoTableHeaderCellRenderer;
+import org.redcross.sar.gui.renderers.DiskoHeaderCellRenderer;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -104,10 +104,9 @@ public class LogisticsPanel implements
             return;
         }*/
         defineSubpanelActionHandlers();
-        m_splitter3.setLeftComponent(
-        		MapStatusBar.createPanel(m_map, 
-				new MapStatusBar(), BorderLayout.NORTH, 
-				BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+		m_map.setNorthBarVisible(true);
+		m_map.setSouthBarVisible(true);
+        m_splitter3.setLeftComponent((JComponent)m_map);
 //        setSplitters();
 //        setPanelSizes();
         initUnitTable();
@@ -330,7 +329,7 @@ public class LogisticsPanel implements
         JTableHeader tableHeader = m_unitTable.getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoTableHeaderCellRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderCellRenderer(tableHeader.getDefaultRenderer()));
         m_unitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_unitTable.setCellSelectionEnabled(true);
         JTableHeader th = m_unitTable.getTableHeader();

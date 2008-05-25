@@ -5,9 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -30,111 +27,12 @@ import java.util.ResourceBundle;
  */
 public class BasicDiskoFactory {
 
-	private final Map<Object,String> m_fileNames = new HashMap<Object,String>(); 	
-	private final Map<String,Object> m_installed = new HashMap<String,Object>(); 	
-		
-	public boolean supports(Object resource) {
+	public static boolean supports(Object resource) {
 		return (resource instanceof ResourceBundle) 
 			|| (resource instanceof Properties);
 	}
-	
-	public boolean isInstalled(Object resource) {
-		// is installed?
-		return m_fileNames.containsKey(resource);
-	}
-	
-	public boolean isInstalled(String filename) {
-		// is installed?
-		return m_installed.containsKey(filename);
-	}
-	
-	public String getFileName(Object resource) {
-		// is installed?
-		if(isInstalled(resource)) {
-			// loop over all
-			return m_fileNames.get(resource);
-		}
-		// not installed
-		return null;
-	}
-	
-	public Object getResource(String filename) {
-		// is installed?
-		if(isInstalled(filename)) {
-			// get installed resource
-			return m_installed.get(filename);
-		}
-		// not installed
-		return null;
-	}
-	
-	public Object getResourceFromKey(String key) {
-		for(Object it: m_installed.values()) {
-			if(it instanceof ResourceBundle) {
-				// cast to resource bundle
-				ResourceBundle bundle =  (ResourceBundle)it;
-				// get file name?
-				if(bundle.containsKey(key)) return it;
-			}
-			if(it instanceof Properties) {
-				// cast to resource bundle
-				Properties properties =  (Properties)it;
-				// get file name?
-				if(properties.containsKey(key)) return it;
-			}
-		}
-		// not found
-		return null;
 		
-	}
-	
-	public boolean install(String filename,Object resource) {
-		// supported resource?
-		if(supports(resource)) {
-			// not installed already?
-			if(!isInstalled(resource)) {
-				// install
-				m_fileNames.put(resource,filename);
-				m_installed.put(filename,resource);
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}
-		
-	public boolean uninstall(Object resource) {
-		// is installed?
-		if(isInstalled(resource)) {
-			// get file name
-			String filename = getFileName(resource);
-			// uninstall
-			m_fileNames.remove(resource);
-			m_installed.remove(filename);
-			// successfully uninstalled
-			return true;
-		}
-		// failure
-		return false;
-	}
-	
-	public boolean uninstall(String filename) {
-		// is installed?
-		if(isInstalled(filename)) {
-			// get file name
-			Object resource = getFileName(filename);
-			// uninstall
-			m_fileNames.remove(resource);
-			m_installed.remove(filename);
-			// successfully uninstalled
-			return true;
-		}
-		// failure
-		return false;
-	}	
-	
-	protected static boolean isPath(String name) {
+	public static boolean fileExist(String name) {
 		try {
 			if (name != null) {
 				return ((new File(name)).exists());
@@ -145,7 +43,7 @@ public class BasicDiskoFactory {
 		return false;
 	}
 
-	protected static boolean createFile(String filename) {
+	public static boolean createFile(String filename) {
 		try {
 			if (filename != null) {
 				// create object
@@ -164,21 +62,21 @@ public class BasicDiskoFactory {
 	}
 	
 	
-	protected static String getKey(Enum e, String suffix) {
+	public static String getKey(Enum e, String suffix) {
 		return getKey(e.getClass().getSimpleName()+"."+e.toString(),suffix);
 	}
 	
 	
-	protected static String getKey(String prefix, String suffix) {
+	public static String getKey(String prefix, String suffix) {
 		return prefix + ((suffix!=null && !suffix.isEmpty()) ? "."+suffix : null);
 	}
 
-	protected String getText(String key, Object resource) {
+	public static String getText(String key, Object resource) {
 		if(key==null || key.isEmpty()) return null;
 		// translate
 		if(resource instanceof ResourceBundle) {
 			// cast to resource bundle
-			ResourceBundle bundle =  (ResourceBundle)resource;
+			ResourceBundle bundle = (ResourceBundle)resource;
 			// get file name?
 			if(bundle.containsKey(key))
 				return  bundle.getString(key);
@@ -194,17 +92,12 @@ public class BasicDiskoFactory {
 		return null;
 	}	
 	
-	protected String getTextFromInstalled(String key) {
-		for(Object it: m_installed.values()) {
-			String text = getText(key, it);
-			if(text!=null && !text.isEmpty())
-				return text;
-		}
-		//  not found
-		return null;			
-	}
-			
-	protected boolean setText(String key, String value, boolean create, boolean write, Object resource, String filename) {
+	public String getString(String key, Object resource) {
+		String text = getText(key,resource);
+		return text==null ? key : text;
+	}	
+
+	public static boolean setText(String key, String value, boolean create, boolean write, Object resource, String filename) {
 		// supported resource?
 		if(supports(resource)) {
 			// get properties
@@ -217,10 +110,6 @@ public class BasicDiskoFactory {
 					properties.setProperty(key, value);
 					// write to file?
 					if(write) {
-						// update file name from installed?
-						if(!isPath(filename)) {
-							filename = getFileName(resource);
-						}
 						// forward
 						return store(properties,filename);
 					}
@@ -231,35 +120,22 @@ public class BasicDiskoFactory {
 		return false;
 	}
 	
-	protected boolean setTextToInstalled(String key, String value, boolean create, boolean write) {
-		for(Object it: m_installed.values()) {
-			if(setText(key, value, create, write, it, null)) {
-				// success!
-				return true;
-			}
-		}
-		//  failed
-		return false;			
-	}
-	
 	/**
 	 * Get the properties file from resource
 	 * 
 	 * If resource is null, then create from file name
 	 * 
 	 */
-	protected Properties getProperties(Object resource, String filename, boolean create) {
+	public static Properties getProperties(Object resource, String filename, boolean create) {
 		// try to get from current information
 		if(resource instanceof Properties) {
 			return (Properties)resource;
 		}
 		else if(resource instanceof ResourceBundle){
-			if(isInstalled(resource)) {
-				return load(getFileName(resource));
-			}
+			return load(filename);
 		}
 		// does file not exist?
-		if(!isPath(filename)) {
+		if(!fileExist(filename)) {
 			// create file?
 			if(create) { 
 				if(!createFile(filename)) {
@@ -279,9 +155,9 @@ public class BasicDiskoFactory {
 	 * @return 
 	 * @throws Exception
 	 */
-	protected static Properties load(String fileName) {
+	public static Properties load(String fileName) {
 		try {
-			if(isPath(fileName)) {
+			if(fileExist(fileName)) {
 				Properties prop = new Properties();
 				FileInputStream in = new FileInputStream(fileName);
 				prop.load(in); in.close();
@@ -302,9 +178,9 @@ public class BasicDiskoFactory {
 	 * @param fileName The name (path) of the file
 	 * @throws Exception
 	 */
-	protected boolean store(Properties properties, String fileName) {
+	public static boolean store(Properties properties, String fileName) {
 		try {
-			if(isPath(fileName)) {
+			if(fileExist(fileName)) {
 				FileOutputStream out = new FileOutputStream(fileName);
 				properties.store(out, null); out.close();
 				// success
@@ -320,24 +196,5 @@ public class BasicDiskoFactory {
 		// failure
 		return false;
 	}	
-	
-	public static ResourceBundle getBundle(Class c) {
-        
-		if (c == null) return null;
-
-        String bundleName = "";
-        try {
-            Field f = c.getField("bundleName");
-            bundleName = (String)f.get(null);
-            return ResourceBundle.getBundle(bundleName);
-        }
-        catch (Exception ex) {/*NOP*/}
-        // not found;
-        return null;
-    }
-
-    public static ResourceBundle getBundle(Enum e) {
-        return getBundle(e.getClass().getDeclaringClass());
-    }	
 	
 }

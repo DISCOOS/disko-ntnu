@@ -133,6 +133,7 @@ public class MapFilterBar extends ToggableTabPane {
 		//System.out.println(msoLayer!=null ? msoLayer.isDirty() : "");
 	}
 	
+	/*
 	public static JPanel createPanel(IDiskoMap map, 
 			MapFilterBar buddy, String position, Border border) {
 		JPanel panel = new JPanel();
@@ -143,6 +144,7 @@ public class MapFilterBar extends ToggableTabPane {
 		panel.setBorder(border);
 		return panel;
 	}
+	*/
 	
 	private class Filter implements Selector<IMsoObjectIf> {
 

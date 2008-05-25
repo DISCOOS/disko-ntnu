@@ -27,15 +27,17 @@ import org.redcross.sar.thread.DiskoProgressEvent.DiskoProgressEventType;
 public class DiskoProgressMonitor {
 	   
 	private static int PAUSE_MILLIS = 500;
+	private static int POPUP_MILLIS = 150;
 	
 	private static DiskoProgressMonitor m_this;
 	
 	private int m_min = 0;
 	private int m_max = 0;
 	private int m_progress = 0;
-	private int m_isInAction = 0;
+	private int m_inAction = 0;
 	private boolean m_inhibit = true;
-	private long m_millisToPopup = 10;
+	private long m_millisToPopup = POPUP_MILLIS;
+	private long m_millisToCancel = 0;			// no automatic cancel as default
 	private String m_note = null;
 	private boolean m_intermediate = false;
 	private DecisionWorker m_worker = null;
@@ -96,18 +98,22 @@ public class DiskoProgressMonitor {
 	}
 	
 	public synchronized int start(String note, int min, int max) {
-		return start(note,min,max,0);
+		return start(note,min,max,0,POPUP_MILLIS,0);
 	}
 	
-	public synchronized int start(String note, int min, int max, int progress) {
+	public synchronized int start(String note, int min, int max, int progress, int millisToPopup, int millisToCancel) {
 		// initialize
 		m_min = 0;
 		m_max = 0;
 		m_progress = progress; 
 		m_note = note;
 		m_intermediate = (min == max);
+		m_hasProgress = false;
 		// start progress?
-		if(m_isInAction == 0) {
+		if(m_inAction == 0) {
+			// update timeout values
+			m_millisToPopup = millisToPopup;
+			m_millisToCancel = millisToCancel;
 			// reset progress
 			m_progress = 0;
 			// start decision thread
@@ -115,30 +121,31 @@ public class DiskoProgressMonitor {
 		}
 		else {
 			// increment
-			m_isInAction++;
+			m_inAction++;
 			// update progress bar
-			update();
+			scheduleUpdate();
 			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);			
 		}
 		// return count
-		return m_isInAction;
+		return m_inAction;
 	}
 	
 	public synchronized int progress(String note, int step, boolean auto) {
-		if(m_isInAction>0) {		
+		if(m_inAction>0) {		
 			// update
 			m_note = note;
 			m_progress = step;
+			m_hasProgress = true;
 			// update progress bar
-			update();
+			scheduleUpdate();
 			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);
 		}
 		else if (auto){
 			start(note);
 		}
-		return m_isInAction;
+		return m_inAction;
 	}
 	
 	public synchronized int finish() {
@@ -147,17 +154,36 @@ public class DiskoProgressMonitor {
 	
 	public synchronized int finish(boolean force) {		
 		// decrement
-		if(m_isInAction>0)
-			m_isInAction--;		
+		if(m_inAction>0)
+			m_inAction--;		
 		// finished?
-		if(m_isInAction==0 || force) {		
+		if(m_inAction==0 || force) {		
 			// forward
 			destroy();
 			// forward
-			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_FINISH);
+			scheduleEventFinish();
 		}
-		// resturn state
-		return m_isInAction;
+		// return state
+		return m_inAction;
+	}
+	
+	public synchronized int cancel() {
+		return(cancel(false));
+	}
+	
+	public synchronized int cancel(boolean force) {		
+		// decrement
+		if(m_inAction>0)
+			m_inAction--;
+		// finished?
+		if(m_inAction==0 || force) {		
+			// forward
+			destroy();
+			// forward
+			scheduleEventCancel();
+		}
+		// return state
+		return m_inAction;
 	}
 	
 	/**
@@ -185,6 +211,22 @@ public class DiskoProgressMonitor {
 	}
 
 	/**
+	 * Returns the amount of time before a start is cancelled if no progress is received
+	 */
+	public synchronized long getMillisToCancel() {
+		return m_millisToCancel;
+	}
+
+	/**
+	 * Specifies the amount of time before a start is cancelled if no progress is received
+	 * 
+	 * @param millisToCancel
+	 */
+	public synchronized void setMillisToCancel(long millisToCancel){
+		m_millisToCancel = millisToCancel;
+	}
+	
+	/**
 	 * Returns the minimum value -- the lower end of the progress value.
 	 * 
 	 */
@@ -211,9 +253,9 @@ public class DiskoProgressMonitor {
 		// update
 		m_note = note;
 		// notify?
-		if(m_isInAction>0) {
+		if(m_inAction>0) {
 			// update progress panel
-			update();			
+			scheduleUpdate();			
 			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);
 		}
@@ -242,7 +284,7 @@ public class DiskoProgressMonitor {
 	 */
 	public synchronized boolean isInAction() {
 		// return count
-		return (m_isInAction>0);
+		return (m_inAction>0);
 	}
 
 	/**
@@ -251,7 +293,7 @@ public class DiskoProgressMonitor {
 	 */
 	public synchronized int isInActionCount() {
 		// return count
-		return m_isInAction;
+		return m_inAction;
 	}
 		
 	public synchronized void addListener(IDiskoProgressListener listener) {
@@ -272,22 +314,21 @@ public class DiskoProgressMonitor {
 	
 	public synchronized void hide() {
 		// get state
-		m_oldState = isVisible();
-		if(m_oldState)
-			setVisible(false);
+		m_oldState = isProgressVisible();
+		if(m_oldState) scheduleEventHide();
 	}
 	
 	public synchronized boolean showAgain() {
 		// show?
-		if(m_oldState && !m_inhibit && !isVisible()) {
-			setVisible(true);
+		if(m_oldState && !m_inhibit && !isProgressVisible()) {
+			scheduleSetVisible(true);
 			return true;
 		}
 		return false;
 	}
 	
   	/*========================================================
-  	 * Inner classes
+  	 * Private methods
   	 *========================================================
   	 */
 	
@@ -298,11 +339,18 @@ public class DiskoProgressMonitor {
 				// reset flag
 				m_hasProgress = false;
 				// is in action
-				m_isInAction = 1;
-				// create decision worker
-				m_worker = new DecisionWorker(m_millisToPopup);
-				// execute in the background
-				m_worker.start();
+				m_inAction = 1;
+				// notify
+				scheduleEventStart();
+				// forward?
+				if(m_millisToPopup==0) scheduleEventShow();					
+				// start worker?
+				if(m_millisToPopup>0 || m_millisToCancel>0) {
+					// create decision worker
+					m_worker = new DecisionWorker(m_millisToPopup);
+					// execute after millisToPopup
+					m_worker.start();
+				}
 			}
 		}
 		catch(Exception e) {
@@ -312,86 +360,131 @@ public class DiskoProgressMonitor {
 	
 	private synchronized void destroy() {
 		// not in action any more
-		m_isInAction = 0;
+		m_inAction = 0;
 		// destroy?
 		if(m_worker!=null) {
 			// cancel thread
 			m_worker.cancel();
 			// reset pointer  
-			m_worker = null; // (execute can only be invoked once per instance)
+			m_worker = null;
 		}
-		// forward
-		setVisible(false);
+	}
+	
+	private void scheduleUpdate() {
+		if(SwingUtilities.isEventDispatchThread()) { update(); }
+		else {
+			// valid
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() { update(); }
+			});
+		}
 	}
 	
 	private void update() {
 		// valid?
-		if(m_isInAction>0) {
+		if(m_inAction>0) {
+			// prepate progress bar
+			if(getIntermediate()) {
+				getProgressPanel().setLimits(m_min, m_max, true);
+			}
+			else {
+				getProgressPanel().setLimits(0, 0, false);
+			}
+			// update progress 
+			getProgressPanel().setProgress(m_progress,m_note,m_note);			
+		}
+	}
+	
+	public void setProgressLocationAt(final JComponent c) { 
+		if(SwingUtilities.isEventDispatchThread()) {
+			getGlassPane().setProgressLocationAt(c);
+		}
+		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					try {
-						// prepate progress bar
-						if(getIntermediate()) {
-							getProgressPanel().setLimits(m_min, m_max, true);
-						}
-						else {
-							getProgressPanel().setLimits(0, 0, false);
-						}
-						// update progress 
-						getProgressPanel().setProgress(m_progress,m_note,m_note);			
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
+					getGlassPane().setProgressLocationAt(c);
+				}
+			});
+		}
+	}
+
+	public synchronized boolean isProgressVisible() {
+		return getProgressDialog().isVisible();
+	}
+	
+	private synchronized void scheduleEventStart() {
+		// forward event to listeners
+		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_START);							
+	}
+		
+	private synchronized void scheduleEventShow() {
+		// show progress
+		scheduleSetVisible(true);
+		// forward event to listeners
+		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_SHOW);							
+	}
+	
+	private synchronized void scheduleEventHide() {
+		// hide progress
+		scheduleSetVisible(false);
+		// forward event to listeners
+		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_HIDE);							
+	}
+	
+	private synchronized void scheduleEventCancel() {
+		// hide progress
+		scheduleSetVisible(false);
+		// forward event to listeners
+		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_CANCEL);		
+		// reset position
+		setProgressLocationAt(null);
+	}
+	
+	private synchronized void scheduleEventFinish() {
+		// hide progress
+		scheduleSetVisible(false);
+		// forward event to listeners
+		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_FINISH);							
+		// reset position
+		setProgressLocationAt(null);
+	}
+	
+	
+	private synchronized void scheduleSetVisible(final boolean isVisible) {
+		if(SwingUtilities.isEventDispatchThread()) {
+			setVisible(isVisible);
+		}
+		else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					setVisible(isVisible);
 				}
 			});
 		}
 	}
 	
-	public synchronized boolean isVisible() {
-		// hide progress
-		return getGlassPane().isVisible() && getProgressDialog().isVisible();
-	}
-	
-	public void setProgressLocationAt(final JComponent c) { 
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				getGlassPane().setProgressLocationAt(c);
-			}
-		});		
-	}
-
-	
-	private synchronized void setVisible(final boolean isVisible) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					// prepare?
-					if(isVisible) {
-						update();
-					}
-					getGlassPane().setVisible(isVisible);
-					getProgressDialog().setVisible(isVisible);				
-				}
-				catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+	private void setVisible(boolean isVisible) {
+		// prepare?
+		if(isVisible) scheduleUpdate();
+		// forward
+		getGlassPane().setVisible(isVisible);
+		getProgressDialog().setVisible(isVisible);
+		getProgressDialog().doLayout();
 	}
 	
 	private void fireUpdateProgressEvent(final DiskoProgressEventType type) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
+		if(SwingUtilities.isEventDispatchThread()) {
+			// get event
+			fireProgressEvent(new DiskoProgressEvent(this,type));
+		}
+		else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
 					// get event
 					fireProgressEvent(new DiskoProgressEvent(this,type));
 				}
-				catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+			});
+		}
 	}
 	
 	private void fireProgressEvent(DiskoProgressEvent e) {
@@ -481,12 +574,10 @@ public class DiskoProgressMonitor {
 				m_isCancelled = true;
 				// stop timer
 				m_timer.stop();
-				// success
+				// allowed
 				return true;
 			}
-			// hide progress
-			setVisible(false);
-			// invalid
+			// disallowed!
 			return false;			
 		}
 		
@@ -503,14 +594,29 @@ public class DiskoProgressMonitor {
 		@Override		
 		public void actionPerformed(ActionEvent e) {
 			// has no progress?
-			if(!m_isCancelled && !m_hasProgress && System.currentTimeMillis()- m_start > m_millisToPopup) {
-				// stop timer
-				m_timer.stop();
-				// show progress
-				setVisible(true);
-				// forward event to listeners
-				fireUpdateProgressEvent(DiskoProgressEventType.EVENT_START);
+			if(!m_isCancelled) {
+				// show progress?
+				if(m_millisToPopup>0 && isTimedOut(m_millisToPopup)) {
+					// stop timer?
+					if(m_millisToCancel==0) m_timer.stop();
+					// forward
+					scheduleEventShow();
+				}
+				if(m_millisToCancel>0 && isTimedOut(m_millisToCancel)) {
+					// stop this (cancel override popup).
+					m_timer.stop();
+					// forward
+					DiskoProgressMonitor.this.cancel();
+				}
 			}
-		}			
+			else {
+				// was cancelled
+				m_timer.stop();
+			}
+		}	
+		
+		private boolean isTimedOut(long millis) {
+			return System.currentTimeMillis() - m_start > millis;
+		}
 	}
 }

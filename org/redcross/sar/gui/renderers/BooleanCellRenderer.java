@@ -6,19 +6,22 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-public class BooleanTableCellRenderer extends JCheckBox implements
+public class BooleanCellRenderer extends JCheckBox implements
 		TableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
 	
-	public BooleanTableCellRenderer() {
+	public BooleanCellRenderer() {
 		super.setOpaque(true);
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
-						
-		setSelected(isSelected);
+		
+		if(value!=null)
+			setSelected(Boolean.valueOf(value.toString()));
+		else
+			setSelected(false);
 		
 		setBackground(table.getBackground());
 		setForeground(table.getForeground());		

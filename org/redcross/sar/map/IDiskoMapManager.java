@@ -9,9 +9,14 @@ import com.esri.arcgis.controls.MapControl;
 
 public interface IDiskoMapManager {
 
-	public int installMxdDocs();
+	public boolean loadXmlFile();
+	public boolean storeXmlFile();
 	
-	public int getInstallMxdDocCount();
+	public int installMxdDocs();
+	public int uninstallMxdDocs();
+	public int getMxdDocCount();
+	public boolean installMxdDoc(String mxdDoc);
+	public boolean uninstallMxdDoc(String mxdDoc);
 	
 	public String getMxdDoc();
 	public boolean setMxdDoc(String mxdDoc);
@@ -21,9 +26,10 @@ public interface IDiskoMapManager {
 
 	public IDiskoMap getCurrentMap();
 	
-	public List<IDiskoMap> getMaps();
-	public List<MapSourceInfo> getMapsInfo();
 	public IDiskoMap getPrintMap();	
+	public List<IDiskoMap> getMaps();
+	public List<MapSourceInfo> getMapInfoList();
+	public MapSourceInfo getMapInfo(String mxdDoc);
 	
 	public int getMapBaseCount();
 	public int toggleMapBase();
@@ -32,5 +38,6 @@ public interface IDiskoMapManager {
 	public boolean checkMxdDoc(String mxddoc, boolean keep);
 	public MapControl getTmpMap(String mxddoc, boolean keep);
 	
+	public boolean selectMap(boolean autoselect);
 	
 }

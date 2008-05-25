@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -71,7 +72,7 @@ public class ScaleDialog extends DiskoDialog {
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 	
@@ -392,11 +393,19 @@ public class ScaleDialog extends DiskoDialog {
 			private static final long serialVersionUID = 1L;
 			public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
                    	throws java.io.IOException, AutomationException {
-				update();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						update();
+					}
+				});				
 			}
 			public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
             	throws java.io.IOException, AutomationException {
-				update();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						update();
+					}
+				});				
 			}
 
 		});

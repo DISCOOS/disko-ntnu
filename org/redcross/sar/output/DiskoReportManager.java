@@ -41,7 +41,7 @@ import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.output.ExportPNG;
 import com.esri.arcgis.output.IExport;
 
-public class DiskoReport {
+public class DiskoReportManager {
 	
 	// print map units in meters. In iReport equals this 487, pixelsize = 0.000037 meters
 	private final static double mapPrintWidthSize = 0.169;		
@@ -71,14 +71,14 @@ public class DiskoReport {
 	
 	private JasperViewer m_viewer = null;
 	
-	public DiskoReport(IDiskoApplication app){
+	public DiskoReportManager(IDiskoApplication app){
 		
 		//System.out.println("test");
 		
 		m_app = app;		
 		m_model = (MsoModelImpl) m_app.getMsoModel();	
 		m_reportMapScale = Double.parseDouble(m_app.getProperty("report.mapscale"));				
-		m_mapManager = m_app.getDiskoMapManager();		
+		m_mapManager = m_app.getMapManager();		
 		m_templatePath = m_app.getProperty("report.template.path");
 		m_printPath = m_app.getProperty("report.printfile.path");	
 		

@@ -4,6 +4,12 @@
 package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
+import java.text.ParseException;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.map.PositionField;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -54,9 +60,23 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	 */
 	
 	protected Component getComponent() {
-		if(m_component==null) {
-			m_component = new PositionField();
-			((PositionField)m_component).setEditable(m_isEditable);
+		try {
+			if(m_component==null) {
+				PositionField field = new PositionField();
+				field.setEditable(m_isEditable);
+				field.addChangeListener(new ChangeListener() {
+
+					public void stateChanged(ChangeEvent e) {
+						if(isWorking()) return;
+						fireOnWorkChange();
+					}
+					
+				});
+				m_component = field;
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return m_component;
 	}

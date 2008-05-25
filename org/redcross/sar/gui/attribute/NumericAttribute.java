@@ -7,6 +7,8 @@ import java.awt.Component;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -64,6 +66,20 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 			JFormattedTextField field = new JFormattedTextField();
 			// set format
 			field.setEditable(m_isEditable);
+			field.getDocument().addDocumentListener(new DocumentListener() {
+
+				public void changedUpdate(DocumentEvent e) { change(); }
+
+				public void insertUpdate(DocumentEvent e) { change(); }
+
+				public void removeUpdate(DocumentEvent e) { change(); }
+				
+				private void change() {
+					if(isWorking()) return;
+					fireOnWorkChange();
+				}
+				
+			});
 			// save the component
 			m_component = field;
 		}

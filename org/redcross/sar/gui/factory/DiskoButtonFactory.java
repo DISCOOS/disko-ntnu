@@ -16,27 +16,23 @@ import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Internationalization;
 
 /**
+ * <p>
  * Read only Disko button factory used to create Disko L&F buttons.
- * 
+ * <p>
  * Resource(s) are used to populate text, icon and tooltip. 
- * 
- * To facilitate resource customization (icon, text and tooltip) this 
- * class wraps the BasicDiskoFactory. The follwing resource types are
- * supported:
- *  
- * java.util.Properties (not localized)
- * java.util.ResourceBundle (localized)
- * 
+ * <p>
  * The resource dominance - which resource is used when equal keys 
  * are present - is as follows:
- * 
- * 1. try passed custom resource
- * 2. if key not found -> try default buttons resource
- * 3. if key not found -> try enums resource (DiskoEnumFactory)
- * 4. if key not found -> try installed resources
- * 5. if all this fails -> button property is set to null 
+ * <p>
+ * 1. try passed custom resource<br>
+ * 2. if key not found -> try default buttons resource<br>
+ * 3. if key not found -> try enums resource (DiskoEnumFactory)<br>
+ * 4. if key not found -> try strings resources (DiskoStringFactory)<br>
+ * 5. if key not found -> try installed resources (Internationalization)<br>
+ * 6. if all this fails -> button property is set to null <br>
  * 
  * 
  * @author kennetgu
@@ -45,8 +41,6 @@ import org.redcross.sar.mso.util.MsoUtils;
 
 public class DiskoButtonFactory
 {
-	private final static BasicDiskoFactory m_basic = 
-		new BasicDiskoFactory();
 	private final static ResourceBundle m_default = 
 		ResourceBundle.getBundle("resources/buttons");	
 	private final static Font BUTTON_FONT = 
@@ -651,7 +645,7 @@ public class DiskoButtonFactory
 	
 	public static String getText(String key, Object resource) {
 		// try custom resource
-		String text = m_basic.getText(key, resource);
+		String text = BasicDiskoFactory.getText(key, resource);
 		// try default bundle?
 		if((text==null || text.isEmpty()) && m_default.containsKey(key)) {
 			text = m_default.getString(key);
@@ -660,12 +654,21 @@ public class DiskoButtonFactory
 		if((text==null || text.isEmpty())) {
 			text = DiskoEnumFactory.getText(key, resource);
 		}
-		// try installed bundles?
-		if((text==null || text.isEmpty()) )
-			// get from installed resource
-			text = m_basic.getTextFromInstalled(key);	
+		// try string factory?
+		if((text==null || text.isEmpty())) {
+			text = DiskoStringFactory.getText(key, resource);
+		}
+		// try installed resources?
+		if((text==null || text.isEmpty())) {
+			text = Internationalization.getText(key);
+		}
 		// return best effort
 		return text;
+	}
+	
+	public String getString(String key, Object resource) {
+		String text = getText(key,resource);
+		return text==null ? key : text;
 	}
 	
 	public static Icon getIcon(String key, String catalog, Object resource) {
@@ -690,17 +693,6 @@ public class DiskoButtonFactory
 		}
 		return value;
 	}	
-	
-	public static Object getResourceFromKey(String key) { 
-		if(m_default.containsKey(key)) {
-			return m_default;
-		}
-		return m_basic.getResourceFromKey(key);
-	}
-	
-	public static BasicDiskoFactory getBasicFactory() {
-		return m_basic;
-	}
 	
 	public static String getText(Enum e) {
 		return getText(e, null);

@@ -13,7 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.table.TableCellRenderer;
 
 
-public class DiskoTableHeaderCellRenderer implements TableCellRenderer { 
+public class DiskoHeaderCellRenderer implements TableCellRenderer { 
 
 	private static final long serialVersionUID = 1L;
 	private JLabel m_wrap;
@@ -24,7 +24,7 @@ public class DiskoTableHeaderCellRenderer implements TableCellRenderer {
 	 * @param TableCellRenderer wrap Wraps a JLabel with the TableCellRenderer interface implemented
 	 * 
 	 */
-	public DiskoTableHeaderCellRenderer(TableCellRenderer wrap) { 
+	public DiskoHeaderCellRenderer(TableCellRenderer wrap) { 
 		m_wrap = (JLabel)wrap;
 	} 
 	

@@ -4,6 +4,8 @@
 package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
@@ -42,6 +44,13 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 		if(m_component==null) {
 			JComboBox field = new JComboBox();
 			field.setEditable(m_isEditable);
+			field.addItemListener(new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					if(isWorking()) return;
+					fireOnWorkChange();
+					
+				}
+			});
 			// save the component
 			m_component = field;			
 		}

@@ -5,19 +5,17 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 
-import java.io.FileInputStream;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 
 /**
@@ -78,29 +76,44 @@ public class Utils {
 		return diskoApp;
 	}
 
-	public static void showWarning(String msg)
-	{
-		showWarning(msg,getApp().getFrame());
+	public static int showConfirm(String title, String msg,int option) {
+		// get frame (if frame is locked use null)
+		Frame frame = Utils.getApp().isLocked() ? null : getApp().getFrame();
+		// forwar
+		return JOptionPane.showConfirmDialog(frame, msg, title, option, JOptionPane.QUESTION_MESSAGE);		
+	}
+	
+	public static void showMessage(String msg) {
+		showMessage(DiskoStringFactory.getText("MESSAGE_HEADER_DEFAULT"),msg);
 	}
 
-	public static void showWarning(String msg, Frame owner)
-	{
-		showWarning(null,msg,owner);
-	}	
-	
-	public static void showWarning(String title, String msg) {
-		showWarning(title,msg,getApp().getFrame());		
+	public static void showMessage(String title, String msg) {
+		showMessage(title,msg,JOptionPane.WARNING_MESSAGE);		
 	}
 	
-	public static void showWarning(String title, String msg, Frame owner)
+	public static void showWarning(String msg) {
+		showWarning(DiskoStringFactory.getText("WARNING_HEADER_DEFAULT"),msg);
+	}
+
+	public static void showWarning(String title, String msg) {
+		showMessage(title,msg,JOptionPane.WARNING_MESSAGE);		
+	}
+	
+	public static void showError(String msg) {
+		showError(DiskoStringFactory.getText("ERROR_HEADER_DEFAULT"),msg);
+	}
+
+	public static void showError(String title, String msg) {
+		showMessage(title,msg,JOptionPane.ERROR_MESSAGE);		
+	}
+	
+	private static void showMessage(final String title, final String msg, final int options)
 	{
-		final String header = title;
-		final String message = msg;
-		final Frame frame = owner;
-		Runnable r = new Runnable()
-		{
-			public void run()
-			{
+		Runnable r = new Runnable(){
+			public void run(){
+				// get frame (if frame is locked use null)
+				Frame frame = Utils.getApp().isLocked() ? null : getApp().getFrame(); 
+				
 				try {
 					// force progress dialog to hide
 					DiskoProgressMonitor.getInstance().hide();
@@ -109,8 +122,7 @@ public class Utils {
 					e.printStackTrace();					
 				}
 				// show dialog
-				JOptionPane.showMessageDialog(frame,
-						message, header, JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(frame, msg, title, options);
 				try {
 					// show progress dialog again
 					DiskoProgressMonitor.getInstance().showAgain();

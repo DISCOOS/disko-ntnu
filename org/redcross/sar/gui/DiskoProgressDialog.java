@@ -14,12 +14,12 @@ import java.awt.event.ActionListener;
  * @author kennetgu
  *
  */
-public class DiskoProgressDialog extends DiskoDialog implements ActionListener {
+public class DiskoProgressDialog extends DiskoDialog { // implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
 	private boolean buffer = false;
-	private DelayAction delay = new DelayAction();
+	//private DelayAction delay = new DelayAction();
 	
 
 	private DiskoProgressPanel m_progressPanel = null;
@@ -77,15 +77,15 @@ public class DiskoProgressDialog extends DiskoDialog implements ActionListener {
 	
 	@Override
 	public void setVisible(boolean isVisible) {
-		if(isVisible()!=isVisible) {
-			super.setVisible(buffer);
-			buffer = isVisible;
+		super.setVisible(isVisible);
+			/*buffer = isVisible;
 			delay.start();
 		}
-		else delay.stop();
+		else delay.stop();*/
 
 	}
 	
+	/*
 	public void actionPerformed(ActionEvent e) {
 		super.setVisible(buffer);
 	}		
@@ -106,6 +106,6 @@ public class DiskoProgressDialog extends DiskoDialog implements ActionListener {
 		}
 
 	}	
-	
+	*/
 
 }

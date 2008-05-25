@@ -60,7 +60,7 @@ public class MainMenuPanel extends JPanel {
 	 * @param button The button to add
 	 * @param menuName A name to identify a panel (menu) in the CardLayout
 	 */
-	public void addItem(AbstractButton button, DiskoCustomIcon icon, String menuName) {
+	public void addItem(AbstractButton button, DiskoIcon icon, String menuName) {
 		JPanel panel = (JPanel)panels.get(menuName);
 		if (panel == null) {
 			panel = new JPanel();
@@ -77,7 +77,7 @@ public class MainMenuPanel extends JPanel {
 			bgroup.add(button);
 		}
 		button.setIcon(icon);
-		((DiskoCustomIcon)button.getIcon()).setColored(false);
+		((DiskoIcon)button.getIcon()).setColored(false);
 	}
 	
 	/**

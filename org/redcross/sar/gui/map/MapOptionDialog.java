@@ -1,118 +1,92 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FileDialog;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.border.BevelBorder;
-import javax.swing.AbstractButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.CustomMapData;
-import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.MapSourceInfo;
+import org.redcross.sar.map.MapSourceTable;
 
-import com.borland.jbcl.layout.VerticalFlowLayout;
-
-
-public class MapOptionDialog extends DiskoDialog {
+public class MapOptionDialog extends DiskoDialog implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	private JTabbedPane jTabbedMapPane = null;  //  @jve:decl-index=0:visual-constraint="102,91"
-	private JPanel panelMapSources = null;
-	//private JPanel panelChooseMap = null;
-	private JPanel addDataPanel = null;
-	private JPanel contentPanel = null;
-	private JPanel buttonPanel = null;
-	private JPanel mapInfoPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
+	private JTabbedPane tabbedPane = null;
+	private DefaultDiskoPanel sourcePanel = null;
+	private MapSourceTable mapSourceTable = null;
 	private JPanel browsePanel = null;
 	
-	private JScrollPane tableScrollPane = null;
-	
-	private JButton cancelButton = null;
-	private JButton finishButton = null;
 	private JButton buttonBrowse = null;
+	
 	private JLabel labelCurrentMxd = null;
 	private JLabel labelCurrentMxdShow = null;
 	
 	private JTextField textFieldBrowse = null;
 	
 	private IDiskoApplication app = null;
-	private String currentMxd = null;
+	
 	private File file = null;
 	
-	private JLabel labelHeadPrimar = null;
-	private JLabel labelHeadSecond = null;
-	private JLabel labelHeadMxd = null;
-	private JLabel labelHeadType = null;
-	private JLabel labelStatus = null;
-	
-	private ButtonGroup bgCurrent = new ButtonGroup();
-	private List<MapSourceInfo> mapSourceList = new ArrayList<MapSourceInfo>();
-	
+	private boolean cancel = true;
 	
 	public MapOptionDialog(IDiskoApplication app){
 		super(app.getFrame());
 		this.app = app;
-		this.currentMxd = app.getDiskoMapManager().getMxdDoc();	
 		initalize();
 	}
 	
 	private void initalize(){
 		try {
             this.setPreferredSize(new Dimension(475, 300));
-            //this.setLocationRelativeTo(null, POS_CENTER, false);
-            //this.setSize(new Dimension(175, 350));
-            this.setSize(new Dimension(400, 447));
-			this.setTitle("DISKO kartoppsett");
+            this.setUndecorated(true);
+            this.setModal(true);
             this.setContentPane(getContentPanel());
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 		
 	/**
 	 * This method initializes jTabbedMapPane	
 	 * 	
-	 * @return javax.swing.JTabbedPane	
+	 * @return {@link DefaultDiskoPanel}	
 	 */
-	private JPanel getContentPanel() {		
-		contentPanel = new JPanel();
-		contentPanel.setLayout(new BorderLayout());
-		contentPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-		
-		//contentPanel.setBorder(BorderFactory.createTitledBorder(null, "Kartoppsett", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11), new Color(0, 70, 213)));
-		contentPanel.add(getCenterPanel(), BorderLayout.CENTER);
-		contentPanel.add(getButtonPanel(), BorderLayout.SOUTH);
-		
+	private DefaultDiskoPanel getContentPanel() {		
+		if(contentPanel == null) {
+			contentPanel = new DefaultDiskoPanel("Oppsett kartografi");
+			contentPanel.setBodyComponent(getTabbedPane());
+			contentPanel.setScrollBarPolicies(
+					JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			contentPanel.addActionListener(this);
+		}
 		return contentPanel;
 	}
 	
@@ -122,16 +96,34 @@ public class MapOptionDialog extends DiskoDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JTabbedPane getCenterPanel(){
-		
-		if (jTabbedMapPane == null) {
-			jTabbedMapPane = new JTabbedPane();
-			//jTabbedMapPane.setSize(new Dimension(312, 219));
-			jTabbedMapPane.addTab("Kartoppsett", null, getPanelMapSources(), null);
-			jTabbedMapPane.addTab("Legg til data", null, getAddDataPanel(), null);
-						
+	private JTabbedPane getTabbedPane(){		
+		if (tabbedPane == null) {
+			
+			// create
+			tabbedPane = new JTabbedPane();
+			tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			tabbedPane.setPreferredSize(new Dimension(425, 200));
+			tabbedPane.addTab("Kartkilder", null, getSourcePanel(), null);
+			//tabbedPane.addTab("Legg til data", null, getBrowsePanel(), null);
+			
+			// listen for tab changes
+			tabbedPane.addChangeListener(new ChangeListener() {
+
+				public void stateChanged(ChangeEvent e) {
+					// translate
+					switch(tabbedPane.getSelectedIndex()) {
+					case 0: break;
+					case 1:
+						labelCurrentMxdShow.setText(app.getMapManager().getMxdDoc());			
+						labelCurrentMxd.setText("Legg data til dokument: " + app.getMapManager().getMxdDoc()); 
+						break;
+					}
+					
+				}
+				
+			});
 		}
-		return jTabbedMapPane;
+		return tabbedPane;
 	}
 	
 	/**
@@ -139,66 +131,18 @@ public class MapOptionDialog extends DiskoDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getPanelMapSources() {
-		if (panelMapSources == null) {
+	private DefaultDiskoPanel getSourcePanel() {
+		if (sourcePanel == null) {
 			try {
-				panelMapSources = new JPanel();
-				panelMapSources.setLayout(new BorderLayout());
-				panelMapSources.add(getTableScrollPane(), BorderLayout.CENTER);
-				//panelMapSources.add(getMapSourceTable(), BorderLayout.CENTER);
-				//panelMapSources.add(getButtonPanel(), BorderLayout.SOUTH);
-				panelMapSources.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				
-				//panelMapSources.add(getButtonPanel(), BorderLayout.CENTER);
+				sourcePanel = new DefaultDiskoPanel("",false,false);
+				sourcePanel.setHeaderVisible(false);
+				sourcePanel.setBorderVisible(false);
+				sourcePanel.setBodyComponent(getMapSourceTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}		
 		}
-		return panelMapSources;
-	}
-
-	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			try {
-				FlowLayout flowLayout = new FlowLayout();
-				flowLayout.setAlignment(FlowLayout.RIGHT);
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(flowLayout);
-				
-				buttonPanel.add(getFinishButton(), null);
-				buttonPanel.add(getCancelButton(), null);
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return buttonPanel;
-	}	
-	
-	/**
-	 * This method initializes panelAddData	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getAddDataPanel() {
-		if (addDataPanel == null) {
-			try {
-				addDataPanel = new JPanel();
-				addDataPanel.setLayout(new BorderLayout());
-				addDataPanel.add(getBrowsePanel(), BorderLayout.CENTER);
-				//addDataPanel.add(getButtonPanel(), BorderLayout.SOUTH);
-				addDataPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));				
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}		
-		}
-		return addDataPanel;
+		return sourcePanel;
 	}
 		
 	private JPanel getBrowsePanel() {
@@ -221,17 +165,13 @@ public class MapOptionDialog extends DiskoDialog {
 			gridBagConstraints2.gridx = 1;
 			gridBagConstraints2.gridy = 0;*/
 			labelCurrentMxdShow = new JLabel();
-			labelCurrentMxdShow.setText(this.currentMxd);			
 			GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.weightx = 2.0;
 			gridBagConstraints.insets = new Insets(10, 10, 10, 0);
 			gridBagConstraints.anchor = GridBagConstraints.WEST;
 			gridBagConstraints.gridy = 0;
-			labelCurrentMxd = new JLabel();
-			
-			labelCurrentMxd.setText("Gjeldende .mxd dokument: " + this.currentMxd); 
-			labelCurrentMxd.setName("");
+			labelCurrentMxd = new JLabel();			
 			browsePanel = new JPanel();
 			
 			//må oppdatere mxdsti utifra hva som er valgt som primær kart.
@@ -246,234 +186,28 @@ public class MapOptionDialog extends DiskoDialog {
 		return browsePanel;
 	}
 	
-	/**
-	 * This method initializes tableScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getTableScrollPane() {
-		if (tableScrollPane == null) {
-			try {
-				tableScrollPane = new JScrollPane();
-				tableScrollPane.getViewport().setBackground(Color.white);
-				tableScrollPane.setViewportView(getMapSourceTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return tableScrollPane;
-	}
 	
 	/**
-	 * This method initializes assignmentTable	
+	 * This method initializes MapSourceTable	
 	 * 	
 	 * @return javax.swing.JTable	
 	 */
-	private JPanel getMapSourceTable() {
-		if (mapInfoPanel == null) {
-			try {
-				
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				mapInfoPanel = new JPanel();
-				mapInfoPanel.setLayout(vfl);
-				
-				
-				//ButtonGroup bgPrimar = new ButtonGroup();
-				//ButtonGroup bgSecond = new ButtonGroup();
-				
-				//Gets a list of availble mxd docs
-				DiskoMapManagerImpl manager = (DiskoMapManagerImpl) app.getDiskoMapManager();
-				mapSourceList = manager.getMapsInfo();
-				
-				MapSourceInfo mapInfo = new MapSourceInfo();
-				Dimension dCb = new Dimension(30,16);
-				Dimension dMxdPath = new Dimension(200,16);
-				Dimension dType = new Dimension(50,16);
-				Dimension dStatus = new Dimension(50,16);
-				
-				//"table "heading
-				FlowLayout flHeading = new FlowLayout();
-		
-				flHeading.setAlignment(FlowLayout.LEFT);
-				JPanel headerRow = new JPanel(flHeading);
-				headerRow.setBackground(Color.LIGHT_GRAY);
-				//headerRow.setBorder(arg0);
-				
-				labelHeadPrimar = new JLabel();
-				labelHeadPrimar.setText(app.getProperty("MapSource.PRIMAR"));				
-				labelHeadPrimar.setPreferredSize(dCb);
-				//labelHeadPrimar.setSize(dCb);
-				labelHeadSecond = new JLabel();
-				labelHeadSecond.setText(app.getProperty("MapSource.SECOND"));
-				labelHeadSecond.setPreferredSize(dCb);
-				//labelHeadSecond.setSize(dCb);
-				labelHeadMxd = new JLabel();
-				labelHeadMxd.setText(app.getProperty("MapSource.MXDPATH"));
-				labelHeadMxd.setPreferredSize(dMxdPath);
-				labelHeadType = new JLabel();
-				labelHeadType.setText(app.getProperty("MapSource.TYPE"));
-				labelHeadType.setPreferredSize(dType);
-				labelStatus = new JLabel();
-				labelStatus.setText(app.getProperty("MapSource.STATUS"));
-				labelStatus.setPreferredSize(dStatus);
-				
-				//labelHeadPrimar.setSize();
-				
-				headerRow.add(labelHeadPrimar, null );
-				headerRow.add(labelHeadSecond, null);
-				headerRow.add(labelHeadMxd, null);
-				headerRow.add(labelHeadType, null);
-				headerRow.add(labelStatus, null);
-				
-				mapInfoPanel.add(headerRow);
-				
-				//iterere igjennom lista
-				for(int i = 0; i < mapSourceList.size(); i++){
-					
-					mapInfo = (MapSourceInfo) mapSourceList.get(i);
-					final String mxd = mapInfo.getMxdPath();
-					FlowLayout fl = new FlowLayout();
-					fl.setAlignment(FlowLayout.LEFT);
-					JPanel row = new JPanel(fl);
-					
-					JCheckBox cbPrimar = new JCheckBox();	
-					cbPrimar.setSelected(mapInfo.isCurrent());
-					cbPrimar.setPreferredSize(dCb);
-					bgCurrent.add(cbPrimar);
-					row.add(cbPrimar);
-										
-					JLabel mxdPath = new JLabel(mapInfo.getMxdPath());
-					mxdPath.setPreferredSize(dMxdPath);
-					row.add(mxdPath);
-															
-					JLabel type = new JLabel(mapInfo.getType());
-					type.setPreferredSize(dType);
-					row.add(type);
-					
-					JLabel status = new JLabel(mapInfo.getStatus());
-					status.setPreferredSize(dStatus);
-					row.add(status);
-					
-					mapInfoPanel.add(row);
-				}							
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
+	private MapSourceTable getMapSourceTable() {
+		if (mapSourceTable == null) {
+			mapSourceTable = new MapSourceTable(app.getMapManager().getMapInfoList());
+
 		}
-		return mapInfoPanel;
+		return mapSourceTable;
 	}
 	
 	private boolean setMxdDoc(String mxd){
-		// set new mxd document
-		if(app.getDiskoMapManager().setMxdDoc(mxd)) {
-			return app.getDiskoMapManager().loadMxdDoc();
-		}
+		// no change?
+		if(app.getMapManager().getMxdDoc().equalsIgnoreCase(mxd)) return true;
+		// set new mxd document and load visible maps
+		if(app.getMapManager().setMxdDoc(mxd)) return app.getMapManager().loadMxdDoc();
 		// failed
 		return false;
 	}
-	
-	/**
-	 * This method initializes finishButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getFinishButton() {
-		if (finishButton == null) {
-			try{
-				
-				
-				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
-				finishButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						
-						//System.out.println("actionPerformed(): finish"); 
-						//checks if active tab is addData
-						
-						//testing
-						CustomMapData addDatatest = new CustomMapData();
-						
-						//addDatatest.AddWMSLayer(map, "")
-						//slutt testint
-						
-						if (jTabbedMapPane.getSelectedIndex() == 1 && file != null){
-							//legger inn et hack for å sjekke filtype. Burde vært fikset med et filter.
-							String fname = file.getName();	
-							int i = fname.lastIndexOf(".") + 1;
-							String ext = fname.substring(i, fname.length());
-							if(ext.equalsIgnoreCase("tif") || ext.equalsIgnoreCase("tiff") || ext.equalsIgnoreCase("shp")){
-								CustomMapData addData = new CustomMapData();					
-								addData.AddCustomData(app, file);
-							}
-							else{
-								//åpne meldingsboks
-								System.out.println("Feil fil format");
-							}
-							textFieldBrowse.setText("");
-							file = null;//nullstiller
-							//System.out.println("FinishButton: add data");
-						}
-						else if(jTabbedMapPane.getSelectedIndex() == 0){
-							// initialize
-							int i = 0;
-							// loop over all check boxes
-							for (Enumeration<AbstractButton> enumerator = bgCurrent.getElements(); enumerator.hasMoreElements();){
-								// is selected?
-								if (enumerator.nextElement().isSelected()){
-									// get document
-									String mxddoc = mapSourceList.get(i).getMxdDoc();
-									// forward
-									if(!setMxdDoc(mxddoc)) {
-										// notify!
-										Utils.showWarning(String.format(DiskoStringFactory.getText("WARNING.MAPSETFAILED.text"),mxddoc));
-										// cancel finish
-										return ;
-									}
-									else break;
-								}	
-								// get next element
-								i++;
-							}	
-						}
-						// finished, hide dialog
-						setVisible(false);
-					}
-				});
-			} catch(Exception e){
-				e.printStackTrace();
-			}
-		}
-		return finishButton;
-	}
-
-	/**
-	 * This method initializes cancelButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getCancelButton() {
-		if (cancelButton == null) {
-			try{
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {						
-						if (jTabbedMapPane.getSelectedIndex() == 1){
-							//addmapdata tab active
-							textFieldBrowse.setText("");
-							System.out.println("actionPerformed() blanker adddata field");
-						}
-						setVisible(false);
-						System.out.println("actionPerformed() Cancel"); // TODO Auto-generated Event stub actionPerformed()
-					}
-				});
-			} catch(Exception e){
-				e.printStackTrace();
-			}
-			
-		}
-		return cancelButton;
-	}
-		
 	
 	/**
 	 * This method initializes textFieldBrowse	
@@ -572,5 +306,87 @@ public class MapOptionDialog extends DiskoDialog {
 		return file;		 
 		 
 	}
+
+	public void actionPerformed(ActionEvent e) {
+		// translate
+		if("finish".equalsIgnoreCase(e.getActionCommand())) {
+			switch(getTabbedPane().getSelectedIndex()) {
+			case 0: 
+				// initialize
+				int count = getMapSourceTable().getRowCount();
+				// loop over all check boxes
+				for(int i =0;i<count;i++){
+					// is selected?
+					if ((Boolean)getMapSourceTable().getValueAt(i, 0)){
+						// get document
+						String mxddoc = (String)getMapSourceTable().getValueAt(i, 1);
+						// get map info
+						MapSourceInfo info = app.getMapManager().getMapInfo(mxddoc);
+						// initalize choice
+						int ans = JOptionPane.YES_OPTION;
+						// show warning?
+						if(info!=null && info.getCoverage()==0) 
+							ans = Utils.showConfirm(
+									DiskoStringFactory.getText("WARNING_HEADER_DEFAULT"), 
+									DiskoStringFactory.getText("WARNING_MAP_NO_COVERAGE"),
+									JOptionPane.YES_NO_OPTION);
+						
+						// cancel?
+						if(ans==JOptionPane.NO_OPTION) break;
+						// try to set document
+						if(!setMxdDoc(mxddoc)) {
+							// notify!
+							Utils.showWarning(String.format(DiskoStringFactory.getText("WARNING_MAP_SET_FAILED"),mxddoc));
+							// finished
+							return;
+						}
+						else break;
+					}	
+				}	
+				break;
+			case 1: 
+				if (file != null){
+					//legger inn et hack for å sjekke filtype. Burde vært fikset med et filter.
+					String fname = file.getName();	
+					int i = fname.lastIndexOf(".") + 1;
+					String ext = fname.substring(i, fname.length());
+					if(ext.equalsIgnoreCase("tif") || ext.equalsIgnoreCase("tiff") || ext.equalsIgnoreCase("shp")){
+						CustomMapData addData = new CustomMapData();					
+						addData.AddCustomData(app, file);
+					}
+					else{
+						//åpne meldingsboks
+						System.out.println("Feil fil format");
+					}
+					textFieldBrowse.setText("");
+					file = null;//nullstiller
+					//System.out.println("FinishButton: add data");
+				}
+				break;
+			}
+			// finished, hide dialog
+			setVisible(false);			
+		}
+		else if("cancel".equalsIgnoreCase(e.getActionCommand())) {
+			// set flag
+			cancel = true;
+			// finished
+			setVisible(false);
+		}
+		
+	}
+	
+	public boolean selectMap(String caption, List<MapSourceInfo> list) {
+		// reset flag
+		cancel = false;
+		// prepare
+		getContentPanel().setCaptionText(caption);
+		getMapSourceTable().load(list);
+		// blocking on this
+		setVisible(true);
+		// finished
+		return !cancel;
+	}
+	
 	
 }

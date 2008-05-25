@@ -17,7 +17,7 @@ import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.UnitUtilities;
-import org.redcross.sar.output.DiskoReport;
+import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 
@@ -170,7 +170,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
              public void actionPerformed(ActionEvent arg0)
              {
              	IUnitIf unit = m_wpUnit.getEditingUnit();
-             	DiskoReport diskoReport = m_wpUnit.getApplication().getDiskoReport();
+             	DiskoReportManager diskoReport = m_wpUnit.getApplication().getReportManager();
              	diskoReport.printUnitLog(unit);
              }
          });

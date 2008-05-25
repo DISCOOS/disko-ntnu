@@ -60,9 +60,10 @@ public class SnapDialog extends DiskoDialog  {
 				m_snapPanel.addActionListener(new ActionListener() {
 
 					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
 						// hide?
-						if("apply".equalsIgnoreCase(e.getActionCommand()) ||
-								"cancel".equalsIgnoreCase(e.getActionCommand()))
+						if("finish".equalsIgnoreCase(cmd) 
+						|| "cancel".equalsIgnoreCase(cmd))
 							setVisible(false);						
 					}
 					

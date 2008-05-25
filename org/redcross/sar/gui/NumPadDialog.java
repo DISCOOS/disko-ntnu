@@ -13,7 +13,7 @@ import javax.swing.text.BadLocationException;
 
 public class NumPadDialog extends JDialog {
 
-	private DiskoPanel componentPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
+	private DefaultDiskoPanel componentPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
 	private static final long serialVersionUID = 1L;
 	private JButton oneButton = null;
 	private JButton twoButton = null;
@@ -78,7 +78,7 @@ public class NumPadDialog extends JDialog {
 			GridLayout gridLayout = new GridLayout();
 			gridLayout.setRows(4);
 			gridLayout.setColumns(3);
-			componentPanel = new DiskoPanel();
+			componentPanel = new DefaultDiskoPanel("Numerisk tastatur",false,false);
 			JPanel panel = (JPanel)componentPanel.getBodyComponent();
 			panel.setLayout(gridLayout);		
 			panel.setSize(new Dimension(215, 214));

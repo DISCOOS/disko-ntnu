@@ -4,7 +4,6 @@ import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -13,16 +12,16 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
 
 import com.esri.arcgis.geodatabase.IFeature;
-import com.esri.arcgis.geodatabase.IFeatureCursor;
-import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
+import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.Point;
-import com.esri.arcgis.geometry.esriGeometryType;
 
 /**
  * A custom draw tool.
@@ -34,7 +33,14 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 100;
 
+	// geometries
 	private Point p = null;
+	private IEnvelope extent = null;
+	
+	// flags
+	private boolean isSelectByPoint = true;
+	
+	// features
 	private IFeature currentFeature = null;
 	
 	/**
@@ -60,7 +66,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				// can process event?
-				if(map!=null && map.isVisible()) {
+				if(map!=null && map.isVisible() && isActive()) {
 					// forward
 					doSelectFeatureWork(null);
 					// consume event
@@ -91,13 +97,14 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		
 		try {
 		
-			// transform to map coordinates
-			p.setX(x);
-			p.setY(y); 
-			transform(p);
+			// get selection rectangle
+			extent = map.trackRectangle();
 			
-			// get position in map units
-			IPoint p = toMapPoint(x,y);
+			// transform to map coordinates
+			p = toMapPoint(x, y);			
+			
+			// no selection by rectangle?
+			isSelectByPoint = (extent==null || extent.isEmpty());
 			
 			// forward to draw adapter?
 			if(!map.isEditSupportInstalled() || !map.getDrawAdapter().onMouseDown(button,shift,p)){
@@ -107,7 +114,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 					public void run() {
 						try {
 							// forward
-							selectFromPoint();
+							doSelectFeatureWork(selectFeature());
 						}
 						catch(Exception e) {
 							e.printStackTrace();
@@ -115,6 +122,10 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 					}
 				});
 				
+			}
+			else if(isSelectByPoint) {
+				// forward onMouseUp() consumed by map.trackRectangle()
+				onMouseUp(button, shift, x, y);
 			}
 		}
 		catch(Exception e) {
@@ -131,13 +142,8 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		
 		try {
 		
-			// transform to map coordinates
-			p.setX(x);
-			p.setY(y); 
-			transform(p);
-			
 			// get position in map units
-			IPoint p = toMapPoint(x,y);
+			p = toMapPoint(x,y);
 			
 			// forward to draw adapter?
 			if(map.isEditSupportInstalled())
@@ -148,7 +154,46 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			e.printStackTrace();
 		}
 	}
+	
+	private IMsoFeature selectFeature() throws Exception  {
+		
+		// initialize
+		Object[] selected;
+		IMsoFeature f = null;
+		
+		// get maximum deviation from point
+		double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
+		
+		// forward
+		if(isSelectByPoint) 
+			selected = MapUtil.selectMsoFeatureFromPoint(p, map, -1, max);
+		else 
+			selected = MapUtil.selectMsoFeatureFromEnvelope(extent, map, -1, max, 
+					esriSpatialRelEnum.esriSpatialRelContains);
+			
+		// found?
+		if(selected!=null) {
+			// get feature and layer
+			f = (IMsoFeature)selected[0];
+			IMsoFeatureLayer l = (IMsoFeatureLayer)selected[1];
+			// not allowed?
+			if(!l.isEnabled()) {
+				// notify with beep
+				Toolkit.getDefaultToolkit().beep();
+				// show disable warning
+				Utils.showWarning(
+						MsoUtils.getMsoObjectName(f.getMsoObject(), 1)
+						+ " kan ikke velges");
+				// failed
+				f = null;
+			}
+		}
+		// failed
+		return f;
+	}		
+	
 
+	/*
 	private void selectFromPoint() throws Exception  {
 		
 		// initialize
@@ -217,6 +262,7 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 			doSelectFeatureWork(ff);
 		
 	}
+	*/
 	
 	@Override
 	public IDiskoToolState save() {
@@ -242,6 +288,8 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 	public class SelectFeatureToolState extends DiskoToolState {
 
 		private Point p = null;
+		private IEnvelope extent = null;
+		private boolean isSelectByPoint = true;
 		private IFeature currentFeature = null;
 		
 		// create state
@@ -252,12 +300,16 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		public void save(SelectFeatureTool tool) {
 			super.save((AbstractDiskoTool)tool);
 			this.p = tool.p;
+			this.extent = tool.extent;
+			this.isSelectByPoint = tool.isSelectByPoint;
 			this.currentFeature = tool.currentFeature;
 		}
 		
 		public void load(SelectFeatureTool tool) {
 			super.load((AbstractDiskoTool)tool);
 			tool.p = this.p;
+			tool.extent = this.extent;
+			tool.isSelectByPoint = this.isSelectByPoint;
 			tool.currentFeature = this.currentFeature;
 		}
 	}			

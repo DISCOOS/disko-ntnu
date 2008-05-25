@@ -6,7 +6,7 @@ import javax.swing.table.TableStringConverter;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
-public class UnitTableStringConverter extends TableStringConverter {
+public class UnitStringConverter extends TableStringConverter {
 
 	@Override
 	public String toString(TableModel model, int row, int column) {

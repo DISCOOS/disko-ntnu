@@ -25,7 +25,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.GotoPanel;
 import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.gui.map.POITypesPanel;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.POITool;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
@@ -49,7 +49,7 @@ import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
  * 
  * @author thomasl
  */
-public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponentIf
+public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -75,6 +75,9 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 	 */
 	public MessagePOIPanel(IDiskoWpMessageLog wp, POIType[] poiTypes)
 	{
+		// forward
+		super("",false,false);
+		
 		// prepare
 		m_wp = wp;
 		m_types = poiTypes;
@@ -86,7 +89,8 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 
 	private void initialize()
 	{
-		// hide borders
+		// hide header and borders
+		setHeaderVisible(false);
 		setBorderVisible(false);
 		
 		// hide me
@@ -104,14 +108,14 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
 		
 		// add empty border
-		setBodyBordrer(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
 		// add components (BorderLayout is default)
-		addBodyComponent(getTypesPanel());
-		addBodyComponent(Box.createHorizontalStrut(5));
-		addBodyComponent(getGotoPanel());
-		addBodyComponent(Box.createHorizontalStrut(5));
-		addBodyComponent(getActionsPanel());
+		addBodyChild(getTypesPanel());
+		addBodyChild(Box.createHorizontalStrut(5));
+		addBodyChild(getGotoPanel());
+		addBodyChild(Box.createHorizontalStrut(5));
+		addBodyChild(getActionsPanel());
 		
 	}
 	
@@ -231,7 +235,7 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 	private POITypesPanel getTypesPanel() {
 		if (m_typesPanel == null) {
 			// get from position panel
-			m_typesPanel = getPOIPanel().getTypesPanel();
+			m_typesPanel = getPOIPanel().getPOITypesPanel();
 			// turn off vertical scrollbar
 			m_typesPanel.setScrollBarPolicies(
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
@@ -277,16 +281,22 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 		// get panel
 		POIPanel panel = getPOIPanel();
 		
+		// prevent changes in panel
+		panel.setChangeable(false);
+		
+		// ensure that work is done synchroniously
+		boolean isWorkPoolMode = m_tool.setWorkPoolMode(false);				
+
 		try {
 			
-			// get point
-			Point point = panel.getGotoPanel().getPositionField().getPoint();
+			// get current point
+			Point point = panel.getPoint();
 			
-			// add or move poi?
-			if(point!=null) {
+			// any change?
+			if(point!=null && point.isEmpty()) {
 				
 				// initialize flag
-				boolean isDirty = false;
+				boolean isDirty = panel.isDirty();
 				
 				// get current message, do create if not exists
 				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
@@ -297,70 +307,42 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 				// get poi
 				IPOIIf poi = (messageLine!=null ? messageLine.getLinePOI() : null);
 				
-				// get flag
-				boolean isWorkPoolMode = m_tool.isWorkPoolMode();
+				// prepare to set poi
+				panel.setPOI(poi);
+				panel.setRemarks(null);
 				
-				// get poi type
-				POIType poiType = panel.getPOIType();
+				// apply changes
+				if(panel.finish()) {
 				
-				// reset flag
-				m_tool.setWorkPoolMode(false);				
-				
-				// new line created just now?
-				if(poi == null)
-				{	
-					// add new poi
-					m_tool.addPOIAt(point, poiType, null);
-					
 					// get added poi
-					poi = m_tool.getCurrentPOI();
+					poi = m_tool.getPOI();
 					
 					// create message?
 					if(message==null) {
 						// create message and message line
 						message = MessageLogBottomPanel.getCurrentMessage(true);	
-						
+						// get message line, create if not exists
+						messageLine = message.findMessageLine(MessageLineType.POI, true);							
+						// update line
+						messageLine.setLinePOI(poi);														
 					}
-					
-					// get message line, create if not exists
-					messageLine = message.findMessageLine(MessageLineType.POI, true);
-					
-					// update line
-					messageLine.setLinePOI(poi);
-					
-				}
-				else {
-					
 					// get flag
-					isDirty = !poi.getType().equals(poiType) || 
-							!poi.getPosition().equals(panel.getGotoPanel().getPositionField().getPosition());					
+					boolean isIntelligence = 
+						  (POIType.FINDING.equals(poi.getType()) 
+						|| POIType.SILENT_WITNESS.equals(poi.getType()));
 					
-					// update poi
-					m_tool.setCurrentPOI(poi);
+					// update task?
+					if(poi!=null && isIntelligence)
+						// forward
+						isDirty = isDirty || setTask(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
 					
-					// add new poi
-					m_tool.movePOIAt(point, poiType, null);
+					// is dirty?
+					if(isDirty)
+						MessageLogBottomPanel.setIsDirty();
 					
-				}
-				
-				// resume mode
-				m_tool.setWorkPoolMode(isWorkPoolMode);				
-				
-				// get flag
-				boolean isIntelligence = (POIType.FINDING.equals(poi.getType()) || 
-						POIType.SILENT_WITNESS.equals(poi.getType()));
-				
-				// update task?
-				if(poi!=null && isIntelligence)
-					// forward
-					isDirty = isDirty || setTask(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
-				
-				// is dirty?
-				if(isDirty)
-					MessageLogBottomPanel.setIsDirty();
-				
-				// set flag
-				isSuccess = true;
+					// set flag
+					isSuccess = true;					
+				}									
 			}			
 			else {
 				// notify
@@ -371,6 +353,12 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 			Utils.showWarning("Ugyldig koordinat format");
 		}
 
+		// resume work pool mode
+		m_tool.setWorkPoolMode(isWorkPoolMode);				
+		
+		// enable changes in panel
+		panel.setChangeable(true);
+		
 		// resume update
 		m_wp.getMsoModel().resumeClientUpdate();
 		
@@ -460,7 +448,7 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 			if(line != null)
 			{
 				IPOIIf poi = line.getLinePOI();
-				getPOIPanel().setCurrentPOI(poi);
+				getPOIPanel().setPOI(poi);
 			}
 		}
 		// resume update
@@ -481,14 +469,16 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 			// show poi in map
 			IPOIIf poi = centerAtPOI(true);
 			// update layout
-			getPOIPanel().setTypes(m_types);
+			getPOIPanel().setPOITypes(m_types);
 			// make it the active property panel
 			m_tool.setPropertyPanel(getPOIPanel());
-			// update tool attributes
-			m_tool.setMsoDrawData(null, poi, MsoClassCode.CLASSCODE_POI);
-			m_tool.setDrawMode(DrawMode.MODE_REPLACE);
+			// prepare to draw
+			m_tool.setMsoData(null, poi, MsoClassCode.CLASSCODE_POI);
+			// replace
+			m_tool.setDrawMode(poi==null ? DrawMode.MODE_CREATE 
+					: DrawMode.MODE_REPLACE);
 			// activate tool
-			m_wp.getMap().setActiveTool(m_tool, true);
+			m_wp.getMap().setActiveTool(m_tool, 0);
 			// show tool
 			m_wp.getApplication().getNavBar().setVisibleButtons(
 					Utils.getListOf(DiskoToolType.POI_TOOL), true, true);
@@ -536,7 +526,7 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 				// get current message line
 				IPOIIf poi = messageLine.getLinePOI();
 				// forward
-				getPOIPanel().setCurrentPOI(poi);
+				getPOIPanel().setPOI(poi);
 			}
 		}
 		catch(Exception e){}
@@ -576,9 +566,8 @@ public class MessagePOIPanel extends DiskoPanel implements IEditMessageComponent
 	public void setMapTool()
 	{
 		IDiskoMap map = m_wp.getMap();
-		try
-		{
-			map.setActiveTool(m_tool,true);
+		try {
+			map.setActiveTool(m_tool,0);
 		}
 		catch (AutomationException e)
 		{

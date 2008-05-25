@@ -35,7 +35,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public static String getText(String aKey)
     {
-        return Internationalization.getFullBundleText(Internationalization.getBundle(IMessageIf.class), aKey);
+        return Internationalization.getString(Internationalization.getBundle(IMessageIf.class), aKey);
     }
 
     public String getStatusText()

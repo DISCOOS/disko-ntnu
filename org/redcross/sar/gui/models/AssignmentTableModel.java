@@ -62,7 +62,6 @@ public class AssignmentTableModel extends AbstractTableModel implements
 				row[0] = new Boolean(false);
 				row[1] = assignment;
 				row[2] = assignment;
-				//row[3] = new EditAction();
 				rows[i] = row;
 			}
 		}
@@ -103,8 +102,6 @@ public class AssignmentTableModel extends AbstractTableModel implements
 			return AssignmentImpl.class;
 		case 2:
 			return AssignmentImpl.class;
-		/*case 3:
-			return EditAction.class;*/
 		default:
 			return Object.class;
 		}
@@ -116,11 +113,9 @@ public class AssignmentTableModel extends AbstractTableModel implements
 		case 0:
 			return "Velg";
 		case 1:
-			return "Oppdragsinfo";
+			return "Oppdrag";
 		case 2:
 			return "Status";
-		/*case 3:
-			return "Handling";*/
 		default:
 			return null;
 		}
@@ -128,18 +123,10 @@ public class AssignmentTableModel extends AbstractTableModel implements
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (columnIndex == 0) { // || columnIndex == 3)  {
+		if (columnIndex == 0) {
 			return true;
 		}
 		return false;
 	}
-
-	/*
-	// dummy class works as placeholder for edit buttons
-	public class EditAction {
-		public String toString() {
-			return null;
-		}
-	}
-	*/
+	
 }

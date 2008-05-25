@@ -1,6 +1,7 @@
 package org.redcross.sar.map.command;
 
-import org.redcross.sar.map.DrawAdapter;
+import javax.swing.JToggleButton;
+
 import org.redcross.sar.map.SnapAdapter;
 
 public interface IDrawTool extends IDiskoTool {
@@ -13,6 +14,7 @@ public interface IDrawTool extends IDiskoTool {
 
 	public enum DrawMode {
 		MODE_UNDEFINED,
+		MODE_LOCKED,
 		MODE_CREATE,
 		MODE_REPLACE,
 		MODE_APPEND,
@@ -21,14 +23,11 @@ public interface IDrawTool extends IDiskoTool {
 		MODE_SNAPTO
 	}	
 	
+	public JToggleButton getButton();
+	
 	public SnapAdapter getSnapAdapter();
 	
 	public DrawAdapter getDrawAdapter();
-	
-	public void reset();
-
-	public boolean apply();
-	public boolean cancel();
 	
 	public boolean isDrawing();
 	public boolean isSnapToMode();
@@ -37,14 +36,11 @@ public interface IDrawTool extends IDiskoTool {
 	public boolean isAppendMode();
 	public boolean isContinueMode();
 	public boolean isConstrainMode();
-	//public boolean isBufferedMode();
 	public boolean isBatchUpdate();
-	public boolean isDirty();
 	
 	public void setSnapToMode(boolean isSnapToMode);
 	public void setDrawMode(DrawMode mode);
 	public void setConstrainMode(boolean isConstrainMode);
-	//public void setBufferedMode(boolean isBufferedMode);
 	public void setBatchUpdate(boolean isBatchUpdate);	
 	
 	public int getMaxStep();
@@ -54,5 +50,6 @@ public interface IDrawTool extends IDiskoTool {
 	public void setMinStep(int distance);	
 	
 	public FeatureType getFeatureType();
+	public boolean isInterchangable(FeatureType type);
 	
 }

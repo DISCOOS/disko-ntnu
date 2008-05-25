@@ -1,6 +1,7 @@
 package org.redcross.sar.gui.map;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
@@ -19,39 +19,34 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.SnapAdapter;
 import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
 import com.esri.arcgis.carto.IFeatureLayer;
+import com.esri.arcgis.interop.AutomationException;
 
-public class SnapPanel extends DiskoPanel implements SnapListener {
+public class SnapPanel extends DefaultDiskoPanel implements SnapListener {
 	
 	private static final long serialVersionUID = 1L;
 
-	private DiskoPanel actionsPanel = null;
-	private DiskoPanel layersPanel = null;
-	private DiskoPanel tolerancePanel = null;
+	private DefaultDiskoPanel layersPanel = null;
+	private DefaultDiskoPanel tolerancePanel = null;
 	private JSlider toleranceSlider = null;
 	private JLabel messageLabel = null;
 	private JPanel selectorPanel = null;
 	private JButton allButton = null;
 	private JButton noneButton = null;
-	private JButton applyButton = null;
-	private JButton cancelButton = null;
 	private HashMap<String,JCheckBox> checkBoxes = null;
 	private HashMap<String,IFeatureLayer> layers = null;
 	private HashMap<String,String> myInterests = null;
 	private SnapAdapter adapter = null;
-	private boolean isSnapToChangeing = false;
 	
 	public SnapPanel() {
 		
@@ -74,15 +69,30 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 	
 	private void initialize() {
 		try {
+			
+			insertButton("finish",getNoneButton(), "none");
+			insertButton("finish",getAllButton(), "all");
+			addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					String cmd = e.getActionCommand();
+					// canceled?
+					if("all".equalsIgnoreCase(cmd)) 
+						checkAll();
+					else if("none".equalsIgnoreCase(cmd)) 
+						checkNone();					
+				}
+				
+			});
+			
 			VerticalFlowLayout vfl = new VerticalFlowLayout();
 			vfl.setAlignment(VerticalFlowLayout.LEFT);
 			vfl.setHgap(5);
 			vfl.setVgap(5);
 			vfl.setVerticalFill(true);
 			JPanel body = (JPanel)getBodyComponent();
-			body.setPreferredSize(new Dimension(200,150));
+			body.setPreferredSize(new Dimension(200,400));
 			body.setLayout(vfl);
-			body.add(getActionsPanel());
 			body.add(getTolerancePanel());
 			body.add(getLayersPanel());
 
@@ -93,69 +103,29 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 		}
 	}
 			
-	private DiskoPanel getActionsPanel() {
-		if (actionsPanel == null) {
-			try {
-				
-				// create layer
-				actionsPanel = new DiskoPanel("Utfør");
-				actionsPanel.setBodyComponent(null);
-				// create buttons
-				allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);
-				noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);
-				applyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				// add action listeners
-				allButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						checkAll();
-					}
-				});
-				noneButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						checkNone();
-					}
-				});
-				applyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						try {
-							// get layers
-							List<IFeatureLayer> list = getSnapToLayers();
-							// is changing
-							isSnapToChangeing = true;
-							// apply snapping?
-							if(adapter!=null) adapter.setSnapToLayers(list);
-							// forward
-							fireActionEvent(e);
-						} catch (Exception ex) {
-							// TODO Auto-generated catch block
-							ex.printStackTrace();
-						}
-						// finished
-						isSnapToChangeing = false;
-					}
-				});
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// reset
-						cancel();
-						// forward
-						fireActionEvent(e);
-					}
-				});
-				// add buttons to panel
-				actionsPanel.addButton(allButton,"all");
-				actionsPanel.addButton(noneButton,"none");
-				actionsPanel.addButton(applyButton,"apply");
-				actionsPanel.addButton(cancelButton,"cancel");
-				
-			} catch (java.lang.Throwable e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	/**
+	 * This method initializes allButton	
+	 * 	
+	 * @return {@link JButton}
+	 */
+	private JButton getAllButton() {
+		if (allButton == null) {
+			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);			
 		}
-		return actionsPanel;
-	}	
+		return allButton;
+	}
+	
+	/**
+	 * This method initializes noneButton	
+	 * 	
+	 * @return {@link JButton}
+	 */
+	private JButton getNoneButton() {
+		if (noneButton == null) {
+			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);			
+		}
+		return noneButton;
+	}
 	
 	public void setSnapAdapter(SnapAdapter adapter) {
 		// release current?
@@ -180,17 +150,53 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 	}
 	
 	@Override
-	public void cancel() {
-		// reload from adapter
-		onSnapableChanged();
-		onSnapToChanged();
+	public boolean finish() {
+		// get flag
+		boolean bFlag = false; 
+		// is changing
+		setChangeable(false);
+		try {
+			// any change?
+			if(super.finish()) {
+				// get layers
+				List<IFeatureLayer> list = getSnapToLayers();
+				// apply snapping?
+				if(adapter!=null) adapter.setSnapToLayers(list);
+				// changes
+				bFlag = true;
+			}
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// is finished
+		setChangeable(true);
+		// finished
+		return bFlag;
 	}
 	
-	private DiskoPanel getLayersPanel() {
+	@Override
+	public boolean cancel() {
+		// any change?
+		if(super.cancel()) {
+			// reload from adapter
+			onSnapableChanged();
+			onSnapToChanged();
+			// finished
+			return true;
+		}
+		// failure
+		return false;
+	}
+	
+	private DefaultDiskoPanel getLayersPanel() {
 		if (layersPanel == null) {
 			try {
 				// get body component
-				layersPanel = new DiskoPanel("Snap til lag");
+				layersPanel = new DefaultDiskoPanel("Snap til lag",false,false);
 				JPanel body = ((JPanel)layersPanel.getBodyComponent());
 				VerticalFlowLayout vfl = new VerticalFlowLayout();
 				vfl.setAlignment(VerticalFlowLayout.LEFT);
@@ -238,10 +244,10 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 	}
 	
 	
-	private DiskoPanel getTolerancePanel() {
+	private DefaultDiskoPanel getTolerancePanel() {
 		if (tolerancePanel == null) {
 			try {
-				tolerancePanel = new DiskoPanel("Sett toleranse (meter)");
+				tolerancePanel = new DefaultDiskoPanel("Sett toleranse (meter)",false,false);
 				tolerancePanel.setBodyComponent(getToleranceSlider());
 				tolerancePanel.setPreferredSize(new Dimension(200, 100));
 			} catch (java.lang.Throwable e) {
@@ -312,22 +318,6 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 		}
 	}
 	
-	public boolean addApplyListener(ActionListener listener) {
-		if(applyButton!=null) {
-			applyButton.addActionListener(listener);
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean removeApplyListener(ActionListener listener) {
-		if(applyButton!=null) {
-			applyButton.removeActionListener(listener);
-			return true;
-		}
-		return false;
-	}
-	
 	private String getLayerCaption(String name)
 	{	   
 		// search for mso layers
@@ -376,8 +366,7 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 				String name = flayer.getName();
 				cb = getCheckBox(name);				
 				if (cb == null) {
-					cb = new JCheckBox();
-					cb.setName(name);
+					cb = createCheckBox(name);
 					selector.add(cb);
 				}
 				// update text
@@ -397,7 +386,7 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 
 	public void onSnapToChanged() {
 		// is not changing?
-		if(!isSnapToChangeing) {
+		if(isChangeable()) {
 			// unselect all
 			checkNone();
 			// get selector panel
@@ -415,8 +404,7 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 					String name = flayer.getName();
 					JCheckBox cb = getCheckBox(name);
 					if (cb == null) {
-						cb = new JCheckBox();
-						cb.setName(name);
+						cb = createCheckBox(name);
 						selector.add(cb);
 						// update text
 						cb.setText(getLayerCaption(name));
@@ -433,7 +421,19 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 					e.printStackTrace();
 				}
 			}
+			setDirty(true);
 		}
+	}
+	
+	private JCheckBox createCheckBox(String name) {
+		JCheckBox cb = new JCheckBox();
+		cb.setName(name);
+		cb.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				setDirty(true);
+			}
+		}) ;
+		return cb;
 	}
 
 	public void onSnapableChanged() {
@@ -456,6 +456,8 @@ public class SnapPanel extends DiskoPanel implements SnapListener {
 			setSnapableLayers(adapter.getSnapableLayers());
 		// get card layout
 		showSelector(bFlag);
+		// reset changes
+		setDirty(false);
 	}
 	
 	private void showSelector(boolean isVisible) {

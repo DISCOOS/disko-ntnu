@@ -1,22 +1,21 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.attribute.CheckBoxAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.document.NumericDocument;
@@ -26,46 +25,27 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.SnapAdapter;
 import org.redcross.sar.map.SnapAdapter.SnapListener;
 import org.redcross.sar.map.command.LineTool;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 
-import com.borland.jbcl.layout.VerticalFlowLayout;
-
-public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListener {
+public class LinePanel extends DefaultToolPanel implements IPropertyPanel, SnapListener {
 
 	private static final long serialVersionUID = 1L;
 
-	private LineTool tool = null;
-	private DiskoPanel captionPanel = null;
-	private DiskoPanel optionsPanel = null;
-	private DiskoPanel actionsPanel = null;
 	private JButton snapToButton = null;
-	private JButton applyButton = null;
-	private JButton cancelButton = null;
+	private DefaultDiskoPanel optionsPanel = null;
 	private CheckBoxAttribute snapToAttr = null;
 	private TextFieldAttribute minStepAttr = null;
 	private TextFieldAttribute maxStepAttr = null;
 	private CheckBoxAttribute constraintAttr = null;
 	
-	private boolean isVertical = true;
-	
-	private List<ActionListener> listeners = null;
-	
-	public LinePanel(LineTool tool, boolean isVertical) {
+	public LinePanel(LineTool tool) {
 		// forward
-		this("Tegne linje",tool,isVertical);
+		this("Tegne linje",tool);
 	}
 	
-	public LinePanel(String caption, LineTool tool, boolean isVertical) {
+	public LinePanel(String caption, LineTool tool) {
 		
 		// forward
-		super(caption);
-		
-		// prepare
-		this.tool = tool;
-		this.listeners = new ArrayList<ActionListener>();
-		
-		// set layout information
-		this.isVertical = isVertical;
+		super(caption,tool);
 		
 		// initialize gui
 		initialize();
@@ -76,89 +56,199 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 	 *
 	 */
 	private void initialize() {
-		// prepare
+		
+		// set preferred body size
 		setPreferredBodySize(new Dimension(200,200));
-		// forward
-		this.setup();
-		// hide header
-		setHeaderVisible(false);
-		// hide borders
-		setBorderVisible(false);
-	}
 		
+		// set body panel
+		setBodyComponent(getOptionsPanel());
+				
+		// add buttons
+		insertButton("finish",getSnapToButton(),"snapto");
+		
+	}
+	
 	/**
-	 * This method applies setup
-	 *
+	 * This method initializes optionsPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
 	 */
-	private void setup() {
-		
-		// get body panel
-		JPanel panel = (JPanel)getBodyComponent();
-		// remove panels from pane
-		panel.removeAll();
-		
-		// build container
-		if(isVertical) {
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
-			vfl.setHgap(5);
-			vfl.setVgap(5);
-			// update
-			panel.setLayout(vfl);
-			panel.add(getCaptionPanel());
-			panel.add(getActionsPanel());
-			panel.add(getOptionsPanel());
+	private DefaultDiskoPanel getOptionsPanel() {
+		if (optionsPanel == null) {
+			try {
+				optionsPanel = new DefaultDiskoPanel("Alternativer",false,false);			
+				JPanel body = (JPanel)optionsPanel.getBodyComponent();
+				body.setPreferredSize(new Dimension(200, 150));
+				body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
+				body.add(Box.createVerticalStrut(5));
+				body.add(getSnapToAttr());
+				body.add(Box.createVerticalStrut(5));
+				body.add(getConstraintAttr());
+				body.add(Box.createVerticalStrut(5));
+				body.add(getMinStepAttr());
+				body.add(Box.createVerticalStrut(5));
+				body.add(getMaxStepAttr());
+				body.add(Box.createVerticalStrut(5));
+
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
 		}
-		else {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			// update
-			panel.setLayout(bl);
-			panel.add(getCaptionPanel(),BorderLayout.NORTH);				
-			panel.add(getActionsPanel(),BorderLayout.EAST);				
-			panel.add(getOptionsPanel(),BorderLayout.CENTER);
-		}
+		return optionsPanel;
 	}
+	
+	private CheckBoxAttribute getSnapToAttr() {
+		if(snapToAttr == null) {
+			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",150,false,true);
+			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
+			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
+			snapToAttr.setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.NORMAL),true);
+			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
+
+				public void itemStateChanged(ItemEvent e) {
+				    if (e.getStateChange() == ItemEvent.DESELECTED)
+				    	getTool().setSnapToMode(false);
+				    else {
+				    	// get snapping adapter
+				    	SnapAdapter snapping = getTool().getSnapAdapter();
+				    	// validate
+				    	if(isSnappingAvailable(snapping)) {
+					    	// update
+				    		getTool().setSnapToMode(true);
+				    	}
+				    	else {
+				    		// reset flag
+				    		snapToAttr.getCheckBox().setSelected(false);
+				    	}
+				    }
+				}
+				
+			});
+			snapToAttr.getButton().setActionCommand("editsnap");
+			snapToAttr.getButton().addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					// forward
+					fireActionEvent(e);					
+				}
+				
+			});
+		}
+		return snapToAttr;
+	}
+	
+	private CheckBoxAttribute getConstraintAttr() {
+		if(constraintAttr == null) {
+			constraintAttr = new CheckBoxAttribute("constaint","Begrens avstand",150,true,true);
+			constraintAttr.setToolTipText("Begrenser avstand mellom punkter på en linje");
+			constraintAttr.getCheckBox().addItemListener(new ItemListener() {
+
+				public void itemStateChanged(ItemEvent e) {
+
+					// get flag
+					boolean mode = (e.getStateChange() == ItemEvent.SELECTED);
+					
+					// update
+				    getTool().setConstrainMode(mode);
+				    getMinStepAttr().setEnabled(mode);
+				    getMaxStepAttr().setEnabled(mode);
+				    
+				}
+				
+			});
+		}
+		return constraintAttr;
+	}	
+	
+	private TextFieldAttribute getMinStepAttr() {
+		if(minStepAttr == null) {
+			minStepAttr = new TextFieldAttribute("min","Minium avstand",150,"10",true);
+			minStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
+			minStepAttr.setToolTipText("Minimum avstand mellom to punktet");
+			minStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
+
+				public void changedUpdate(DocumentEvent e) { change(); }
+				public void insertUpdate(DocumentEvent e) { change(); }
+				public void removeUpdate(DocumentEvent e) { change(); }
+				
+				private void change() {
+					// consume?
+					if(!isChangeable()) return;
+					// get value as string
+					String value = (String)minStepAttr.getValue();
+					// set value
+					getTool().setMinStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
+				}
+				
+			});
+		}
+		return minStepAttr;
+	}	
+	
+	private TextFieldAttribute getMaxStepAttr() {
+		if(maxStepAttr == null) {
+			maxStepAttr = new TextFieldAttribute("max","Maximum avstand",150,"100",true);
+			maxStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
+			maxStepAttr.setToolTipText("Maximum avstand mellom to punktet");
+			maxStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
+
+				public void changedUpdate(DocumentEvent e) { change(); }
+				public void insertUpdate(DocumentEvent e) { change(); }
+				public void removeUpdate(DocumentEvent e) { change(); }
+				
+				private void change() {
+					// consume?
+					if(!isChangeable()) return;
+					// get value as string
+					String value = (String)maxStepAttr.getValue();
+					// set value
+					getTool().setMaxStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
+				}
+				
+			});
+		}
+		return maxStepAttr;
+	}	
+
+	private JButton getSnapToButton() {
+		if (snapToButton == null) {
+			try {
+				snapToButton = DiskoButtonFactory.createButton("MAP.SNAPTO",ButtonSize.NORMAL);
+				snapToButton.setActionCommand("snapto");
+				snapToButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// forward
+						doSnapTo();
+						// forward
+						fireActionEvent(e);						
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return snapToButton;
+	}	
+	
+	/* ===========================================
+	 * Private methods
+	 * ===========================================
+	 */
 	
 	private void doSnapTo() {
 		// get adapter
-		SnapAdapter snapping = tool.getSnapAdapter();
+		SnapAdapter snapping = getTool().getSnapAdapter();
 		// validate
 		if(isSnappingAvailable(snapping)) {
+			// consume change events
+			setChangeable(false);
 			// force snapping on selected object
-			tool.doSnapTo();
+			boolean bFlag = getTool().doSnapTo();
+			// resume changes
+			setChangeable(true);
+			// reset flag?
+			if(bFlag) setDirty(false);
 		}
-	}
-	
-	private void apply() {
-		// forward
-		tool.apply(true);
-	}
-	
-	public void setVertical(boolean isVertical) {
-		// is changed?
-		if(this.isVertical != isVertical) {
-			this.isVertical = isVertical;
-			// setup gui
-			setup();
-		}
-	}
-	
-	public boolean isVertical() {
-		return isVertical;
-	}
-	
-	public void cancel() {
-		tool.cancel();
-	}
-
-	public boolean isButtonsVisible() {
-		return getActionsPanel().isVisible();
-	}
-	
-	public void setButtonsVisible(boolean isVisible) {
-		getActionsPanel().setVisible(isVisible);
 	}
 	
 	private boolean isSnappingAvailable(SnapAdapter snapping) {
@@ -181,259 +271,31 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 		return bFlag;		
 	}
 	
-	
-	/**
-	 * This method initializes optionsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	/* ===========================================
+	 * Overridden public methods
+	 * ===========================================
 	 */
-	private DiskoPanel getOptionsPanel() {
-		if (optionsPanel == null) {
-			try {
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setVgap(5);
-				vfl.setHgap(5);
-				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				optionsPanel = new DiskoPanel("Alternativer");				
-				JPanel panel = (JPanel)optionsPanel.getBodyComponent();
-				panel.setPreferredSize(new Dimension(200, 150));
-				panel.setLayout(vfl);
-				panel.add(getSnapToAttr());
-				panel.add(getConstraintAttr());
-				panel.add(getMinStepAttr());
-				panel.add(getMaxStepAttr());
-
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return optionsPanel;
-	}
 	
-	private CheckBoxAttribute getSnapToAttr() {
-		if(snapToAttr == null) {
-			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",150,false,true);
-			Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
-			snapToAttr.setPreferredSize(new Dimension(200,dim.height));
-			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
-			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
-			snapToAttr.setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.NORMAL),true);
-			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
-
-				public void itemStateChanged(ItemEvent e) {
-				    if (e.getStateChange() == ItemEvent.DESELECTED)
-				    	tool.setSnapToMode(false);
-				    else {
-				    	// get snapping adapter
-				    	SnapAdapter snapping = tool.getSnapAdapter();
-				    	// validate
-				    	if(isSnappingAvailable(snapping)) {
-					    	// update
-				    		tool.setSnapToMode(true);
-				    	}
-				    	else {
-				    		// reset flag
-				    		snapToAttr.getCheckBox().setSelected(false);
-				    	}
-				    }
-				}
-				
-			});
-			snapToAttr.getButton().setActionCommand("editsnap");
-			snapToAttr.getButton().addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					// forward
-					doAction(e);					
-				}
-				
-			});
-		}
-		return snapToAttr;
-	}
-	
-	private CheckBoxAttribute getConstraintAttr() {
-		if(constraintAttr == null) {
-			constraintAttr = new CheckBoxAttribute("constaint","Begrens avstand",150,true,true);
-			constraintAttr.setToolTipText("Begrenser avstand mellom punkter på en linje");
-			constraintAttr.getCheckBox().addItemListener(new ItemListener() {
-
-				public void itemStateChanged(ItemEvent e) {
-
-					// get flag
-					boolean mode = (e.getStateChange() == ItemEvent.SELECTED);
-					
-					// update
-				    tool.setConstrainMode(mode);
-				    getMinStepAttr().setEnabled(mode);
-				    getMaxStepAttr().setEnabled(mode);
-				    
-				}
-				
-			});
-		}
-		return constraintAttr;
-	}	
-	
-	private TextFieldAttribute getMinStepAttr() {
-		if(minStepAttr == null) {
-			minStepAttr = new TextFieldAttribute("min","Minium avstand",150,"10",true);
-			minStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
-			minStepAttr.setToolTipText("Minimum avstand mellom to punktet");
-			minStepAttr.getTextField().addFocusListener(new FocusAdapter() {
-
-				@Override
-				public void focusLost(FocusEvent e) {
-					// forward
-					super.focusLost(e);
-					// get value as string
-					String value = (String)minStepAttr.getValue();
-					// set value
-					tool.setMinStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
-				}
-				
-			});
-		}
-		return minStepAttr;
-	}	
-	
-	private TextFieldAttribute getMaxStepAttr() {
-		if(maxStepAttr == null) {
-			maxStepAttr = new TextFieldAttribute("max","Maximum avstand",150,"100",true);
-			maxStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
-			maxStepAttr.setToolTipText("Maximum avstand mellom to punktet");
-			maxStepAttr.getTextField().addFocusListener(new FocusAdapter() {
-
-				@Override
-				public void focusLost(FocusEvent e) {
-					// forward
-					super.focusLost(e);
-					// get value as string
-					String value = (String)maxStepAttr.getValue();
-					// set value
-					tool.setMaxStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
-				}
-				
-			});
-		}
-		return maxStepAttr;
-	}	
-
-	private DiskoPanel getCaptionPanel() {
-		if (captionPanel == null) {
-			try {
-				captionPanel = new DiskoPanel(MapUtil.getDrawText(null, null, null));
-				captionPanel.setBodyComponent(null);
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return captionPanel;
+	@Override
+	public void setFixedSize() {
+		super.setFixedSize();
+		int w = getWidth()-50;
+		int h = getConstraintAttr().getHeight();
+		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
+		Utils.setFixedSize(getSnapToAttr(),w,dim.height);	
+		Utils.setFixedSize(getConstraintAttr(),w,h);	
+		Utils.setFixedSize(getMinStepAttr(),w,h);	
+		Utils.setFixedSize(getMaxStepAttr(),w,h);	
 	}
 
-	private DiskoPanel getActionsPanel() {
-		if (actionsPanel == null) {
-			try {
-				actionsPanel = new DiskoPanel("Utfør");
-				actionsPanel.addButton(getSnapToButton(),"snapto");
-				actionsPanel.addButton(getApplyButton(),"apply");
-				actionsPanel.addButton(getCancelButton(),"cancel");
-				actionsPanel.setBodyComponent(null);
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return actionsPanel;
-	}
-	
-	public JButton getCancelButton() {
-		if (cancelButton == null) {
-			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				cancelButton.setActionCommand("cancel");
-				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// forward
-						cancel();
-						// forward
-						doAction(e);
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return cancelButton;
-	}
-	
-	private JButton getApplyButton() {
-		if (applyButton == null) {
-			try {
-				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
-				applyButton.setActionCommand("finish");
-				applyButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// forward
-						apply();
-						// forward
-						doAction(e);						
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return applyButton;
-	}	
-	
-	
-	private JButton getSnapToButton() {
-		if (snapToButton == null) {
-			try {
-				snapToButton = DiskoButtonFactory.createButton("MAP.SNAPTO",ButtonSize.NORMAL);
-				snapToButton.setActionCommand("snapTo");
-				snapToButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// forward
-						doSnapTo();
-						// forward
-						doAction(e);						
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return snapToButton;
-	}	
-	
-	public void setMsoObject(IMsoObjectIf msoObject) {		
-		// consume?
-		if (tool == null || tool.getMap() == null) return;
-		try {
-			// update caption
-			if(tool.getMap().isEditSupportInstalled())
-				getCaptionPanel().setCaptionText(tool.getMap().getDrawAdapter().getDescription());
-			else 
-				getCaptionPanel().setCaptionText(MapUtil.getDrawText(msoObject, 
-						tool.getMsoClassCode(), tool.getDrawMode())); 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	private void doAction(ActionEvent e) {
-		for(ActionListener it: listeners) {
-			it.actionPerformed(e);
-		}
-	}
+	/* ===========================================
+	 * SnapListener interface implementation
+	 * ===========================================
+	 */
 	
 	public void onSnapToChanged() {
 		// get adapter
-		SnapAdapter adapter = tool.getSnapAdapter();
+		SnapAdapter adapter = getTool().getSnapAdapter();
 		// enable auto snapping check?
 		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
 	}
@@ -441,26 +303,51 @@ public class LinePanel extends DiskoPanel implements IPropertyPanel, SnapListene
 	public void onSnapableChanged() {}
 
 	/* ===========================================
-	 * IPropertyPanel implementation
+	 * IPropertyPanel interface implementation
 	 * ===========================================
 	 */
 
+	@Override
+	public LineTool getTool() {
+		return (LineTool)super.getTool();
+	}
+
 	public void update() {
-		getSnapToAttr().setValue(tool.isSnapToMode());
-		getConstraintAttr().setValue(tool.isConstrainMode());
-		getMinStepAttr().setValue(String.valueOf(tool.getMinStep()));
-		getMaxStepAttr().setValue(String.valueOf(tool.getMaxStep()));
+		
+		// consume reentry?
+		if(!isChangeable()) return;
+		
+		// forward
+		super.update();
+		
+		// suspend events
+		setChangeable(false);
+		
+		try {
+			
+			// update attributes
+			getSnapToAttr().setValue(getTool().isSnapToMode());
+			getConstraintAttr().setValue(getTool().isConstrainMode());
+			getMinStepAttr().setValue(String.valueOf(getTool().getMinStep()));
+			getMaxStepAttr().setValue(String.valueOf(getTool().getMaxStep()));
+			// update caption
+			if(getTool().getMap().isEditSupportInstalled())
+				setCaptionText(getTool().getMap().getDrawAdapter().getDescription());
+			else 
+				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
+						getTool().getMsoCode(), getTool().getDrawMode())); 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// resume changes
+		setChangeable(true);
 	}
 		
-	public void addActionListener(ActionListener listener) {
-		listeners.add(listener);
-	}
-	
-	public void removeActionListener(ActionListener listener) {
-		listeners.remove(listener);
-		getActionsPanel().removeActionListener(listener);
-	}
-	
-	
+	/* ===========================================
+	 * IMsoUpdateListenerIf implementation
+	 * ===========================================
+	 */
+
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

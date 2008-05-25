@@ -24,6 +24,7 @@ import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnFullExtentUpdatedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMapReplacedEvent;
 import com.esri.arcgis.geometry.Envelope;
+import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;
@@ -44,7 +45,8 @@ public class SnapAdapter {
 	protected boolean isDirty = false;
 	protected boolean isSnapToMode = false;
 	
-	// holds snapping geometry
+	// holds snapping geometries
+	private Envelope currentExtent = null;
 	private Envelope searchEnvelope = null;
 	
 	// indexing
@@ -165,8 +167,9 @@ public class SnapAdapter {
 		isDirty = this.isSnapToMode != isSnapToMode && isSnapToMode;
 		// set flag
 		this.isSnapToMode = isSnapToMode;
-		// update indexing
-		updateIndexing();
+		// update indexing?
+		if(isSnapToMode)
+			updateIndexing();
 	}
 	
 	/**
@@ -324,13 +327,8 @@ public class SnapAdapter {
 				if(snapTo.size()>0) {
 					// get current extent
 					Envelope extent = (Envelope)map.getActiveView().getExtent();
-					// schedule on work pool thread
-					try {
-						DiskoWorkPool.getInstance().schedule(new SnappingWork(extent,snapTo,true));
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					// forward
+					scheduleSnapWork(extent);
 				}				
 			}
 			// not dirty
@@ -407,40 +405,77 @@ public class SnapAdapter {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void onAfterDraw(IMapControlEvents2OnAfterDrawEvent e) throws IOException, AutomationException {
-			// forward
-			if(e.getViewDrawPhase()==esriViewDrawPhase.esriViewGraphics)
-				update(false);
+		public void onAfterDraw(final IMapControlEvents2OnAfterDrawEvent e) throws IOException, AutomationException {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// forward
+					if (e.getViewDrawPhase() == esriViewDrawPhase.esriViewGraphics)
+						update(false);
+				}
+			});			
 		}
 
 		@Override
 		public void onFullExtentUpdated(IMapControlEvents2OnFullExtentUpdatedEvent e) throws IOException, AutomationException {			
-			// update
-			update(true);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// update
+					update(true);
+				}
+			});			
 		}
 		
 		@Override
 		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent e)
 				throws IOException, AutomationException {
-			// update?
-			update(true);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// update?
+					update(true);
+				}
+			});			
 		}
 
 		@Override
 		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent arg0)
 				throws IOException, AutomationException {
-			// update
-			update(true);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// update
+					update(true);
+				}
+			});			
 		}
 		
 	}	
 	
-	class SnappingWork extends AbstractDiskoWork<Void> {
+	private boolean scheduleSnapWork(Envelope extent) {
+		// schedule on work pool thread
+		try {
+			// update indexes?
+			if(currentExtent==null || !extent.within(currentExtent)) {
+				// update current extent
+				currentExtent = extent;
+				// schedule
+				DiskoWorkPool.getInstance().schedule(
+						new SnapWork(extent,snapTo,true));
+				// finished
+				return true;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		// no work scheduled
+		return false;
+	}
+	
+	class SnapWork extends AbstractDiskoWork<Void> {
 		
 		Envelope extent = null;
 		List<IFeatureLayer> snapTo = null;
 		
-		public SnappingWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
+		public SnapWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
 					"Oppdaterer snapping buffer",100,notify);

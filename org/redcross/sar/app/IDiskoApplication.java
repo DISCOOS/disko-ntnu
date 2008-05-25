@@ -9,7 +9,7 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.output.DiskoReport;
+import org.redcross.sar.output.DiskoReportManager;
 
 
 /**
@@ -18,6 +18,8 @@ import org.redcross.sar.output.DiskoReport;
  *
  */
 public interface IDiskoApplication {
+	
+	public final static String bundleName = "org.redcross.sar.app.application";
 	
 	/**
 	 * Get the current (active) role
@@ -78,20 +80,20 @@ public interface IDiskoApplication {
 	 * Get a reference to the DiskoMapManager.
 	 * @return
 	 */
-	public IDiskoMapManager getDiskoMapManager();
+	public IDiskoMapManager getMapManager();
 	
 	/**
-	 * Get a reference to the DiskoModuleLoader. This class is responsible
+	 * Get a reference to the DiskoModuleManager. This class is responsible
 	 * for loading work process modules
 	 * @return A reference to the DiskoModuleLoader
 	 */
-	public DiskoModuleLoader getDiskoModuleLoader();
+	public DiskoModuleManager getModuleManager();
 	
 	/**
-	 * Get a reference to the DiskoReport.
+	 * Get a reference to the DiskoReportManager.
 	 * @return
 	 */
-	public DiskoReport getDiskoReport();
+	public DiskoReportManager getReportManager();
 	
 	/**
 	 * Open the login dialog
@@ -99,8 +101,16 @@ public interface IDiskoApplication {
 	 * @param user Default user name
 	 * @param password Default password
 	 */
-	public void login(String rolleName, String user, char[] password);
+	public boolean login(String role, String user, char[] password);
 
+	/**
+	 * Open the change role dialog 
+	 * @param rolleName Default role name
+	 * @param user Default user name
+	 * @param password Default password
+	 */
+	public boolean swapTo(String role, String user, char[] password);
+	
     /**
      * Get a reference to the MsoModel.
      * This class is responsible for all communication with the data model and data server (SARA).
@@ -112,8 +122,15 @@ public interface IDiskoApplication {
      * choose the active operation
      * @param prompt user before choosing new operation
      */
-    void chooseActiveOperation(boolean prompt);
+    boolean selectActiveOperation(boolean prompt);
 
+    /**
+     * Active operation with passed operation id
+     * 
+     * @param operation id
+     */
+    boolean activeOperation(String opId);
+    
     /**
      * finished the active operation
      * @param prompt user before choosing new operation
@@ -139,7 +156,7 @@ public interface IDiskoApplication {
      */
     void newOperation();
 
-    void operationAdded(String id);
+    void onOperationAdded(String id);
     
     void shutdown();
     

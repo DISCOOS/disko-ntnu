@@ -10,7 +10,7 @@ public class MapInfoComparator implements Comparator {
 		MapSourceInfo row1 = (MapSourceInfo) obj1;
 		MapSourceInfo row2 = (MapSourceInfo) obj2;
 		// compare selection
-		int compare = (row1.isCurrent()==row2.isCurrent())? 0 : (row1.isCurrent() ? 1 : -1);
+		int compare = row1.getMxdDoc().compareTo(row2.getMxdDoc());
         // sort on status?
 		if(compare==0){
             return row2.getStatus().compareTo(row1.getStatus());

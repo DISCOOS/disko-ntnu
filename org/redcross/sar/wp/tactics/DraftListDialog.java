@@ -1,22 +1,18 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.border.BevelBorder;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -28,12 +24,8 @@ public class DraftListDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IDiskoWpModule wp = null;
-	private DiskoPanel contentPanel = null;
-	private JPanel buttonPanel = null;
-	private JButton cancelButton = null;
-	private JButton applyButton = null;
-	private JLabel infoLabel = null;
-	private JScrollPane tableScrollPane = null;
+	private DefaultDiskoPanel contentPanel = null;
+	private JButton makeReadyButton = null;
 	private AssignmentTable assignmentTable = null;
 	private IDiskoApplication app = null;
 	private int changeCount = 0;
@@ -62,58 +54,8 @@ public class DraftListDialog extends DiskoDialog {
 			this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
-	}
-	
-	public int prompt() {
-		// reset flag
-		isCancel = false;
-		// initialize
-		changeCount = 0;		
-		// anything to show?
-		if(assignmentTable.getRowSorter().getViewRowCount()>0) {
-			// show me
-			setVisible(true);
-		}
-		// return state
-		return isCancel ? -1 : changeCount;		
-	}
-	
-	private void cancel() {
-		// set flag
-		isCancel = true;
-		// hide me
-		setVisible(false);		
-	}	
-	
-	private void apply() {
-		try {
-			// initialize
-			changeCount=0;
-			// suspend for faster update
-			app.getMsoModel().suspendClientUpdate();
-			// change status
-			JTable table = getAssignmentTable();
-			for (int i = 0; i < table.getRowCount(); i++) {
-				// selected?
-				if ((Boolean)table.getValueAt(i,0)) {
-					IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
-					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
-						changeCount++;
-						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);
-						fireOnWorkChange(applyButton,assignment,IAssignmentIf.AssignmentStatus.READY);
-					}
-				}
-			}
-			// resume updates
-			app.getMsoModel().resumeClientUpdate();
-		} catch (IllegalOperationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		// hide me
-		setVisible(false);		
 	}
 	
 	/**
@@ -124,101 +66,45 @@ public class DraftListDialog extends DiskoDialog {
 	private JPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel("Endre status på oppdrag");
-				JPanel panel = (JPanel)contentPanel.getBodyComponent();
-				panel.setLayout(new BorderLayout());
-				panel.add(getButtonPanel(), BorderLayout.SOUTH);
-				panel.add(getTableScrollPane(), BorderLayout.CENTER);
+				contentPanel = new DefaultDiskoPanel("Velg oppdrag som er klare",false,true);
+				contentPanel.setBodyComponent(getAssignmentTable());
+				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
+				contentPanel.insertButton("finish",getMakeReadyButton(),"change");
+				contentPanel.addActionListener(new ActionListener() {
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						// canceled?
+						if("cancel".equalsIgnoreCase(cmd)) 
+							cancel();
+						else if("change".equalsIgnoreCase(cmd)) 
+							change();
+						
+					}
+					
+				});
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
 	}
-
+	
 	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			try {
-				FlowLayout flowLayout = new FlowLayout();
-				flowLayout.setAlignment(FlowLayout.RIGHT);
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(flowLayout);
-				infoLabel = new JLabel("Velg oppdrag som er klare");
-				buttonPanel.add(infoLabel,null);
-				buttonPanel.add(getApplyButton(), null);
-				buttonPanel.add(getCancelButton(), null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return buttonPanel;
-	}
-
-	/**
-	 * This method initializes cancelButton	
+	 * This method initializes makeReadyButton	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getCancelButton() {
-		if (cancelButton == null) {
+	private JButton getMakeReadyButton() {
+		if (makeReadyButton == null) {
 			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						cancel();
-					}
-				});
+				makeReadyButton = DiskoButtonFactory.createButton("STATUS.READY",ButtonSize.NORMAL);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return cancelButton;
-	}
-	
-	/**
-	 * This method initializes applyButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getApplyButton() {
-		if (applyButton == null) {
-			try {
-				applyButton = DiskoButtonFactory.createButton("GENERAL.APPLY",ButtonSize.NORMAL);
-				applyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						apply();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return applyButton;
-	}
-	
-	/**
-	 * This method initializes tableScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getTableScrollPane() {
-		if (tableScrollPane == null) {
-			try {
-				tableScrollPane = new JScrollPane();
-				tableScrollPane.getViewport().setBackground(Color.white);
-				tableScrollPane.setViewportView(getAssignmentTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return tableScrollPane;
+		return makeReadyButton;
 	}
 
 	/**
@@ -236,6 +122,56 @@ public class DraftListDialog extends DiskoDialog {
 			}
 		}
 		return assignmentTable;
+	}	
+	
+	public int prompt() {
+		// reset flag
+		isCancel = false;
+		// initialize
+		changeCount = 0;		
+		// anything to show?
+		if(getAssignmentTable().getRowSorter().getViewRowCount()>0) {
+			// show me
+			setVisible(true);
+		}
+		// return state
+		return isCancel ? -1 : changeCount;		
+	}
+	
+	private void cancel() {
+		// set flag
+		isCancel = true;
+		// hide me
+		setVisible(false);		
+	}	
+	
+	private void change() {
+		try {
+			// initialize
+			changeCount=0;
+			// suspend for faster update
+			app.getMsoModel().suspendClientUpdate();
+			// change status
+			JTable table = getAssignmentTable();
+			for (int i = 0; i < table.getRowCount(); i++) {
+				// selected?
+				if ((Boolean)table.getValueAt(i,0)) {
+					IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
+					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
+						changeCount++;
+						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);
+						fireOnWorkChange(assignment,AssignmentStatus.READY);
+					}
+				}
+			}
+			// resume updates
+			app.getMsoModel().resumeClientUpdate();
+		} catch (IllegalOperationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		// hide me
+		setVisible(false);		
 	}
 
 }  //  @jve:decl-index=0:visual-constraint="10,2"

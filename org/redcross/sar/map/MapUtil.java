@@ -2,7 +2,10 @@ package org.redcross.sar.map;
 
 import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -10,8 +13,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoPropertyFactory;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
+import org.redcross.sar.map.feature.IMsoFeature;
+import org.redcross.sar.map.feature.MsoFeatureClass;
+import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoListIf;
@@ -24,6 +30,7 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.GlobalProps;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
@@ -52,16 +59,21 @@ import com.esri.arcgis.display.SimpleLineSymbol;
 import com.esri.arcgis.display.esriScreenCache;
 import com.esri.arcgis.display.esriSimpleFillStyle;
 import com.esri.arcgis.display.esriSimpleLineStyle;
+import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.IFeatureClass;
+import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geodatabase.IFeatureProxy;
+import com.esri.arcgis.geodatabase.ISpatialFilter;
+import com.esri.arcgis.geodatabase.SpatialFilter;
 import com.esri.arcgis.geodatabase.Workspace;
+import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
+import com.esri.arcgis.geometry.CircularArc;
 import com.esri.arcgis.geometry.Envelope;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeographicCoordinateSystem;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
-import com.esri.arcgis.geometry.IPointCollection;
 import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
@@ -69,6 +81,7 @@ import com.esri.arcgis.geometry.ISpatialReferenceFactory2;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polygon;
 import com.esri.arcgis.geometry.Polyline;
+import com.esri.arcgis.geometry.Ring;
 import com.esri.arcgis.geometry.SpatialReferenceEnvironment;
 import com.esri.arcgis.geometry.esriMGRSModeEnum;
 import com.esri.arcgis.geometry.esriSRGeoCSType;
@@ -86,7 +99,7 @@ public class MapUtil {
 	
 	public static Workspace getWorkspace() throws AutomationException, IOException {
 		if (workspace == null) {
-			String dbPath = DiskoPropertyFactory.getText("Database.path");
+			String dbPath = GlobalProps.getText("Database.path");
 			FileGDBWorkspaceFactory factory = new FileGDBWorkspaceFactory();
 			workspace = (Workspace) factory.openFromFile(dbPath, 0);
 		}
@@ -120,20 +133,23 @@ public class MapUtil {
 	
 	public static IEnvelope expand(double ratio, IEnvelope env) 
 		throws IOException, AutomationException {
-		env.expand(ratio, ratio, true);
-		return env.getEnvelope();
+		IEnvelope extent = env.getEnvelope();
+		extent.expand(ratio, ratio, true);
+		return extent;
 	}
 	
 	public static IEnvelope expand(double x, double y, boolean isRatio, IEnvelope env) 
 		throws IOException, AutomationException {
-		env.expand(x, y, isRatio);
-		return env.getEnvelope();
+		IEnvelope extent = env.getEnvelope();
+		extent.expand(x, y, isRatio);
+		return extent;
 	}
 	
 	public static IEnvelope offset(double x, double y, IEnvelope env) 
 		throws IOException, AutomationException {
-		env.offset(x, y);
-		return env.getEnvelope();
+		IEnvelope extent = env.getEnvelope();
+		extent.offset(x, y);
+		return extent;
 	}
 	
 	public static IPoint getCenter(IEnvelope env) 
@@ -418,7 +434,7 @@ public class MapUtil {
 		Polyline polyline = new Polyline();
 		polyline.setSpatialReferenceByRef(polygon.getSpatialReference());
 		for (int i = 0; i < polygon.getPointCount(); i++) {
-			polygon.addPoint(polygon.getPoint(i), null, null);
+			polyline.addPoint(polygon.getPoint(i), null, null);
 		}
 		//polyline.simplify();
 		return polyline;
@@ -474,7 +490,7 @@ public class MapUtil {
 			throws Exception {
 		String mgrs = p.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 		String zone = mgrs.substring(0,3);
-		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(zone);		
+		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(getSRProjCS_WGS1984UTM_Zone(zone));
 		p.project(outgoingCoordSystem);
 		return zone + formatCoord(p.getX(),7,7)+ "E" + formatCoord(p.getY(),7,7) + "N";
 		
@@ -487,10 +503,10 @@ public class MapUtil {
 	
 	public static String getDEGfromPoint(Point p) 
 		throws Exception {
-		return fromDEGtoDES(p.getX())+ "E" + fromDEGtoDES(p.getY()) + "N";
+		return fromDEStoDEG(p.getX())+ "E" + fromDEStoDEG(p.getY()) + "N";
 	}
 	
-	private static String fromDEGtoDES(double des) {
+	private static String fromDEStoDEG(double des) {
 		
 		// Get degrees by chopping off at the decimal
 		double d = Math.floor( des );
@@ -526,10 +542,15 @@ public class MapUtil {
 			m = 0;
 		}
 		
+		String dt = String.valueOf(Math.round(d));
+		if(dt.length()==1) dt = "0" + dt;
+		String mt = String.valueOf(Math.round(m));
+		if(mt.length()==1) mt = "0" + mt;
+		String st = String.valueOf(Math.round(s));
+		if(st.length()==1) st = "0" + st;
+		
 		// return string
-		return Math.round(d) + Character.toString((char)186) +
-			Math.round(m) + Character.toString((char)39) +
-			Math.round(s) + Character.toString((char)34);
+		return dt + "d" + mt + "m" + st + "s";
 		
 	}
 	
@@ -559,33 +580,34 @@ public class MapUtil {
 	public static String getMGRSfromPosition(Point2D p) 
 		throws Exception {
 		Point point = new Point();
+		point.setSpatialReferenceByRef(getGeographicCS());
 		point.setX(p.getX());
 		point.setY(p.getY());
-		point.setSpatialReferenceByRef(getGeographicCS());
 		return point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 	}
 	
 	public static String getUTMfromPosition(Point2D p) 
 		throws Exception {
 		Point point = new Point();
+		point.setSpatialReferenceByRef(getGeographicCS());	
 		point.setX(p.getX());
 		point.setY(p.getY());
-		point.setSpatialReferenceByRef(getGeographicCS());	
 		String mgrs = point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 		String zone = mgrs.substring(0,3);
-		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(zone);		
+		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(getSRProjCS_WGS1984UTM_Zone(zone));		
 		point.project(outgoingCoordSystem);
 		return zone + formatCoord(point.getX(),7,7)+ "E" + formatCoord(point.getY(),7,7) + "N";
 	}
 	
 	public static String getDEGfromPosition(Point2D p) 
 		throws Exception {
-		return formatCoord(p.getX(),7,7)+ "E" + formatCoord(p.getY(),7,7) + "N";
+		return fromDEStoDEG(p.getX())+ "E" + fromDEStoDEG(p.getY()) + "N";
 	}
 
 	public static String getDESfromPosition(Point2D p) 
 		throws Exception {
-		return fromDEGtoDES(p.getX())+ "E" + fromDEGtoDES(p.getY()) + "N";
+		DecimalFormat format = new DecimalFormat("0.0000");
+		return format.format(p.getX()) + "E" + format.format(p.getY()) + "N";
 	}
 	
 
@@ -598,17 +620,18 @@ public class MapUtil {
 	 * @return {@link Point}
 	 * @throws Exception
 	 */	
-	public static Point getPointFromMGRS(String mgrs) 
+	public static Point getEsriPointFromMGRS(String mgrs, ISpatialReference srs) 
 		throws Exception {
 		// trim 
 		mgrs = mgrs.trim();
 		String prefix = mgrs.substring(0,5);
 		String suffix = mgrs.substring(5,mgrs.length());
 		suffix = suffix.toUpperCase().replace("E", "").replace("N", "");
-		Point point = new Point();
-		point.setSpatialReferenceByRef(getGeographicCS());
-		point.putCoordsFromMGRS(prefix.concat(suffix), esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
-		return point;
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.putCoordsFromMGRS(prefix.concat(suffix), esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		p.project(srs);
+		return p;
 	}
 	
 	/**
@@ -622,19 +645,21 @@ public class MapUtil {
 	 * @return {@link Point}
 	 * @throws Exception
 	 */
-	public static Point getPointFromUTM(String utm) 
+	public static Point getEsriPointFromUTM(String utm, ISpatialReference srs) 
 		throws Exception {
 		utm = utm.trim();
 		String zone = utm.subSequence(0, 3).toString();
-		String x = utm.subSequence(3, 10).toString();
-		String y = utm.subSequence(11, 18).toString();
-		Point point = new Point();
+		zone = getSRProjCS_WGS1984UTM_Zone(zone);
+		String suffix = utm.substring(3,utm.length()).toUpperCase().replace("E", "").replace("N", "");
+		String x = suffix.subSequence(0, 7).toString();
+		String y = suffix.subSequence(7, 14).toString();
+		Point p = new Point();
 		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);		
-		point.setSpatialReferenceByRef(incommingCoordSystem);
-		point.setX(Double.valueOf(x));
-		point.setY(Double.valueOf(y));
-		point.project(getGeographicCS());
-		return point;
+		p.setSpatialReferenceByRef(incommingCoordSystem);
+		p.setX(Double.valueOf(x));
+		p.setY(Double.valueOf(y));
+		p.project(srs);
+		return p;
 	}
 
 	/**
@@ -646,7 +671,7 @@ public class MapUtil {
 	 * @return {@link Point}
 	 * @throws Exception
 	 */
-	public static Point getPointFromDEG(String deg) 
+	public static Point getEsriPointFromDEG(String deg, ISpatialReference srs) 
 		throws Exception {
 
 		// remove any spaces
@@ -688,11 +713,12 @@ public class MapUtil {
 		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
 		
 		// create point
-		Point point = new Point();
-		point.setSpatialReferenceByRef(getGeographicCS());
-		point.setX(dec1);
-		point.setY(dec2);
-		return point;
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.setX(dec1);
+		p.setY(dec2);
+		p.project(srs);
+		return p;
 		
 	}
 	
@@ -705,7 +731,7 @@ public class MapUtil {
 	 * @return {@link Point}
 	 * @throws Exception
 	 */
-	public static Point getPointFromDES(String des) 
+	public static Point getEsriPointFromDES(String des, ISpatialReference srs) 
 		throws Exception {
 	
 		// remove any spaces
@@ -713,97 +739,138 @@ public class MapUtil {
 		
 		// split into longitude and latitude
 		String[] split = des.split("E");
-		
-		// get sub strings
-		String lat = split[0]; 
-		String lon = split[1].replace("N", ""); 
+		String lon = split[0]; 
+		split = split[1].split("N"); 
+		String lat = split[0];
 		
 		// parse longitude (E) 
-		double x = Double.valueOf(lat);
+		double x = Double.valueOf(lon.replace(",", "."));
 		
 		// parse latitude (N)
-		double y = Double.valueOf(lon);
+		double y = Double.valueOf(lat.replace(",", "."));
+		
 		// create point
-		Point point = new Point();
-		point.setSpatialReferenceByRef(getGeographicCS());
-		point.setX(x);
-		point.setY(y);
-		return point;
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.setX(x);
+		p.setY(y);
+		p.project(srs);
+		return p;
 		
 	}
 		
 	public static Position getPositionFromMGRS(String mgrs) 
 			throws Exception {
-		IPoint point = getPointFromMGRS(mgrs);
+		IPoint point = getEsriPointFromMGRS(mgrs,getGeographicCS());
 		return new Position(null, point.getX(), point.getY());
 	}
 	
 	public static Position getPositionFromUTM(String utm) 
 		throws Exception {
-		Point point = getPointFromUTM(utm);
+		Point point = getEsriPointFromUTM(utm,getGeographicCS());
 		return new Position(null,point.getX(),point.getY());
 	}
 	
 	public static Position getPositionFromDEG(String deg) 
 		throws Exception {
-		Point point = getPointFromDEG(deg);
+		Point point = getEsriPointFromDEG(deg,getGeographicCS());
 		return new Position(null,point.getX(),point.getY());
 	}
 	
 	public static Position getPositionFromDES(String des) 
 		throws Exception {
-		Point point = getPointFromDES(des);
+		Point point = getEsriPointFromDES(des,getGeographicCS());
 		return new Position(null,point.getX(),point.getY());
 	}
 	
-	public static ISpatialReference getProjectedSpatialReference(String zone) {
+	public static String unformatDEG(String text) {
+		String[] split = text.split("d");
+		String step = split[0];
+		if(step.length()<2) step = "0" + step;
+		String value = step;
+		split = split[1].split("m");
+		step = split[0];
+		if(step.length()<2) step = "0" + step;
+		value += "-" + step;
+		split = split[1].split("s");
+		value += "-" + split[0];
+		return value;
+	}
+	
+	/** 
+	 *
+	 * UTM latitude is devided from C --> X (20 rows). Northern hemisphere is
+	 * therefore from N --> X and suthern from C --> M.
+	 * 
+	 */
+	
+	public static String getSRProjCS_WGS1984UTM_Zone(String zone) {
 		
+		// prepare
 		zone = zone.trim();
 		
-		if (zone.length()!=3) return null;
+		// valid?
+		if (zone.length()==3) {
 		
-		ISpatialReference coordSys = null;
+			// upper or lower hemisphere?
+			if(zone.substring(2, 3).compareToIgnoreCase("M")>0)
+				return zone.substring(0, 2) + "N";
+			else
+				return zone.substring(0, 2) + "S";
+		}
+		// failed
+		return null;		
+	}
+	
+	public static String getSRProjCS_WGS1984UTM_Zone(double x, double y) {
+		
+		int nZone;
+	    double dZone;
+		String suffix;
+		
+		// get prefix
+	    if(x >= 0.0)
+	    	suffix = "N";
+	    else
+	    	suffix = "S";
+
+	    // calculate zone
+	    dZone = (180.0 + x) / 6.0;
+	    nZone = (int)dZone;
+	    if(dZone > nZone) nZone++;
+	    
+	    // finished
+	    return nZone + suffix;
+	    
+	}
+		
+	public static ISpatialReference getProjectedSpatialReference(String zone) {
+		
 		try {
+		    
+			// initialize
+			ISpatialReference srs = null;			
 			SpatialReferenceEnvironment sRefEnv = new SpatialReferenceEnvironment();
 			
-			/* 
-			 *
-			 * UTM latitude is devided from C --> X (20 rows). Northern hemisphere is
-			 * therefor from N --> X and suthern from C --> M.
-			 * 
-			 * UTM longitude is devided from 1 --> 60
-			 * 
-			 * Only Norway is supported yet (32-36 N)
-			 * 
-			 * TODO: Implement generic convertion from xxy, where xx=[1,60], y={S,N} to 
-			 * esriSRProjCSType.esriSRProjCS_WGS1984UTM_xxy
-			 */
-			
-			// upper or lower hemisphere?
-			if(zone.substring(2, 3).compareToIgnoreCase("M")>0) {
-				// Is nothern hemisphere, dispatch belt 
-				if(zone.substring(0, 2).compareToIgnoreCase("32")==0) {
-					coordSys = sRefEnv.createProjectedCoordinateSystem(esriSRProjCSType.esriSRProjCS_WGS1984UTM_32N);
-				}
-				else if(zone.substring(0, 2).compareToIgnoreCase("33")==0) {
-					coordSys = sRefEnv.createProjectedCoordinateSystem(esriSRProjCSType.esriSRProjCS_WGS1984UTM_33N);				
-				}
-				else if(zone.substring(0, 2).compareToIgnoreCase("34")==0) {
-					coordSys = sRefEnv.createProjectedCoordinateSystem(esriSRProjCSType.esriSRProjCS_WGS1984UTM_34N);				
-				}
-				else if(zone.substring(0, 2).compareToIgnoreCase("35")==0) {
-					coordSys = sRefEnv.createProjectedCoordinateSystem(esriSRProjCSType.esriSRProjCS_WGS1984UTM_35N);				
-				}
-				else if(zone.substring(0, 2).compareToIgnoreCase("36")==0) {
-					coordSys = sRefEnv.createProjectedCoordinateSystem(esriSRProjCSType.esriSRProjCS_WGS1984UTM_36N);				
-				}
-			}
+		    // get UTM projection string
+		    String strUTM = "esriSRProjCS_WGS1984UTM_" + zone;
+
+		    // convert utm string to esriSRProjCSType int value 
+		    Field field = esriSRProjCSType.class.getField(strUTM);
+		    int type = field.getInt(esriSRProjCSType.class);
+		    
+		    // create projected coordinate system
+		    srs = sRefEnv.createProjectedCoordinateSystem(type);
+		    
+		    // finished
+		    return srs;
 
 		}
 		catch(Exception e) {
-			// invalid zone
+			e.printStackTrace();
 		}
-		return coordSys;
+		// failed
+		return null;
 	}
 	
 	/**
@@ -1275,7 +1342,7 @@ public class MapUtil {
 	
 	public static String getDrawText(IMsoObjectIf msoObj, MsoClassCode code, DrawMode mode) {
 		// initialize
-		String undef = "<" + DiskoEnumFactory.getText(DrawMode.MODE_UNDEFINED) + ">";
+		String undef = DiskoEnumFactory.getText(DrawMode.MODE_UNDEFINED);
 		// parse state
 		if(DrawMode.MODE_CREATE.equals(mode)) {
 			return DiskoEnumFactory.getText(DrawMode.MODE_CREATE) + " " + (code != null 
@@ -1296,42 +1363,42 @@ public class MapUtil {
 		return undef;		
 	}
 	
-	public static IEnvelope getMsoEnvelope(IMsoObjectIf msoObj, IDiskoMap map) throws AutomationException, IOException {
+	public static IEnvelope getMsoExtent(IMsoObjectIf msoObj, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// parse
 		if(msoObj instanceof IOperationAreaIf) {
 			// forward
-			return getOperationAreaEnvelope((IOperationAreaIf)msoObj, map);
+			return getOperationAreaExtent((IOperationAreaIf)msoObj, map, constrain);
 		}
 		else if(msoObj instanceof ISearchAreaIf) {
 			// forward
-			return getSearchAreaEnvelope((ISearchAreaIf)msoObj, map);
+			return getSearchAreaExtent((ISearchAreaIf)msoObj, map ,constrain);
 		}
 		else if(msoObj instanceof IAreaIf) {
 			// get forward
-			return MapUtil.getAreaEnvelope((IAreaIf)msoObj,map);
+			return MapUtil.getAreaExtent((IAreaIf)msoObj,map ,constrain);
 		}
 		else if(msoObj instanceof IRouteIf) {
 			// get forward
-			return MapUtil.getRouteEnvelope((IRouteIf)msoObj,map);
+			return MapUtil.getRouteExtent((IRouteIf)msoObj,map ,constrain);
 		}
 		else if(msoObj instanceof ITrackIf) {
 			// get forward
-			return MapUtil.getTrackEnvelope((ITrackIf)msoObj,map);
+			return MapUtil.getTrackExtent((ITrackIf)msoObj,map ,constrain);
 		}
 		else if(msoObj instanceof IPOIIf) {
 			// get forward
-			return MapUtil.getPOIEnvelope((IPOIIf)msoObj,map);
+			return MapUtil.getPOIExtent((IPOIIf)msoObj,map ,constrain);
 		}
 		else if(msoObj instanceof IUnitIf) {
 			// get forward
-			return MapUtil.getUnitEnvelope((IUnitIf)msoObj,map);
+			return MapUtil.getUnitExtent((IUnitIf)msoObj,map ,constrain);
 		}
 		// failed!
 		return null;
 				
 	}
 	
-	public static IEnvelope getOperationAreaEnvelope(IOperationAreaIf area, IDiskoMap map) throws AutomationException, IOException {
+	public static IEnvelope getOperationAreaExtent(IOperationAreaIf area, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// initialize frame
 		IEnvelope frame = null;
 		// get geometry bag of all lines
@@ -1339,12 +1406,14 @@ public class MapUtil {
 			MapUtil.getEsriPolygon(area.getGeodata(),map.getSpatialReference());
 		// create frame
 		if(geoArea!=null)
-			frame = geoArea.getEnvelope();								
+			frame = geoArea.getEnvelope();
+		// limit to minimal extent
+		if(constrain) frame.union(getConstrainExtent(getCenter(frame), map));
 		// finished
 		return frame;
 	}	
 	
-	public static IEnvelope getSearchAreaEnvelope(ISearchAreaIf area, IDiskoMap map) throws AutomationException, IOException {
+	public static IEnvelope getSearchAreaExtent(ISearchAreaIf area, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// initialize frame
 		IEnvelope frame = null;
 		// get geometry bag of all lines
@@ -1353,11 +1422,13 @@ public class MapUtil {
 		// create frame
 		if(geoArea!=null)
 			frame = geoArea.getEnvelope();								
+		// limit to minimal extent
+		if(constrain) frame.union(getConstrainExtent(getCenter(frame), map));
 		// finished
 		return frame;
 	}	
-		
-	public static IEnvelope getAreaEnvelope(IAreaIf area, IDiskoMap map) throws AutomationException, IOException {
+
+	public static IEnvelope getAreaExtent(IAreaIf area, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// initialize frame
 		IEnvelope frame = null;
 		// get geometry bag of all lines
@@ -1374,16 +1445,19 @@ public class MapUtil {
 			frame = geoArea.getEnvelope();
 		}
 		if(geoPOI!=null) {
+			// union with frame
 			if(frame==null)
-				frame = geoArea.getEnvelope();
+				frame = geoPOI.getEnvelope();
 			else
 				frame.union(geoPOI.getEnvelope());
 		}
+		// limit to minimal extent
+		if(constrain) frame.union(getConstrainExtent(getCenter(frame), map));
 		// finished
 		return frame;
 	}
 
-	public static IEnvelope getRouteEnvelope(IRouteIf route, IDiskoMap map) throws AutomationException, IOException {
+	public static IEnvelope getRouteExtent(IRouteIf route, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// initialize frame
 		IEnvelope frame = null;
 		// convert to a polyline
@@ -1391,47 +1465,63 @@ public class MapUtil {
 		// create frame
 		if(p!=null)
 			frame = p.getEnvelope();								
+		// limit to minimal extent
+		if(constrain) frame.union(getConstrainExtent(getCenter(frame), map));
 		// finished
 		return frame;
 	}	
 	
-	public static IEnvelope getTrackEnvelope(ITrackIf track, IDiskoMap map) throws AutomationException, IOException {
+	public static IEnvelope getTrackExtent(ITrackIf track, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// initialize frame
-		IEnvelope frame = null;
+		Envelope frame = null;
 		// convert to a polyline
 		IPolyline p = getEsriPolyline(track.getGeodata(), map.getSpatialReference());
 		// create frame
 		if(p!=null)
-			frame = p.getEnvelope();								
+			frame = (Envelope)p.getEnvelope();
+		// limit to minimal extent
+		if(constrain) frame.union(getConstrainExtent(getCenter(frame), map));
 		// finished
 		return frame;
 	}
 	
-	public static IEnvelope getPOIEnvelope(IPOIIf poi, IDiskoMap map) throws AutomationException, IOException {
-		// initialize frame
-		IEnvelope frame = null;
+	public static IEnvelope getPOIExtent(IPOIIf poi, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// get polyline
-		IPoint p = MapUtil.getEsriPoint(poi.getPosition(),map.getSpatialReference());
-		if(map.isEditSupportInstalled())
-			frame = MapUtil.getEnvelope(p, map.getSnapAdapter().getSnapTolerance());
+		IPoint p = getEsriPoint(poi.getPosition(),map.getSpatialReference());
+		// limit to minimal extent
+		if(constrain) 
+			return getConstrainExtent(p,map);
 		else
-			frame = MapUtil.getEnvelope(p, 100);
-		// finished
-		return frame;
+			return p.getEnvelope();
 	}	
 	
-	public static IEnvelope getUnitEnvelope(IUnitIf unit, IDiskoMap map) throws AutomationException, IOException {
-		// initialize frame
-		IEnvelope frame = null;
-		// get polyline
-		IPoint p = MapUtil.getEsriPoint(unit.getPosition(),map.getSpatialReference());
-		if(map.isEditSupportInstalled())
-			frame = MapUtil.getEnvelope(p, map.getSnapAdapter().getSnapTolerance());
+	public static IEnvelope getUnitExtent(IUnitIf unit, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
+		// get point
+		IPoint p = getEsriPoint(unit.getPosition(),map.getSpatialReference());
+		// limit to minimal extent
+		if(constrain) 
+			return getConstrainExtent(p,map);
 		else
-			frame = MapUtil.getEnvelope(p, 100);
-		// finished
-		return frame;
+			return p.getEnvelope();
 	}	
+	
+	public static IEnvelope getConstrainExtent(IEnvelope extent, IDiskoMap map) throws AutomationException, IOException {
+		// get constrain extent
+		Envelope constrain = (Envelope)getConstrainExtent(getCenter(extent), map);
+		// create union
+		constrain.union(extent);
+		// finished
+		return constrain;
+	}
+	
+	public static IEnvelope getConstrainExtent(IPoint p, IDiskoMap map) throws AutomationException, IOException {
+		// get minimum envelope
+		if(map.isEditSupportInstalled())
+			return getEnvelope(p, map.getSnapAdapter().getSnapTolerance()*10);
+		else
+			return getEnvelope(p, 100);
+		
+	}
 	
 	public static boolean addPointsAfter(IPoint p, Polyline source, Polyline path) throws AutomationException, IOException {
 		
@@ -1554,6 +1644,225 @@ public class MapUtil {
 	
 	public static boolean is2DEqual(IPoint p1, IPoint p2) throws AutomationException, IOException {
 		return (p1.getX()==p2.getX() && p1.getY()==p2.getY());
+	}
+	
+	public static IEnvelope getOperationExtent(IDiskoMap map) throws AutomationException, IOException {
+		// initialize
+		IEnvelope e = null;
+		// get layer
+		IMsoFeatureLayer l = map.getMsoLayer(LayerCode.OPERATION_AREA_LAYER);
+		// get extent?
+		if(l!=null)
+			e = l.getVisibleFeaturesExtent();
+		else {
+			// get layer
+			l = map.getMsoLayer(LayerCode.SEARCH_AREA_LAYER);
+			// get extent?
+			if(l!=null) {
+				if(e!=null) e.union(l.getVisibleFeaturesExtent());
+				else e = l.getVisibleFeaturesExtent();
+			} 
+			else {
+    			// get layer
+    			l = map.getMsoLayer(LayerCode.AREA_LAYER);
+    			// get extent?
+    			if(l!=null) {
+    				if(e!=null) e.union(l.getVisibleFeaturesExtent());
+    				else e = l.getVisibleFeaturesExtent();
+    			}
+    			else {
+        			// get layer
+        			l = map.getMsoLayer(LayerCode.ROUTE_LAYER);
+        			// get extent?
+        			if(l!=null) {
+        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
+        				else e = l.getVisibleFeaturesExtent();
+        			}				        				
+    			}
+			}
+		}
+		// finished
+		return e;	
+	}
+	
+	public static IFeatureCursor search(IFeatureClass fc, IPoint p, double size) throws UnknownHostException, IOException {
+		return search(fc,p,size,esriSpatialRelEnum.esriSpatialRelOverlaps);
+	}
+
+	public static IFeatureCursor search(IFeatureClass fc, IPoint p, double size, int relation) throws UnknownHostException, IOException {
+		return search(fc,MapUtil.getEnvelope(p, size),relation);
+	}
+	
+	public static IFeatureCursor search(IFeatureClass fc, IEnvelope extent) throws UnknownHostException, IOException {
+		return search(fc,extent,esriSpatialRelEnum.esriSpatialRelWithin);
+	}
+	
+	public static IFeatureCursor search(IFeatureClass fc, IEnvelope extent, int relation) throws UnknownHostException, IOException {
+		ISpatialFilter filter = new SpatialFilter();
+		filter.setGeometryByRef(extent);
+		filter.setSpatialRel(relation);
+		return fc.search(filter, false);
+	}
+
+	public static Object[] selectMsoFeatureFromPoint(IPoint p, IDiskoMap map, double min, double max) throws Exception  {
+		
+		// initialize
+		IMsoFeature ff = null;
+		IMsoFeatureLayer fl = null;
+		
+		// get elements
+		List layers = map.getMsoLayers();
+				
+		// search for feature
+		for (int i = 0; i < layers.size(); i++) {
+			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
+			if(l.isSelectable() && l.isVisible()) {
+				// get features in search extent
+				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), p,max);
+				// select features within {min, max} distance of point p
+				Object[] found = selectFeature(c,p,min,max);
+				// get feature
+				IMsoFeature f = (IMsoFeature)found[0];
+				// update minimum length
+				min = (Double)found[1];
+				// found?
+				if(f!=null) {
+					ff = f;
+					fl = l;
+				}
+			}
+		}
+		
+		// anything found?
+		if(ff!=null && fl!=null)
+			return new Object[]{ff,fl,min};
+		else 
+			return null;
+		
+	}	
+	
+	public static Object[] selectMsoFeatureFromEnvelope(IEnvelope extent, IDiskoMap map, double min, double max, int relation) throws Exception  {
+		
+		// initialize
+		IMsoFeature ff = null;
+		IMsoFeatureLayer fl = null;
+		
+		// get center of envelope
+		IPoint p = getCenter(extent);
+		
+		// get elements
+		List layers = map.getMsoLayers();
+				
+		// search for feature
+		for (int i = 0; i < layers.size(); i++) {
+			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
+			if(l.isSelectable() && l.isVisible()) {
+				// get all features within search extent
+				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), extent, relation);
+				// select features within {min, max} distance of point p
+				Object[] found = selectFeature(c,p,min,max);
+				// get feature
+				IMsoFeature f = (IMsoFeature)found[0];
+				// update minimum length
+				min = (Double)found[1];
+				// found?
+				if(f!=null) {
+					ff = f;
+					fl = l;
+				}
+			}
+		}		
+		
+		// anything found?
+		if(ff!=null && fl!=null)
+			return new Object[]{ff,fl,min};
+		else 
+			return null;
+		
+	}
+	
+	private static Object[] selectFeature(IFeatureCursor c, IPoint p, double min, double max) throws AutomationException, IOException {
+		// initialize
+		IMsoFeature ff = null;
+		// get fist feature in search extent
+		IFeature f = c.nextFeature();
+		// loop over all features in search extent
+		while(f!=null) {
+			// is mso feature?
+			if (f instanceof IMsoFeature) {						
+				// get first minimum distance
+				double d = getMinimumDistance(f,p);
+				// has valid distance?						
+				if(d!=-1) {
+					int shapeType = f.getFeatureType();
+					// save found feature?
+					if((min==-1 || (d<min) || shapeType==esriGeometryType.esriGeometryPoint) && (d<max)) {
+						// initialize
+						min = d;
+						ff = (IMsoFeature)f;							
+					}
+				}
+				else {
+					// save found feature
+					ff = (IMsoFeature)f;
+				}
+			}
+			// get next feature
+			f = c.nextFeature();
+		}
+		// finished
+		return new Object[]{ff,min};
+	}
+	
+	public static double getMinimumDistance(Object f, IPoint p) throws AutomationException, IOException {
+		double min = -1;
+		if(f instanceof IProximityOperator) {
+			min = ((IProximityOperator)f).returnDistance(p);
+		}
+		else if(f instanceof IMsoFeature) {
+			// get shape
+			IGeometry geom = ((IMsoFeature)f).getShape();
+			// is geometry bag?
+			if(geom instanceof GeometryBag) {
+				// cast
+				GeometryBag geomBag = (GeometryBag)geom;
+				// get count
+				int count = geomBag.getGeometryCount();
+				// has items?
+				if(count>0) {
+					// get minimum length of first
+					min = getMinimumDistance(geomBag.getGeometry(0), p);
+					// loop
+					for(int i=1;i<count;i++) {
+						// get distance
+						double d = getMinimumDistance(geomBag.getGeometry(i), p);
+						// update minimum distance
+						if(d>0)
+							min = java.lang.Math.min(min, d);
+					}
+				}
+			}
+			// has proximity operator?
+			else if(geom instanceof IProximityOperator) {
+				// get point
+				IProximityOperator opr = (IProximityOperator)(geom);
+				IProximityOperator p2 =  (IProximityOperator)opr.returnNearestPoint(p, 0);
+				min = p2.returnDistance(p);
+			}
+		}
+		return min;
+	}
+	
+	public static IPolygon createCircle(IPoint p, double r) throws AutomationException, IOException {
+		Polygon polygon = new Polygon();
+		polygon.setSpatialReferenceByRef(p.getSpatialReference());
+		Ring ring = new Ring();
+		CircularArc arc =  new CircularArc();
+		ring.addSegment(arc, null, null);
+		polygon.addGeometry(ring, null,null);
+		arc.putCoordsByAngle(p, 0, 2*Math.PI, r);
+		polygon.geometriesChanged();
+		return polygon;		
 	}
 	
 }

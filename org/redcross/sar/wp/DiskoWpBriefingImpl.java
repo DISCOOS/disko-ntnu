@@ -20,9 +20,9 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
 
     private JButton m_situationButton = null;
 
-    public DiskoWpBriefingImpl(IDiskoRole role) throws IllegalClassFormatException
+    public DiskoWpBriefingImpl() throws IllegalClassFormatException
     {
-        super(role);
+        super();
         initialize();
     }
 

@@ -1,10 +1,10 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,48 +12,48 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderers.EditActionTableCellEditor;
 import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
-import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.output.DiskoReport;
+import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
-import com.esri.arcgis.interop.AutomationException;
-
 public class ListDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
-	private IDiskoWpModule wp = null;
-	private DiskoPanel contentPanel = null;
-	private JPanel buttonPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JButton printButton = null;
 	private JButton makeReadyButton = null;
-	private JScrollPane tableScrollPane = null;
-	private AssignmentTable assignmentTable = null;
+	private JButton makeDraftButton = null;
+	private JPanel statusPanel = null;
 	private JLabel statusLabel = null;
 	private JComboBox statusComboBox = null;
-	private DiskoReport report = null;
+
+	private IDiskoWpModule wp = null;
 	private IDiskoApplication app = null;
+	private AssignmentTable assignmentTable = null;
+	
+	private DiskoReportManager report = null;
 	
 	public ListDialog(IDiskoWpModule wp) {
+		// forward
 		super(wp.getApplication().getFrame());
+		// prepare
 		this.wp = wp;
-		app = wp.getApplication();
+		this.app = wp.getApplication();
+		// initialize gui
 		initialize();
 	}
 
@@ -68,51 +68,8 @@ public class ListDialog extends DiskoDialog {
 			this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
-	}
-	
-	private void makeReady() {
-		try {
-			app.getMsoModel().suspendClientUpdate();
-			JTable table = getAssignmentTable();
-			for (int i = 0; i < table.getRowCount(); i++) {
-				// selected?
-				if ((Boolean)table.getValueAt(i,0)) {
-					IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
-					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
-						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);				
-						fireOnWorkChange(makeReadyButton,assignment,IAssignmentIf.AssignmentStatus.READY);
-					}
-				}
-			}	
-			app.getMsoModel().resumeClientUpdate();
-		} catch (IllegalOperationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
-	
-	private void sendToPrint() {
-		//System.out.println("sendToPrint");
-		List<IAssignmentIf> assignments = new ArrayList<IAssignmentIf>();
-		JTable table = getAssignmentTable();
-		wp.getMap();
-		for (int i = 0; i < table.getRowCount(); i++) {
-			// selected?
-			if (true == (Boolean)table.getValueAt(i,0)) {
-				IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
-				assignments.add(assignment);	
-			}
-		}		
-		report.printAssignments(assignments);
-	}
-	
-	public void enableButtons() {
-		int[] selection = assignmentTable.getSelectedRows();
-		boolean enable = selection != null && selection.length > 0;
-		getMakeReadyButton().setEnabled(enable);
-		getPrintButton().setEnabled(enable);
 	}
 	
 	/**
@@ -120,14 +77,35 @@ public class ListDialog extends DiskoDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel("Oppdrag");
-				JPanel panel = (JPanel)contentPanel.getBodyComponent();
-				panel.setLayout(new BorderLayout());
-				panel.add(getButtonPanel(), BorderLayout.SOUTH);
-				panel.add(getTableScrollPane(), BorderLayout.CENTER);
+				contentPanel = new DefaultDiskoPanel("Oppdrag",false,true);
+				contentPanel.setBodyComponent(getAssignmentTable());
+				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
+				contentPanel.insertItem("finish", getStatusPanel());
+				contentPanel.insertButton("finish",getPrintButton(), "print");
+				contentPanel.insertButton("finish",getMakeDraftButton(), "draft");
+				contentPanel.insertButton("finish",getMakeReadyButton(), "ready");
+				contentPanel.addActionListener(new ActionListener() {
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("cancel".equalsIgnoreCase(cmd)) 
+							cancel();
+						else if("print".equalsIgnoreCase(cmd)) 
+							print();
+						else if("draft".equalsIgnoreCase(cmd)) 
+							change(AssignmentStatus.DRAFT);
+						else if("draft".equalsIgnoreCase(cmd)) 
+							change(AssignmentStatus.READY);
+						
+					}
+					
+				});
+				
+				
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -140,26 +118,45 @@ public class ListDialog extends DiskoDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
+	private JPanel getStatusPanel() {
+		if (statusPanel == null) {
 			try {
 				FlowLayout flowLayout = new FlowLayout();
 				flowLayout.setAlignment(FlowLayout.LEFT);
 				statusLabel = new JLabel();
+				statusLabel.setOpaque(false);
 				statusLabel.setText("Vis status:");
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(flowLayout);
-				buttonPanel.add(getPrintButton(), null);
-				buttonPanel.add(getMakeReadyButton(), null);
-				buttonPanel.add(statusLabel, null);
-				buttonPanel.add(getStatusComboBox(), null);
+				statusLabel.setForeground(Color.WHITE);
+				statusPanel = new JPanel();
+				statusPanel.setOpaque(false);
+				statusPanel.setLayout(flowLayout);
+				statusPanel.add(statusLabel);
+				statusPanel.add(getStatusComboBox());
+				statusPanel.setPreferredSize(new Dimension(200,30));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return buttonPanel;
+		return statusPanel;
 	}
 
+	/**
+	 * This method initializes makeDraftButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getMakeDraftButton() {
+		if (makeDraftButton == null) {
+			try {
+				makeDraftButton = DiskoButtonFactory.createButton(TacticsActionType.CHANGE_TO_DRAFT,ButtonSize.NORMAL);
+				makeDraftButton.setEnabled(false);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return makeDraftButton;
+	}
+	
 	/**
 	 * This method initializes makeReadyButton	
 	 * 	
@@ -170,17 +167,13 @@ public class ListDialog extends DiskoDialog {
 			try {
 				makeReadyButton = DiskoButtonFactory.createButton(TacticsActionType.MAKE_READY,ButtonSize.NORMAL);
 				makeReadyButton.setEnabled(false);
-				makeReadyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						makeReady();
-					}
-				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return makeReadyButton;
 	}
+	
 	
 	/**
 	 * This method initializes printButton	
@@ -192,35 +185,12 @@ public class ListDialog extends DiskoDialog {
 			try {
 				printButton = DiskoButtonFactory.createButton(TacticsActionType.PRINT_SELECTED,ButtonSize.NORMAL);
 				printButton.setEnabled(false);
-				report = app.getDiskoReport();
-				printButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {						
-						sendToPrint();
-					}
-				});
+				report = app.getReportManager();
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return printButton;
-	}
-
-	/**
-	 * This method initializes tableScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 */
-	private JScrollPane getTableScrollPane() {
-		if (tableScrollPane == null) {
-			try {
-				tableScrollPane = new JScrollPane();
-				tableScrollPane.getViewport().setBackground(Color.white);
-				tableScrollPane.setViewportView(getAssignmentTable());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return tableScrollPane;
 	}
 
 	/**
@@ -232,46 +202,13 @@ public class ListDialog extends DiskoDialog {
 		if (assignmentTable == null) {
 			try {
 				assignmentTable = new AssignmentTable(wp.getMsoModel());
-				
-				EditActionTableCellEditor editor = new EditActionTableCellEditor();
-				editor.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						String action = e.getActionCommand();
-						int[] rows = assignmentTable.getSelectedRows();
-						if (rows != null && rows.length == 1) {
-							IAssignmentIf assignment = (IAssignmentIf)assignmentTable.getValueAt(rows[0],1);
-							if (action.equals("EDIT")) {
-								try {
-									IDiskoMap map = wp.getMap();
-									map.suspendNotify();
-									map.setSelected(assignment, true);
-									map.zoomToMsoObject(assignment);
-									map.resumeNotify();
-								} catch (AutomationException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-							}
-							else if (action.equals("COPY")) {
-								// copy not yest implemented
-							}
-							setVisible(false);
-						}
-					}
-				});
-				//assignmentTable.setEditActionEditor(editor);
-				//selection listener
-				assignmentTable.getSelectionModel().addListSelectionListener(
-						new ListSelectionListener() {
+				assignmentTable.getModel().addTableModelListener(new TableModelListener() {
 
-					public void valueChanged(ListSelectionEvent e) {
-						//Ignore extra messages.
-	                    if (e.getValueIsAdjusting()) return;
+					public void tableChanged(TableModelEvent e) {
+						// forward
 						enableButtons();
 					}
+					
 				});
 
 			} catch (java.lang.Throwable e) {
@@ -291,7 +228,7 @@ public class ListDialog extends DiskoDialog {
 			try {
 				statusComboBox = new JComboBox();
 				statusComboBox.setRenderer(new SimpleListCellRenderer());
-				statusComboBox.setPreferredSize(new Dimension(125, 20));
+				statusComboBox.setPreferredSize(new Dimension(125, 25));
 				statusComboBox.addItem("SHOW_ALL");
 				AssignmentStatus[] values = AssignmentStatus.values();
 				for (int i = 0; i < values.length; i++) {
@@ -309,5 +246,68 @@ public class ListDialog extends DiskoDialog {
 		return statusComboBox;
 	}
 
+	private void change(AssignmentStatus status) {
+		try {
+			app.getMsoModel().suspendClientUpdate();
+			JTable table = getAssignmentTable();
+			for (int i = 0; i < table.getRowCount(); i++) {
+				// selected?
+				if ((Boolean)table.getValueAt(i,0)) {
+					IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
+					if(!status.equals(assignment.getStatus())) {
+						assignment.setStatus(status);				
+						fireOnWorkChange(assignment,status);
+					}
+				}
+			}	
+			app.getMsoModel().resumeClientUpdate();
+		} catch (IllegalOperationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	
+	public boolean cancel() {
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide me
+		setVisible(false);
+		// finished
+		return true;
+	}
+	
+	public boolean print() {
+		// initialize
+		JTable table = getAssignmentTable();
+		List<IAssignmentIf> assignments = new ArrayList<IAssignmentIf>();
+		// collect assignment to print
+		for (int i = 0; i < table.getRowCount(); i++) {
+			// selected?
+			if (true == (Boolean)table.getValueAt(i,0)) {
+				IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
+				assignments.add(assignment);	
+			}
+		}		
+		// forward
+		report.printAssignments(assignments);
+		// finished
+		return true;
+	}
+	
+	public void enableButtons() {
+		// initialize
+		boolean enable = false;
+		// check if any is selected
+		for (int i = 0; i < assignmentTable.getRowCount(); i++) {
+			// selected?
+			if (true == (Boolean)assignmentTable.getValueAt(i,0)) {
+				enable = true; break;
+			}				
+		}		
+		getMakeDraftButton().setEnabled(enable);
+		getMakeReadyButton().setEnabled(enable);
+		getPrintButton().setEnabled(enable);
+	}
+	
 
 }  //  @jve:decl-index=0:visual-constraint="10,2"

@@ -1,7 +1,9 @@
 package org.redcross.sar.gui.map;
 
+import java.awt.Dimension;
 import java.awt.Frame;
 
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
@@ -25,7 +27,7 @@ public class ElementDialog extends DiskoDialog {
 	private void initialize() {
 		try {
             this.setContentPane(getElementPanel());
-            //this.setPreferredSize(new Dimension(600,525));
+            this.setPreferredSize(new Dimension(600,530));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -42,6 +44,11 @@ public class ElementDialog extends DiskoDialog {
 		if (elementPanel == null) {
 			try {
 				elementPanel = new ElementPanel();
+				// never allow scroll bars, this allows the 
+				// lists to manage scrolling
+				elementPanel.setScrollBarPolicies(
+						DefaultDiskoPanel.VERTICAL_SCROLLBAR_NEVER, 
+						DefaultDiskoPanel.HORIZONTAL_SCROLLBAR_NEVER);
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

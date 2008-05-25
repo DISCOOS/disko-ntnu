@@ -53,6 +53,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 
 	protected JTable m_table;
 	protected TaskTableRowSorter m_rowSorter;
+	protected PopupListener m_popupListener;
 
 	protected static EnumSet<TaskPriority> m_priorityFilter = EnumSet.of(
 			TaskPriority.HIGH,
@@ -119,10 +120,6 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 		m_rowSorter = new TaskTableRowSorter(this);
 		m_rowSorter.setSortsOnUpdates(true);
 		m_table.setRowSorter(m_rowSorter);
-
-		PopupListener listener = new PopupListener(new TaskTableModel.HeaderPopupHandler(this, m_table));
-        JTableHeader tableHeader = m_table.getTableHeader();
-        tableHeader.addMouseListener(listener);
 	}
 
 	public TaskTableRowSorter getRowSorter()
@@ -266,7 +263,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
         private final TableColumnModel m_columnModel;
         private final JPopupMenu[] m_menus = new JPopupMenu[6];
 
-        public HeaderPopupHandler(TaskTableModel model, JTable table)
+        public HeaderPopupHandler(IDiskoRole role, TaskTableModel model, JTable table)
         {
         	m_columnModel = table.getColumnModel();
         	m_rowSorter = getRowSorter();
@@ -280,8 +277,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 			try
 			{
 				m_menus[3] = new JPopupMenu();
-				String[] roles = m_wpTasks.getApplication().getDiskoModuleLoader().getRoleTitles();
-				IDiskoRole role = m_wpTasks.getDiskoRole();
+				String[] roles = m_wpTasks.getApplication().getModuleManager().getRoleTitles(false);
 	        	String roleName = role.getTitle();
 
 	        	// Show own item
@@ -331,11 +327,10 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 					}
 	        	};
 
-	        	for(int i=0; i<roles.length; i++)
+        		// Don't add own role to selection filter, should always view own tasks
+	        	for(int i=0; i<roles.length-1; i++)
 	        	{
-	        		// Don't add own role to selection filter, should always view own tasks
-	        		if(!roleName.equals(roles[i]))
-	        		{
+	        		if(!roleName.equalsIgnoreCase(roles[i])) {
 	        			JCheckBoxMenuItem item = new JCheckBoxMenuItem();
 	        			item.setText(roles[i]);
 	        			item.addActionListener(responsibleListener);
@@ -366,7 +361,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 						String[] allRoles = null;
 						try
 						{
-							allRoles = m_wpTasks.getApplication().getDiskoModuleLoader().getRoleTitles();
+							allRoles = m_wpTasks.getApplication().getModuleManager().getRoleTitles(false);
 						}
 						catch (Exception e1)
 						{
@@ -453,7 +448,21 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
             int realIndex = m_columnModel.getColumn(index).getModelIndex();
             return m_menus[realIndex];
 		}
+		
     }
+	
+	public void setRole(IDiskoRole role) {
+		// get header
+        JTableHeader tableHeader = m_table.getTableHeader();
+		// remove?
+		if(m_popupListener!=null)
+			tableHeader.removeMouseListener(m_popupListener);
+		// add new listener?
+		if(role!=null) {
+			m_popupListener = new PopupListener(new HeaderPopupHandler(role, this, m_table));
+			tableHeader.addMouseListener(m_popupListener);
+		}
+	}
 
 	/**
 	 * @param taskNr

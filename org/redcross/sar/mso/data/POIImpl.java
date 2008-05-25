@@ -28,7 +28,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
 
     public static String getText(String aKey)
     {
-        return Internationalization.getFullBundleText(Internationalization.getBundle(IPOIIf.class),aKey);
+        return Internationalization.getString(Internationalization.getBundle(IPOIIf.class),aKey);
     }
 
     public String getTypeText()

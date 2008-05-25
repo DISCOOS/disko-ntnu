@@ -13,8 +13,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
@@ -26,13 +27,11 @@ import org.redcross.sar.map.command.IDrawTool.FeatureType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
-import com.esri.arcgis.interop.AutomationException;
-import com.esri.arcgis.systemUI.ITool;
-
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
@@ -46,7 +45,7 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 
 	private static final long serialVersionUID = 1L;
 	
-	private DiskoPanel m_contentPanel = null;
+	private DefaultDiskoPanel m_contentPanel = null;
 	private JPanel m_buttonsPanel = null;
 	private JPanel m_propertyPanels = null;
 	private ButtonGroup m_buttonGroup = null;	
@@ -55,7 +54,7 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 	
 	private IDiskoMap m_map = null;
 	
-	private IDrawTool m_activeTool = null;
+	private IDrawTool m_selectedTool = null;
 	
 	private HashMap<DiskoToolType, IDrawTool> m_tools = null;
 	private HashMap<DiskoToolType, IPropertyPanel> m_panels = null;
@@ -98,11 +97,11 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 	/**
 	 * This method initializes m_contentPanel	
 	 * 	
-	 * @return {@link DiskoPanel}	
+	 * @return {@link DefaultDiskoPanel}	
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (m_contentPanel == null) {
-			m_contentPanel = new DiskoPanel("Tegneverktøy");
+			m_contentPanel = new DefaultDiskoPanel("Tegneverktøy",false,false);
 			m_contentPanel.setBodyComponent(getSplitPane());
 		}
 		return m_contentPanel;
@@ -184,11 +183,21 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 		return m_splitPane;
 	}
 	
-	private void activateTool(IDrawTool tool) {
-		// no change?
-		if(m_activeTool==tool) return;
+	private boolean selectTool(IDrawTool tool, boolean activate, boolean force) {
+		// reset old tool?
+		if(m_selectedTool!=null && m_selectedTool.isDirty()) {
+			// prompt user?
+			if(!force && !m_selectedTool.isInterchangable(tool.getFeatureType())) {
+				// prompt
+				int ans = Utils.showConfirm("Bekreftelse", "Endringer vil gå tapt. Vil du fortsette?", JOptionPane.YES_NO_OPTION);
+				// canceled?
+				if(ans == JOptionPane.NO_OPTION) return false;
+				// reset tool
+				m_selectedTool.reset();
+			}
+		}
 		// save
-		m_activeTool = tool;
+		m_selectedTool = tool;
 		// toggle tool button on draw dialog if not selected
 		JToggleButton toggle = m_buttons.get(tool.getType());
 		// select active tool?
@@ -198,23 +207,28 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 		Component panel = (Component)m_panels.get(tool.getType());
 		// update property panel view state
 		showPropertyPanel(panel!=null ? tool.getType() : "message");
+		// activate button?
+		if (activate){
+			tool.getButton().doClick();
+		}
 		// setup host tool?
 		if(m_hostTool!=null) {
 			// update host tool
-			m_hostTool.setTool(tool);
+			m_hostTool.setTool(tool,false);
 			// get button
 			AbstractButton button = m_hostTool.getButton();
 			// update icon and tooltip text
 			button.setIcon(tool.getButton().getIcon());
 			button.setToolTipText(tool.getButton().getToolTipText());
-			if(button.isVisible()) {
-				button.setSelected(true);
-				button.doClick();
-			}
+			button.setSelected(activate);
+			activate = activate && button.isVisible();
 		}
 		
 		// update tool caption
 		getToolCaption();
+		
+		// selection change
+		return true;
 		
 	}
 	
@@ -239,18 +253,22 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 			m_hostTool = tool;
 	}
 	
-	public IDiskoTool getActiveTool() {
-		return m_activeTool;
+	public IDrawTool getSelectedTool() {
+		return m_selectedTool;
 	}
 	
-	public void setActiveTool(IDiskoTool tool) {
+	public void setSelectedTool(IDiskoTool tool, boolean activate) {
 		// validate
 		if(!(tool instanceof IDrawTool))
 			throw new IllegalArgumentException("Only tools implementing the " +
-					"IDrawTool can be activated");
+					"IDrawTool can be selected");
 		// forward
-		activateTool((IDrawTool)tool);
+		selectTool((IDrawTool)tool,activate,true);
 	}	
+	
+	public boolean containsToolType(DiskoToolType type) {
+		return m_tools.containsKey(type);
+	}
 	
 	public void register(IDiskoTool tool) {
 		
@@ -264,10 +282,10 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 	}
 	
 	public void getToolCaption() {
-		if(m_activeTool!=null) {
+		if(m_selectedTool!=null) {
 			try {
 				getContentPanel().setCaptionText("<html>Tegneverktøy - "
-						+ m_activeTool.getCaption() +"</hmtl>"); return;
+						+ m_selectedTool.getCaption() +"</hmtl>"); return;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -300,7 +318,7 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 			// show?
 			button.setVisible(visibleCount>0);
 			button.setEnabled(enabledCount>0);
-			// reactivate tool?
+			/*/ reactivate tool?
 			if(visibleCount>0) {
 				if(m_activeTool!=null) {
 					activateTool(m_activeTool);
@@ -310,6 +328,7 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 					activateTool(m_tools.values().iterator().next());
 				}	
 			}
+			*/
 		}
 	}	
 	
@@ -422,14 +441,14 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 		while(tools.hasNext()) {
 			IDiskoTool tool = tools.next();
 			if(tool!=source)
-				tool.setMsoDrawData(source);
+				tool.setMsoData(source);
 		}		
 	}
 
 	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
 		Iterator<IDrawTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
-			tools.next().setMsoDrawData(msoOwner,msoObject,msoClassCode);
+			tools.next().setMsoData(msoOwner,msoObject,msoClassCode);
 		}		
 	}
 	
@@ -462,7 +481,7 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 				m_buttonsPanel.add(new JSeparator(JSeparator.HORIZONTAL),null);
 			}		
 			
-			// add button
+			// create toggle button 
 			JToggleButton button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 			button.setIcon(tool.getButton().getIcon());
 			button.setToolTipText(tool.getButton().getToolTipText());
@@ -470,14 +489,11 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 			
 			// add action listener
 			button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					try {
-						m_map.setActiveTool((ITool)tool,false);
-						activateTool(tool);
-					} catch (AutomationException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
+				public void actionPerformed(ActionEvent e) {
+					// cancel?
+					if(!selectTool(tool,true,false)) {
+						// reselect old button
+						m_buttons.get(m_selectedTool.getType()).setSelected(true);
 					}
 				}
 			});
@@ -560,11 +576,7 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 		// parse action
 		if("editsnap".equalsIgnoreCase(e.getActionCommand())) {
 			getSnapDialog().setVisible(!getSnapDialog().isVisible());
-		}
-		else if("apply".equalsIgnoreCase(e.getActionCommand())) {
-			getSnapDialog().setVisible(false);
-		}
-		
+		}		
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="23,0"

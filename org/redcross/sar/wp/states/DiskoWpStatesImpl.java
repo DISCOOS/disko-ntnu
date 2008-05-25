@@ -21,11 +21,9 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 	/**
 	 * Constructs a DiskoWpStatesImpl
 	 * 
-	 * @param rolle
-	 *            A reference to the DiskoRolle
 	 */
-	public DiskoWpStatesImpl(IDiskoRole rolle) throws IllegalClassFormatException {
-		super(rolle);
+	public DiskoWpStatesImpl() throws IllegalClassFormatException {
+		super();
 	    initialize();
 	}
 
@@ -43,8 +41,10 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 		return "Tilstand";
 	}
 
-	public void activated() {
-		super.activated();
+	public void activate(IDiskoRole role) {
+		
+		// forward
+		super.activate(role);
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
@@ -53,8 +53,8 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 		}				
 	}
 	
-	public void deactivated() {
-		super.deactivated();
+	public void deactivate() {
+		super.deactivate();
 	}
 	
 	public boolean cancel() {

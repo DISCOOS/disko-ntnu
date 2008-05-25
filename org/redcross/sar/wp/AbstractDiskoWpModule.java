@@ -10,16 +10,13 @@ import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.MainPanel;
 import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.SubMenuPanel;
 import org.redcross.sar.gui.NavBar.NavState;
-import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -80,16 +77,14 @@ public abstract class AbstractDiskoWpModule
     private long tickTime = 0;
 
     /**
-     * @param role
      */
-    public AbstractDiskoWpModule(IDiskoRole role) throws IllegalClassFormatException
+    public AbstractDiskoWpModule() throws IllegalClassFormatException
     {
         
     	// valid package name?
     	if(Utils.getPackageName(getClass()) == null) 
-    		throw new IllegalClassFormatException("Implementation of IDiskoWpModule must be inside a unique package");
+    		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
     	
-    	this.role = role;
         this.listeners = new ArrayList<IDiskoWorkListener>();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
@@ -101,9 +96,6 @@ public abstract class AbstractDiskoWpModule
         // initialize layers
         this.mapLayers = getDefaultMapLayers();
         
-        // initialialize map
-        getMap();
-        
 		// initialize timers
         //initTickTimer();
         
@@ -112,12 +104,10 @@ public abstract class AbstractDiskoWpModule
     /**
      * @param role
      */
-    public AbstractDiskoWpModule(IDiskoRole role, 
-    		EnumSet<IMsoManagerIf.MsoClassCode> wpInterests,
+    public AbstractDiskoWpModule(EnumSet<IMsoManagerIf.MsoClassCode> wpInterests,
     		EnumSet<IMsoFeatureLayer.LayerCode> mapLayers)
     {
         // initialize objects
-    	this.role = role;
         this.listeners = new ArrayList<IDiskoWorkListener>();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
@@ -131,9 +121,6 @@ public abstract class AbstractDiskoWpModule
     			getEventManager().addClientUpdateListener(this);
     	}
 
-        // initialialize map
-        getMap();
-        
         // initialize timer
 		//initTickTimer();
     }
@@ -155,24 +142,26 @@ public abstract class AbstractDiskoWpModule
         return role;
     }
 
-
-    /* (non-Javadoc)
-      * @see org.redcross.sar.wp.IDiskoWpModule#getMap()
-      */
-    public IDiskoMap getMap()
-    {
+    public boolean isMapInstalled() {
+    	return map!=null;
+    }
+    
+    
+    public boolean installMap() {
         if (map == null)
         {
             try
             {
             	// get map manager
-                IDiskoMapManager manager = role.getApplication().getDiskoMapManager();
+                IDiskoMapManager manager = getApplication().getMapManager();
                 // initialize map
                 map = manager.createMap(mapLayers);
                 // hide map
                 ((DiskoMap)map).setVisible(false);
                 // add disko work listener
                 map.addDiskoWorkEventListener(this);
+                // success
+                return true;
             }
             catch (Exception e)
             {
@@ -180,12 +169,21 @@ public abstract class AbstractDiskoWpModule
                 e.printStackTrace();
             }
         }
+        // failed
+        return false;
+    }
+
+    /* (non-Javadoc)
+      * @see org.redcross.sar.wp.IDiskoWpModule#getMap()
+      */
+    public IDiskoMap getMap()
+    {
         return map;
     }
 
     public IDiskoApplication getApplication()
     {
-        return role.getApplication();
+        return Utils.getApp();
     }
 
     /* (non-Javadoc)
@@ -208,14 +206,6 @@ public abstract class AbstractDiskoWpModule
     public String getCallingWp()
     {
         return callingWp;
-    }
-
-    /* (non-Javadoc)
-      * @see org.redcross.sar.wp.IDiskoWpModule#hasMap()
-      */
-    public boolean hasMap()
-    {
-        return map != null;
     }
 
     /* (non-Javadoc)
@@ -251,12 +241,11 @@ public abstract class AbstractDiskoWpModule
 		fireOnWorkChange(e);
 	}
 
-    protected void fireOnWorkChange(Object worker, IMsoObjectIf msoObj, Object data)
+    protected void fireOnWorkChange(Object data)
     {
 
     	// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				worker,msoObj,data,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEventType.TYPE_CHANGE);
     	// forward
 		fireOnWorkChange(e);
     	
@@ -280,8 +269,7 @@ public abstract class AbstractDiskoWpModule
     protected void fireOnWorkCancel()
     {
     	// create event
-    	DiskoWorkEvent e = new DiskoWorkEvent(this,
-    			null,null,null,DiskoWorkEventType.TYPE_CANCEL);    	
+    	DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CANCEL);    	
 
     	// forward
     	fireOnWorkCancel(e);
@@ -308,8 +296,7 @@ public abstract class AbstractDiskoWpModule
     protected void fireOnWorkFinish()
     {
     	// create event
-    	DiskoWorkEvent e = new DiskoWorkEvent(this,
-    			null,null,null,DiskoWorkEventType.TYPE_FINISH);
+    	DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_FINISH);
     	// forward
     	fireOnWorkFinish(e);
     }
@@ -348,16 +335,20 @@ public abstract class AbstractDiskoWpModule
     {
         return isActive;
     }
-    
-    /* (non-Javadoc)
-    * @see org.redcross.sar.wp.IDiskoWpModule#activated()
-    */
-    public void activated()
+
+    public void activate(IDiskoRole role)
     {
     	// set active
         isActive=true;
+        
+        // prepare
+        this.role = role;
+        
+        // update frame text
+        setFrameText(null);
+        
         // refresh map?
-        if(hasMap()) {
+        if(isMapInstalled()) {
     		SwingUtilities.invokeLater(new Runnable() {
 
 				public void run() {
@@ -366,40 +357,7 @@ public abstract class AbstractDiskoWpModule
 		        			// reset flag
 		        			getMap().setInitMode(false);
 		        			// initialize
-		        			IEnvelope e = null;
-		        			// get layer
-		        			IMsoFeatureLayer l = getMap().getMsoLayer(LayerCode.OPERATION_AREA_LAYER);
-		        			// get extent?
-		        			if(l!=null) {
-		        				e = l.getVisibleFeaturesExtent();
-		        			}
-		        			else {
-			        			// get layer
-			        			l = getMap().getMsoLayer(LayerCode.SEARCH_AREA_LAYER);
-			        			// get extent?
-			        			if(l!=null) {
-			        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
-			        				else e = l.getVisibleFeaturesExtent();
-			        			} 
-			        			else {
-				        			// get layer
-				        			l = getMap().getMsoLayer(LayerCode.AREA_LAYER);
-				        			// get extent?
-				        			if(l!=null) {
-				        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
-				        				else e = l.getVisibleFeaturesExtent();
-				        			}
-				        			else {
-					        			// get layer
-					        			l = getMap().getMsoLayer(LayerCode.ROUTE_LAYER);
-					        			// get extent?
-					        			if(l!=null) {
-					        				if(e!=null) e.union(l.getVisibleFeaturesExtent());
-					        				else e = l.getVisibleFeaturesExtent();
-					        			}				        				
-				        			}
-			        			}
-		        			}
+		        			IEnvelope e = MapUtil.getOperationExtent(getMap());
 		        			// set extent?
 		        			if(e!=null) getMap().setExtent(MapUtil.expand(1.25,e));
 		        		}
@@ -430,7 +388,7 @@ public abstract class AbstractDiskoWpModule
     /* (non-Javadoc)
     * @see org.redcross.sar.wp.IDiskoWpModule#deactivated()
     */
-    public void deactivated()
+    public void deactivate()
     {
     	// get navbar
     	NavBar navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
@@ -473,7 +431,7 @@ public abstract class AbstractDiskoWpModule
     
     public void setFrameText(String text)
     {
-        String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + DiskoStringFactory.getText(getName() + ".name") +"> - ";
+        String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + getBundleText(getName()) +"> - ";
         String o = "<Aksjon: " + getApplication().getMsoModel().getModelDriver().getActiveOperationName() + ">";
         if (text != null) {
             s += text + " - " + o;
@@ -489,12 +447,12 @@ public abstract class AbstractDiskoWpModule
 		// Internationalization
 		String msg = getBundleText(key); 
 		// forward
-        Utils.showWarning(msg,getApplication().getFrame());
+        Utils.showWarning(msg);
     }
 
     protected void layoutComponent(JComponent comp)
     {
-        String id = role.getName() + getName();
+        String id = getName();
         MainPanel mainPanel = getApplication().getUIFactory().getMainPanel();
         mainPanel.addComponent(comp, id);
     }
@@ -506,35 +464,13 @@ public abstract class AbstractDiskoWpModule
 
     protected void layoutButton(AbstractButton button, boolean addToGroup)
     {
-        String id = role.getName() + getName();
-        SubMenuPanel subMenuPanel = getApplication().getUIFactory().getSubMenuPanel();
-        subMenuPanel.addItem(button, id, addToGroup);
+    	// get menu name
+        String id = getName();
+        // add button to sub menu
+        getApplication().getUIFactory().getSubMenuPanel().addItem(button, id, addToGroup);
+        // set sub menu existence flag
         hasSubMenu = true;
     }
-
-    /*
-    protected JButton createNormalButton(String aText, java.awt.event.ActionListener aListener)
-    {
-        return createButton(aText, DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL), aListener);
-    }
-
-    protected JButton createSmallButton(String aText, java.awt.event.ActionListener aListener)
-    {
-        return createButton(aText, DiskoButtonFactory.getButtonSize(ButtonSize.SMALL), aListener);
-    }
-
-    protected JButton createButton(String aText, Dimension aSize, java.awt.event.ActionListener aListener)
-    {
-        JButton createdButton = new JButton();
-        createdButton.setText(aText);
-        createdButton.setPreferredSize(aSize);
-        if (aListener != null)
-        {
-            createdButton.addActionListener(aListener);
-        }
-        return createdButton;
-    }
-	*/
     
     public IMsoModelIf getMsoModel()
     {
@@ -558,7 +494,7 @@ public abstract class AbstractDiskoWpModule
 
     public String getBundleText(String aKey)
     {
-        return Internationalization.getFullBundleText(wpBundle,aKey);
+        return Internationalization.getString(wpBundle,aKey);
     }
 
     protected void assignWpBundle(Class aClass)

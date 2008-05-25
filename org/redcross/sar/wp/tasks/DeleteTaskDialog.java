@@ -5,7 +5,7 @@ import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 
@@ -15,10 +15,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -34,13 +32,11 @@ public class DeleteTaskDialog extends DiskoDialog
 
 	protected ITaskIf m_currentTask;
 
-	protected DiskoPanel m_contentsPanel;
+	protected DefaultDiskoPanel m_contentsPanel;
 	protected TextFieldAttribute m_taskAttr;
 	protected TextAreaAttribute m_descAttr;
 	protected JPanel m_attributesPanel;
-	protected JButton m_cancelButton;
 	protected JButton m_deleteButton;
-	protected JPanel m_actionsPanel;
 	
 	public DeleteTaskDialog(IDiskoWpTasks wp)
 	{
@@ -74,42 +70,31 @@ public class DeleteTaskDialog extends DiskoDialog
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (m_contentsPanel == null) {
 			try {
 				// create content panel
-				m_contentsPanel = new DiskoPanel();
-				// prepare
-				m_contentsPanel.setCaptionText(m_wpTasks.getBundleText("DeleteTask.text"));
+				m_contentsPanel = new DefaultDiskoPanel(m_wpTasks.getBundleText("DeleteTask.text"),false,true);
+				m_contentsPanel.insertButton("finish", getDeleteButton(), "delete");
+				m_contentsPanel.addActionListener(new ActionListener() {
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("delete".equalsIgnoreCase(cmd))
+							delete();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();						
+					}
+					
+				});
 				// add components
-				m_contentsPanel.addBodyComponent(getAttributesPanel(),BorderLayout.CENTER);
-				m_contentsPanel.addBodyComponent(getActionsPanel(),BorderLayout.SOUTH);
+				m_contentsPanel.setBodyComponent(getAttributesPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return m_contentsPanel;
 	}
-	
-	/**
-	 * This method initializes ActionsPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getActionsPanel() {
-		if (m_actionsPanel == null) {
-			try {
-				// create panel
-				m_actionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-				// add component
-				m_actionsPanel.add(getDeleteButton());
-				m_actionsPanel.add(getCancelButton());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return m_actionsPanel;
-	}	
 	
 	/**
 	 * This method initializes getAttributesPanel
@@ -135,49 +120,19 @@ public class DeleteTaskDialog extends DiskoDialog
 	}	
 	
 	/**
-	 * This method initializes CancelButton
-	 *
-	 * @return javax.swing.JButton
-	 */
-	private JButton getCancelButton() {
-		if (m_cancelButton == null) {
-			try {
-				m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				m_cancelButton.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						cancel();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return m_cancelButton;
-	}
-	
-	/**
 	 * This method initializes DeleteButton
 	 *
 	 * @return javax.swing.JButton
 	 */
 	private JButton getDeleteButton() {
-		if (m_cancelButton == null) {
+		if (m_deleteButton == null) {
 			try {
-				m_cancelButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
-				m_cancelButton.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						delete();
-					}
-				});
+				m_deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return m_cancelButton;
+		return m_deleteButton;
 	}
 	
 	/**

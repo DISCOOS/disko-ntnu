@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
  */
 public class Internationalization
 {
-    private static Map<Class, ResourceBundle> resourceBundles = new LinkedHashMap<Class, ResourceBundle>();
+    private static Map<Class, ResourceBundle> bundles = new LinkedHashMap<Class, ResourceBundle>();
 
     /**
      * Get international text from a given java.util.ResourceBundle.
@@ -27,22 +27,36 @@ public class Internationalization
      * @param aKey    Lookup value
      * @return The found value, or <code>null</code> if not found.
      */
-    public static String getBundleText(ResourceBundle aBundle, String aKey)
+    public static String getText(ResourceBundle aBundle, String aKey)
     {
-        if (aBundle == null)
-        {
-            return null;
-        }
-        try
-        {
+        if (aBundle == null || aKey == null || aKey.isEmpty()) return null;
+
+        try {
             return aBundle.getString(aKey);
         }
-        catch (Exception e)
-        {
-            return null;
-        }
+        catch (Exception e) { return null; }
     }
 
+    /**
+     * Get international text from first occurence in 
+     * an installed java.util.ResourceBundle.
+     *
+     * @param aBundle The ResourceBundle to use
+     * @param aKey    Lookup value
+     * @return The found value, or <code>null</code> if not found.
+     */
+    public static String getText(String aKey)
+    {
+        if (aKey == null || aKey.isEmpty()) return null;
+
+    	for(ResourceBundle bundle : bundles.values()) {
+    		String text = getText(bundle,aKey);
+    		if(text!=null) return text;
+    	}
+    	// not found
+    	return null;
+    }
+    
     /**
      * Get international text from a given java.util.ResourceBundle.
      *
@@ -50,12 +64,32 @@ public class Internationalization
      * @param aKey    Lookup value
      * @return The found value, or aKey if not found.
      */
-    public static String getFullBundleText(ResourceBundle aBundle, String aKey)
+    public static String getString(ResourceBundle aBundle, String aKey)
     {
-        String retVal = getBundleText(aBundle, aKey);
+        String retVal = getText(aBundle, aKey);
         return retVal != null ? retVal : aKey;
     }
 
+    /**
+     * Get international text from first occurence in 
+     * an installed java.util.ResourceBundle.
+     *
+     * @param aBundle The ResourceBundle to use
+     * @param aKey    Lookup value
+     * @return The found value, or aKey if not found.
+     */
+    public static String getString(String aKey)
+    {
+        if (aKey == null || aKey.isEmpty()) return null;
+
+    	for(ResourceBundle bundle : bundles.values()) {
+    		String text = getText(bundle,aKey);
+    		if(text!=null) return text;
+    	}
+    	// not found, return key
+    	return aKey;
+    }
+    
     /**
      * Get international Enum text from a given java.util.ResourceBundle.
      *
@@ -65,7 +99,7 @@ public class Internationalization
      */
     public static String getEnumText(ResourceBundle aBundle, Enum anEnum)
     {
-        String retVal = getBundleText(aBundle, anEnum.getClass().getSimpleName() + "." + anEnum.name() + ".text");
+        String retVal = getText(aBundle, anEnum.getClass().getSimpleName() + "." + anEnum.name() + ".text");
         return retVal != null ? retVal : anEnum.name();
     }
 
@@ -77,7 +111,7 @@ public class Internationalization
      *
      * @param aBundle The ResourceBundle to use
      * @param obj     Lookup value
-     * @return Same as {@link #getEnumText(java.util.ResourceBundle,Enum)} or {@link #getBundleText(java.util.ResourceBundle,String)}, depending on type of obj.
+     * @return Same as {@link #getEnumText(java.util.ResourceBundle,Enum)} or {@link #getText(java.util.ResourceBundle,String)}, depending on type of obj.
      */
     public static String translate(ResourceBundle aBundle, Object obj)
     {
@@ -89,7 +123,7 @@ public class Internationalization
         {
             return getEnumText(aBundle, (Enum) obj);
         }
-        return getBundleText(aBundle, obj.toString()+ ".text");
+        return getText(aBundle, obj.toString()+ ".text");
     }
 
 
@@ -107,19 +141,19 @@ public class Internationalization
         {
             return null;
         }
-        ResourceBundle retVal = resourceBundles.get(aClass);
-        if (retVal == null)
+        ResourceBundle bundle = bundles.get(aClass);
+        if (bundle == null)
         {
             String bundleName = "";
             try
             {
                 Field f = aClass.getField("bundleName");
                 bundleName = (String)f.get(null);
-                retVal = ResourceBundle.getBundle(bundleName);
+                bundle = ResourceBundle.getBundle(bundleName);
             }
             catch (NoSuchFieldException e)
             {
-                Log.error("getBundle: Field 'bundleName' not defined for class " + aClass);
+                Log.warning("getBundle: Field 'bundleName' not defined for class " + aClass);
             }
             catch (IllegalAccessException e)
             {
@@ -135,10 +169,11 @@ public class Internationalization
             }
             finally
             {
-                resourceBundles.put(aClass,retVal);
+            	// put locally
+                bundles.put(aClass,bundle);
             }
         }
-        return retVal;
+        return bundle;
     }
 
     /**
@@ -160,7 +195,7 @@ public class Internationalization
      * The method shall give the same type of results as {@link org.redcross.sar.app.Utils#translate(Object)}.
      *
      * @param anEnum Lookup value
-     * @return Same as {@link #getEnumText(java.util.ResourceBundle,Enum)} or {@link #getBundleText(java.util.ResourceBundle,String)}, depending on type of obj.
+     * @return Same as {@link #getEnumText(java.util.ResourceBundle,Enum)} or {@link #getText(java.util.ResourceBundle,String)}, depending on type of obj.
      */
 
     public static String translate(Enum anEnum)

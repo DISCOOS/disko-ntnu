@@ -2,7 +2,6 @@ package org.redcross.sar.map.command;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
@@ -11,10 +10,11 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.gui.map.PositionPanel;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
@@ -71,32 +71,6 @@ public class PositionTool extends AbstractDrawTool {
 		
 	}
 
-	@Override
-	public void onCreate(Object obj) {
-		
-		// forward
-		super.onCreate(obj);
-		
-		try {
-
-			// is map valid?
-			if (map!=null) {
-				
-				// add layer listener
-				IMsoFeatureLayer msoLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-				Iterator<IPropertyPanel> it = panels.iterator();
-				while(it.hasNext()) {
-					msoLayer.addMsoLayerEventListener((PositionPanel)it.next());
-				}
-				
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}			
-	}
-
 	public boolean onFinish(int button, int shift, int x, int y) {
 		
 		try {
@@ -104,11 +78,6 @@ public class PositionTool extends AbstractDrawTool {
 			// validate
 			if(validate()) {
 
-				//p.setSpatialReferenceByRef(map.getSpatialReference());
-				
-				// update panel
-				getPositionPanel().updatePosition(p);
-				
 				// forward
 				updateGeometry();				
 				
@@ -123,33 +92,18 @@ public class PositionTool extends AbstractDrawTool {
 		// failed
 		return false;
 	}
-	
-	@Override
-	public boolean activate(boolean allow) {
-		
-		// forward
-		boolean bflag = super.activate(allow);
-		
-		try {
-			// update poi point
-			Point p = map.getClickPoint();
-			if(p.isEmpty())
-				p = map.getMovePoint();
-			getPositionPanel().updatePosition(p);
-			// hosted?
-			if(isHosted()) {
-				getHostTool().setTool(this);
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// return flag
-		return bflag;
-		
-	}
 
+	@Override
+	public boolean finish() {
+		// validate
+		if(validate()) {
+			// forward
+			return super.finish();			
+		}
+		// failure
+		return false;
+	}
+	
 	private boolean validate() {
 		
 		// initialize
@@ -165,7 +119,7 @@ public class PositionTool extends AbstractDrawTool {
 		else {
 		
 			// dispatch type
-			if (msoClassCode != IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT) {
+			if (msoCode != IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT) {
 				Utils.showWarning("Kun enhet kan endre posisjon");
 				// do not add point
 				bDoWork = false;
@@ -177,42 +131,46 @@ public class PositionTool extends AbstractDrawTool {
 		
 	}
 
-	public IUnitIf getCurrentUnit() {
+	public IUnitIf getUnit() {
 		if(msoObject instanceof IUnitIf)
 			return (IUnitIf)msoObject;
 		else
 			return null;
 	}
 	
-	public void setCurrentUnit(IUnitIf unit) {
-		if(msoObject!=unit) {
-			msoObject = unit;
-			getPositionPanel().setCurrentUnit(unit);
+	public void setUnit(IUnitIf msoUnit) {
+		// forward
+		setMsoData(msoOwner,msoUnit,msoCode);
+	}
+	
+	@Override
+	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoCode) {
+		try {
+			
+			// update tool point
+			if(msoObject instanceof IUnitIf) {
+				IUnitIf msoUnit = (IUnitIf)msoObject;
+				setPoint(MapUtil.getEsriPoint(msoUnit.getPosition(), map.getSpatialReference()));
+			}
+			else {
+				setPoint(null);
+			}
+			
+			// forward
+			super.setMsoData(msoOwner, msoObject, msoCode);
+			
+			// forward
+			getPositionPanel().setMsoObject(msoObject);
+			
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
-	public Position getPosition() {
-		if(msoObject instanceof IUnitIf)
-			return ((IUnitIf)msoObject).getPosition();
-		else
-			return null;
-	}
-	
-	public void setPositionAt(Point p) {
-		// validate
-		if(validate()) {
-			try {
-				// update point
-				this.p = (Point)p.esri_clone();
-				// forward
-				doFinishWork();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-		
 	public PositionPanel getPositionPanel() {
 		return (PositionPanel)propertyPanel;
 	}
@@ -239,8 +197,8 @@ public class PositionTool extends AbstractDrawTool {
 			// update 
 			geoPoint = p;
 			
-			// mark change
-			setDirty();
+			// forward
+			setDirty(true);
 		}		
 	}		
 	
@@ -268,6 +226,7 @@ public class PositionTool extends AbstractDrawTool {
 	public class PositionToolState extends DiskoToolState {
 
 		private IUnitIf unit = null;
+		private boolean isDirty = false;
 		
 		// create state
 		public PositionToolState(PositionTool tool) {
@@ -276,13 +235,16 @@ public class PositionTool extends AbstractDrawTool {
 		}		
 		public void save(PositionTool tool) {
 			super.save((AbstractDiskoTool)tool);
-			this.unit = tool.getPositionPanel().getCurrentUnit();
+			this.unit = tool.getPositionPanel().getUnit();
+			this.isDirty = tool.getPositionPanel().isDirty();
 		}
 		
 		public void load(PositionTool tool) {
 			super.load((AbstractDiskoTool)tool);
-			tool.getPositionPanel().setCurrentUnit(this.unit);
-			tool.getPositionPanel().updatePosition(p);
+			tool.getPositionPanel().setChangeable(false);
+			tool.getPositionPanel().setUnit(this.unit);
+			tool.getPositionPanel().setChangeable(true);
+			tool.getPositionPanel().setDirty(isDirty);
 		}
 	}
 

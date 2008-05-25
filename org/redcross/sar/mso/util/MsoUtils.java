@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -36,6 +37,7 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.IGeodataIf;
@@ -56,22 +58,63 @@ import com.esri.arcgis.interop.AutomationException;
  */
 public class MsoUtils {
 		
-	public static boolean delete(IMsoObjectIf msoObject) {
+	public static boolean isEditable(IMsoObjectIf msoObj) {
+		IAreaIf area = MsoUtils.getOwningArea(msoObj);
+		if(area!=null) {
+			IAssignmentIf assignment = area.getOwningAssignment();
+			if(assignment!=null)
+				return AssignmentStatus.FINISHED.compareTo(assignment.getStatus())>0;
+		}
+		return true;
+	}
+	
+	public static boolean isDeleteable(IMsoObjectIf msoObj) {
+		// choose delete operations
+		if (msoObj instanceof IOperationAreaIf)
+			return true;
+		else if (msoObj instanceof ISearchAreaIf) {
+			return true;
+		}
+		else if (msoObj instanceof IAreaIf) {
+			return isEditable(msoObj);
+		}					
+		else if (msoObj instanceof IRouteIf) {
+			return isEditable(msoObj);
+		}					
+		else if (msoObj instanceof IPOIIf) {
+			return isEditable(msoObj);
+		}		
+		// all else is deletable
+		return true;
+	}
+	
+	public static boolean delete(IMsoObjectIf msoObject, int options) {
 		
-		// dispatch type
-		if(msoObject instanceof IAreaIf) {
-			// forward
-			return deleteArea((IAreaIf)msoObject);
+		// allowd?
+		if(isDeleteable(msoObject)) {		
+			// dispatch type
+			if(msoObject instanceof IAreaIf) {
+				// cast to IAreaIf
+				IAreaIf area = (IAreaIf)msoObject;
+				// get assignment?
+				IAssignmentIf assignment = (options!=0) ? area.getOwningAssignment() : null; 
+				// delete assignment or area?
+				if(assignment!=null)
+					return deleteAssignment(assignment);
+				else
+					return deleteArea(area);
+			}
+			else if (msoObject instanceof IAssignmentIf) {
+				// forward
+				return deleteAssignment((IAssignmentIf)msoObject);
+			}
+			else {
+				// forward 
+				return msoObject.deleteObject();
+			}
 		}
-		else if (msoObject instanceof IAssignmentIf) {
-			// forward
-			return deleteAssignment((IAssignmentIf)msoObject);
-		}
-		else {
-			// forward
-			return msoObject.deleteObject();
-		}
-		
+		// failure
+		return false;
 	}
 	
 	public static boolean deleteArea(IAreaIf area) {
@@ -129,23 +172,62 @@ public class MsoUtils {
 		
 	}
 	
+	public static String getDeleteMessage(IMsoObjectIf msoObj) {
+		// get default value
+		String message = MsoUtils.getMsoObjectName(msoObj, 1) + " kan ikke slettes";		
+		// is deletable?
+		if(MsoUtils.isDeleteable(msoObj)) {
+			// choose delete operations
+			if (msoObj instanceof IOperationAreaIf)
+				message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
+			else if (msoObj instanceof ISearchAreaIf) {
+				message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
+			}
+			else if (msoObj instanceof IAreaIf) {
+				message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
+			}					
+			else if (msoObj instanceof IRouteIf) {
+				// get owning area
+				IAreaIf area = MsoUtils.getOwningArea(msoObj);
+				// get message
+				message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + " fra " 
+		            + MsoUtils.getMsoObjectName(area, 1) + ". Vil du fortsette?";
+			}					
+			else if (msoObj instanceof IPOIIf) {
+				// get owning area
+				IAreaIf area = MsoUtils.getOwningArea(msoObj);
+				// has area?
+				if(area!=null)
+					// get message
+					message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + " fra " 
+			            + MsoUtils.getMsoObjectName(area, 1) + ". Vil du fortsette?";
+				else
+					// get message
+					message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
+				
+			}
+		}		
+		// finished
+		return message;
+	}
+	
 	public static Enum getType(IMsoObjectIf msoObj, boolean subtype)
     {
     	// initialize
     	Enum e = null;
-    	IMsoObjectIf msoOwner = null;
+    	IMsoObjectIf msoOwn = null;
     	
 		// get type object
     	if(msoObj instanceof IRouteIf) {
-			msoOwner = getOwningArea(msoObj).getOwningAssignment();
+			msoOwn = getOwningArea(msoObj).getOwningAssignment();
 		}
 		else if(msoObj instanceof IAreaIf) {
-			msoOwner = ((IAreaIf)msoObj).getOwningAssignment();
+			msoOwn = ((IAreaIf)msoObj).getOwningAssignment();
 		}
 
 		// replace with owner?
-		if(msoOwner!=null)
-			msoObj = msoOwner;
+		if(msoOwn!=null)
+			msoObj = msoOwn;
 		
 		// get subtype
 		if(msoObj instanceof IAssignmentIf && !subtype) {
@@ -236,7 +318,10 @@ public class MsoUtils {
 		IAreaIf found = null;
 		
 		// dispatch method
-		if(msoObj instanceof IRouteIf) {
+		if(msoObj instanceof IAreaIf) {
+			found = (IAreaIf)msoObj;
+		}
+		else if(msoObj instanceof IRouteIf) {
 			found = getOwningArea((IRouteIf)msoObj);
 		}
 		else if(msoObj instanceof IPOIIf) {
@@ -497,11 +582,11 @@ public class MsoUtils {
 		String name = "<Unknown>";
 		if(searchArea!=null) {
 			switch(searchArea.getPriority()) {
-			case 0: name = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA.text"); break;
-			case 1: name = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA.text"); break;
-			case 2: name = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA.text"); break;
-			case 3: name = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA.text"); break;
-			case 4: name = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA.text"); break;
+			case 0: name = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA"); break;
+			case 1: name = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA"); break;
+			case 2: name = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA"); break;
+			case 3: name = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA"); break;
+			case 4: name = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA"); break;
 			}
 		}
 		return name;
@@ -821,6 +906,41 @@ public class MsoUtils {
 		if(a==b) return 0;
 		else if(a<b) return -1;
 		else return 1;
+	}
+	
+	public static POIType[] getAvailablePOITypes(MsoClassCode code, IMsoObjectIf msoObj) {
+		if(MsoClassCode.CLASSCODE_ROUTE.equals(code)) {
+			// initialize
+			EnumSet<POIType> list = EnumSet.of(POIType.START, POIType.VIA, POIType.STOP);
+			// get area if exists
+			IAreaIf area = getOwningArea(msoObj);
+			if(area!=null) {
+				// Only allow one Start and one Stop POI per area
+				for(IPOIIf it: area.getAreaPOIsItems()) {
+					POIType type = it.getType();
+					if(!POIType.VIA.equals(type)) {
+						if(list.contains(it.getType())) {
+							list.remove(it.getType());
+						}
+					}
+				}
+			}
+			int i=0;
+			POIType[] types = new POIType[list.size()];
+			for(POIType type : list) { 
+				types[i] = type;
+				i++;
+			}
+			return types;
+		}
+		else if(MsoClassCode.CLASSCODE_POI.equals(code)) {
+			// default POI types
+			return new POIType[] { POIType.GENERAL, POIType.INTELLIGENCE,
+					POIType.OBSERVATION, POIType.FINDING,
+					POIType.SILENT_WITNESS };
+		}
+		// not supported
+		return null;
 	}
 	
 }

@@ -16,14 +16,14 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.ScaleBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.FlankTool;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
-public class FlankPanel extends DiskoPanel {
+public class FlankPanel extends DefaultDiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -39,6 +39,8 @@ public class FlankPanel extends DiskoPanel {
 	private FlankTool tool = null;
 	
 	public FlankPanel(IDiskoApplication app, FlankTool tool) {
+		// forward
+		super("",false,false);
 		// prepare
 		this.tool = tool;
 		// initialize gui

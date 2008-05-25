@@ -6,6 +6,9 @@ package org.redcross.sar.map.command;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.swing.SwingUtilities;
+
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.map.FreeHandPanel;
@@ -18,12 +21,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
-import com.esri.arcgis.geometry.GeometryBag;
-import com.esri.arcgis.geometry.IPoint;
-import com.esri.arcgis.geometry.ISegmentGraphCursor;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;
-import com.esri.arcgis.geometry.SegmentGraph;
 import com.esri.arcgis.interop.AutomationException;
 
 /**
@@ -87,9 +86,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		dialog.register(this);		
 		
 	}
-	
-	
-	
+		
 	@Override
 	public void onCreate(Object obj) {
 
@@ -155,30 +152,38 @@ public class FreeHandTool extends AbstractDrawTool {
 	}
 		
 	@Override
-	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
+	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
 		// forward
-		super.setMsoDrawData(msoOwner, msoObject, msoClassCode);
+		super.setMsoData(msoOwner, msoObject, msoClassCode);
 		// select mso object
-		((FreeHandPanel)getPropertyPanel()).setMsoObject((msoOwner!=null ? msoOwner : msoObject));
+		getPropertyPanel().setMsoObject((msoOwner!=null ? msoOwner : msoObject));
 	}
 
 	@Override
-	public boolean doPrepare() {
-		// is owner search assignment?
-		if(msoOwner instanceof IAreaIf) {
-			// get owning assignment
-			IAssignmentIf assignment = ((IAreaIf)msoOwner).getOwningAssignment();
-			// is search assignment?
-			if(assignment instanceof ISearchIf) {
-				// cast to ISearchIf
-				ISearchIf search = (ISearchIf)assignment; 
-				// update?
-				if(searchSubType!=null && !searchSubType.equals(search.getSubType()))
-					search.setSubType(searchSubType);
-			}
-		}
+	public boolean doPrepare(IMsoObjectIf msoObj, boolean isDefined) {
 		// forward
-		return super.doPrepare();
+		if(super.doPrepare(msoObj,isDefined)) {
+			// handle this?
+			if(!isDefined) {
+				// is owner search assignment?
+				if(msoObj instanceof IAreaIf) {
+					// get owning assignment
+					IAssignmentIf assignment = ((IAreaIf)msoObj).getOwningAssignment();
+					// is search assignment?
+					if(assignment instanceof ISearchIf) {
+						// cast to ISearchIf
+						ISearchIf search = (ISearchIf)assignment; 
+						// update?
+						if(searchSubType!=null && !searchSubType.equals(search.getSubType()))
+							search.setSubType(searchSubType);
+					}
+				}
+			}
+			// forward
+			return true;
+		}
+		// failed
+		return false;
 	}
 	
 	public boolean onBegin(int button, int shift, int x, int y) {
@@ -203,8 +208,39 @@ public class FreeHandTool extends AbstractDrawTool {
 			// update drawn geometry
 			updateGeometry();
 			
-			// update last point
-			p1 = p2;
+			// revert direction?
+			if(isContinued && geoPath!=null 
+					&& !FeatureType.FEATURE_POLYGON.equals(featureType)) {
+				// get distances
+				double d1 = p.returnDistance(geoPath.getFromPoint());
+				double d2 = p.returnDistance(geoPath.getToPoint());
+				// get start area radius
+				double r = getSnapTolerance();
+				// not within init distance?
+				if(d1>r && d2>r) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							// notify later
+							Utils.showMessage("Begrensing","Du må starte med et endepunkt");
+						}
+					});					
+					return false;
+				}
+				// reverse direction?
+				if(d1<d2) {
+					geoPath.reverseOrientation();
+				}
+				// continue 
+				p1 = (Point)geoPath.getToPoint();
+				// forward
+				setDirty(true);
+			}
+			else {
+				// initialize
+				p1 = p2;				
+			}
+			// reset flag
+			isContinued = false;
 			
 			// update rubber band
 			geoRubber.updatePoint(0,p2);
@@ -269,7 +305,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		if(panels==null)
 			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		IPropertyPanel panel = new FreeHandPanel(this,true);
+		IPropertyPanel panel = new FreeHandPanel(this);
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
@@ -285,6 +321,7 @@ public class FreeHandTool extends AbstractDrawTool {
 			p1 = new Point();
 			p1.setX(0);
 			p1.setY(0);
+			p2 = null;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -293,71 +330,15 @@ public class FreeHandTool extends AbstractDrawTool {
 
 	private void updateGeometry() throws IOException, AutomationException {
 
-		// any change?
+		// consume?
 		if (p1.returnDistance(p2) == 0 || !isDrawing()) return;
 
-		// initialize
-		Polyline pline1 = null;
-		Polyline pline2 = null;
+		// add current mouse point
+		geoPath.addPoint(p2, null, null);
 		
-		// try to snap?
-		if(isSnapToMode()) {
-
-			// only update snap geometry
-			snapTo(p1);
-			
-			// search polyline inside envelope
-			pline1 = (Polyline)snapAdapter.getSnapGeometry();
-			pline2 = (Polyline)geoSnap;
-			
-		}
-
-		// nothing to snap to?
-		if (pline1 == null || pline2 == null) {
-			// add point
-			geoPath.addPoint(p2, null, null);
-			// replace rubber
-			geoRubber = (Polyline)geoPath.esri_clone();	
-		}
-		else {
-			// densify rubberband, use vertices as input to segment graph
-			Polyline copy = (Polyline)geoRubber.esri_clone();
-			copy.densify(getSnapTolerance()/10, -1);
-			// greate a geometry bag to hold selected polylines
-			GeometryBag gb = new GeometryBag();
-			if (pline1 != null) {
-				gb.addGeometry(pline1, null, null);
-			}
-			if (pline2 != null) {
-				gb.addGeometry(pline2, null, null);
-			}
-			// create the segment graph
-			SegmentGraph segmentGraph = new SegmentGraph();
-			segmentGraph.load(gb, false, true);
-			ISegmentGraphCursor segmentGraphCursor = segmentGraph.getCursor(p1);
-	
-			// tracing the segmnet graph
-			for (int i = 0; i < copy.getPointCount(); i++) {
-				IPoint p = copy.getPoint(i);
-				if (!segmentGraphCursor.moveTo(p)) {
-					segmentGraphCursor.finishMoveTo(p);
-				}
-			}
-			Polyline trace = (Polyline)segmentGraphCursor.getCurrentTrace();
-			if (trace != null && trace.getPointCount() > 0) {
-				// add tracepoints to path
-				for (int i = 0; i < trace.getPointCount(); i++ ) {
-					geoPath.addPoint(trace.getPoint(i), null, null);
-				}
-			}
-			else {
-				geoPath.addPoint(p2, null, null);
-			}
-			// reset
-			segmentGraphCursor = null;
-		}
-		// mark change
-		setDirty();			
+		// forward
+		setDirty(true);
+		
 	}
 	
 	@Override
@@ -408,6 +389,7 @@ public class FreeHandTool extends AbstractDrawTool {
 			tool.p1 = this.p1;
 			tool.p2 = this.p2;
 			tool.searchSubType = this.searchSubType;
+			tool.getPropertyPanel().update();
 		}
 	}
 

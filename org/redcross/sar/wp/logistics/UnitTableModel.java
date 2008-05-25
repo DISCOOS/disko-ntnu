@@ -945,7 +945,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
                 }
 			}
 			catch(UnsupportedFlavorException e) {
-				Utils.showWarning("Mottatt objekt er ikke et oppdrag", Utils.getApp().getFrame());
+				Utils.showWarning("Mottatt objekt er ikke et oppdrag");
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -970,14 +970,14 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
 	                	return true;
 	                }
 		        	// notify
-					Utils.showWarning("Du kan ikke flytte oppdrag hit", Utils.getApp().getFrame());
+					Utils.showWarning("Du kan ikke flytte oppdrag hit");
 				}
 				else {
 					// TODO: Raise exception!					
 				}
 			}
 			catch(UnsupportedFlavorException e) {
-				Utils.showWarning("Mottatt objekt er ikke et oppdrag", Utils.getApp().getFrame());
+				Utils.showWarning("Mottatt objekt er ikke et oppdrag");
 			}
 			catch (Exception e) {
 				e.printStackTrace();

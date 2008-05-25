@@ -10,7 +10,7 @@ import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.output.DiskoReport;
+import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
 
@@ -78,7 +78,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 
     private long m_timeCounter;
     
-    private DiskoReport m_report = null;
+    private DiskoReportManager m_report = null;
 
     public InfoPanelHandler(JPanel anInfoPanel, IDiskoWpLogistics aWpModule, AssignmentLabel.AssignmentLabelActionHandler anActionHandler)
     {
@@ -86,7 +86,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         m_infoPanel = anInfoPanel;
         m_assignmentLabelMouseListener = anActionHandler;
         m_wpModule = aWpModule;
-        m_report = aWpModule.getApplication().getDiskoReport();
+        m_report = aWpModule.getApplication().getReportManager();
 
         m_infoPanel.add(new JPanel(), EMPTY_PANEL_NAME);
 
@@ -371,8 +371,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         {
             //System.out.println("Trykk 1: " + command + m_displayedUnit.getUnitNumber());
             IDiskoRole role = m_wpModule.getDiskoRole();
-            String id = role.getName() + "UNITS";
-            IDiskoWpModule calledModule = role.getDiskoWpModule(id);
+            IDiskoWpModule calledModule = role.getDiskoWpModule("UNIT");
             if (calledModule != null && calledModule instanceof IDiskoWpUnit)
             {
                 IDiskoWpUnit calledUnitModule = (IDiskoWpUnit) calledModule;
@@ -411,8 +410,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         } else if (command.equalsIgnoreCase(ASG_CHANGE))
         {
             IDiskoRole role = m_wpModule.getDiskoRole();
-            String id = role.getName() + "TACTICS";
-            IDiskoWpModule calledModule = role.getDiskoWpModule(id);
+            IDiskoWpModule calledModule = role.getDiskoWpModule("TACTICS");
             if (calledModule != null)
             {
                 role.selectDiskoWpModule(calledModule);

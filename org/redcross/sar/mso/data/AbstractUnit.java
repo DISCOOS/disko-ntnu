@@ -42,7 +42,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     
     public static String getText(String aKey)
     {
-        return Internationalization.getFullBundleText(Internationalization.getBundle(IUnitIf.class), aKey);
+        return Internationalization.getString(Internationalization.getBundle(IUnitIf.class), aKey);
     }
 
     public static char getEnumLetter(Enum anEnum)

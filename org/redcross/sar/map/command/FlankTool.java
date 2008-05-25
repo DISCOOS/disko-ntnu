@@ -3,6 +3,7 @@ package org.redcross.sar.map.command;
 import java.io.IOException;
 
 import com.esri.arcgis.geodatabase.IFeature;
+import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
@@ -15,6 +16,7 @@ import org.redcross.sar.gui.map.FlankPanel;
 import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.FlankFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -187,7 +189,8 @@ public class FlankTool extends AbstractDiskoTool {
 				// apply flanks
 				IMsoFeatureLayer editLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.FLANK_LAYER);
 				MsoFeatureClass featureClass = (MsoFeatureClass)editLayer.getFeatureClass();
-				IFeature feature = search(featureClass, p,max).nextFeature();
+				IFeatureCursor c =  MapUtil.search(featureClass, p,max);
+				IFeature feature = c.nextFeature();
 				if (feature != null && feature instanceof FlankFeature) {
 					FlankFeature flankFeature = (FlankFeature)feature;
 					GeometryBag geomBag = (GeometryBag)flankFeature.getShape();

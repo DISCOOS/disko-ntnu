@@ -9,8 +9,6 @@ import java.awt.Graphics;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
-import java.awt.Image;
-import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 
 /**
@@ -29,18 +27,18 @@ import java.awt.image.BufferedImage;
  *
  * @author Santhosh Kumar T
  */
-public class DiskoCustomIcon implements Icon {
+public class DiskoIcon implements Icon {
     private Icon delegate;
 
-    public DiskoCustomIcon(Icon delegate){
+    public DiskoIcon(Icon delegate){
         this(delegate, UIManager.getColor("textHighlight"), 0.5F);
     }
 
-    public DiskoCustomIcon(Icon delegate, Color color){
+    public DiskoIcon(Icon delegate, Color color){
         this(delegate, color, 0.5F);
     }
 
-    public DiskoCustomIcon(Icon delegate, Color color, float alpha){
+    public DiskoIcon(Icon delegate, Color color, float alpha){
         if(delegate==null) delegate = new ImageIcon(new BufferedImage(48,48,BufferedImage.TYPE_INT_RGB));
         this.delegate = delegate;
         createColorMask(color, alpha);

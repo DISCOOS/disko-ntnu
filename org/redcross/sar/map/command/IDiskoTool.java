@@ -6,7 +6,7 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.systemUI.ITool;
@@ -34,36 +34,35 @@ public interface IDiskoTool extends ITool {
 	 */
 	
 	public String getName();
-	
 	public DiskoToolType getType();
 	
-	public boolean isHosted();
-	
+	public boolean isHosted();	
 	public IHostDiskoTool getHostTool();
 	
 	public void onCreate(Object obj);
 	
+	public void reset();
+	public boolean finish();
+	public boolean cancel();
+	
 	public boolean isActive();
-	
-	public boolean activate(boolean allow);
-	
+	public boolean activate(int options);	
 	public boolean deactivate();
 	
-	public void setMsoDrawData(IDiskoTool tool);
-	
-	public void setMsoDrawData(IMsoObjectIf msoOwner, 
-			IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode);
-	
-	public void setMsoObject(IMsoObjectIf msoObject);
-	
-	public IMsoObjectIf getMsoObject();
-	
-	public void setMsoOwner(IMsoObjectIf msoOwner);
-	
-	public IMsoObjectIf getMsoOwner();
-	
-	public IMsoManagerIf.MsoClassCode getMsoClassCode();
+	public boolean isDirty();
 
+	public IMsoObjectIf getMsoObject();
+	public void setMsoObject(IMsoObjectIf msoObj);
+		
+	public IMsoObjectIf getMsoOwner();
+	public void setMsoOwner(IMsoObjectIf msoOwn);
+	
+	public MsoClassCode getMsoCode();
+
+	public void setMsoData(IDiskoTool tool);	
+	public void setMsoData(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, MsoClassCode msoCode);
+	
+		
 	public IDiskoMap getMap();
 	
 	public DiskoDialog getDialog();

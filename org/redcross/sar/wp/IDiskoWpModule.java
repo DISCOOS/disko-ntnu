@@ -38,6 +38,16 @@ public interface IDiskoWpModule {
 	 */
 	public String getCaption();	
 	
+	/** 
+	 * @return True if map is installed
+	 */
+	public boolean isMapInstalled();
+	
+	/**
+	 * @return true if DiskoMap is different from null, false otherwise
+	 */
+	public boolean installMap();
+	
 	/**
 	 * Get a reference to the DiskoMap. If the implementing class has no map,
 	 * null should be returned
@@ -68,24 +78,21 @@ public interface IDiskoWpModule {
 	public boolean isActive();	
 	
 	/**
-	 * @return true if DiskoMap is different from null, false otherwise
-	 */
-	public boolean hasMap();
-
-	/**
 	 * @return true if this IDiskoWpModule has sub menu, false otherwise
 	 */
 	public boolean hasSubMenu();
 
 	/**
 	 * Called when this IDiskoWpModule is activated
+	 * 
+	 * @param IDiskoRole role The role activating the module
 	 */
-	public void activated();
+	public void activate(IDiskoRole role);
 
 	/**
 	 * Called when this IDiskoWpModule is deactivated
 	 */
-	public void deactivated();
+	public void deactivate();
 	
 	 /**
      * @return Returns whether or not WP module can be deactivated. E.g. if uncommitted data is stored.

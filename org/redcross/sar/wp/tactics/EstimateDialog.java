@@ -4,21 +4,16 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.EnumSet;
 
-import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.attribute.NumericAttribute;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -32,7 +27,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListener {
 
 	private static final long serialVersionUID = 1L;	
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JPanel estimatePanel = null;
 	private NumericAttribute attrEta = null;
 	private ISearchIf currentAssignment = null;
@@ -57,7 +52,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 	
@@ -88,39 +83,28 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 		getEtaAttribute().setValue(eta);
 	}
 	
-	public boolean finish() {
-		// no mso update allowed?
-		if (!isWorking()) 
-			return attrEta.save();
-		else
-			return false;
-	}
-	
-	private void cancel() {
-		attrEta.load();
-	}
-	
 	/**
 	 * This method initializes contentPanel
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
+				contentPanel = new DefaultDiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = contentPanel.addButton(
-						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// cancel any pending changes
-						cancel();
-						// hide me!
-						setVisible(false);						
-					}					
-				});
 				contentPanel.setBodyComponent(getEstimatePanel());
+				contentPanel.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("finish".equalsIgnoreCase(cmd))
+							finish();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();
+					}
+					
+				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -128,6 +112,32 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 		return contentPanel;
 	}
 
+	public boolean finish() {
+		// consume?
+		if (isWorking()) return false;
+		// forward
+		boolean bFlag = attrEta.save();
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide?
+		if(bFlag) setVisible(false);
+		// finished
+		return bFlag;
+	}
+	
+	public boolean cancel() {
+		// consume?
+		if (isWorking()) return false;
+		// forward
+		boolean bFlag = attrEta.load();
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide
+		setVisible(false); 
+		// finished
+		return bFlag;
+	}
+	
 	/**
 	 * This method initializes estimatePanel	
 	 * 	
@@ -154,28 +164,18 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	private NumericAttribute getEtaAttribute() {
 		if (attrEta == null) {
 			try {
+				
 				// create attribute
 				attrEta = new NumericAttribute("ETA","Estimert tidsbruk:",150,"000000",true);
+				
 				// set numeric properties
 				attrEta.setMaxDigits(6);
 				attrEta.setDecimalPrecision(0);
 				attrEta.setAllowNegative(false);				
-				// add updata manager
-				attrEta.addFocusListener(new FocusAdapter() {
-					
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
-							finish();
-					}
-					
-				});
 				
 				// add disko work listener
-				attrEta.addDiskoWorkListener(this);				
+				attrEta.addDiskoWorkListener(this);
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -187,6 +187,8 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	public int setMsoObject(IMsoObjectIf msoObj) {
 		int state = 0;
 		if(isWorking()) return state;
+		// consume changes
+		setIsWorking();
 		// initialize
 		IAttributeIf eta = null;
 		// get owning area
@@ -203,10 +205,17 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 			state = -1;
 			currentAssignment = null;			
 		}
+		
 		// update
 		getEtaAttribute().setMsoAttribute(eta);
+
+		// reset state 
+		setIsNotWorking();
+		getContentPanel().setDirty(false);
+		
 		// forward
 		setup();
+		
 		// success
 		return state;
 	}	

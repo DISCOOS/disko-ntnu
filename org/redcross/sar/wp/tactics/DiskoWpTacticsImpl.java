@@ -1,13 +1,11 @@
 package org.redcross.sar.wp.tactics;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,11 +26,9 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.ElementDialog;
-import org.redcross.sar.gui.map.MapFilterBar;
-import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.DrawAdapter.IDrawAdapterListener;
+import org.redcross.sar.map.command.DrawAdapter.IDrawAdapterListener;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
@@ -87,12 +83,14 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	 * Constructs a DiskoApTaktikkImpl
 	 * @param rolle A reference to the DiskoRolle
 	 */
-	public DiskoWpTacticsImpl(IDiskoRole rolle) {
+	public DiskoWpTacticsImpl() {
+		
 		// forward
-		super(rolle,getWpInterests(),getMapLayers());
+		super(getWpInterests(),getMapLayers());
 		
 		// initialize objects
 		dialogs = new ArrayList<DiskoDialog>();
+		
 		// init GUI
 		initialize();
 	}
@@ -122,9 +120,11 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		
 	private void initialize() {
 		assignWpBundle(IDiskoWpTactics.class);		
-		DiskoMap map = (DiskoMap) getMap();
-		layoutComponent(DiskoMap.createPanel(map, new MapStatusBar(), 
-				new MapFilterBar(), BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+		installMap();
+		DiskoMap map = (DiskoMap)getMap();
+		map.setNorthBarVisible(true);
+		map.setSouthBarVisible(true);
+		layoutComponent(map);
 		layoutButton(getElementToggleButton(), true);
 		layoutButton(getListToggleButton(), true);
 		layoutButton(getMissionToggleButton(), true);
@@ -177,14 +177,17 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	 * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
 	 */
 	public String getCaption() {
-		return getBundleText("Caption");
+		return getBundleText("TACTICS");
 	}
 
-	public void activated() {
+	public void activate(IDiskoRole role) {
 		
 		// forward
-		super.activated();
+		super.activate(role);
 		
+		// update title bar text
+		setFrameText("<" + getElementToggleButton().getToolTipText() + ">");	
+        
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
 			// get set of tools visible for this wp
@@ -248,8 +251,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return true;
 	}
 	
-	public void deactivated() {
-		super.deactivated();
+	public void deactivate() {
+		// forward
+		super.deactivate();
 		// hide map
 		DiskoMap map = (DiskoMap) getMap();
 		map.setVisible(false);
@@ -835,11 +839,15 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 
 	public void afterOperationChange(){
+		// forward
 		super.afterOperationChange();
+		// forward
 		if(isChanged())
 			cancel(false);
 		else
 			reset(false);
+		// update title bar text
+		setFrameText("<" + getElementToggleButton().getToolTipText() + ">");	
 	}
 
 	public void handleMsoCommitEvent(Commit e) throws CommitException {

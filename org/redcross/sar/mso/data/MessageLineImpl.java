@@ -35,7 +35,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 
     public static String getText(String aKey)
     {
-        return Internationalization.getFullBundleText(Internationalization.getBundle(IMessageLineIf.class), aKey);
+        return Internationalization.getString(Internationalization.getBundle(IMessageLineIf.class), aKey);
     }
 
     public String getLineTypeText()

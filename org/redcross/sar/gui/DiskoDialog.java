@@ -118,7 +118,7 @@ public class DiskoDialog extends JDialog
 		// prepare objects
 		this.myInterests = myInterests;
 		this.myLayers = myLayers;
-        // add listeners
+        // initialize listeners
         owner.addComponentListener(new ComponentListener() {
 			public void componentHidden(ComponentEvent arg0) {
 				setVisible(false);		
@@ -167,8 +167,7 @@ public class DiskoDialog extends JDialog
 	
 	protected void fireOnWorkFinish() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_FINISH);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_FINISH);
 	   	// forward
     	fireOnWorkFinish(e);
     }
@@ -183,8 +182,7 @@ public class DiskoDialog extends JDialog
 	
 	protected void fireOnWorkCancel() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CHANGE);
     	// forward
     	fireOnWorkCancel(e);
     }
@@ -197,15 +195,17 @@ public class DiskoDialog extends JDialog
 		}
 	}
 	
-	protected void fireOnWorkChange(Object worker, IMsoObjectIf msoObj, Object data) {
-		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				worker,msoObj,data,DiskoWorkEventType.TYPE_CHANGE);
-
-		// forward
-		fireOnWorkChange(e);    	
+	protected void fireOnWorkChange(Object data) {
+		fireOnWorkChange(this, data);
     }
     
+	protected void fireOnWorkChange(Object source, Object data) {
+		// create event
+		DiskoWorkEvent e = new DiskoWorkEvent(source,data,DiskoWorkEventType.TYPE_CHANGE);
+		// forward
+		fireOnWorkChange(e);    			
+	}
+	
     protected void fireOnWorkChange(DiskoWorkEvent e)
     {
 		// notify listeners

@@ -19,7 +19,7 @@ public class SysBar extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private IDiskoApplication app = null;
 	private ButtonGroup bgroup = null;
-	private JButton changeRolleButton = null;
+	private JButton swapToButton = null;
 	private JButton mapOptionButton = null;
     private JButton newOpButton = null;
     private JButton finishOperationButton=null;
@@ -53,7 +53,7 @@ public class SysBar extends JPanel {
 		flowLayout.setVgap(0);
 		flowLayout.setAlignment(FlowLayout.RIGHT);
 		this.setLayout(flowLayout);
-		addButton(getChangeRolleButton());
+		addButton(getSwapToButton());
 		addButton(getMapOptionButton());
 		addButton(getFinishOperationButton());
         addButton(getNewOpButton());
@@ -119,7 +119,7 @@ public class SysBar extends JPanel {
             chooseOperationButton = DiskoButtonFactory.createButton("SYSTEM.SELECT",ButtonSize.NORMAL);
             chooseOperationButton.addActionListener(new java.awt.event.ActionListener() {
                public void actionPerformed(java.awt.event.ActionEvent e) {
-                  app.chooseActiveOperation(true);
+                  app.selectActiveOperation(true);
                }
             });
          } catch (java.lang.Throwable e) {
@@ -129,21 +129,20 @@ public class SysBar extends JPanel {
       return chooseOperationButton;
    }
 
-   private JButton getChangeRolleButton() {
-		if (changeRolleButton == null) {
+   private JButton getSwapToButton() {
+		if (swapToButton == null) {
 			try {
-				changeRolleButton = DiskoButtonFactory.createButton("SYSTEM.SWITCH",ButtonSize.NORMAL);				
-				changeRolleButton.addActionListener(new java.awt.event.ActionListener() {
+				swapToButton = DiskoButtonFactory.createButton("SYSTEM.SWAPTO",ButtonSize.NORMAL);				
+				swapToButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						LoginDialog loginDialog = app.getUIFactory().getLoginDialog();
-						loginDialog.setVisible(true,false);
+						app.getUIFactory().getLoginDialog().showSwapTo();
 					}
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return changeRolleButton;
+		return swapToButton;
 	}
 	
 	private JButton getMapOptionButton() {
@@ -153,8 +152,8 @@ public class SysBar extends JPanel {
 				mapOptionButton = DiskoButtonFactory.createButton("SYSTEM.MAP",ButtonSize.NORMAL);				
 				mapOptionButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						MapOptionDialog mapOptionDialog = app.getUIFactory().getMapOptionDialog();
-						mapOptionDialog.setVisible(true);
+						MapOptionDialog dialog = app.getUIFactory().getMapOptionDialog();
+						dialog.selectMap("Velg kart", app.getMapManager().getMapInfoList());
 					}
 				});
 			} catch (java.lang.Throwable e) {

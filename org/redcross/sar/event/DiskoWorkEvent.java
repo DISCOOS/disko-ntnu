@@ -23,22 +23,16 @@ public class DiskoWorkEvent extends EventObject {
 	}
 	
 	private DiskoWorkEventType type = null;
-	private Object worker = null;
-	private IMsoObjectIf msoObj = null;
 	private Object data = null;
 	
 	public DiskoWorkEvent(Object source, 
 			DiskoWorkEventType type) {
-		this(source,null,null,null,type);
+		this(source,null,type);
 	}
 	
-	public DiskoWorkEvent(Object source, 
-			Object worker, IMsoObjectIf msoObj,
-			Object data, DiskoWorkEventType type) {
+	public DiskoWorkEvent(Object source, Object data, DiskoWorkEventType type) {
 		super(source);
-		this.worker = worker;
 		this.type = type;
-		this.msoObj = msoObj;
 		this.data = data;
 	}
 	
@@ -47,19 +41,23 @@ public class DiskoWorkEvent extends EventObject {
 	}
 	
 	public IMsoObjectIf getMsoObject() {
-		return msoObj;
+		if(isMsoSource())
+			return (IMsoObjectIf)source;
+		if(isMsoData())
+			return (IMsoObjectIf)data;
+		return null;
+	}
+	
+	public boolean isMsoSource() {
+		return (source instanceof IMsoObjectIf);
 	}
 	
 	public boolean isMsoData() {
-		return (msoObj!=null);
-	}
-	
-	public Object getWorker() {
-		return worker;
+		return (data instanceof IMsoObjectIf);
 	}
 	
 	public boolean isWorkDoneByAwtComponent() {
-		return (worker instanceof Component);
+		return (getSource() instanceof Component);
 	}
 	
 	public Object getType() {

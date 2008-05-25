@@ -21,9 +21,9 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
     private JButton m_PoiButton = null;
     private JButton m_HypothesisButton = null;
 
-    public DiskoWpIntelligenceImpl(IDiskoRole role) throws IllegalClassFormatException
+    public DiskoWpIntelligenceImpl() throws IllegalClassFormatException
     {
-        super(role);
+        super();
         initialize();
     }
 

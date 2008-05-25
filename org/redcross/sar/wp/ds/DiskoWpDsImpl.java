@@ -25,22 +25,24 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	/**
 	 * Constructs a DiskoWpDsImpl
 	 * 
-	 * @param rolle
-	 *            A reference to the DiskoRolle
 	 */
-	public DiskoWpDsImpl(IDiskoRole rolle) throws IllegalClassFormatException {
-		super(rolle);
+	public DiskoWpDsImpl() throws IllegalClassFormatException {
+		// forward
+		super();
 		// initialize gui
 	    initialize();
 	}
 
 	private void initialize() {
+		installMap();
         m_routeCost = new RouteCostPanel(this);
         layoutComponent(m_routeCost);
 	}
 
-	public void activated() {
-		super.activated();
+	public void activate(IDiskoRole role) {
+		
+		// forward
+		super.activate(role);
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
@@ -61,8 +63,8 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 		}				
 	}
 	
-	public void deactivated() {
-		super.deactivated();
+	public void deactivate() {
+		super.deactivate();
 		NavBar navBar = getApplication().getNavBar();
 		navBar.hideDialogs();
 	}

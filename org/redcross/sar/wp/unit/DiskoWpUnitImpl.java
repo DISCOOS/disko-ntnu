@@ -91,9 +91,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private static boolean m_newUnit = false;
 	private static boolean m_newCallOut = false;
 
-	public DiskoWpUnitImpl(IDiskoRole role) throws IllegalClassFormatException
+	public DiskoWpUnitImpl() throws IllegalClassFormatException
 	{
-		super(role);
+		super();
 		
 		// Initialize transfer handler
 		try
@@ -349,13 +349,14 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	@Override
 	public String getCaption()
 	{
-		return getBundleText("Caption");
+		return getBundleText("UNIT");
 	}
 	
 	@Override
-	public void activated()
-	{
-		super.activated();
+	public void activate(IDiskoRole role) {
+		
+		// forward
+		super.activate(role);
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
@@ -365,9 +366,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	}
 	
 	@Override
-	public void deactivated()
+	public void deactivate()
 	{
-		super.deactivated();
+		super.deactivate();
 	}
 	
 	@Override

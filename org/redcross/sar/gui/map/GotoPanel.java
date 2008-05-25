@@ -4,23 +4,24 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.text.ParseException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMap.CoordinateFormat;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
-import com.esri.arcgis.controls.IMapControlEvents2OnMouseUpEvent;
+import com.esri.arcgis.controls.IMapControlEvents2OnMouseDownEvent;
 import com.esri.arcgis.interop.AutomationException;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -28,7 +29,7 @@ import javax.swing.event.ChangeListener;
  * @author kennetgu
  *
  */
-public class GotoPanel extends DiskoPanel {
+public class GotoPanel extends DefaultDiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -43,28 +44,14 @@ public class GotoPanel extends DiskoPanel {
 	private IDiskoMap m_map = null;
 	
 	private boolean m_isAutoUpdate = false;
-		
-	private final IMapControlEvents2Adapter m_mouseAdapter = new IMapControlEvents2Adapter() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void onMouseUp(IMapControlEvents2OnMouseUpEvent e) throws IOException, AutomationException {
-			// forward
-			super.onMouseUp(e);
-			// update point?
-			if(m_map!=null)
-				getPositionField().setPoint(m_map.getClickPoint());
-		}
-		
-	};
 	
 	/**
 	 * Constructor 
 	 * 
 	 */
 	public GotoPanel() {
-		
+		// forward
+		super("",false,false);
 		// initialize GUI
 		initialize();
 		
@@ -75,7 +62,10 @@ public class GotoPanel extends DiskoPanel {
 	 * 
 	 * @param caption
 	 */
-	public GotoPanel(String caption) {
+	public GotoPanel(String caption, boolean isAutoUpdate) {
+		
+		// prepare
+		m_isAutoUpdate = isAutoUpdate;
 		
 		// initialize GUI
 		initialize();
@@ -180,15 +170,27 @@ public class GotoPanel extends DiskoPanel {
 	 */
 	public PositionField getPositionField() {
 		if (m_positionField == null) {
-			m_positionField = new PositionField();
+			try {
+				m_positionField = new PositionField();
+				m_positionField.addChangeListener(new ChangeListener() {
+
+					public void stateChanged(ChangeEvent e) {
+						GotoPanel.this.fireOnWorkChange(e.getSource());
+					}
+					
+				});
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return m_positionField;
 	}
 
 	/**
-	 * This method initializes m_poiField	
+	 * This method initializes GotoButton	
 	 * 	
-	 * @return POIField	
+	 * @return {@link JButton}
 	 */
 	private JButton getGotoButton() {
 		if (m_gotoButton == null) {
@@ -251,6 +253,7 @@ public class GotoPanel extends DiskoPanel {
 				// center at position?
 				if(p!=null) {
 					m_map.centerAtPosition(p);
+					m_map.flashPosition(p);
 				}
 				else
 					Utils.showWarning("Du må oppgi korrekte koordinater");
@@ -344,5 +347,20 @@ public class GotoPanel extends DiskoPanel {
 		}
 	}
 	
+	private final IMapControlEvents2Adapter m_mouseAdapter = new IMapControlEvents2Adapter() {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// update point?
+					if (m_map != null) getClickPoint();
+				}
+			});			
+		}
+		
+	};
 	
 }  //  @jve:decl-index=0:visual-constraint="23,0"

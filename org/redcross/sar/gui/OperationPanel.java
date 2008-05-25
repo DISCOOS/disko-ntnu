@@ -1,20 +1,21 @@
+
 package org.redcross.sar.gui;
 
-import java.awt.GridBagLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.app.Utils;
-
-public class OperationPanel extends JPanel {
+public class OperationPanel extends DefaultDiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private DiskoPanel m_panel = null;
-	private JList m_list = null;
+	private OperationTable m_table = null;
 	
 	public OperationPanel() {
+		// forward
+		super("Velg aktiv aksjon");
 		// initialize GUI
 		initialize();
 	}
@@ -23,30 +24,63 @@ public class OperationPanel extends JPanel {
 	 * Initialize this
 	 */
 	private void initialize() {
-		this.setLayout(new GridBagLayout());
-		this.add(getPanel());
-	}
-	
-	/**
-	 * Initialize the panel
-	 */
-	private JPanel getPanel() {
-		if(m_panel == null) {
-			m_panel = new DiskoPanel();
-			m_panel.setBodyComponent(getList());
-			m_panel.setCaptionText("Velg operasjon");
-			Utils.setFixedSize(m_panel, 400, 300);
-		}
-		return m_panel;
+		// set table
+		setBodyComponent(getTable());
 	}
 	
 	/**
 	 * Initialize the list 
 	 */
-	private JList getList() {
-		if(m_list == null) {
-			m_list = new JList();
+	private OperationTable getTable() {
+		if(m_table == null) {
+			m_table = new OperationTable();
+			m_table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+				public void valueChanged(ListSelectionEvent e) {
+					// consume?
+					if(!isChangeable()) return;
+					// consume change
+					setChangeable(false);
+					// set dirty flag
+					setDirty(e.getFirstIndex()>=0);					
+					// resume change
+					setChangeable(true);
+				}
+				
+			});
+			m_table.addKeyListener(new KeyAdapter() {
+
+				public void keyTyped(KeyEvent e) {
+					if(KeyEvent.VK_ENTER == e.getKeyCode())
+						finish();
+					else if(KeyEvent.VK_ESCAPE == e.getKeyCode())
+						cancel();					
+				}
+				
+			});
 		}
-		return m_list;
+		return m_table;
 	}
+	
+	public String getSelectedOperation() {
+		return m_table.getValueAt(m_table.getSelectedRow(),0).toString();
+	}
+	
+	@Override
+	public void update() {
+		// forward
+		super.update();
+		// consume?
+		if(!isChangeable()) return;
+		// consume changes
+		setChangeable(false);
+		// update table
+		getTable().update();
+		// resume changes
+		setChangeable(true);
+		// select first?
+		if(getTable().getRowCount()>0)
+			getTable().getSelectionModel().setSelectionInterval(0, 0);		
+	}
+	
 }

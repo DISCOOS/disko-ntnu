@@ -15,9 +15,10 @@ import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.wp.IDiskoWp;
-import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.map.IDiskoMap;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
@@ -119,12 +120,20 @@ public class SubMenuPanel extends JPanel {
 		if (cancelButton == null) {
 			try {
 				cancelButton = DiskoButtonFactory.createButton("SYSTEM.ROLLBACK",ButtonSize.NORMAL);
-				cancelButton.setIcon(new DiskoCustomIcon(cancelButton.getIcon(),Color.RED,0.4f));
+				cancelButton.setIcon(new DiskoIcon(cancelButton.getIcon(),Color.RED,0.4f));
 				cancelButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						IDiskoWp wp = (IDiskoWp)app.getCurrentRole().getCurrentDiskoWpModule();
 			    		// forward
-						wp.cancel();
+						boolean isCanceled = wp.cancel();
+						// forward to draw adapter?
+						if(isCanceled && wp.isMapInstalled()) {
+							// get map
+							IDiskoMap map = wp.getMap();
+							if(map.isEditSupportInstalled()) {
+								map.getDrawAdapter().cancel();
+							}							
+						}
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -143,7 +152,7 @@ public class SubMenuPanel extends JPanel {
 		if (finishButton == null) {
 			try {
 				finishButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
-				finishButton.setIcon(new DiskoCustomIcon(finishButton.getIcon(),Color.GREEN,0.4f));
+				finishButton.setIcon(new DiskoIcon(finishButton.getIcon(),Color.GREEN,0.4f));
 				finishButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						IDiskoWp wp = (IDiskoWp)app.getCurrentRole().getCurrentDiskoWpModule();

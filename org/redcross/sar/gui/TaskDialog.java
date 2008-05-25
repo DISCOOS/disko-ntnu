@@ -54,12 +54,12 @@ public class TaskDialog extends DiskoDialog
 	
 	private IDiskoApplication m_application = null;
 	
-	private DiskoPanel m_contentsPanel = null;
+	private DefaultDiskoPanel m_contentsPanel = null;
 
 	private ITaskIf m_currentTask = null;
 
-	private JButton m_finishedButton = null;
-	private JButton m_cancelButton = null;
+	//private JButton m_finishedButton = null;
+	//private JButton m_cancelButton = null;
 
 	private JTextField m_taskTextField = null;
 	private JComboBox m_typeComboBox = null;
@@ -87,7 +87,18 @@ public class TaskDialog extends DiskoDialog
 
 	private void initialize()
 	{
-		m_contentsPanel = new DiskoPanel("Oppgave");
+		m_contentsPanel = new DefaultDiskoPanel("Oppgave");
+		m_contentsPanel.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				String cmd = e.getActionCommand();
+				if("finish".equalsIgnoreCase(cmd)) 
+					finish();
+				else if("cancel".equalsIgnoreCase(cmd)) 
+					cancel();				
+			}
+			
+		});
 		
 		JPanel panel = (JPanel)m_contentsPanel.getBodyComponent();
 		panel.setLayout(new GridBagLayout());
@@ -139,7 +150,7 @@ public class TaskDialog extends DiskoDialog
 		Object[] responsible = {};
 		try
 		{
-			responsible = m_application.getDiskoModuleLoader().getRoleTitles();
+			responsible = m_application.getModuleManager().getRoleTitles(false);
 		}
 		catch (Exception e1)
 		{
@@ -232,48 +243,39 @@ public class TaskDialog extends DiskoDialog
 		gbc.gridwidth = 3;
 		addComponent(0, m_resources.getString("TaskObject.text"), m_objectTextField, 1, gbc);
 
-		// Finish button
-		JPanel actionButtonPanel = new JPanel();
-		m_finishedButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
-		m_finishedButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				if(timesValid())
-				{
-					saveTask();
-					setVisible(false);
-				}
-				else
-				{
-					ErrorDialog error = new ErrorDialog(m_application.getFrame());
-					error.showError(m_resources.getString("TimeError.header"),
-							m_resources.getString("TimeError.text"));
-				}
-			}
-		});
-		actionButtonPanel.add(m_finishedButton);
-
-		// Cancel button
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				fireOnWorkCancel();
-				setVisible(false);
-			}
-		});
-		actionButtonPanel.add(m_cancelButton);
-
-		gbc.gridwidth = 4;
-		gbc.gridy++;
-		panel.add(actionButtonPanel, gbc);
 
 		this.add(m_contentsPanel);
 		this.pack();
 	}
+	
+	public boolean finish() {
+		if(isWorking()) return false;
+		setIsWorking();
+		if(timesValid())
+		{
+			saveTask();
+			setVisible(false);
+		}
+		else
+		{
+			ErrorDialog error = new ErrorDialog(m_application.getFrame());
+			error.showError(m_resources.getString("TimeError.header"),
+					m_resources.getString("TimeError.text"));
+		}		
+		setIsNotWorking();
+		m_contentsPanel.setDirty(false);
+		return true;
+	}
 
+	public boolean cancel() {
+		if(isWorking()) return false;
+		setIsWorking();
+		fireOnWorkCancel();
+		setVisible(false);		
+		setIsNotWorking();
+		return true;
+	}
+	
 	private void addComponent(int column, String labelText, JComponent component, int numRows, GridBagConstraints gbc)
 	{
 		gbc.gridheight = Math.max(1, numRows);

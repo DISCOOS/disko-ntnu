@@ -15,6 +15,9 @@ import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -25,12 +28,12 @@ import com.borland.jbcl.layout.VerticalFlowLayout;
  * @author kennetgu
  *
  */
-public class AttributesPanel extends JPanel {
+public class AttributesPanel extends DefaultDiskoPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Map<String,IDiskoAttribute> m_panels = null;
 	private List<String> m_attributes = null;
+	private Map<String,IDiskoAttribute> m_panels = null;
 	
 	private JPanel m_contentPanel = null;
 	private JLabel m_emptyLabel = null;
@@ -95,29 +98,47 @@ public class AttributesPanel extends JPanel {
 			attributes.add(it.next());
 		}
 		// forward
-		create(msoObject,attributes,width,isEditable);
+		create(msoObject,attributes,width,true,isEditable);
 	}
 	
-	public int create(IMsoObjectIf msoObject, List<String> attributes, int width, boolean isEditable) {
+	public int create(IMsoObjectIf msoObject, List<String> attributes, int width, boolean include, boolean isEditable) {
 		// initialize
 		int added = 0;
 		// remove old panels
 		clearAttributes();
 		// get all attributes
 		Map<String,IAttributeIf> map = msoObject.getAttributes();
-		// add panels
-		for(String it:attributes) {
-			// contains?
-			if(map.containsKey(it)) {
-				// get attribute
-				IAttributeIf attr = map.get(it);
-				// is supported?
-				if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
-					// add new attribute panel this
-					added += (addAttribute(attr,attr.getName(),width,isEditable)!=null ? 1 : 0);
+		// select decision method
+		if(include) {
+			// insert only passed attribues 
+			for(String it:attributes) {
+				// add to panel?
+				if(map.containsKey(it)) {
+					// get attribute
+					IAttributeIf attr = map.get(it);
+					// is supported?
+					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
+						// add new attribute panel this
+						added += (addAttribute(attr,attr.getName(),width,isEditable)!=null ? 1 : 0);
+					}
 				}
-			}
-		}		
+			}		
+		}
+		else {
+			// insert all attribues except passed attribues
+			for(String it: map.keySet()) {
+				// add to panel?
+				if(!attributes.contains(it)) {
+					// get attribute
+					IAttributeIf attr = map.get(it);
+					// is supported?
+					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
+						// add new attribute panel this
+						added += (addAttribute(attr,attr.getName(),width,isEditable)!=null ? 1 : 0);
+					}
+				}
+			}					
+		}
 		// retrun counter
 		return added;
 	}
@@ -137,14 +158,25 @@ public class AttributesPanel extends JPanel {
 		for(IDiskoAttribute it: m_panels.values()) {
 			count += (it.save() ? 1 : 0);
 		}
+		setDirty(false);
 		return count;
 	}
 	
-	public boolean addAttributePanel(IDiskoAttribute panel)  {
-		
-		// failure
+	@Override
+	public boolean finish() {
+		if(super.finish()) {
+			return (save()>0);
+		}
 		return false;
-		
+	}
+	
+	@Override
+	public boolean cancel() {
+		if(super.cancel()) {
+			load();
+			return true;
+		}
+		return false;
 	}
 	
 	public boolean addAttribute(IDiskoAttribute attribute)  {
@@ -176,6 +208,26 @@ public class AttributesPanel extends JPanel {
 			m_attributes.add(name);			
 			// add to content panel
 			getContentPanel().add((Component)attr,null);
+			// add listener
+			attr.addDiskoWorkListener(new IDiskoWorkListener() {
+
+				public void onWorkCancel(DiskoWorkEvent e) {
+					update();					
+				}
+
+				public void onWorkChange(DiskoWorkEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void onWorkFinish(DiskoWorkEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+			});
+			// forward
+			update();
 			// return panel
 			return attr;
 		}
@@ -205,6 +257,7 @@ public class AttributesPanel extends JPanel {
 			m_attributes.remove(name);
 			getContentPanel().remove(it);
 		}
+		update();
 		// failure
 		return false;
 	}
@@ -323,5 +376,17 @@ public class AttributesPanel extends JPanel {
 			e.printStackTrace();
 		}
 		return component;
-  	}	
+  	}
+  	
+  	public void update() {
+  		// calculate dirty bit
+  		for(IDiskoAttribute it : m_panels.values()) {
+  			if(it.isDirty()) {
+  				setDirty(true);
+  				break;
+  			}
+  		}
+  		// forward 
+  		super.update();
+  	}
 }

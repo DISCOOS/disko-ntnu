@@ -16,7 +16,6 @@ import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoCommitListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.thread.AbstractDiskoWork;
-import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoNullPointerException;
@@ -209,7 +208,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
         	// delete all undeleteable objects
         	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
-        		if(!msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
+        		if(msoObj!=null && !msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
         			msoObj.deleteObject();
         	}
         	        	
@@ -698,7 +697,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
             {
                 loadingOperation = false;
-                diskoApp.operationAdded(((SarOperation) change.getSource()).getID());
+                diskoApp.onOperationAdded(((SarOperation) change.getSource()).getID());
             }
         }
         if (sarOperation != null && change.getSarOp() == sarOperation)

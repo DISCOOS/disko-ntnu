@@ -9,6 +9,8 @@ import java.util.EnumSet;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -57,6 +59,15 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		if(m_component==null) {
 			JList list = new JList();
 			list.setEnabled(m_isEditable);
+			list.addListSelectionListener(new ListSelectionListener() {
+
+				public void valueChanged(ListSelectionEvent e) {
+					if(isWorking()) return;
+					fireOnWorkChange();					
+				}
+				
+			});
+			
 			m_component = list;
 		}
 		return m_component;

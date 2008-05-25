@@ -5,6 +5,7 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -137,11 +138,11 @@ public class MessageLogPanel
         m_scrollPane1 = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         m_scrollPane1.setOpaque(false);
 
+        m_map.setNorthBarVisible(true);
+        m_map.setSouthBarVisible(true);
+
         m_tablePanel.add(m_scrollPane1, LOG_ID);
-        m_tablePanel.add(
-        		MapStatusBar.createPanel(m_map, 
-				new MapStatusBar(), BorderLayout.NORTH, 
-				BorderFactory.createBevelBorder(BevelBorder.LOWERED)), MAP_ID);
+        m_tablePanel.add((JComponent)m_map, MAP_ID);
 
         m_logTable = new JTable();
         m_scrollPane1.setViewportView(m_logTable);

@@ -6,9 +6,6 @@ package org.redcross.sar.gui.attribute;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -44,15 +41,17 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	protected AbstractButton m_button = null;
 	
 	protected String m_caption = null;
-	protected boolean m_isEditable = false;
 	
 	protected Dimension m_absolute = null;
 
 	protected IAttributeIf m_attribute = null;
 	
+	protected boolean m_isDirty = false;
 	protected boolean m_autoSave = false;
+	protected boolean m_isEditable = false;
 	
 	private int m_isWorking = 0;
+	
 	
 	private List<IDiskoWorkListener> listeners = null;
 	
@@ -85,20 +84,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		this.add(getCaptionLabel(),BorderLayout.WEST);
 		this.add(getComponent(),BorderLayout.CENTER);
 		this.add(getButton(), BorderLayout.EAST);
-
-		// add update manager
-		getComponent().addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {						
-				// forward
-				super.focusLost(e);
-				// save?
-				if(isWorking() || !m_autoSave) return;
-				// forward
-				save();				
-			}
-			
-		});
 		
 	}
 					
@@ -146,10 +131,11 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	}
 	
 	protected void fireOnWorkChange() {
-		fireOnWorkChange(new DiskoWorkEvent(this,m_component,null,getValue(),DiskoWorkEventType.TYPE_CHANGE));
+		fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEventType.TYPE_CHANGE));
 	}
 			
 	protected void fireOnWorkChange(DiskoWorkEvent e) {
+		// forward
 		for(IDiskoWorkListener it: listeners) {
 			it.onWorkChange(e);
 		}
@@ -166,6 +152,13 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 * Public methods
 	 *================================================================== 
 	 */
+	
+	public boolean isDirty() {
+		if(m_attribute==null)
+			return m_attribute.isUncommitted();
+		else
+			return m_isDirty;
+	}
 	
 	public Dimension getAttributeSize() {
 		return m_absolute;
@@ -230,43 +223,76 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	public void setCaption(String text) {
 		getCaptionLabel().setText(text);
 	}
+
+	/**
+	 * Updates the attribute value
+	 * 
+	 * If overridden by extending class, remember
+	 * to forward the call to this super class.
+	 */
 	
+	public boolean setValue(Object value) {
+		// update dirty bit?
+		if(!isWorking()) m_isDirty = true;
+		// failure, is not implemented
+		return false;
+	}
+
 	public boolean fill(Object values) { return true; };
 	
 	public boolean load() {
+		// consume?
+		if(isWorking()) return false;
+		// initialise
+		boolean bFlag = false;
+		// consume change
+		setIsWorking();
 		// load from mso model?
 		if(isMsoAttribute()) {
 			try {
 				// forward
-				return setValue(getAttribValue(m_attribute));
+				bFlag = setValue(getAttribValue(m_attribute));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	
 		}
 		else {
 			// reapply current value
-			return setValue(getValue());
+			bFlag = setValue(getValue());
 		}
-		// failed
-		return false;
+		// resume change
+		setIsNotWorking();
+		// finished
+		return bFlag;
 	}
 	
 	public boolean save() {
 		// allowed?
-		if(!isMsoAttribute() || ! m_isEditable) return false;
+		if(isWorking() || !isMsoAttribute() || ! m_isEditable) return false;
+		
+		// initialize
+		boolean bFlag = false;
+		
+		// consume changes
+		setIsWorking();
+		
 		try {
 			// forward
 			if(setAttribValue(m_attribute,getValue())) {
 				// notify				
 				fireOnWorkChange();
 				// success
-				return true;
+				bFlag = true;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		// failed
-		return false;
+
+		// resume changes
+		setIsNotWorking();
+		
+		// finished
+		return bFlag;
 	}
 
 
@@ -291,14 +317,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	public boolean removeDiskoWorkListener(IDiskoWorkListener listener) {
 		return listeners.remove(listener);
 		
-	}
-	
-	public void addFocusListener(FocusListener listener) {
-		getComponent().addFocusListener(listener);
-	}
-	
-	public void removeFocusListener(FocusListener listener) {
-		getComponent().removeFocusListener(listener);
 	}
 	
 	public void setButton(AbstractButton button, boolean isVisible) {
@@ -331,9 +349,8 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 
 	public abstract Object getValue();
 	
-	public abstract boolean setValue(Object value);
-
 	public abstract boolean setMsoAttribute(IAttributeIf attribute);
+	
 	
 	/*==================================================================
 	 * Static protected methods

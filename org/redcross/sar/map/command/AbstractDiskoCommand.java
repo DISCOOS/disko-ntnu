@@ -286,8 +286,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 
 	protected void fireOnWorkFinish() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_FINISH);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_FINISH);
 	   	// forward
     	fireOnWorkFinish(e);
     }
@@ -302,8 +301,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 
 	protected void fireOnWorkCancel() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_CANCEL);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CANCEL);
     	// forward
     	fireOnWorkCancel(e);
     }
@@ -318,8 +316,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 
 	protected void fireOnWorkChange() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CHANGE);
     	// forward
     	fireOnWorkCancel(e);
     }
@@ -332,11 +329,9 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		}
 	}
     
-	protected void fireOnWorkChange(Object worker, 
-			IMsoObjectIf msoObj, Object data) {
+	protected void fireOnWorkChange(Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				worker,msoObj,data,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEventType.TYPE_CHANGE);
 		// forward
 		fireOnWorkChange(e);    	
     }

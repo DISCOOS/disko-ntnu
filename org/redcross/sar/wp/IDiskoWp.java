@@ -7,7 +7,7 @@ package org.redcross.sar.wp;
  * @author geira
  *
  */
-public interface IDiskoWp {
+public interface IDiskoWp extends IDiskoWpModule {
 	
 	/**
 	 * Must be called when a task is canceled. Rollback.

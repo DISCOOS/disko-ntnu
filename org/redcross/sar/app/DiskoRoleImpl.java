@@ -10,7 +10,7 @@ import javax.swing.JToggleButton;
 
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.MainMenuPanel;
 import org.redcross.sar.gui.MainPanel;
 import org.redcross.sar.gui.NavBar;
@@ -73,26 +73,35 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	 */
 	public void addDiskoWpModule(final IDiskoWpModule module, boolean isDefault) {
 		try {
-			final String id = getName()+module.getName();
+			
+			// get module id
+			final String id = module.getName();
+			
+			// add role as disko work to module
 			module.addDiskoWorkEventListener(this);
 
-			// get toggle button
-			JToggleButton tbutton = DiskoButtonFactory
-				.createToggleButton(ButtonSize.NORMAL, 0, 0);
-			// get icon
-			DiskoCustomIcon icon = DiskoIconFactory.getIcon("MODULE."+module.getName(), 
-					DiskoButtonFactory.getCatalog(ButtonSize.NORMAL),Color.ORANGE,0.3f);
-			// set tooltip
+			// get toggle button and icon
+			JToggleButton tbutton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL, 0, 0);
 			tbutton.setToolTipText(module.getCaption());
-			// add actions listener
+			DiskoIcon icon = DiskoIconFactory.getIcon("MODULE."+module.getName(), 
+					DiskoButtonFactory.getCatalog(ButtonSize.NORMAL),Color.ORANGE,0.3f);
+			
+			// add action listener for invocation of module
 			tbutton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					selectDiskoWpModule(id);
 				}
 			});
-			app.getUIFactory().getMainMenuPanel().addItem(tbutton, icon,getName());
+			
+			// add button to this roles main menu (identified by the role name)
+			app.getUIFactory().getMainMenuPanel().addItem(tbutton,icon,getName());
+			
+			// save as default module?
 			defaultModule = (isDefault ? module : defaultModule);
+			
+			// add to modules
 			modules.add(module);
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -107,6 +116,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	}
 	
 	public void fireAfterOperationChange() {
+		// forward
 		for (int i = 0; i < modules.size(); i++) {
 			// forward
 			modules.get(i).afterOperationChange();
@@ -119,7 +129,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	
 	public IDiskoWpModule getDiskoWpModule(String id) {
 		for (int i = 0; i < modules.size(); i++) {
-			if ((getName()+modules.get(i).getName()).equals(id)) {
+			if ((modules.get(i).getName()).equals(id)) {
 				return modules.get(i);
 			}
 		}
@@ -158,8 +168,8 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	public IDiskoWpModule selectDiskoWpModule(IDiskoWpModule module) {
 		if (module != null) {
 	    	boolean isLocked = app.setLocked(true);
-	    	// has a current module 
-			if (currentModule!=null) {
+	    	// any change?
+			if (module!=currentModule && currentModule!=null) {
 				// Require current WP to confirm switch (E.g. confirm abort for uncommitted changes).
 				// Override AbstractDiskoWpModule#confirmDeactivate() to define WP specific confirm
 				if(!currentModule.confirmDeactivate()) {
@@ -172,9 +182,10 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 					app.setLocked(isLocked);
 					return currentModule;
 				}
-				// deactiat previous module
+				// deactivate previous module
 				try {
-					currentModule.getMap().setActiveTool(null,false);
+					if(currentModule.isMapInstalled())
+						currentModule.getMap().setActiveTool(null,0);
 				} catch (AutomationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -182,9 +193,9 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				currentModule.deactivated();
+				currentModule.deactivate();
 			}
-			String id = getName()+module.getName();
+			String id = module.getName();
 			MainMenuPanel mainMenu = app.getUIFactory().getMainMenuPanel();
 			SubMenuPanel subMenu   = app.getUIFactory().getSubMenuPanel();
 			NavBar navBar = app.getUIFactory().getMainPanel().getNavBar();
@@ -200,7 +211,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			}
 			navBar.hideDialogs();
 			currentModule = module;
-			module.activated();
+			module.activate(this);
 			setColoredIcon(module.isChanged());
 			// set the button selected in the main menu
 			int index =  modules.indexOf(module);
@@ -224,7 +235,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.app.IDiskoRole#getDiskoWpModules()
 	 */
-	public List getDiskoWpModules() {
+	public List<IDiskoWpModule> getDiskoWpModules() {
 		return modules;
 	}
 	
@@ -273,18 +284,18 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 	private void setColoredIcon(boolean show) {
 		MainMenuPanel mainMenu = app.getUIFactory().getMainMenuPanel();
 		SubMenuPanel subMenu = app.getUIFactory().getSubMenuPanel();
-		String id = getName()+currentModule.getName();
+		String id = currentModule.getName();
 		IDiskoWpModule module = getDiskoWpModule(id);
 		if (module != null) {
 			int index = modules.indexOf(module);
 			AbstractButton button = mainMenu.getButton(getName() ,index);
-			((DiskoCustomIcon)button.getIcon()).setColored(show);
+			((DiskoIcon)button.getIcon()).setColored(show);
 			button.repaint();
 			button = subMenu.getCancelButton();
-			((DiskoCustomIcon)button.getIcon()).setColored(show);
+			((DiskoIcon)button.getIcon()).setColored(show);
 			button.repaint();
 			button = subMenu.getFinishButton();
-			((DiskoCustomIcon)button.getIcon()).setColored(show);
+			((DiskoIcon)button.getIcon()).setColored(show);
 			button.repaint();
 		}
 	}

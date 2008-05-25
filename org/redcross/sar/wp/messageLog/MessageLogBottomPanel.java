@@ -3,7 +3,7 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -702,9 +702,9 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		// get flag
 		boolean isDirty = m_currentMessage!=null && m_newMessage || m_messageDirty;
 		// reset color
-		((DiskoCustomIcon)m_cancelStatusButton.getIcon()).setColored(isDirty);
+		((DiskoIcon)m_cancelStatusButton.getIcon()).setColored(isDirty);
 		m_cancelStatusButton.repaint();
-		((DiskoCustomIcon)m_finishedStatusButton.getIcon()).setColored(isDirty);
+		((DiskoIcon)m_finishedStatusButton.getIcon()).setColored(isDirty);
 		m_finishedStatusButton.repaint();
 	}
 	
@@ -774,8 +774,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	if(m_finishedStatusButton == null)
     	{
     		m_finishedStatusButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
-    		m_finishedStatusButton.setIcon(new DiskoCustomIcon(m_finishedStatusButton.getIcon(),Color.GREEN,0.3f));
-			((DiskoCustomIcon)m_finishedStatusButton.getIcon()).setColored(false);
+    		m_finishedStatusButton.setIcon(new DiskoIcon(m_finishedStatusButton.getIcon(),Color.GREEN,0.4f));
+			((DiskoIcon)m_finishedStatusButton.getIcon()).setColored(false);
     		m_finishedStatusButton.addActionListener(new ActionListener()
     		{
 				// Commit current message
@@ -1001,8 +1001,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	{
     		try {
     			m_cancelStatusButton = DiskoButtonFactory.createButton("SYSTEM.ROLLBACK",ButtonSize.NORMAL);
-    			m_cancelStatusButton.setIcon(new DiskoCustomIcon(m_cancelStatusButton.getIcon(),Color.RED,0.3f));
-    			((DiskoCustomIcon)m_cancelStatusButton.getIcon()).setColored(false);
+    			m_cancelStatusButton.setIcon(new DiskoIcon(m_cancelStatusButton.getIcon(),Color.RED,0.4f));
+    			((DiskoIcon)m_cancelStatusButton.getIcon()).setColored(false);
         		m_cancelStatusButton.addActionListener(new ActionListener()
         		{
     				public void actionPerformed(ActionEvent e)

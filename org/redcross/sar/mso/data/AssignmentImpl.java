@@ -40,7 +40,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public static String getText(String aKey)
     {
-        return Internationalization.getFullBundleText(Internationalization.getBundle(IAssignmentIf.class), aKey);
+        return Internationalization.getString(Internationalization.getBundle(IAssignmentIf.class), aKey);
     }
 
     public AssignmentImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)

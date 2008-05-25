@@ -10,12 +10,9 @@ import java.awt.FlowLayout;
 import java.util.Collection;
 import java.util.HashMap;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
 
-import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -107,7 +104,7 @@ public class MapStatusBar extends JPanel {
 	
 	private JLabel getSelectedLabel() {
 		if (selectedLabel == null) {
-			selectedLabel = new BarItem("Objekt","","",
+			selectedLabel = new BarItem("Objekt","<b>","",
 					"<velg>",true,
 					BarItemType.BAR_ITEM_SELECTED);
 		}
@@ -116,7 +113,7 @@ public class MapStatusBar extends JPanel {
 	
 	private JLabel getScaleLabel() {
 		if (scaleLabel == null) {
-			scaleLabel = new BarItem("Skala","1:","",
+			scaleLabel = new BarItem("Skala","<b>1:","",
 					"<velg>",true,BarItemType.BAR_ITEM_SCALE);
 		}
 		return scaleLabel;
@@ -124,9 +121,14 @@ public class MapStatusBar extends JPanel {
 	
 	public void onMouseDown(Point p) {
 		try {
-			clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true));		
+			if(p!=null && !p.isEmpty())
+				clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true));		
+			else {
+				mouseOverLabel.setEmpty();
+			}
 		}
 		catch(Exception e) {
+			e.printStackTrace();
 			clickLabel.setEmpty();
 		}
 	}
@@ -134,13 +136,16 @@ public class MapStatusBar extends JPanel {
 	public void onMouseMove(Point p) {
 		try {
 			if(p!=null && !p.isEmpty()) {
-				mouseOverLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true));
+				String text = MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true);
+				mouseOverLabel.setValue(text);
+				mouseOverLabel.updateUI();
 			}
 			else {
 				mouseOverLabel.setEmpty();
 			}
 		}
 		catch(Exception e) {
+			e.printStackTrace();
 			mouseOverLabel.setEmpty();
 		}
 	}
@@ -216,18 +221,6 @@ public class MapStatusBar extends JPanel {
 		for(BarItem it : c) {
 			it.setEmpty();
 		}
-	}
-	
-	public static JPanel createPanel(IDiskoMap map, 
-			MapStatusBar buddy, String position, Border border) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-		panel.add(buddy,position);
-		panel.add((JComponent)map,BorderLayout.CENTER);
-		((JComponent)map).setBorder(null);
-		map.setMapStatusBar(buddy);
-		panel.setBorder(border);
-		return panel;
 	}
 	
 	public class BarItem extends JLabel {

@@ -1,6 +1,7 @@
 package org.redcross.sar.gui.models;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -12,37 +13,43 @@ public class MapSourceTableModel extends AbstractTableModel {
 
 	private ArrayList<Object[]> rows = null;
 	
-	public MapSourceTableModel(ArrayList<MapSourceInfo> list){		
+	public MapSourceTableModel(List<MapSourceInfo> list){		
 		rows = new ArrayList<Object[]>();
+		load(list);
+	}
+	
+	public void load(List<MapSourceInfo> list) {
+		rows.clear();
 		for (int i = 0; i< list.size(); i++) {
 			add(list.get(i));
 		}			
 		super.fireTableDataChanged();
+
 	}
 	
-	private void add(MapSourceInfo mapinfo){
-		Object[] row = new Object[4];
-		row[0] = new Boolean(mapinfo.isCurrent());
-		row[1] = mapinfo.getMxdPath();
-		row[2] = mapinfo.getType();
-		row[3] = mapinfo.getStatus();
+	private void add(MapSourceInfo info){
+		Object[] row = new Object[5];
+		row[0] = info.isCurrent();
+		row[1] = info.getMxdDoc();
+		row[2] = info.getCoverage();
+		row[3] = info.getType();
+		row[4] = info.getStatus();
 		rows.add(row);
-		//System.out.println("test: " +row[0] + ", " + row[1]+", " +row[2]+", " +row[3]);
 	}
 	
 	public int getColumnCount() {
-		return 4;
+		return 5;
 	}
 
 	public int getRowCount() {
 		return rows.size();
 	}
 
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		if (rowIndex >= 0 && rowIndex < rows.size() && 
-				columnIndex >= 0 && columnIndex < rows.size()+1) {
-			Object[] row = (Object[])rows.get(rowIndex);
-			return row[columnIndex];
+	public Object getValueAt(int row, int col) {
+		if (row >= 0 && row < rows.size() && 
+				col >= 0 && col < getColumnCount()) {
+			Object[] data = (Object[])rows.get(row);
+			return data[col];
 		}
 		return null;
 	}
@@ -60,10 +67,38 @@ public class MapSourceTableModel extends AbstractTableModel {
 	public String getColumnName(int column) {
 		switch(column) {
 			case 0: return "Valgt";
-			case 2: return "Kartdokument";
+			case 1: return "Kartdokument";
+			case 2: return "Dekning";
 			case 3: return "Type";
 			case 4: return "Status";
 			default: return null;
+		}
+	}
+
+	@Override
+	public boolean isCellEditable(int row, int col) {
+		switch(col) {
+		case 0: return true;
+		default: return false;
+		}
+	}
+
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		if (row >= 0 && row < rows.size() && 
+				col >= 0 && col < getColumnCount()) {
+			if(col==0) {
+				// update all rows
+				for(int i=0;i<getRowCount();i++) {
+					Object[] data = (Object[])rows.get(i);
+					data[col] = (i==row);
+				}				
+				fireTableDataChanged();
+			}
+			else {
+				Object[] data = (Object[])rows.get(row);
+				data[col] = value;
+			}
 		}
 	}
 	

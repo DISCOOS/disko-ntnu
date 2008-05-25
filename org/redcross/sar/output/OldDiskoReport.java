@@ -73,7 +73,7 @@ public class OldDiskoReport {
 		m_msoModel = (MsoModelImpl) app.getMsoModel();	
 		this.reportMapScale = Double.parseDouble(app.getProperty("report.mapscale"));
 				
-		mapManager = app.getDiskoMapManager();
+		mapManager = app.getMapManager();
 
 		
 		this.reportTemplate_path = app.getProperty("report.template.path");

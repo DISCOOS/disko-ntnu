@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -26,6 +25,7 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.command.DiskoToolWrapper;
 import org.redcross.sar.map.command.DrawHostTool;
 import org.redcross.sar.map.command.ElementCommand;
 import org.redcross.sar.map.command.EraseTool;
@@ -42,6 +42,7 @@ import org.redcross.sar.map.command.ScaleCommand;
 import org.redcross.sar.map.command.SelectFeatureTool;
 import org.redcross.sar.map.command.SplitTool;
 import org.redcross.sar.map.command.TocCommand;
+import org.redcross.sar.map.command.DiskoToolWrapper.WrapAction;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.command.IDiskoTool.IDiskoToolState;
@@ -56,7 +57,6 @@ import com.esri.arcgis.controls.ControlsMapZoomToLastExtentBackCommand;
 import com.esri.arcgis.controls.ControlsMapZoomToLastExtentForwardCommand;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ICommand;
-import com.esri.arcgis.systemUI.ITool;
 
 public class NavBar extends JPanel {
 	
@@ -111,14 +111,14 @@ public class NavBar extends JPanel {
 	private EraseTool eraseCommand = null;
 	private ScaleCommand scaleCommand = null;
 	private SelectFeatureTool selectFeatureTool = null;
-	private ControlsMapZoomInTool zoomInTool = null;
-	private ControlsMapZoomOutTool zoomOutTool = null;
-	private ControlsMapPanTool panTool = null;
-	private ControlsMapZoomInFixedCommand zoomInFixedCommand = null;
-	private ControlsMapZoomOutFixedCommand zoomOutFixedCommand = null;
-	private ControlsMapFullExtentCommand fullExtentCommand = null;
-	private ControlsMapZoomToLastExtentForwardCommand zoomToLastExtentForwardCommand = null;
-	private ControlsMapZoomToLastExtentBackCommand zoomToLastExtentBackCommand = null;
+	private DiskoToolWrapper zoomInTool = null;
+	private DiskoToolWrapper zoomOutTool = null;
+	private DiskoToolWrapper panTool = null;
+	private DiskoToolWrapper zoomInFixedCommand = null;
+	private DiskoToolWrapper zoomOutFixedCommand = null;
+	private DiskoToolWrapper fullExtentCommand = null;
+	private DiskoToolWrapper zoomToLastExtentForwardCommand = null;
+	private DiskoToolWrapper zoomToLastExtentBackCommand = null;
 	private MapToggleCommand mapToggle = null;
 
 	public NavBar() {
@@ -131,10 +131,13 @@ public class NavBar extends JPanel {
 	}
 	
 	private void initialize() {
+		
+		// prepare
 		commands = new Hashtable<Enum<?>, ICommand>();
 		buttons = new Hashtable<Enum<?>, AbstractButton>();
 		bgroup = new ButtonGroup();
-			
+		
+		// add to layout
 		setLayout(new BorderLayout());
 		add(getLeftPanel(), BorderLayout.WEST);
 		add(getRightPanel(), BorderLayout.EAST);
@@ -142,51 +145,52 @@ public class NavBar extends JPanel {
 		// Add a not visible dummy JToggleButton, used to unselect all
 		// (visbible) JToggleButtons. This is a hack suggested by Java dev forum
 		bgroup.add(getDummyToggleButton());
-			
+		
+		// add all available commands
 		addCommand(getDrawHostToolToggleButton(), getDrawHostTool(), 
-				DiskoToolType.DRAW_HOST_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.DRAW_HOST_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getFreeHandToggleButton(), getFreeHandTool(), 
-				DiskoToolType.FREEHAND_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.FREEHAND_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getLineToolToggleButton(), getLineTool(), 
-				DiskoToolType.LINE_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.LINE_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getPOIToggleButton(), getPOITool(), 
-				DiskoToolType.POI_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.POI_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getPositionToggleButton(), getPositionTool(), 
-				DiskoToolType.POSITION_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.POSITION_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getFlankToggleButton(), getFlankTool(), 
-				DiskoToolType.FLANK_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.FLANK_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getSplitToggleButton(), getSplitTool(), 
-				DiskoToolType.SPLIT_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.SPLIT_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getSelectFeatureToggleButton(), getSelectFeatureTool(), 
-				DiskoToolType.SELECT_FEATURE_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.SELECT_FEATURE_TOOL, ButtonPlacement.LEFT,0);
 		addCommand(getEraseButton(), getEraseCommand(), 
-				DiskoToolType.ERASE_TOOL, ButtonPlacement.LEFT);
+				DiskoToolType.ERASE_TOOL, ButtonPlacement.LEFT,0);
 		addCommand(getElementToggleButton(), getElementCommand(), 
-				DiskoCommandType.ELEMENT_COMMAND, ButtonPlacement.LEFT);
+				DiskoCommandType.ELEMENT_COMMAND, ButtonPlacement.LEFT,1);
 		addCommand(getZoomInToggleButton(), getZoomInTool(), 
-				DiskoToolType.ZOOM_IN_TOOL, ButtonPlacement.RIGHT);
+				DiskoToolType.ZOOM_IN_TOOL, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomOutToggleButton(), getZoomOutTool(), 
-				DiskoToolType.ZOOM_OUT_TOOL, ButtonPlacement.RIGHT);
+				DiskoToolType.ZOOM_OUT_TOOL, ButtonPlacement.RIGHT,0);
 		addCommand(getPanToggleButton(), getPanTool(), 
-				DiskoToolType.PAN_TOOL, ButtonPlacement.RIGHT);
+				DiskoToolType.PAN_TOOL, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomInFixedButton(), getZoomInFixedCommand(),
-				DiskoCommandType.ZOOM_IN_FIXED_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.ZOOM_IN_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomOutFixedButton(), getZoomOutFixedCommand(),
-				DiskoCommandType.ZOOM_OUT_FIXED_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.ZOOM_OUT_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getFullExtentButton(), getFullExtentCommand(), 
-				DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomToLastExtentBackwardButton(), getZoomToLastExtentBackCommand(), 
-				DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND, ButtonPlacement.RIGHT);	
+				DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND, ButtonPlacement.RIGHT,0);	
 		addCommand(getZoomToLastExtentForwardButton(), getZoomToLastExtentForwardCommand(), 
-				DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getMapToggleButton(), getMapToggleCommand(), 
-				DiskoCommandType.MAP_TOGGLE_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.MAP_TOGGLE_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getScaleButton(), getScaleCommand(), 
-				DiskoCommandType.SCALE_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.SCALE_COMMAND, ButtonPlacement.RIGHT,1);
 		addCommand(getTocToggleButton(), getTocTool(), 
-				DiskoCommandType.TOC_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.TOC_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getGotoToggleButton(), getGotoTool(), 
-				DiskoCommandType.GOTO_COMMAND, ButtonPlacement.RIGHT);
+				DiskoCommandType.GOTO_COMMAND, ButtonPlacement.RIGHT,0);
 	}
 	
 	private JPanel getLeftPanel() {
@@ -362,10 +366,10 @@ public class NavBar extends JPanel {
 		return selectFeatureTool;
 	}
 	
-	private ControlsMapZoomInTool getZoomInTool() {
+	private DiskoToolWrapper getZoomInTool() {
 		if (zoomInTool == null) {
 			try {
-				zoomInTool = new ControlsMapZoomInTool();
+				zoomInTool = DiskoToolWrapper.create(new ControlsMapZoomInTool(),WrapAction.ONMOUSEUP);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -377,10 +381,10 @@ public class NavBar extends JPanel {
 		return zoomInTool;
 	}
 	
-	private ControlsMapZoomOutTool getZoomOutTool() {
+	private DiskoToolWrapper getZoomOutTool() {
 		if (zoomOutTool == null) {
 			try {
-				zoomOutTool = new ControlsMapZoomOutTool();
+				zoomOutTool = DiskoToolWrapper.create(new ControlsMapZoomOutTool(),WrapAction.ONMOUSEUP);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -392,10 +396,10 @@ public class NavBar extends JPanel {
 		return zoomOutTool;
 	}
 	
-	private ControlsMapPanTool getPanTool() {
+	private DiskoToolWrapper getPanTool() {
 		if (panTool == null) {
 			try {
-				panTool = new ControlsMapPanTool();
+				panTool = DiskoToolWrapper.create(new ControlsMapPanTool(),WrapAction.ONMOUSEUP);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -407,10 +411,10 @@ public class NavBar extends JPanel {
 		return panTool;
 	}
 		
-	private ControlsMapZoomInFixedCommand getZoomInFixedCommand() {
+	private DiskoToolWrapper getZoomInFixedCommand() {
 		if (zoomInFixedCommand == null) {
 			try {
-				zoomInFixedCommand = new ControlsMapZoomInFixedCommand();
+				zoomInFixedCommand = DiskoToolWrapper.create(new ControlsMapZoomInFixedCommand(),WrapAction.ONCLICK);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -422,10 +426,10 @@ public class NavBar extends JPanel {
 		return zoomInFixedCommand;
 	}
 	
-	private ControlsMapZoomOutFixedCommand getZoomOutFixedCommand() {
+	private DiskoToolWrapper getZoomOutFixedCommand() {
 		if (zoomOutFixedCommand == null) {
 			try {
-				zoomOutFixedCommand = new ControlsMapZoomOutFixedCommand();
+				zoomOutFixedCommand = DiskoToolWrapper.create(new ControlsMapZoomOutFixedCommand(),WrapAction.ONCLICK);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -438,10 +442,10 @@ public class NavBar extends JPanel {
 		
 	}
 	
-	private ControlsMapFullExtentCommand getFullExtentCommand() {
+	private DiskoToolWrapper getFullExtentCommand() {
 		if (fullExtentCommand == null) {
 			try {
-				fullExtentCommand = new ControlsMapFullExtentCommand();
+				fullExtentCommand = DiskoToolWrapper.create(new ControlsMapFullExtentCommand(),WrapAction.ONCLICK);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -454,10 +458,11 @@ public class NavBar extends JPanel {
 		
 	}
 	
-	private ControlsMapZoomToLastExtentForwardCommand getZoomToLastExtentForwardCommand() {
+	private DiskoToolWrapper getZoomToLastExtentForwardCommand() {
 		if (zoomToLastExtentForwardCommand == null) {
 			try {
-				zoomToLastExtentForwardCommand = new ControlsMapZoomToLastExtentForwardCommand();
+				zoomToLastExtentForwardCommand = DiskoToolWrapper.create(
+						new ControlsMapZoomToLastExtentForwardCommand(),WrapAction.ONCLICK);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -470,10 +475,11 @@ public class NavBar extends JPanel {
 		
 	}
 	
-	private ControlsMapZoomToLastExtentBackCommand getZoomToLastExtentBackCommand() {
+	private DiskoToolWrapper getZoomToLastExtentBackCommand() {
 		if (zoomToLastExtentBackCommand == null) {
 			try {
-				zoomToLastExtentBackCommand = new ControlsMapZoomToLastExtentBackCommand();
+				zoomToLastExtentBackCommand = DiskoToolWrapper.create(
+						new ControlsMapZoomToLastExtentBackCommand(),WrapAction.ONCLICK);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -904,7 +910,7 @@ public class NavBar extends JPanel {
 		return (AbstractButton)buttons.get(key);
 	}
 	
-	public void addCommand(AbstractButton button, ICommand command, Enum e, Enum buttonPlacement) {
+	public void addCommand(AbstractButton button, ICommand command, Enum e, Enum buttonPlacement, int options) {
 		if (buttonPlacement == ButtonPlacement.LEFT) {
 			getLeftPanel().add(button);
 		} else {
@@ -916,10 +922,10 @@ public class NavBar extends JPanel {
 		buttons.put(e, button);
 		commands.put(e, command);
 		if (command != null) {
-			button.addActionListener(new NavActionListener(command));
+			button.addActionListener(new NavActionListener(command,options));
 		}
-		DiskoCustomIcon icon = 
-			new DiskoCustomIcon(DiskoIconFactory.getIcon(
+		DiskoIcon icon = 
+			new DiskoIcon(DiskoIconFactory.getIcon(
 					DiskoEnumFactory.getIcon(e),"48x48"));
 		if (icon != null) {
 			button.setIcon(icon);
@@ -1042,28 +1048,47 @@ public class NavBar extends JPanel {
 	
 	class NavActionListener implements ActionListener {
 		
+		private int options = 0;
+		private IDiskoTool tool = null;
 		private ICommand command = null;
 		
-		NavActionListener(ICommand command) {
-			this.command = command;
+		NavActionListener(Object command, int options) {
+			// prepare
+			this.options = options;
+			// get tool or command
+			if (command instanceof DiskoToolWrapper) {
+				// cast to DiskoToolWrapper
+				DiskoToolWrapper w = (DiskoToolWrapper)command;
+				// is command?
+				if(w.isCommand()) 
+					this.command = (ICommand)w;
+				// is tool?
+				if(w.isTool()) 
+					this.tool = (IDiskoTool)w;	
+			}
+			else if(command instanceof IDiskoTool)
+				this.tool = (IDiskoTool)command;
+			else if(command instanceof ICommand)
+				this.command = (ICommand)command;
 		}
 		
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
-				if (command instanceof ITool) {
+				// translate into action
+				if(tool!=null) {
 					IDiskoMap map = app.getCurrentMap();
 					if(map!=null)
-						map.setActiveTool((ITool)command,true);
+						map.setActiveTool(tool,options);					
 				}
-				else {
-					command.onClick();
+				else if(command!=null) {
+					command.onClick();					
 				}
-			} catch (AutomationException e1) {
+			} catch (AutomationException ex) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IOException e1) {
+				ex.printStackTrace();
+			} catch (IOException ex) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				ex.printStackTrace();
 			}
 		}
 	}

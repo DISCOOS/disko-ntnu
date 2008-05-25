@@ -2,6 +2,9 @@ package org.redcross.sar.app;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -14,35 +17,46 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This class loads and instanciate modules that implements the DiskoAp interface. 
- * Modules are grouped by roles (DiskoRolle). Roles an modules are read from a xml-file.
+ * <p>
+ * This class manages modules that implement the IDiskoWpModule 
+ * interface. Modules shared resources between roles, each role will
+ * can have one or more of these roles available.
+ * 
+ * <p>
+ * Roles an modules are read from a xml-file.
  * 
  * @author geira
  *
  */
 
-public class DiskoModuleLoader {
+public class DiskoModuleManager {
 
 	private IDiskoApplication app = null;
 	private Document doc = null;
 	private String[] rolleNames = null;
 	private ClassLoader classLoader = null;
+	private Map<String,IDiskoWpModule> modules = null;
 	
 	/**
-	 * Constructs a DiskoModuleLoader
+	 * Constructs a DiskoModuleManager
 	 * @param app A reference to the Disko application.
 	 * @param file A xml file containing roles and modules.
 	 */
-	public DiskoModuleLoader(IDiskoApplication app, File file) throws Exception {
+	public DiskoModuleManager(IDiskoApplication app, File file) throws Exception {
+		
+		// prepare
 		this.app = app;
 		this.classLoader = ClassLoader.getSystemClassLoader();
+		this.modules = new HashMap<String,IDiskoWpModule>();
 		
+		// load xml document
 		FileInputStream instream = new FileInputStream(file);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
 		dbf.setValidating(false);
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		doc = db.parse(instream);
+		this.doc = db.parse(instream);
+		
 	}
 	
 	/**
@@ -50,9 +64,9 @@ public class DiskoModuleLoader {
 	 * @return An array of role titles
 	 * @throws Exception
 	 */
-	public String[] getRoleTitles() throws Exception {
-		if (rolleNames == null) {
-			NodeList elems = doc.getElementsByTagName("DiskoRolle");
+	public String[] getRoleTitles(boolean refresh) throws Exception {
+		if (rolleNames == null || refresh) {
+			NodeList elems = doc.getElementsByTagName("DiskoRole");
 			rolleNames = new String[elems.getLength()];
 			for (int i = 0; i < elems.getLength(); i++) {
 				Element elem = (Element)elems.item(i);
@@ -70,7 +84,7 @@ public class DiskoModuleLoader {
 	 * @throws Exception
 	 */
 	public IDiskoRole parseRole(String name) throws Exception {
-		NodeList elems = doc.getElementsByTagName("DiskoRolle");
+		NodeList elems = doc.getElementsByTagName("DiskoRole");
 		for (int i = 0; i < elems.getLength(); i++) {
 			Element elem = (Element)elems.item(i);
 			String title = elem.getAttribute("title");
@@ -83,11 +97,14 @@ public class DiskoModuleLoader {
 	}
 
 	private IDiskoRole parseDiskoRole(Element elem) throws Exception {
+		
+		// get role information
 		String name = elem.getAttribute("name");
 		String title = elem.getAttribute("title");
 		String description = elem.getAttribute("description");
-		DiskoRoleImpl rolle = new DiskoRoleImpl(app, name, title, description);
+		DiskoRoleImpl role = new DiskoRoleImpl(app, name, title, description);
 
+		// enumerate all modules
 		NodeList children = elem.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			Node child = children.item(i);
@@ -95,26 +112,37 @@ public class DiskoModuleLoader {
 				continue;
 			}
 			if (child.getNodeName().equalsIgnoreCase("DiskoModule")) {
+				// get class name
 				String className = ((Element) child).getAttribute("classname");
+				// initialize
+				IDiskoWpModule module = null;
 				Boolean isDefault = false;
 				if(((Element) child).hasAttribute("isDefault")) {
 					isDefault = Boolean.valueOf(((Element) child).getAttribute("isDefault"));
 				}
-				Class cls = classLoader.loadClass(className);
-				String message = DiskoStringFactory.getText(Utils.getPackageName(cls)+".name");
-				message = String.format(DiskoStringFactory.getText("PROGRESS.STARTUP.CLASS.text"),message);
-				DiskoProgressMonitor.getInstance().setNote(message);
-				Object[] args = {rolle};
-				Object obj = cls.getConstructors()[0].newInstance(args);
-				if (obj instanceof IDiskoWpModule) {
-					IDiskoWpModule module = (IDiskoWpModule)obj;
-					rolle.addDiskoWpModule(module,isDefault);
+				// is module loaded already?
+				if(modules.containsKey(className)) {
+					module = modules.get(className);	
 				}
 				else {
-					throw new Exception("Unsupported class was found");
+					// load module
+					Class cls = classLoader.loadClass(className);
+					String message = DiskoStringFactory.getText(Utils.getPackageName(cls));
+					message = String.format(DiskoStringFactory.getText("PROGRESS_LOADING_CLASS"),message);
+					DiskoProgressMonitor.getInstance().setNote(message);
+					Object obj = cls.getConstructors()[0].newInstance();
+					if (obj instanceof IDiskoWpModule) {
+						module = (IDiskoWpModule)obj;
+						modules.put(className,module);
+					}
+					else throw new Exception("Unsupported class was found");
 				}
-			}
+				// add module?
+				if(module!=null)
+					role.addDiskoWpModule(module,isDefault);
+			}			
 		}
-		return rolle;
-	}
+		// return role
+		return role;
+	}	
 }

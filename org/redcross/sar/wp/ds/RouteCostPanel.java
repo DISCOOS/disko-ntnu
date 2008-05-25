@@ -177,9 +177,9 @@ public class RouteCostPanel extends JPanel
 			m_topPanel = new JPanel();
 			m_topPanel.setLayout(new BorderLayout());
 			m_topPanel.setPreferredSize(new Dimension(150, 350));
-			m_topPanel.add(MapStatusBar.createPanel(getMap(), 
-					new MapStatusBar(), BorderLayout.NORTH, 
-					BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+			getMap().setNorthBarVisible(true);
+			getMap().setSouthBarVisible(true);
+			m_topPanel.add((JComponent)getMap());
 			
 		}
 		return m_topPanel;

@@ -431,12 +431,12 @@ public class AssignmentScrollPanel extends DiskoScrollPanel implements IDiskoDro
 		        if (!AssignmentTransferUtilities.assignmentCanChangeToStatus(
 		        		assignment, getSelectedStatus(), getSelectedUnit())) {
 		        	// notify
-					Utils.showWarning("Du kan ikke flytte oppdrag hit", Utils.getApp().getFrame());
+					Utils.showWarning("Du kan ikke flytte oppdrag hit");
 		        }
 			}
 		}
 		catch(UnsupportedFlavorException e1) {
-			Utils.showWarning("Mottatt objekt er ikke et oppdrag", Utils.getApp().getFrame());
+			Utils.showWarning("Mottatt objekt er ikke et oppdrag");
 		}
 		catch (Exception e2) {
 			e2.printStackTrace();

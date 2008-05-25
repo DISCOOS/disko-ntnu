@@ -1,30 +1,33 @@
 package org.redcross.sar.gui;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.FlowLayout;
-import javax.swing.JButton;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 
+import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 
 public class LoginDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	private boolean allowExit = true;
-
-	private JPanel mainPanel = null;
-	private JButton okButton = null;
-	private JButton cancelButton = null;
-	private JPanel buttonPanel = null;
+	private boolean isLogin = false;
+	private boolean isCancel = false;
+	private boolean exitAppOnCancel = false;
+	
+	private DefaultDiskoPanel contentPanel = null;
 
 	private TextFieldAttribute attrUserName = null;
 	private TextFieldAttribute attrPassword = null;
@@ -42,11 +45,11 @@ public class LoginDialog extends DiskoDialog {
 	
 	private void initialize() {
 		try {
-			this.setTitle("DISKO Innlogging");
-            this.setContentPane(getMainPanel());
-            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            this.setUndecorated(false);
             this.setModal(true);
+            this.setUndecorated(true);
+            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            this.setContentPane(getContentPanel());
+            this.setPreferredSize(new Dimension(275,160));
             this.pack();
 				
 		}
@@ -55,85 +58,83 @@ public class LoginDialog extends DiskoDialog {
 		}
 	}
 
-	public boolean getAllowExit() {
-		return allowExit;
+	public void setVisible(boolean isVisible) {
+		// Only use showLogin() og showChangeRole()
 	}
 	
-	public void setVisible(boolean isVisible, boolean exit) {
-		allowExit = exit;
-		super.setVisible(isVisible);
-	}
 	/**
 	 * This method initializes jContentPane
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getMainPanel() {
-		if (mainPanel == null) {
-			mainPanel = new JPanel();
-			mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
-			mainPanel.add(createRigidArea());
-			mainPanel.add(getRoles());
-			mainPanel.add(createRigidArea());
-			mainPanel.add(getUserName());
-			mainPanel.add(createRigidArea());
-			mainPanel.add(getPassword());
-			mainPanel.add(createRigidArea());
-			mainPanel.add(getButtonPanel());
-			mainPanel.add(createRigidArea());
+	private DefaultDiskoPanel getContentPanel() {
+		if (contentPanel == null) {
+			contentPanel = new DefaultDiskoPanel("Innlogging");
+			contentPanel.setScrollBarPolicies(
+					DefaultDiskoPanel.VERTICAL_SCROLLBAR_NEVER,
+					DefaultDiskoPanel.HORIZONTAL_SCROLLBAR_NEVER);
+			contentPanel.setPreferredBodySize(new Dimension(275,100));
+			JPanel panel = (JPanel)contentPanel.getBodyComponent();
+			panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			panel.add(getRoles());
+			panel.add(createRigidArea());
+			panel.add(getUserName());
+			panel.add(createRigidArea());
+			panel.add(getPassword());
+			contentPanel.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					String cmd = e.getActionCommand();
+					if("finish".equalsIgnoreCase(cmd))
+						authorize();
+					else if("cancel".equalsIgnoreCase(cmd))
+						cancel();
+										
+				}
+				
+			});
 		}
-		return mainPanel;
+		return contentPanel;
 	}
 
 	public void setFixedSize() {
 		int offset = 0;
+		getContentPanel().setFixedSize();
 		Utils.setFixedSize(getRoles(),getWidth()-offset, 25);	
 		Utils.setFixedSize(getUserName(),getWidth()-offset, 25);	
 		Utils.setFixedSize(getPassword(),getWidth()-offset, 25);	
-		Utils.setFixedSize(getButtonPanel(),getWidth()-offset, 60);	
 	}	
 	
-	/**
-	 * This method initializes okButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getOKButton() {
-		if (okButton == null) {
-			try {
-				okButton = DiskoButtonFactory.createButton("GENERAL.OK", ButtonSize.NORMAL);
-				//okButton.setPreferredSize(new Dimension(100, 50));
-				okButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						fireOnWorkFinish();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
+	private void authorize() {
+		// get values
+		String role = (String)getRoles().getValue();
+		String user = (String)getUserName().getValue();
+		char[] pwd = String.valueOf(getPassword().getValue()).toCharArray();
+		// initialize authorization flag
+		boolean auth = true;
+		// login or change role?
+		if(isLogin) {
+			// forward
+			auth = Utils.getApp().login(role, user, pwd);
+			// is not authorized?
+			if(!auth) Utils.showWarning(DiskoStringFactory.getText("WARNING_LOGIN_FAILED"));
 		}
-		return okButton;
+		else {
+			// forward
+			auth = Utils.getApp().swapTo(role,user,pwd);
+			// is not authorized?
+			if(!auth) Utils.showWarning(DiskoStringFactory.getText("WARNING_LOGIN_FAILED"));
+		}
+		// hide me?
+		if(auth) super.setVisible(false);
 	}
 
-	/**
-	 * This method initializes cancelButton	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getCancelButton() {
-		if (cancelButton == null) {
-			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL);
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						fireOnWorkCancel();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return cancelButton;
+	private void cancel() {
+		// hide this
+		super.setVisible(false);
+		// exit system?
+		if (exitAppOnCancel) System.exit(0);		
 	}
 	
 	/**
@@ -184,25 +185,48 @@ public class LoginDialog extends DiskoDialog {
 		return attrRoles;
 	}
 
-	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.CENTER);
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(fl);
-				buttonPanel.add(getOKButton(), null);
-				buttonPanel.add(getCancelButton(), null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
+	public void load() {
+		String[] rolleNames = null;
+		IDiskoApplication app = Utils.getApp();
+		try {
+			rolleNames = app.getModuleManager().getRoleTitles(false);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return buttonPanel;
+		DefaultComboBoxModel model = new DefaultComboBoxModel();
+		for (int i = 0; i < rolleNames.length; i++) {
+			IDiskoRole currentRolle = app.getCurrentRole();
+			if (currentRolle != null && 
+					currentRolle.getTitle().equals(rolleNames[i])) {
+				// skip current rolle
+				continue;
+			}
+			model.addElement(rolleNames[i]);
+		}
+		getRoles().fill(model);
+	}
+	
+	public boolean showLogin(boolean exitAppOnCancel) {
+		// set flags
+		this.isCancel = false;
+		this.isLogin = true;
+		this.exitAppOnCancel = exitAppOnCancel;
+		// show dialog
+		super.setVisible(true);
+		// finished
+		return isCancel;
+	}
+	
+	public boolean showSwapTo() {
+		// set flags
+		this.isCancel = false;
+		this.isLogin = false;
+		this.exitAppOnCancel = false;
+		// show dialog
+		super.setVisible(true);
+		// finished
+		return isCancel;
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

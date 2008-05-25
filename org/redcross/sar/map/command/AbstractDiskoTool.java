@@ -2,20 +2,12 @@ package org.redcross.sar.map.command;
 
 import com.esri.arcgis.controls.BaseTool;
 import com.esri.arcgis.display.IDisplayTransformation;
-import com.esri.arcgis.geodatabase.IFeatureClass;
-import com.esri.arcgis.geodatabase.IFeatureCursor;
-import com.esri.arcgis.geodatabase.ISpatialFilter;
-import com.esri.arcgis.geodatabase.SpatialFilter;
-import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IEnvelope;
-import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
-import com.esri.arcgis.geometry.IProximityOperator;
 import com.esri.arcgis.geometry.IRelationalOperator;
 import com.esri.arcgis.geometry.Point;
-import com.esri.arcgis.geometry.Polygon;
-import com.esri.arcgis.geometry.Polyline;
+import com.esri.arcgis.geometry.esriTransformDirection;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
@@ -27,25 +19,13 @@ import org.redcross.sar.gui.map.IToolCollection;
 import org.redcross.sar.gui.map.IPropertyPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IOperationAreaIf;
-import org.redcross.sar.mso.data.IPOIIf;
-import org.redcross.sar.mso.data.IRouteIf;
-import org.redcross.sar.mso.data.ISearchAreaIf;
-import org.redcross.sar.mso.data.ITrackIf;
-import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.thread.AbstractDiskoWork;
-import org.redcross.sar.util.mso.TimePos;
-import org.redcross.sar.util.mso.Track;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 import java.util.Properties;
 import java.awt.geom.Point2D;
 
@@ -55,6 +35,7 @@ import javax.swing.SwingUtilities;
 public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	
 	// flags
+	protected boolean isDirty = false;			// true:=change is pending
 	protected boolean isActive = false;
 	protected boolean showDirect = false;
 	protected boolean showDialog = true;
@@ -66,7 +47,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	// mso objects information
 	protected IMsoObjectIf msoOwner = null;
 	protected IMsoObjectIf msoObject = null;
-	protected IMsoManagerIf.MsoClassCode msoClassCode = null;	
+	protected IMsoManagerIf.MsoClassCode msoCode = null;	
 	
 	// GUI components
 	protected DiskoMap map = null;
@@ -90,7 +71,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 *
 	 */
 	protected AbstractDiskoTool() {
-		listeners = new ArrayList<IDiskoWorkListener>();
+		// prepare
+		listeners = new ArrayList<IDiskoWorkListener>();		
 	}
 	
 	/*===============================================
@@ -104,6 +86,21 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	public boolean isActive() {
 		return isActive;
 	}
+	
+	public boolean isDirty() {
+		return isDirty;
+	}
+	
+	/**
+	 * Set dirty bit
+	 * 
+	 */	
+	protected void setDirty(boolean isDirty) {
+		// set flag
+		this.isDirty = isDirty;
+		// update panel
+		getPropertyPanel().update();		
+	}	
 	
 	/**
 	 * Returns the disko tool type
@@ -146,13 +143,13 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 * to activate this class. Howerver, an extender
 	 * of this class can override this behavior. 
 	 */	
-	public boolean activate(boolean allow){
+	public boolean activate(int options){
 		// set flag
 		isActive = true;
 		// toogle dialog?
-		if (dialog != null && allow && showDialog && showDirect)
+		if (dialog != null && (options==1) && showDialog && showDirect)
 				dialog.setVisible(!dialog.isVisible());
-		// allways allowed
+		// always allowed
 		return true;
 	}
 
@@ -171,8 +168,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return true;
 	}
 
-	public MsoClassCode getMsoClassCode() {
-		return msoClassCode;
+	public MsoClassCode getMsoCode() {
+		return msoCode;
 	}
 
 	public IMsoObjectIf getMsoObject() {
@@ -180,7 +177,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 
 	public void setMsoObject(IMsoObjectIf msoObject) {
-		setMsoDrawData(msoOwner,msoObject,msoClassCode);
+		setMsoData(msoOwner,msoObject,msoCode);
 	}
 	
 	public IMsoObjectIf getMsoOwner() {
@@ -188,17 +185,17 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 
 	public void setMsoOwner(IMsoObjectIf msoOwner) {
-		setMsoDrawData(msoOwner,msoObject,msoClassCode);
+		setMsoData(msoOwner,msoObject,msoCode);
 	}
 	
-	public void setMsoDrawData(IDiskoTool tool) {
+	public void setMsoData(IDiskoTool tool) {
 		if(tool instanceof AbstractDiskoTool && tool!=this) {
 			AbstractDiskoTool abstractTool = (AbstractDiskoTool)tool;
-			setMsoDrawData(abstractTool.msoOwner,abstractTool.msoObject,abstractTool.msoClassCode);
+			setMsoData(abstractTool.msoOwner,abstractTool.msoObject,abstractTool.msoCode);
 		}
 	}
 	
-	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode) {
+	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode) {
 		
 		// is working?
 		if(isWorking()) return;
@@ -208,9 +205,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		// set mso object
 		this.msoObject = msoObject;
 		// set mso object
-		this.msoClassCode = msoClassCode;
+		this.msoCode = msoClassCode;
 		// set class code
-		this.msoClassCode = msoClassCode;
+		this.msoCode = msoClassCode;
 		
 	}
 
@@ -298,9 +295,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 */
 	protected IDisplayTransformation getTransform()
 			throws IOException, AutomationException {
-		if (transform == null) {
+		//if (transform == null) {
 			transform = map.getActiveView().getScreenDisplay().getDisplayTransformation();
-		}
+		//}
 		return transform;
 	}
 
@@ -332,18 +329,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 	
 	protected void transform(Point p) throws IOException, AutomationException {
-		p.transform(com.esri.arcgis.geometry.esriTransformDirection.esriTransformReverse, getTransform());
-	}
-
-	protected IFeatureCursor search(IFeatureClass fc, IPoint p, double size) throws UnknownHostException, IOException {
-		//System.out.println("Extent.Width:="+map.getActiveView().getExtent().getWidth());
-		IEnvelope env = MapUtil.getEnvelope(p, size); //map.getActiveView().getExtent().getWidth()/50);
-		ISpatialFilter filter = new SpatialFilter();
-		filter.setGeometryByRef(env);
-		filter.setSpatialRel(esriSpatialRelEnum.esriSpatialRelOverlaps);
-		/*IFeatureCursor cursor = fc.search(filter, false);
-		IFeature feature = cursor.nextFeature();*/
-		return fc.search(filter, false);
+		p.transform(esriTransformDirection.esriTransformReverse, getTransform());
 	}
 
 	protected int getGeomIndex(GeometryBag geomBag, IPoint p) throws AutomationException, IOException {
@@ -357,90 +343,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return -1;
 	}
 
-	protected double getMinimumDistance(Object f, IPoint p) throws AutomationException, IOException {
-		double min = -1;
-		if(f instanceof IProximityOperator) {
-			min = ((IProximityOperator)f).returnDistance(p);
-		}
-		else if(f instanceof IMsoFeature) {
-			// get shape
-			IGeometry geom = ((IMsoFeature)f).getShape();
-			// is geometry bag?
-			if(geom instanceof GeometryBag) {
-				// cast
-				GeometryBag geomBag = (GeometryBag)geom;
-				// get count
-				int count = geomBag.getGeometryCount();
-				// has items?
-				if(count>0) {
-					// get minimum length of first
-					min = getMinimumDistance(geomBag.getGeometry(0), p);
-					// loop
-					for(int i=1;i<count;i++) {
-						// get distance
-						double d = getMinimumDistance(geomBag.getGeometry(i), p);
-						// update minimum distance
-						if(d>0)
-							min = java.lang.Math.min(min, d);
-					}
-				}
-			}
-			// has proximity operator?
-			else if(geom instanceof IProximityOperator) {
-				// get point
-				IProximityOperator opr = (IProximityOperator)(geom);
-				IProximityOperator p2 =  (IProximityOperator)opr.returnNearestPoint(p, 0);
-				min = p2.returnDistance(p);
-			}
-		}
-		return min;
-	}
-	
-	/*
-	protected void updateMsoObject(IMsoFeature msoFeature, IGeometry geom) throws IOException, AutomationException {
-		
-		// get mso object
-		IMsoObjectIf msoObj = msoFeature.getMsoObject();
-		// get class code
-		IMsoManagerIf.MsoClassCode classCode = msoObj.getMsoClassCode();
-		// dispatch
-		if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_POI) {
-			IPOIIf msoPOI = (IPOIIf)msoObj;
-			msoPOI.setPosition(MapUtil.getMsoPosistion((Point)geom));
-		}
-		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT) {
-			IUnitIf msoUnit = (IUnitIf)msoObj;
-			msoUnit.setPosition(MapUtil.getMsoPosistion((Point)geom));
-		}
-		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE) {
-			IRouteIf msoRoute = (IRouteIf)msoObj;
-			msoRoute.setGeodata(MapUtil.getMsoRoute((Polyline)geom));			
-		}
-		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_TRACK) {
-			ITrackIf msoTrack = (ITrackIf)msoObj;
-			Track track = msoTrack.getGeodata();
-			List<TimePos> list = new ArrayList<TimePos>(track.getTrackTimePos());
-			List<Calendar> timesteps = new ArrayList<Calendar>(list.size());
-			for(int i=0;i<list.size();i++) {
-				timesteps.add(list.get(i).getTime());
-			}
-			msoTrack.setGeodata(MapUtil.getMsoTrack((Polyline)geom,timesteps));						
-		}
-		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA) {
-			ISearchAreaIf msoSearchArea = (ISearchAreaIf)msoObj;
-			msoSearchArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));			
-		}
-		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {
-			IOperationAreaIf msoOperationArea = (IOperationAreaIf)msoObj;
-			msoOperationArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));						
-		}
-	}
-	*/
-
 	protected void fireOnWorkFinish() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_FINISH);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_FINISH);
 	   	// forward
     	fireOnWorkFinish(e);
     }
@@ -455,8 +360,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 
 	protected void fireOnWorkCancel() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_CANCEL);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,msoObject,DiskoWorkEventType.TYPE_CANCEL);
     	// forward
     	fireOnWorkCancel(e);
     }
@@ -471,8 +375,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 
 	protected void fireOnWorkChange() {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				null,null,null,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,msoObject,DiskoWorkEventType.TYPE_CHANGE);
     	// forward
     	fireOnWorkChange(e);
     }
@@ -485,11 +388,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		}
 	}
     
-	protected void fireOnWorkChange(Object worker, 
-			IMsoObjectIf msoObj, Object data) {
+	protected void fireOnWorkChange(Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,
-				worker,msoObj,data,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEventType.TYPE_CHANGE);
 		// forward
 		fireOnWorkChange(e);    	
     }
@@ -591,6 +492,20 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return propertyPanel;		
 	}
 
+	public boolean cancel() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public boolean finish() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void reset() {
+		// TODO Auto-generated method stu	
+	}
+	
 	/*=============================================================
 	 * Inner classes
 	 *============================================================= 
@@ -671,7 +586,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			this.isActive = tool.isActive;
 			this.showDirect = tool.showDirect;
 			this.showDialog = tool.showDialog;
-			this.msoClassCode = tool.msoClassCode;
+			this.msoClassCode = tool.msoCode;
 			this.msoObject = tool.msoObject;
 			this.msoOwner = tool.msoOwner;
 			this.propertyPanel = tool.propertyPanel;
@@ -681,10 +596,12 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			tool.isActive = this.isActive;
 			tool.showDirect = this.showDirect;
 			tool.showDialog = this.showDialog;
-			tool.msoClassCode = this.msoClassCode;
+			tool.msoCode = this.msoClassCode;
 			tool.msoObject = this.msoObject;
 			tool.msoOwner = this.msoOwner;
 			tool.propertyPanel = this.propertyPanel;
+			if(tool.propertyPanel!=null)
+				tool.propertyPanel.update();
 		}
 	}
 }

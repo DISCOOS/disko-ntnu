@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.SwingUtilities;
-
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 
@@ -54,12 +52,12 @@ public class DrawFrame {
 	
 	private boolean isActive = false;
 	private boolean isIconBoxActive = false;
+	private boolean isCommitPending = false;
 	
 	private IEnvelope dirtyArea = null;
 	
 	private String pendingText = null;
 	private IEnvelope pendingFrame = null;
-	private boolean pendingRefresh = false;
 	
 	
 	public DrawFrame(IActiveView activeView) throws IOException, UnknownHostException {
@@ -71,11 +69,11 @@ public class DrawFrame {
 		this.nameIcons = new HashMap<String, IconElement>();
 		this.orderIcons = new ArrayList<IconElement>();
 		
-		// forward
-		setActiveView(activeView);
-		
 		// initialize elements
 		initialize();
+		
+		// forward
+		setActiveView(activeView);
 		
 	}
 	
@@ -116,8 +114,7 @@ public class DrawFrame {
 			// deactivate map
 			activeView.setIsMapActivated(false);
 		}
-		
-		
+				
 		// update hook
 		this.activeView = activeView;
 		
@@ -237,15 +234,15 @@ public class DrawFrame {
 		setDirtyRegion(getTextBoxElement());
 		// prepare
 		getTextElement().setText(text);
-		// forward?
-		if(display()!=null) {
-			update(getFrame());		
-		}
 		// set dirty
 		getTextElement().isDirty();
 		getTextBoxElement().isDirty();
 		// set dirty union?
 		setDirtyRegion(getTextBoxElement());
+		
+		// set flag
+		isCommitPending = true;
+		
 	}
 	
 	public void setFrame(IEnvelope e) throws AutomationException, UnknownHostException, IOException {
@@ -255,7 +252,7 @@ public class DrawFrame {
 			return;
 		}
 		// forward
-		update(e,getText());
+		setFrameAndText(e,getText());
 	}
 	
 	public IEnvelope getExtent() throws AutomationException, UnknownHostException, IOException {
@@ -270,13 +267,29 @@ public class DrawFrame {
 		return (g!=null) ? g.getEnvelope() : null;
 	}
 	
-	public void update(IEnvelope frame, String text) throws AutomationException, UnknownHostException, IOException {
+	public boolean isCommitPending() {
+		return isCommitPending;
+	}
+	
+	public void commit() throws AutomationException, UnknownHostException, IOException {
+		// forward?
+		if(isActive && isCommitPending() && display()!=null) {
+			// forward
+			update(getFrame());		
+			// set flag
+			isCommitPending = false;		
+		}		
+	}
+	
+	private void setFrameAndText(IEnvelope frame, String text) throws AutomationException, UnknownHostException, IOException {
 		// set as pending?
 		if(!isActive) {
 			pendingText = text;
 			pendingFrame = frame;
 			return;
 		}
+		// set flag
+		isCommitPending = true;
 		// set dirty unions
 		setDirtyRegion(getTextBoxElement());
 		setDirtyRegion(getFrameElement());		
@@ -289,10 +302,6 @@ public class DrawFrame {
 		getFrameElement().setGeometry(frame);
 		// update
 		getTextElement().setText(text);
-		// forward?
-		if(display()!=null) {
-			update(frame.getEnvelope());		
-		}		
 		// set dirty
 		getTextElement().isDirty();		
 		getFrameElement().isDirty();		
@@ -300,11 +309,6 @@ public class DrawFrame {
 		// set dirty unions
 		setDirtyRegion(getTextBoxElement());
 		setDirtyRegion(getFrameElement());		
-		// add icons to dirty area
-		for(IconElement it : orderIcons) {
-			if(it.isVisible())
-				setDirtyRegion(it);
-		}
 	}
 	
 	public void draw() throws AutomationException, IOException {
@@ -375,6 +379,7 @@ public class DrawFrame {
 				p.setY(moveIcon(p,it));
 			else
 				moveIcon(o,it);
+			setDirtyRegion(it);
 		}
 		// move icon box?
 		if((isIconBoxActive) && selectedIcon!=null) {
@@ -422,7 +427,7 @@ public class DrawFrame {
 				icon.importPictureFromFile(iconFile.getAbsolutePath());
 			}
 			// initialize geometry
-			icon.setGeometry(MapUtil.getPictureBounds(display(),icon));
+			icon.setGeometry(MapUtil.createEnvelope());
 			// update collections
 			orderIcons.add(icon);
 			nameIcons.put(name,icon);
@@ -542,21 +547,26 @@ public class DrawFrame {
 	}
 	
 	public String hitIcon(double x, double y, double tolerance) throws AutomationException, IOException {
-		Object[] names = nameIcons.keySet().toArray();
-		for(int i=0; i< names.length; i++) {
-			String name = names[i].toString();
-			if(hitIcon(name, x, y, tolerance))
-				return name;
+		if(isActive()) {
+			Object[] names = nameIcons.keySet().toArray();
+			for(int i=0; i< names.length; i++) {
+				String name = names[i].toString();
+				if(hitIcon(name, x, y, tolerance))
+					return name;
+			}
 		}
 		return null;
 	}
 	
 	public boolean hitIcon(String name, double x, double y, double tolerance) throws AutomationException, IOException {
-		IconElement icon = nameIcons.get(name);
-		if(icon!=null)  
-			return icon.hitTest(x, y, tolerance);
-		else
-			return false;
+		if(isActive()) {
+			IconElement icon = nameIcons.get(name);
+			if(icon!=null)  
+				return icon.hitTest(x, y, tolerance);
+			else
+				return false;
+		}
+		return false;
 	}
 	
 	public IScreenDisplay display() throws AutomationException, IOException {
@@ -585,12 +595,10 @@ public class DrawFrame {
 			}
 			// update?
 			if(isDirty && isActive) {
-				// forward?
-				if(display()!=null) {
-					update(getFrame());		
-				}
 				// forward
 				setDirtyRegion(icon);								
+				// set flag
+				isCommitPending = true;		
 			}
 		}
 		// state

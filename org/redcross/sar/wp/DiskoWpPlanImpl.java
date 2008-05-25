@@ -20,9 +20,9 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
     private JButton m_tidsplanButton = null;
     private JButton m_grovplanButton = null;
 
-    public DiskoWpPlanImpl(IDiskoRole role) throws IllegalClassFormatException
+    public DiskoWpPlanImpl() throws IllegalClassFormatException
     {
-        super(role);
+        super();
         initialize();
     }
 

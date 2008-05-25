@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.logistics;
 
-import org.redcross.sar.gui.map.DiskoBorder;
+import org.redcross.sar.gui.DiskoRoundBorder;
 import org.redcross.sar.gui.renderers.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 
@@ -24,7 +24,7 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
 {
 
 	private final static long serialVersionUID = 1L;
-	private final static Border LabelBorder = new DiskoBorder(2, 6, false);
+	private final static Border LabelBorder = new DiskoRoundBorder(2, 6, false);
     private final static Dimension LabelDimension = new Dimension(150, 50);
     
     private boolean m_isSelected;

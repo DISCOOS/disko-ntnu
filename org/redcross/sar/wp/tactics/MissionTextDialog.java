@@ -3,18 +3,15 @@ package org.redcross.sar.wp.tactics;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.EnumSet;
 
-import javax.swing.AbstractButton;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -25,7 +22,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class MissionTextDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JTextArea textArea = null;
 	
 	private IOperationAreaIf currentOperationArea = null;
@@ -52,7 +49,7 @@ public class MissionTextDialog extends DiskoDialog {
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 	
@@ -87,7 +84,7 @@ public class MissionTextDialog extends DiskoDialog {
 			if(currentOperationArea!=null) {
 				// update remark
 				currentOperationArea.setRemarks(text);
-				fireOnWorkChange(getTextArea(),currentOperationArea,text);
+				fireOnWorkChange(currentOperationArea,text);
 			}
 		}
 		setIsNotWorking();
@@ -98,22 +95,23 @@ public class MissionTextDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
+				contentPanel = new DefaultDiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = contentPanel.addButton(
-						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// remove any changes 
-						cancel();
-						// hide me!
-						setVisible(false);						
-					}					
-				});
 				contentPanel.setBodyComponent(getTextArea());
+				contentPanel.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("finish".equalsIgnoreCase(cmd))
+							finish();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();
+					}
+					
+				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -131,18 +129,18 @@ public class MissionTextDialog extends DiskoDialog {
 			try {
 				textArea = new JTextArea();
 				textArea.setLineWrap(true);
-				textArea.addFocusListener(new FocusAdapter() {
+				textArea.getDocument().addDocumentListener(new DocumentListener() {
 
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
-							finish();
+					public void changedUpdate(DocumentEvent e) { change(); }
+					public void insertUpdate(DocumentEvent e) { change(); }
+					public void removeUpdate(DocumentEvent e) { change(); }
+					
+					private void change() {
+						if(isWorking()) return;
+						getContentPanel().setDirty(true);
 					}
 					
-				});
+				}); 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -155,24 +153,30 @@ public class MissionTextDialog extends DiskoDialog {
 		if (isWorking()) return false;
 		// update mso model
 		setText(textArea.getText(),false,true);
+		// reset flag
+		getContentPanel().setDirty(false);
 		// success
 		return true;
 	}
 		
-	public void cancel() {
+	public boolean cancel() {
 		// not allowed?
-		if (isWorking()) return;
-		// reset to mso model
-		setText((currentOperationArea!=null 
-				? currentOperationArea.getRemarks() : null),true,false);
+		if (isWorking()) return false;
 		// reset
-		currentOperationArea = null;		
+		setMsoObject(currentMsoObj);
+		// reset flag
+		getContentPanel().setDirty(false);
+		// finished
+		return true;
 	}
 	
 	@Override
 	public int setMsoObject(IMsoObjectIf msoObj) {
 		int state = 0;
+		// consume?
 		if(isWorking()) return state;
+		// consume changes
+		setIsWorking();
 		// set operation area
 		if (msoObj instanceof IOperationAreaIf) {
 			currentOperationArea = (IOperationAreaIf)msoObj;
@@ -183,13 +187,30 @@ public class MissionTextDialog extends DiskoDialog {
 		}
 		else {
 			state = -1;
-			cancel();
+			reset();
 		}
+
+		getContentPanel().setDirty(false);
+		setIsNotWorking();
+		
 		// forward
 		setup();
 		// success
 		return state;
 	}	
+	
+	private void reset() {
+		// not allowed?
+		if (isWorking()) return;
+		// consume changes
+		setIsWorking();
+		// reset
+		textArea.setText(null);
+		// reset flag
+		getContentPanel().setDirty(false);
+		// finished
+		setIsNotWorking();
+	}
 	
 	private void setup() {
 		// update icon

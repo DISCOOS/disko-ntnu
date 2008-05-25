@@ -20,10 +20,12 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 {
     MessageLogPanel m_logPanel;
 
-    public DiskoWpMessageLogImpl(IDiskoRole role) throws IllegalClassFormatException
+    public DiskoWpMessageLogImpl() throws IllegalClassFormatException
     {
         // initialize with spesific map interests
-    	super(role);
+    	super();
+    	
+    	// intialize GUI
         initialize();
     }
 
@@ -32,6 +34,9 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
         // load class resource bundle
         assignWpBundle(IDiskoWpMessageLog.class);
 
+        // install map
+        installMap();
+        
         // get message log panel. This panel implements the gui
         m_logPanel = new MessageLogPanel(this);
         
@@ -47,9 +52,10 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     }
 	
     @Override
-	public void activated()
-    {
-        super.activated();
+	public void activate(IDiskoRole role) {
+		
+		// forward
+		super.activate(role);
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
@@ -76,9 +82,9 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     }
 
     @Override
-	public void deactivated()
+	public void deactivate()
     {
-    	super.deactivated();
+    	super.deactivate();
     	
 		// hide map
 		DiskoMap map = (DiskoMap) getMap();
@@ -144,7 +150,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     @Override
 	public String getCaption()
     {
-        return getBundleText("Caption");
+        return getBundleText("MESSAGELOG");
     }
 
     /* (non-Javadoc)

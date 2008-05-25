@@ -1,7 +1,5 @@
 package org.redcross.sar.wp.tactics;
 
-
-import javax.swing.AbstractButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,16 +21,13 @@ import java.awt.event.FocusEvent;
 import java.util.EnumSet;
 import java.util.Hashtable;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -43,11 +38,10 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-
 public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEventListener {
 
 	private static final long serialVersionUID = 1L;
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JPanel requirementPanel = null;
 	private JLabel accuracyLabel = null;
 	private JSlider accuracySlider = null;
@@ -87,7 +81,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 
@@ -109,22 +103,23 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
+				contentPanel = new DefaultDiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = contentPanel.addButton(
-						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// cancel any pending changes
-						cancel();
-						// hide me!
-						setVisible(false);						
-					}					
-				});
 				contentPanel.setBodyComponent(getTabbedPane());
+				contentPanel.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("finish".equalsIgnoreCase(cmd))
+							finish();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();
+					}
+					
+				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -158,11 +153,17 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		setRemarks(getRemarks(),false,true);
 		setPriority(getPriority(), false, true);
 		setAccuracy(getAccuracy(),false,true);		
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide me
+		setVisible(false);
 		// success
 		return true;
 	}
 
-	public void cancel() {
+	public boolean cancel() {
+		// no mso update allowed?
+		if (isWorking()) return false;
 		setIsWorking();
 		//getAccuracyTextField().setText(null);
 		//getPriorityTextField().setText(null);
@@ -172,8 +173,22 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		getAccuracySlider().setValue(50);
 		currentAssignment = null;
 		setIsNotWorking();
+		// hide me
+		setVisible(false);
+		// finished
+		return true;
 	}
 
+	private void reset() {
+		// no mso update allowed?
+		setIsWorking();
+		getRemarksTextArea().setText(null);
+		getPersonnelTextField().setText(null);
+		getPrioritySlider().setValue(2);
+		getAccuracySlider().setValue(50);
+		currentAssignment = null;
+		setIsNotWorking();
+	}
 	
 	
 	public int getAccuracy() {
@@ -216,7 +231,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			if(currentAssignment!=null) {
 				if(currentAssignment.getPlannedAccuracy()!=accuracy) {
 					currentAssignment.setPlannedAccuracy(accuracy);
-					fireOnWorkChange(getAccuracySlider(),currentAssignment,accuracy);
+					fireOnWorkChange(currentAssignment,accuracy);
 
 				}
 			}
@@ -245,7 +260,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			if(currentAssignment!=null) {
 				if(currentAssignment.getPriority()!=priority) {
 					currentAssignment.setPriority(priority);
-					fireOnWorkChange(getPrioritySlider(),currentAssignment,priority);
+					fireOnWorkChange(currentAssignment,priority);
 
 				}
 			}
@@ -266,7 +281,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			if(currentAssignment!=null) {
 				if(currentAssignment.getPlannedPersonnel()!=number) {
 					currentAssignment.setPlannedPersonnel(number);
-					fireOnWorkChange(getPersonnelTextField(),currentAssignment,number);
+					fireOnWorkChange(currentAssignment,number);
 				}
 			}
 		}
@@ -286,7 +301,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			if(currentAssignment!=null) {
 				if(!currentAssignment.getRemarks().equals(remarks)) {
 					currentAssignment.setRemarks(remarks);
-					fireOnWorkChange(getRemarksTextArea(),currentAssignment,remarks);
+					fireOnWorkChange(currentAssignment,remarks);
 				}
 			}
 		}
@@ -607,6 +622,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	public int setMsoObject(IMsoObjectIf msoObj) {
 		int state = 0;
 		if(isWorking()) return state;
+		setIsWorking();
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
@@ -622,8 +638,12 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 		else {
 			state = -1;
 			// forward
-			cancel();
+			reset();
 		}
+
+		getContentPanel().setDirty(false);
+		setIsNotWorking();
+		
 		// forward
 		setup();
 		// success
@@ -644,7 +664,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getTabbedPane().setEnabled(false);
-			cancel();
+			reset();
 		}		
 	}
 	
@@ -665,7 +685,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 			// reset selection
 			currentMsoFeature =null;
 			currentMsoObj =null;
-			cancel();
+			reset();
 		}
 	}
 	

@@ -29,7 +29,7 @@ import java.util.Hashtable;
 public class RouteLayer extends AbstractMsoFeatureLayer {
 
 	private static final long serialVersionUID = 1L;
-	private static final double FONT_SIZE = 12;
+	private static final double FONT_SIZE = 8;
 	private static final double FONT_OFFSET = 5;
 	private static final double LINE_WIDTH = 1.5;
 	private static final double REFERENCE_SCALE = 50000;
@@ -233,6 +233,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 
 			textSymbol = new TextSymbol();
 			textSymbol.setYOffset(5);
+			textSymbol.getFont().setName("Arial");
 
 			defaultLineSymbol = new SimpleLineSymbol();
 			defaultLineSymbol.setWidth(LINE_WIDTH);

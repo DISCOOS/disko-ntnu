@@ -3,11 +3,14 @@ package org.redcross.sar.map.command;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.swing.SwingUtilities;
+
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.map.IDrawToolCollection;
@@ -144,36 +147,44 @@ public class LineTool extends AbstractDrawTool {
 	}
 
 	@Override
-	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
+	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
 		// forward
-		super.setMsoDrawData(msoOwner, msoObject, msoClassCode);
+		super.setMsoData(msoOwner, msoObject, msoClassCode);
 		// set mso object in panel
 		((LinePanel)getPropertyPanel()).setMsoObject((msoObject!=null ? msoObject : msoOwner));
 	}
 
 	@Override
-	public boolean doPrepare() {
-		// is owner search assignment?
-		if(msoOwner instanceof IAreaIf) {
-			// get owning assignment
-			IAssignmentIf assignment = ((IAreaIf)msoOwner).getOwningAssignment();
-			// is search assignment?
-			if(assignment instanceof ISearchIf) {
-				// cast to ISearchIf
-				ISearchIf search = (ISearchIf)assignment; 
-				// update?
-				if(searchSubType!=null && !searchSubType.equals(search.getSubType()))
-					search.setSubType(searchSubType);
-			}
-		}
+	public boolean doPrepare(IMsoObjectIf msoObj, boolean isDefined) {
 		// forward
-		return super.doPrepare();
+		if(super.doPrepare(msoObj,isDefined)) {
+			// is handling this?
+			if(!isDefined) {
+				// is owner search assignment?
+				if(msoObj instanceof IAreaIf) {
+					// get owning assignment
+					IAssignmentIf assignment = ((IAreaIf)msoObj).getOwningAssignment();
+					// is search assignment?
+					if(assignment instanceof ISearchIf) {
+						// cast to ISearchIf
+						ISearchIf search = (ISearchIf)assignment; 
+						// update?
+						if(searchSubType!=null && !searchSubType.equals(search.getSubType()))
+							search.setSubType(searchSubType);
+					}
+				}
+			}
+			// finished
+			return true;
+		}
+		// failed
+		return false;
 	}
 
 	public boolean onBegin(int button, int shift, int x, int y) {
 		
 		try {
-
+			
 			// get next point. This point is already snapped 
 			// by the abstract class is snapping is on.
 			p2 = p;
@@ -196,8 +207,41 @@ public class LineTool extends AbstractDrawTool {
 			// update tool drawings
 			updateGeometry();
 			
+			// revert direction?
+			if(isContinued && geoPath!=null 
+					&& !FeatureType.FEATURE_POLYGON.equals(featureType)) {
+				// get distances
+				double d1 = p.returnDistance(geoPath.getFromPoint());
+				double d2 = p.returnDistance(geoPath.getToPoint());
+				// get start area radius
+				double r = getSnapTolerance();
+				// not within init distance?
+				if(d1>r && d2>r) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							// notify later
+							Utils.showMessage("Begrensing","Du må starte med et endepunkt");
+						}
+					});					
+					return false;
+				}
+				// reverse direction?
+				if(d1<d2) {
+					geoPath.reverseOrientation();
+				}
+				// continue 
+				p1 = (Point)geoPath.getToPoint();
+				// forward
+				setDirty(true);
+			}
+			else {
+				// initialize
+				p1 = p2;				
+			}
+			// reset flag
+			isContinued = false;
+			
 			// save current geometries
-			p1 = p2;
 			geoSnap1 = geoSnap2;
 			
 			// initialize rubber band to this point 
@@ -254,7 +298,7 @@ public class LineTool extends AbstractDrawTool {
 		if(panels==null)
 			panels = new ArrayList<IPropertyPanel>(1);			
 		// create panel
-		IPropertyPanel panel = new LinePanel(this,true);		
+		IPropertyPanel panel = new LinePanel(this);		
 		// try to add
 		if (panels.add(panel)) {
 			return panel;
@@ -282,10 +326,10 @@ public class LineTool extends AbstractDrawTool {
 
 	private void updateGeometry() throws IOException, AutomationException {
 		
-		// any change?
-		if (p1.returnDistance(p2) == 0 || !isDrawing()) return;
+		// consume?
+		if (p1.returnDistance(p2) < (isSnapToMode()?getSnapTolerance():0) || !isDrawing()) return;
 
-		// trace snap path from p1 to p2
+		// trace snap path from p1 to p2?
 		if(isSnapToMode() && geoSnap1!=null && geoSnap2!=null) {
 
 			// clone snapping geometries
@@ -403,8 +447,8 @@ public class LineTool extends AbstractDrawTool {
 			geoPath.addPoint(p2, null, null);			
 		}
 
-		// mark change
-		setDirty();			
+		// forward
+		setDirty(true);
 
 		
 	}

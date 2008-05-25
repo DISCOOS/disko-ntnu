@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.tactics;
 
-import javax.swing.AbstractButton;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -28,7 +27,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -53,10 +52,10 @@ public class HypothesisDialog extends DiskoDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JPanel hypothesisPanel = null;
 	private JPanel buttonPanel = null;
-	private JButton newButton = null;
+	private JButton createButton = null;
 	private JScrollPane listScrollPane = null;
 	private JList hypothesisList = null;
 	private JPanel centerPanel = null;
@@ -158,11 +157,11 @@ public class HypothesisDialog extends DiskoDialog {
 	
 	private void createlabels() {
 		labels = new String[5];
-		labels[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA.text");
-		labels[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA.text");
-		labels[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA.text");
-		labels[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA.text");
-		labels[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA.text");
+		labels[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
+		labels[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA");
+		labels[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA");
+		labels[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA");
+		labels[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA");
 	}
 
 	public IHypothesisIf getSelectedHypothesis() {
@@ -191,7 +190,7 @@ public class HypothesisDialog extends DiskoDialog {
 					// any change?
 					if (!hypothesis.equals(currentSearchArea.getSearchAreaHypothesis())) {
 						currentSearchArea.setSearchAreaHypothesis(hypothesis);
-						fireOnWorkChange(hypothesisList,currentSearchArea,hypothesis);
+						fireOnWorkChange(currentSearchArea,hypothesis);
 					}
 				}
 			}
@@ -217,7 +216,7 @@ public class HypothesisDialog extends DiskoDialog {
 			if(mso) { 
 				if (!selectedHypothesis.getDescription().equals(text)) {
 					selectedHypothesis.setDescription(text);
-					fireOnWorkChange(getDescriptionTextArea(),selectedHypothesis,text);
+					fireOnWorkChange(selectedHypothesis,text);
 				}
 			}
 		}
@@ -236,7 +235,7 @@ public class HypothesisDialog extends DiskoDialog {
 			if(mso) { 
 				if (selectedHypothesis.getPriorityIndex() != priority) {
 					selectedHypothesis.setPriorityIndex(priority);
-					fireOnWorkChange(priorityComboBox,selectedHypothesis,priority);
+					fireOnWorkChange(selectedHypothesis,priority);
 				}
 			}
 		}
@@ -255,7 +254,7 @@ public class HypothesisDialog extends DiskoDialog {
 			if(mso) { 
 				if (selectedHypothesis.getStatus() != status) {
 					selectedHypothesis.setStatus(status);
-					fireOnWorkChange(statusComboBox,selectedHypothesis,status);
+					fireOnWorkChange(selectedHypothesis,status);
 				}
 			}
 		}
@@ -267,22 +266,26 @@ public class HypothesisDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
+				contentPanel = new DefaultDiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = contentPanel.addButton(
-						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// cancel any pending changes
-						cancel();
-						// hide me!
-						setVisible(false);						
-					}					
-				});
+				contentPanel.insertButton("finish", getCreateButton(), "create");
 				contentPanel.setBodyComponent(getHypothesisPanel());
+				contentPanel.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("create".equalsIgnoreCase(cmd))
+							create();
+						else if("finish".equalsIgnoreCase(cmd))
+							finish();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();
+					}
+					
+				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -321,7 +324,7 @@ public class HypothesisDialog extends DiskoDialog {
 				flowLayout.setAlignment(FlowLayout.RIGHT);
 				buttonPanel = new JPanel();
 				buttonPanel.setLayout(flowLayout);
-				buttonPanel.add(getNewButton(), null);
+				buttonPanel.add(getCreateButton(), null);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -330,29 +333,19 @@ public class HypothesisDialog extends DiskoDialog {
 	}
 
 	/**
-	 * This method initializes newButton
+	 * This method initializes createButton
 	 *
 	 * @return javax.swing.JButton
 	 */
-	private JButton getNewButton() {
-		if (newButton == null) {
+	private JButton getCreateButton() {
+		if (createButton == null) {
 			try {
-				newButton = new JButton();
-				newButton.setPreferredSize(new Dimension(50, 50));
-				newButton.setText("NY");
-				newButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						if(isWorking()) return;
-						// create a new Hypothesis
-						ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-						setHypotesis(cmdPost.getHypothesisList().createHypothesis(), true, true);
-					}
-				});
+				createButton = DiskoButtonFactory.createButton("GENERAL.STAR", ButtonSize.NORMAL);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return newButton;
+		return createButton;
 	}
 
 	/**
@@ -388,12 +381,10 @@ public class HypothesisDialog extends DiskoDialog {
 				hypothesisList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				hypothesisList.addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
-						if (e.getValueIsAdjusting() || isWorking()) {
-							return;
-						}
-						// forward
-						IHypothesisIf hyp = getHypothesis((String)getHypothesisList().getSelectedValue()); 
-						setHypotesis(hyp, false, true);
+						// consume?
+						if (e.getValueIsAdjusting() || isWorking()) return;
+						// is dirty
+						getContentPanel().setDirty(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -546,8 +537,10 @@ public class HypothesisDialog extends DiskoDialog {
 				priorityComboBox.setSelectedIndex(0);
 				priorityComboBox.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
+						// consume?
 						if (isWorking()) return;
-						setPriority(priorityComboBox.getSelectedIndex()+1, false, true);
+						// set flag
+						getContentPanel().setDirty(true);
 					}
 				});
 
@@ -575,8 +568,10 @@ public class HypothesisDialog extends DiskoDialog {
 				statusComboBox.setSelectedIndex(0);
 				statusComboBox.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
+						// consume?
 						if (isWorking()) return;
-						setStatus((HypothesisStatus)statusComboBox.getSelectedItem(), false, true);
+						// set flag
+						getContentPanel().setDirty(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -590,6 +585,8 @@ public class HypothesisDialog extends DiskoDialog {
 	public int setMsoObject(IMsoObjectIf msoObj) {
 		int state = 0;		
 		if(isWorking()) return state;
+		// consume changes
+		setIsWorking();
 		// get search area
 		if (msoObj instanceof ISearchAreaIf) {
 			// save reference
@@ -606,10 +603,16 @@ public class HypothesisDialog extends DiskoDialog {
 		}
 		else {
 			state = -1;
-			cancel();
+			reset();
 		}
+		
+		// reset state 
+		setIsNotWorking();
+		getContentPanel().setDirty(false);
+		
 		// forward
 		setup();
+		
 		// success
 		return state;
 	}	
@@ -621,7 +624,7 @@ public class HypothesisDialog extends DiskoDialog {
 			getContentPanel().setCaptionText("<html>Oppgi hypotese for <b>" + 
 					MsoUtils.getSearchAreaName(currentSearchArea).toLowerCase() + "</b></html>");
 			getHypothesisList().setEnabled(true);
-			getNewButton().setEnabled(true);
+			getCreateButton().setEnabled(true);
 			getTextAreaScrollPane().setEnabled(true);
 			getDescriptionTextArea().setEnabled(true);
 			getPriorityComboBox().setEnabled(true);
@@ -631,7 +634,7 @@ public class HypothesisDialog extends DiskoDialog {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et søkeområde");			
 			getHypothesisList().setEnabled(false);
-			getNewButton().setEnabled(false);
+			getCreateButton().setEnabled(false);
 			getTextAreaScrollPane().setEnabled(false);
 			getDescriptionTextArea().setEnabled(false);
 			getPriorityComboBox().setEnabled(false);
@@ -671,22 +674,57 @@ public class HypothesisDialog extends DiskoDialog {
 		}
 	}		
 	
-	public boolean finish() {
-		// no mso update allowed?
-		if (!isWorking()) {
-			setDescription(getDescriptionTextArea().getText(),false,true);
-			return true;
-		}
-		return false;
+	public boolean create() {
+		if(isWorking()) return false;
+		// create a new Hypothesis
+		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+		setHypotesis(cmdPost.getHypothesisList().createHypothesis(), true, false);
+		// finished
+		return true;
 	}
 	
-	public void cancel() {
+	public boolean finish() {
+		// consume?
+		if (isWorking()) return false;
+		// forward
+		setDescription(getDescriptionTextArea().getText(),false,true);
+		setHypotesis(getHypothesis((String)getHypothesisList().getSelectedValue()), false, true);
+		setPriority(priorityComboBox.getSelectedIndex()+1, false, true);
+		setStatus((HypothesisStatus)statusComboBox.getSelectedItem(), false, true);
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide me
+		setVisible(false);
+		// success
+		return true;
+	}
+	
+	public boolean cancel() {
+		// consume?
+		if (isWorking()) return false;
+		// consume change
+		setIsWorking();
+		// reset current changes
+		setMsoObject(currentMsoObj);
+		// hide me
+		setVisible(false);
+		// resume changes
+		setIsNotWorking();
+		// finished
+		return true;
+	}
+	
+	private void reset() {
+		// consume?
+		if (isWorking()) return;
+		// consume change
+		setIsWorking();
+		getHypothesisList().setSelectedIndex(-1);
 		getDescriptionTextArea().setText(null);
-		getHypothesisList().clearSelection();
-		getPriorityComboBox().setSelectedItem(0);
-		getStatusComboBox().setSelectedItem(0);
-		// reset
-		currentSearchArea = null;
+		getPriorityComboBox().setSelectedIndex(-1);
+		getStatusComboBox().setSelectedIndex(-1);		
+		// resume changes
+		setIsNotWorking();
 	}
 		
 }  //  @jve:decl-index=0:visual-constraint="10,10"

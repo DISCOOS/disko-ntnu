@@ -15,6 +15,8 @@ public class DiskoProgressEvent extends EventObject {
 
 	public enum DiskoProgressEventType {
 		EVENT_START,
+		EVENT_SHOW,
+		EVENT_HIDE,
 		EVENT_UPDATE,
 		EVENT_CANCEL,
 		EVENT_FINISH

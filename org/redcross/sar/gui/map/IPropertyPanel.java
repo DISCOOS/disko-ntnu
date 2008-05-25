@@ -1,12 +1,10 @@
 package org.redcross.sar.gui.map;
 
-import java.awt.event.ActionListener;
+import org.redcross.sar.gui.IDiskoPanel;
+import org.redcross.sar.map.command.IDiskoTool;
 
-public interface IPropertyPanel {
+public interface IPropertyPanel extends IDiskoPanel {
 	
-	public void update();
-	
-	public void addActionListener(ActionListener listener);	
-	public void removeActionListener(ActionListener listener);
+	public IDiskoTool getTool();
 	
 }

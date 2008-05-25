@@ -15,7 +15,6 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 import java.lang.instrument.IllegalClassFormatException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -28,10 +27,10 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 {
     LogisticsPanel m_logisticsPanel;
 
-    public DiskoWpLogisticsImpl(IDiskoRole role) throws IllegalClassFormatException
+    public DiskoWpLogisticsImpl() throws IllegalClassFormatException
     {
     	// forward role to abstract class
-        super(role);
+        super();
         
         // initialize GUI
         initialize();
@@ -44,6 +43,9 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         // attach class resource bundle
         assignWpBundle(IDiskoWpLogistics.class);
 
+        // install map
+        installMap();
+        
         // get logistic panel. This panel implements the gui
         m_logisticsPanel = new LogisticsPanel(this);
         
@@ -55,10 +57,10 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
               
     }
 
-    public void activated()
-    {
-    	// forward
-        super.activated();
+	public void activate(IDiskoRole role) {
+		
+		// forward
+		super.activate(role);
 
         // setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
@@ -89,19 +91,19 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 				
     }
 
-    public void deactivated()
+    public void deactivate()
     {
 		// hide map
 		DiskoMap map = (DiskoMap) getMap();
 		map.setVisible(false);
 		
     	// forward
-        super.deactivated();
+        super.deactivate();
 
     }
     
 	public String getCaption() {
-		return getBundleText("Caption");
+		return getBundleText("LOGISTICS");
 	}
 	
     /* (non-Javadoc)

@@ -4,7 +4,7 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.MainMenuPanel;
@@ -66,9 +66,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     private final static int TASK_ALERT_TIME = 10000;
     private long m_timeCounter = 0;
 
-    public DiskoWpTasksImpl(IDiskoRole role) throws IllegalClassFormatException
+    public DiskoWpTasksImpl() throws IllegalClassFormatException
     {
-        super(role);
+        super();
 
         m_dialogs = new LinkedList<DiskoDialog>();
 
@@ -139,7 +139,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     @Override
     public String getCaption()
     {
-        return getBundleText("Caption");
+        return getBundleText("TASKS");
     }
 
     private void initButtons()
@@ -228,9 +228,13 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     }
 
     @Override
-    public void activated()
-    {
-        super.activated();
+	public void activate(IDiskoRole role) {
+		
+		// forward
+		super.activate(role);
+		
+		// set role in task table model (enables popup menus)
+		((TaskTableModel)m_taskTable.getModel()).setRole(role);
 
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
@@ -246,9 +250,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     }
 
     @Override
-    public void deactivated()
+    public void deactivate()
     {
-        super.deactivated();
+        super.deactivate();
         SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();
         subMenu.getFinishButton().setVisible(m_wasFinishButtonVisible);
         subMenu.getCancelButton().setVisible(m_wasCancelButtonVisible);
@@ -427,7 +431,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
                 AbstractButton button = mainMenu.getButton(role.getName(), index);
                 // set button icon color mask according to 
                 // the alert flag from DiskWork result
-            	((DiskoCustomIcon)button.getIcon()).setColored(get());
+            	((DiskoIcon)button.getIcon()).setColored(get());
 			}
 			catch(Exception e) {
 				e.printStackTrace();

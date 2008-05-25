@@ -11,7 +11,7 @@ import javax.swing.AbstractButton;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoCustomIcon;
+import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -22,7 +22,6 @@ import org.redcross.sar.map.command.IDiskoTool.IDiskoToolState;
 
 import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.interop.AutomationException;
-import com.esri.arcgis.systemUI.ITool;
 
 /**
  * @author kennetgu
@@ -102,8 +101,8 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 				map = (DiskoMap)obj;
 				dialog.register(map);
 				dialog.setLocationRelativeTo(map, DiskoDialog.POS_WEST, true, true);
-				if(button!=null && button.getIcon() instanceof DiskoCustomIcon) {
-					DiskoCustomIcon icon = (DiskoCustomIcon)button.getIcon();
+				if(button!=null && button.getIcon() instanceof DiskoIcon) {
+					DiskoIcon icon = (DiskoIcon)button.getIcon();
 					icon.setMarked(true);
 				}
 			}
@@ -116,10 +115,10 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	public void onClick() {
 		// forward to map?
 		if(tool!=null) {
-			if(map!=null && (tool instanceof ITool)) {
+			if(map!=null) {
 				try {
 					// set as current map tool
-					map.setActiveTool((ITool)tool,false);
+					map.setActiveTool(tool,0);
 				}
 				catch(Exception e) {
 					e.printStackTrace();
@@ -132,15 +131,19 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	}
 
 	
-	public void setTool(IDiskoTool tool) {
+	public void setTool(IDiskoTool tool, boolean activate) {
 		// host can't host as empty tool
 		if(tool!=null) {
 			// save tool
 			this.tool = tool;
 			showDialog = tool.isShowDialog();
+			// forward?
+			if(dialog.getSelectedTool()!=tool)
+				dialog.setSelectedTool(tool, activate);
 			// update button
 			button.setIcon(tool.getButton().getIcon());
 			button.setToolTipText(tool.getButton().getToolTipText());
+			button.setSelected(tool.getButton().isSelected());
 		}
 	}
 
@@ -343,7 +346,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			tool.showDirect = this.showDirect;
 			tool.showDialog = this.showDialog;
 			// forward
-			dialog.setActiveTool(this.tool);
+			dialog.setSelectedTool(this.tool,this.isActive);
 		}
 	}
 }

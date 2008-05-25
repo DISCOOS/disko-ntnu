@@ -1,13 +1,14 @@
 package org.redcross.sar.gui.map;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -16,49 +17,35 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.gui.DiskoPanel;
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.IconListCellRenderer;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.command.PositionTool;
-import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Position;
 
-import com.borland.jbcl.layout.VerticalFlowLayout;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-public class PositionPanel extends DiskoPanel implements IPropertyPanel,
-					IMsoUpdateListenerIf, IMsoLayerEventListener {
+public class PositionPanel extends DefaultToolPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private PositionTool tool = null;
-	
 	private IMsoModelIf msoModel;
-	private DiskoPanel captionPanel = null;	
-	private DiskoPanel actionsPanel = null;	
-	private JPanel optionsPanel = null;	
-	private JButton applyButton = null;
-	private JButton cancelButton = null;
+	private JButton centerAtButton = null;
 	private GotoPanel gotoPanel = null;
-	private DiskoPanel unitsPanel = null;
+	private DefaultDiskoPanel unitsPanel = null;
 	private JList unitList = null;
 	
 	private boolean isSingleUnitOnly = false;
-	
-	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	
 	public PositionPanel(PositionTool tool) {
 		// forward
@@ -69,15 +56,13 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 	public PositionPanel(String caption,PositionTool tool) {
 		
 		// forward
-		super(caption);
+		super(caption,tool);
 		
 		// prepare
-		this.tool = tool;
 		this.msoModel = Utils.getApp().getMsoModel();
-		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 		
-		// add listeners
-		this.msoModel.getEventManager().addClientUpdateListener(this);
+		// listen for IUnitIf changes
+		setInterestedIn(EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT));
 		
 		// initialize gui
 		initialize();
@@ -94,80 +79,26 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 	private void initialize() {
 		
 		// set preferred body size
-		setPreferredBodySize(new Dimension(200,450));
-		
-		// hide header and borders
-		setHeaderVisible(false);
-		setBorderVisible(false);
+		setPreferredBodySize(new Dimension(200,350));
 		
 		// get body panel
 		JPanel panel = (JPanel)getBodyComponent();
 		
+		// set layout
+		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+
 		// build container
-		VerticalFlowLayout vfl = new VerticalFlowLayout();
-		vfl.setAlignment(VerticalFlowLayout.LEFT);
-		vfl.setHgap(5);
-		vfl.setVgap(0);
-		panel.setLayout(vfl);
-		panel.add(Box.createRigidArea(new Dimension(5,5)));
-		panel.add(getCaptionPanel());
-		panel.add(Box.createRigidArea(new Dimension(5,5)));
-		panel.add(getActionsPanel());
-		panel.add(getOptionsPanel());
+		addBodyChild(Box.createVerticalStrut(5));
+		addBodyChild(getGotoPanel());
+		addBodyChild(Box.createVerticalStrut(5));
+		addBodyChild(getUnitsPanel());
+		addBodyChild(Box.createVerticalStrut(5));
+		
+		// add buttons
+		insertButton("finish",getCenterAtButton(),"centerat");
+
 	}
 
-	public DiskoPanel getCaptionPanel() {
-		if (captionPanel == null) {
-			try {
-				captionPanel = new DiskoPanel(MapUtil.getDrawText(null, null, null));
-				captionPanel.setBodyComponent(null);
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return captionPanel;
-	}
-
-	public DiskoPanel getActionsPanel() {
-		if (actionsPanel == null) {
-			try {
-				actionsPanel = new DiskoPanel("Utfør");
-				actionsPanel.addButton(getApplyButton(),"apply");
-				actionsPanel.addButton(getCancelButton(),"cancel");
-				actionsPanel.setBodyComponent(null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return actionsPanel;
-	}
-
-	/**
-	 * This method initializes OptionsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getOptionsPanel() {
-		if (optionsPanel == null) {
-			// create panel
-			optionsPanel = new JPanel();
-			// create flow layout
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
-			vfl.setHgap(0);
-			vfl.setVgap(5);
-			// set flow layout
-			optionsPanel.setLayout(vfl); 
-			// set preferred size
-			optionsPanel.setPreferredSize(new Dimension(200,350));
-			// add components
-			optionsPanel.add(getGotoPanel());
-			optionsPanel.add(getUnitsPanel());
-		}
-		return optionsPanel;
-	}
-	
 	/**
 	 * This method initializes fieldPanel	
 	 * 	
@@ -175,8 +106,34 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 	 */
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
-			gotoPanel = new GotoPanel("Skriv inn posisjon");
+			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
 			gotoPanel.setGotoButtonVisible(false);
+			gotoPanel.addDiskoWorkEventListener(new IDiskoWorkListener() {
+
+				public void onWorkChange(DiskoWorkEvent e) {
+					try {
+
+						// consume?
+						if(!isChangeable()) return;
+						
+						// update tool
+						getTool().setPoint(
+								gotoPanel.getPositionField().getPoint(
+										getTool().getMap().getSpatialReference()));
+						
+					} catch (AutomationException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
+				}
+				
+				public void onWorkCancel(DiskoWorkEvent e) { /* NOP */ }
+				public void onWorkFinish(DiskoWorkEvent e) { /* NOP */ }
+				
+			});
 		}
 		return gotoPanel;
 	}
@@ -186,10 +143,10 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 	 * 	
 	 * @return GotoPanel
 	 */
-	public DiskoPanel getUnitsPanel() {
+	public DefaultDiskoPanel getUnitsPanel() {
 		if (unitsPanel == null) {
 			// create
-			unitsPanel = new DiskoPanel("Velg enhet");
+			unitsPanel = new DefaultDiskoPanel("Velg enhet",false,false);
 			// replace body compontent
 			unitsPanel.setBodyComponent(getUnitList());
 			// set preferred body size
@@ -214,25 +171,12 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 
 				public void valueChanged(ListSelectionEvent e) {
 
-					// is value adjusting?
-					if(e.getValueIsAdjusting()) return;
-
-					// get unit name
-					IUnitIf unit = (IUnitIf)unitList.getSelectedValue();
+					// consume?
+					if(!isChangeable() || e.getValueIsAdjusting()) return;
 					
-					// is unit selected?
-					if(unit==null ) {
-						// reset panel
-						reset();
-						// disable options panel
-						getOptionsPanel().setEnabled(false);
-					}
-					else {
-						// select unit
-						setCurrentUnit(unit);
-						// enable poi panel?
-						getOptionsPanel().setEnabled(unit!=null);						
-					}
+					// notify
+					setDirty(true);
+					
 				}
             	
             });
@@ -240,47 +184,98 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 		return unitList;
 	}
 
-	public JButton getCancelButton() {
-		if (cancelButton == null) {
-			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-				cancelButton.setActionCommand("cancel");
-				cancelButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						cancel();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
+	/**
+	 * This method initializes CenterAtButton	
+	 * 	
+	 * @return {@link JButton}
+	 */
+	private JButton getCenterAtButton() {
+		if (centerAtButton == null) {
+			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);			
+			centerAtButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					// forward
+					centerAt();
+				}
+				
+			});
 		}
-		return cancelButton;
+		return centerAtButton;
 	}
 	
-	private JButton getApplyButton() {
-		if (applyButton == null) {
+	/* ===========================================
+	 * Private methods
+	 * ===========================================
+	 */
+	
+	private void centerAt() {
+		// has map?
+		if(getTool().getMap()!=null) {						
 			try {
-				applyButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
-				applyButton.setActionCommand("finish");
-				applyButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// forward
-						apply();
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
+				// get position 
+				Position p = getGotoPanel().getPositionField().getPosition();
+				// center at position?
+				if(p!=null) {
+					getTool().getMap().centerAtPosition(p);
+				}
+				else
+					Utils.showWarning("Du må oppgi korrekte koordinater");
+			} catch (Exception ex) {
+				// TODO Auto-generated catch block
+				ex.printStackTrace();
 			}
 		}
-		return applyButton;
-	}	
+	}
+	
+	/* ===========================================
+	 * Public methods
+	 * ===========================================
+	 */
+	
+	public Point getPoint() {
+		try {
+			if(getTool()!=null) 
+				return getGotoPanel().getPositionField().getPoint(getTool().getMap().getSpatialReference());
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed!
+		return null;
+	}
+	
+	public void setPoint(Point p) {
+		getGotoPanel().getPositionField().setPoint(p);
+	}
+	
+	public Position getPosition() {
+		return getGotoPanel().getPositionField().getPosition();
+	}
+	
+	public void setPosition(Position p) {
+		getGotoPanel().getPositionField().setPosition(p);
+	}
+	
+	public IUnitIf getUnit() {
+		return (IUnitIf)getUnitList().getSelectedValue();
+	}
+	
+	public void setUnit(IUnitIf msoUnit) {
+		if(msoUnit!=null)
+			getUnitList().setSelectedValue(msoUnit,true);
+		else
+			getUnitList().setSelectedIndex(-1);
+	}
 	
 	public boolean isSingleUnitOnly() {
 		return isSingleUnitOnly;
 	}
 	
-	public void loadSingleUnitOnly(IUnitIf unit) {
+	public void loadUnit(IUnitIf unit) {
 		// create new model
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		// add unit
@@ -288,7 +283,7 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 		// apply to list
 		getUnitList().setModel(model);
 		// select unit
-		setCurrentUnit(unit);
+		setUnit(unit);
 		// set flag
 		isSingleUnitOnly = true;
 	}
@@ -314,121 +309,138 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 		// reset flag
 		isSingleUnitOnly = false;
 	}
-
-
-	public void cancel() {
-		// has revert data?
-		if (getCurrentPosition() != null) {
-			try {
-				// revert
-				setCurrentPosition(getCurrentPosition());
-			} catch (Exception ex) {
-				// consume any exceptions
-			}
-
-		} else {
-			// revert
-			setCurrentPosition(null);
-		}		
-		// forward
-		tool.cancel();
-	}
 	
-	private void apply() {
-		// coordinates
-		Point point = null;
+	/* ===========================================
+	 * IPropertyPanel implementation
+	 * ===========================================
+	 */
+
+	@Override
+	public PositionTool getTool() {
+		return (PositionTool)super.getTool();
+	}
+		
+	@Override
+	public boolean finish() {
+		
+		// initialize
+		boolean bFlag = false;
+		
+		// consume change events
+		setChangeable(false);
+		
 		try {
-			point = getGotoPanel().getPositionField().getPoint();
+			// get point from coordinates
+			Point point = gotoPanel.getPositionField().getPoint(
+					getTool().getMap().getSpatialReference());
+			// add or move poi?
+			if(point!=null) {
+				// get unit
+				IUnitIf msoUnit = getUnit();
+				// add or move poi?
+				if (msoUnit == null) {
+					Utils.showWarning("Du må først velge en enhet");
+				} else {
+					// forward
+					getTool().setMsoObject(msoUnit);
+					// set point
+					getTool().setPoint(point);
+					// forward
+					getTool().finish();
+				}		
+				// finished
+				bFlag = true;
+			}
+			else 
+				Utils.showWarning("Ingen posisjon er oppgitt");
 		} catch (Exception ex) {
 			Utils.showWarning("Ugyldig format. Sjekk koordinater og prøv igjen");
 		}
-		// add or move poi?
-		if (tool.getCurrentUnit() == null) {
-			Utils.showWarning("Du må først velge en enhet");
-		} else {
-			tool.setPositionAt(point);
-			// forward
-			tool.apply();
-		}		
+		
+		// resume change events
+		setChangeable(true);
+		
+		// reset bit?
+		if(bFlag) setDirty(false);
+		
+		// finished
+		return bFlag;
 	}
 	
 	public void reset() {
-		tool.cancel();
-		getGotoPanel().getPositionField().setText(null);
-		if(getUnitList().getModel().getSize()>0)
-			getUnitList().setSelectedIndex(-1);
-	}
-	
-	public void updatePosition(Point p) {
-		getGotoPanel().getPositionField().setPoint(p);
-	}
-	
-	public Position getCurrentPosition() {
-		if(tool.getCurrentUnit()!=null)
-			return tool.getCurrentUnit().getPosition();
-		return null;
-	}
-	
-	public void setCurrentPosition(Position p) {
-		if(tool.getCurrentUnit()!=null)
-			tool.getCurrentUnit().setPosition(p);
-	}
-	
-	public IUnitIf getCurrentUnit() {
-		return tool.getCurrentUnit();
-	}
-	
-	public void setCurrentUnit(IUnitIf unit) {
-		// update list
-		if(unit!=null) {
-			getUnitList().setSelectedValue(unit,true);
-		}
-		else {
-			getUnitList().setSelectedValue(null, false);
-		}		
-		// set tool unit
-		tool.setCurrentUnit((IUnitIf)getUnitList().getSelectedValue());
-		// update caption
-		//getCaptionPanel().setCaptionText(MsoUtils.getMsoObjectName(unit, 0));
-
+		// consume change events
+		setChangeable(false);
+		// forward
+		getTool().reset();
+		setPosition(null);
+		setUnit(null);
+		setDirty(false);
+		// resume change events
+		setChangeable(true);
 	}	
 	
+	public void update() {
+		
+		// consume reentry?
+		if(!isChangeable()) return;
+		
+		// forward
+		super.update();
+		
+		// suspend events
+		setChangeable(false);
+		
+		try {
+			
+			// update caption
+			if(getTool().getMap().isEditSupportInstalled())
+				setCaptionText(getTool().getMap().getDrawAdapter().getDescription());
+			else 
+				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
+						getTool().getMsoCode(), getTool().getDrawMode())); 
+			// update attributes
+			// get point
+			getGotoPanel().getPositionField().setPoint(getTool().getPoint());
+			// set types enabled state
+			getUnitList().setEnabled(!getTool().isReplaceMode());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// refresh list
+		getUnitList().updateUI();
+		
+		// resume events
+		setChangeable(true);
+	}
+	
+	@Override
+	public void setMsoObject(IMsoObjectIf msoObj) {		
+		// consume?
+		if (!isChangeable()) return;
+		// consume changes
+		setChangeable(false);
+		// update comments and type
+		if(msoObj instanceof IUnitIf)
+			setUnit((IUnitIf)msoObj);
+		else
+			setUnit(null);
+		// resume changes
+		setChangeable(true);
+		// finished
+		update();
+	}
+
 	/* ===========================================
 	 * IMsoUpdateListenerIf implementation
 	 * ===========================================
 	 */
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
-		return myInterests.contains(aMsoObject.getMsoClassCode());
-	}	
-
-	public void handleMsoUpdateEvent(Update e) {
-		// get flags
-		int mask = e.getEventTypeMask();
-        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
-		
-        // get mso object
-        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-        
-        // add object?
-		if (createdObject && !isSingleUnitOnly) {
-			msoObjectCreated(msoObj,mask);
-		}
-		// is object modified?
-		if ( (addedReference || removedReference || modifiedObject)) {
-			msoObjectChanged(msoObj,mask);
-		}
-		// delete object?
-		if (deletedObject) {
-			msoObjectDeleted(msoObj,mask);		
-		}
-	}
-
-	private void msoObjectCreated(IMsoObjectIf msoObject, int mask) {
+	@Override
+	protected void msoObjectCreated(IMsoObjectIf msoObject, int mask) {
+		// consume?
+		if(!isSingleUnitOnly) return;
 		// get model
 		DefaultComboBoxModel model = 
 			(DefaultComboBoxModel)getUnitList().getModel();
@@ -436,66 +448,29 @@ public class PositionPanel extends DiskoPanel implements IPropertyPanel,
 		if(model.getIndexOf(msoObject)<0) {
 			model.addElement((IUnitIf)msoObject);
 		}
-		getUnitList().setModel(model);
 	}
 	
-	private void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-		IUnitIf unit = getCurrentUnit();
-		// same as selected?
-		if(unit==(IUnitIf)msoObject) {
-			setCurrentPosition(unit.getPosition());
-		}
+	@Override
+	protected void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
+		// forward
+		update();
 	}
 
-	private void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
+	@Override
+	protected void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
 		// cast to IUnitIf
 		IUnitIf unit = (IUnitIf)msoObject;
 		// get model
 		DefaultComboBoxModel model = 
 			(DefaultComboBoxModel)getUnitList().getModel();
-		// get name of current from local list (name in mso model can be changed)
 		// is current?
-		boolean isCurrent = (getCurrentUnit()==unit);
+		boolean isCurrent = (getUnit()==unit);
 		// remove item
 		model.removeElement(unit);
 		// update list
 		getUnitList().setModel(model);
 		// reset?
-		if(isCurrent)
-			setCurrentUnit(null);
-	}	
-	
-	/* ===========================================
-	 * IMsoLayerEventListener implementation
-	 * ===========================================
-	 */
-
-	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
-		if (tool.getMap() == null || !e.isFinal()) return; 
-		com.esri.arcgis.geometry.Point point = null;
-		List<IMsoFeature> selection = e.getSelected();
-		if (selection != null && selection.size() > 0) {
-			IMsoFeature msoFeature = (IMsoFeature)selection.get(0);
-			IMsoObjectIf msoObject = msoFeature.getMsoObject();
-			if(msoObject instanceof IUnitIf) {
-				IUnitIf unit = (IUnitIf)msoObject;
-				tool.setCurrentUnit(unit);
-				getUnitList().setSelectedValue(unit, true);
-				point = (com.esri.arcgis.geometry.Point)msoFeature.getShape();
-			}
-		}
-		getGotoPanel().getPositionField().setPoint(point);
+		if(isCurrent) setUnit(null);
 	}
-	
-	/* ===========================================
-	 * IPropertyPanel implementation
-	 * ===========================================
-	 */
-
-	public void update() { /*NOP*/ }
-	
-	public void addActionListener(ActionListener listener) { /*NOP*/ }
-	public void removeActionListener(ActionListener listener) { /*NOP*/ }
-
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

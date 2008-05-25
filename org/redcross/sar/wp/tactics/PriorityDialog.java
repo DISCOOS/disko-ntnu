@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import javax.swing.AbstractButton;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -13,12 +12,10 @@ import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DiskoPanel;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.DefaultDiskoPanel;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderers.RadioListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -30,7 +27,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListener{
 
 	private static final long serialVersionUID = 1L;
-	private DiskoPanel contentPanel = null;
+	private DefaultDiskoPanel contentPanel = null;
 	private JList priorityList = null;
 	
 	public PriorityDialog(IDiskoWpModule wp) {
@@ -55,7 +52,7 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
-			//  Do Something
+			e.printStackTrace();
 		}
 	}
 	
@@ -91,7 +88,7 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 				if(searchArea.getPriority()!=priority-1) {
 					searchArea.setPriority(priority-1);
 				}
-				fireOnWorkChange(priorityList,currentMsoObj,priority-1);
+				fireOnWorkChange(currentMsoObj,priority-1);
 			}
 		}
 		setIsNotWorking();
@@ -102,20 +99,23 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private DiskoPanel getContentPanel() {
+	private DefaultDiskoPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DiskoPanel();
+				contentPanel = new DefaultDiskoPanel();
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				AbstractButton button = contentPanel.addButton(
-						DiskoButtonFactory.createButton("GENERAL.CANCEL", ButtonSize.NORMAL),"cancel");
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// hide me!
-						setVisible(false);						
-					}					
-				});
 				contentPanel.setBodyComponent(getPriorityList());
+				contentPanel.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("finish".equalsIgnoreCase(cmd))
+							finish();
+						else if("cancel".equalsIgnoreCase(cmd))
+							cancel();
+					}
+					
+				});
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -135,24 +135,21 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 				priorityList = new JList();
 				priorityList.setCellRenderer(new RadioListCellRenderer());
 				Object[] listData = new Object[5];
-				listData[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA.text");
-				listData[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA.text");
-				listData[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA.text");
-				listData[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA.text");
-				listData[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA.text");
+				listData[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
+				listData[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA");
+				listData[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA");
+				listData[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA");
+				listData[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA");
 				
 				priorityList.setListData(listData);
 				priorityList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				priorityList.setSelectedIndex(0);
 				priorityList.addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
-						if(e.getValueIsAdjusting() || isWorking()) {
-							return;
-						}
-						// update mso model
-						setPriority(getPriority(), false, true);						
-						// hide me and notify change
-						setVisible(false);
+						// consume?
+						if(e.getValueIsAdjusting() || isWorking());
+						// notify
+						getContentPanel().setDirty(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -162,10 +159,34 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 		return priorityList;
 	}
 
+	public boolean finish() {
+		if(isWorking()) return false;
+		// update mso model
+		setPriority(getPriority(), false, true);
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide me
+		setVisible(false);
+		return true;
+	}
+	
+	public boolean cancel() {
+		if(isWorking()) return false;
+		// resume old state
+		setMsoObject(currentMsoObj);
+		// reset flag
+		getContentPanel().setDirty(false);
+		// hide me
+		setVisible(false);
+		return true;
+	}
+	
+	
 	@Override
 	public int setMsoObject(IMsoObjectIf msoObj) {
 		int state = 0;
 		if(isWorking()) return state;		
+		setIsWorking();
 		// dispatch type
 		if (msoObj instanceof ISearchAreaIf) {
 			ISearchAreaIf searchArea = (ISearchAreaIf)msoObj;
@@ -177,6 +198,8 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 			setPriority(1,true,false);
 			state = -1;
 		}
+		setIsNotWorking();
+		getContentPanel().setDirty(false);
 		// forward
 		setup();
 		// not selected

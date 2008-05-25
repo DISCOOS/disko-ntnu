@@ -8,6 +8,8 @@ import java.util.Calendar;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.MaskFormatter;
 
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -45,10 +47,24 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 		if(m_component==null) {
 			// create
 			JFormattedTextField field = new JFormattedTextField();
-			// get
 			// set format
 			field.setFormatterFactory(new DTGFormat());
 			field.setEditable(m_isEditable);
+			field.getDocument().addDocumentListener(new DocumentListener() {
+
+				public void changedUpdate(DocumentEvent e) { change(); }
+
+				public void insertUpdate(DocumentEvent e) { change(); }
+
+				public void removeUpdate(DocumentEvent e) { change(); }
+				
+				private void change() {
+					if(isWorking()) return;
+					fireOnWorkChange();
+				}
+				
+			});
+			
 			// save the component
 			m_component = field;
 			

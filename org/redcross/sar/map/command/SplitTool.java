@@ -1,19 +1,16 @@
 package org.redcross.sar.map.command;
 
 import com.esri.arcgis.geodatabase.IFeature;
+import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geometry.*;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.command.FlankTool.FlankWork;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -27,8 +24,6 @@ import org.redcross.sar.thread.DiskoWorkPool;
 
 import java.awt.*;
 import java.io.IOException;
-
-import javax.swing.JToggleButton;
 
 /**
  * A custom draw tool.
@@ -192,7 +187,8 @@ public class SplitTool extends AbstractDiskoTool {
 				double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
 				IMsoFeatureLayer editLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 				MsoFeatureClass featureClass = (MsoFeatureClass)editLayer.getFeatureClass();
-				IFeature feature = search(featureClass, p,max).nextFeature();
+				IFeatureCursor c =  MapUtil.search(featureClass, p,max);
+				IFeature feature = c.nextFeature();
 				if (feature != null && feature instanceof IMsoFeature) {
 					IMsoFeature editFeature = (IMsoFeature)feature;
 					IGeometry geom = editFeature.getShape();

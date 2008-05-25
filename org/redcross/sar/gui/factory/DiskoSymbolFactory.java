@@ -4,11 +4,12 @@ import java.awt.image.BufferedImage;
 
 import java.util.ResourceBundle;
 
+import org.redcross.sar.util.Internationalization;
+
 public class DiskoSymbolFactory {
 
 	private final static String m_path = "symbols";	
-	private final static BasicDiskoFactory m_basic = 
-		new BasicDiskoFactory();
+
 	private final static ResourceBundle m_default = 
 		ResourceBundle.getBundle("resources/symbols");
 	
@@ -36,22 +37,22 @@ public class DiskoSymbolFactory {
 	public static String getPath(String symbol, Object resource) {
 		
 		// is path?
-		if (m_basic.isPath(symbol)) {
+		if (BasicDiskoFactory.fileExist(symbol)) {
 			return symbol;
 		}
 		else {
 			// get key
 			String key = (!symbol.endsWith(".symbol")) 
-					   ? m_basic.getKey(symbol,"symbol") : symbol;
+					   ? BasicDiskoFactory.getKey(symbol,"symbol") : symbol;
 			// get from passed resource
-			String filename = m_basic.getText(key,resource);
+			String filename = BasicDiskoFactory.getText(key,resource);
 			// try default bundle?
 			if((filename==null || filename.isEmpty()) && m_default.containsKey(key))
 				filename = m_default.getString(key);
 			// found filename?
 			if((filename==null || filename.isEmpty())) {
 				// get from installed resource
-				filename = m_basic.getTextFromInstalled(key);	
+				filename = Internationalization.getText(key);	
 			}
 			// found filename?
 			if(filename!=null && !filename.isEmpty())
@@ -62,19 +63,4 @@ public class DiskoSymbolFactory {
 		return null;
 	}
 
-	public static String getKey(Enum e) {
-		return m_basic.getKey(e,"symbol");
-	}
-
-	public static Object getResourceFromKey(String key) { 
-		if(m_default.containsKey(key)) {
-			return m_default;
-		}
-		return m_basic.getResourceFromKey(key);
-	}
-	
-	public static BasicDiskoFactory getBasicFactory() {
-		return m_basic;
-	}
-			
 }

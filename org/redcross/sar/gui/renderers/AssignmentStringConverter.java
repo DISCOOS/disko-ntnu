@@ -8,7 +8,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
-public class AssignmentTableStringConverter extends TableStringConverter {
+public class AssignmentStringConverter extends TableStringConverter {
 
 	@Override
 	public String toString(TableModel model, int row, int column) {

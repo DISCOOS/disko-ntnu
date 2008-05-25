@@ -10,9 +10,9 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.models.UnitTableModel;
-import org.redcross.sar.gui.renderers.DiskoTableHeaderCellRenderer;
-import org.redcross.sar.gui.renderers.UnitTableCellRenderer;
-import org.redcross.sar.gui.renderers.UnitTableStringConverter;
+import org.redcross.sar.gui.renderers.DiskoHeaderCellRenderer;
+import org.redcross.sar.gui.renderers.UnitCellRenderer;
+import org.redcross.sar.gui.renderers.UnitStringConverter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
 
@@ -25,7 +25,7 @@ public class UnitTable extends JTable {
 	public UnitTable(IMsoModelIf msoModel, String catalog) {
 		
 		// set default unit cell table renderer
-		setDefaultRenderer(AbstractUnit.class, new UnitTableCellRenderer(catalog));
+		setDefaultRenderer(AbstractUnit.class, new UnitCellRenderer(catalog));
 		
 		// prepare data model
 		UnitTableModel model = new UnitTableModel(msoModel); 
@@ -33,7 +33,7 @@ public class UnitTable extends JTable {
 		
 		// add row sorter
 		tableRowSorter = new TableRowSorter<UnitTableModel>(model);
-		tableRowSorter.setStringConverter(new UnitTableStringConverter());
+		tableRowSorter.setStringConverter(new UnitStringConverter());
 		setRowSorter(tableRowSorter);		
 		
 		// prepare table
@@ -51,7 +51,7 @@ public class UnitTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(true);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoTableHeaderCellRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderCellRenderer(tableHeader.getDefaultRenderer()));
         
         // add model lister to ensure data fit
         getModel().addTableModelListener(new TableModelListener() {

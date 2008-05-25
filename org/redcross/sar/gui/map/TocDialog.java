@@ -18,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
@@ -108,34 +109,47 @@ public class TocDialog extends DiskoDialog {
 			private static final long serialVersionUID = 1L;
 			public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
                    	throws java.io.IOException, AutomationException {
-				update();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						update();
+					}
+				});				
 			}
 		});
 		updateLayerSelection(map);
 	}
 	
-	private void update() throws IOException, AutomationException{		
-		//Må oppdaterer kartlagsliste
+	private void update() {		
 		
-		//MsoLayerSelectionModel er den samme
-		map.setMsoLayerSelectionModel();
-		this.msoLayerSelectionModel = map.getMsoLayerSelectionModel();
+		try {
+			//Må oppdaterer kartlagsliste
+			
+			//MsoLayerSelectionModel er den samme
+			map.setMsoLayerSelectionModel();
+			this.msoLayerSelectionModel = map.getMsoLayerSelectionModel();
 
-		//DefaultMapLayerSelectionModel må oppdateres		
-		map.setDefaultMapLayerSelectionModel();
-		this.defaultMapLayerSelectionModel = map.getDefaultMapLayerSelectionModel();
-		
-		//WMSLayerSelectionModel må oppdateres
-		map.setWMSLayerSelectionModel();
-		this.wmsLayerSelectionModel = map.getWMSLayerSelectionModel();
-		
-		//todo - må oppdatere snapLayerModell og flankLayerModell også 
-		
-		updateLayerSelection(map);
+			//DefaultMapLayerSelectionModel må oppdateres		
+			map.setDefaultMapLayerSelectionModel();
+			this.defaultMapLayerSelectionModel = map.getDefaultMapLayerSelectionModel();
+			
+			//WMSLayerSelectionModel må oppdateres
+			map.setWMSLayerSelectionModel();
+			this.wmsLayerSelectionModel = map.getWMSLayerSelectionModel();
+			
+			//todo - må oppdatere snapLayerModell og flankLayerModell også 
+			
+			updateLayerSelection(map);
 
-		apply();
-		
-		this.layerSelectionPanel.updateUI();
+			apply();
+			
+			this.layerSelectionPanel.updateUI();
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 			
 	}
 	

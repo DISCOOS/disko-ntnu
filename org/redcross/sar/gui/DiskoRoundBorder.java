@@ -1,20 +1,13 @@
-package org.redcross.sar.gui.map;
+package org.redcross.sar.gui;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.border.Border;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Stroke;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
 
@@ -25,19 +18,20 @@ import java.awt.geom.Line2D;
  * Time: 12:43:19
  * To change this template use File | Settings | File Templates.
  */
-public class DiskoBorder implements Border
+public class DiskoRoundBorder implements Border
 {
     private final int radius;
     private final int halfThickness;
     private final boolean doubleLine;
-    private Insets insets;
     private final Stroke linestroke;
-    boolean top;
-    boolean left;
-    boolean bottom;
-    boolean right;
+    
+    private boolean top;
+    private boolean left;
+    private boolean bottom;
+    private boolean right;
+    private Insets insets;
 
-    public DiskoBorder(int aThickness, int aDiameter, boolean isDouble)
+    public DiskoRoundBorder(int aThickness, int aDiameter, boolean isDouble)
     {
         radius = (aDiameter + 1) / 2;
         halfThickness = (aThickness + 1) / 2;
@@ -52,7 +46,7 @@ public class DiskoBorder implements Border
         right = true;
     }
 
-    public DiskoBorder(int aThickness, int aDiameter, boolean showTop, boolean showLeft, boolean showBottom, boolean showRight)
+    public DiskoRoundBorder(int aThickness, int aDiameter, boolean showTop, boolean showLeft, boolean showBottom, boolean showRight)
     {
         radius = (aDiameter + 1) / 2;
         halfThickness = (aThickness + 1) / 2;
@@ -174,17 +168,19 @@ public class DiskoBorder implements Border
         }
         g2.setStroke(oldStroke);
     }
+    
+    /*
 
     public static void main(String args[])
     {
         JFrame fr = new JFrame();
         fr.setSize(400, 500);
         JLabel label = new JLabel("Testing");
-        label.setBorder(new DiskoBorder(12, 56, false));
+        label.setBorder(new DiskoRoundBorder(12, 56, false));
         label.setBackground(Color.YELLOW);
         label.setOpaque(true);
         JButton butt = new JButton("Test butt");
-        butt.setBorder(new DiskoBorder(3, 6, true,false,true,true));
+        butt.setBorder(new DiskoRoundBorder(3, 6, true,false,true,true));
         fr.getContentPane().add(label, BorderLayout.NORTH);
         fr.getContentPane().add(butt, BorderLayout.SOUTH);
         fr.setVisible(true);
@@ -197,5 +193,7 @@ public class DiskoBorder implements Border
             }
         });
     }
+    
+    */
 
 }
