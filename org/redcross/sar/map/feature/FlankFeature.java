@@ -13,7 +13,6 @@ import com.esri.arcgis.geometry.Polygon;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoListIf;
@@ -106,22 +105,17 @@ public class FlankFeature extends AbstractMsoFeature {
 				try {
 					createFlank(path, leftDist, clipFeatures, LEFT_SIDE_FLANK);
 				} catch (AutomationException e) {
-					showError("Kan ikke lage venstre flanke. Ugyldig geometri.", e.getDescription());
+					Utils.showError("Kan ikke lage venstre flanke. Ugyldig geometri.", e.getDescription());
 				}
 			}
 			if (rightDist > 0) {
 				try {
 					createFlank(path, rightDist, clipFeatures, RIGHT_SIDE_FLANK);
 				} catch (AutomationException e) {
-					showError("Kan ikke lage høyre flanke. Ugyldig geometri.", e.getDescription());
+					Utils.showError("Kan ikke lage høyre flanke. Ugyldig geometri.", e.getDescription());
 				}
 			}
 		}
-	}
-
-	private void showError(String msg, String description) {
-		ErrorDialog dialog = Utils.getErrorDialog(Utils.getApp().getFrame());
-		dialog.showError(msg, description);
 	}
 
 	private void createFlank(Polyline path, double dist, List clipFeatures, int side)

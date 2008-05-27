@@ -7,6 +7,8 @@ import javax.swing.JToggleButton;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
@@ -121,13 +123,13 @@ public class MainMenuPanel extends JPanel {
 				// get NAV button
 				navToggleButton = DiskoButtonFactory.createToggleButton(
 						"SYSTEM.NAV", ButtonSize.NORMAL, 0, 0,null);
-				navToggleButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						MainPanel mainPanel = app.getUIFactory().getMainPanel();
+				navToggleButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MainPanel mainPanel = app.getUIFactory()
+								.getMainPanel();
 						if (navToggleButton.isSelected()) {
 							mainPanel.getNavBar().setVisible(true);
-						}
-						else {
+						} else {
 							mainPanel.getNavBar().setVisible(false);
 						}
 					}
@@ -150,13 +152,13 @@ public class MainMenuPanel extends JPanel {
 			
 				sysToggleButton = DiskoButtonFactory.createToggleButton(
 						"SYSTEM.SYS", ButtonSize.NORMAL);
-				sysToggleButton.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						MainPanel mainPanel = app.getUIFactory().getMainPanel();
+				sysToggleButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MainPanel mainPanel = app.getUIFactory()
+								.getMainPanel();
 						if (sysToggleButton.isSelected()) {
 							mainPanel.getSysBar().setVisible(true);
-						}
-						else {
+						} else {
 							mainPanel.getSysBar().setVisible(false);
 						}
 					}

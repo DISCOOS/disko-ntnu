@@ -97,7 +97,7 @@ public abstract class AbstractDiskoWpModule
         this.mapLayers = getDefaultMapLayers();
         
 		// initialize timers
-        //initTickTimer();
+        initTickTimer();
         
     }
 
@@ -349,9 +349,11 @@ public abstract class AbstractDiskoWpModule
         
         // refresh map?
         if(isMapInstalled()) {
-    		SwingUtilities.invokeLater(new Runnable() {
+    		
+        	/*SwingUtilities.invokeLater(new Runnable() {
 
 				public void run() {
+				*/
 		        	try {
 		        		if(getMap().isInitMode()) {
 		        			// reset flag
@@ -372,8 +374,8 @@ public abstract class AbstractDiskoWpModule
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}						
-				}        			
-    		});
+			//	}        			
+    		//});
         }
     	setFrameText(null);
     	// has nav state?

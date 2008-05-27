@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -258,8 +259,7 @@ public class TaskDialog extends DiskoDialog
 		}
 		else
 		{
-			ErrorDialog error = new ErrorDialog(m_application.getFrame());
-			error.showError(m_resources.getString("TimeError.header"),
+			Utils.showError(m_resources.getString("TimeError.header"),
 					m_resources.getString("TimeError.text"));
 		}		
 		setIsNotWorking();

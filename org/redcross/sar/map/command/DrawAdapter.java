@@ -563,25 +563,24 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		
 	}	
 	
-	public void setFrame(IEnvelope e) throws AutomationException, IOException {
+	public boolean setFrame(IEnvelope e) throws AutomationException, IOException {
 		// update
 		geoFrame = (e!=null) ? e.getEnvelope() : null;	
 		// refresh
-		setGeoFrame();
+		return setGeoFrame();
 	}
 	
-	public void setFrameUnion(IEnvelope e) throws AutomationException, IOException {
+	public boolean setFrameUnion(IEnvelope e) throws AutomationException, IOException {
 		// update
 		if(geoFrame==null)
-			setFrame(e);
-		else {
-			if(e!=null) geoFrame.union(e);
-			// refresh
-			setGeoFrame();			
-		}
+			return setFrame(e);
+		if(e!=null) 
+			geoFrame.union(e);
+		// refresh
+		return setGeoFrame();			
 	}
 	
-	private void setGeoFrame() throws IOException, AutomationException {
+	private boolean setGeoFrame() throws IOException, AutomationException {
 		
 		try {
 			// has frame?
@@ -605,10 +604,14 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				// hide
 				drawFrame.deactivate();
 			}
+			// success
+			return true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		// failure
+		return false;
 	}	
 	
 	public void prepareFrame(boolean refresh) {
@@ -833,7 +836,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		if(isWorking()) return false;
 		
 		// prepare
-		setIsWorking();
+		//setIsWorking();
 		suspendUpdate();
 		
 		// initialize
@@ -858,7 +861,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 
 		// finished
 		resumeUpdate();
-		setIsNotWorking();
+		//setIsNotWorking();
 	
 		// failed
 		return bFlag;
@@ -1627,7 +1630,8 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	}
 	
 	public void setSelectedTool(IDrawTool tool, boolean activate) {
-		drawDialog.setSelectedTool(tool,activate);
+		// update draw dialog
+		drawDialog.setSelectedTool(tool,activate);		
 	}
 	
 	public void onSelectionChanged(IDrawTool tool) {

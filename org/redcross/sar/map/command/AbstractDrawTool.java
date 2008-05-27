@@ -151,6 +151,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// forward
 		super();
 		
+		// set cursor
+		cursorPath = "cursors/create.cur";
+		
 		// create the symbol to draw with
 		markerSymbol = new SimpleMarkerSymbol();
 		RgbColor markerColor = new RgbColor();
@@ -303,25 +306,27 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	public boolean activate(int options) {
 		// forward
 		boolean flag = super.activate(options);
-		// allowed?
-		if(flag) {
-			// update modes in panel
-			getPropertyPanel().update();		
-			// forward?
-			if(!isDirty) setGeometries();
-			// turn on snapping?
-			if(snapAdapter!=null) {
-				try {
+		try {
+			// allowed?
+			if(flag) {
+				// update modes in panel
+				getPropertyPanel().update();		
+				// forward?
+				if(!isDirty) setGeometries();
+				// turn on snapping?
+				if(snapAdapter!=null) {
 					// forward
 					snapAdapter.setSnapToMode(isSnapToMode);
-				} catch (AutomationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
+			// forward
+			refresh();
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		// return state
 		return flag;
@@ -373,7 +378,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// show default?
 		if(isMouseOverIcon && !isDrawing())
 			return 0;
-		else {
+		else 
+			return super.getCursor();
+		/*{
 			if(msoObject==null && isCreateMode())
 				return super.getCursorFromLocation("cursors/create.cur");
 			else if(msoObject!=null && isReplaceMode())
@@ -385,8 +392,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			else
 				return super.getCursorFromLocation("cursors/cursor.cur");			
 		}	
+		 */
 	}
-
+	
 	public void onCreate(Object obj) {
 		
 		// is working?
@@ -620,7 +628,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		return isShowDrawFrame;
 	}
 
-	public void isShowDrawFrame(boolean isShowDrawFrame) {
+	public void setShowDrawFrame(boolean isShowDrawFrame) {
 		// get flag
 		boolean bFlag = isShowDrawFrame && map.isEditSupportInstalled();
 		try {
@@ -1272,7 +1280,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}
 	
 	protected boolean isGeometriesDrawn() {
-		return (featureType!=null) 
+		boolean bFlag = (featureType!=null) 
 			&& (isActive || 
 					(isShowDrawFrame 
 							&& map.isEditSupportInstalled() 
@@ -1280,6 +1288,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 							&& this == drawAdapter.getSelectedTool()
 					)
 				);
+		return bFlag;
 	}
 
 	/* ==================================================

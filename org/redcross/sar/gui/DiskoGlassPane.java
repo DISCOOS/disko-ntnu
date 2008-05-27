@@ -7,12 +7,8 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.AWTEventListener; 
@@ -24,7 +20,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -76,21 +71,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
     
     private void initialize() {
     	// make transparent
-    	this.setOpaque(false);
-    	/*/ use absolute positioning
-    	this.setLayout(null);
-    	// create label
-    	JLabel l = new JLabel("Helluuu!");
-    	// set fixed size
-    	Utils.setFixedSize(l, 100, 20);
-    	// add to container
-    	this.add(l);
-    	// position
-    	Insets insets = this.getInsets();
-        Dimension size = l.getPreferredSize();
-        l.setBounds(250 + insets.left, 250 + insets.top,
-                     size.width, size.height);
-    	*/
+    	this.setOpaque(false);    	
     	// set glass pane cursor
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // ensures that focus is not lost when locked
@@ -134,11 +115,13 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
             if(m_isLocked) ke.consume();
         }
         else if (e instanceof MouseEvent) { 
-            MouseEvent me = (MouseEvent)e; 
+            MouseEvent me = (MouseEvent)e;
+            Component c = me.getComponent();
         	// belongs to this application?
-            if (!Utils.inApp(me.getComponent())) return; 
-            // consume?
-            if(m_isLocked) me.consume();
+            if (!(Utils.inApp(me.getComponent()) || Utils.getApp().getMapManager().isMap(c))) return; 
+            // consume? (allow message dialog boxes)
+            if(m_isLocked && !Utils.isMessageDialog(SwingUtilities.getRoot(c)))
+            	me.consume();
             else if (me.getID() == MouseEvent.MOUSE_EXITED && me.getComponent() == m_frame) { 
                 m_point = null; 
             } else { 

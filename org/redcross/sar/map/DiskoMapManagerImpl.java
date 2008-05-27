@@ -1,5 +1,7 @@
 package org.redcross.sar.map;
 
+import java.awt.Component;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -821,4 +823,16 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// failed
 		return false;
 	}
+
+	public boolean isMap(Component c) {
+		return maps.contains(c);
+		/*
+		for(IDiskoMap it : maps) {
+			// application
+			if(SwingUtilities.isDescendingFrom(c, (Component)windows[i]))
+				return true;
+		}
+		return false;*/
+	}
+	
 }

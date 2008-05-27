@@ -1,10 +1,12 @@
 package org.redcross.sar.wp.messageLog;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -14,6 +16,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
@@ -22,10 +25,13 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.map.GotoPanel;
 import org.redcross.sar.gui.map.PositionPanel;
 import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.PositionTool;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.command.IDiskoTool.IDiskoToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -46,9 +52,11 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	private final static long serialVersionUID = 1L;
 
 	protected JPanel m_actionsPanel = null;
+	protected DiskoIcon m_finishIcon = null;
+	protected DiskoIcon m_cancelIcon = null;
 	protected JButton m_finishButton = null;
-	protected JButton m_centerAtButton = null;
 	protected JButton m_cancelButton = null;
+	protected JButton m_centerAtButton = null;
 	protected PositionPanel m_positionPanel = null;
 	protected GotoPanel m_gotoPanel = null;
 	protected DefaultDiskoPanel m_unitsPanel = null;
@@ -56,9 +64,8 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	protected IDiskoWpMessageLog m_wp = null;
 	
 	protected PositionTool m_tool = null;
+	protected IDiskoToolState m_toolState = null;
 
-	private int isWorking = 0;
-	
 	/**
 	 * @param wp Message log work process
 	 * @param poiTypes Which POI types are valid in panel
@@ -90,7 +97,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
         
 		// turn off vertical scrollbar
 		setScrollBarPolicies(
-				JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		// set layout
@@ -118,6 +125,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 			m_actionsPanel.add(getCancelButton());
 			m_actionsPanel.add(getCenterAtButton());
 			m_actionsPanel.add(getFinishButton());
+			m_actionsPanel.add(Box.createVerticalGlue());
 		}
 		return m_actionsPanel;
 	
@@ -126,18 +134,15 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	private JButton getFinishButton() {
 		if(m_finishButton==null) {
 			// create button
-			m_finishButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+			m_finishButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);			
+			m_finishIcon = new DiskoIcon(m_finishButton.getIcon(),Color.GREEN,0.4f);
+			m_finishButton.setIcon(m_finishIcon);
 			// add action listener
 			m_finishButton.addActionListener(new ActionListener() {
-				/**
-				 * Add/update POI in current message
-				 */
 				public void actionPerformed(ActionEvent e){
-					if(applyPosition())
-						MessageLogBottomPanel.showListPanel();				
+					if(apply()) MessageLogBottomPanel.showListPanel();				
 				}
 			});
-
 		}
 		return m_finishButton;
 	
@@ -153,7 +158,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 				 * Center map at position
 				 */
 				public void actionPerformed(ActionEvent e){
-					centerAtPosition(true);
+					centerAtPosition();
 				}
 			});
 
@@ -166,6 +171,8 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 		if(m_cancelButton==null) {
 			// create button
 			m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+			m_cancelIcon = new DiskoIcon(m_cancelButton.getIcon(),Color.RED,0.4f);
+			m_cancelButton.setIcon(m_cancelIcon);
 			// add action listener
 			m_cancelButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
@@ -212,7 +219,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// set preferred size of body component
-			m_gotoPanel.setPreferredSize(new Dimension(275,125));
+			m_gotoPanel.setPreferredSize(new Dimension(275,115));
 		}
 		return m_gotoPanel;
 	}
@@ -231,37 +238,23 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// set preferred size of body component
-			m_unitsPanel.setPreferredSize(new Dimension(200,125));
+			m_unitsPanel.setPreferredSize(new Dimension(200,115));
 		}
 		return m_unitsPanel;
 	}	
 	
-
-	private boolean isWorking() {
-		return (isWorking>0);
-	}
-
-	private int setIsWorking() {
-		isWorking++;
-		return isWorking; 
-	}
-	
-	private int setIsNotWorking() {
-		if(isWorking>0) {
-			isWorking--;
-		}
-		return isWorking; 
-	}
-	
 	/**
 	 * Apply position in current message based on values in GUI fields
 	 */
-	private boolean applyPosition()
+	private boolean apply()
 	{
 		
-		// set flag
-		setIsWorking();
+		// consume?
+		if(!isChangeable()) return false;
 
+		// consume changes
+		setChangeable(false);
+		
 		// initialize flag
 		boolean isSuccess = false;
 
@@ -378,8 +371,8 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 			Utils.showWarning("Du må først velge en enhet");
 		}
 
-		// reset flag
-		setIsNotWorking();
+		// resume chante
+		setChangeable(true);
 		
 		// return flag
 		return isSuccess;
@@ -421,26 +414,31 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	 */
 	public void showComponent()
 	{
+		
 		try {
-			// do not show dialog in map
-			m_tool.setShowDialog(false);
 			// center map at position of current unit
-			IUnitIf unit = centerAtPosition(true);			
+			IUnitIf unit = centerAtUnit(true);			
 			// load all units?
 			if(unit==null) 
 				getPositionPanel().loadUnits();
 			else
 				getPositionPanel().loadUnit(unit);
+			// save current state
+			m_toolState = m_tool.save();
 			// set it the active property panel
 			m_tool.setPropertyPanel(getPositionPanel());
-			// update tool attributes
+			// prepare to draw
+			m_tool.setShowDialog(false);
+			m_tool.setShowDrawFrame(false);
 			m_tool.setMsoData(null, unit, MsoClassCode.CLASSCODE_UNIT);
-			m_tool.setDrawMode(DrawMode.MODE_REPLACE);
+			m_tool.setDrawMode(unit==null ? DrawMode.MODE_CREATE : DrawMode.MODE_REPLACE);
 			// set tool active
 			m_wp.getMap().setActiveTool(m_tool,0);
 			// show tool
-			m_wp.getApplication().getNavBar()
-				.setVisibleButtons(Utils.getListOf(DiskoToolType.POSITION_TOOL), true, true);
+			NavBar bar = m_wp.getApplication().getNavBar();
+			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
+			bar.setEnabledButtons(types, true, true);
+			bar.setVisibleButtons(types, true, true);
 			// show this panel
 			this.setVisible(true);
 			// show map over log
@@ -453,13 +451,16 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 
 	public void hideComponent()
 	{
+
 		// hide tool
-		m_wp.getApplication().getNavBar()
-			.setVisibleButtons(Utils.getListOf(DiskoToolType.POSITION_TOOL), false, true);
+		NavBar bar = m_wp.getApplication().getNavBar();
+		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
+		bar.setEnabledButtons(types, false, true);
+		bar.setVisibleButtons(types, false, true);
 		// hide num pad
 		m_wp.getApplication().getUIFactory().getNumPadDialog().setVisible(false);
-		// resume default tool property panel 
-		m_tool.setDefaultPropertyPanel();
+		// resume old tool state
+		m_tool.load(m_toolState);
 		// hide map
         MessageLogPanel.hideMap();
 		// hide me
@@ -498,7 +499,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	public void newMessageSelected(IMessageIf message)
 	{
 		// consume?
-		if(isWorking()) return;
+		if(!isChangeable()) return;
 		
 		// Update dialog
 		updatePosition(message);
@@ -531,16 +532,48 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 		}
 	}
 
-
 	/**
 	 * center on position in map
 	 */
-	public IUnitIf centerAtPosition(boolean isSelected)
+	public boolean centerAtPosition()
+	{
+		
+		try
+		{
+			// initialize
+			IPoint p = getPositionPanel().getPoint();
+			
+			// can center at point?
+			if(p!=null) {
+				// forward
+	        	m_wp.getMap().centerAt(p);
+	        	// success
+	        	return true;
+			}
+		}
+		catch (AutomationException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+		}
+		// return unit
+		return false;
+	}
+	
+	/**
+	 * center map at unit
+	 */
+	public IUnitIf centerAtUnit(boolean isSelected)
 	{
 		// initialize
 		IUnitIf unit = null;
+		
 		// get current message, do not create if not exist
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+		
 		// has message?
 		if(message != null)
 		{
@@ -580,6 +613,16 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 		}
 		// return unit
 		return unit;
+	}
+	
+	public void update() { 
+		
+		// update attributes
+		m_finishIcon.setColored(isDirty());
+		m_cancelIcon.setColored(isDirty());
+		m_finishButton.repaint();
+		m_cancelButton.repaint();
+			
 	}
 	
 }

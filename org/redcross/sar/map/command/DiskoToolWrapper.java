@@ -2,6 +2,8 @@ package org.redcross.sar.map.command;
 
 import java.io.IOException;
 
+import javax.swing.SwingUtilities;
+
 import org.redcross.sar.map.IDiskoMap;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -407,7 +409,6 @@ public class DiskoToolWrapper extends AbstractDiskoTool {
 			// trace event
 			//System.out.println(toString() + "::beforeAction("+type+")");						
 			// forward?
-			if(map!=null) map.showProgressor(true);
 		}			
 	}
 	

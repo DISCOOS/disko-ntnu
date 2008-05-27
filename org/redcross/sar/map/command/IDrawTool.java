@@ -37,11 +37,13 @@ public interface IDrawTool extends IDiskoTool {
 	public boolean isContinueMode();
 	public boolean isConstrainMode();
 	public boolean isBatchUpdate();
+	public boolean isShowDrawFrame();
 	
 	public void setSnapToMode(boolean isSnapToMode);
 	public void setDrawMode(DrawMode mode);
 	public void setConstrainMode(boolean isConstrainMode);
 	public void setBatchUpdate(boolean isBatchUpdate);	
+	public void setShowDrawFrame(boolean isShowDrawFrame);
 	
 	public int getMaxStep();
 	public void setMaxStep(int distance);

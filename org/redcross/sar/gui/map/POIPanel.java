@@ -101,7 +101,7 @@ public class POIPanel extends DefaultToolPanel {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
 			gotoPanel.setGotoButtonVisible(false);
-			gotoPanel.setPreferredSize(new Dimension(200, 125));
+			gotoPanel.setPreferredSize(new Dimension(200, 130));
 			gotoPanel.addDiskoWorkEventListener(new IDiskoWorkListener() {
 
 				public void onWorkChange(DiskoWorkEvent e) {

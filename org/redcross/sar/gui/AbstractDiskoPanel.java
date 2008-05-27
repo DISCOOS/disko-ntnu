@@ -101,7 +101,7 @@ public abstract class AbstractDiskoPanel extends JPanel implements IDiskoPanel {
 		this.setBorderColor(m_borderColor);
 	}	
 	
-	private DiskoBorder createBorder() {
+	private Border createBorder() {
 		// create?
 		if(m_isBorderVisible) {
 			// create border
@@ -202,8 +202,24 @@ public abstract class AbstractDiskoPanel extends JPanel implements IDiskoPanel {
 	public void setBorderVisible(boolean isVisible) {
 		m_isBorderVisible = isVisible;
 		this.setBorder(createBorder());
-		getHeaderPanel().setBorderVisible(isVisible);
+		this.setHeaderBorderVisible(isHeaderBorderVisible());
 	}	
+
+	public boolean isHeaderBorderVisible() {
+		return getHeaderPanel().isBorderVisible();
+	}
+	
+	public void setHeaderBorderVisible(boolean isVisible) {
+		if(isVisible) {
+			if(m_isBorderVisible)
+				getHeaderPanel().setInsets(0, 0, 0, 1);
+			else
+				getHeaderPanel().setInsets(1, 1, 1, 1);
+		}
+		else
+			getHeaderPanel().setBorderVisible(isVisible);
+
+	}
 	
 	public Insets getInsets() {
 		return m_insets;
@@ -361,6 +377,16 @@ public abstract class AbstractDiskoPanel extends JPanel implements IDiskoPanel {
 		m_bodyComponent = body;
 		// update borders
 		setBorderColor(m_borderColor);
+	}
+	
+	public boolean isBodyEnabled() {
+		return m_bodyComponent.isEnabled();
+	}
+	
+	public void setBodyEnabled(Boolean isEnabled) {
+		// update
+		getScrollPane().setEnabled(isEnabled);
+		m_bodyComponent.setEnabled(isEnabled);
 	}
 	
 	public void addActionListener(ActionListener listener) {

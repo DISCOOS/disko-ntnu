@@ -1,11 +1,13 @@
 package org.redcross.sar.wp.messageLog;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -15,6 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
@@ -26,10 +29,13 @@ import org.redcross.sar.gui.map.GotoPanel;
 import org.redcross.sar.gui.map.POIPanel;
 import org.redcross.sar.gui.map.POITypesPanel;
 import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.POITool;
 import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.command.IDiskoTool.IDiskoToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -54,6 +60,8 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 	private final static long serialVersionUID = 1L;
 
 	protected JPanel m_actionsPanel = null;
+	protected DiskoIcon m_finishIcon = null;
+	protected DiskoIcon m_cancelIcon = null;
 	protected JButton m_finishButton = null;
 	protected JButton m_centerAtButton = null;
 	protected JButton m_cancelButton = null;
@@ -65,10 +73,9 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 	
 	protected POITool m_tool = null;
 	protected POIType[] m_types = null;
+	protected IDiskoToolState m_toolState = null;
 	protected HashMap<String,IUnitIf> m_units = null;
 	
-	private int isWorking = 0;
-
 	/**
 	 * @param wp Message log work process
 	 * @param poiTypes Which POI types are valid in panel
@@ -138,14 +145,12 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 		if(m_finishButton==null) {
 			// create button
 			m_finishButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+			m_finishIcon = new DiskoIcon(m_finishButton.getIcon(),Color.GREEN,0.4f);
+			m_finishButton.setIcon(m_finishIcon);
 			// add action listener
 			m_finishButton.addActionListener(new ActionListener() {
-				/**
-				 * Add/update POI in current message
-				 */
 				public void actionPerformed(ActionEvent e){
-					if(applyPOI())
-						MessageLogBottomPanel.showListPanel();				
+					if(apply()) MessageLogBottomPanel.showListPanel();				
 				}
 			});
 
@@ -158,13 +163,12 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 		if(m_centerAtButton==null) {
 			// create button
 			m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
+			m_cancelIcon = new DiskoIcon(m_cancelButton.getIcon(),Color.RED,0.4f);
+			m_cancelButton.setIcon(m_cancelIcon);
 			// add action listener
 			m_centerAtButton.addActionListener(new ActionListener() {
-				/**
-				 * Center map at position
-				 */
 				public void actionPerformed(ActionEvent e){
-					centerAtPOI(true);
+					centerAtPosition();
 				}
 			});
 
@@ -181,7 +185,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 			m_cancelButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					// cancel any changes
-					revertPOI();
+					revert();
 					// return to list view
 					MessageLogBottomPanel.showListPanel();
 				}
@@ -222,7 +226,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// set preferred size of body component
-			m_gotoPanel.setPreferredSize(new Dimension(275,125));
+			m_gotoPanel.setPreferredSize(new Dimension(275,115));
 		}
 		return m_gotoPanel;
 	}
@@ -241,36 +245,23 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// set preferred size of body component
-			m_typesPanel.setPreferredSize(new Dimension(100,125));
+			m_typesPanel.setPreferredSize(new Dimension(100,115));
 			
 		}
 		return m_typesPanel;
 	}
 	
-	private boolean isWorking() {
-		return (isWorking>0);
-	}
-
-	private int setIsWorking() {
-		isWorking++;
-		return isWorking; 
-	}
-	
-	private int setIsNotWorking() {
-		if(isWorking>0) {
-			isWorking--;
-		}
-		return isWorking; 
-	}
-	
 	/**
 	 * apply POI position and type in current message based on values in GUI fields
 	 */
-	private boolean applyPOI()
+	private boolean apply()
 	{
 
-		// set flag
-		setIsWorking();
+		// consume?
+		if(!isChangeable()) return false;
+		
+		// consume
+		setChangeable(false);
 		
 		// initialize flag
 		boolean isSuccess = false;
@@ -334,7 +325,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 					// update task?
 					if(poi!=null && isIntelligence)
 						// forward
-						isDirty = isDirty || setTask(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
+						isDirty = isDirty || schedule(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
 					
 					// is dirty?
 					if(isDirty)
@@ -362,14 +353,14 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 		// resume update
 		m_wp.getMsoModel().resumeClientUpdate();
 		
-		// reset flag
-		setIsNotWorking();
+		// resume changes
+		setChangeable(true);
 		
 		// return flag
 		return isSuccess;
 	}
 
-	private boolean setTask(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {
+	private boolean schedule(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {
 		
 		// initialize
 		boolean isDirty = false;
@@ -430,7 +421,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 	/**
 	 * Reverts contents of text fields to what is stored in MSO
 	 */
-	private void revertPOI()
+	private void revert()
 	{
 		// suspend update events
 		m_wp.getMsoModel().suspendClientUpdate();
@@ -468,20 +459,22 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 			m_tool.setShowDialog(false);
 			// show poi in map
 			IPOIIf poi = centerAtPOI(true);
-			// update layout
+			// save current state
+			m_toolState = m_tool.save();
+			// update panels
 			getPOIPanel().setPOITypes(m_types);
 			// make it the active property panel
 			m_tool.setPropertyPanel(getPOIPanel());
 			// prepare to draw
 			m_tool.setMsoData(null, poi, MsoClassCode.CLASSCODE_POI);
-			// replace
-			m_tool.setDrawMode(poi==null ? DrawMode.MODE_CREATE 
-					: DrawMode.MODE_REPLACE);
+			m_tool.setDrawMode(poi==null ? DrawMode.MODE_CREATE : DrawMode.MODE_REPLACE);
 			// activate tool
 			m_wp.getMap().setActiveTool(m_tool, 0);
 			// show tool
-			m_wp.getApplication().getNavBar().setVisibleButtons(
-					Utils.getListOf(DiskoToolType.POI_TOOL), true, true);
+			NavBar bar = m_wp.getApplication().getNavBar();
+			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
+			bar.setEnabledButtons(types, true, true);
+			bar.setVisibleButtons(types, true, true);
 			// show panel
 			this.setVisible(true);
 			// show map
@@ -495,12 +488,14 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 	public void hideComponent()
 	{
 		// hide tool
-		m_wp.getApplication().getNavBar()
-			.setVisibleButtons(Utils.getListOf(DiskoToolType.POI_TOOL), false, true);
+		NavBar bar = m_wp.getApplication().getNavBar();
+		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
+		bar.setEnabledButtons(types, false, true);
+		bar.setVisibleButtons(types, false, true);
 		// hide num pad
 		m_wp.getApplication().getUIFactory().getNumPadDialog().setVisible(false);
-		// resume default tool property panel 
-		m_tool.setDefaultPropertyPanel();
+		// resume old tool state
+		m_tool.load(m_toolState);
 		// hide map
         MessageLogPanel.hideMap();
 		// hide me
@@ -508,7 +503,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 
     }
 
-	private void updatePOI(IMessageIf message)
+	private void update(IMessageIf message)
 	{
 		// create or get current fining message line
 		IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POI, false);
@@ -538,10 +533,10 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 	public void newMessageSelected(IMessageIf message)
 	{
 		// consume?
-		if(isWorking()) return;
+		if(!isChangeable()) return;
 		
 		// Update dialog
-		updatePOI(message);
+		update(message);
 	}
 
 	/**
@@ -631,4 +626,45 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 		return poi;
 	}
 	
+	/**
+	 * center on position in map
+	 */
+	public boolean centerAtPosition()
+	{
+		
+		try
+		{
+			// initialize
+			IPoint p = getPOIPanel().getPoint();
+			
+			// can center at point?
+			if(p!=null) {
+				// forward
+	        	m_wp.getMap().centerAt(p);
+	        	// success
+	        	return true;
+			}
+		}
+		catch (AutomationException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+		}
+		// return unit
+		return false;
+	}
+
+	
+	public void update() { 
+		
+		// update attributes
+		m_finishIcon.setColored(isDirty());
+		m_cancelIcon.setColored(isDirty());
+		m_finishButton.repaint();
+		m_cancelButton.repaint();
+			
+	}
 }

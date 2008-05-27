@@ -318,17 +318,12 @@ public class DrawDialog extends DiskoDialog  implements IDrawToolCollection, Act
 			// show?
 			button.setVisible(visibleCount>0);
 			button.setEnabled(enabledCount>0);
-			/*/ reactivate tool?
+			// reactivate tool?
 			if(visibleCount>0) {
-				if(m_activeTool!=null) {
-					activateTool(m_activeTool);
+				if(m_selectedTool!=null) {
+					selectTool(m_selectedTool,false,false);
 				}
-				else if(m_tools.size()>0) {
-					// activate first in array
-					activateTool(m_tools.values().iterator().next());
-				}	
 			}
-			*/
 		}
 	}	
 	

@@ -62,6 +62,8 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		button.addMouseListener(new MouseListener() {
 
 			public void mouseClicked(MouseEvent e) {
+				// consume?
+				if(dialog == null || !showDialog ) return;
 				// double click?
 				if(e.getClickCount() == 2) {
 					dialog.setVisible(!dialog.isVisible());
@@ -69,11 +71,15 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			}
 
 			public void mousePressed(MouseEvent e) {
+				// consume?
+				if(dialog == null || !showDialog ) return;
 				// start show/hide
 				dialog.setVisibleDelay(!dialog.isVisible(), 250);				
 			}
 
 			public void mouseReleased(MouseEvent e) {
+				// consume?
+				if(dialog == null || !showDialog ) return;
 				// stop show if not shown already
 				dialog.cancelSetVisible();				
 			}

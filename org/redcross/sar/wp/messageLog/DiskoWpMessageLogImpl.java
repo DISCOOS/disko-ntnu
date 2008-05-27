@@ -2,7 +2,6 @@ package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -48,15 +47,15 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
         
 		// install draw support in map 
 		getMap().installEditSupport();        
+		
+		// hide map
+		getMap().setVisible(false);
         
     }
 	
     @Override
 	public void activate(IDiskoRole role) {
 		
-		// forward
-		super.activate(role);
-
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
 			// get tool set 
@@ -75,30 +74,14 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			// forward
 			setupNavBar(myButtons,false);
 		}	
-		// make map visible (is not shown in work prosess before
-		// MessageLogPanel.showMap() is called)
-		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(true);
-    }
+		if(MessageLogPanel.isMapShown()) 
+			MessageLogPanel.showMap();
+		else
+			MessageLogPanel.hideMap();
+		// forward
+		super.activate(role);
 
-    @Override
-	public void deactivate()
-    {
-    	super.deactivate();
-    	
-		// hide map
-		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(false);
-		
-		/*
-    	m_logPanel.hidePanels();
-    	m_logPanel.clearSelection();
-
-    	// Delete current message
-    	MessageLogBottomPanel.clearCurrentMessage();
-    	*/
-    }
-    	
+    }    	
     	
     @Override
     public boolean confirmDeactivate()
@@ -143,6 +126,14 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		return true;
 
     }
+    
+	public void deactivate() {
+		// hide map
+		getMap().setVisible(false);
+		// forward
+		super.deactivate();
+	}
+    
 
     /* (non-Javadoc)
     * @see com.geodata.engine.disko.task.DiskoAp#getCaption()

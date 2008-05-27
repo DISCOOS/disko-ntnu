@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.messageLog;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -159,8 +159,7 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 		}
 		catch (IllegalMsoArgumentException e1)
 		{
-			ErrorDialog error = new ErrorDialog(m_wp.getApplication().getFrame());
-			error.showError(m_wp.getBundleText("InvalidDTG.header"), m_wp.getBundleText("InvalidDTG.details"));
+			Utils.showError(m_wp.getBundleText("InvalidDTG.header"), m_wp.getBundleText("InvalidDTG.details"));
 			fireOnWorkCancel();
 		}
 	}

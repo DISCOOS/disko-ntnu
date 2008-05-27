@@ -31,7 +31,6 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -662,8 +661,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 					catch (IllegalOperationException e)
 					{
 						//  Can not delete personnel, give error message
-						ErrorDialog error = new ErrorDialog(this.getApplication().getFrame());
-						error.showError(this.getBundleText("CanNotDeletePersonnel.header"),
+						Utils.showError(this.getBundleText("CanNotDeletePersonnel.header"),
 								this.getBundleText("CanNotDeletePersonnel.details"));
 					}					
 				}
@@ -697,8 +695,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 					}
 					catch(IllegalOperationException e)
 					{
-						ErrorDialog error = new ErrorDialog(this.getApplication().getFrame());
-						error.showError(this.getBundleText("CanNotDeleteUnit.header"),
+						Utils.showError(this.getBundleText("CanNotDeleteUnit.header"),
 								this.getBundleText("CanNotDeleteUnit.details"));
 					}
 				}

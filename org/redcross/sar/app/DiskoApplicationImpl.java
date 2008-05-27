@@ -56,7 +56,6 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		Internationalization.getBundle(IDiskoApplication.class);
 	private static final String CONFIRMATION_TEXT = "CONFIRMATION.TEXT";
 	private static final String CONFIRMATION_TITLE = "CONFIRMATION.HEADER";
-	private static final String CHOOSEOPDESC = "CHOOSE.OP.DESC";
 	private static final String CHOOSETEXT = "CHOOSE.OP.TEXT";
 	private static final String WORK_ERROR_TEXT = "WORK.ERROR.TEXT";
 	private static final String WORK_ERROR_TITLE = "WORK.ERROR.TITLE";

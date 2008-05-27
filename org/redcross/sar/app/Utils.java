@@ -14,7 +14,8 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 
@@ -26,18 +27,10 @@ import org.redcross.sar.thread.DiskoProgressMonitor;
 public class Utils {
 
 	//private static Properties properties = null;
-	private static ErrorDialog errorDialog = null;
+	private static MessageDialog messageDialog = null;
 	private static ProgressMonitor progressMonitor = null;
 	private static IDiskoApplication diskoApp = null;
-
-	public static ErrorDialog getErrorDialog(Frame owner) {
-		// update
-		errorDialog = new ErrorDialog(owner);
-		errorDialog.setLocationRelativeTo(owner);
-		// return
-		return errorDialog;
-	}
-
+	
 	public static ProgressMonitor startProgress(Frame owner, 
 			Object message, String note, int min, int max,
 			boolean intermediate) {
@@ -80,7 +73,7 @@ public class Utils {
 		// get frame (if frame is locked use null)
 		Frame frame = Utils.getApp().isLocked() ? null : getApp().getFrame();
 		// forwar
-		return JOptionPane.showConfirmDialog(frame, msg, title, option, JOptionPane.QUESTION_MESSAGE);		
+		return JOptionPane.showConfirmDialog(frame, msg, title, option, MessageDialog.QUESTION_MESSAGE);		
 	}
 	
 	public static void showMessage(String msg) {
@@ -88,7 +81,7 @@ public class Utils {
 	}
 
 	public static void showMessage(String title, String msg) {
-		showMessage(title,msg,JOptionPane.WARNING_MESSAGE);		
+		showMessage(title,msg,MessageDialog.WARNING_MESSAGE);		
 	}
 	
 	public static void showWarning(String msg) {
@@ -96,7 +89,7 @@ public class Utils {
 	}
 
 	public static void showWarning(String title, String msg) {
-		showMessage(title,msg,JOptionPane.WARNING_MESSAGE);		
+		showMessage(title,msg,MessageDialog.WARNING_MESSAGE);		
 	}
 	
 	public static void showError(String msg) {
@@ -104,35 +97,58 @@ public class Utils {
 	}
 
 	public static void showError(String title, String msg) {
-		showMessage(title,msg,JOptionPane.ERROR_MESSAGE);		
+		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);		
 	}
 	
 	private static void showMessage(final String title, final String msg, final int options)
 	{
-		Runnable r = new Runnable(){
-			public void run(){
-				// get frame (if frame is locked use null)
-				Frame frame = Utils.getApp().isLocked() ? null : getApp().getFrame(); 
-				
-				try {
-					// force progress dialog to hide
-					DiskoProgressMonitor.getInstance().hide();
+		
+		// consume?
+		if(isMessageDialogShown()) return;
+		
+		if(SwingUtilities.isEventDispatchThread()) {
+			
+			// create message dialog
+			messageDialog = new MessageDialog(getApp().getFrame());
+			messageDialog.setLocationRelativeTo(getApp().getFrame(), DiskoDialog.POS_CENTER, false,true);
+			
+			// lock application
+			boolean isLocked = Utils.getApp().setLocked(true);
+			
+			// force progress dialog to hide
+			try { DiskoProgressMonitor.getInstance().hide(); }
+			catch(Exception e) { e.printStackTrace(); }
+			
+			// show dialog
+			messageDialog.showMessage(title, msg, options);
+
+			// show progress dialog again
+			try { DiskoProgressMonitor.getInstance().showAgain(); }
+			catch(Exception e) { e.printStackTrace(); }
+			
+			// resume lock mode
+			Utils.getApp().setLocked(isLocked);
+			
+			// reset message dialog
+			messageDialog = null;
+			
+		}
+		else {
+			Runnable r = new Runnable(){
+				public void run(){
+					showMessage(title, msg, options);
 				}
-				catch(Exception e) {
-					e.printStackTrace();					
-				}
-				// show dialog
-				JOptionPane.showMessageDialog(frame, msg, title, options);
-				try {
-					// show progress dialog again
-					DiskoProgressMonitor.getInstance().showAgain();
-				}
-				catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		SwingUtilities.invokeLater(r);
+			};
+			SwingUtilities.invokeLater(r);
+		}
+	}
+	
+	public static boolean isMessageDialogShown() {
+		return messageDialog!=null;
+	}
+	
+	public static boolean isMessageDialog(Component c) {
+		return (messageDialog!=null && messageDialog==c);
 	}
 	
 	public static String getPackageName(Class c) {

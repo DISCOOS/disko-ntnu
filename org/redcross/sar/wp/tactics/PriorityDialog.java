@@ -134,15 +134,9 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 			try {
 				priorityList = new JList();
 				priorityList.setCellRenderer(new RadioListCellRenderer());
-				Object[] listData = new Object[5];
-				listData[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
-				listData[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA");
-				listData[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA");
-				listData[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA");
-				listData[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA");
-				
-				priorityList.setListData(listData);
-				priorityList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+				priorityList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);				
+				priorityList.setFixedCellHeight(25);
+				priorityList.setListData(getPriData());
 				priorityList.setSelectedIndex(0);
 				priorityList.addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
@@ -157,6 +151,16 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 			}
 		}
 		return priorityList;
+	}
+	
+	private static Object[] getPriData() {
+		Object[] data = new Object[5];
+		data[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
+		data[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA");
+		data[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA");
+		data[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA");
+		data[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA");
+		return data;
 	}
 
 	public boolean finish() {

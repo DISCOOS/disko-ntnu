@@ -206,6 +206,7 @@ public class UnitSelectionDialog extends DiskoDialog {
 		setMsoObject(currentMsoObj);
 		getContentPanel().setDirty(false);
 		setIsNotWorking();
+		setVisible(false);
 		return false;		
 	}
 	

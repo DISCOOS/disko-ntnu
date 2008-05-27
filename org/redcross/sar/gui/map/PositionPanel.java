@@ -174,7 +174,16 @@ public class PositionPanel extends DefaultToolPanel {
 					// consume?
 					if(!isChangeable() || e.getValueIsAdjusting()) return;
 					
-					// notify
+					// consume changes
+					setChangeable(false);
+					
+					// forward
+					getTool().setUnit(getUnit());
+					
+					// resume changes
+					setChangeable(true);
+					
+					// forward
 					setDirty(true);
 					
 				}
@@ -276,6 +285,10 @@ public class PositionPanel extends DefaultToolPanel {
 	}
 	
 	public void loadUnit(IUnitIf unit) {
+		// consume?
+		if(!isChangeable()) return;
+		// consume changes
+		setChangeable(false);
 		// create new model
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		// add unit
@@ -284,8 +297,12 @@ public class PositionPanel extends DefaultToolPanel {
 		getUnitList().setModel(model);
 		// select unit
 		setUnit(unit);
+		// resume changes
+		setChangeable(true);
 		// set flag
 		isSingleUnitOnly = true;
+		// set dirty flag
+		setDirty(true);
 	}
 	
 	public void loadUnits() {
@@ -392,24 +409,17 @@ public class PositionPanel extends DefaultToolPanel {
 		
 		try {
 			
-			// update caption
-			if(getTool().getMap().isEditSupportInstalled())
-				setCaptionText(getTool().getMap().getDrawAdapter().getDescription());
-			else 
-				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
-						getTool().getMsoCode(), getTool().getDrawMode())); 
 			// update attributes
-			// get point
 			getGotoPanel().getPositionField().setPoint(getTool().getPoint());
-			// set types enabled state
-			getUnitList().setEnabled(!getTool().isReplaceMode());
+			
+			// units state
+			getUnitsPanel().setBodyEnabled(getTool().isCreateMode());
+			getUnitsPanel().setCaptionText(getTool().isCreateMode() ? "Velg enhet" : "Kan ikke endres");
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		// refresh list
-		getUnitList().updateUI();
 		
 		// resume events
 		setChangeable(true);

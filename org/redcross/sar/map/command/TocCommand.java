@@ -35,7 +35,7 @@ public class TocCommand extends AbstractDiskoCommand {
 		showDirect = true;
 		
 		// create dialog
-		dialog = new TocDialog(Utils.getApp());
+		dialog = new TocDialog(Utils.getApp().getFrame());
 		
 	}
 	
@@ -52,5 +52,15 @@ public class TocCommand extends AbstractDiskoCommand {
 		}
 		// forward
 		super.onCreate(obj);		
-	}	
+	}
+	
+	@Override
+	public void onClick() {
+		// forward
+		((TocDialog)dialog).reload();
+		// forward
+		super.onClick();
+	}
+
+	
 }

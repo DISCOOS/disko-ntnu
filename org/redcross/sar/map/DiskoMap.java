@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Toolkit;
@@ -49,6 +50,7 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.gui.DiskoDialog;
 import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.map.DrawDialog;
 import org.redcross.sar.gui.map.ElementDialog;
 import org.redcross.sar.gui.map.MapFilterBar;
@@ -99,14 +101,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private int supressDrawing = 0;
 	private int notifySuspended = 0;
 	private int currentBase = 0;
-	//private boolean isAutoFlashOn = true;
 	private boolean isCacheChanged = false;
 	private boolean isEditSupportInstalled = false;
 	
 	// lists
 	private MsoLayerSelectionModel msoLayerSelectionModel = null;
-	private WMSLayerSelectionModel wmsLayerSelectionModel = null;
-	private DefaultMapLayerSelectionModel defaultMapLayerSelectionModel = null;
+	private WmsLayerSelectionModel wmsLayerSelectionModel = null;
+	private MapLayerSelectionModel mapLayerSelectionModel = null;
 	private EnumSet<IMsoFeatureLayer.LayerCode> myLayers = null;
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private List<IMsoFeatureLayer> msoLayers = null;
@@ -295,6 +296,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		for (int i = 0; i < focusMap.getLayerCount(); i++) {
 			initLayer(focusMap.getLayer(i));
 		}
+		
+		// initialize mso selection model
+		setMsoLayerSelectionModel();
 		
 	}	
 	
@@ -502,18 +506,18 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public void setWMSLayerSelectionModel()
+	public void setWmsLayerSelectionModel()
 		throws IOException, AutomationException {
-		wmsLayerSelectionModel = new WMSLayerSelectionModel(this);
+		wmsLayerSelectionModel = new WmsLayerSelectionModel(this);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public WMSLayerSelectionModel getWMSLayerSelectionModel()
+	public WmsLayerSelectionModel getWmsLayerSelectionModel()
 			throws IOException, AutomationException {
 		if (wmsLayerSelectionModel == null) {
-			wmsLayerSelectionModel = new WMSLayerSelectionModel(this);
+			wmsLayerSelectionModel = new WmsLayerSelectionModel(this);
 		}
 		return wmsLayerSelectionModel;
 	}
@@ -521,20 +525,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public void setDefaultMapLayerSelectionModel()
+	public void setMapLayerSelectionModel()
 		throws IOException, AutomationException {
-		defaultMapLayerSelectionModel = new DefaultMapLayerSelectionModel(this);
+		mapLayerSelectionModel = new MapLayerSelectionModel(this);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public DefaultMapLayerSelectionModel getDefaultMapLayerSelectionModel()
+	public MapLayerSelectionModel getMapLayerSelectionModel()
 			throws IOException, AutomationException {
-		if (defaultMapLayerSelectionModel == null) {
-			defaultMapLayerSelectionModel = new DefaultMapLayerSelectionModel(this);
+		if (mapLayerSelectionModel == null) {
+			mapLayerSelectionModel = new MapLayerSelectionModel(this);
 		}
-		return defaultMapLayerSelectionModel;
+		return mapLayerSelectionModel;
 	}
 
 	public IDiskoMapManager getMapManager() {
@@ -1816,6 +1820,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			// update current index
 			currentBase = index;
 			
+			// update map layer selection model
+			setMapLayerSelectionModel();
+			
 			// return next base layer index
 			return index;
 			
@@ -2052,6 +2059,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						if (drawFrame != null) {
 							drawFrame.setActiveView(getActiveView());
 						}
+						// update current selection models
+						setMsoLayerSelectionModel();
+						setMapLayerSelectionModel();
+						setWmsLayerSelectionModel();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -2202,7 +2213,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			setInitialDelay(0);
 			
 		}		
-	}	
-	
-	
+	}
+
 }

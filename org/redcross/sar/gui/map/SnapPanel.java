@@ -428,8 +428,9 @@ public class SnapPanel extends DefaultDiskoPanel implements SnapListener {
 	private JCheckBox createCheckBox(String name) {
 		JCheckBox cb = new JCheckBox();
 		cb.setName(name);
-		cb.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
+		cb.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(!isChangeable()) return;
 				setDirty(true);
 			}
 		}) ;

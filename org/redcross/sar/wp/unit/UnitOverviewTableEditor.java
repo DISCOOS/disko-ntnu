@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.ErrorDialog;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -176,8 +176,7 @@ public class UnitOverviewTableEditor
 					}
 					catch (IllegalOperationException e)
 					{
-						ErrorDialog error = new ErrorDialog(null);
-						error.showError(m_resources.getString("PauseUnitError.header"),
+						Utils.showError(m_resources.getString("PauseUnitError.header"),
 								m_resources.getString("PauseUnitError.text"));
 					}
 
@@ -208,8 +207,7 @@ public class UnitOverviewTableEditor
 					}
 					catch (IllegalOperationException e1)
 					{
-						ErrorDialog error = new ErrorDialog(null);
-						error.showError(m_resources.getString("ReleaseUnitError.header"),
+						Utils.showError(m_resources.getString("ReleaseUnitError.header"),
 								m_resources.getString("ReleaseUnitError.text"));
 					}
 

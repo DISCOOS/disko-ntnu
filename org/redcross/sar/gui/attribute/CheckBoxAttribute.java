@@ -4,10 +4,10 @@
 package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -45,9 +45,9 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 			JCheckBox cb = new JCheckBox();
 			m_component = cb;
 			m_component.setEnabled(m_isEditable);
-			cb.addChangeListener(new ChangeListener() {
+			cb.addActionListener(new ActionListener() {
 
-				public void stateChanged(ChangeEvent e) {
+				public void actionPerformed(ActionEvent e) {
 					if(isWorking()) return;
 					fireOnWorkChange();
 		

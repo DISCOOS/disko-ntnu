@@ -1129,12 +1129,14 @@ public class NavBar extends JPanel {
 				m_buttons.put(key, buttonState);
 				// get command
 				ICommand cmd = it.next();
+				// initialize
+				IDiskoToolState state = null;
 				// is a disko tool?
 				if(cmd instanceof IDiskoTool) {
 					// get tool
 					IDiskoTool tool = (IDiskoTool)cmd;
 					// get state
-					IDiskoToolState state = tool.save();
+					state = tool.save();
 					// override isVisible?
 					if(tool.isHosted()) {
 						// override
@@ -1142,10 +1144,17 @@ public class NavBar extends JPanel {
 							((IToolCollection)tool.getDialog())
 								.getVisible(tool.getType());
 					}
-					// put to command hashtable?
-					if(state!=null)
-						m_tools.put(key, state);					
 				}
+				// is a disko host tool?
+				else if(cmd instanceof IHostDiskoTool) {
+					// get host tool
+					IHostDiskoTool tool = (IHostDiskoTool)cmd;					
+					// get state
+					state = tool.save();
+				}
+				// put to command hashtable?
+				if(state!=null)
+					m_tools.put(key, state);					
 			}			
 		}
 		
@@ -1180,6 +1189,11 @@ public class NavBar extends JPanel {
 						// NEVER be shown on the navbar!
 						button.setVisible(false);
 					}
+				}
+				// is a disko host tool?
+				else if(cmd instanceof IHostDiskoTool) {
+					// load tool
+					((IHostDiskoTool)cmd).load(m_tools.get(key));					
 				}
 			}						
 			// get nav button

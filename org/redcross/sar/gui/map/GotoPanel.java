@@ -51,10 +51,7 @@ public class GotoPanel extends DefaultDiskoPanel {
 	 */
 	public GotoPanel() {
 		// forward
-		super("",false,false);
-		// initialize GUI
-		initialize();
-		
+		this("",true);		
 	}
 
 	/**
@@ -63,6 +60,9 @@ public class GotoPanel extends DefaultDiskoPanel {
 	 * @param caption
 	 */
 	public GotoPanel(String caption, boolean isAutoUpdate) {
+		
+		// forward
+		super(caption,false,false);
 		
 		// prepare
 		m_isAutoUpdate = isAutoUpdate;

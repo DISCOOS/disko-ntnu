@@ -1,34 +1,9 @@
 package org.redcross.sar.wp.messageLog;
 
-import no.cmr.tools.Log;
-
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.attribute.AttributesPanel;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderers.IconRenderer;
-import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
-import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.except.IllegalMsoArgumentException;
-import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.util.mso.Selector;
-
-import com.esri.arcgis.interop.AutomationException;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -47,14 +22,34 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 
+import no.cmr.tools.Log;
+
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.attribute.AttributesPanel;
+import org.redcross.sar.gui.attribute.TextFieldAttribute;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMessageLineIf;
+import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
+import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.except.IllegalMsoArgumentException;
+import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.util.mso.Selector;
+
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * Abstract panel handling all updates to assignment. Implemented as template pattern.

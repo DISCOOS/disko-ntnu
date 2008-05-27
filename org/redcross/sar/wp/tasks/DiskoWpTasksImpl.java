@@ -6,7 +6,6 @@ import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.ErrorDialog;
 import org.redcross.sar.gui.MainMenuPanel;
 import org.redcross.sar.gui.SubMenuPanel;
 import org.redcross.sar.gui.TaskDialog;
@@ -327,8 +326,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         {
             if (m_currentTask.getStatus() == TaskStatus.FINISHED)
             {
-                ErrorDialog error = new ErrorDialog(this.getApplication().getFrame());
-                error.showError(this.getBundleText("CanNotDeleteTaskError.header"),
+            	Utils.showError(this.getBundleText("CanNotDeleteTaskError.header"),
                         this.getBundleText("CanNotDeleteTaskError.text"));
             } else
             {

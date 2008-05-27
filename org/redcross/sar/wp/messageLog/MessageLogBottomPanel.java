@@ -65,7 +65,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final int PANEL_HEIGHT = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height * 4 + 30;
+	public static final int PANEL_HEIGHT = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height * 5;
 	public static final int SMALL_PANEL_WIDTH = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).width;
 
 	private static final String EMPTY_PANEL_ID = "EMPTY_PANEL";
@@ -371,8 +371,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 		for(IEditMessageComponentIf component : m_editComponents)
 		{
-			component.clearContents();
 			component.hideComponent();
+			component.clearContents();
 		}
 	}
 

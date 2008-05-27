@@ -200,8 +200,6 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			SubMenuPanel subMenu   = app.getUIFactory().getSubMenuPanel();
 			NavBar navBar = app.getUIFactory().getMainPanel().getNavBar();
 			MainPanel mainPanel = app.getUIFactory().getMainPanel();
-			mainPanel.showComponent(id);
-		
 			if (module.hasSubMenu()) {
 				subMenu.setVisible(true);
 				subMenu.showMenu(id);
@@ -209,6 +207,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			else {
 				subMenu.setVisible(false);
 			}
+			mainPanel.showComponent(id);		
 			navBar.hideDialogs();
 			currentModule = module;
 			module.activate(this);

@@ -52,11 +52,11 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
 	
 	public MsoLayerSelectionModel getMsoLayerSelectionModel() throws IOException, AutomationException;
-	public WMSLayerSelectionModel getWMSLayerSelectionModel() throws IOException, AutomationException;	
-	public DefaultMapLayerSelectionModel getDefaultMapLayerSelectionModel() throws IOException, AutomationException;	
-	public void setWMSLayerSelectionModel() throws IOException, AutomationException;
+	public WmsLayerSelectionModel getWmsLayerSelectionModel() throws IOException, AutomationException;	
+	public MapLayerSelectionModel getMapLayerSelectionModel() throws IOException, AutomationException;	
+	public void setWmsLayerSelectionModel() throws IOException, AutomationException;
 	public void setMsoLayerSelectionModel() throws IOException, AutomationException;
-	public void setDefaultMapLayerSelectionModel() throws IOException, AutomationException;
+	public void setMapLayerSelectionModel() throws IOException, AutomationException;
 	
 	public IDiskoMapManager getMapManager();
 	

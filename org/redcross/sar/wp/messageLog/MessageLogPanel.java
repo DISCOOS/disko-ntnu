@@ -1,10 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.map.MapStatusBar;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -14,7 +12,6 @@ import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
@@ -42,6 +39,7 @@ public class MessageLogPanel
     private static final String LOG_ID = "LOG";
 
     private JPanel WorkspacePanel;
+    private static String m_current = LOG_ID;
     private MessageLogBottomPanel m_messagePanel;
     private static JSplitPane m_splitter1;
     private static IDiskoWpMessageLog m_wpModule;
@@ -83,19 +81,17 @@ public class MessageLogPanel
 					final JToggleButton b = (JToggleButton)e.getSource();
 	            	// toggle
 					if(b.isSelected()){
-						// run after this event has returned to ensure that the map 
-						// is drawn in DiskoMap without bugged output
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								// show map
-					        	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
-					            cards.show(m_tablePanel, MAP_ID);
-							}							
-						});
+						// show map
+			        	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+			            cards.show(m_tablePanel, MAP_ID);
+			            m_current = MAP_ID;
+			            m_map.setVisible(true);
 					}
 					else {						
+			            m_map.setVisible(false);
 			        	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
 			            cards.show(m_tablePanel, LOG_ID);
+			            m_current = LOG_ID;
 			        }					
 				}
 				
@@ -250,9 +246,14 @@ public class MessageLogPanel
         JToggleButton navButton = m_wpModule.getApplication().getUIFactory()
         	.getMainMenuPanel().getNavToggleButton();
         // is not selected?
-        if(!navButton.isSelected()) {
+        if(!navButton.isSelected())
         	navButton.doClick();
-        }
+        else if(m_current == MAP_ID) {
+			// show map
+	    	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+	        cards.show(m_tablePanel, MAP_ID);
+	        m_map.setVisible(true);
+		}
     }
 
     /**
@@ -261,11 +262,16 @@ public class MessageLogPanel
     public static void hideMap()
     {
         // get nav button
-        JToggleButton navButton = m_wpModule.getApplication().getUIFactory()
-        	.getMainMenuPanel().getNavToggleButton();
+        JToggleButton navButton = 
+        	m_wpModule.getApplication().getUIFactory().getMainMenuPanel().getNavToggleButton();
         // is not selected?
         if(navButton.isSelected()) {
         	navButton.doClick();
+        }
+        else if(m_current == LOG_ID) {
+            m_map.setVisible(false);
+    		CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+    		cards.show(m_tablePanel, LOG_ID);
         }
     }
 
@@ -275,5 +281,9 @@ public class MessageLogPanel
     public static IDiskoMap getMap()
     {
         return m_map;
+    }
+    
+    public static boolean isMapShown() {
+    	return (m_current == MAP_ID);
     }
 }

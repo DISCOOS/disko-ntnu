@@ -205,8 +205,7 @@ public class PositionField extends JPanel {
 			}
 		}
 		catch(Exception e) {
-			// invalid format
-			bEmpty = true;
+			// invalid format;
 		}
 		
 		if (bEmpty) {
@@ -526,7 +525,7 @@ public class PositionField extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format
+			// invalid format;
 		}
 		return null;
 	}
@@ -545,7 +544,7 @@ public class PositionField extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format
+			// invalid format;
 		}
 		return null;
 	}
@@ -568,7 +567,7 @@ public class PositionField extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format
+			// invalid format;
 		}
 	}	
 	
@@ -590,7 +589,7 @@ public class PositionField extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format
+			// invalid format;
 		}
 	}
 	
@@ -668,7 +667,7 @@ public class PositionField extends JPanel {
 		
 		MGRSFormat(String direction) throws ParseException {
 			super("#####"+direction);
-			this.setPlaceholder("#####"+direction);
+			this.setPlaceholder("00000"+direction);
 			this.setPlaceholderCharacter('0');
 			this.setAllowsInvalid(false);
 			this.direction = direction;
@@ -683,7 +682,7 @@ public class PositionField extends JPanel {
 		
 		UTMFormat(String direction) throws ParseException {
 			super("#######"+direction);
-			this.setPlaceholder("#######"+direction);
+			this.setPlaceholder("0000000"+direction);
 			this.setPlaceholderCharacter('0');
 			this.setAllowsInvalid(false);
 			this.direction = direction;
@@ -697,13 +696,9 @@ public class PositionField extends JPanel {
 		String direction;
 		
 		DEGFormat(String direction) throws ParseException {
-			super("##"+"-"+
-					  "##"+"-"+
-					  "##"+ direction);
-			String mask = "##"+"-"+
-						  "##"+"-"+
-						  "##"+ direction;
-			this.setPlaceholder(mask);
+			super("##"+"-"+"##"+"-"+"##"+ direction);
+			String init = "00-00-00"+ direction;
+			this.setPlaceholder(init);
 			this.setPlaceholderCharacter('0');
 			this.setAllowsInvalid(false);
 			this.direction = direction;
@@ -718,8 +713,8 @@ public class PositionField extends JPanel {
 		
 		DESFormat(String direction) throws ParseException {
 			super("##,####"+ direction);
-			String mask = "##,####"+ direction;
-			this.setPlaceholder(mask);
+			String init = "00,0000"+ direction;
+			this.setPlaceholder(init);
 			this.setPlaceholderCharacter('0');
 			this.setAllowsInvalid(false);
 			this.direction = direction;

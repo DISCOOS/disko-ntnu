@@ -76,7 +76,6 @@ public class DefaultDiskoPanel extends AbstractDiskoPanel {
 			try {
 				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
 				cancelIcon = new DiskoIcon(cancelButton.getIcon(),Color.RED,0.4f);
-				cancelIcon.setMarked(false);
 				cancelButton.setIcon(cancelIcon);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -90,7 +89,6 @@ public class DefaultDiskoPanel extends AbstractDiskoPanel {
 			try {
 				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 				finishIcon = new DiskoIcon(finishButton.getIcon(),Color.GREEN,0.4f);
-				finishIcon.setMarked(false);
 				finishButton.setIcon(finishIcon);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

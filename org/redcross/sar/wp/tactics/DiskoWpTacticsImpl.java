@@ -5,7 +5,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -199,6 +198,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			getMap().getDrawAdapter().nextElement();
 		}
 		
+		/*
 		// show map
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -206,7 +206,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				map.setVisible(true);
 			}			
 		});
-		
+		*/
 	}
 
 	public boolean confirmDeactivate() {
@@ -252,12 +252,12 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 	
 	public void deactivate() {
+		/*/ hide map
+		getMap().setVisible(false);*/
+		// hide visible wp dialogs
+		hideDialogs(null);
 		// forward
 		super.deactivate();
-		// hide map
-		DiskoMap map = (DiskoMap) getMap();
-		map.setVisible(false);
-		hideDialogs(null);
 	}
 	
 	/*

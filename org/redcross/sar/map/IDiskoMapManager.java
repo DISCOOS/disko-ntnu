@@ -1,5 +1,6 @@
 package org.redcross.sar.map;
 
+import java.awt.Component;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -39,5 +40,7 @@ public interface IDiskoMapManager {
 	public MapControl getTmpMap(String mxddoc, boolean keep);
 	
 	public boolean selectMap(boolean autoselect);
+	
+	public boolean isMap(Component c);
 	
 }
