@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
 
-import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.gui.renderer.IconRenderer;
 
 
 /**

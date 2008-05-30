@@ -9,11 +9,11 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.models.OperationTableModel;
-import org.redcross.sar.gui.models.UnitTableModel;
-import org.redcross.sar.gui.renderers.DiskoHeaderCellRenderer;
-import org.redcross.sar.gui.renderers.UnitCellRenderer;
-import org.redcross.sar.gui.renderers.UnitStringConverter;
+import org.redcross.sar.gui.model.OperationTableModel;
+import org.redcross.sar.gui.model.UnitTableModel;
+import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
+import org.redcross.sar.gui.renderer.UnitCellRenderer;
+import org.redcross.sar.gui.renderer.UnitStringConverter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
 

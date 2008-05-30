@@ -10,6 +10,8 @@
 package org.redcross.sar.mso;
 
 import no.cmr.tools.Log;
+
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.modelDriver.ModelDriver;
 import org.redcross.sar.modelDriver.SarModelDriver;
@@ -170,7 +172,7 @@ public class MsoModelImpl implements IMsoModelIf
         }
         catch (CommitException e)
         {
-            JOptionPane.showMessageDialog(null,e.getMessage(),null,JOptionPane.ERROR_MESSAGE);
+        	Utils.showError(e.getMessage());
             rollback();
             return;
         }

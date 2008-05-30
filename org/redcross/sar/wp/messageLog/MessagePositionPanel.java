@@ -22,16 +22,16 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.GotoPanel;
-import org.redcross.sar.gui.map.PositionPanel;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.panel.GotoPanel;
+import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.panel.PositionPanel;
 import org.redcross.sar.gui.DiskoIcon;
-import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.command.PositionTool;
-import org.redcross.sar.map.command.IDrawTool.DrawMode;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
-import org.redcross.sar.map.command.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.PositionTool;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -47,7 +47,7 @@ import org.redcross.sar.util.mso.Track;
  *
  * @author thomasl
  */
-public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMessageComponentIf
+public class MessagePositionPanel extends DefaultPanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -59,7 +59,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	protected JButton m_centerAtButton = null;
 	protected PositionPanel m_positionPanel = null;
 	protected GotoPanel m_gotoPanel = null;
-	protected DefaultDiskoPanel m_unitsPanel = null;
+	protected DefaultPanel m_unitsPanel = null;
 	
 	protected IDiskoWpMessageLog m_wp = null;
 	
@@ -229,7 +229,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	 * 	
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultDiskoPanel getUnitsPanel() {
+	private DefaultPanel getUnitsPanel() {
 		if (m_unitsPanel == null) {
 			// get from position panel
 			m_unitsPanel = getPositionPanel().getUnitsPanel();
@@ -435,7 +435,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 			// set tool active
 			m_wp.getMap().setActiveTool(m_tool,0);
 			// show tool
-			NavBar bar = m_wp.getApplication().getNavBar();
+			NavBarPanel bar = m_wp.getApplication().getNavBar();
 			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
 			bar.setEnabledButtons(types, true, true);
 			bar.setVisibleButtons(types, true, true);
@@ -453,7 +453,7 @@ public class MessagePositionPanel extends DefaultDiskoPanel implements IEditMess
 	{
 
 		// hide tool
-		NavBar bar = m_wp.getApplication().getNavBar();
+		NavBarPanel bar = m_wp.getApplication().getNavBar();
 		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
 		bar.setEnabledButtons(types, false, true);
 		bar.setVisibleButtons(types, false, true);

@@ -2,6 +2,8 @@ package org.redcross.sar.app;
 
 import java.util.List;
 
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
@@ -11,7 +13,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
  *
  */
 
-public interface IDiskoRole {
+public interface IDiskoRole extends IDiskoWorkListener {
 
 	/**
 	 * Add a new work process module to this DiskoRole.
@@ -90,5 +92,10 @@ public interface IDiskoRole {
 	 * @return A reference to the DiskoApplication
 	 */
 	public IDiskoApplication getApplication();
+	
+	/**
+	 * 
+	 */
+	public void onWorkPerformed(DiskoWorkEvent e);
 	
 }

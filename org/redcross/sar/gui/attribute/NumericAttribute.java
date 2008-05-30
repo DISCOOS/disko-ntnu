@@ -5,7 +5,6 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
-import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -56,14 +55,14 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	}
 	
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			// create
-			JFormattedTextField field = new JFormattedTextField();
+			JTextField field = new JTextField();
 			// set format
 			field.setEditable(m_isEditable);
 			field.getDocument().addDocumentListener(new DocumentListener() {
@@ -86,10 +85,9 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 			
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
+	public JTextField getTextField() {
+		return (JTextField)m_component;
+	}
 	
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
@@ -119,20 +117,21 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// reset?
 		if(attribute==null) {
 			// reset
-			m_attribute = null;			
+			m_attribute = null;
 		}
-		else 
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoInteger ||
-					attribute instanceof AttributeImpl.MsoDouble) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
+		else { 
+			// is supported?
+			if(isMsoAttributeSupported(attribute)) {
+				// match component type and attribute
+				if(attribute instanceof AttributeImpl.MsoInteger ||
+						attribute instanceof AttributeImpl.MsoDouble) {
+					// save attribute
+					m_attribute = attribute;
+					// update name
+					setName(m_attribute.getName());
+					// forward
+					return load();
+				}
 			}
 		}
 		// failure
@@ -169,5 +168,10 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		return ((NumericDocument)((JTextField)m_component).getDocument()).getAllowNegative(); 
 	}
 
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getTextField().setEditable(isEditable);		
+	}
 	
 }

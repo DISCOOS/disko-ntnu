@@ -136,12 +136,12 @@ public class DiskoWpIntelligenceImpl extends AbstractDiskoWpModule implements ID
         return m_HypothesisButton;
     }
 
-	public boolean cancel() {
+	public boolean rollback() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public boolean finish() {
+	public boolean commit() {
 		// TODO Auto-generated method stub
 		return false;
 	}

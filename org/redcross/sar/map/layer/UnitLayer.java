@@ -104,7 +104,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 						pictureSymbol.setSize(zoomPointSize);
 						
 						// get unit text
-						String text = MsoUtils.getUnitName(msoUnit,true);
+						String text = feature.getCaption();
 						
 						// is enabled?
 						if(isEnabled) {

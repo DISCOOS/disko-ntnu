@@ -49,13 +49,13 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		// fill values
 		setValues(values);	
 	}
-	
+				
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			JList list = new JList();
 			list.setEnabled(m_isEditable);
@@ -72,11 +72,10 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		}
 		return m_component;
 	}
-			
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
+
+	public JList getList() {
+		return (JList)m_component;
+	}
 	
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
@@ -163,6 +162,12 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		// failure
 		return false;
 	}	
+	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getList().setEnabled(isEditable && isEnabled());		
+	}
 	
 	/*==================================================================
 	 * Private static methods

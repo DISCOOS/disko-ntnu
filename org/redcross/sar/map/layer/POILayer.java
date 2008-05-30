@@ -6,9 +6,8 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.MsoLayerEventStack;
-import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.POIFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -37,6 +36,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	private RgbColor executingColor = null;
 	private RgbColor finishedColor = null;
 	private TextSymbol textSymbol = null;
+	private BalloonCallout textBackground = null;
 	private Hashtable<POIType, IDisplayName> symbols = null;
 
  	public POILayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
@@ -120,7 +120,16 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	 							|| POIType.INTELLIGENCE.equals(type)) {
 	 						// double the size
 	 						size = size*2; 
+	 						textSymbol.setBackgroundByRef(textBackground);
 	 					}
+	 					
+	 					// show text background?
+	 					if(!(POIType.START.equals(type) || POIType.VIA.equals(type) 
+	 							|| POIType.STOP.equals(type))) 
+	 						textSymbol.setBackgroundByRef(textBackground);
+	 					else	 						
+	 						textSymbol.setBackgroundByRef(null);
+	 						
 						// is enabled?
 						if(isEnabled) {
 							// is selected?
@@ -142,14 +151,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 						// draw label?
 						if(isTextShown) {
 							display.setSymbol(textSymbol);
-							String text = DiskoEnumFactory.getText(poi.getType());
-							String remark = poi.getRemarks();
-							// replace with comment?
-							if (remark != null) {
-								if(remark.length() > 0) {
-									text = remark;
-								}
-							}
+							String text = feature.getCaption();
 							display.drawText(point, text);
 						}
 						
@@ -250,10 +252,19 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			symbols.put(POIType.SILENT_WITNESS, cyanDiamondSymbol);
 			symbols.put(POIType.INTELLIGENCE, redDiamondSymbol);
 
+			textBackground = new BalloonCallout();
+			textBackground.setBottomMargin(1);
+			textBackground.setTopMargin(1);
+			textBackground.setLeftMargin(1);
+			textBackground.setRightMargin(1);
+			textBackground.setStyle(esriBalloonCalloutStyle.esriBCSRoundedRectangle); 
+			textBackground.setSymbolByRef(MapUtil.getFillSymbol(esriSimpleFillStyle.esriSFSSolid, esriSimpleLineStyle.esriSLSSolid));
+			
 			textSymbol = new TextSymbol();
 			textSymbol.setHorizontalAlignment(esriTextHorizontalAlignment.esriTHALeft);
 			textSymbol.setVerticalAlignment(esriTextHorizontalAlignment.esriTHACenter);
 			textSymbol.setXOffset(redRoundSymbol.getSize());
+			textSymbol.setBackgroundByRef(textBackground);
 			
 			
 			

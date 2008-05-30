@@ -6,9 +6,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.NavBar;
+import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -65,16 +65,16 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	
 	public void deactivate() {
 		super.deactivate();
-		NavBar navBar = getApplication().getNavBar();
+		NavBarPanel navBar = getApplication().getNavBar();
 		navBar.hideDialogs();
 	}
 	
-	public boolean cancel() {
+	public boolean rollback() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public boolean finish() {
+	public boolean commit() {
 		// TODO Auto-generated method stub
 		return false;
 	}

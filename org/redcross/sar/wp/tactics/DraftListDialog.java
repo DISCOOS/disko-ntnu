@@ -6,28 +6,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 
 import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.AssignmentTable;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class DraftListDialog extends DiskoDialog {
+public class DraftListDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
+	
 	private IDiskoWpModule wp = null;
-	private DefaultDiskoPanel contentPanel = null;
+	private DefaultPanel contentPanel = null;
 	private JButton makeReadyButton = null;
 	private AssignmentTable assignmentTable = null;
+	
 	private IDiskoApplication app = null;
+	
 	private int changeCount = 0;
 	private boolean isCancel = false;
 	
@@ -63,10 +67,22 @@ public class DraftListDialog extends DiskoDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel("Velg oppdrag som er klare",false,true);
+				contentPanel = new DefaultPanel("Velg oppdrag som er klare",false,true) {
+
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected boolean beforeCancel() {
+						// set flag
+						isCancel = true;
+						// success
+						return true; 
+					}
+
+				};
 				contentPanel.setBodyComponent(getAssignmentTable());
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
 				contentPanel.insertButton("finish",getMakeReadyButton(),"change");
@@ -74,15 +90,14 @@ public class DraftListDialog extends DiskoDialog {
 
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
-						// canceled?
-						if("cancel".equalsIgnoreCase(cmd)) 
-							cancel();
-						else if("change".equalsIgnoreCase(cmd)) 
-							change();
-						
+						// translate
+						if("change".equalsIgnoreCase(cmd)) 
+							change();						
 					}
 					
 				});
+				contentPanel.addDiskoWorkListener((IDiskoWorkListener)wp);
+				
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -138,13 +153,6 @@ public class DraftListDialog extends DiskoDialog {
 		return isCancel ? -1 : changeCount;		
 	}
 	
-	private void cancel() {
-		// set flag
-		isCancel = true;
-		// hide me
-		setVisible(false);		
-	}	
-	
 	private void change() {
 		try {
 			// initialize
@@ -160,7 +168,8 @@ public class DraftListDialog extends DiskoDialog {
 					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
 						changeCount++;
 						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);
-						fireOnWorkChange(assignment,AssignmentStatus.READY);
+						DiskoWorkEvent e = new DiskoWorkEvent(assignment,AssignmentStatus.READY,DiskoWorkEvent.EVENT_CHANGE);
+						getContentPanel().onWorkPerformed(e);
 					}
 				}
 			}

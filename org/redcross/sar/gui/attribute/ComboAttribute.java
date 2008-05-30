@@ -36,11 +36,11 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 	}
 	
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			JComboBox field = new JComboBox();
 			field.setEditable(m_isEditable);
@@ -56,12 +56,11 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 		}
 		return m_component;
 	}
-			
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
 	
+	public JComboBox getComboBox() {
+		return (JComboBox)m_component;
+	}
+			
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}
@@ -107,6 +106,12 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 		}
 		// failure
 		return false;
-	}	
+	}
 	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getComboBox().setEditable(isEditable);		
+	}
+		
 }

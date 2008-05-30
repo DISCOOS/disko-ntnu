@@ -1,33 +1,27 @@
 package org.redcross.sar.wp.tactics;
 
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.EnumSet;
-import java.util.Hashtable;
 
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
-import org.redcross.sar.gui.NumPadDialog;
-import org.redcross.sar.gui.document.NumericDocument;
+import org.redcross.sar.gui.attribute.ComboAttribute;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -38,35 +32,30 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEventListener {
+public class SearchRequirementDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DefaultDiskoPanel contentPanel = null;
+	
+	private DefaultPanel contentPanel = null;
 	private JPanel requirementPanel = null;
-	private JLabel accuracyLabel = null;
-	private JSlider accuracySlider = null;
-	private JTextField accuracyTextField = null;
-	private JLabel priorityLabel = null;
-	private JSlider prioritySlider = null;
-	private JTextField priorityTextField = null;
-	private JLabel personnelLabel = null;
-	private JScrollPane remarksScrollPane = null;
+	private BasePanel remarksPanel = null;
 	private JTextArea remarksTextArea = null;
-	private JTabbedPane tabbedPane = null;  //  @jve:decl-index=0:visual-constraint="10,10"
-	private JFormattedTextField personnelTextField = null;
+	private AttributesPanel attribsPanel = null; 
+	private ComboAttribute accuracyCombo;
+	private ComboAttribute priorityCombo;
+	private ComboAttribute personnelCombo;
+	
 	private IDiskoWpModule wp = null;
-	private ISearchIf currentAssignment = null;
-
-
+	
 	public SearchRequirementDialog(IDiskoWpModule wp) {
 		// forward
-		super(wp.getApplication().getFrame(),wp.getMap(),getMyInterest(),getMyLayers());
+		super(wp.getApplication().getFrame());
 		// prepare objeckts
 		this.wp = wp;
 		// initialize gui
 		initialize();
-		// get selected mso feature
-		setSelectedMsoFeature(wp.getMap());
+		// initialise
+		setup();
 	}
 
 	/**
@@ -75,8 +64,7 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(800, 200));
-            this.setSize(new Dimension(989, 145));
+            this.setPreferredSize(new Dimension(800, 175));
             this.setContentPane(getContentPanel());
             this.pack();
 		}
@@ -103,23 +91,102 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel();
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.setBodyComponent(getTabbedPane());
-				contentPanel.addActionListener(new ActionListener(){
+				contentPanel = new DefaultPanel() {
 
-					public void actionPerformed(ActionEvent e) {
-						String cmd = e.getActionCommand();
-						if("finish".equalsIgnoreCase(cmd))
-							finish();
-						else if("cancel".equalsIgnoreCase(cmd))
-							cancel();
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected boolean beforeFinish() {
+						// update mso model
+						setPersonnel(getPersonnel(),false,true);
+						setRemarks(getRemarks(),false,true);
+						setPriority(getPriority(), false, true);
+						setAccuracy(getAccuracy(),false,true);		
+						getRemarksTextArea().requestFocus();
+						// finished
+						return true;
 					}
 					
-				});
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						// initialize
+						ISearchIf search = null;
+						String remarks = null;
+						AssignmentPriority pri = AssignmentPriority.NORMAL;
+						int accuracy = 1;
+						int personnel = 3;
+						// try to get search assignment
+						if(msoObj instanceof ISearchIf) {
+							search = (ISearchIf)msoObj;
+						}
+						else {
+							// get owning area
+							IAreaIf area = MsoUtils.getOwningArea(msoObj);
+							// has area?
+							if(area!=null) {
+								IAssignmentIf assignment = area.getOwningAssignment();
+								if (assignment instanceof ISearchIf) {		
+									search = (ISearchIf)assignment;	
+								}
+							}
+						}
+						
+						// has search assignment?
+						if(search!=null) {
+							pri = search.getPriority();
+							accuracy = search.getPlannedAccuracy();
+							personnel = search.getPlannedPersonnel();
+							remarks = search.getRemarks();
+						}
+
+						// update
+						super.setMsoObject(search);
+						setPriority((pri==null) ? AssignmentPriority.NORMAL : pri ,true,false);
+						setAccuracy(accuracy!=0 ? personnel : 75,true,false);
+						setPersonnel(personnel!=0 ? personnel : 3,true,false);
+						setRemarks(remarks,true,false);
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);
+												
+					}	
+					
+					@Override
+					public void update() {
+						super.update();
+						setup();
+					}
+					
+					@Override
+					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+						// is same as selected?
+						if(msoObj == msoObject) {
+							setMsoObject(msoObject);
+						}
+					}
+
+					@Override
+					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+						// is same as selected?
+						if(msoObj == msoObject) {
+							// reset selection
+							setMsoObject(null);
+						}
+					}					
+					
+				};
+				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setBodyComponent(getRequirementPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -128,90 +195,186 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	}
 	
 	/**
-	 * This method initializes tabbedPane
+	 * This method initializes requirementPanel
 	 *
-	 * @return javax.swing.JTabbedPane
+	 * @return javax.swing.JPanel
 	 */
-	private JTabbedPane getTabbedPane() {
-		if (tabbedPane == null) {
+	private JPanel getRequirementPanel() {
+		if (requirementPanel == null) {
 			try {
-				tabbedPane = new JTabbedPane();
-				tabbedPane.addTab("Krav", null, getRequirementPanel(), null);
-				tabbedPane.addTab("Merknad", null, getRemarksScrollPane(), null);
+				requirementPanel = new JPanel();
+				requirementPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+				BorderLayout bl = new BorderLayout();
+				bl.setHgap(5);
+				bl.setVgap(5);				
+				requirementPanel.setLayout(bl);
+				requirementPanel.add(getRemarksPanel(),BorderLayout.CENTER);
+				requirementPanel.add(getAttribsPanel(),BorderLayout.EAST);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return tabbedPane;
-	}
-	
-	public boolean finish() {
-		// no mso update allowed?
-		if (isWorking()) return false;
-		// update mso model
-		setPersonnelNeed(getPersonnelNeed(),false,true);
-		setRemarks(getRemarks(),false,true);
-		setPriority(getPriority(), false, true);
-		setAccuracy(getAccuracy(),false,true);		
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide me
-		setVisible(false);
-		// success
-		return true;
+		return requirementPanel;
 	}
 
-	public boolean cancel() {
-		// no mso update allowed?
-		if (isWorking()) return false;
-		setIsWorking();
-		//getAccuracyTextField().setText(null);
-		//getPriorityTextField().setText(null);
-		getRemarksTextArea().setText(null);
-		getPersonnelTextField().setText(null);
-		getPrioritySlider().setValue(2);
-		getAccuracySlider().setValue(50);
-		currentAssignment = null;
-		setIsNotWorking();
-		// hide me
-		setVisible(false);
-		// finished
-		return true;
+	/**
+	 * This method initializes AttribsPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private AttributesPanel getAttribsPanel() {
+		if (attribsPanel == null) {
+			try {
+				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
+				attribsPanel.setPreferredBodySize(new Dimension(200, 150));
+				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				attribsPanel.addAttribute(getPriorityCombo());
+				attribsPanel.addAttribute(getAccuracyCombo());
+				attribsPanel.addAttribute(getPersonnelCombo());
+				attribsPanel.addDiskoWorkListener(getContentPanel());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return attribsPanel;
+	}
+	
+	/**
+	 * This method initializes priorityCombo
+	 *
+	 * @return {@link ComboAttribute}
+	 */
+	private ComboAttribute getPriorityCombo() {
+		if (priorityCombo == null) {
+			try {
+				priorityCombo = new ComboAttribute("priority", "Prioritet", 50, null, false);
+				DefaultComboBoxModel model = new DefaultComboBoxModel();
+				AssignmentPriority[] values = AssignmentPriority.values();
+				for (int i = 0; i < values.length; i++) {
+					model.addElement(values[i]);
+				}
+				priorityCombo.fill(model);
+				JComboBox cb = (JComboBox)priorityCombo.getComponent();
+				cb.setRenderer(new SimpleListCellRenderer());
+				cb.setSelectedIndex(0);
+
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return priorityCombo;
 	}
 
-	private void reset() {
-		// no mso update allowed?
-		setIsWorking();
-		getRemarksTextArea().setText(null);
-		getPersonnelTextField().setText(null);
-		getPrioritySlider().setValue(2);
-		getAccuracySlider().setValue(50);
-		currentAssignment = null;
-		setIsNotWorking();
+	/**
+	 * This method initializes accuracyCombo
+	 *
+	 * @return javax.swing.JComboBox
+	 */
+	private ComboAttribute getAccuracyCombo() {
+		if (accuracyCombo == null) {
+			try {
+				accuracyCombo = new ComboAttribute("accuracy", "Nøyaktighet", 50, null, true);
+				DefaultComboBoxModel model = new DefaultComboBoxModel();
+				for (int i = 1; i < 4; i++) {
+					model.addElement(new Integer(i*25));
+				}
+				accuracyCombo.fill(model);
+				JComboBox cb = (JComboBox)accuracyCombo.getComponent();
+				cb.setSelectedIndex(0);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return accuracyCombo;
+	}	
+
+	/**
+	 * This method initializes personnelCombo
+	 *
+	 * @return javax.swing.JComboBox
+	 */
+	private ComboAttribute getPersonnelCombo() {
+		if (personnelCombo == null) {
+			try {
+				personnelCombo = new ComboAttribute("personnel", "Antall mnsk", 50, null, true);
+				DefaultComboBoxModel model = new DefaultComboBoxModel();
+				for (int i = 1; i < 10; i++) {
+					model.addElement(new Integer(i));
+				}
+				personnelCombo.fill(model);
+				JComboBox cb = (JComboBox)accuracyCombo.getComponent();
+				cb.setSelectedIndex(0);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return personnelCombo;
+	}	
+	
+	/**
+	 * This method initializes requirementPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private BasePanel getRemarksPanel() {
+		if (remarksPanel == null) {
+			try {
+				remarksPanel = new BasePanel("Beskrivelse");
+				remarksPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED, 
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				remarksPanel.setBodyComponent(getRemarksTextArea());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return remarksPanel;
 	}
 	
-	
+	/**
+	 * This method initializes criticalQuestionsTextArea
+	 *
+	 * @return javax.swing.JTextArea
+	 */
+	private JTextArea getRemarksTextArea() {
+		if (remarksTextArea == null) {
+			try {
+				remarksTextArea = new JTextArea();
+				remarksTextArea.setLineWrap(true);
+				// add update manager
+				remarksTextArea.getDocument().addDocumentListener(new DocumentListener() {
+
+					public void changedUpdate(DocumentEvent e) { change(); }
+					public void insertUpdate(DocumentEvent e) { change(); }
+					public void removeUpdate(DocumentEvent e) { change(); }
+					
+					private void change() {
+						// consume?
+						if(!isChangeable()) return;
+						setDirty(true);
+					}
+					
+				});
+				
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return remarksTextArea;		
+	}
+
 	public int getAccuracy() {
-		return getAccuracySlider().getValue();
+		Object value = getAccuracyCombo().getValue();
+		return value!=null ? Integer.valueOf(value.toString()) : 75;
 	}
 
 	public AssignmentPriority getPriority() {
-		int value = getPrioritySlider().getValue();
-		switch (value) {
-			case 1: return AssignmentPriority.LOW;
-			case 2: return AssignmentPriority.NORMAL;
-			case 3: return AssignmentPriority.HIGH;
-		}
-		return null;
+		return (AssignmentPriority)getPriorityCombo().getValue();
 	}
 
-	public int getPersonnelNeed() {
-		try {
-			return Integer.parseInt(getPersonnelTextField().getText());
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-		}
-		return 0;
+	public int getPersonnel() {
+		Object value = getPersonnelCombo().getValue();
+		return value!=null ? Integer.valueOf(value.toString()) : 3;
 	}
 
 	public String getRemarks() {
@@ -223,69 +386,54 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	}
 
 	private void setAccuracy(int accuracy, boolean gui, boolean mso) {
-		setIsWorking();
 		if(gui) {
-			getAccuracySlider().setValue(accuracy);
+			getAccuracyCombo().setValue(accuracy);
 		}
 		if(mso) {
-			if(currentAssignment!=null) {
-				if(currentAssignment.getPlannedAccuracy()!=accuracy) {
-					currentAssignment.setPlannedAccuracy(accuracy);
-					fireOnWorkChange(currentAssignment,accuracy);
-
+			ISearchIf search = (ISearchIf)getMsoObject();
+			if(search!=null) {
+				if(search.getPlannedAccuracy()!=accuracy) {
+					search.setPlannedAccuracy(accuracy);
 				}
 			}
 		}
-		setIsNotWorking();
 	}
 	
 	public void setPriority(AssignmentPriority priority) {
 		setPriority(priority,true,true);
 	}
 
-	private void setPriority(AssignmentPriority priority, boolean gui, boolean mso) {
-		setIsWorking();
+	private void setPriority(AssignmentPriority priority, boolean gui, boolean mso) {		
 		if(gui) {
-			if (priority == AssignmentPriority.LOW) {
-				getPrioritySlider().setValue(1);
-			}
-			else if (priority == AssignmentPriority.NORMAL) {
-				getPrioritySlider().setValue(2);
-			}
-			if (priority == AssignmentPriority.HIGH) {
-				getPrioritySlider().setValue(3);
-			}
+			getPriorityCombo().setValue(priority);
 		}
 		if(mso) {
-			if(currentAssignment!=null) {
-				if(currentAssignment.getPriority()!=priority) {
-					currentAssignment.setPriority(priority);
-					fireOnWorkChange(currentAssignment,priority);
+			ISearchIf search = (ISearchIf)getMsoObject();
+			if(search!=null) {
+				if(search.getPriority()!=priority) {
+					search.setPriority(priority);
 
 				}
 			}
 		}
-		setIsNotWorking();
 	}
 	
-	public void setPersonnelNeed(int number) {
-		setPersonnelNeed(number,true,true);
+	public void setPersonnel(int number) {
+		setPersonnel(number,true,true);
 	}
 
-	private void setPersonnelNeed(int number, boolean gui, boolean mso) {
-		setIsWorking();
+	private void setPersonnel(int number, boolean gui, boolean mso) {
 		if(gui) {
-			getPersonnelTextField().setText(String.valueOf(number));
+			getPersonnelCombo().setValue(String.valueOf(number));
 		}
 		if(mso) {
-			if(currentAssignment!=null) {
-				if(currentAssignment.getPlannedPersonnel()!=number) {
-					currentAssignment.setPlannedPersonnel(number);
-					fireOnWorkChange(currentAssignment,number);
+			ISearchIf search = (ISearchIf)getMsoObject();
+			if(search!=null) {
+				if(search.getPlannedPersonnel()!=number) {
+					search.setPlannedPersonnel(number);
 				}
 			}
 		}
-		setIsNotWorking();
 	}
 	
 	public void setRemarks(String remarks) {
@@ -293,401 +441,53 @@ public class SearchRequirementDialog extends DiskoDialog implements IMsoLayerEve
 	}
 
 	private void setRemarks(String remarks, boolean gui, boolean mso) {
-		setIsWorking();
 		if(gui) {
 			getRemarksTextArea().setText(remarks);
 		}
 		if(mso) {
-			if(currentAssignment!=null) {
-				if(!currentAssignment.getRemarks().equals(remarks)) {
-					currentAssignment.setRemarks(remarks);
-					fireOnWorkChange(currentAssignment,remarks);
+			ISearchIf search = (ISearchIf)getMsoObject();
+			if(search!=null) {
+				if(!search.getRemarks().equals(remarks)) {
+					search.setRemarks(remarks);
 				}
 			}
 		}
-		setIsNotWorking();
 	}	
-	
-	/**
-	 * This method initializes requirementPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getRequirementPanel() {
-		if (requirementPanel == null) {
-			try {
-				GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-				gridBagConstraints1.fill = GridBagConstraints.HORIZONTAL;
-				gridBagConstraints1.gridy = 1;
-				gridBagConstraints1.weightx = 1.0;
-				gridBagConstraints1.anchor = GridBagConstraints.NORTHWEST;
-				gridBagConstraints1.gridx = 3;
-				GridBagConstraints gridBagConstraints13 = new GridBagConstraints();
-				gridBagConstraints13.fill = GridBagConstraints.NONE;
-				gridBagConstraints13.gridy = 4;
-				gridBagConstraints13.weightx = 1.0;
-				gridBagConstraints13.anchor = GridBagConstraints.WEST;
-				gridBagConstraints13.insets = new Insets(0, 0, 5, 0);
-				gridBagConstraints13.gridx = 1;
-				GridBagConstraints gridBagConstraints12 = new GridBagConstraints();
-				gridBagConstraints12.gridx = 0;
-				gridBagConstraints12.anchor = GridBagConstraints.WEST;
-				gridBagConstraints12.insets = new Insets(0, 10, 0, 0);
-				gridBagConstraints12.gridy = 4;
-				GridBagConstraints gridBagConstraints91 = new GridBagConstraints();
-				gridBagConstraints91.fill = GridBagConstraints.NONE;
-				gridBagConstraints91.gridx = 2;
-				gridBagConstraints91.gridy = 1;
-				gridBagConstraints91.anchor = GridBagConstraints.NORTHWEST;
-				gridBagConstraints91.weightx = 1.0;
-				GridBagConstraints gridBagConstraints81 = new GridBagConstraints();
-				gridBagConstraints81.fill = GridBagConstraints.HORIZONTAL;
-				gridBagConstraints81.gridx = 1;
-				gridBagConstraints81.gridy = 1;
-				gridBagConstraints81.anchor = GridBagConstraints.WEST;
-				gridBagConstraints81.insets = new Insets(5, 0, 0, 0);
-				gridBagConstraints81.weightx = 1.0;
-				GridBagConstraints gridBagConstraints71 = new GridBagConstraints();
-				gridBagConstraints71.fill = GridBagConstraints.NONE;
-				gridBagConstraints71.anchor = GridBagConstraints.NORTHWEST;
-				gridBagConstraints71.insets = new Insets(5, 0, 5, 0);
-				gridBagConstraints71.weightx = 1.0;
-				GridBagConstraints gridBagConstraints61 = new GridBagConstraints();
-				gridBagConstraints61.fill = GridBagConstraints.HORIZONTAL;
-				gridBagConstraints61.anchor = GridBagConstraints.WEST;
-				gridBagConstraints61.insets = new Insets(5, 0, 5, 0);
-				gridBagConstraints61.weightx = 1.0;
-				GridBagConstraints gridBagConstraints6 = new GridBagConstraints();
-				gridBagConstraints6.gridx = 3;
-				gridBagConstraints6.anchor = GridBagConstraints.SOUTHWEST;
-				gridBagConstraints6.insets = new Insets(0, 0, 0, 0);
-				gridBagConstraints6.gridy = 0;
-				personnelLabel = new JLabel();
-				personnelLabel.setText("Mannskapsbehov:");
-				GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-				gridBagConstraints3.gridx = 0;
-				gridBagConstraints3.anchor = GridBagConstraints.WEST;
-				gridBagConstraints3.insets = new Insets(0, 10, 0, 0);
-				gridBagConstraints3.gridy = 1;
-				priorityLabel = new JLabel();
-				priorityLabel.setText("Prioritet:");
-				GridBagConstraints gridBagConstraints = new GridBagConstraints();
-				gridBagConstraints.gridx = 0;
-				gridBagConstraints.anchor = GridBagConstraints.WEST;
-				gridBagConstraints.insets = new Insets(0, 10, 10, 0);
-				gridBagConstraints.gridy = 0;
-				accuracyLabel = new JLabel();
-				accuracyLabel.setText("Nøyaktighet:");
-				requirementPanel = new JPanel();
-				requirementPanel.setLayout(new GridBagLayout());
-				requirementPanel.add(priorityLabel, gridBagConstraints3);
-				requirementPanel.add(personnelLabel, gridBagConstraints6);
-				requirementPanel.add(accuracyLabel, gridBagConstraints);
-				requirementPanel.add(getAccuracySlider(), gridBagConstraints61);
-				requirementPanel.add(getAccuracyTextField(), gridBagConstraints71);
-				requirementPanel.add(getPrioritySlider(), gridBagConstraints81);
-				requirementPanel.add(getPriorityTextField(), gridBagConstraints91);
-				requirementPanel.add(getPersonnelTextField(), gridBagConstraints1);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return requirementPanel;
-	}
 
-	/**
-	 * This method initializes accuracySlider
-	 *
-	 * @return javax.swing.JSlider
-	 */
-	private JSlider getAccuracySlider() {
-		if (accuracySlider == null) {
-			try {
-				accuracySlider = new JSlider();
-				accuracySlider.setMajorTickSpacing(50);
-				accuracySlider.setPaintLabels(true);
-				accuracySlider.setPreferredSize(new Dimension(583, 40));
-				accuracySlider.setMinorTickSpacing(10);
-				accuracySlider.setSnapToTicks(true);
-				accuracySlider.setPaintTicks(true);
-				accuracySlider.setMinimum(0);
-				accuracySlider.setMaximum(100);
-				accuracySlider.setValue(50);
-				accuracySlider.addChangeListener(new javax.swing.event.ChangeListener() {
-					public void stateChanged(javax.swing.event.ChangeEvent e) {
-						if (isWorking()) return;
-						getAccuracyTextField().setText(accuracySlider.getValue()+"%");
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return accuracySlider;
-	}
-
-	/**
-	 * This method initializes prioritySlider
-	 *
-	 * @return javax.swing.JSlider
-	 */
-	private JSlider getPrioritySlider() {
-		if (prioritySlider == null) {
-			try {
-				prioritySlider = new JSlider();
-				prioritySlider.setPreferredSize(new Dimension(583, 40));
-				prioritySlider.setPaintLabels(true);
-				prioritySlider.setMinorTickSpacing(0);
-				prioritySlider.setMajorTickSpacing(1);
-				prioritySlider.setSnapToTicks(true);
-				prioritySlider.setMinimum(1);
-				prioritySlider.setMaximum(3);
-				prioritySlider.setValue(2);
-				prioritySlider.setPaintTicks(true);
-				prioritySlider.addChangeListener(new javax.swing.event.ChangeListener() {
-					public void stateChanged(javax.swing.event.ChangeEvent e) {
-						if (isWorking()) return;
-						Integer key = Integer.valueOf(prioritySlider.getValue());
-						String text = ((JLabel)prioritySlider.getLabelTable().get(key)).getText();
-						getPriorityTextField().setText(text);
-					}
-				});
-				Hashtable<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
-				labels.put(new Integer(1), new JLabel("LAV"));
-				labels.put(new Integer(2), new JLabel("NORMAL"));
-				labels.put(new Integer(3), new JLabel("HØY"));
-				prioritySlider.setLabelTable(labels);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return prioritySlider;
-	}
-
-	/**
-	 * This method initializes accuracyTextField
-	 *
-	 * @return javax.swing.JTextField
-	 */
-	private JTextField getAccuracyTextField() {
-		if (accuracyTextField == null) {
-			try {
-				accuracyTextField = new JTextField();
-				accuracyTextField.setPreferredSize(new Dimension(75, 20));
-				accuracyTextField.setEditable(true);
-				accuracyTextField.setText("50%");
-				accuracyTextField.addFocusListener(new FocusAdapter() {
-
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
-							finish();
-					}
-					
-				});
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return accuracyTextField;
-	}
-
-	/**
-	 * This method initializes priorityTextField
-	 *
-	 * @return javax.swing.JTextField
-	 */
-	private JTextField getPriorityTextField() {
-		if (priorityTextField == null) {
-			try {
-				priorityTextField = new JTextField();
-				priorityTextField.setPreferredSize(new Dimension(75, 20));
-				priorityTextField.setEditable(true);
-				priorityTextField.setText("HØY");
-				priorityTextField.addFocusListener(new FocusAdapter() {
-
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
-							finish();
-					}
-					
-				});				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return priorityTextField;
-	}
-
-	/**
-	 * This method initializes personnelTextField
-	 *
-	 * @return javax.swing.JTextField
-	 */
-	private JTextField getPersonnelTextField() {
-		if (personnelTextField == null) {
-			try {
-				personnelTextField = new JFormattedTextField();
-				personnelTextField.setDocument(new NumericDocument(-1,0,false));
-				personnelTextField.setText("0");
-				personnelTextField.addFocusListener(new FocusAdapter() {
-
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
-							finish();
-					}
-					
-				});								
-				personnelTextField.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						if (e.getClickCount() == 2){
-							NumPadDialog npDialog = wp.getApplication().
-								getUIFactory().getNumPadDialog();
-							Point p = personnelTextField.getLocationOnScreen();
-							p.setLocation(p.x + personnelTextField.getWidth()-
-									npDialog.getWidth(), p.y-npDialog.getHeight()-2);
-							npDialog.setLocation(p);
-							npDialog.setTextField(personnelTextField);
-							npDialog.setVisible(true);
-						}
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return personnelTextField;
-	}
-
-	/**
-	 * This method initializes criticalQuestionsScrollPane
-	 *
-	 * @return javax.swing.JScrollPane
-	 */
-	private JScrollPane getRemarksScrollPane() {
-		if (remarksScrollPane == null) {
-			try {
-				remarksScrollPane = new JScrollPane();
-				remarksScrollPane.setViewportView(getRemarksTextArea());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return remarksScrollPane;
-	}
-
-	/**
-	 * This method initializes criticalQuestionsTextArea
-	 *
-	 * @return javax.swing.JTextArea
-	 */
-	private JTextArea getRemarksTextArea() {
-		if (remarksTextArea == null) {
-			try {
-				remarksTextArea = new JTextArea();
-				remarksTextArea.setLineWrap(true);
-				remarksTextArea.addFocusListener(new FocusAdapter() {
-
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel"))
-							finish();
-					}
-					
-				});												
-				
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return remarksTextArea;		
-	}
-	
-	@Override
-	public int setMsoObject(IMsoObjectIf msoObj) {
-		int state = 0;
-		if(isWorking()) return state;
-		setIsWorking();
-		IAreaIf area = MsoUtils.getOwningArea(msoObj);
-		if(area!=null) {
-			IAssignmentIf assignment = area.getOwningAssignment();
-			if (assignment instanceof ISearchIf) {		
-				currentAssignment = (ISearchIf)assignment;
-				setPriority(currentAssignment.getPriority(),true,false);
-				setAccuracy(currentAssignment.getPlannedAccuracy(),true,false);
-				setPersonnelNeed(currentAssignment.getPlannedPersonnel(),true,false);
-				setRemarks(currentAssignment.getRemarks(),true,false);
-				state = 1;
-			}
-		}
-		else {
-			state = -1;
-			// forward
-			reset();
-		}
-
-		getContentPanel().setDirty(false);
-		setIsNotWorking();
-		
-		// forward
-		setup();
-		// success
-		return state;
-	}	
-	
 	private void setup() {
+
+		// consume?
+		if(!isChangeable()) return;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// try to get mso object?
+		if(getMsoObject()==null) 
+			getContentPanel().setSelectedMsoFeature(wp.getMap());
+		
+		// get current assignment
+		ISearchIf search = (ISearchIf)getMsoObject();
+		
 		// update icon
-		if(currentAssignment!=null) {
-			Enum e = MsoUtils.getType(currentAssignment,true);
+		if(search!=null) {
+			Enum e = MsoUtils.getType(search,true);
 			getContentPanel().setCaptionIcon(
 					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Krav til <b>" + 
-					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
-			getTabbedPane().setEnabled(true);
+					MsoUtils.getAssignmentName(search, 1).toLowerCase() + "</b></html>");
+			getContentPanel().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
-			getTabbedPane().setEnabled(false);
-			reset();
+			getContentPanel().setEnabled(false);
 		}		
+		getAttribsPanel().update();
+		
+		// resume changes
+		setChangeable(true);
+		
 	}
-	
-	@Override
-	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			setMsoObject(msoObject);
-		}
-	}
-
-	@Override
-	public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			// reset selection
-			currentMsoFeature =null;
-			currentMsoObj =null;
-			reset();
-		}
-	}
-	
 }  //  @jve:decl-index=0:visual-constraint="10,10"
 

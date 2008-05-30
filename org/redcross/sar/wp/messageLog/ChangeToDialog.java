@@ -12,11 +12,10 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import javax.swing.SwingConstants;
 
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -29,8 +28,9 @@ import org.redcross.sar.mso.data.IMessageIf;
  *
  * @author thomasl
  */
-public class ChangeToDialog extends DiskoDialog 
-	implements IEditMessageComponentIf, IDiskoWorkListener
+public class ChangeToDialog extends DefaultDialog  
+							implements IEditMessageComponentIf,
+									   IDiskoWorkListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -71,7 +71,7 @@ public class ChangeToDialog extends DiskoDialog
 	private void initDialogs()
 	{
 		m_nbFieldDialog = new UnitFieldSelectionDialog(m_wpMessageLog, false);
-		m_nbFieldDialog.addDiskoWorkEventListener(this);
+		m_nbFieldDialog.addDiskoWorkListener(this);
 		m_nbFieldDialog.getOKButton().addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -81,16 +81,16 @@ public class ChangeToDialog extends DiskoDialog
 				{
 					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 					message.setSingleReceiver(singleReceiver);
-					fireOnWorkFinish();
+					fireOnWorkFinish(this,message);
 				}
 			}	
 		});
 		m_nbListDialog = new SingleUnitListSelectionDialog(m_wpMessageLog, false);
 		m_broadcastDialog = new BroadcastToDialog(m_wpMessageLog);
 		
-		m_nbFieldDialog.addDiskoWorkEventListener(this);
-		m_nbListDialog.addDiskoWorkEventListener(this);
-		m_broadcastDialog.addDiskoWorkEventListener(this);
+		m_nbFieldDialog.addDiskoWorkListener(this);
+		m_nbListDialog.addDiskoWorkListener(this);
+		m_broadcastDialog.addDiskoWorkListener(this);
 		
 		m_nbFieldDialog.addActionListener(m_nbListDialog);
 	}
@@ -267,26 +267,20 @@ public class ChangeToDialog extends DiskoDialog
 	/**
 	 * {@link IDiskoWorkListener#onDialogCancel(DiskoWorkEvent)}
 	 */
-	public void onWorkCancel(DiskoWorkEvent e)
-	{
-		// not in use!
-	}
+	public void onWorkCancel(DiskoWorkEvent e) { /* NOP */ }
 
 	/**
 	 * {@link IDiskoWorkListener#onWorkFinish(DiskoWorkEvent)}
 	 */
 	public void onWorkFinish(DiskoWorkEvent e)
 	{
-		fireOnWorkFinish(e);
+		fireOnWorkPerformed(e);
 	}
 
 	/**
-	 * {@link IDiskoWorkListener#onWorkChange(DiskoWorkEvent)}
+	 * {@link IDiskoWorkListener#onWorkPerformed(DiskoWorkEvent)}
 	 */
-	public void onWorkChange(DiskoWorkEvent e)
-	{
-		// not in use!
-	}
+	public void onWorkPerformed(DiskoWorkEvent e) { /* NOP */ }
 	
 	/**
 	 * Keep track of broadcast or not

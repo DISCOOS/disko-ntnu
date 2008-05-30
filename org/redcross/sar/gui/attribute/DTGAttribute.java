@@ -39,11 +39,11 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	}
 	
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			// create
 			JFormattedTextField field = new JFormattedTextField();
@@ -72,10 +72,9 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 			
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
+	public JFormattedTextField getTextField() {
+		return (JFormattedTextField)m_component;
+	}
 	
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
@@ -117,6 +116,12 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 		// failure
 		return false;
 	}	
+	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getTextField().setEditable(isEditable);		
+	}
 	
 	/*==================================================================
 	 * Inner classes

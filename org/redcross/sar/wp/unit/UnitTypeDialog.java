@@ -1,31 +1,26 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.event.IDiskoWorkListener;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.Internationalization;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import java.util.EnumSet;
 
@@ -34,87 +29,66 @@ import java.util.EnumSet;
  *
  * @author thomasl
  */
-public class UnitTypeDialog extends DiskoDialog
+public class UnitTypeDialog extends DefaultDialog
 {
 	private static final long serialVersionUID = 1L;
 
-	private JPanel m_contentsPanel;
-	private JButton m_okButton;
-	private JButton m_cancelButton;
 	private JList m_typeList;
 
 	private static UnitType m_type;
 
 	private IDiskoWpUnit m_wpUnit;
 
-	public UnitTypeDialog(IDiskoWpUnit wpUnit, JComponent parentComponent)
+	public UnitTypeDialog(IDiskoWpUnit wpUnit, JComponent parent)
 	{
+		// forward
 		super(wpUnit.getApplication().getFrame());
-		m_wpUnit = wpUnit;
-		initialize(parentComponent);
+		
+		// prepare
+		m_wpUnit = wpUnit;		
+		
+		// initialize gui
+		initialize();
+		
+		// show in center of parent
+		setLocationRelativeTo(parent, DefaultDialog.POS_CENTER, true, true);
+		
 	}
 
-	private void initialize(JComponent parentComponent)
+	private void initialize()
 	{
-		this.setLocationRelativeTo(parentComponent, DiskoDialog.POS_CENTER, true, true);
+		// prepare dialog
 		this.setPreferredSize(new Dimension(400, 500));
-		m_contentsPanel = new JPanel();
-		m_contentsPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.PAGE_AXIS));
-
-		// Labels
-		//m_contentsPanel.add(new JLabel(m_wpUnit.getText("CreateNewUnit.text")));
-		//m_contentsPanel.add(Box.createRigidArea(new Dimension(10, 20)));
-		m_contentsPanel.add(new JLabel(m_wpUnit.getBundleText("ChooseUnitType.text")));
-
-		// List
+		
+		// create content panel
+		DefaultPanel panel = new DefaultPanel(m_wpUnit.getBundleText("CreateNewUnit.text"));
+		
+		// create unit list
 		m_typeList = new JList();
-		EnumSet<UnitType> data  = EnumSet.of(
-				UnitType.AIRCRAFT,
-				UnitType.BOAT,
-				UnitType.DOG,
-				UnitType.TEAM,
-				UnitType.VEHICLE);
+		EnumSet<UnitType> data  = EnumSet.of( UnitType.AIRCRAFT, UnitType.BOAT,
+										UnitType.DOG, UnitType.TEAM, UnitType.VEHICLE);
 		m_typeList.setListData(data.toArray());
 		m_typeList.setCellRenderer(new UnitTypeCellRenderer());
 		m_typeList.setFixedCellHeight(DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height);
 		m_typeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		JScrollPane tableScroller = new JScrollPane(m_typeList);
-		m_contentsPanel.add(tableScroller);
+		m_typeList.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 
-		// Buttons
-		JPanel actionButtonRow = new JPanel();
-
-		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
-		m_okButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				// get type
+			public void valueChanged(ListSelectionEvent e) {
+				if(!isChangeable()) return;
 				m_type = (UnitType)m_typeList.getSelectedValue();
-				
-				// was type selected?
-				if(m_type==null)
-					Utils.showWarning("Du må først velge en enhet");
-				else
-					fireOnWorkFinish();
+				setDirty(true);	
 			}
+			
 		});
-		actionButtonRow.add(m_okButton);
+		
+		// set list as body
+		panel.setBodyComponent(m_typeList);
 
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				fireOnWorkCancel();
-			}
-		});
-		actionButtonRow.add(m_cancelButton);
-
-		m_contentsPanel.add(actionButtonRow);
-
-		this.add(m_contentsPanel);
+		// add work listener
+		panel.addDiskoWorkListener((IDiskoWorkListener)m_wpUnit);
+		
+		// add content panel
+		this.setContentPane(panel);
 		this.pack();
 	}
 

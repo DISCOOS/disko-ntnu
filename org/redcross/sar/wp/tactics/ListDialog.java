@@ -18,11 +18,11 @@ import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.AssignmentTable;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.output.DiskoReportManager;
@@ -30,10 +30,10 @@ import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
-public class ListDialog extends DiskoDialog {
+public class ListDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DefaultDiskoPanel contentPanel = null;
+	private DefaultPanel contentPanel = null;
 	private JButton printButton = null;
 	private JButton makeReadyButton = null;
 	private JButton makeDraftButton = null;
@@ -77,10 +77,10 @@ public class ListDialog extends DiskoDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel("Oppdrag",false,true);
+				contentPanel = new DefaultPanel("Oppdrag",false,true);
 				contentPanel.setBodyComponent(getAssignmentTable());
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
 				contentPanel.insertItem("finish", getStatusPanel());
@@ -91,9 +91,7 @@ public class ListDialog extends DiskoDialog {
 
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
-						if("cancel".equalsIgnoreCase(cmd)) 
-							cancel();
-						else if("print".equalsIgnoreCase(cmd)) 
+						if("print".equalsIgnoreCase(cmd)) 
 							print();
 						else if("draft".equalsIgnoreCase(cmd)) 
 							change(AssignmentStatus.DRAFT);
@@ -256,7 +254,7 @@ public class ListDialog extends DiskoDialog {
 					IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
 					if(!status.equals(assignment.getStatus())) {
 						assignment.setStatus(status);				
-						fireOnWorkChange(assignment,status);
+						fireOnWorkChange(assignment);
 					}
 				}
 			}	
@@ -265,15 +263,6 @@ public class ListDialog extends DiskoDialog {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-	}
-	
-	public boolean cancel() {
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide me
-		setVisible(false);
-		// finished
-		return true;
 	}
 	
 	public boolean print() {

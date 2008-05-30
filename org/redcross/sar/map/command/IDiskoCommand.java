@@ -4,7 +4,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
@@ -52,7 +52,7 @@ public interface IDiskoCommand extends ICommand {
 	
 	public IMsoManagerIf.MsoClassCode getMsoClassCode();
 
-	public DiskoDialog getDialog();
+	public DefaultDialog getDialog();
 	
 	public AbstractButton getButton();
 	

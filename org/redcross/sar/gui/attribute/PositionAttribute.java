@@ -6,12 +6,13 @@ package org.redcross.sar.gui.attribute;
 import java.awt.Component;
 import java.text.ParseException;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.gui.map.PositionField;
+import org.redcross.sar.gui.panel.PositionFieldPanel;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.util.mso.Position;
@@ -37,7 +38,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// save format
-		((PositionField)m_component).setFormat(format);
+		((PositionFieldPanel)m_component).setFormat(format);
 		// get value from attribute
 		load();		
 	}
@@ -51,18 +52,18 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,width,value,isEditable);
 		// save format
-		((PositionField)m_component).setFormat(format);
+		((PositionFieldPanel)m_component).setFormat(format);
 	}
 	
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		try {
 			if(m_component==null) {
-				PositionField field = new PositionField();
+				PositionFieldPanel field = new PositionFieldPanel();
 				field.setEditable(m_isEditable);
 				field.addChangeListener(new ChangeListener() {
 
@@ -81,13 +82,12 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
+	public PositionFieldPanel getPositionField() {
+		return (PositionFieldPanel)m_component;
+	}
 	
 	public Object getValue() {
-		return ((PositionField)m_component).getPosition();
+		return ((PositionFieldPanel)m_component).getPosition();
 	}
 	
 	public boolean setValue(Object value) {
@@ -95,11 +95,11 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		if(!m_isEditable) return false;
 		// validate data type
 		if(value instanceof Point)
-			((PositionField)m_component).setPoint((Point)value);
+			((PositionFieldPanel)m_component).setPoint((Point)value);
 		else if(value instanceof Position) 
-			((PositionField)m_component).setPosition((Position)value);
+			((PositionFieldPanel)m_component).setPosition((Position)value);
 		else if(value instanceof String) 
-			((PositionField)m_component).setText((String)value);
+			((PositionFieldPanel)m_component).setText((String)value);
 		else {
 			// failure
 			return false;
@@ -128,11 +128,18 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	public void setFormat(int format) {
 		// save format
-		((PositionField)m_component).setFormat(format);		
+		((PositionFieldPanel)m_component).setFormat(format);		
 	}
 			
 	public int getFormat() {
 		// get format
-		return ((PositionField)m_component).getFormat();		
+		return ((PositionFieldPanel)m_component).getFormat();		
 	}
+	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getPositionField().setEditable(isEditable);		
+	}
+	
 }

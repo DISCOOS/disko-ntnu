@@ -39,4 +39,7 @@ public interface IMsoFeature extends IFeature {
 	public boolean isDirty();
 	public void setDirty(boolean isDirty);
 	
+	public String getCaption();
+	public void setCaption(String caption);
+	
 }

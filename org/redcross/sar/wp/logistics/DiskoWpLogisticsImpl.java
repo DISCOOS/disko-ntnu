@@ -3,7 +3,7 @@ package org.redcross.sar.wp.logistics;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;

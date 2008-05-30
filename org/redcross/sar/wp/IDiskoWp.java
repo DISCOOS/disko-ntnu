@@ -12,12 +12,12 @@ public interface IDiskoWp extends IDiskoWpModule {
 	/**
 	 * Must be called when a task is canceled. Rollback.
 	 */
-	public boolean cancel();
+	public boolean rollback();
 	
 	/**
 	 * Must be called when a task is finished
 	 */
-	public boolean finish();
+	public boolean commit();
 	
 	public String getName();
 }

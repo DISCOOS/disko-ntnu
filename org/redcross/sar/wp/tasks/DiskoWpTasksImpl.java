@@ -5,13 +5,13 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.DiskoIcon;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.MainMenuPanel;
-import org.redcross.sar.gui.SubMenuPanel;
-import org.redcross.sar.gui.TaskDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.gui.panel.MainMenuPanel;
+import org.redcross.sar.gui.panel.SubMenuPanel;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
@@ -58,7 +58,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     private JButton m_performedButton;
 
     private DeleteTaskDialog m_deleteTaskDialog;
-    private List<DiskoDialog> m_dialogs;
+    private List<DefaultDialog> m_dialogs;
 
     private ITaskIf m_currentTask;
 
@@ -69,7 +69,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     {
         super();
 
-        m_dialogs = new LinkedList<DiskoDialog>();
+        m_dialogs = new LinkedList<DefaultDialog>();
 
         setTaskAlertTimer();
 
@@ -242,10 +242,10 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		}		
         
         SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();
-        m_wasFinishButtonVisible = subMenu.getFinishButton().isVisible();
-        m_wasCancelButtonVisible = subMenu.getCancelButton().isVisible();
-        subMenu.getFinishButton().setVisible(false);
-        subMenu.getCancelButton().setVisible(false);
+        m_wasFinishButtonVisible = subMenu.getCommitButton().isVisible();
+        m_wasCancelButtonVisible = subMenu.getRollbackButton().isVisible();
+        subMenu.getCommitButton().setVisible(false);
+        subMenu.getRollbackButton().setVisible(false);
     }
 
     @Override
@@ -253,8 +253,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     {
         super.deactivate();
         SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();
-        subMenu.getFinishButton().setVisible(m_wasFinishButtonVisible);
-        subMenu.getCancelButton().setVisible(m_wasCancelButtonVisible);
+        subMenu.getCommitButton().setVisible(m_wasFinishButtonVisible);
+        subMenu.getRollbackButton().setVisible(m_wasCancelButtonVisible);
         
         TaskDialog taskDialog = getApplication().getUIFactory().getTaskDialog();
         taskDialog.setVisible(false);
@@ -297,9 +297,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     {
         hideDialogs();
         TaskDialog taskDialog = this.getApplication().getUIFactory().getTaskDialog();
-        taskDialog.setLocationRelativeTo(m_contentsPanel, DiskoDialog.POS_CENTER, false, true);
+        taskDialog.setLocationRelativeTo(m_contentsPanel, DefaultDialog.POS_CENTER, false, true);
+        taskDialog.getTaskPanel().setTask(null);
         taskDialog.setVisible(true);
-        taskDialog.setTask(null);
     }
 
     /**
@@ -311,9 +311,9 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         {
             hideDialogs();
             TaskDialog taskDialog = this.getApplication().getUIFactory().getTaskDialog();
-            taskDialog.setLocationRelativeTo(m_contentsPanel, DiskoDialog.POS_CENTER, false, true);
+            taskDialog.setLocationRelativeTo(m_contentsPanel, DefaultDialog.POS_CENTER, false, true);
             taskDialog.setVisible(true);
-            taskDialog.setTask(m_currentTask);
+            taskDialog.getTaskPanel().setTask(m_currentTask);
         }
     }
 
@@ -332,7 +332,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             {
                 hideDialogs();
                 m_deleteTaskDialog.setTask(m_currentTask);
-                m_deleteTaskDialog.setLocationRelativeTo(m_contentsPanel, DiskoDialog.POS_CENTER, false, true);
+                m_deleteTaskDialog.setLocationRelativeTo(m_contentsPanel, DefaultDialog.POS_CENTER, false, true);
                 m_deleteTaskDialog.setVisible(true);
             }
         }
@@ -355,7 +355,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     private void hideDialogs()
     {
-        for (DiskoDialog dialog : m_dialogs)
+        for (DefaultDialog dialog : m_dialogs)
         {
             dialog.setVisible(false);
         }

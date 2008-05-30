@@ -15,9 +15,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -112,12 +112,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return m_captionLabel;
 	}
 	
-	private void setAbsoluteSize(Component c, Dimension size) {
-		c.setMinimumSize(size);
-		c.setPreferredSize(size);
-		c.setMaximumSize(size);
-	}
-	
 	protected boolean isWorking() {
 		return (m_isWorking>0);
 	}
@@ -131,22 +125,17 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	}
 	
 	protected void fireOnWorkChange() {
-		fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEventType.TYPE_CHANGE));
+		fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEvent.EVENT_CHANGE));
 	}
 			
 	protected void fireOnWorkChange(DiskoWorkEvent e) {
 		// forward
 		for(IDiskoWorkListener it: listeners) {
-			it.onWorkChange(e);
+			it.onWorkPerformed(e);
 		}
 	}
 	
-	/*==================================================================
-	 * Abstract protected methods
-	 *================================================================== 
-	 */
-	
-	protected abstract Component getComponent();
+	public abstract Component getComponent();
 	
 	/*==================================================================
 	 * Public methods
@@ -154,7 +143,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 */
 	
 	public boolean isDirty() {
-		if(m_attribute==null)
+		if(m_attribute!=null)
 			return m_attribute.isUncommitted();
 		else
 			return m_isDirty;
@@ -168,7 +157,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		// save
 		m_absolute = size;
 		// constain to size
-		setAbsoluteSize(this, size);
+		Utils.setFixedSize(this, size.width,size.height);
 		// constrain caption width
 		setCaptionWidth(getCaptionWidth());
 		
@@ -185,7 +174,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		Dimension size = new Dimension();
 		size.setSize(Math.max(width,cw),m_absolute.getHeight());
 		// set as absolute size
-		setAbsoluteSize(getCaptionLabel(), size);				
+		Utils.setFixedSize(getCaptionLabel(), size.width,size.height);				
 	}	
 	
 	@Override
@@ -193,15 +182,14 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		// forward
 		super.setEnabled(isEnabled);
 		// update button
-		getButton().setEnabled(isEnabled && m_isEditable);
+		getButton().setEnabled(isEnabled);
 		// forward?
-		if(m_component!=null) m_component.setEnabled(isEnabled && m_isEditable);
+		if(m_component!=null) m_component.setEnabled(isEnabled);
 	}
 	
 	public void setEditable(boolean isEditable) {
 		m_isEditable = isEditable;
-		m_component.setEnabled(isEditable && isEnabled());
-		getButton().setEnabled(isEditable && isEnabled());
+		getButton().setEnabled(isEditable);
 	}
 		
 	public boolean isEditable() {
@@ -279,8 +267,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		try {
 			// forward
 			if(setAttribValue(m_attribute,getValue())) {
-				// notify				
-				fireOnWorkChange();
 				// success
 				bFlag = true;
 			}

@@ -3,7 +3,7 @@ package org.redcross.sar.wp.logistics;
 import java.awt.Component;
 
 import org.redcross.sar.gui.DiskoRoundBorder;
-import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.gui.renderer.IconRenderer;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;

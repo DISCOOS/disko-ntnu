@@ -69,12 +69,12 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
         return m_situationButton;
     }
 
-	public boolean cancel() {
+	public boolean rollback() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public boolean finish() {
+	public boolean commit() {
 		// TODO Auto-generated method stub
 		return false;
 	}

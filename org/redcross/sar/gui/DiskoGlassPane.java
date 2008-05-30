@@ -25,6 +25,8 @@ import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ProgressDialog;
 
 /** 
  * GlassPane tutorial 
@@ -58,7 +60,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
     private Point m_point = new Point(); 
     private Component m_recentFocusOwner;
     private boolean m_isLocked = false;
-    private DiskoProgressDialog m_progressDialog = null;
+    private ProgressDialog m_progressDialog = null;
  
     public DiskoGlassPane(JFrame frame) { 
     	// forward
@@ -90,9 +92,9 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
         return m_point; 
     } 
     
-    public DiskoProgressDialog getProgressDialog() {
+    public ProgressDialog getProgressDialog() {
     	if(m_progressDialog==null) {
-    		m_progressDialog = new DiskoProgressDialog(m_frame,false);
+    		m_progressDialog = new ProgressDialog(m_frame,false);
     		m_progressDialog.getProgressPanel().getCancelButton().setCursor(Cursor.getDefaultCursor());
             this.addFocusListener(new FocusAdapter() {
             	@Override
@@ -207,9 +209,9 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	
 	public void setProgressLocationAt(JComponent c) {
 		if(c!=null)
-			getProgressDialog().setLocationRelativeTo(c, DiskoDialog.POS_CENTER, false, true);
+			getProgressDialog().setLocationRelativeTo(c, DefaultDialog.POS_CENTER, false, true);
 		else
-			getProgressDialog().setLocationRelativeTo(m_frame.getLayeredPane(), DiskoDialog.POS_CENTER, false, true);
+			getProgressDialog().setLocationRelativeTo(m_frame.getLayeredPane(), DefaultDialog.POS_CENTER, false, true);
 	}
 	
 }

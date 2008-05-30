@@ -1,19 +1,19 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.NumericAttribute;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -24,21 +24,25 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListener {
+public class EstimateDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;	
-	private DefaultDiskoPanel contentPanel = null;
-	private JPanel estimatePanel = null;
+
+	private DefaultPanel contentPanel = null;
+	private AttributesPanel estimatePanel = null;
 	private NumericAttribute attrEta = null;
-	private ISearchIf currentAssignment = null;
+	
+	private IDiskoWpModule wp = null;
 
 	public EstimateDialog(IDiskoWpModule wp) {
 		// forward
-		super(wp.getApplication().getFrame(),wp.getMap(),getMyInterest(),getMyLayers());
+		super(wp.getApplication().getFrame());
+		// prepare
+		this.wp = wp;
 		// initialize gui
 		initialize();
-		// get selected mso feature
-		setSelectedMsoFeature(wp.getMap());
+		// initialise
+		setup();
 	}
 
 	/**
@@ -48,7 +52,7 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	private void initialize() {
 		try {
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(800,110));
+            this.setPreferredSize(new Dimension(400,125));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -69,42 +73,91 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 	    return myLayers;
 	}
 	
-	public String getEstimatedTime() {
-		try {
-			return (String)getEtaAttribute().getValue();
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-		}
-		return "0";
-	}
-	
-	
-	public void setEstimatedTime(int eta) {
-		getEtaAttribute().setValue(eta);
-	}
-	
 	/**
 	 * This method initializes contentPanel
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel();
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.setBodyComponent(getEstimatePanel());
-				contentPanel.addActionListener(new ActionListener(){
+				contentPanel = new DefaultPanel() {
+					
+					private static final long serialVersionUID = 1L;
 
-					public void actionPerformed(ActionEvent e) {
-						String cmd = e.getActionCommand();
-						if("finish".equalsIgnoreCase(cmd))
-							finish();
-						else if("cancel".equalsIgnoreCase(cmd))
-							cancel();
+					@Override
+					protected boolean beforeCancel() {
+						// forward
+						attrEta.load();
+						// success
+						return true; 
+					}
+
+					@Override
+					protected boolean beforeFinish() {
+						// forward
+						return attrEta.save();
+					}
+
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						// initialize
+						IAttributeIf eta = null;
+						IAssignmentIf assignment = null;
+						// get owning area
+						IAreaIf area = MsoUtils.getOwningArea(msoObj);
+						if(area!=null) {
+							assignment = area.getOwningAssignment();
+							if (assignment instanceof ISearchIf)
+								eta = ((ISearchIf)assignment).getPlannedProgressAttribute();
+							else
+								assignment = null;
+						}
+						
+						// update
+						super.setMsoObject(assignment);
+						getEtaAttribute().setMsoAttribute(eta);
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);						
+						
+					}	
+					
+					@Override
+					public void update() {
+						super.update();
+						setup();
 					}
 					
-				});
+					@Override
+					public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
+						// is same as selected?
+						if(msoObject == this.msoObject) {
+							setMsoObject(msoObject);
+						}
+					}
+
+					@Override
+					public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
+						// is same as selected?
+						if(msoObject == this.msoObject) {
+							// forward
+							setMsoObject(null);
+						}
+					}
+					
+					
+				};				
+				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setBodyComponent(getEstimatePanel());
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -112,43 +165,21 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 		return contentPanel;
 	}
 
-	public boolean finish() {
-		// consume?
-		if (isWorking()) return false;
-		// forward
-		boolean bFlag = attrEta.save();
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide?
-		if(bFlag) setVisible(false);
-		// finished
-		return bFlag;
-	}
-	
-	public boolean cancel() {
-		// consume?
-		if (isWorking()) return false;
-		// forward
-		boolean bFlag = attrEta.load();
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide
-		setVisible(false); 
-		// finished
-		return bFlag;
-	}
-	
 	/**
 	 * This method initializes estimatePanel	
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getEstimatePanel() {
+	private AttributesPanel getEstimatePanel() {
 		if (estimatePanel == null) {
 			try {
-				estimatePanel = new JPanel();
-				estimatePanel.setLayout(new BorderLayout());
-				estimatePanel.add(getEtaAttribute(), BorderLayout.CENTER);
+				estimatePanel = new AttributesPanel("","",false,false);
+				estimatePanel.setHeaderVisible(false);
+				estimatePanel.setLayout(new BoxLayout(estimatePanel,BoxLayout.Y_AXIS));
+				estimatePanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				estimatePanel.addAttribute(getEtaAttribute());
+				estimatePanel.addDiskoWorkListener(getContentPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -173,8 +204,6 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 				attrEta.setDecimalPrecision(0);
 				attrEta.setAllowNegative(false);				
 				
-				// add disko work listener
-				attrEta.addDiskoWorkListener(this);
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -183,51 +212,28 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 		return attrEta;
 	}
 
-	@Override
-	public int setMsoObject(IMsoObjectIf msoObj) {
-		int state = 0;
-		if(isWorking()) return state;
-		// consume changes
-		setIsWorking();
-		// initialize
-		IAttributeIf eta = null;
-		// get owning area
-		IAreaIf area = MsoUtils.getOwningArea(msoObj);
-		if(area!=null) {
-			IAssignmentIf assignment = area.getOwningAssignment();
-			if (assignment instanceof ISearchIf) {
-				state = 1;
-				currentAssignment = (ISearchIf)assignment;
-				eta = currentAssignment.getPlannedProgressAttribute();
-			}
-		}
-		else {
-			state = -1;
-			currentAssignment = null;			
-		}
-		
-		// update
-		getEtaAttribute().setMsoAttribute(eta);
-
-		// reset state 
-		setIsNotWorking();
-		getContentPanel().setDirty(false);
-		
-		// forward
-		setup();
-		
-		// success
-		return state;
-	}	
-	
 	private void setup() {
+
+		// consume?
+		if(!isChangeable()) return;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// try to get mso object?
+		if(getMsoObject()==null)
+			getContentPanel().setSelectedMsoFeature(wp.getMap());
+		
+		// get mso object
+		IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
+		
 		// update icon
-		if(currentAssignment!=null) {
-			Enum e = MsoUtils.getType(currentAssignment,true);
+		if(assignment!=null) {
+			Enum e = MsoUtils.getType(assignment,true);
 			getContentPanel().setCaptionIcon(
 					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Estimer tidsforbruk for <b>" + 
-					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
+					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b></html>");
 			getEtaAttribute().setEnabled(true);
 		}
 		else {
@@ -235,28 +241,10 @@ public class EstimateDialog extends DiskoDialog implements IMsoLayerEventListene
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getEtaAttribute().setEnabled(false);
 		}		
-	}	
-	
-	@Override
-	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			setMsoObject(msoObject);
-		}
-	}
-
-	@Override
-	public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			// reset selection
-			currentMsoFeature =null;
-			currentMsoObj =null;
-			// forward
-			setMsoObject(null);
-		}
+		getEstimatePanel().update();
+		
+		// resume changes
+		setChangeable(true);
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -16,9 +16,12 @@ import com.esri.arcgis.system.IClone;
 public abstract class AbstractMsoFeature implements IMsoFeature {
 	
 	private static final long serialVersionUID = 1L;
+
+	protected String caption = "";
 	protected IMsoObjectIf msoObject = null;
 	protected IGeometry geometry = null;
 	protected ISpatialReference srs = null;
+	
 	protected boolean isSelected = false;
 	protected boolean isVisible = true; 
 	protected boolean isEditing = false;
@@ -45,6 +48,10 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 				isDirty = true;
 		}
 	}
+	
+	/**
+	 * Override this!
+	 */
 	
 	public boolean geometryIsChanged(IMsoObjectIf msoObj) {
 		return false;
@@ -169,6 +176,14 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	
 	public void setDirty(boolean isDirty) {
 		this.isDirty = isDirty;
+	}
+	
+	public String getCaption() {
+		return this.caption;
+	}
+	
+	public void setCaption(String caption) {
+		this.caption = caption;
 	}
 	
 	

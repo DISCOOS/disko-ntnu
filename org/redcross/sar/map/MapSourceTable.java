@@ -6,9 +6,9 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.ListSelectionModel;
 
-import org.redcross.sar.gui.models.MapSourceTableModel;
-import org.redcross.sar.gui.renderers.BooleanCellRenderer;
-import org.redcross.sar.gui.renderers.MapSourceInfoCellRenderer;
+import org.redcross.sar.gui.model.MapSourceTableModel;
+import org.redcross.sar.gui.renderer.BooleanCellRenderer;
+import org.redcross.sar.gui.renderer.MapSourceInfoCellRenderer;
 
 public class MapSourceTable extends JTable {
 

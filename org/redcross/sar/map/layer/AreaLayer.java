@@ -106,7 +106,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 						SimpleLineSymbol lineSymbol = null;
 						if (search != null) {
 							lineSymbol = (SimpleLineSymbol)symbols.get(search.getSubType());
-							text = MsoUtils.getAssignmentName(search,2);
+							text = feature.getCaption();
 						} else {
 							lineSymbol = defaultLineSymbol;
 						}

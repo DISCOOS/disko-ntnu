@@ -5,6 +5,7 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -33,13 +34,13 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,width,value,isEditable);
 	}
-	
+				
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			JTextField field = new JTextField();
 			field.setEditable(m_isEditable);
@@ -62,12 +63,7 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 		}
 		return m_component;
 	}
-			
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
-	
+
 	public JTextField getTextField() {
 		return (JTextField)m_component;
 	}
@@ -108,4 +104,9 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 		return false;
 	}	
 	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getTextField().setEditable(isEditable);		
+	}
 }

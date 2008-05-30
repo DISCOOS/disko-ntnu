@@ -11,8 +11,8 @@ import javax.swing.Timer;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoGlassPane;
-import org.redcross.sar.gui.DiskoProgressDialog;
 import org.redcross.sar.gui.DiskoProgressPanel;
+import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.thread.DiskoProgressEvent.DiskoProgressEventType;
 
 /**
@@ -45,7 +45,7 @@ public class DiskoProgressMonitor {
 	private boolean m_oldState = false;
 	
 	private DiskoGlassPane m_glassPane = null;
-	private DiskoProgressDialog m_progressDialog = null;
+	private ProgressDialog m_progressDialog = null;
 	private DiskoProgressPanel m_progressPanel = null;
 	
 	private List<IDiskoProgressListener> m_listeners = null;
@@ -511,7 +511,7 @@ public class DiskoProgressMonitor {
 	 * 
 	 * @return DiskoProgressDialog
 	 */
-	private DiskoProgressDialog getProgressDialog() {
+	private ProgressDialog getProgressDialog() {
 		// initialize?
 		if(m_progressDialog==null) {
 			m_progressDialog = getGlassPane().getProgressDialog();

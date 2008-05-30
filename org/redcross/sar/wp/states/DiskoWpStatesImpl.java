@@ -4,7 +4,7 @@ import java.lang.instrument.IllegalClassFormatException;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -57,12 +57,12 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 		super.deactivate();
 	}
 	
-	public boolean cancel() {
+	public boolean rollback() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public boolean finish() {
+	public boolean commit() {
 		// TODO Auto-generated method stub
 		return false;
 	}	

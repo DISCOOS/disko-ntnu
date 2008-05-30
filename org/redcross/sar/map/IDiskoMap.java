@@ -4,17 +4,19 @@ import java.io.IOException;
 import java.util.List;
 
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.gui.map.DrawDialog;
-import org.redcross.sar.gui.map.ElementDialog;
-import org.redcross.sar.gui.map.MapFilterBar;
-import org.redcross.sar.gui.map.MapStatusBar;
-import org.redcross.sar.gui.map.SnapDialog;
-import org.redcross.sar.map.command.DrawAdapter;
-import org.redcross.sar.map.command.IDiskoTool;
+import org.redcross.sar.gui.dialog.DrawDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
+import org.redcross.sar.gui.dialog.SnapDialog;
+import org.redcross.sar.gui.panel.MapFilterPanel;
+import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.tool.DrawAdapter;
+import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.SnapAdapter;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.Position;
 
@@ -31,12 +33,13 @@ import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-public interface IDiskoMap extends IDiskoWorkListener {
+public interface IDiskoMap {
 	
 	public enum CoordinateFormat {
 		FORMAT_UTM,
 		FORMAT_MGRS,
 		FORMAT_DEG,
+		FORMAT_DEM,
 		FORMAT_DES
 	}
 	
@@ -45,9 +48,9 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	
 	public List<IMsoFeatureLayer> getMsoLayers();
 	
-	public List<IMsoFeatureLayer> getMsoLayers(IMsoManagerIf.MsoClassCode classCode);
+	public List<IMsoFeatureLayer> getMsoLayers(MsoClassCode classCode);
 	
-	public IMsoFeatureLayer getMsoLayer(IMsoFeatureLayer.LayerCode layerCode);
+	public IMsoFeatureLayer getMsoLayer(LayerCode layerCode);
 	
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
 	
@@ -108,8 +111,8 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	public void refreshMapBase(IEnvelope extent) throws IOException, AutomationException;	
 	public void refreshMsoLayers() throws IOException, AutomationException;
 	public void refreshMsoLayers(IEnvelope extent) throws IOException, AutomationException;	
-	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode code) throws IOException, AutomationException;
-	public void refreshMsoLayers(IMsoManagerIf.MsoClassCode code, IEnvelope extent) throws IOException, AutomationException;	
+	public void refreshMsoLayers(MsoClassCode code) throws IOException, AutomationException;
+	public void refreshMsoLayers(MsoClassCode code, IEnvelope extent) throws IOException, AutomationException;	
 	
 	public void suspendNotify();	
 	public void consumeNotify();	
@@ -127,8 +130,8 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	public boolean isSouthBarVisible();
 	public void setSouthBarVisible(boolean isVisible);
 
-	public MapStatusBar getMapStatusBar();
-	public MapFilterBar getMapFilterBar();
+	public MapStatusPanel getMapStatusBar();
+	public MapFilterPanel getMapFilterBar();
 	
 	public Point getClickPoint();
 	
@@ -162,7 +165,7 @@ public interface IDiskoMap extends IDiskoWorkListener {
 	
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException;
 	
-	public void addDiskoWorkEventListener(IDiskoWorkListener listener);
+	public void addDiskoWorkListener(IDiskoWorkListener listener);
 	public void removeDiskoWorkEventListener(IDiskoWorkListener listener);
 	
 	public IEnvelope getDirtyExtent();

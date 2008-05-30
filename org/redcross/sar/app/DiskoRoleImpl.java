@@ -9,15 +9,14 @@ import javax.swing.AbstractButton;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoIcon;
-import org.redcross.sar.gui.MainMenuPanel;
-import org.redcross.sar.gui.MainPanel;
-import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.SubMenuPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.MainMenuPanel;
+import org.redcross.sar.gui.panel.MainPanel;
+import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.panel.SubMenuPanel;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -31,7 +30,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  *
  */
-public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
+public class DiskoRoleImpl implements IDiskoRole {
 	
 	private IDiskoApplication app = null;
 	private String name = null;
@@ -78,13 +77,13 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			final String id = module.getName();
 			
 			// add role as disko work to module
-			module.addDiskoWorkEventListener(this);
+			module.addDiskoWorkListener(this);
 
 			// get toggle button and icon
 			JToggleButton tbutton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL, 0, 0);
 			tbutton.setToolTipText(module.getCaption());
 			DiskoIcon icon = DiskoIconFactory.getIcon("MODULE."+module.getName(), 
-					DiskoButtonFactory.getCatalog(ButtonSize.NORMAL),Color.ORANGE,0.3f);
+					DiskoButtonFactory.getCatalog(ButtonSize.NORMAL),Color.ORANGE,0.5f);
 			
 			// add action listener for invocation of module
 			tbutton.addActionListener(new java.awt.event.ActionListener() {
@@ -198,7 +197,7 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			String id = module.getName();
 			MainMenuPanel mainMenu = app.getUIFactory().getMainMenuPanel();
 			SubMenuPanel subMenu   = app.getUIFactory().getSubMenuPanel();
-			NavBar navBar = app.getUIFactory().getMainPanel().getNavBar();
+			NavBarPanel navBar = app.getUIFactory().getMainPanel().getNavBar();
 			MainPanel mainPanel = app.getUIFactory().getMainPanel();
 			if (module.hasSubMenu()) {
 				subMenu.setVisible(true);
@@ -268,16 +267,11 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 		return app;
 	}
 
-	public void onWorkCancel(DiskoWorkEvent e) {
-		setColoredIcon(false);
-	}
-
-	public void onWorkFinish(DiskoWorkEvent e) {
-		setColoredIcon(false);
-	}
-
-	public void onWorkChange(DiskoWorkEvent e) {
-		setColoredIcon(true);
+	public void onWorkPerformed(DiskoWorkEvent e) {
+		// get module state
+		boolean bFlag = currentModule!=null ? currentModule.isChanged() : false;
+		// update icons to reflect state
+		setColoredIcon(bFlag);
 	}
 	
 	private void setColoredIcon(boolean show) {
@@ -290,10 +284,10 @@ public class DiskoRoleImpl implements IDiskoRole, IDiskoWorkListener {
 			AbstractButton button = mainMenu.getButton(getName() ,index);
 			((DiskoIcon)button.getIcon()).setColored(show);
 			button.repaint();
-			button = subMenu.getCancelButton();
+			button = subMenu.getRollbackButton();
 			((DiskoIcon)button.getIcon()).setColored(show);
 			button.repaint();
-			button = subMenu.getFinishButton();
+			button = subMenu.getCommitButton();
 			((DiskoIcon)button.getIcon()).setColored(show);
 			button.repaint();
 		}

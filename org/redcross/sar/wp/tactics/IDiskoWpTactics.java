@@ -4,7 +4,7 @@ import org.redcross.sar.wp.IDiskoWp;
 
 public interface IDiskoWpTactics extends IDiskoWp {
 	
-    public final static String bundleName = "org.redcross.sar.wp.tactics.tactics";
+    public final static String bundleName = "org.redcross.sar.wp.tactics.Tactics";
     
 	public enum TacticsActionType {
 		MANAGE_ELEMENTS,

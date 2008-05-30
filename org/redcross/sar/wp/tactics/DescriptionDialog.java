@@ -1,19 +1,17 @@
 package org.redcross.sar.wp.tactics;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.models.POITableModel;
+import org.redcross.sar.gui.model.POITableModel;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -23,19 +21,18 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class DescriptionDialog extends DiskoDialog {
+public class DescriptionDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DefaultDiskoPanel contentPanel = null;
+	private DefaultPanel contentPanel = null;
 	private JTable poiTable = null;
 	private IDiskoWpModule wp = null;
 	private POITableModel tableModel = null;
-	private ISearchIf currentAssignment = null;
 
 	public DescriptionDialog(IDiskoWpModule wp) {
 		
 		// forward
-		super(wp.getApplication().getFrame(),wp.getMap(),getMyInterest(),getMyLayers());
+		super(wp.getApplication().getFrame());
 		
 		// prepare objects
 		this.wp = wp;
@@ -43,8 +40,8 @@ public class DescriptionDialog extends DiskoDialog {
 		// initialize ui
 		initialize();
 
-		// get selected mso feature
-		setSelectedMsoFeature(wp.getMap());
+		// initialise
+		setup();
 		
 	}
 
@@ -54,7 +51,7 @@ public class DescriptionDialog extends DiskoDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(800, 200));
+            this.setPreferredSize(new Dimension(600, 200));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}
@@ -81,18 +78,55 @@ public class DescriptionDialog extends DiskoDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel();
+				
+				// create a default table
+				contentPanel = new DefaultPanel("",false,true) { 					
+
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						// initialize
+						IAssignmentIf assignment = null;
+						// get owning area
+						IAreaIf area = MsoUtils.getOwningArea(msoObj);
+						if(area!=null) {
+							assignment = area.getOwningAssignment();
+							if (assignment instanceof ISearchIf)
+								assignment = (ISearchIf)assignment;
+							else
+								assignment = null;
+						}
+						
+						// update
+						super.setMsoObject(assignment);
+						getPOITableModel().setArea(area);
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);						
+						
+					}	
+					
+					@Override
+					public void update() {
+						setup();
+						super.update();
+					}
+					
+				};
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// hide me!
-						setVisible(false);						
-					}					
-				});
+				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setBodyComponent(getPoiTable());
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -148,56 +182,39 @@ public class DescriptionDialog extends DiskoDialog {
 			}
 		}
 	}
-	
-	@Override
-	public int setMsoObject(IMsoObjectIf msoObj) {
-		int state = 0;
-		if(isWorking()) return state;
-		setIsWorking();
-		// get area
-		IAreaIf area = MsoUtils.getOwningArea(msoObj);
-		if(area!=null) {
-			IAssignmentIf assignment = area.getOwningAssignment();
-			if (assignment instanceof ISearchIf) {		
-				currentAssignment = (ISearchIf)assignment;
-				state = 1;
-			}
-		}
-		else {
-			// set state
-			state = -1;
-			// reset assignment
-			currentAssignment = null;
-		}
-		
-		// set current area
-		getPOITableModel().setArea(area);
 
-		// reset state 
-		setIsNotWorking();
-		getContentPanel().setDirty(false);
-		
-		// forward
-		setup();
-		
-		// success
-		return state;
-	}	
-	
 	private void setup() {
+		
+		// consume?
+		if(!isChangeable()) return;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// try to get mso object?
+		if(getMsoObject()==null) 
+			getContentPanel().setSelectedMsoFeature(wp.getMap());
+		
+		// get mso object
+		IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
+		
 		// update icon
-		if(currentAssignment!=null) {
-			Enum e = MsoUtils.getType(currentAssignment,true);
+		if(assignment!=null) {
+			Enum e = MsoUtils.getType(assignment,true);
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
-			getContentPanel().setCaptionText("<html>Punktvis beskrivelse av <b>" + 
-					MsoUtils.getAssignmentName(currentAssignment, 1).toLowerCase() + "</b></html>");
+			getContentPanel().setCaptionText("<html>Stegvis beskrivelse av <b>" + 
+					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b></html>");
 			getPoiTable().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getPoiTable().setEnabled(false);
-		}		
+		}
+		
+		// resume changes
+		setChangeable(true);
 	}	
-
+	
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

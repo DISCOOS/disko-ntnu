@@ -3,9 +3,9 @@ package org.redcross.sar.app;
 import javax.swing.JFrame;
 
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
-import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.SysBar;
 import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.panel.SysBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -72,9 +72,9 @@ public interface IDiskoApplication {
 	 */
 	public UIFactory getUIFactory();
 	
-	public NavBar getNavBar();
+	public NavBarPanel getNavBar();
 	
-	public SysBar getSysBar();
+	public SysBarPanel getSysBar();
 	
 	/**
 	 * Get a reference to the DiskoMapManager.

@@ -14,8 +14,8 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.MessageDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 
@@ -81,7 +81,7 @@ public class Utils {
 	}
 
 	public static void showMessage(String title, String msg) {
-		showMessage(title,msg,MessageDialog.WARNING_MESSAGE);		
+		showMessage(title,msg,MessageDialog.INFORMATION_MESSAGE);		
 	}
 	
 	public static void showWarning(String msg) {
@@ -100,7 +100,7 @@ public class Utils {
 		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);		
 	}
 	
-	private static void showMessage(final String title, final String msg, final int options)
+	public static void showMessage(final String title, final String msg, final int options)
 	{
 		
 		// consume?
@@ -110,7 +110,7 @@ public class Utils {
 			
 			// create message dialog
 			messageDialog = new MessageDialog(getApp().getFrame());
-			messageDialog.setLocationRelativeTo(getApp().getFrame(), DiskoDialog.POS_CENTER, false,true);
+			messageDialog.setLocationRelativeTo(getApp().getFrame(), DefaultDialog.POS_CENTER, false,true);
 			
 			// lock application
 			boolean isLocked = Utils.getApp().setLocked(true);

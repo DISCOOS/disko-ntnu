@@ -2,7 +2,7 @@ package org.redcross.sar.wp.messageLog;
 
 import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -29,7 +29,7 @@ import javax.swing.JPanel;
  *
  * @author thomasl
  */
-public class UnitTypeDialog extends DiskoDialog implements IEditMessageComponentIf
+public class UnitTypeDialog extends DefaultDialog implements IEditMessageComponentIf
 {
 	private static final long serialVersionUID = 1L;
 

@@ -3,15 +3,15 @@ package org.redcross.sar.wp;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.DiskoWorkRepeater;
 import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.MainPanel;
-import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.NavBar.NavState;
 import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.panel.MainPanel;
+import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.panel.NavBarPanel.NavState;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
@@ -51,14 +51,13 @@ import javax.swing.SwingUtilities;
  * @author geira
  */
 public abstract class AbstractDiskoWpModule 
-			implements IDiskoWpModule, IMsoUpdateListenerIf, IDiskoWorkListener {
+			implements IDiskoWp, IMsoUpdateListenerIf, IDiskoWorkListener {
 	
 	private IDiskoRole role = null;
     private IDiskoMap map = null;
     private boolean hasSubMenu = false;
     private NavState m_navState = null;
     private boolean isNavBarSetupNeeded = true;
-    private ArrayList<IDiskoWorkListener> listeners = null;
 	private EnumSet<IMsoManagerIf.MsoClassCode> wpInterests = null;
 	private EnumSet<IMsoFeatureLayer.LayerCode> mapLayers = null;
 	
@@ -66,11 +65,13 @@ public abstract class AbstractDiskoWpModule
     protected ResourceBundle wpBundle;
     protected boolean isActive = false;
     
+    protected final DiskoWorkRepeater repeater;
+
     private int isWorking = 0;
     
     private final ArrayList<ITickEventListenerIf> tickListeners;
 
-    protected final ArrayList<DiskoWorkEvent> changeList;
+    protected final ArrayList<DiskoWorkEvent> changeStack;
     
     private final TickEvent tickEvent;
     
@@ -84,11 +85,12 @@ public abstract class AbstractDiskoWpModule
     	// valid package name?
     	if(Utils.getPackageName(getClass()) == null) 
     		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
-    	
-        this.listeners = new ArrayList<IDiskoWorkListener>();
+
+    	// prepare
+        this.repeater = new DiskoWorkRepeater();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
-        this.changeList = new ArrayList<DiskoWorkEvent>();
+        this.changeStack = new ArrayList<DiskoWorkEvent>();
 
         // initialize interests
         this.wpInterests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
@@ -108,10 +110,10 @@ public abstract class AbstractDiskoWpModule
     		EnumSet<IMsoFeatureLayer.LayerCode> mapLayers)
     {
         // initialize objects
-        this.listeners = new ArrayList<IDiskoWorkListener>();
+        this.repeater = new DiskoWorkRepeater();
         this.tickListeners = new ArrayList<ITickEventListenerIf>();
         this.tickEvent = new TickEvent(this);
-        this.changeList = new ArrayList<DiskoWorkEvent>();
+        this.changeStack = new ArrayList<DiskoWorkEvent>();
         this.wpInterests  = wpInterests;
         this.mapLayers = mapLayers;
 
@@ -122,7 +124,7 @@ public abstract class AbstractDiskoWpModule
     	}
 
         // initialize timer
-		//initTickTimer();
+		initTickTimer();
     }
     
 	private static EnumSet<IMsoFeatureLayer.LayerCode> getDefaultMapLayers() {	
@@ -159,7 +161,7 @@ public abstract class AbstractDiskoWpModule
                 // hide map
                 ((DiskoMap)map).setVisible(false);
                 // add disko work listener
-                map.addDiskoWorkEventListener(this);
+                map.addDiskoWorkListener(this);
                 // success
                 return true;
             }
@@ -216,108 +218,78 @@ public abstract class AbstractDiskoWpModule
         return hasSubMenu;
     }
 
-    public void addDiskoWorkEventListener(IDiskoWorkListener listener)
-    {
-        if (listeners.indexOf(listener) == -1)
-        {
-            listeners.add(listener);
-        }
-    }
-
-    public void removeDiskoWorkEventListener(IDiskoWorkListener listener)
-    {
-        listeners.remove(listener);
-    }
-
-	public void onWorkCancel(DiskoWorkEvent e) {
-		fireOnWorkCancel(e);
-	}
-	
-	public void onWorkFinish(DiskoWorkEvent e) {
-		fireOnWorkFinish(e);
+	public boolean commit() {
+		// get flag
+		boolean bFlag = isChanged();
+		// notify?
+		if(bFlag) fireOnWorkCommit();
+		// finished
+		return bFlag;
 	}
 
-	public void onWorkChange(DiskoWorkEvent e) {
-		fireOnWorkChange(e);
+	public boolean rollback() {
+		// get flag
+		boolean bFlag = isChanged();
+		// notify?
+		if(bFlag) fireOnWorkRollback();
+		// finished
+		return bFlag;
+	}
+
+    public void addDiskoWorkListener(IDiskoWorkListener listener)
+    {
+    	repeater.addDiskoWorkListener(listener);
+    }
+
+    public void removeDiskoWorkListener(IDiskoWorkListener listener)
+    {
+    	repeater.removeDiskoWorkListener(listener);
+    }
+
+	public void onWorkPerformed(DiskoWorkEvent e) {
+    	// update change stack?
+		if(e.isChange() || e.isFinish())
+			changeStack.add(e);
+	    // forward
+		repeater.fireOnWorkPerformed(e);
 	}
 
     protected void fireOnWorkChange(Object data)
     {
 
     	// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEventType.TYPE_CHANGE);
-    	// forward
-		fireOnWorkChange(e);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEvent.EVENT_CHANGE);
+    	
+		// forward
+		fireOnWorkPerformed(e);
     	
     }
     
-    protected void fireOnWorkChange(DiskoWorkEvent e)
-    {
-    	// is active?
-    	if(isActive) {
-    		
-	    	// add to list
-	    	changeList.add(e);
-	    	
-	    	// notify listeners
-	        for (int i = 0; i < listeners.size(); i++){
-	            listeners.get(i).onWorkChange(e);
-	        }
-    	}
-    }
-
-    protected void fireOnWorkCancel()
+    protected void fireOnWorkRollback()
     {
     	// create event
-    	DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CANCEL);    	
+    	DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEvent.EVENT_ROLLBACK);    	
 
     	// forward
-    	fireOnWorkCancel(e);
+    	fireOnWorkPerformed(e);
     }
     
-    protected void fireOnWorkCancel(DiskoWorkEvent e)
-    {
-    	// consume?
-    	if(e.getSource()!=this) return;
-    	
-    	// is active?
-    	if(isActive) {
-    			    	
-	    	// notify listeners
-	        for (int i = 0; i < listeners.size(); i++){
-	            listeners.get(i).onWorkCancel(e);
-	        }
-	        
-	        // clear change list
-	        changeList.clear();
-    	}        
-    }
-
-    protected void fireOnWorkFinish()
+    protected void fireOnWorkCommit()
     {
     	// create event
-    	DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_FINISH);
+    	DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEvent.EVENT_COMMIT);
     	// forward
-    	fireOnWorkFinish(e);
+    	fireOnWorkPerformed(e);
     }
     
-    protected void fireOnWorkFinish(DiskoWorkEvent e)
+    protected void fireOnWorkPerformed(DiskoWorkEvent e)
     {
-
-    	// consume?
-    	if(e.getSource()!=this) return;
-    		
-    	// is active?
-    	if(isActive) {
-    		
-	    	// notify listeners
-	        for (int i = 0; i < listeners.size(); i++){
-	            listeners.get(i).onWorkFinish(e);
-	        }
-	        
-	        // clear change list
-	        changeList.clear();
-    	}        
+    	// update change stack?
+		if(e.isCommit() || e.isRollback())
+			changeStack.clear();
+		
+		// forward
+		repeater.fireOnWorkPerformed(e);
     }
 
     /**
@@ -325,7 +297,7 @@ public abstract class AbstractDiskoWpModule
      */
     public boolean isChanged()
     {
-        return (changeList.size()>0);
+        return (changeStack.size()>0);
     }
 
     /**
@@ -352,8 +324,7 @@ public abstract class AbstractDiskoWpModule
     		
         	/*SwingUtilities.invokeLater(new Runnable() {
 
-				public void run() {
-				*/
+				public void run() {*/
 		        	try {
 		        		if(getMap().isInitMode()) {
 		        			// reset flag
@@ -364,8 +335,7 @@ public abstract class AbstractDiskoWpModule
 		        			if(e!=null) getMap().setExtent(MapUtil.expand(1.25,e));
 		        		}
 		        		else {
-		        			// refresh any dirty layers
-		        			getMap().refreshMsoLayers();
+		        			getMap().refreshGeography(null, map.getExtent());
 		        		}
 					} catch (AutomationException e) {
 						// TODO Auto-generated catch block
@@ -381,7 +351,7 @@ public abstract class AbstractDiskoWpModule
     	// has nav state?
     	if(m_navState!=null) {
         	// get navbar
-        	NavBar navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
+        	NavBarPanel navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
     		// load state
         	navBar.load(m_navState);
     	}
@@ -393,7 +363,7 @@ public abstract class AbstractDiskoWpModule
     public void deactivate()
     {
     	// get navbar
-    	NavBar navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
+    	NavBarPanel navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
     	// save state
 		m_navState =  navBar.save();
 		// hide dialogs
@@ -415,7 +385,7 @@ public abstract class AbstractDiskoWpModule
      */
     public void setupNavBar(List<Enum<?>> buttons, boolean isSelected) {
     	// get navbar
-    	NavBar navBar = getApplication().getNavBar();
+    	NavBarPanel navBar = getApplication().getNavBar();
     	// show buttons
     	navBar.setVisibleButtons(buttons,true,false);
     	// setup navbar
@@ -452,6 +422,14 @@ public abstract class AbstractDiskoWpModule
         Utils.showWarning(msg);
     }
 
+	public void showMessage(String key)
+    {
+		// Internationalization
+		String msg = getBundleText(key); 
+		// forward
+        Utils.showMessage(msg);
+    }
+	
     protected void layoutComponent(JComponent comp)
     {
         String id = getName();
@@ -531,7 +509,6 @@ public abstract class AbstractDiskoWpModule
             }
         }, 0, TIMER_DELAY);
     }
-
 
     public void addTickEventListener(ITickEventListenerIf listener)
     {
@@ -617,6 +594,8 @@ public abstract class AbstractDiskoWpModule
 	}
     
 	public void afterOperationChange() {
+		// clear stack
+		changeStack.clear();
 		// resume map update
 		if(map!=null) {
 			try {

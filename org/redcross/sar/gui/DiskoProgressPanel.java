@@ -17,6 +17,8 @@ import javax.swing.SwingUtilities;
 
 import javax.swing.JButton;
 
+import org.redcross.sar.gui.dialog.DefaultDialog;
+
 /**
  * @author kennetgu
  *
@@ -126,8 +128,8 @@ public class DiskoProgressPanel extends JPanel {
 			
 		}
 		// update position
-		if(c instanceof DiskoDialog)
-			((DiskoDialog)c).snapTo();
+		if(c instanceof DefaultDialog)
+			((DefaultDialog)c).snapTo();
 		
 	}
 	

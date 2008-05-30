@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -33,7 +33,7 @@ import javax.swing.JToggleButton;
  *
  * @author thomasl
  */
-public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditMessageComponentIf, IMsoUpdateListenerIf, ActionListener
+public class SingleUnitListSelectionDialog extends DefaultDialog implements IEditMessageComponentIf, IMsoUpdateListenerIf, ActionListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -360,7 +360,7 @@ public class SingleUnitListSelectionDialog extends DiskoDialog implements IEditM
 					}
 				}				
 				
-				fireOnWorkFinish();
+				fireOnWorkFinish(this,message);
 			}
 		});
 

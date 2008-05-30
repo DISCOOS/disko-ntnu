@@ -31,11 +31,11 @@ import javax.swing.ListSelectionModel;
 import no.cmr.tools.Log;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.attribute.AttributesPanel;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -200,7 +200,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     
     protected void initSelectedPanel() {
     	// create
-    	m_selectedPanel = new AttributesPanel("<Velg oppdrag>");
+    	m_selectedPanel = new AttributesPanel("Velg oppdrag","Ingen oppdrag tilgjengelig",false,false);
     	m_selectedPanel.setMinimumSize(new Dimension(150,60));
     }
     
@@ -225,7 +225,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     protected void initEditAssignmentPanel()
     {
         
-    	m_editAssignmentPanel = new AttributesPanel("<Velg oppdragslinje>");
+    	m_editAssignmentPanel = new AttributesPanel("Velg oppdrag","Ingen oppdrag funnet",false,false);
     	m_editAssignmentPanel.setMinimumSize(new Dimension(150,60));
     	
     	// add attributes
@@ -554,7 +554,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     			m_selectedPanel.setCaptionWidth(100);
     			size = new Dimension(350,75);
     			m_selectedPanel.setAttributeSize("Remarks",size);
-    			m_selectedPanel.doLayout();
+    			m_selectedPanel.update();
     			m_selectedPanel.revalidate();
 	    	}
     		else {

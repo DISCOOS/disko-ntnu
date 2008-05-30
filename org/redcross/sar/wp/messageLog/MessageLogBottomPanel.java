@@ -221,7 +221,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	if(m_changeDTGDialog == null)
     	{
     		m_changeDTGDialog = new ChangeDTGDialog(m_wpMessageLog);
-    		m_changeDTGDialog.addDiskoWorkEventListener(this);
+    		m_changeDTGDialog.addDiskoWorkListener(this);
     		m_editComponents.add(m_changeDTGDialog);
     	}
     	return m_changeDTGDialog;
@@ -232,7 +232,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	if(m_fieldFromDialog == null)
     	{
     		m_fieldFromDialog = new UnitFieldSelectionDialog(m_wpMessageLog, true);
-    		m_fieldFromDialog.addDiskoWorkEventListener(this);
+    		m_fieldFromDialog.addDiskoWorkListener(this);
     		m_fieldFromDialog.getOKButton().addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -258,7 +258,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	if(m_listFromDialog == null)
     	{
     		m_listFromDialog = new SingleUnitListSelectionDialog(m_wpMessageLog, true);
-    		m_listFromDialog.addDiskoWorkEventListener(this);
+    		m_listFromDialog.addDiskoWorkListener(this);
     		m_editComponents.add(m_listFromDialog);
     	}
     	return m_listFromDialog;
@@ -269,7 +269,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		if(m_changeToDialog == null)
 		{
 			m_changeToDialog = new ChangeToDialog(m_wpMessageLog);
-			m_changeToDialog.addDiskoWorkEventListener(this);
+			m_changeToDialog.addDiskoWorkListener(this);
 			m_editComponents.add(m_changeToDialog);
 		}
 		return m_changeToDialog;
@@ -355,7 +355,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		if(m_changeTasksDialog == null)
 		{
 			m_changeTasksDialog = new ChangeTasksDialog(m_wpMessageLog);
-			m_changeTasksDialog.addDiskoWorkEventListener(this);
+			m_changeTasksDialog.addDiskoWorkListener(this);
 			m_editComponents.add(m_changeTasksDialog);
 		}
 		return m_changeTasksDialog;
@@ -692,7 +692,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		updateMessageGUI();
 	}
 
-	public void onWorkChange(DiskoWorkEvent e)
+	public void onWorkPerformed(DiskoWorkEvent e)
 	{
 		// not in use
 	}

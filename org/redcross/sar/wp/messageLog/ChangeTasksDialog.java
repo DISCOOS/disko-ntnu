@@ -2,9 +2,8 @@ package org.redcross.sar.wp.messageLog;
 
 import no.cmr.tools.Log;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.TaskDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -46,7 +45,7 @@ import javax.swing.JToggleButton;
  *
  * @author thomasl
  */
-public class ChangeTasksDialog extends DiskoDialog implements IEditMessageComponentIf, IMsoUpdateListenerIf
+public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComponentIf, IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 

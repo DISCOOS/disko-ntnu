@@ -2,7 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;

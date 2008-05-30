@@ -29,8 +29,13 @@ public class RouteFeature extends AbstractMsoFeature {
 
 	public boolean geometryIsChanged(IMsoObjectIf msoObj) {
 		IRouteIf route = (IRouteIf)msoObject;
-        return (route.getGeodata() != null && !route.getGeodata().equals(getGeodata())) ||
-        getAssignmentStatus(getOwningArea(route)) != asgStatus ;
+		boolean gChanged = (route.getGeodata() != null && !route.getGeodata().equals(getGeodata())) ||
+        			getAssignmentStatus(getOwningArea(route)) != asgStatus;
+		IAreaIf area = getOwningArea(route);
+		IAssignmentIf assignment = area.getOwningAssignment();
+		boolean cChanged = !caption.equals(MsoUtils.getAssignmentName(assignment,2));
+		isDirty = gChanged || cChanged;
+		return gChanged || cChanged;
 	}
 
 	private AssignmentStatus getAssignmentStatus(IAreaIf anArea)
@@ -64,13 +69,14 @@ public class RouteFeature extends AbstractMsoFeature {
 		if (srs == null || msoObject == null) return;
 		IRouteIf route = (IRouteIf)msoObject;
 		geodata = route.getGeodata();
-		if (geodata instanceof Route) {
+		if (geodata instanceof Route)
 			geometry = MapUtil.getEsriPolyline((Route)geodata, srs);
-		}
-		else {
+		else 
 			geometry = null;
-		}
         asgStatus = getAssignmentStatus(getOwningArea(route));
+		IAreaIf area = getOwningArea(route);
+		IAssignmentIf assignment = area.getOwningAssignment();
+		caption = MsoUtils.getAssignmentName(assignment,2);        
 		super.msoGeometryChanged();
 	}
 	

@@ -2,8 +2,8 @@ package org.redcross.sar.wp.messageLog;
 
 import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.mso.data.AbstractDerivedList;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -35,7 +35,7 @@ import javax.swing.JPanel;
  *
  * @author thomasl
  */
-public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessageComponentIf, KeyListener
+public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMessageComponentIf, KeyListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -171,7 +171,7 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 				{
 					if(unitExists())
 					{
-						fireOnWorkFinish();
+						fireOnWorkFinish(this,getUnitNumber());
 					}
 					else
 					{
@@ -421,7 +421,7 @@ public class UnitFieldSelectionDialog extends DiskoDialog implements IEditMessag
 		{
 			if(isValidUnitType() && isValidUnitNumber())
 			{
-				fireOnWorkFinish();
+				fireOnWorkFinish(this,getUnitNumber());
 			}
 			else
 			{

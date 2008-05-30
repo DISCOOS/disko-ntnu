@@ -30,11 +30,11 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -212,11 +212,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		vertSplit.setResizeWeight(1.0);
 		m_contentsPanel.add(vertSplit, BorderLayout.CENTER);
 		
-		m_unitTypeDialog = new UnitTypeDialog(this, m_overviewTabPane);
-		m_unitTypeDialog.addDiskoWorkEventListener(this);
-		
+		// create dialogs
+		m_unitTypeDialog = new UnitTypeDialog(this, m_overviewTabPane);		
 		m_importCalloutDialog = new ImportCalloutDialog(this);
-		m_importCalloutDialog.addDiskoWorkEventListener(this);
 	}
 
 	private void initTables()
@@ -396,10 +394,10 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			switch(ans) {
 			case JOptionPane.OK_OPTION:
 				// forward
-				return finish();
+				return commit();
 			case JOptionPane.NO_OPTION:
 				// forward
-				return cancel();						
+				return rollback();						
 			case JOptionPane.CANCEL_OPTION:
 				// do not deactivate
 				return false;
@@ -413,7 +411,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	/**
 	 * Cancel any creation process
 	 */
-	public boolean cancel()
+	public boolean rollback()
 	{
 		if(m_newPersonnel)
 		{
@@ -458,7 +456,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		return true;
 	}
 
-	public boolean finish()
+	public boolean commit()
 	{
 		
 		this.getMsoModel().suspendClientUpdate();
@@ -617,7 +615,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_overviewTabPane.setEnabled(false);
 			m_importCalloutButton.setSelected(true);
 			m_importCalloutDialog.setLocationRelativeTo(m_contentsPanel,
-					DiskoDialog.POS_CENTER, true, true);	
+					DefaultDialog.POS_CENTER, true, true);	
 			m_importCalloutDialog.setVisible(true);
 		}
 		else {
@@ -998,90 +996,86 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	{
 		m_newCallOut = newCallOut;
 	}
-
-	/**
-	 * Cancel unit creation
-	 */
-	public void onWorkCancel(DiskoWorkEvent e)
-	{
-		if(e.getSource() instanceof ImportCalloutDialog)
-		{
-			// Import call-out canceled
-			m_importCalloutDialog.setVisible(false);
-			m_newCallOut = false;
-			m_importCalloutButton.setSelected(false);
-			m_overviewTabPane.setEnabled(true);
-			this.getMsoModel().rollback();
-		}
-		else
-		{
-			// Unit type dialog canceled
-			m_newUnitButton.setSelected(false);
-			m_unitTypeDialog.setVisible(false);
-		}
-		
-	}
 	
-	/**
-	 *  Handles unit type selection when creating new unit
-	 */
-	public void onWorkFinish(DiskoWorkEvent e)
-	{
+	public void onWorkPerformed(DiskoWorkEvent e){
 		
-		if(e.getSource() instanceof ImportCalloutDialog)
-		{
-			m_importCalloutDialog.setVisible(false);
-			m_newCallOut = false;
-			m_importCalloutButton.setSelected(false);
-			m_overviewTabPane.setEnabled(true);
-			this.getMsoModel().commit();
-		}
-		else if(e.getSource() instanceof UnitTypeDialog)
-		{
-			// Continue unit creation
-			IUnitIf newUnit = null;
-			UnitType type = m_unitTypeDialog.getUnitType();
-			switch(type)
-			{
-			case BOAT:
-				newUnit = m_msoModel.getMsoManager().createBoat("");
-				break;
-			case VEHICLE:
-				newUnit = m_msoModel.getMsoManager().createVehicle("");
-				break;
-			case DOG:
-				newUnit = m_msoModel.getMsoManager().createDog("");
-				break;
-			case AIRCRAFT:
-				newUnit = m_msoModel.getMsoManager().createAircraft("");
-				break;
-			case TEAM:
-				newUnit = m_msoModel.getMsoManager().createTeam("");
-				break;
-			}
+		if(e.isFinish()) {
 			
-			if(newUnit != null)
+			if(m_newCallOut)
 			{
-				m_newUnit = true;
 				
-				newUnit.setStatus(UnitStatus.EMPTY);
+				m_newCallOut = false;
 				
-				m_unitDetailsLeftPanel.setUnit(newUnit);
-				m_unitDetailsLeftPanel.updateFieldContents();
-				CardLayout layout = (CardLayout)m_leftPanel.getLayout();
-				layout.show(m_leftPanel, UNIT_VIEW_ID);
+				m_importCalloutButton.setSelected(false);				
+				m_overviewTabPane.setEnabled(true);
 				
-				m_bottomMessageLabel.setText(this.getBundleText("AddPersonnel.text"));
-				layout = (CardLayout)m_bottomPanel.getLayout();
-				layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
+				commit();
+				
 			}
-			
-			m_unitTypeDialog.setVisible(false);
+			else if(m_newUnit)
+			{
+				// Continue unit creation
+				IUnitIf newUnit = null;
+				UnitType type = m_unitTypeDialog.getUnitType();
+				switch(type)
+				{
+				case BOAT:
+					newUnit = m_msoModel.getMsoManager().createBoat("");
+					break;
+				case VEHICLE:
+					newUnit = m_msoModel.getMsoManager().createVehicle("");
+					break;
+				case DOG:
+					newUnit = m_msoModel.getMsoManager().createDog("");
+					break;
+				case AIRCRAFT:
+					newUnit = m_msoModel.getMsoManager().createAircraft("");
+					break;
+				case TEAM:
+					newUnit = m_msoModel.getMsoManager().createTeam("");
+					break;
+				}
+				
+				if(newUnit != null)
+				{
+					m_newUnit = true;
+					
+					newUnit.setStatus(UnitStatus.EMPTY);
+					
+					m_unitDetailsLeftPanel.setUnit(newUnit);
+					m_unitDetailsLeftPanel.updateFieldContents();
+					CardLayout layout = (CardLayout)m_leftPanel.getLayout();
+					layout.show(m_leftPanel, UNIT_VIEW_ID);
+					
+					m_bottomMessageLabel.setText(this.getBundleText("AddPersonnel.text"));
+					layout = (CardLayout)m_bottomPanel.getLayout();
+					layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
+				}
+				
+				m_unitTypeDialog.setVisible(false);
+			}			
 		}
-	}
+		else if(e.isCancel()) {
+			
+			if(m_newCallOut)
+			{
+				// Import call-out canceled
+				m_importCalloutDialog.setVisible(false);
+				m_newCallOut = false;
+				m_importCalloutButton.setSelected(false);
+				m_overviewTabPane.setEnabled(true);
+				this.getMsoModel().rollback();
+			}
+			else if(m_newUnit)
+			{
+				// Unit type dialog canceled
+				m_newUnit = false;
+				m_newUnitButton.setSelected(false);
+				m_unitTypeDialog.setVisible(false);
+			}		
+			
+		}
 
-	public void onWorkChange(DiskoWorkEvent e){
-		// Not in use!
 	}
 
 	public void afterOperationChange()

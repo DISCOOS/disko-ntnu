@@ -12,14 +12,14 @@ import javax.swing.JPanel;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.DiskoGlassPane;
-import org.redcross.sar.gui.LoginDialog;
-import org.redcross.sar.gui.MainMenuPanel;
-import org.redcross.sar.gui.MainPanel;
-import org.redcross.sar.gui.NumPadDialog;
-import org.redcross.sar.gui.OperationDialog;
-import org.redcross.sar.gui.SubMenuPanel;
-import org.redcross.sar.gui.TaskDialog;
-import org.redcross.sar.gui.map.MapOptionDialog;
+import org.redcross.sar.gui.dialog.LoginDialog;
+import org.redcross.sar.gui.dialog.MapOptionDialog;
+import org.redcross.sar.gui.dialog.NumPadDialog;
+import org.redcross.sar.gui.dialog.OperationDialog;
+import org.redcross.sar.gui.dialog.TaskDialog;
+import org.redcross.sar.gui.panel.MainMenuPanel;
+import org.redcross.sar.gui.panel.MainPanel;
+import org.redcross.sar.gui.panel.SubMenuPanel;
 
 public class UIFactory {
 	
@@ -89,7 +89,7 @@ public class UIFactory {
 	
 	public TaskDialog getTaskDialog(){
 		if(taskDialog == null){
-			taskDialog = new TaskDialog(app);
+			taskDialog = new TaskDialog(app.getFrame());
 			register(taskDialog);
 		}
 		return taskDialog;

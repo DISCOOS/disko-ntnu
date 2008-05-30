@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.logistics;
 
 import org.redcross.sar.gui.DiskoRoundBorder;
-import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 
 import javax.swing.Icon;

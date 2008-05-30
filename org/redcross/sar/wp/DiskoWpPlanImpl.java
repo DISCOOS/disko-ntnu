@@ -92,12 +92,12 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
         return m_grovplanButton;
     }
 
-	public boolean cancel() {
+	public boolean rollback() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public boolean finish() {
+	public boolean commit() {
 		// TODO Auto-generated method stub
 		return false;
 	}

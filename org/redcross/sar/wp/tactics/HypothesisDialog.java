@@ -1,41 +1,47 @@
 package org.redcross.sar.wp.tactics;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.attribute.ComboAttribute;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.models.HypothesisListModel;
-import org.redcross.sar.gui.renderers.HypothesisListCellRenderer;
-import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
+import org.redcross.sar.gui.model.HypothesisListModel;
+import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.renderer.HypothesisListCellRenderer;
+import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -47,39 +53,40 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-
-public class HypothesisDialog extends DiskoDialog {
+public class HypothesisDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
 	private IMsoModelIf msoModel = null;
-	private DefaultDiskoPanel contentPanel = null;
+	private DefaultPanel contentPanel = null;
 	private JPanel hypothesisPanel = null;
 	private JPanel buttonPanel = null;
 	private JButton createButton = null;
+	private JButton deleteButton = null;
 	private JScrollPane listScrollPane = null;
 	private JList hypothesisList = null;
 	private JPanel centerPanel = null;
-	private JScrollPane textAreaScrollPane = null;
+	private JLabel selectedLabel = null;
+	private BasePanel descriptionPanel = null;
 	private JTextArea descriptionTextArea = null;
-	private JPanel propertiesPanel;
-	private JLabel statusLabel;
-	private JLabel priorityLabel;
-	private JComboBox priorityComboBox;
-	private JComboBox statusComboBox;
+	private AttributesPanel attribsPanel;
+	private ComboAttribute statusCombo;
+	private ComboAttribute priorityCombo;
+	
+	private IDiskoWpModule wp = null;
+	
 	private String[] labels = null;
-
-	private ISearchAreaIf currentSearchArea = null;
-	private IHypothesisIf selectedHypothesis = null;
-
+	
 	public HypothesisDialog(IDiskoWpModule wp) {
 		// forward
-		super(wp.getApplication().getFrame(),wp.getMap(),getMyInterest(),getMyLayers());
+		super(wp.getApplication().getFrame());
+		// prepare
+		this.wp = wp;
 		// setup objects
 		this.msoModel = wp.getMsoModel();
 		// initialize ui
 		initialize();
-		// get selected mso feature
-		setSelectedMsoFeature(wp.getMap());
+		// initialise
+		setup();
 	}
 
 	/**
@@ -112,6 +119,403 @@ public class HypothesisDialog extends DiskoDialog {
 	    return myLayers;
 	}
 
+	
+	/**
+	 * This method initializes contentPanel
+	 *
+	 * @return {@link BasePanel}
+	 */
+	private DefaultPanel getContentPanel() {
+		if (contentPanel == null) {
+			try {
+				contentPanel = new DefaultPanel() {
+					
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected boolean beforeFinish() {
+						// forward
+						setDescription(getDescriptionTextArea().getText(),false,true);
+						setHypothesis(getSelectedHypothesis(), false, true);
+						setPriority(getPriority(), false, true);
+						setStatus((HypothesisStatus)getStatusCombo().getValue(), false, true);
+						getDescriptionTextArea().requestFocus();
+						// success
+						return true; 
+					}
+					
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						// initialize
+						ISearchAreaIf area = null;
+						IHypothesisIf h = null;
+						// get search area
+						if (msoObj instanceof ISearchAreaIf) {
+							// save reference
+							area = (ISearchAreaIf)msoObj;
+							// get hypothesis
+							h = (area!=null ? area.getSearchAreaHypothesis() : null);
+						}
+												
+						// update
+						super.setMsoObject(area);
+						setHypothesis(h, true, false);
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);
+												
+					}	
+					
+					@Override
+					public void update() {
+						super.update();
+						setup();
+					}
+					
+					@Override
+					public void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
+						if(msoObj instanceof IHypothesisIf) {
+							addHypothesis((IHypothesisIf)msoObj);
+						}
+					}
+
+					@Override
+					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+						// is same as selected?
+						if(msoObj == msoObject) {
+							setMsoObject(msoObj);
+						}
+						else if(msoObj instanceof IHypothesisIf) {
+							// refresh list
+							setHypothesis((IHypothesisIf)msoObj, true, false);
+						}
+					}
+
+					@Override
+					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+						// is same as selected?
+						if(msoObj == msoObject) {
+							// reset selection
+							setMsoObject(null);
+						}
+						else if(msoObj instanceof IHypothesisIf) {
+							removeHypothesis((IHypothesisIf)msoObj);
+						}
+					}							
+				};
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
+				contentPanel.setBodyComponent(getHypothesisPanel());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return contentPanel;
+	}
+
+	/**
+	 * This method initializes hypothesisPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getHypothesisPanel() {
+		if (hypothesisPanel == null) {
+			try {
+				hypothesisPanel = new JPanel();
+				hypothesisPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+				BorderLayout bl = new BorderLayout();
+				bl.setHgap(5);
+				hypothesisPanel.setLayout(bl);
+				hypothesisPanel.add(getListScrollPane(), BorderLayout.WEST);
+				hypothesisPanel.add(getCenterPanel(), BorderLayout.CENTER);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return hypothesisPanel;
+	}
+
+	/**
+	 * This method initializes buttonPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getButtonPanel() {
+		if (buttonPanel == null) {
+			try {
+				buttonPanel = new JPanel();
+				buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.Y_AXIS));
+				buttonPanel.add(getCreateButton());
+				buttonPanel.add(getDeleteButton());
+				buttonPanel.add(Box.createVerticalGlue());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return buttonPanel;
+	}
+
+	/**
+	 * This method initializes createButton
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getCreateButton() {
+		if (createButton == null) {
+			try {
+				createButton = DiskoButtonFactory.createButton("GENERAL.STAR", ButtonSize.NORMAL);
+				createButton.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						create();
+					}
+					
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return createButton;
+	}
+
+	/**
+	 * This method initializes deleteButton
+	 *
+	 * @return javax.swing.JButton
+	 */
+	private JButton getDeleteButton() {
+		if (deleteButton == null) {
+			try {
+				deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE", ButtonSize.NORMAL);
+				deleteButton.addActionListener(new ActionListener(){
+
+					public void actionPerformed(ActionEvent e) {
+						delete();
+					}
+					
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return deleteButton;
+	}
+	
+	/**
+	 * This method initializes listScrollPane
+	 *
+	 * @return javax.swing.JScrollPane
+	 */
+	private JScrollPane getListScrollPane() {
+		if (listScrollPane == null) {
+			try {
+				listScrollPane = new JScrollPane();
+				listScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				listScrollPane.setPreferredSize(new Dimension(150, 150));
+				listScrollPane.setViewportView(getHypothesisList());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return listScrollPane;
+	}
+
+	/**
+	 * This method initializes hypothesisList
+	 *
+	 * @return javax.swing.JList
+	 */
+	private JList getHypothesisList() {
+		if (hypothesisList == null) {
+			try {
+				HypothesisListModel listModel = new HypothesisListModel(msoModel);
+				hypothesisList = new JList(listModel);
+				hypothesisList.setCellRenderer(new HypothesisListCellRenderer());
+				hypothesisList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+				hypothesisList.addListSelectionListener(new ListSelectionListener() {
+					public void valueChanged(ListSelectionEvent e) {
+						// consume?
+						if (e.getValueIsAdjusting() || !isChangeable()) return;
+						// forward
+						setHypothesis(getSelectedHypothesis(), true, false);
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return hypothesisList;
+	}
+
+	/**
+	 * This method initializes centerPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getCenterPanel() {
+		if (centerPanel == null) {
+			try {
+				centerPanel = new JPanel();
+				BorderLayout bl = new BorderLayout();
+				bl.setHgap(5);
+				bl.setVgap(5);
+				centerPanel.setLayout(bl);
+				centerPanel.add(getSelectedLabel(), BorderLayout.NORTH);
+				centerPanel.add(getButtonPanel(), BorderLayout.WEST);
+				centerPanel.add(getDescriptionPanel(), BorderLayout.CENTER);
+				centerPanel.add(getAttribsPanel(), BorderLayout.EAST);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return centerPanel;
+	}
+
+	/**
+	 * This method initializes activeLabel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private JLabel getSelectedLabel() {
+		if (selectedLabel == null) {
+			try {
+				selectedLabel = new JLabel("Ingen hypotese er valg");
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return selectedLabel;
+	}
+	
+	/**
+	 * This method initializes textAreaScrollPane
+	 *
+	 * @return javax.swing.JScrollPane
+	 */
+	private BasePanel getDescriptionPanel() {
+		if (descriptionPanel == null) {
+			try {
+				descriptionPanel = new BasePanel("Beskrivelse");
+				descriptionPanel.setBodyComponent(getDescriptionTextArea());
+				descriptionPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED, 
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return descriptionPanel;
+	}
+
+	/**
+	 * This method initializes descriptionTextArea
+	 *
+	 * @return javax.swing.JTextArea
+	 */
+	private JTextArea getDescriptionTextArea() {
+		if (descriptionTextArea == null) {
+			try {
+				descriptionTextArea = new JTextArea();
+				descriptionTextArea.setLineWrap(true);
+				descriptionTextArea.setEnabled(false);
+				// add updata manager
+				descriptionTextArea.getDocument().addDocumentListener(new DocumentListener() {
+
+					public void changedUpdate(DocumentEvent e) { change(); }
+					public void insertUpdate(DocumentEvent e) { change(); }
+					public void removeUpdate(DocumentEvent e) { change(); }
+					
+					private void change() {
+						// consume?
+						if(!isChangeable()) return;
+						// update model directly
+						setDescription(getDescriptionTextArea().getText(), false, true) ;
+					}
+					
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return descriptionTextArea;
+	}
+
+	/**
+	 * This method initializes AttribsPanel
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private AttributesPanel getAttribsPanel() {
+		if (attribsPanel == null) {
+			try {
+				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
+				attribsPanel.setPreferredBodySize(new Dimension(200, 150));
+				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				attribsPanel.addAttribute(getPriorityCombo());
+				attribsPanel.addAttribute(getStatusCombo());
+				attribsPanel.addDiskoWorkListener(getContentPanel());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return attribsPanel;
+	}
+
+	/**
+	 * This method initializes priorityCombo
+	 *
+	 * @return {@link ComboAttribute}
+	 */
+	private ComboAttribute getPriorityCombo() {
+		if (priorityCombo == null) {
+			try {
+				priorityCombo = new ComboAttribute("priority", "Prioritet", 50, null, false);
+				DefaultComboBoxModel model = new DefaultComboBoxModel();
+				for (int i = 1; i < 6; i++) {
+					model.addElement(new Integer(i));
+				}
+				priorityCombo.fill(model);
+				JComboBox cb = (JComboBox)priorityCombo.getComponent();
+				cb.setSelectedIndex(0);
+
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return priorityCombo;
+	}
+
+	/**
+	 * This method initializes statusComboBox
+	 *
+	 * @return javax.swing.JComboBox
+	 */
+	private ComboAttribute getStatusCombo() {
+		if (statusCombo == null) {
+			try {
+				statusCombo = new ComboAttribute("status", "Status", 50, null, false);
+				DefaultComboBoxModel model = new DefaultComboBoxModel();
+				HypothesisStatus[] values = HypothesisStatus.values();
+				for (int i = 0; i < values.length; i++) {
+					model.addElement(values[i]);
+				}
+				statusCombo.fill(model);
+				JComboBox cb = (JComboBox)statusCombo.getComponent();
+				cb.setRenderer(new SimpleListCellRenderer());
+				cb.setSelectedIndex(0);
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return statusCombo;
+	}	
+	
 	private void loadHypotheses() {
 		Collection<IHypothesisIf> c = msoModel.getMsoManager().
 			getCmdPost().getHypothesisListItems();
@@ -165,566 +569,184 @@ public class HypothesisDialog extends DiskoDialog {
 	}
 
 	public IHypothesisIf getSelectedHypothesis() {
-		return selectedHypothesis;
+		return getHypothesis((String)getHypothesisList().getSelectedValue());
 	}
 
-	private void setHypotesis(IHypothesisIf hypothesis, boolean gui, boolean mso) {
-		setIsWorking();
-		boolean enable = false;
-		if(hypothesis!=null) {
-			// update gui?
-			if (gui) {
-				// get hypothesis name
-				String name = DiskoEnumFactory.getText(IMsoManagerIf
-						.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+hypothesis.getNumber();
-				// update all
-				getHypothesisList().setSelectedValue(name, true);
-				getDescriptionTextArea().setText(hypothesis.getDescription());
-				getPriorityComboBox().setSelectedIndex(hypothesis.getPriorityIndex());
-				getStatusComboBox().setSelectedItem(hypothesis.getStatus());
-			}
-			// update mso?
-			if(mso) {
-				// get search area
-				if(currentSearchArea!=null) {
-					// any change?
-					if (!hypothesis.equals(currentSearchArea.getSearchAreaHypothesis())) {
-						currentSearchArea.setSearchAreaHypothesis(hypothesis);
-						fireOnWorkChange(currentSearchArea,hypothesis);
-					}
+	private void setHypothesis(IHypothesisIf h, boolean gui, boolean mso) {
+		// update gui?
+		if (gui) {
+			// get hypothesis name
+			String name = (h!=null ? DiskoEnumFactory.getText(IMsoManagerIf
+					.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null);
+			getSelectedLabel().setText(h!=null ? "<html><b>" + name + "</b> er valg</html>" : 
+				getHypothesisList().getModel().getSize() == 0 ? "Du må opprette en hypotese" :"Velg en hypotese");
+			// update all
+			getHypothesisList().setSelectedValue(name, true);
+			setDescription(h!=null ? h.getDescription() : null,true,mso);
+			setPriority(h!=null ? h.getPriorityIndex() + 1 : 0,true,mso);
+			setStatus(h!=null ? h.getStatus() : HypothesisStatus.ACTIVE ,true,mso);
+			// request focus
+			getDescriptionTextArea().requestFocus();
+			// force an update
+			setDirty(true);
+			
+		}
+		// update mso?
+		if(mso) {
+			ISearchAreaIf area = (ISearchAreaIf)getMsoObject(); 
+			// get search area
+			if(h!=null && area!=null) {
+				// any change?
+				if (!h.equals(area.getSearchAreaHypothesis())) {
+					area.setSearchAreaHypothesis(h);
 				}
 			}
-			enable = true;
 		}
-		// update selection
-		selectedHypothesis = hypothesis;
 		// update enabled state
-		getDescriptionTextArea().setEnabled(enable);						
-		// finished
-		setIsNotWorking();
+		getDescriptionPanel().setEnabled(h!=null);
+		getDescriptionTextArea().setEnabled(h!=null);
+		getAttribsPanel().setEnabled(h!=null);
 	}
 	
 	private void setDescription(String text, boolean gui, boolean mso) {
-		setIsWorking();
+		IHypothesisIf h = getSelectedHypothesis();
 		// has hypothesis?
-		if(selectedHypothesis!=null) {
+		if(h!=null) {
 			// update gui?
 			if (gui) {
 				getDescriptionTextArea().setText(text);
 			}
 			// update mso?
 			if(mso) { 
-				if (!selectedHypothesis.getDescription().equals(text)) {
-					selectedHypothesis.setDescription(text);
-					fireOnWorkChange(selectedHypothesis,text);
+				if (!h.getDescription().equals(text)) {
+					h.setDescription(text);
 				}
 			}
 		}
-		setIsNotWorking();
+	}
+	
+	private int getPriority()  {
+		return ((JComboBox)getPriorityCombo().getComponent()).getSelectedIndex()+1;
 	}
 	
 	private void setPriority(int priority, boolean gui, boolean mso) {
-		setIsWorking();
+		IHypothesisIf h = getSelectedHypothesis();
 		// has hypothesis?
-		if(selectedHypothesis!=null) {
+		if(h!=null) {
 			// update gui?
 			if (gui) {
-				getPriorityComboBox().setSelectedIndex(priority-1);
+				((JComboBox)getPriorityCombo().getComponent()).setSelectedIndex(priority-1);
 			}
 			// update mso?
 			if(mso) { 
-				if (selectedHypothesis.getPriorityIndex() != priority) {
-					selectedHypothesis.setPriorityIndex(priority);
-					fireOnWorkChange(selectedHypothesis,priority);
+				if (h.getPriorityIndex() != priority) {
+					h.setPriorityIndex(priority);
 				}
 			}
 		}
-		setIsNotWorking();
+	}
+	
+	private HypothesisStatus getStatus()  {
+		return (HypothesisStatus)getStatusCombo().getValue();
 	}
 	
 	private void setStatus(HypothesisStatus status, boolean gui, boolean mso) {
-		setIsWorking();
+		IHypothesisIf h = getSelectedHypothesis();
 		// has hypothesis?
-		if(selectedHypothesis!=null) {
+		if(h!=null) {
 			// update gui?
 			if (gui) {
-				getStatusComboBox().setSelectedItem(status);
+				getStatusCombo().setValue(status);
 			}
 			// update mso?
 			if(mso) { 
-				if (selectedHypothesis.getStatus() != status) {
-					selectedHypothesis.setStatus(status);
-					fireOnWorkChange(selectedHypothesis,status);
+				if (h.getStatus() != status) {
+					h.setStatus(status);
 				}
 			}
 		}
-		setIsNotWorking();
 	}
-	
-	/**
-	 * This method initializes contentPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private DefaultDiskoPanel getContentPanel() {
-		if (contentPanel == null) {
-			try {
-				contentPanel = new DefaultDiskoPanel();
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.insertButton("finish", getCreateButton(), "create");
-				contentPanel.setBodyComponent(getHypothesisPanel());
-				contentPanel.addActionListener(new ActionListener(){
-
-					public void actionPerformed(ActionEvent e) {
-						String cmd = e.getActionCommand();
-						if("create".equalsIgnoreCase(cmd))
-							create();
-						else if("finish".equalsIgnoreCase(cmd))
-							finish();
-						else if("cancel".equalsIgnoreCase(cmd))
-							cancel();
-					}
-					
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return contentPanel;
-	}
-
-	/**
-	 * This method initializes hypothesisPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getHypothesisPanel() {
-		if (hypothesisPanel == null) {
-			try {
-				hypothesisPanel = new JPanel();
-				hypothesisPanel.setLayout(new BorderLayout());
-				hypothesisPanel.add(getListScrollPane(), BorderLayout.WEST);
-				hypothesisPanel.add(getCenterPanel(), BorderLayout.CENTER);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return hypothesisPanel;
-	}
-
-	/**
-	 * This method initializes buttonPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			try {
-				FlowLayout flowLayout = new FlowLayout();
-				flowLayout.setAlignment(FlowLayout.RIGHT);
-				buttonPanel = new JPanel();
-				buttonPanel.setLayout(flowLayout);
-				buttonPanel.add(getCreateButton(), null);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return buttonPanel;
-	}
-
-	/**
-	 * This method initializes createButton
-	 *
-	 * @return javax.swing.JButton
-	 */
-	private JButton getCreateButton() {
-		if (createButton == null) {
-			try {
-				createButton = DiskoButtonFactory.createButton("GENERAL.STAR", ButtonSize.NORMAL);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return createButton;
-	}
-
-	/**
-	 * This method initializes listScrollPane
-	 *
-	 * @return javax.swing.JScrollPane
-	 */
-	private JScrollPane getListScrollPane() {
-		if (listScrollPane == null) {
-			try {
-				listScrollPane = new JScrollPane();
-				listScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-				listScrollPane.setPreferredSize(new Dimension(150, 150));
-				listScrollPane.setViewportView(getHypothesisList());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return listScrollPane;
-	}
-
-	/**
-	 * This method initializes hypothesisList
-	 *
-	 * @return javax.swing.JList
-	 */
-	private JList getHypothesisList() {
-		if (hypothesisList == null) {
-			try {
-				HypothesisListModel listModel = new HypothesisListModel(msoModel);
-				hypothesisList = new JList(listModel);
-				hypothesisList.setCellRenderer(new HypothesisListCellRenderer());
-				hypothesisList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-				hypothesisList.addListSelectionListener(new ListSelectionListener() {
-					public void valueChanged(ListSelectionEvent e) {
-						// consume?
-						if (e.getValueIsAdjusting() || isWorking()) return;
-						// is dirty
-						getContentPanel().setDirty(true);
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return hypothesisList;
-	}
-
-	/**
-	 * This method initializes centerPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getCenterPanel() {
-		if (centerPanel == null) {
-			try {
-				centerPanel = new JPanel();
-				centerPanel.setLayout(new BorderLayout());
-				centerPanel.add(getButtonPanel(), BorderLayout.WEST);
-				centerPanel.add(getTextAreaScrollPane(), BorderLayout.CENTER);
-				centerPanel.add(getPropertiesPanel(), BorderLayout.EAST);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return centerPanel;
-	}
-
-	/**
-	 * This method initializes textAreaScrollPane
-	 *
-	 * @return javax.swing.JScrollPane
-	 */
-	private JScrollPane getTextAreaScrollPane() {
-		if (textAreaScrollPane == null) {
-			try {
-				textAreaScrollPane = new JScrollPane();
-				textAreaScrollPane.setViewportView(getDescriptionTextArea());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return textAreaScrollPane;
-	}
-
-	/**
-	 * This method initializes descriptionTextArea
-	 *
-	 * @return javax.swing.JTextArea
-	 */
-	private JTextArea getDescriptionTextArea() {
-		if (descriptionTextArea == null) {
-			try {
-				descriptionTextArea = new JTextArea();
-				descriptionTextArea.setLineWrap(true);
-				descriptionTextArea.setEnabled(false);
-				// add updata manager
-				descriptionTextArea.addFocusListener(new FocusAdapter() {
-					
-					@Override
-					public void focusLost(FocusEvent e) {						
-						// forward
-						super.focusLost(e);						
-						// forward?
-						if(e.getOppositeComponent() != getContentPanel().getButton("cancel")) {
-							// update mso model
-							Runnable r = new Runnable() {
-	
-								public void run() {
-									finish();
-								}
-								
-							};
-							SwingUtilities.invokeLater(r);
-						}
-						
-					}
-					
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return descriptionTextArea;
-	}
-
-	/**
-	 * This method initializes propertiesPanel
-	 *
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getPropertiesPanel() {
-		if (propertiesPanel == null) {
-			try {
-				GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
-				gridBagConstraints11.fill = GridBagConstraints.HORIZONTAL;
-				gridBagConstraints11.gridy = 1;
-				gridBagConstraints11.weightx = 1.0;
-				gridBagConstraints11.anchor = GridBagConstraints.WEST;
-				gridBagConstraints11.insets = new Insets(10, 0, 10, 0);
-				gridBagConstraints11.gridx = 1;
-				GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-				gridBagConstraints1.fill = GridBagConstraints.HORIZONTAL;
-				gridBagConstraints1.gridy = 0;
-				gridBagConstraints1.weightx = 1.0;
-				gridBagConstraints1.anchor = GridBagConstraints.WEST;
-				gridBagConstraints1.insets = new Insets(10, 0, 0, 0);
-				gridBagConstraints1.gridx = 1;
-				GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-				gridBagConstraints2.gridx = 0;
-				gridBagConstraints2.insets = new Insets(10, 5, 0, 5);
-				gridBagConstraints2.anchor = GridBagConstraints.WEST;
-				gridBagConstraints2.gridy = 0;
-				GridBagConstraints gridBagConstraints = new GridBagConstraints();
-				gridBagConstraints.gridx = 0;
-				gridBagConstraints.anchor = GridBagConstraints.WEST;
-				gridBagConstraints.insets = new Insets(10, 5, 10, 0);
-				gridBagConstraints.gridy = 1;
-				statusLabel = new JLabel();
-				statusLabel.setText("Status:");
-				priorityLabel = new JLabel();
-				priorityLabel.setText("Prioritet:");
-				propertiesPanel = new JPanel();
-				propertiesPanel.setLayout(new GridBagLayout());
-				propertiesPanel.setPreferredSize(new Dimension(175, 150));
-				propertiesPanel.add(priorityLabel, gridBagConstraints2);
-				propertiesPanel.add(statusLabel, gridBagConstraints);
-				propertiesPanel.add(getPriorityComboBox(), gridBagConstraints1);
-				propertiesPanel.add(getStatusComboBox(), gridBagConstraints11);
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return propertiesPanel;
-	}
-
-	/**
-	 * This method initializes priorityComboBox
-	 *
-	 * @return javax.swing.JComboBox
-	 */
-	private JComboBox getPriorityComboBox() {
-		if (priorityComboBox == null) {
-			try {
-				priorityComboBox = new JComboBox();
-				for (int i = 1; i < 6; i++) {
-					priorityComboBox.addItem(new Integer(i));
-				}
-				priorityComboBox.setSelectedIndex(0);
-				priorityComboBox.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// consume?
-						if (isWorking()) return;
-						// set flag
-						getContentPanel().setDirty(true);
-					}
-				});
-
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return priorityComboBox;
-	}
-
-	/**
-	 * This method initializes statusComboBox
-	 *
-	 * @return javax.swing.JComboBox
-	 */
-	private JComboBox getStatusComboBox() {
-		if (statusComboBox == null) {
-			try {
-				statusComboBox = new JComboBox();
-				statusComboBox.setRenderer(new SimpleListCellRenderer());
-				HypothesisStatus[] values = HypothesisStatus.values();
-				for (int i = 0; i < values.length; i++) {
-					statusComboBox.addItem(values[i]);
-				}
-				statusComboBox.setSelectedIndex(0);
-				statusComboBox.addActionListener(new java.awt.event.ActionListener() {
-					public void actionPerformed(java.awt.event.ActionEvent e) {
-						// consume?
-						if (isWorking()) return;
-						// set flag
-						getContentPanel().setDirty(true);
-					}
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return statusComboBox;
-	}
-
-	@Override
-	public int setMsoObject(IMsoObjectIf msoObj) {
-		int state = 0;		
-		if(isWorking()) return state;
-		// consume changes
-		setIsWorking();
-		// get search area
-		if (msoObj instanceof ISearchAreaIf) {
-			// save reference
-			currentSearchArea = (ISearchAreaIf)msoObj;
-			// set state
-			state = 1;
-			// get hypothesis
-			IHypothesisIf h = (currentSearchArea!=null ? currentSearchArea.getSearchAreaHypothesis() : null);
-			// select value
-			if(h!=null)
-				getHypothesisList().setSelectedValue(getHypothesisName(h),true);			
-			else 
-				getHypothesisList().clearSelection();
-		}
-		else {
-			state = -1;
-			reset();
-		}
-		
-		// reset state 
-		setIsNotWorking();
-		getContentPanel().setDirty(false);
-		
-		// forward
-		setup();
-		
-		// success
-		return state;
-	}	
 	
 	private void setup() {
-		// update icon
-		if(currentSearchArea!=null) {
+		
+		// consume?
+		if(!isChangeable()) return;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// try to get mso object?
+		if(getMsoObject()==null)
+			getContentPanel().setSelectedMsoFeature(wp.getMap());
+		
+		// get current area
+		ISearchAreaIf area = (ISearchAreaIf)getMsoObject();
+		
+		// get current hypothesis
+		IHypothesisIf h  = getSelectedHypothesis();
+		
+		// update elements
+		if(area!=null) {
+			// update texts
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON", "48x48"));			
-			getContentPanel().setCaptionText("<html>Oppgi hypotese for <b>" + 
-					MsoUtils.getSearchAreaName(currentSearchArea).toLowerCase() + "</b></html>");
+			getContentPanel().setCaptionText("<html>Velg hypotese for <b>" + 
+					MsoUtils.getSearchAreaName(area).toLowerCase() + "</b></html>");			
+			// enable controls
 			getHypothesisList().setEnabled(true);
 			getCreateButton().setEnabled(true);
-			getTextAreaScrollPane().setEnabled(true);
-			getDescriptionTextArea().setEnabled(true);
-			getPriorityComboBox().setEnabled(true);
-			getStatusComboBox().setEnabled(true);			
+			getDeleteButton().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-			getContentPanel().setCaptionText("Du må først velge et søkeområde");			
+			getContentPanel().setCaptionText("Du må først velge et søkeområde");
+			getSelectedLabel().setText(null);
 			getHypothesisList().setEnabled(false);
 			getCreateButton().setEnabled(false);
-			getTextAreaScrollPane().setEnabled(false);
+			getDeleteButton().setEnabled(false);
+			getDescriptionPanel().setEnabled(false);
 			getDescriptionTextArea().setEnabled(false);
-			getPriorityComboBox().setEnabled(false);
-			getStatusComboBox().setEnabled(false);			
-		}		
+			getAttribsPanel().setEnabled(false);
+		}
+		// these are only enabled if an hypothesis is selected
+		getDescriptionPanel().setEnabled(h!=null);
+		getDescriptionTextArea().setEnabled(h!=null);
+		getAttribsPanel().setEnabled(h!=null);
+		getAttribsPanel().update();
+		
+		// resume changes
+		setChangeable(true);
+		
 	}	
 	
-	@Override
-	public void msoObjectCreated(IMsoObjectIf msoObject, int mask) {
-		if(msoObject instanceof IHypothesisIf) {
-			addHypothesis((IHypothesisIf)msoObject);
-		}
-	}
-
-	@Override
-	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			setMsoObject(msoObject);
-		}
-		else if(msoObject instanceof IHypothesisIf) {
-			setHypotesis((IHypothesisIf)msoObject,true,false);
-		}
-	}
-
-	@Override
-	public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			// reset selection
-			currentMsoFeature =null;
-			currentMsoObj =null;
-			getHypothesisList().setSelectedIndex(0);
-		}
-		else if(msoObject instanceof IHypothesisIf) {
-			removeHypothesis((IHypothesisIf)msoObject);
-		}
-	}		
-	
-	public boolean create() {
-		if(isWorking()) return false;
+	private boolean create() {
 		// create a new Hypothesis
 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		setHypotesis(cmdPost.getHypothesisList().createHypothesis(), true, false);
-		// finished
+		IHypothesisIf h = cmdPost.getHypothesisList().createHypothesis();
+		if(h!=null) {
+			// forward
+			setHypothesis(h, true, false);
+			// finished
+			return true;
+		}
+		return false;
+	}
+			
+	private boolean delete() {
+		// get current hypothesis
+		IHypothesisIf h = getSelectedHypothesis();		
+		// prompt?
+		if(h!=null) {
+			int ans = Utils.showConfirm("Bekreft", "Dette vil slette " 
+					+ getHypothesisList().getSelectedValue() 
+					+ ". Vil du fortsette?", JOptionPane.YES_NO_OPTION);
+			if(ans == JOptionPane.YES_OPTION) {
+				if(MsoUtils.delete(h, 0)) {
+					return true;
+				}
+			}
+		}
+		// failed
 		return true;
 	}
 	
-	public boolean finish() {
-		// consume?
-		if (isWorking()) return false;
-		// forward
-		setDescription(getDescriptionTextArea().getText(),false,true);
-		setHypotesis(getHypothesis((String)getHypothesisList().getSelectedValue()), false, true);
-		setPriority(priorityComboBox.getSelectedIndex()+1, false, true);
-		setStatus((HypothesisStatus)statusComboBox.getSelectedItem(), false, true);
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide me
-		setVisible(false);
-		// success
-		return true;
-	}
-	
-	public boolean cancel() {
-		// consume?
-		if (isWorking()) return false;
-		// consume change
-		setIsWorking();
-		// reset current changes
-		setMsoObject(currentMsoObj);
-		// hide me
-		setVisible(false);
-		// resume changes
-		setIsNotWorking();
-		// finished
-		return true;
-	}
-	
-	private void reset() {
-		// consume?
-		if (isWorking()) return;
-		// consume change
-		setIsWorking();
-		getHypothesisList().setSelectedIndex(-1);
-		getDescriptionTextArea().setText(null);
-		getPriorityComboBox().setSelectedIndex(-1);
-		getStatusComboBox().setSelectedIndex(-1);		
-		// resume changes
-		setIsNotWorking();
-	}
-		
 }  //  @jve:decl-index=0:visual-constraint="10,10"

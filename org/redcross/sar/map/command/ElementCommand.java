@@ -5,14 +5,14 @@ import java.io.IOException;
 import javax.swing.JComponent;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.ElementDialog;
-import org.redcross.sar.gui.map.ElementPanel.ElementEvent;
-import org.redcross.sar.gui.map.ElementPanel.IElementEventListener;
+import org.redcross.sar.gui.panel.ElementPanel.ElementEvent;
+import org.redcross.sar.gui.panel.ElementPanel.IElementEventListener;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -48,7 +48,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		try {
 			if (obj instanceof JComponent) {
 				ElementDialog elementDialog = (ElementDialog)dialog;
-				elementDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false, true);			
+				elementDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, false, true);			
 			}
 		}
 		catch (Exception e) {

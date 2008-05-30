@@ -1,17 +1,15 @@
 package org.redcross.sar.wp.tactics;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -19,22 +17,23 @@ import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class MissionTextDialog extends DiskoDialog {
+public class MissionTextDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DefaultDiskoPanel contentPanel = null;
+
+	private DefaultPanel contentPanel = null;
 	private JTextArea textArea = null;
 	
-	private IOperationAreaIf currentOperationArea = null;
+	private IDiskoWpModule wp = null;
 	
 	public MissionTextDialog(IDiskoWpModule wp) {
 		// forward
-		super(wp.getApplication().getFrame(),wp.getMap(), getMyInterest(),getMyLayers());
+		super(wp.getApplication().getFrame());
+		// prepare
+		this.wp = wp;
 		// initialize ui
 		initialize();
-		// get selected mso feature
-		setSelectedMsoFeature(wp.getMap());
-		// forward
+		// initialise
 		setup();
 	}
 
@@ -68,50 +67,81 @@ public class MissionTextDialog extends DiskoDialog {
 	    return myLayers;
 	}
 
-	private void setText(String text) {
-		setText(text,true,true);
-	}
-	
-	private void setText(String text, boolean gui, boolean mso) {
-		setIsWorking();
-		// update gui?
-		if (gui && !mso) {
-			getTextArea().setText(text);
-		}
-		// update mso? (text is update from Mso Update event)
-		if(mso) {
-			// has operation object?
-			if(currentOperationArea!=null) {
-				// update remark
-				currentOperationArea.setRemarks(text);
-				fireOnWorkChange(currentOperationArea,text);
-			}
-		}
-		setIsNotWorking();
-	}
-	
 	/**
 	 * This method initializes contentPanel
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel();
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.setBodyComponent(getTextArea());
-				contentPanel.addActionListener(new ActionListener(){
+				contentPanel = new DefaultPanel() {
 
-					public void actionPerformed(ActionEvent e) {
-						String cmd = e.getActionCommand();
-						if("finish".equalsIgnoreCase(cmd))
-							finish();
-						else if("cancel".equalsIgnoreCase(cmd))
-							cancel();
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected boolean beforeFinish() {
+						// update mso model
+						setText(textArea.getText(),false,true);
+						// finished
+						return true;
 					}
 					
-				});
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						// initialize
+						IOperationAreaIf area = null;
+						String remarks = null;
+						// set operation area
+						if (msoObj instanceof IOperationAreaIf) {
+							area = (IOperationAreaIf)msoObj;
+							// set current text
+							remarks =(area!=null ? area.getRemarks() : null);
+						}
+
+						// update
+						super.setMsoObject(area);
+						setText(remarks,true,false);
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);
+												
+					}	
+					
+					@Override
+					public void update() {
+						super.update();
+						setup();
+					}
+
+					@Override
+					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+						// is same as selected?
+						if(msoObj == msoObject) {
+							setMsoObject(msoObject);
+						}
+					}
+
+					@Override
+					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+						// is same as selected?
+						if(msoObj == msoObject) {
+							// reset selection
+							setMsoObject(null);
+						}
+					}	
+				};
+				
+				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setBodyComponent(getTextArea());
+				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -136,8 +166,8 @@ public class MissionTextDialog extends DiskoDialog {
 					public void removeUpdate(DocumentEvent e) { change(); }
 					
 					private void change() {
-						if(isWorking()) return;
-						getContentPanel().setDirty(true);
+						if(!isChangeable()) return;
+						setDirty(true);
 					}
 					
 				}); 
@@ -146,78 +176,43 @@ public class MissionTextDialog extends DiskoDialog {
 			}
 		}
 		return textArea;
-	}
-
-	public boolean finish() {
-		// no mso update allowed?
-		if (isWorking()) return false;
-		// update mso model
-		setText(textArea.getText(),false,true);
-		// reset flag
-		getContentPanel().setDirty(false);
-		// success
-		return true;
-	}
-		
-	public boolean cancel() {
-		// not allowed?
-		if (isWorking()) return false;
-		// reset
-		setMsoObject(currentMsoObj);
-		// reset flag
-		getContentPanel().setDirty(false);
-		// finished
-		return true;
-	}
-	
-	@Override
-	public int setMsoObject(IMsoObjectIf msoObj) {
-		int state = 0;
-		// consume?
-		if(isWorking()) return state;
-		// consume changes
-		setIsWorking();
-		// set operation area
-		if (msoObj instanceof IOperationAreaIf) {
-			currentOperationArea = (IOperationAreaIf)msoObj;
-			state = 1;
-			// set current text
-			setText((currentOperationArea!=null 
-					? currentOperationArea.getRemarks() : null),true,false);
-		}
-		else {
-			state = -1;
-			reset();
-		}
-
-		getContentPanel().setDirty(false);
-		setIsNotWorking();
-		
-		// forward
-		setup();
-		// success
-		return state;
 	}	
 	
-	private void reset() {
-		// not allowed?
-		if (isWorking()) return;
-		// consume changes
-		setIsWorking();
-		// reset
-		textArea.setText(null);
-		// reset flag
-		getContentPanel().setDirty(false);
-		// finished
-		setIsNotWorking();
+	private void setText(String text, boolean gui, boolean mso) {
+		// update gui?
+		if (gui && !mso) {
+			getTextArea().setText(text);
+		}
+		// update mso? (text is update from Mso Update event)
+		if(mso) {
+			IOperationAreaIf area = (IOperationAreaIf)getMsoObject();
+			// has operation object?
+			if(area!=null) {
+				// update remark
+				area.setRemarks(text);
+				fireOnWorkChange(area);
+			}
+		}
 	}
-	
+
 	private void setup() {
+		// consume?
+		if(!isChangeable()) return;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// try to get mso object?
+		if(getMsoObject()==null) 
+			getContentPanel().setSelectedMsoFeature(wp.getMap());
+		
+		// get current area
+		IOperationAreaIf area = (IOperationAreaIf)getMsoObject();
 		// update icon
-		if(currentOperationArea!=null) {
+		if(area!=null) {
 			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
 			getContentPanel().setCaptionText("<html>Skriv inn ordre fra oppdragsgiver for <b>" + 
-					MsoUtils.getOperationAreaName(currentOperationArea,true).toLowerCase() 
+					MsoUtils.getOperationAreaName(area,true).toLowerCase() 
 					+ "</b></html>");
 			getTextArea().setVisible(true);
 		}
@@ -226,26 +221,9 @@ public class MissionTextDialog extends DiskoDialog {
 			getContentPanel().setCaptionText("Du må først velge et operasjonsområde");			
 			getTextArea().setVisible(false);
 		}		
+		
+		// resume changes
+		setChangeable(true);
 	}	
 	
-	@Override
-	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			setMsoObject(msoObject);
-		}
-	}
-
-	@Override
-	public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			// reset selection
-			currentMsoFeature =null;
-			currentMsoObj =null;
-			setText(null);
-		}
-	}	
 }

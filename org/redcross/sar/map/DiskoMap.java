@@ -1,12 +1,10 @@
 package org.redcross.sar.map;
 
 import javax.swing.AbstractButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Toolkit;
@@ -45,24 +43,25 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.DiskoWorkRepeater;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.MsoLayerEventStack;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.map.DrawDialog;
-import org.redcross.sar.gui.map.ElementDialog;
-import org.redcross.sar.gui.map.MapFilterBar;
-import org.redcross.sar.gui.map.MapStatusBar;
-import org.redcross.sar.gui.map.SnapDialog;
-import org.redcross.sar.map.command.DrawAdapter;
-import org.redcross.sar.map.command.IDiskoTool;
-import org.redcross.sar.map.command.IDrawTool;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.DrawDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
+import org.redcross.sar.gui.dialog.SnapDialog;
+import org.redcross.sar.gui.panel.MapFilterPanel;
+import org.redcross.sar.gui.panel.MapStatusPanel;
+import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
+import org.redcross.sar.map.tool.DrawAdapter;
+import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.IDrawTool;
+import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -112,14 +111,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private List<IMsoFeatureLayer> msoLayers = null;
 	
-	// listeners
-	private List<IDiskoWorkListener> workListeners = null;
-	
 	// components
 	private JPanel northBar = null;
 	private JPanel southBar = null;
-	private MapStatusBar mapStatusBar = null;
-	private MapFilterBar mapFilterBar = null;
+	private MapStatusPanel mapStatusBar = null;
+	private MapFilterPanel mapFilterBar = null;
 	private DrawDialog drawDialog = null;
 	private ElementDialog elementDialog = null;
 	private SnapDialog snapDialog = null;
@@ -134,6 +130,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	// adapters
 	private DrawAdapter drawAdapter = null;
 	private SnapAdapter snapAdapter = null;
+	private DiskoWorkRepeater workRepeater = null;
 	private ControlEventsAdapter ctrlAdapter = null;
 	private MapCompEventsAdapter compAdapter = null;
 	
@@ -167,10 +164,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		this.msoModel = msoModel;
 		this.myLayers = myLayers;
 		this.msoLayerEventStack = new MsoLayerEventStack();
-		this.workListeners = new ArrayList<IDiskoWorkListener>();
-		this.ctrlAdapter = new ControlEventsAdapter();
+		
+		// adpaters
 		this.tracker = new MapTracker();
+		this.ctrlAdapter = new ControlEventsAdapter();
 		this.compAdapter = new MapCompEventsAdapter();
+		this.workRepeater = new DiskoWorkRepeater();		
 		
 		// initialize GUI
 		initialize();
@@ -444,26 +443,37 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		if(activeTool==tool) return true;
 		// update locals
 		if (activeTool != null && !activeTool.deactivate()) {
-			JOptionPane.showMessageDialog(this, 
-					"Verktøy " + tool.getCaption() + " kan ikke deaktiveres", 
-					"Begrensing",JOptionPane.OK_OPTION);
+			Utils.showError("Verktøy " + tool.getCaption() 
+					+ " kan ikke deaktiveres");
 				return false;
 		}
 		// allowed?
 		if(tool!=null && !tool.activate(options)) {
-			JOptionPane.showMessageDialog(this, "Verktøy "
-					+ tool.getCaption() + " kan ikke velges",
-					"Begrensing",JOptionPane.OK_OPTION);
+			Utils.showError("Verktøy "
+					+ tool.getCaption() + " kan ikke velges");
 			return false;
 		}
+		
+		// unregister work listener?
+		if(activeTool!=null) {
+			activeTool.removeDiskoEventListener(workRepeater);
+		}
+		
 		// forward
 		super.setCurrentToolByRef(tool);
+		
 		// save tool
 		activeTool = tool;
-		// ensure correct button states?
+		
+		// register?
 		if(activeTool!=null) {
+			
+			// register work listener
+			activeTool.addDiskoWorkListener(workRepeater);
+			
 			// get button
 			AbstractButton button = activeTool.getButton(); 
+			
 			// has button?
 			if(button!=null) {
 				button.setSelected(true);
@@ -478,7 +488,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// forward to draw adapter?
 		if(isEditSupportInstalled()) {
 			if(activeTool instanceof IDrawTool)
-				getDrawAdapter().onSelectionChanged((IDrawTool)activeTool);
+				getDrawAdapter().onActiveToolChanged((IDrawTool)activeTool);
 		}
 		// success
 		return true;
@@ -1467,9 +1477,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return northBar;
 	}
 	
-	public MapStatusBar getMapStatusBar() {
+	public MapStatusPanel getMapStatusBar() {
 		if(mapStatusBar==null) {
-			mapStatusBar = new MapStatusBar();
+			mapStatusBar = new MapStatusPanel();
 			
 		}
 		return mapStatusBar;		
@@ -1491,9 +1501,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		((CardLayout)panel.getLayout()).show(panel, key);
 	}
 	
-	public MapFilterBar getMapFilterBar() {
+	public MapFilterPanel getMapFilterBar() {
 		if(mapFilterBar==null) {
-			mapFilterBar = new MapFilterBar();
+			mapFilterBar = new MapFilterPanel();
 			mapFilterBar.setMap(this);			
 		}
 		return mapFilterBar;		
@@ -1624,9 +1634,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		if(drawDialog == null) {
 			
 			// get draw dialog
-	        NavBar navBar = Utils.getApp().getNavBar();
+	        NavBarPanel navBar = Utils.getApp().getNavBar();
 			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
-			drawDialog.setLocationRelativeTo(this,DiskoDialog.POS_WEST, true, true);
+			drawDialog.setLocationRelativeTo(this,DefaultDialog.POS_WEST, true, true);
 
 		}
 		return drawDialog;
@@ -1640,7 +1650,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			
 			// create
 			elementDialog = new ElementDialog(Utils.getApp().getFrame());
-			elementDialog.setLocationRelativeTo(this,DiskoDialog.POS_EAST, false, true);
+			elementDialog.setLocationRelativeTo(this,DefaultDialog.POS_EAST, false, true);
 
 		}
 		return elementDialog;
@@ -1670,7 +1680,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			
 			// create new snap dialog
 	        snapDialog = new SnapDialog(Utils.getApp().getFrame());
-	        snapDialog.setLocationRelativeTo(this,DiskoDialog.POS_WEST, true, true);
+	        snapDialog.setLocationRelativeTo(this,DefaultDialog.POS_WEST, true, true);
 
 		}
 		return snapDialog;
@@ -1686,54 +1696,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		this.isInitMode = isInitMode;
 	}
 	
-	/*==========================================================
-	 * IDiskoWorkListener methods
-	 *========================================================== 
-	 */		
-	
-	public void onWorkCancel(DiskoWorkEvent e) {
-		fireOnWorkCancel(e);	
-	}
-	
-	public void onWorkFinish(DiskoWorkEvent e) {
-		fireOnWorkFinish(e);	
-	}
-	
-	public void onWorkChange(DiskoWorkEvent e) {
-		fireOnWorkChange(e);
-	}
-
-	public void addDiskoWorkEventListener(IDiskoWorkListener listener) {
-		workListeners.add(listener);
-	}
-	
-	public void removeDiskoWorkEventListener(IDiskoWorkListener listener) {
-		workListeners.remove(listener);
-	}
-    
-    private void fireOnWorkCancel(DiskoWorkEvent e)
-    {
-		// notify workListeners
-		for (int i = 0; i < workListeners.size(); i++) {
-			workListeners.get(i).onWorkCancel(e);
-		}
-	}
-		
-    private void fireOnWorkFinish(DiskoWorkEvent e)
-    {
-		// notify workListeners
-		for (int i = 0; i < workListeners.size(); i++) {
-			workListeners.get(i).onWorkFinish(e);
-		}
-	}
-    
-    private void fireOnWorkChange(DiskoWorkEvent e)
-    {
-		// notify workListeners
-		for (int i = 0; i < workListeners.size(); i++) {
-			workListeners.get(i).onWorkChange(e);
-		}
-	}
     
     public IEnvelope getDirtyExtent() {
     	IEnvelope extent = null;
@@ -1980,7 +1942,23 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 	}
 	
-	class ControlEventsAdapter extends IMapControlEvents2Adapter {
+	/*==========================================================
+	 * IDiskoWorkListener methods
+	 *==========================================================*/		
+
+	public void addDiskoWorkListener(IDiskoWorkListener listener) {
+		workRepeater.addDiskoWorkListener(listener);
+	}
+	
+	public void removeDiskoWorkEventListener(IDiskoWorkListener listener) {
+		workRepeater.removeDiskoWorkListener(listener);
+	}
+    
+	/*==========================================================
+	 * Internal classes
+	 *==========================================================*/
+    
+    class ControlEventsAdapter extends IMapControlEvents2Adapter {
 
 		private static final long serialVersionUID = 1L;
 		
@@ -2162,9 +2140,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			try {
 				if(isVisible()) {
 					// turn off
-					suppressResizeDrawing(false, 0);
+					//suppressResizeDrawing(false, 0);
 					// turn on
-					suppressResizeDrawing(true, 0);
+					//suppressResizeDrawing(true, 0);
 				}
 			}
 			catch (Exception e) {

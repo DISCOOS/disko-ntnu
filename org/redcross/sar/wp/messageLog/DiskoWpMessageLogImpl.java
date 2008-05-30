@@ -3,7 +3,7 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;

@@ -1,8 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.NumPadDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -32,7 +32,7 @@ import java.util.Calendar;
  * Creates the dialog for changing DTG in message log edit mode.
  * @author thomasl
  */
-public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMessageComponentIf
+public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEditMessageComponentIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -155,12 +155,12 @@ public class ChangeDTGDialog extends DiskoDialog implements KeyListener, IEditMe
 		{
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 			message.setOccuredTime(DTG.DTGToCal(this.getTime()));
-			fireOnWorkFinish();
+			fireOnWorkFinish(this,message);
 		}
 		catch (IllegalMsoArgumentException e1)
 		{
 			Utils.showError(m_wp.getBundleText("InvalidDTG.header"), m_wp.getBundleText("InvalidDTG.details"));
-			fireOnWorkCancel();
+			fireOnWorkCancel(this,null);
 		}
 	}
 

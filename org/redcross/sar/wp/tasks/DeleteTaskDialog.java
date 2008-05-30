@@ -2,10 +2,11 @@ package org.redcross.sar.wp.tasks;
 
 import org.redcross.sar.gui.attribute.TextAreaAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 
@@ -24,20 +25,18 @@ import java.awt.event.ActionListener;
  * Dialog for deleting a task
  * @author thomasl
  */
-public class DeleteTaskDialog extends DiskoDialog
+public class DeleteTaskDialog extends DefaultDialog
 {
 	private final static long serialVersionUID = 1L;
 
-	protected IDiskoWpTasks m_wpTasks;
-
-	protected ITaskIf m_currentTask;
-
-	protected DefaultDiskoPanel m_contentsPanel;
+	protected DefaultPanel m_contentsPanel;
 	protected TextFieldAttribute m_taskAttr;
 	protected TextAreaAttribute m_descAttr;
 	protected JPanel m_attributesPanel;
 	protected JButton m_deleteButton;
 	
+	protected IDiskoWpTasks m_wpTasks;
+
 	public DeleteTaskDialog(IDiskoWpTasks wp)
 	{
 		// forward
@@ -70,11 +69,43 @@ public class DeleteTaskDialog extends DiskoDialog
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (m_contentsPanel == null) {
 			try {
 				// create content panel
-				m_contentsPanel = new DefaultDiskoPanel(m_wpTasks.getBundleText("DeleteTask.text"),false,true);
+				m_contentsPanel = new DefaultPanel(m_wpTasks.getBundleText("DeleteTask.text"),false,true) {
+
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected boolean beforeCancel() {
+						setMsoObject(null);
+						return true;
+					}
+					
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						
+						// initialize
+						ITaskIf task = null;
+						// dispatch type
+						if (msoObj instanceof ITaskIf) {
+							task = (ITaskIf)msoObj;
+						}						
+						// update
+						super.setMsoObject(task);
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);
+												
+					}	
+					
+				};
 				m_contentsPanel.insertButton("finish", getDeleteButton(), "delete");
 				m_contentsPanel.addActionListener(new ActionListener() {
 
@@ -82,8 +113,6 @@ public class DeleteTaskDialog extends DiskoDialog
 						String cmd = e.getActionCommand();
 						if("delete".equalsIgnoreCase(cmd))
 							delete();
-						else if("cancel".equalsIgnoreCase(cmd))
-							cancel();						
 					}
 					
 				});
@@ -176,24 +205,15 @@ public class DeleteTaskDialog extends DiskoDialog
 	}
 		
 	/**
-	 * Cancel delete action
-	 */
-	private void cancel()
-	{
-		m_currentTask = null;
-		this.setVisible(false);
-	}
-
-	/**
 	 * Finish delete action, delete selected task
 	 */
-	private void delete()
-	{
-		if(m_currentTask != null)
+	private void delete() {
+		ITaskIf task = (ITaskIf)getMsoObject();
+		if(task != null)
 		{
-			m_currentTask.setStatus(TaskStatus.DELETED);
+			task.setStatus(TaskStatus.DELETED);
 
-			m_currentTask = null;
+			task = null;
 
 			m_wpTasks.getMsoModel().commit();
 		}
@@ -202,16 +222,17 @@ public class DeleteTaskDialog extends DiskoDialog
 
 	public void setTask(ITaskIf task)
 	{
-		m_currentTask = task;
+		setMsoObject(task);
 		updateFieldContents();
 	}
 
 	private void updateFieldContents()
 	{
-		if(m_currentTask != null)
+		ITaskIf task = (ITaskIf)getMsoObject();
+		if(task != null)
 		{
-			m_taskAttr.setValue(m_currentTask.getTaskText());
-			m_descAttr.setValue(m_currentTask.getDescription());
+			m_taskAttr.setValue(task.getTaskText());
+			m_descAttr.setValue(task.getDescription());
 		}
 	}
 }

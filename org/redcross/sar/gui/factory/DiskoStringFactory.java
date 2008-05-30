@@ -56,6 +56,10 @@ public class DiskoStringFactory {
 			// get from installed resource
 			text = Internationalization.getText(key);
 		}
+		// return key?
+		if((text==null || text.isEmpty())) { 
+			text = key;
+		}
 		// return best effort
 		return text;
 	}

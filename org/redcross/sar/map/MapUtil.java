@@ -13,11 +13,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.map.command.IDrawTool.DrawMode;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoListIf;
@@ -498,12 +498,17 @@ public class MapUtil {
 	
 	public static String getDESfromPoint(Point p) 
 		throws Exception {	
-		return formatCoord(p.getX(),7,7)+ "E" + formatCoord(p.getY(),7,7) + "N";
+		Point point = (Point)p.esri_clone();
+		point.project(getGeographicCS());
+		DecimalFormat format = new DecimalFormat("00.0000");
+		return format.format(point.getX()) + "E" + format.format(point.getY()) + "N";
 	}
 	
 	public static String getDEGfromPoint(Point p) 
 		throws Exception {
-		return fromDEStoDEG(p.getX())+ "E" + fromDEStoDEG(p.getY()) + "N";
+		Point point = (Point)p.esri_clone();
+		point.project(getGeographicCS());
+		return fromDEStoDEG(point.getX())+ "E" + fromDEStoDEG(point.getY()) + "N";
 	}
 	
 	private static String fromDEStoDEG(double des) {
@@ -554,6 +559,41 @@ public class MapUtil {
 		
 	}
 	
+	public static String getDEMfromPoint(Point p) 
+		throws Exception {
+		Point point = (Point)p.esri_clone();
+		point.project(getGeographicCS());
+		return fromDEStoDEM(point.getX())+ "E" + fromDEStoDEM(point.getY()) + "N";
+	}
+	
+	private static String fromDEStoDEM(double des) {
+		
+		// Get degrees by chopping off at the decimal
+		double d = Math.floor( des );
+		
+		// correction required since floor() is not the same as int()
+		if ( d < 0 )
+			d = d + 1;
+
+		// Get fraction after the decimal
+		double fd = Math.abs( des - d );
+
+		// Convert this fraction to decimal minutes
+		double m = fd * 60;
+
+		// create numeric format
+		DecimalFormat format = new DecimalFormat("00.000000");		
+		
+		// create strings
+		String dt = String.valueOf(Math.round(d));
+		if(dt.length()==1) dt = "0" + dt;
+		String mt = format.format(m);
+		
+		// return string
+		return dt + "d" + mt + "m";
+		
+	}	
+	
 	public static String getMGRSfromPosition(Position pos) 
 		throws Exception {
 		if(pos!=null)
@@ -575,6 +615,11 @@ public class MapUtil {
 	public static String getDESfromPosition(Position pos) 
 		throws Exception {
 		return getDESfromPosition(pos.getPosition());
+	}
+	
+	public static String getDEMfromPosition(Position pos) 
+		throws Exception {
+		return getDEMfromPosition(pos.getPosition());
 	}
 	
 	public static String getMGRSfromPosition(Point2D p) 
@@ -606,10 +651,14 @@ public class MapUtil {
 
 	public static String getDESfromPosition(Point2D p) 
 		throws Exception {
-		DecimalFormat format = new DecimalFormat("0.0000");
+		DecimalFormat format = new DecimalFormat("00.0000");
 		return format.format(p.getX()) + "E" + format.format(p.getY()) + "N";
 	}
 	
+	public static String getDEMfromPosition(Point2D p) 
+		throws Exception {
+		return fromDEStoDEM(p.getX())+ "E" + fromDEStoDEM(p.getY()) + "N";
+	}
 
 	/**
 	 * Converts a MGRS position string to a point in decimal degress
@@ -619,7 +668,8 @@ public class MapUtil {
 	 * 				east direction (x) and y = ######N equals north direction (y)
 	 * @return {@link Point}
 	 * @throws Exception
-	 */	
+	 */
+	/*
 	public static Point getEsriPointFromMGRS(String mgrs, ISpatialReference srs) 
 		throws Exception {
 		// trim 
@@ -633,6 +683,7 @@ public class MapUtil {
 		p.project(srs);
 		return p;
 	}
+	*/
 	
 	/**
 	 * Converts a UTM position string to a point in decimal degress
@@ -645,6 +696,7 @@ public class MapUtil {
 	 * @return {@link Point}
 	 * @throws Exception
 	 */
+	/*
 	public static Point getEsriPointFromUTM(String utm, ISpatialReference srs) 
 		throws Exception {
 		utm = utm.trim();
@@ -661,6 +713,7 @@ public class MapUtil {
 		p.project(srs);
 		return p;
 	}
+	*/
 
 	/**
 	 * Converts a DEGREE position string to a point in decimal degress
@@ -671,6 +724,7 @@ public class MapUtil {
 	 * @return {@link Point}
 	 * @throws Exception
 	 */
+	/*
 	public static Point getEsriPointFromDEG(String deg, ISpatialReference srs) 
 		throws Exception {
 
@@ -688,17 +742,17 @@ public class MapUtil {
 		int offset = lat.startsWith("-") ? 1 : 0;
 		
 		// parse longitude (E) 
-		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString());
-		double m1 = Double.valueOf(lat.subSequence(3+offset, 5+offset).toString());
-		double s1 = Double.valueOf(lat.subSequence(6+offset, 8+offset).toString());
+		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m1 = Double.valueOf(lat.subSequence(3+offset, 5+offset).toString().replace(",", "."));
+		double s1 = Double.valueOf(lat.subSequence(6+offset, 8+offset).toString().replace(",", "."));
 		
 		// account for sign
 		offset = lon.startsWith("-") ? 1 : 0;
 		
 		// parse latitude (N)
-		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString());
-		double m2 = Double.valueOf(lon.subSequence(3+offset, 5+offset).toString());
-		double s2 = Double.valueOf(lon.subSequence(6+offset, 8+offset).toString());
+		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m2 = Double.valueOf(lon.subSequence(3+offset, 5+offset).toString().replace(",", "."));
+		double s2 = Double.valueOf(lon.subSequence(6+offset, 8+offset).toString().replace(",", "."));
 		
 		// Determine longitude fraction from minutes and seconds
 		double f1 = Double.valueOf(m1) / 60 + Double.valueOf(s1) / 3600;
@@ -721,16 +775,18 @@ public class MapUtil {
 		return p;
 		
 	}
+	*/
 	
 	/**
 	 * Converts a DECIMAL DEGREE position string to a point in decimal degress
 	 * 
-	 * @param deg	A DEGREE string on the strict format ##.#[#-->#]E##.#[#-->#]N, where
-	 * 				x = ##.#[#-->#]E equals east direction (x) 
-	 * 				and y = ##.#[#-->#]N equals north direction (y)
+	 * @param deg	A DEGREE string on the strict format ##,#[#-->#]E##,#[#-->#]N, where
+	 * 				x = ##,#[#-->#]E equals east direction (x) 
+	 * 				and y = ##,#[#-->#]N equals north direction (y)
 	 * @return {@link Point}
 	 * @throws Exception
 	 */
+	/*
 	public static Point getEsriPointFromDES(String des, ISpatialReference srs) 
 		throws Exception {
 	
@@ -758,29 +814,247 @@ public class MapUtil {
 		return p;
 		
 	}
+	*/
+	
+	/**
+	 * Converts a DECIMAL DEGREE position string to a point in decimal degress
+	 * 
+	 * @param deg	A DEGREE string on the strict format ##-##,[#-->#]E##-##,[#-->#]N, where
+	 * 				x = ##-##,[#-->#]E equals east direction (x) 
+	 * 				and y = ##-##,#[#-->#]N equals north direction (y)
+	 * @return {@link Point}
+	 * @throws Exception
+	 */
+	/*
+	public static Point getEsriPointFromDEM(String dem, ISpatialReference srs) 
+		throws Exception {
+	
+		// remove any spaces
+		dem = dem.trim().toUpperCase();
 		
+		// split into longitude and latitude
+		String[] split = dem.split("E");
+		
+		// get sub strings
+		String lat = split[0]; 
+		String lon = split[1].replace("N", "0");
+		
+		// account for sign
+		int offset = lat.startsWith("-") ? 1 : 0;
+		
+		// parse longitude (E) 
+		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m1 = Double.valueOf(lat.subSequence(3+offset, lat.length()).toString().replace(",", "."));
+		
+		// account for sign
+		offset = lon.startsWith("-") ? 1 : 0;
+		
+		// parse latitude (N)
+		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m2 = Double.valueOf(lon.subSequence(3+offset, lon.length()).toString().replace(",", "."));
+		
+		// Determine longitude fraction from minutes and seconds
+		double f1 = Double.valueOf(m1) / 60;
+
+		// Be careful to get the sign right.
+		double dec1 = ( d1 < 0 ) ? d1 - f1 : d1 + f1;
+		
+		// Determine latitude fraction from minutes and seconds
+		double f2 = Double.valueOf(m2) / 60;
+		
+		// Be careful to get the sign right.
+		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
+		
+		// create point
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.setX(dec1);
+		p.setY(dec2);
+		p.project(srs);
+		return p;
+		
+	}
+	*/
+	
 	public static Position getPositionFromMGRS(String mgrs) 
 			throws Exception {
-		IPoint point = getEsriPointFromMGRS(mgrs,getGeographicCS());
-		return new Position(null, point.getX(), point.getY());
+
+		// trim 
+		mgrs = mgrs.trim();
+		String prefix = mgrs.substring(0,5);
+		String suffix = mgrs.substring(5,mgrs.length());
+		suffix = suffix.toUpperCase().replace("E", "").replace("N", "");
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());		
+		p.putCoordsFromMGRS(prefix.concat(suffix), esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		p.project(getGeographicCS());				
+		return new Position(null, p.getX(), p.getY());
+		
+		//getEsriPointFromMGRS(mgrs,getGeographicCS())
 	}
 	
 	public static Position getPositionFromUTM(String utm) 
 		throws Exception {
-		Point point = getEsriPointFromUTM(utm,getGeographicCS());
-		return new Position(null,point.getX(),point.getY());
+		
+		utm = utm.trim();
+		String zone = utm.subSequence(0, 3).toString();
+		zone = getSRProjCS_WGS1984UTM_Zone(zone);
+		String suffix = utm.substring(3,utm.length()).toUpperCase().replace("E", "").replace("N", "");
+		String x = suffix.subSequence(0, 7).toString();
+		String y = suffix.subSequence(7, 14).toString();
+		Point p = new Point();
+		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);		
+		p.setSpatialReferenceByRef(incommingCoordSystem);
+		p.setX(Double.valueOf(x));
+		p.setY(Double.valueOf(y));
+		p.project(getGeographicCS());
+		
+		//Point point = getEsriPointFromUTM(utm,getGeographicCS());
+		return new Position(null,p.getX(),p.getY());
 	}
 	
 	public static Position getPositionFromDEG(String deg) 
 		throws Exception {
-		Point point = getEsriPointFromDEG(deg,getGeographicCS());
-		return new Position(null,point.getX(),point.getY());
+
+		// remove any spaces
+		deg = deg.trim().toUpperCase();
+		
+		// split into longitude and latitude
+		String[] split = deg.split("E");
+		
+		// get sub strings
+		String lat = split[0]; 
+		String lon = split[1].replace("N", "0");
+		
+		// account for sign
+		int offset = lat.startsWith("-") ? 1 : 0;
+		
+		// parse longitude (E) 
+		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m1 = Double.valueOf(lat.subSequence(3+offset, 5+offset).toString().replace(",", "."));
+		double s1 = Double.valueOf(lat.subSequence(6+offset, 8+offset).toString().replace(",", "."));
+		
+		// account for sign
+		offset = lon.startsWith("-") ? 1 : 0;
+		
+		// parse latitude (N)
+		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m2 = Double.valueOf(lon.subSequence(3+offset, 5+offset).toString().replace(",", "."));
+		double s2 = Double.valueOf(lon.subSequence(6+offset, 8+offset).toString().replace(",", "."));
+		
+		// Determine longitude fraction from minutes and seconds
+		double f1 = Double.valueOf(m1) / 60 + Double.valueOf(s1) / 3600;
+
+		// Be careful to get the sign right.
+		double dec1 = ( d1 < 0 ) ? d1 - f1 : d1 + f1;
+		
+		// Determine latitude fraction from minutes and seconds
+		double f2 = Double.valueOf(m2) / 60 + Double.valueOf(s2) / 3600;
+		
+		// Be careful to get the sign right.
+		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
+		
+		// create point
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.setX(dec1);
+		p.setY(dec2);
+		p.project(getGeographicCS());
+		
+		//Point point = getEsriPointFromDEG(deg,getGeographicCS());
+		return new Position(null,p.getX(),p.getY());
 	}
 	
 	public static Position getPositionFromDES(String des) 
 		throws Exception {
-		Point point = getEsriPointFromDES(des,getGeographicCS());
-		return new Position(null,point.getX(),point.getY());
+		
+		// remove any spaces
+		des = des.trim().toUpperCase();
+		
+		// split into longitude and latitude
+		String[] split = des.split("E");
+		String lon = split[0]; 
+		split = split[1].split("N"); 
+		String lat = split[0];
+		
+		// parse longitude (E) 
+		double x = Double.valueOf(lon.replace(",", "."));
+		
+		// parse latitude (N)
+		double y = Double.valueOf(lat.replace(",", "."));
+		
+		// create point
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.setX(x);
+		p.setY(y);
+		p.project(getGeographicCS());
+		
+		//Point point = getEsriPointFromDES(des,getGeographicCS());
+		
+		return new Position(null,p.getX(),p.getY());
+	}
+	
+	public static Position getPositionFromDEM(String dem) 
+		throws Exception {
+
+		// remove any spaces
+		dem = dem.trim().toUpperCase();
+		
+		// split into longitude and latitude
+		String[] split = dem.split("E");
+		
+		// get sub strings
+		String lat = split[0]; 
+		String lon = split[1].replace("N", "0");
+		
+		// account for sign
+		int offset = lat.startsWith("-") ? 1 : 0;
+		
+		// parse longitude (E) 
+		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m1 = Double.valueOf(lat.subSequence(3+offset, lat.length()).toString().replace(",", "."));
+		
+		// account for sign
+		offset = lon.startsWith("-") ? 1 : 0;
+		
+		// parse latitude (N)
+		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
+		double m2 = Double.valueOf(lon.subSequence(3+offset, lon.length()).toString().replace(",", "."));
+		
+		// Determine longitude fraction from minutes and seconds
+		double f1 = Double.valueOf(m1) / 60;
+
+		// Be careful to get the sign right.
+		double dec1 = ( d1 < 0 ) ? d1 - f1 : d1 + f1;
+		
+		// Determine latitude fraction from minutes and seconds
+		double f2 = Double.valueOf(m2) / 60;
+		
+		// Be careful to get the sign right.
+		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
+		
+		// create point
+		Point p = new Point();
+		p.setSpatialReferenceByRef(getGeographicCS());
+		p.setX(dec1);
+		p.setY(dec2);
+		p.project(getGeographicCS());
+		
+		//Point point = getEsriPointFromDEM(des,getGeographicCS());
+		
+		return new Position(null,p.getX(),p.getY());
+	}
+	
+	public static String unformatDEM(String text) {
+		String[] split = text.split("d");
+		String step = split[0];
+		if(step.length()<2) step = "0" + step;
+		String value = step;
+		split = split[1].split("m");
+		step = split[0];
+		value += "-" + step;
+		return value;
 	}
 	
 	public static String unformatDEG(String text) {

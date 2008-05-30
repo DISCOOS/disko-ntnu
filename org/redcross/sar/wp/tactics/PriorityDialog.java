@@ -1,8 +1,6 @@
 package org.redcross.sar.wp.tactics;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
 import javax.swing.JList;
@@ -10,13 +8,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.gui.DiskoDialog;
-import org.redcross.sar.gui.DefaultDiskoPanel;
-import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.renderers.RadioListCellRenderer;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.renderer.RadioListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -24,20 +20,22 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListener{
+public class PriorityDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DefaultDiskoPanel contentPanel = null;
+	private DefaultPanel contentPanel = null;
 	private JList priorityList = null;
+	
+	private IDiskoWpModule wp = null;
 	
 	public PriorityDialog(IDiskoWpModule wp) {
 		// forward
-		super(wp.getApplication().getFrame(),wp.getMap(),getMyInterest(),getMyLayers());
-		// initialize ui
+		super(wp.getApplication().getFrame());
+		// prepare
+		this.wp = wp;
+		// initialize gui
 		initialize();
-		// get selected mso feature
-		setSelectedMsoFeature(wp.getMap());
-		// forward
+		// initialise
 		setup();
 	}
 
@@ -68,30 +66,14 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 	    return myLayers;
 	}
 
-	private int getPriority() {
-		return getPriorityList().getSelectedIndex()+1;
-	}
-	
-	private void setPriority(int priority, boolean gui, boolean mso) {
-		setIsWorking();
-		// update gui?
-		if(gui) {
-			getPriorityList().setSelectedIndex(priority-1);
-		}
-		// update mso? (list is updated from Mso Update event)
-		if(mso) {
-			// dispatch type
-			if(currentMsoObj instanceof ISearchAreaIf) {
-				// cast to ISearchAreaIf
-				ISearchAreaIf searchArea = (ISearchAreaIf)currentMsoObj;
-				// update?
-				if(searchArea.getPriority()!=priority-1) {
-					searchArea.setPriority(priority-1);
-				}
-				fireOnWorkChange(currentMsoObj,priority-1);
-			}
-		}
-		setIsNotWorking();
+	private static Object[] getPriData() {
+		Object[] data = new Object[5];
+		data[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
+		data[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA");
+		data[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA");
+		data[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA");
+		data[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA");
+		return data;
 	}
 	
 	/**
@@ -99,23 +81,78 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private DefaultDiskoPanel getContentPanel() {
+	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultDiskoPanel();
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.setBodyComponent(getPriorityList());
-				contentPanel.addActionListener(new ActionListener(){
+				contentPanel = new DefaultPanel() {
 
-					public void actionPerformed(ActionEvent e) {
-						String cmd = e.getActionCommand();
-						if("finish".equalsIgnoreCase(cmd))
-							finish();
-						else if("cancel".equalsIgnoreCase(cmd))
-							cancel();
+					private static final long serialVersionUID = 1L;
+					
+					@Override
+					protected boolean beforeFinish() {
+						// update mso model
+						setPriority(getPriority(), false, true);
+						// finished
+						return true;
+					}
+
+
+					@Override
+					public void setMsoObject(IMsoObjectIf msoObj) {
+						// consume changes
+						setChangeable(false);
+						// initialize
+						int pri = 1;
+						ISearchAreaIf area = null;
+						// dispatch type
+						if (msoObj instanceof ISearchAreaIf) {
+							area = (ISearchAreaIf)msoObj;
+							pri = area.getPriority();
+						}
+						
+						// update
+						super.setMsoObject(area);
+						setPriority(pri,true,false);						
+
+						// resume changes
+						setChangeable(true);
+						
+						// update
+						setDirty(false);
+												
+					}	
+					
+					@Override
+					public void update() {
+						super.update();
+						setup();
 					}
 					
-				});
+					@Override
+					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+						// consume?
+						if(!isChangeable()) return;
+						// is same as selected?
+						if(msoObj == msoObject) {
+							setMsoObject(msoObj);
+						}
+					}
+
+					@Override
+					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+						if(!isChangeable()) return;
+						// is same as selected?
+						if(msoObj == msoObject) {
+							// reset selection
+							setMsoObject(null);
+						}
+					}	
+					
+				};
+				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setBodyComponent(getPriorityList());
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -141,9 +178,9 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 				priorityList.addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
 						// consume?
-						if(e.getValueIsAdjusting() || isWorking());
+						if(e.getValueIsAdjusting() || !isChangeable());
 						// notify
-						getContentPanel().setDirty(true);
+						setDirty(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -153,92 +190,49 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 		return priorityList;
 	}
 	
-	private static Object[] getPriData() {
-		Object[] data = new Object[5];
-		data[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
-		data[1] = DiskoStringFactory.getText("SECONDARY_SEARCH_AREA");
-		data[2] = DiskoStringFactory.getText("PRIORITY3_SEARCH_AREA");
-		data[3] = DiskoStringFactory.getText("PRIORITY4_SEARCH_AREA");
-		data[4] = DiskoStringFactory.getText("PRIORITY5_SEARCH_AREA");
-		return data;
-	}
-
-	public boolean finish() {
-		if(isWorking()) return false;
-		// update mso model
-		setPriority(getPriority(), false, true);
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide me
-		setVisible(false);
-		return true;
+	private int getPriority() {
+		return getPriorityList().getSelectedIndex()+1;
 	}
 	
-	public boolean cancel() {
-		if(isWorking()) return false;
-		// resume old state
-		setMsoObject(currentMsoObj);
-		// reset flag
-		getContentPanel().setDirty(false);
-		// hide me
-		setVisible(false);
-		return true;
-	}
-	
-	
-	@Override
-	public int setMsoObject(IMsoObjectIf msoObj) {
-		int state = 0;
-		if(isWorking()) return state;		
-		setIsWorking();
-		// dispatch type
-		if (msoObj instanceof ISearchAreaIf) {
-			ISearchAreaIf searchArea = (ISearchAreaIf)msoObj;
-			setPriority(searchArea.getPriority(),true,false);
-			state = 1;
-		}
-		else {
-			// reset to default priority
-			setPriority(1,true,false);
-			state = -1;
-		}
-		setIsNotWorking();
-		getContentPanel().setDirty(false);
-		// forward
-		setup();
-		// not selected
-		return state;
-	}
-	
-	@Override
-	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			setMsoObject(msoObject);
+	private void setPriority(int priority, boolean gui, boolean mso) {
+		// update gui?
+		if(gui)
+			getPriorityList().setSelectedIndex(priority-1);
+		// update mso? (list is updated from Mso Update event)
+		if(mso) {
+			// dispatch type
+			if(getMsoObject() instanceof ISearchAreaIf) {
+				// cast to ISearchAreaIf
+				ISearchAreaIf searchArea = (ISearchAreaIf)getMsoObject();
+				// update?
+				if(searchArea.getPriority()!=priority-1) {
+					searchArea.setPriority(priority-1);
+				}
+			}
 		}
 	}
 
-	@Override
-	public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
-		if(isWorking()) return;
-		// is same as selected?
-		if(msoObject == currentMsoObj) {
-			// reset selection
-			currentMsoFeature =null;
-			currentMsoObj =null;
-			setPriority(1,true,false);
-		}
-	}	
-	
 	private void setup() {
+		
+		// consume?
+		if(!isChangeable()) return;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// try to get mso object?
+		if(getMsoObject()==null) 
+			getContentPanel().setSelectedMsoFeature(wp.getMap());
+
+		// get search area
+		ISearchAreaIf area = (ISearchAreaIf)getMsoObject(); 
+		
 		// update icon
-		if(currentMsoObj!=null) {
-			Enum e = MsoUtils.getType(currentMsoObj,true);
+		if(area!=null) {
 			getContentPanel().setCaptionIcon(
-					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));			
-			getContentPanel().setCaptionText("<html>Oppgi prioritet for <b>" + 
-					MsoUtils.getMsoObjectName(currentMsoObj,0).toLowerCase() + "</b></html>");
+					DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));			
+			getContentPanel().setCaptionText("<html>Endre prioritet for <b>" + 
+					MsoUtils.getMsoObjectName(area,0).toLowerCase() + "</b></html>");
 			getPriorityList().setEnabled(true);
 		}
 		else {
@@ -246,6 +240,9 @@ public class PriorityDialog extends DiskoDialog implements IMsoLayerEventListene
 			getContentPanel().setCaptionText("Du må først velge et søkeområde");			
 			getPriorityList().setEnabled(false);
 		}		
+		
+		// resume changes
+		setChangeable(true);
 	}	
 	
 	

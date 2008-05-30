@@ -629,15 +629,22 @@ public class MsoUtils {
 		return name;
 	}
 	
-	public static String getPOIName(IPOIIf poi, boolean include) {
+	public static String getPOIName(IPOIIf poi, boolean replace, boolean include) {
 		// get name
 		String name = "<Unknown>";
 		
 		if(poi!=null) {
-			name = DiskoEnumFactory.getText(poi.getType()); 			
 
+			name = DiskoEnumFactory.getText(poi.getType()); 			
+			String remark = poi.getRemarks();
+			// replace with comment?
+			if (remark != null) {
+				if(replace && remark.length() > 0) {
+					return remark;
+				}
+			}
 			// include sequence number?
-			if(include) {
+			if(include) {			
 				IPOIIf.POIType type = poi.getType();
 				boolean isNumberedPoi = (
 						type == POIType.FINDING || 
@@ -668,9 +675,11 @@ public class MsoUtils {
 		}
 		else if (msoObj instanceof IPOIIf) { 
 			if(options==0)
-				return getPOIName((IPOIIf)msoObj, false);
+				return getPOIName((IPOIIf)msoObj, false, false);
+			else if(options==1)
+				return getPOIName((IPOIIf)msoObj, false, true);
 			else
-				return getPOIName((IPOIIf)msoObj, true);
+				return getPOIName((IPOIIf)msoObj, true, false);
 		}
 		else if(msoObj instanceof IUnitIf) {
 			if(options==0)

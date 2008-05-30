@@ -129,7 +129,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 								ISearchIf search = (ISearchIf)assignment;
 								// get line symbol
 								lineSymbol = (SimpleLineSymbol)symbols.get(search.getSubType());
-								text = MsoUtils.getAssignmentName(search,2);
+								text = feature.getCaption();
 								// update line color
 								lineSymbol.setColor(color);
 							} 

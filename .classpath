@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding=".classpath|DiskoModules.xml|Thumbs.db|cursors/|icons/|lib/|mapping/|output/|reports/|resources/|sara.id.lockfile|symbols/" kind="src" path=""/>
+	<classpathentry excluding=".classpath|DiskoModules.xml|Thumbs.db|cursors/|icons/|lib/|mapping/|output/|reports/|sara.id.lockfile|symbols/" kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.6.0_05"/>
 	<classpathentry exported="true" kind="lib" path="lib/apache-activemq-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/arcobjects.jar"/>

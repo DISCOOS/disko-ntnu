@@ -127,20 +127,27 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			
 			// add object?
 			if (createdObject && msoFeature == null && isFeature) {
+				// create and att to feature class				
 				msoFeature = createMsoFeature(msoObj);
 				msoFC.addFeature(msoFeature);
+				// update dirty flag
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}
 			// is object modified?
 			if ( (addedReference || removedReference || modifiedObject) 
 					&& msoFeature != null && msoFeature.geometryIsChanged(msoObj)) {
+				// change geometry
 				msoFeature.msoGeometryChanged();
+				// update dirty flag
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}			
 			// delete object?
 			if ((deletedObject) && msoFeature != null && isFeature) {
+				// remove from feature class
 				msoFC.removeFeature(msoFeature);
+				// update dirty flag
+				isDirty = isDirty || isFeatureDirty(msoFeature);			
 			}
-			// update dirty flag
-			isDirty = isDirty || isFeatureDirty(msoFeature);			
 			
 		} catch (AutomationException e1) {
 			// TODO Auto-generated catch block

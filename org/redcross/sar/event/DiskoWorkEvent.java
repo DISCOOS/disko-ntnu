@@ -16,21 +16,21 @@ public class DiskoWorkEvent extends EventObject {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum DiskoWorkEventType {
-		TYPE_CHANGE, 
-		TYPE_CANCEL,
-		TYPE_FINISH
-	}
+	public final static int EVENT_CHANGE = 0; 
+	public final static int EVENT_CANCEL = 1;
+	public final static int EVENT_FINISH = 2;
+	public final static int EVENT_COMMIT = 3;
+	public final static int EVENT_ROLLBACK = 4;
 	
-	private DiskoWorkEventType type = null;
+	private int type = EVENT_CHANGE;
+	
 	private Object data = null;
 	
-	public DiskoWorkEvent(Object source, 
-			DiskoWorkEventType type) {
+	public DiskoWorkEvent(Object source, int type) {
 		this(source,null,type);
 	}
 	
-	public DiskoWorkEvent(Object source, Object data, DiskoWorkEventType type) {
+	public DiskoWorkEvent(Object source, Object data, int type) {
 		super(source);
 		this.type = type;
 		this.data = data;
@@ -65,15 +65,23 @@ public class DiskoWorkEvent extends EventObject {
 	}
 	
 	public boolean isChange() {
-		return (type == DiskoWorkEventType.TYPE_CHANGE);
+		return (type == EVENT_CHANGE);
 	}
 	
 	public boolean isCancel() {
-		return (type == DiskoWorkEventType.TYPE_CANCEL);
+		return (type == EVENT_CANCEL);
 	}
 	
 	public boolean isFinish() {
-		return (type == DiskoWorkEventType.TYPE_FINISH);
+		return (type == EVENT_FINISH);
+	}
+	
+	public boolean isCommit() {
+		return (type == EVENT_COMMIT);		
+	}
+	
+	public boolean isRollback() {
+		return (type == EVENT_ROLLBACK);		
 	}
 	
 }

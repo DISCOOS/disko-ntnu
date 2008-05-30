@@ -9,7 +9,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 
-import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -32,7 +32,7 @@ import org.redcross.sar.util.Internationalization;
  * 3. if key not found -> try enums resource (DiskoEnumFactory)<br>
  * 4. if key not found -> try strings resources (DiskoStringFactory)<br>
  * 5. if key not found -> try installed resources (Internationalization)<br>
- * 6. if all this fails -> button property is set to null <br>
+ * 6. if all this fails -> button properties is set to null <br>
  * 
  * 
  * @author kennetgu

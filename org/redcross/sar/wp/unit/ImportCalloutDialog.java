@@ -1,19 +1,20 @@
 package org.redcross.sar.wp.unit;
 
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.IDiskoWorkListener;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelImportStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
-import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -42,24 +43,22 @@ import java.awt.event.ActionListener;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 /**
  * Dialog handling import of new call-outs
  * 
  * @author thomasl
  */
-public class ImportCalloutDialog extends DiskoDialog
+public class ImportCalloutDialog extends DefaultDialog
 {
 	private static final long serialVersionUID = 1L;
-
-    private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
 	private static final String IMPORT_ID = "IMPORT";
 	private static final String CONFIRM_ID = "CONFIRM";
@@ -67,12 +66,10 @@ public class ImportCalloutDialog extends DiskoDialog
 	
 	List<PersonnelAuxiliary> m_personnelList;
 	
-	private JPanel m_contentsPanel;
+	private DefaultPanel m_contentsPanel;
 	private JPanel m_topPanel;
-	private JPanel m_bottomPanel;
 	
 	private JPanel m_importPanel;
-	private JLabel m_importTopLabel;
 	private JTextField m_dtgTextField;
 	private JTextField m_titleTextField;
 	private JTextField m_organizationTextField;
@@ -81,75 +78,154 @@ public class ImportCalloutDialog extends DiskoDialog
 	private JButton m_fileDialogButton;
 	
 	private JPanel m_confirmPanel;
-	private JLabel m_confirmTopLanel;
 	private JTable m_personnelTable;
 	private ImportPersonnelTableModel m_tableModel;
 	
 	private JButton m_backButton;
 	private JButton m_nextButton;
-	private JButton m_cancelButton;
 	private JButton m_okButton;
 	
-	private IDiskoWpModule m_wpModule;
+	private IDiskoWpUnit m_wpUnit;
 	
-	public ImportCalloutDialog(IDiskoWpModule wp)
+	public ImportCalloutDialog(IDiskoWpUnit wp)
 	{
+		// forward
 		super(wp.getApplication().getFrame());
-		this.setModal(true);
-		m_wpModule = wp;
+		
+		// prepare
+		m_wpUnit = wp;
 		m_personnelList = new LinkedList<PersonnelAuxiliary>();
 		
+		// initialize gui
 		initialize();
+		
 	}
 	
 	private void initialize()
 	{
+		// prepare dialog
+		this.setModal(true);
 		this.setPreferredSize(new Dimension(400, 450));
-		m_contentsPanel = new JPanel();
-		m_contentsPanel.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.PAGE_AXIS));
-		m_topPanel = new JPanel(new CardLayout());
-		m_contentsPanel.add(m_topPanel);
-		m_bottomPanel = new JPanel();
-		m_contentsPanel.add(m_bottomPanel);
 		
+		// create content panel
+		m_contentsPanel = new DefaultPanel("");
+		m_contentsPanel.setRequestHideOnFinish(false);
+		m_contentsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+		m_contentsPanel.setPreferredBodySize(new Dimension(398, 200));
+		
+		// prepare body panel
+		m_contentsPanel.setBodyLayout(new CardLayout());
+		m_topPanel = (JPanel)m_contentsPanel.getBodyComponent();
+		
+		// forward
 		initializeImportPanel();
 		initializeConfirmPanel();
 		initializeButtons();
+
+		// add work listener
+		m_contentsPanel.addDiskoWorkListener((IDiskoWorkListener)m_wpUnit);
 		
-		this.add(m_contentsPanel);
+		// add action listener		
+		m_contentsPanel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e)
+			{
+				String cmd = e.getActionCommand();
+				if("back".equals(cmd)) {
+					if(m_currentPanel == CONFIRM_ID) {
+						m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
+						CardLayout layout = (CardLayout)m_topPanel.getLayout();
+						layout.show(m_topPanel, IMPORT_ID);
+						m_currentPanel = IMPORT_ID;
+						
+						m_okButton.setEnabled(false);
+						m_backButton.setEnabled(false);
+					}
+				}
+				else if("next".equals(cmd)) {
+					if(m_currentPanel == IMPORT_ID)
+					{
+						try
+						{
+							importFile();
+							checkForPreExistingPersonnel();
+							m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 2/2");
+							CardLayout layout = (CardLayout)m_topPanel.getLayout();
+							layout.show(m_topPanel, CONFIRM_ID);
+							m_currentPanel = CONFIRM_ID;
+							m_contentsPanel.setDirty(true);						
+							m_okButton.setEnabled(true);
+							m_backButton.setEnabled(true);
+						} 
+						catch (FileNotFoundException ex) {
+							Utils.showWarning("File " +  m_fileTextField.getText() + " eksisterer ikke");							
+						}
+						catch (IOException ex) {
+							ex.printStackTrace();
+						}
+						
+					}
+					else
+					{
+						m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
+						saveCallout();
+						CardLayout layout = (CardLayout)m_topPanel.getLayout();
+						layout.show(m_topPanel, IMPORT_ID);
+						m_currentPanel = IMPORT_ID;
+						clearForm();
+						m_contentsPanel.finish();
+					}					
+				}
+				else if("finish".equals(cmd)) {
+					m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
+					saveCallout();
+					CardLayout layout = (CardLayout)m_topPanel.getLayout();
+					layout.show(m_topPanel, IMPORT_ID);
+					m_currentPanel = IMPORT_ID;
+					clearForm();
+					fireOnWorkFinish(this,null);
+					
+				}
+				else if("cancel".equals(cmd)) {
+					m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
+					CardLayout layout = (CardLayout)m_topPanel.getLayout();
+					layout.show(m_topPanel, IMPORT_ID);
+					m_currentPanel = IMPORT_ID;
+					setVisible(false);
+					fireOnWorkCancel(this,null);
+				}
+			}
+		});
+		
+		// add content panel
+		this.setContentPane(m_contentsPanel);
 		this.pack();
 	}
 
 	private void initializeImportPanel()
 	{
 		m_importPanel = new JPanel(new GridBagLayout());
+		m_importPanel.setPreferredSize(new Dimension(398,200));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		
-		m_importTopLabel = new JLabel();
-		m_importTopLabel.setText(m_resources.getString("ImportCallOut.text") + " 1/2");
-		gbc.gridwidth = 3;
-		m_importPanel.add(m_importTopLabel, gbc);
-		gbc.gridy++;
-		
 		m_dtgTextField = new JTextField();
 		layoutComponent(m_importPanel, "DTG", m_dtgTextField, gbc, 1);
 		
 		m_titleTextField = new JTextField();
 		gbc.gridwidth = 2;
-		layoutComponent(m_importPanel, m_resources.getString("Title.text"), m_titleTextField, gbc, 1);
+		layoutComponent(m_importPanel, m_wpUnit.getBundleText("Title.text"), m_titleTextField, gbc, 1);
 		
 		m_organizationTextField = new JTextField();
 		gbc.gridwidth = 2;
-		layoutComponent(m_importPanel, m_resources.getString("Organization.text"), m_organizationTextField, gbc, 1);
+		layoutComponent(m_importPanel, m_wpUnit.getBundleText("Organization.text"), m_organizationTextField, gbc, 1);
 		
 		m_departmentTextField = new JTextField();
 		gbc.gridwidth = 2;
-		layoutComponent(m_importPanel, m_resources.getString("Department.text"), m_departmentTextField, gbc, 1);
+		layoutComponent(m_importPanel, m_wpUnit.getBundleText("Department.text"), m_departmentTextField, gbc, 1);
 		
 		gbc.gridwidth = 3;
 		m_importPanel.add(new JSeparator(JSeparator.HORIZONTAL), gbc);
@@ -157,9 +233,9 @@ public class ImportCalloutDialog extends DiskoDialog
 		
 		gbc.gridwidth = 1;
 		m_fileTextField = new JTextField();
-		layoutComponent(m_importPanel, m_resources.getString("FileName.text"), m_fileTextField, gbc, 0);
+		layoutComponent(m_importPanel, m_wpUnit.getBundleText("FileName.text"), m_fileTextField, gbc, 0);
 
-		String text = m_resources.getString("File.text");
+		String text = m_wpUnit.getBundleText("File.text");
 		m_fileDialogButton = DiskoButtonFactory.createButton(text,text,null,ButtonSize.NORMAL);
 		m_fileDialogButton.addActionListener(new ActionListener()
 		{
@@ -184,7 +260,7 @@ public class ImportCalloutDialog extends DiskoDialog
 		fileDescription.setEditable(false);
 		fileDescription.setWrapStyleWord(true);
 		fileDescription.setLineWrap(true);
-		fileDescription.setText(m_resources.getString("PersonnelFileDescription.text"));
+		fileDescription.setText(m_wpUnit.getBundleText("PersonnelFileDescription.text"));
 		gbc.gridwidth = 3;
 		gbc.gridx = 0;
 		m_importPanel.add(fileDescription, gbc);
@@ -199,9 +275,7 @@ public class ImportCalloutDialog extends DiskoDialog
 	{
 		m_confirmPanel = new JPanel();
 		m_confirmPanel.setLayout(new BoxLayout(m_confirmPanel, BoxLayout.PAGE_AXIS));
-		
-		m_confirmTopLanel = new JLabel(m_resources.getString("ImportCallOut.text") + " 2/2");
-		m_confirmPanel.add(m_confirmTopLanel);
+		m_confirmPanel.setPreferredSize(new Dimension(398,200));
 		
 		m_tableModel = new ImportPersonnelTableModel();
 		m_personnelTable = new JTable(m_tableModel);
@@ -230,91 +304,15 @@ public class ImportCalloutDialog extends DiskoDialog
 
 	private void initializeButtons()
 	{
-		m_backButton = DiskoButtonFactory.createButton("GENERAL.BACK",ButtonSize.NORMAL);
-		m_backButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				if(m_currentPanel == CONFIRM_ID)
-				{
-					CardLayout layout = (CardLayout)m_topPanel.getLayout();
-					layout.show(m_topPanel, IMPORT_ID);
-					m_currentPanel = IMPORT_ID;
-					
-					m_okButton.setEnabled(false);
-					m_backButton.setEnabled(false);
-				}
-			}
-		});
+		m_backButton = DiskoButtonFactory.createButton("GENERAL.NEXT",ButtonSize.NORMAL);
 		m_backButton.setEnabled(false);
-		m_bottomPanel.add(m_backButton);
+		m_contentsPanel.insertButton("finish", m_backButton, "back");
 		
-		m_nextButton = DiskoButtonFactory.createButton("GENERAL.NEXT",ButtonSize.NORMAL);
-		m_nextButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent ae)
-			{
-				if(m_currentPanel == IMPORT_ID)
-				{
-					try
-					{
-						importFile();
-						checkForPreExistingPersonnel();
-					} 
-					catch (IOException e)
-					{
-					}
-					
-					CardLayout layout = (CardLayout)m_topPanel.getLayout();
-					layout.show(m_topPanel, CONFIRM_ID);
-					m_currentPanel = CONFIRM_ID;
-					
-					m_okButton.setEnabled(true);
-					m_backButton.setEnabled(true);
-				}
-				else
-				{
-					saveCallout();
-					CardLayout layout = (CardLayout)m_topPanel.getLayout();
-					layout.show(m_topPanel, IMPORT_ID);
-					m_currentPanel = IMPORT_ID;
-					clearContents();
-					fireOnWorkFinish();
-				}
-			}
-		});
-		m_bottomPanel.add(m_nextButton);
+		m_nextButton = DiskoButtonFactory.createButton("GENERAL.BACK",ButtonSize.NORMAL);
+		m_contentsPanel.insertButton("finish", m_nextButton, "next");
 		
-		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+		m_okButton = (JButton)m_contentsPanel.getButton("finish");
 		m_okButton.setEnabled(false);
-		m_okButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				saveCallout();
-				CardLayout layout = (CardLayout)m_topPanel.getLayout();
-				layout.show(m_topPanel, IMPORT_ID);
-				m_currentPanel = IMPORT_ID;
-				clearContents();
-				fireOnWorkFinish();
-			}
-		});
-		m_bottomPanel.add(m_okButton);
-		
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				CardLayout layout = (CardLayout)m_topPanel.getLayout();
-				layout.show(m_topPanel, IMPORT_ID);
-				m_currentPanel = IMPORT_ID;
-				fireOnWorkCancel();
-			}
-		});
-		m_bottomPanel.add(m_cancelButton);
-		
-		
 	}
 	
 	private void layoutComponent(JPanel panel, String label, JComponent component, GridBagConstraints gbc, int height)
@@ -332,7 +330,7 @@ public class ImportCalloutDialog extends DiskoDialog
 		gbc.gridy += height;
 	}
 	
-	private void clearContents()
+	private void clearForm()
 	{
 		m_personnelList.clear();
 		
@@ -404,7 +402,7 @@ public class ImportCalloutDialog extends DiskoDialog
 	{
 //		// Build key hash-set
 //		HashSet<String> personnelKeys = new HashSet<String>();
-//		for(IPersonnelIf personnel : m_wpModule.getMsoManager().getCmdPost().getAttendanceListItems())
+//		for(IPersonnelIf personnel : m_wpUnit.getMsoManager().getCmdPost().getAttendanceListItems())
 //		{
 //			personnelKeys.add(personnel.getFirstname() + " " + personnel.getLastname());
 //		}
@@ -421,7 +419,7 @@ public class ImportCalloutDialog extends DiskoDialog
 		// Brute-force check
 		for(PersonnelAuxiliary personnel : m_personnelList)
 		{
-			for(IPersonnelIf potentialMatch : m_wpModule.getMsoManager().getCmdPost().getAttendanceListItems())
+			for(IPersonnelIf potentialMatch : m_wpUnit.getMsoManager().getCmdPost().getAttendanceListItems())
 			{
 				personnel.equals(potentialMatch);
 			}
@@ -435,7 +433,7 @@ public class ImportCalloutDialog extends DiskoDialog
 	private void saveCallout()
 	{
 		// Create call-out
-		ICalloutIf callout = m_wpModule.getMsoManager().createCallout();
+		ICalloutIf callout = m_wpUnit.getMsoManager().createCallout();
 		
 		try
 		{
@@ -464,7 +462,7 @@ public class ImportCalloutDialog extends DiskoDialog
 						if(personnel.isCreateNew())
 						{
 							// Create new personnel instance
-							msoPersonnel = m_wpModule.getMsoManager().createPersonnel();
+							msoPersonnel = m_wpUnit.getMsoManager().createPersonnel();
 							msoPersonnel.setDataSourceID(personnel.getId());
 							msoPersonnel.setFirstname(personnel.getFirstName());
 							msoPersonnel.setLastname(personnel.getLastName());
@@ -502,7 +500,7 @@ public class ImportCalloutDialog extends DiskoDialog
 					else
 					{
 						// Create new personnel
-						msoPersonnel = m_wpModule.getMsoManager().createPersonnel();
+						msoPersonnel = m_wpUnit.getMsoManager().createPersonnel();
 						msoPersonnel.setFirstname(personnel.getFirstName());
 						msoPersonnel.setLastname(personnel.getLastName());
 						msoPersonnel.setTelephone1(personnel.getPhone());
@@ -757,8 +755,8 @@ public class ImportCalloutDialog extends DiskoDialog
 			m_optionsPanel = new JPanel();
 			m_optionsPanel.setBackground(m_personnelTable.getBackground());
 			
-			String letter = m_resources.getString("UpdateButton.text");
-			String text = m_resources.getString("UpdateButton.letter");
+			String text = m_wpUnit.getBundleText("UpdateButton.text");
+			String letter = m_wpUnit.getBundleText("UpdateButton.letter");
 			m_updateButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_updateButton.addActionListener(new ActionListener()
 			{
@@ -773,8 +771,8 @@ public class ImportCalloutDialog extends DiskoDialog
 			});
 			m_optionsPanel.add(m_updateButton);
 			
-			letter = m_resources.getString("KeepButton.text");
-			text = m_resources.getString("KeepButton.letter");
+			text = m_wpUnit.getBundleText("KeepButton.text");
+			letter = m_wpUnit.getBundleText("KeepButton.letter");
 			m_keepButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_keepButton.addActionListener(new ActionListener()
 			{
@@ -789,8 +787,8 @@ public class ImportCalloutDialog extends DiskoDialog
 			});
 			m_optionsPanel.add(m_keepButton);
 			
-			letter = m_resources.getString("NewButton.text");
-			text = m_resources.getString("NewButton.letter");
+			text = m_wpUnit.getBundleText("NewButton.text");
+			letter = m_wpUnit.getBundleText("NewButton.letter");
 			m_newButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 			m_newButton.addActionListener(new ActionListener()
 			{

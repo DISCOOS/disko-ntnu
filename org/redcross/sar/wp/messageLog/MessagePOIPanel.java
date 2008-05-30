@@ -25,17 +25,17 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.GotoPanel;
-import org.redcross.sar.gui.map.POIPanel;
-import org.redcross.sar.gui.map.POITypesPanel;
-import org.redcross.sar.gui.DefaultDiskoPanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.panel.GotoPanel;
+import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.panel.POIPanel;
+import org.redcross.sar.gui.panel.POITypesPanel;
 import org.redcross.sar.gui.DiskoIcon;
-import org.redcross.sar.gui.NavBar;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.command.POITool;
-import org.redcross.sar.map.command.IDrawTool.DrawMode;
-import org.redcross.sar.map.command.IDiskoTool.DiskoToolType;
-import org.redcross.sar.map.command.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.POITool;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -55,7 +55,7 @@ import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
  * 
  * @author thomasl
  */
-public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageComponentIf
+public class MessagePOIPanel extends DefaultPanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -278,10 +278,10 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 		// ensure that work is done synchroniously
 		boolean isWorkPoolMode = m_tool.setWorkPoolMode(false);				
 
+		// get current point
+		Point point = panel.getPoint();
+		
 		try {
-			
-			// get current point
-			Point point = panel.getPoint();
 			
 			// any change?
 			if(point!=null && point.isEmpty()) {
@@ -302,7 +302,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 				panel.setPOI(poi);
 				panel.setRemarks(null);
 				
-				// apply changes
+				// apply changes?
 				if(panel.finish()) {
 				
 					// get added poi
@@ -334,15 +334,14 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 					// set flag
 					isSuccess = true;					
 				}									
-			}			
-			else {
-				// notify
-				Utils.showWarning("Ingen posisjon er valgt");
 			}
-		} catch (Exception ex) {
-			// notify
-			Utils.showWarning("Ugyldig koordinat format");
-		}
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}			
 
 		// resume work pool mode
 		m_tool.setWorkPoolMode(isWorkPoolMode);				
@@ -471,7 +470,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 			// activate tool
 			m_wp.getMap().setActiveTool(m_tool, 0);
 			// show tool
-			NavBar bar = m_wp.getApplication().getNavBar();
+			NavBarPanel bar = m_wp.getApplication().getNavBar();
 			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
 			bar.setEnabledButtons(types, true, true);
 			bar.setVisibleButtons(types, true, true);
@@ -488,7 +487,7 @@ public class MessagePOIPanel extends DefaultDiskoPanel implements IEditMessageCo
 	public void hideComponent()
 	{
 		// hide tool
-		NavBar bar = m_wp.getApplication().getNavBar();
+		NavBarPanel bar = m_wp.getApplication().getNavBar();
 		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
 		bar.setEnabledButtons(types, false, true);
 		bar.setVisibleButtons(types, false, true);

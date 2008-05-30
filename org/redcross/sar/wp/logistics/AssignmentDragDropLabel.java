@@ -8,7 +8,7 @@ import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IDiskoDropTarget;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
-import org.redcross.sar.gui.renderers.IconRenderer;
+import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 
 import java.awt.Component;

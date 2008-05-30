@@ -2,7 +2,7 @@ package org.redcross.sar.map.command;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.map.command.IDiskoCommand.IDiskoCommandState;
 
 public interface IHostDiskoCommand {
@@ -13,7 +13,7 @@ public interface IHostDiskoCommand {
 	
 	public void onClick();
 	
-	public DiskoDialog getDialog();
+	public DefaultDialog getDialog();
 	
 	public AbstractButton getButton();
 	

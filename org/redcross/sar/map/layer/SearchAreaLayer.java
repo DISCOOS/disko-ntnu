@@ -109,7 +109,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 						display.drawPolygon(polygon);
 						display.setSymbol(textSymbol);	
 						if( isTextShown) {
-							display.drawText(polygon.getCentroid(), MsoUtils.getSearchAreaName(searchArea));
+							display.drawText(polygon.getCentroid(), feature.getCaption());
 						}
 						
 						// restore

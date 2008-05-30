@@ -34,13 +34,13 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,width,value,isEditable);
 	}
-	
+		
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			JCheckBox cb = new JCheckBox();
 			m_component = cb;
@@ -50,7 +50,6 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 				public void actionPerformed(ActionEvent e) {
 					if(isWorking()) return;
 					fireOnWorkChange();
-		
 				}
 				
 			});
@@ -58,11 +57,6 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
-	
 	public JCheckBox getCheckBox() {
 		return ((JCheckBox)m_component);
 	}
@@ -110,5 +104,11 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		// failure
 		return false;
 	}	
+	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getCheckBox().setEnabled(isEditable && isEnabled());		
+	}
 		
 }

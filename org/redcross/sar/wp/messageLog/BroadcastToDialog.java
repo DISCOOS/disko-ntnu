@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -37,7 +37,7 @@ import javax.swing.SwingConstants;
  * Dialog shown when setting the to field of a message in broadcast mode
  * @author thomasl
  */
-public class BroadcastToDialog extends DiskoDialog implements IEditMessageComponentIf
+public class BroadcastToDialog extends DefaultDialog implements IEditMessageComponentIf
 {
 
 	private static final long serialVersionUID = 1L;

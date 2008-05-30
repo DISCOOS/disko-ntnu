@@ -19,6 +19,7 @@ import com.esri.arcgis.carto.IGraphicsContainer;
 import com.esri.arcgis.carto.IGraphicsContainerSelect;
 import com.esri.arcgis.carto.IGraphicsLayer;
 import com.esri.arcgis.carto.ILayer;
+import com.esri.arcgis.carto.IMap;
 import com.esri.arcgis.carto.SymbolBackground;
 import com.esri.arcgis.carto.TextElement;
 import com.esri.arcgis.carto.esriViewDrawPhase;
@@ -30,6 +31,7 @@ import com.esri.arcgis.geometry.Envelope;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.interop.AutomationException;
 
 public class DrawFrame {
@@ -136,8 +138,9 @@ public class DrawFrame {
 		}
 		// was activated?
 		if(activeView.isMapActivated()) {
+			IMap map = activeView.getFocusMap();
 			// create draw frame layer and get hook to IGraphicsContainer
-			container = (IGraphicsContainer)MapUtil.createCompositeGraphicsLayer(activeView.getFocusMap(), "DrawFrame");
+			container = (IGraphicsContainer)MapUtil.createCompositeGraphicsLayer(map, "DrawFrame");
 			// add elements to graphics container
 			container.addElement(getGroupElement(),0);			
 			container.addElement(getFrameElement(),0);

@@ -5,10 +5,10 @@ import java.io.IOException;
 import javax.swing.JComponent;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ScaleDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.ScaleDialog;
 import org.redcross.sar.map.IDiskoMap;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -44,7 +44,7 @@ public class ScaleCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				ScaleDialog scaleDialog = (ScaleDialog)dialog;
 				scaleDialog.onLoad((IDiskoMap)obj);
-				scaleDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false, true);			
+				scaleDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, false, true);			
 			}
 		}
 		catch(Exception e) {

@@ -7,8 +7,7 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.event.DiskoWorkEvent.DiskoWorkEventType;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -53,7 +52,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 	protected IMsoManagerIf.MsoClassCode msoClassCode = null;	
 	
 	// GUI components
-	protected DiskoDialog dialog = null;
+	protected DefaultDialog dialog = null;
 	protected JPanel propertyPanel = null;
 	protected AbstractButton button = null;
 
@@ -190,7 +189,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		return button;
 	}
 	
-	public DiskoDialog getDialog() {
+	public DefaultDialog getDialog() {
 		return dialog;
 	}
 
@@ -284,57 +283,34 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		}
 	}
 
-	protected void fireOnWorkFinish() {
+	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_FINISH);
+		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_FINISH);
 	   	// forward
-    	fireOnWorkFinish(e);
+		fireOnWorkPerformed(e);
     }
     
-    protected void fireOnWorkFinish(DiskoWorkEvent e)
-    {
-		// notify listeners
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).onWorkFinish(e);
-		}
-	}
-
-	protected void fireOnWorkCancel() {
+	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CANCEL);
+		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_CANCEL);
     	// forward
-    	fireOnWorkCancel(e);
+		fireOnWorkPerformed(e);
     }
     
-    protected void fireOnWorkCancel(DiskoWorkEvent e)
-    {
-		// notify listeners
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).onWorkCancel(e);
-		}
-	}
-
-	protected void fireOnWorkChange() {
+	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,null,DiskoWorkEventType.TYPE_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_CHANGE);
     	// forward
-    	fireOnWorkCancel(e);
+		fireOnWorkPerformed(e);
     }
-	
-    protected void fireOnWorkChange(DiskoWorkEvent e)
+	    
+    protected void fireOnWorkPerformed(DiskoWorkEvent e)
     {
 		// notify listeners
 		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).onWorkChange(e);
+			listeners.get(i).onWorkPerformed(e);
 		}
 	}
-    
-	protected void fireOnWorkChange(Object data) {
-		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEventType.TYPE_CHANGE);
-		// forward
-		fireOnWorkChange(e);    	
-    }
     
     protected boolean isWorking() {
 		return (workCount>0);

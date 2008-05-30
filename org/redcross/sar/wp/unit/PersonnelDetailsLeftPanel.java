@@ -6,7 +6,7 @@ import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderers.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;

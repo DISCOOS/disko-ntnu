@@ -5,6 +5,7 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -35,11 +36,11 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 	}
 	
 	/*==================================================================
-	 * Protected methods
+	 * Public methods
 	 *================================================================== 
 	 */
 	
-	protected Component getComponent() {
+	public Component getComponent() {
 		if(m_component==null) {
 			JTextArea area = new JTextArea();
 			area.setEditable(m_isEditable);
@@ -63,11 +64,6 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 			
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
-	
 	public JTextArea getTextArea() {
 		return (JTextArea)m_component;
 	}
@@ -107,5 +103,11 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 		// failure
 		return false;
 	}	
+	
+	@Override
+	public void setEditable(boolean isEditable) {
+		super.setEditable(isEditable);
+		getTextArea().setEditable(isEditable);		
+	}
 	
 }

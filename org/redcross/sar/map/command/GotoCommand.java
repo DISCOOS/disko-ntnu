@@ -5,10 +5,10 @@ import java.io.IOException;
 import javax.swing.JComponent;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.DiskoDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.GotoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.map.GotoDialog;
 import org.redcross.sar.map.IDiskoMap;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -45,7 +45,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				GotoDialog gotoDialog = (GotoDialog)dialog;
 				gotoDialog.onLoad((IDiskoMap)obj);
-				gotoDialog.setLocationRelativeTo((JComponent)obj, DiskoDialog.POS_EAST, false, true);			
+				gotoDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, false, true);			
 			}
 		}
 		catch (Exception e) {
@@ -57,8 +57,6 @@ public class GotoCommand extends AbstractDiskoCommand {
 	public void onClick() {
 		// forward
 		super.onClick();
-		// update panel
-		((GotoDialog)dialog).getClickPoint();
 	}	
 	
 }

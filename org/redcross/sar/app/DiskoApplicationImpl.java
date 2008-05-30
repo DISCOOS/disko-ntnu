@@ -4,9 +4,9 @@ import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
-import org.redcross.sar.gui.NavBar;
-import org.redcross.sar.gui.SysBar;
 import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.panel.SysBarPanel;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
@@ -33,6 +33,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -276,6 +277,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			// pass through events from classes
 			keyEventDispatcher.addPassed(JTextArea.class);
 			keyEventDispatcher.addPassed(JTextField.class);
+			keyEventDispatcher.addPassed(JFormattedTextField.class);
 			// add to current KeyboardFocusManager
 			KeyboardFocusManager.getCurrentKeyboardFocusManager()
 								.addKeyEventDispatcher(keyEventDispatcher);
@@ -342,12 +344,12 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		return uiFactory;
 	}
 
-	public NavBar getNavBar()
+	public NavBarPanel getNavBar()
 	{
 		return getUIFactory().getMainPanel().getNavBar();
 	}
 
-	public SysBar getSysBar()
+	public SysBarPanel getSysBar()
 	{
 		return getUIFactory().getMainPanel().getSysBar();
 	}
@@ -622,7 +624,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	 */
 	public void mergeOperations()
 	{
-		JOptionPane.showMessageDialog(null, "Beklager, fletting er foreløpig ikke støttet", "Ikke støttet", JOptionPane.WARNING_MESSAGE);
+		Utils.showWarning("Beklager, fletting er foreløpig ikke støttet");
 	}
 
 	public void newOperation()
@@ -647,8 +649,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			// reset flag
 			waitingForNewOp=false;
 			// notify user of new operation created
-			JOptionPane.showMessageDialog(uiFactory.getContentPanel(), bundle.getString(OPERATION_CREATED_TEXT),
-					bundle.getString(OPERATION_CREATED_TITLE), JOptionPane.INFORMATION_MESSAGE);
+			Utils.showMessage(bundle.getString(OPERATION_CREATED_TEXT));
 			// schedule work
 			doSetActiveOperation(opId);
 		}
@@ -818,8 +819,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				// failed?
 				if(!hasActive) {
 					// model driver is not initiated. Display message to user and shut down
-					JOptionPane.showMessageDialog(uiFactory.getContentPanel(), bundle.getString(INIT_ERROR_SHUTDOWN_TEXT),
-							bundle.getString(INIT_ERROR_TEXT), JOptionPane.ERROR_MESSAGE);
+					Utils.showError(bundle.getString(INIT_ERROR_SHUTDOWN_TEXT));
 					shutdown();
 				}
 				// finished
@@ -830,8 +830,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				e.printStackTrace();
 			}
 			// model driver is not initiated. Display message to user and shut down
-			JOptionPane.showMessageDialog(uiFactory.getContentPanel(), bundle.getString(WORK_ERROR_TEXT),
-					bundle.getString(WORK_ERROR_TITLE), JOptionPane.ERROR_MESSAGE);
+			Utils.showError(bundle.getString(WORK_ERROR_TEXT));
 			shutdown();				
 		}		
 		
@@ -944,8 +943,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				e.printStackTrace();
 			}
 			// model driver is not initiated. Display message to user and shut down
-			JOptionPane.showMessageDialog(uiFactory.getContentPanel(), bundle.getString(WORK_ERROR_TEXT),
-					bundle.getString(WORK_ERROR_TITLE), JOptionPane.ERROR_MESSAGE);
+			Utils.showError(bundle.getString(WORK_ERROR_TEXT));
 			shutdown();				
 		}		
 	}
@@ -1074,8 +1072,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				e.printStackTrace();
 			}
 			// model driver is not initiated. Display message to user and shut down
-			JOptionPane.showMessageDialog(uiFactory.getContentPanel(), bundle.getString(WORK_ERROR_TEXT),
-					bundle.getString(WORK_ERROR_TITLE), JOptionPane.ERROR_MESSAGE);
+			Utils.showError(bundle.getString(WORK_ERROR_TEXT));
 			shutdown();				
 		}		
 	}

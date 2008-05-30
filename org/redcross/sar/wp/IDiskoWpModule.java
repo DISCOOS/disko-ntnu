@@ -99,9 +99,9 @@ public interface IDiskoWpModule {
      */
     public boolean confirmDeactivate();
 
-	public void addDiskoWorkEventListener(IDiskoWorkListener listener);
+	public void addDiskoWorkListener(IDiskoWorkListener listener);
 
-    public void removeDiskoWorkEventListener(IDiskoWorkListener listener);
+    public void removeDiskoWorkListener(IDiskoWorkListener listener);
 
     public void showWarning(String msg);
 
