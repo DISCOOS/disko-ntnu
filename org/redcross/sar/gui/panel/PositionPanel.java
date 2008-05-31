@@ -22,6 +22,7 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.IconListCellRenderer;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -110,16 +111,26 @@ public class PositionPanel extends DefaultToolPanel {
 			gotoPanel.addDiskoWorkListener(new IDiskoWorkListener() {
 
 				public void onWorkPerformed(DiskoWorkEvent e) {
-					try {
+					
+					// consume?
+					if(!isChangeable()) return;
 
-						// consume?
-						if(!isChangeable()) return;
+					// consume changes
+					setChangeable(false);
+					
+					try {
+					
+						// get position
+						Position p = getGotoPanel().getPositionField().getPosition();
 						
-						// update tool
-						getTool().setPoint(
-								gotoPanel.getPositionField().getPoint(
-										getTool().getMap().getSpatialReference()));
+						// has point?
+						if(p!=null) {
+							// convert and update tool
+							Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
+							getTool().setPoint(point);							
+						}
 						
+					
 					} catch (AutomationException ex) {
 						// TODO Auto-generated catch block
 						ex.printStackTrace();
@@ -127,6 +138,10 @@ public class PositionPanel extends DefaultToolPanel {
 						// TODO Auto-generated catch block
 						ex.printStackTrace();
 					}
+					
+					// resume changes
+					setChangeable(true);
+					
 				}
 				
 			});
@@ -340,32 +355,46 @@ public class PositionPanel extends DefaultToolPanel {
 		// consume change events
 		setChangeable(false);
 		
-		try {
-			// get point from coordinates
-			Point point = gotoPanel.getPositionField().getPoint(
-					getTool().getMap().getSpatialReference());
-			// add or move poi?
-			if(point!=null) {
-				// get unit
-				IUnitIf msoUnit = getUnit();
-				// add or move poi?
-				if (msoUnit == null) {
-					Utils.showWarning("Du må først velge en enhet");
-				} else {
-					// forward
-					getTool().setMsoObject(msoUnit);
-					// set point
-					getTool().setPoint(point);
-					// forward
-					getTool().finish();
+		// get unit
+		IUnitIf msoUnit = getUnit();
+		// add or move poi?
+		if (msoUnit == null) {
+			Utils.showWarning("Du må først velge en enhet");
+		} 
+		else {
+			// is position valid?
+			if(getGotoPanel().getPositionField().isPositionValid()) {
+				// get point from coordinates
+				Position p = gotoPanel.getPositionField().getPosition();
+				// has point?
+				if(p!=null) {
+					try {
+						// convert and update tool
+						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
+						getTool().setPoint(point);							
+						// forward
+						getTool().setMsoObject(msoUnit);
+						// set point
+						getTool().setPoint(point);
+						// forward
+						getTool().finish();
+						// finished
+						bFlag = true;
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}		
-				// finished
-				bFlag = true;
+				else 
+					Utils.showWarning("Ingen posisjon er oppgitt");
 			}
-			else 
-				Utils.showWarning("Ingen posisjon er oppgitt");
-		} catch (Exception ex) {
-			Utils.showWarning("Ugyldig format. Sjekk koordinater og prøv igjen");
+			else {
+				Utils.showWarning("Oppgitt posisjon finnes ikke");
+			}
+				
 		}
 		
 		// resume change events
@@ -402,6 +431,9 @@ public class PositionPanel extends DefaultToolPanel {
 			
 			// update attributes
 			getGotoPanel().getPositionField().setPoint(getTool().getPoint());
+			
+			// only update if unit is selected
+			getGotoPanel().getPositionField().setEnabled(getUnit()!=null);
 			
 			// units state
 			getUnitsPanel().setBodyEnabled(getTool().isCreateMode());

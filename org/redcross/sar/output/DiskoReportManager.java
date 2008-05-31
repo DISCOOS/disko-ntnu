@@ -38,6 +38,8 @@ import com.esri.arcgis.display.tagRECT;
 import com.esri.arcgis.geometry.Envelope;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.ISpatialReference;
+import com.esri.arcgis.output.ExportBMP;
+import com.esri.arcgis.output.ExportGIF;
 import com.esri.arcgis.output.ExportPNG;
 import com.esri.arcgis.output.IExport;
 
@@ -157,9 +159,21 @@ public class DiskoReportManager {
 	 * @param assignments
 	 */
 	public void printAssignments(List<IAssignmentIf> assignments){		
+		printAssignments(assignments,m_reportMapScale);
+	}
+	
+	/**
+	 * Prints out an list of assignments to a single report
+	 * @param assignments
+	 * @param map scale
+	 */
+	public void printAssignments(List<IAssignmentIf> assignments, double scale){		
 		
 		// initialize report
 		initialize();		
+		
+		// update scale
+		m_reportMapScale = scale;
 		
 		// get jasper file name
 		String jasperFileName = m_app.getProperty("report.TACTICS_TEMPLATE")+".jasper";
@@ -289,6 +303,14 @@ public class DiskoReportManager {
 		
 	}
 	
+	public double getMapScale() {
+		return m_reportMapScale;
+	}
+	
+	public void setMapScale(double scale) {
+		m_reportMapScale = scale;
+	}
+	
 	private void prepareMap(IAssignmentIf assignment){
 		try{			
 
@@ -344,7 +366,7 @@ public class DiskoReportManager {
 		try{
 			
 			// create objects
-			docExport = new ExportPNG();
+			docExport = new ExportBMP();
 			
 			//set export filename
 			//System.out.println(exportPath);

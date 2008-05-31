@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
@@ -78,25 +79,25 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
                 return;
             }
 
-            aircraftButton = addButton(bundle,UnitType.AIRCRAFT);
+            aircraftButton =  addButton(UnitType.AIRCRAFT);
 			m_buttons.add(aircraftButton);
 
-			boatButton = addButton(bundle, UnitType.BOAT);
+			boatButton = addButton(UnitType.BOAT);
 			m_buttons.add(boatButton);
 
-			dogButton = addButton(bundle, UnitType.DOG);
+			dogButton = addButton(UnitType.DOG);
 			m_buttons.add(dogButton);
 
-			vehicleButton = addButton(bundle, UnitType.VEHICLE);
+			vehicleButton = addButton(UnitType.VEHICLE);
 			m_buttons.add(vehicleButton);
 
-			teamButton = addButton(bundle, UnitType.TEAM);
+			teamButton = addButton(UnitType.TEAM);
 			m_buttons.add(teamButton);
 
-			commandPostButton = addButton(bundle, UnitType.CP);
+			commandPostButton = addButton(UnitType.CP);
 			m_buttons.add(commandPostButton);
 				        
-			allUnits = addButton("GENERAL.ALL",null,null,null);
+			allUnits = DiskoButtonFactory.createButton("GENERAL.ALL", ButtonSize.NORMAL);
 			m_buttons.add(allUnits);
 			
 		}
@@ -106,16 +107,16 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 		}
 	}
 
-    private JButton addButton(ResourceBundle bundle, UnitType unitType) throws MissingResourceException
+    private JButton addButton(UnitType unitType) throws MissingResourceException
     {
         String unitName = unitType.name();
-        String unitText = bundle.getString("UnitType." +unitName + ".text");
-        String unitLetter = bundle.getString("UnitType." +unitName + ".letter");
-        String unitIcon = bundle.getString("UnitType." +unitName + ".icon");
-        return addButton(unitText,unitLetter,unitIcon,unitType);
+        String unitText = DiskoButtonFactory.getText("UnitType." +unitName + ".text",null);
+        String unitLetter = DiskoButtonFactory.getText("UnitType." +unitName + ".letter",null);
+        Icon icon = DiskoButtonFactory.getIcon("UnitType." +unitName + ".icon","48x48",null);
+        return addButton(unitText,unitLetter,icon,unitType);
     }
 
-    private JButton addButton(String name, final String unitTypeLetter, String icon, UnitType unitType)
+    private JButton addButton(String name, final String unitTypeLetter, Icon icon, UnitType unitType)
 	{
 
     	// create button
@@ -124,9 +125,8 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 		// set unit type name?
 		if(unitType!=null)
 			button.setActionCommand(unitType.name());
-		// set icon?		
-		if(button.getIcon()==null && icon!=null && icon.length()!=0)
-			button.setIcon(DiskoIconFactory.getIcon(icon,"48x48"));
+		// set icon
+		button.setIcon(icon);
 		// set text?		
 		if(button.getIcon()==null && button.getText()==null)
 			button.setText(name);

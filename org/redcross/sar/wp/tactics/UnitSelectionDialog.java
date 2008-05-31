@@ -28,6 +28,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -43,6 +44,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 		MESSAGE_SAME_UNIT,
 		MESSAGE_ASSIGNMENT_MISSING,
 		MESSAGE_UNIT_MISSING,
+		MESSAGE_UNIT_RELEASED,
 		MESSAGE_CLEAR,
 		MESSAGE_NOTHING_ALLOCATED
 	}
@@ -238,7 +240,8 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private UnitTable getUnitTable() {
 		if (unitTable == null) {
 			try {
-				unitTable = new UnitTable(msoModel,"32x32");
+				EnumSet<UnitStatus> status = EnumSet.complementOf(EnumSet.of(UnitStatus.RELEASED,UnitStatus.EMPTY));
+				unitTable = new UnitTable(msoModel,"32x32",status);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -492,6 +495,12 @@ public class UnitSelectionDialog extends DefaultDialog {
 		else if(type == MessageBoxType.MESSAGE_ASSIGNMENT_MISSING) {			
 			Utils.showMessage("Begrensning",
 	                "Du må først velge et oppdrag",
+	                MessageDialog.INFORMATION_MESSAGE);
+
+		}
+		else if(type == MessageBoxType.MESSAGE_UNIT_RELEASED) {			
+			Utils.showMessage("Begrensning",
+	                "Enheten du har valgt er oppløst og kan derfor ikke tildeles oppdrag",
 	                MessageDialog.INFORMATION_MESSAGE);
 
 		}

@@ -133,6 +133,8 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 				}
 				
 			});
+			addAction("editsnap");
+			
 		}
 		return snapToAttr;
 	}

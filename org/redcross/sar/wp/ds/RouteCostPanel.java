@@ -38,6 +38,7 @@ import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
+import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -177,9 +178,10 @@ public class RouteCostPanel extends JPanel
 			m_topPanel = new JPanel();
 			m_topPanel.setLayout(new BorderLayout());
 			m_topPanel.setPreferredSize(new Dimension(150, 350));
-			getMap().setNorthBarVisible(true);
-			getMap().setSouthBarVisible(true);
-			m_topPanel.add((JComponent)getMap());
+			MapPanel panel = new MapPanel((DiskoMap)getMap());
+			panel.setNorthBarVisible(true);
+			panel.setSouthBarVisible(true);
+			m_topPanel.add(panel);
 			
 		}
 		return m_topPanel;

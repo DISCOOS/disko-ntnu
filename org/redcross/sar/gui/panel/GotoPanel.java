@@ -1,6 +1,7 @@
 package org.redcross.sar.gui.panel;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -80,7 +81,9 @@ public class GotoPanel extends DefaultPanel {
 		try {
 			this.setCaptionText("Gå til posisjon");
 			this.setBodyComponent(getTabbedPane());
-			// apply mgrs format
+			this.setScrollBarPolicies(
+					BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+					BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 			formatChanged(1);
 		}
 		catch(Exception e) {

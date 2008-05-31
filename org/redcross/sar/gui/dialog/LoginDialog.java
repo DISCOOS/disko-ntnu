@@ -138,7 +138,7 @@ public class LoginDialog extends DefaultDialog {
 	public TextFieldAttribute getUserName() {
 		if (attrUserName == null) {
 			try {
-				attrUserName = new TextFieldAttribute("username","Brukernavn",70,"",true);
+				attrUserName = new TextFieldAttribute("username","Brukernavn",100,"",true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -154,7 +154,7 @@ public class LoginDialog extends DefaultDialog {
 	public TextFieldAttribute getPassword() {
 		if (attrPassword == null) {
 			try {
-				attrPassword = new TextFieldAttribute("password","Passord",70,"",true);
+				attrPassword = new TextFieldAttribute("password","Passord",100,"",true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -170,7 +170,7 @@ public class LoginDialog extends DefaultDialog {
 	public ComboAttribute getRoles() {
 		if (attrRoles == null) {
 			try {
-				attrRoles = new ComboAttribute("roles","Roller",70,"",false);
+				attrRoles = new ComboAttribute("roles","Roller",100,"",false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

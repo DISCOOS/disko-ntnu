@@ -119,7 +119,7 @@ public class MapStatusPanel extends JPanel {
 		return scaleLabel;
 	}
 	
-	public void onMouseDown(Point p) {
+	public void onMouseClick(Point p) {
 		try {
 			if(p!=null && !p.isEmpty())
 				clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true));		

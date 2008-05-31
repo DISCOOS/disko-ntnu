@@ -112,9 +112,6 @@ public class Utils {
 			messageDialog = new MessageDialog(getApp().getFrame());
 			messageDialog.setLocationRelativeTo(getApp().getFrame(), DefaultDialog.POS_CENTER, false,true);
 			
-			// lock application
-			boolean isLocked = Utils.getApp().setLocked(true);
-			
 			// force progress dialog to hide
 			try { DiskoProgressMonitor.getInstance().hide(); }
 			catch(Exception e) { e.printStackTrace(); }
@@ -125,9 +122,6 @@ public class Utils {
 			// show progress dialog again
 			try { DiskoProgressMonitor.getInstance().showAgain(); }
 			catch(Exception e) { e.printStackTrace(); }
-			
-			// resume lock mode
-			Utils.getApp().setLocked(isLocked);
 			
 			// reset message dialog
 			messageDialog = null;

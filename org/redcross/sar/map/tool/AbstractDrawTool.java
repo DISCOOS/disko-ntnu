@@ -510,14 +510,20 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	@Override
 	public void onMouseMove(int button, int shift, int x, int y) {
 
+		moveCount++;
+		
+		if(moveCount<2) return;
+		
+		moveCount = 0;
+		
 		// get tic
-		long tic = Calendar.getInstance().getTimeInMillis();
+		//long tic = Calendar.getInstance().getTimeInMillis();
 		
 		// consume?
-		if(tic-previous<250) return;
+		//if(tic-previous<250) return;
 		
 		// update tic
-		previous = tic;
+		//previous = tic;
 		
 		// is moving
 		isMoving = true;

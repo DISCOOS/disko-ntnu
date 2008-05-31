@@ -351,8 +351,9 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			tool.isActive = this.isActive;
 			tool.showDirect = this.showDirect;
 			tool.showDialog = this.showDialog;
-			// forward
-			dialog.setSelectedTool(this.tool,this.isActive);
+			// forward?
+			if(this.tool!=null)
+				dialog.setSelectedTool(this.tool,this.isActive);
 		}
 	}
 }

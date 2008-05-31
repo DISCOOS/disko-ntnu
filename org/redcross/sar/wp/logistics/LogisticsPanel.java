@@ -7,7 +7,9 @@ import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
@@ -104,9 +106,12 @@ public class LogisticsPanel implements
             return;
         }*/
         defineSubpanelActionHandlers();
-		m_map.setNorthBarVisible(true);
-		m_map.setSouthBarVisible(true);
-        m_splitter3.setLeftComponent((JComponent)m_map);
+
+		MapPanel panel = new MapPanel(m_map);
+		panel.setNorthBarVisible(true);
+		panel.setSouthBarVisible(true);
+        m_splitter3.setLeftComponent(panel);
+        
 //        setSplitters();
 //        setPanelSizes();
         initUnitTable();
@@ -258,6 +263,10 @@ public class LogisticsPanel implements
 	                m_mapSelectedByButton = false;
 	                isDirty = true;
 	            }
+	            
+	            // set unit
+	            getInfoPanelHandler().setUnit(anAssignment.getOwningUnit());
+	            
 	            // refresh dirty layers
 	            if(isDirty) {
 		            if(m_mapSelectedAssignment!=null) {

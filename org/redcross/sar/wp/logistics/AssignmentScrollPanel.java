@@ -10,6 +10,7 @@ import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 
 import java.awt.Component;
@@ -264,7 +265,7 @@ public class AssignmentScrollPanel extends DiskoScrollPanel implements IDiskoDro
      */
     public IAssignmentIf.AssignmentStatus getSelectedStatus()
     {
-        return m_selectedStatus;
+        return m_selectedStatus == null ? AssignmentStatus.READY : m_selectedStatus;
     }
 
     /**
@@ -427,12 +428,15 @@ public class AssignmentScrollPanel extends DiskoScrollPanel implements IDiskoDro
 			IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
 			// valid assignment?
 			if(assignment!=null) {
+				AssignmentStatus newStatus = getSelectedStatus()==null ? AssignmentStatus.READY : getSelectedStatus();
 				// validate transfer
-		        if (!AssignmentTransferUtilities.assignmentCanChangeToStatus(
-		        		assignment, getSelectedStatus(), getSelectedUnit())) {
-		        	// notify
-					Utils.showWarning("Du kan ikke flytte oppdrag hit");
+		        if (AssignmentTransferUtilities.assignmentCanChangeToStatus(
+		        		assignment, newStatus, getSelectedUnit())) {
+		        	// allowed
+		        	return true;
 		        }
+	        	// notify
+				Utils.showWarning("Du kan ikke flytte oppdrag hit");		        
 			}
 		}
 		catch(UnsupportedFlavorException e1) {

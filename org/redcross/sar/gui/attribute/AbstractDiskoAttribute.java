@@ -6,6 +6,8 @@ package org.redcross.sar.gui.attribute;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -42,13 +44,16 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	protected String m_caption = null;
 	
-	protected Dimension m_absolute = null;
+	protected Dimension m_fixedSize = null;
 
 	protected IAttributeIf m_attribute = null;
 	
 	protected boolean m_isDirty = false;
 	protected boolean m_autoSave = false;
 	protected boolean m_isEditable = false;
+	
+	protected int m_captionWidth = 80;
+	protected int m_maximumHeight = 25;
 	
 	private int m_isWorking = 0;
 	
@@ -80,10 +85,22 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		bl.setHgap(5);
 		bl.setVgap(5);
 		this.setLayout(bl);
-		this.setAttributeSize(new Dimension(250,25));
 		this.add(getCaptionLabel(),BorderLayout.WEST);
 		this.add(getComponent(),BorderLayout.CENTER);
 		this.add(getButton(), BorderLayout.EAST);
+		addComponentListener(new ComponentAdapter() {
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				setSizes();
+			}
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				setSizes();
+			}
+			
+		});
 		
 	}
 					
@@ -149,33 +166,55 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 			return m_isDirty;
 	}
 	
-	public Dimension getAttributeSize() {
-		return m_absolute;
+	/*
+	public Dimension getFixedSize() {
+		return m_fixedSize;
 	}
-
-	public void setAttributeSize(Dimension size) {
+	public void setFixedSize(Dimension size) {
 		// save
-		m_absolute = size;
+		m_fixedSize = size;
 		// constain to size
 		Utils.setFixedSize(this, size.width,size.height);
 		// constrain caption width
 		setCaptionWidth(getCaptionWidth());
 		
 	}
+	*/
 	
-	public double getCaptionWidth() {
-		return getCaptionLabel().getPreferredSize().getWidth();
+	public int getCaptionWidth() {
+		return m_captionWidth ==-1 ? getCaptionLabel().getWidth() : m_captionWidth ;
 	}
 
-	public void setCaptionWidth(double width) {
-		// get contraint width
-		double cw = m_absolute.getWidth()/3;		
-		// get size
-		Dimension size = new Dimension();
-		size.setSize(Math.max(width,cw),m_absolute.getHeight());
-		// set as absolute size
-		Utils.setFixedSize(getCaptionLabel(), size.width,size.height);				
+	public void setCaptionWidth(int width) {
+		// update
+		m_captionWidth = width;
+		// apply
+		setSizes();
 	}	
+	
+	public int getMaximumHeight() {
+		return m_maximumHeight ==-1 ? getHeight() : m_maximumHeight ;
+	}
+
+	public void setMaximumHeight(int height) {
+		// update
+		m_maximumHeight = height;
+		// apply
+		setSizes();
+	}	
+	
+	private void setSizes() {
+		// get sizes
+		int cw = getCaptionWidth();
+		int mh = Math.max(getMaximumHeight(), getHeight());
+		// set as absolute caption size
+		Utils.setFixedSize(getCaptionLabel(), cw,mh);
+		// set width
+		int mw = Math.max(getWidth() - getCaptionWidth() - getButton().getWidth() - 10, 75);
+		// set absolute component size
+		Utils.setFixedSize(getComponent(), mw, mh);			
+		
+	}
 	
 	@Override
 	public void setEnabled(boolean isEnabled) {

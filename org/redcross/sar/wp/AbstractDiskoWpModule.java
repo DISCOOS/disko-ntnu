@@ -221,8 +221,8 @@ public abstract class AbstractDiskoWpModule
 	public boolean commit() {
 		// get flag
 		boolean bFlag = isChanged();
-		// notify?
-		if(bFlag) fireOnWorkCommit();
+		// notify
+		fireOnWorkCommit();
 		// finished
 		return bFlag;
 	}
@@ -230,8 +230,8 @@ public abstract class AbstractDiskoWpModule
 	public boolean rollback() {
 		// get flag
 		boolean bFlag = isChanged();
-		// notify?
-		if(bFlag) fireOnWorkRollback();
+		// notify
+		fireOnWorkRollback();
 		// finished
 		return bFlag;
 	}
@@ -322,9 +322,9 @@ public abstract class AbstractDiskoWpModule
         // refresh map?
         if(isMapInstalled()) {
     		
-        	/*SwingUtilities.invokeLater(new Runnable() {
+        	SwingUtilities.invokeLater(new Runnable() {
 
-				public void run() {*/
+				public void run() {
 		        	try {
 		        		if(getMap().isInitMode()) {
 		        			// reset flag
@@ -333,10 +333,10 @@ public abstract class AbstractDiskoWpModule
 		        			IEnvelope e = MapUtil.getOperationExtent(getMap());
 		        			// set extent?
 		        			if(e!=null) getMap().setExtent(MapUtil.expand(1.25,e));
-		        		}
-		        		else {
+		        			// update
 		        			getMap().refreshGeography(null, map.getExtent());
 		        		}
+						getMap().setVisible(true);
 					} catch (AutomationException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -344,8 +344,8 @@ public abstract class AbstractDiskoWpModule
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}						
-			//	}        			
-    		//});
+				}        			
+    		});
         }
     	setFrameText(null);
     	// has nav state?
@@ -362,6 +362,9 @@ public abstract class AbstractDiskoWpModule
     */
     public void deactivate()
     {
+    	// hide map ?
+    	if(isMapInstalled()) getMap().setVisible(false);
+    	
     	// get navbar
     	NavBarPanel navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
     	// save state

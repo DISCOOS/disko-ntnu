@@ -428,7 +428,7 @@ public class HeaderPanel extends JPanel {
     
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }

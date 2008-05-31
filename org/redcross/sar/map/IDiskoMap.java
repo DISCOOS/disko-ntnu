@@ -1,6 +1,7 @@
 package org.redcross.sar.map;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.redcross.sar.event.IDiskoWorkListener;
@@ -51,6 +52,8 @@ public interface IDiskoMap {
 	public List<IMsoFeatureLayer> getMsoLayers(MsoClassCode classCode);
 	
 	public IMsoFeatureLayer getMsoLayer(LayerCode layerCode);
+	
+	public EnumSet<LayerCode> getSupportedMsoLayers();
 	
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
 	
@@ -124,15 +127,6 @@ public interface IDiskoMap {
 	
 	public List<IFeatureLayer> getSnappableLayers() throws IOException, AutomationException;
 	
-	public boolean isNorthBarVisible();
-	public void setNorthBarVisible(boolean isVisible);
-	
-	public boolean isSouthBarVisible();
-	public void setSouthBarVisible(boolean isVisible);
-
-	public MapStatusPanel getMapStatusBar();
-	public MapFilterPanel getMapFilterBar();
-	
 	public Point getClickPoint();
 	
 	public Point getMovePoint();
@@ -186,5 +180,9 @@ public interface IDiskoMap {
 	
 	public void showProgressor(boolean autocancel);
 	public void hideProgressor();
+	
+	public boolean addDiskoMapListener(IDiskoMapListener listener);
+	public boolean removeDiskoMapListener(IDiskoMapListener listener);
+	
 	
 }

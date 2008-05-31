@@ -6,8 +6,10 @@ package org.redcross.sar.gui.attribute;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.reflect.Array;
 
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -71,7 +73,10 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 	
 	public boolean fill(Object values) {
 		try {
-			((JComboBox)m_component).setModel((ComboBoxModel)values);
+			if(values instanceof Object[])
+				((JComboBox)m_component).setModel(new DefaultComboBoxModel((Object[])values));
+			else
+				((JComboBox)m_component).setModel((ComboBoxModel)values);
 			return true;
 		}
 		catch(Exception e) {

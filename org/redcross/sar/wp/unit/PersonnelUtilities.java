@@ -3,6 +3,7 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
@@ -186,7 +187,7 @@ public class PersonnelUtilities
 		{
 			for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())
 			{
-				if(unitPersonnel == personnel)
+				if(!UnitStatus.RELEASED.equals(unit.getStatus()) &&  unitPersonnel == personnel)
 				{
 					return false;
 				}

@@ -8,6 +8,8 @@ import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -271,6 +273,11 @@ public class DiskoButtonFactory
 		// set tooltip text
 		button.setToolTipText(tooltip);
 		
+		// update text alignment
+		if(button.getIcon()!=null) {
+			button.setHorizontalTextPosition(SwingConstants.LEFT);
+		}
+		
 		// return button
 		return button;
 	}
@@ -301,6 +308,11 @@ public class DiskoButtonFactory
 		// set tooltip text
 		button.setToolTipText(tooltip);
 		
+		// update text alignment
+		if(button.getIcon()!=null) {
+			button.setHorizontalTextPosition(SwingConstants.LEFT);
+		}
+
 		// return button
 		return button;
 	}
@@ -390,7 +402,7 @@ public class DiskoButtonFactory
 	 */
 	public static JToggleButton createToggleButton(
 			IAssignmentIf assignment, ButtonSize size){
-		return createToggleButton(assignment,size);
+		return createToggleButton(assignment,size,0,0,null);
 	}
 	
 	/**
@@ -525,12 +537,19 @@ public class DiskoButtonFactory
 		// set tooltip text
 		button.setToolTipText(getText(BasicDiskoFactory.getKey(name,"tooltip"),resource));
 		
-		// get get icon
-		button.setIcon(getIcon(BasicDiskoFactory.getKey(name,"icon"),catalog,resource));
+		// get icon key
+		String icon = BasicDiskoFactory.getKey(name,"icon");
 
 		// set button text?
-		if(button.getIcon()==null) 
+		if(!BasicDiskoFactory.fileExist(DiskoIconFactory.getPath(icon, catalog))) 
 			button.setText(getText(BasicDiskoFactory.getKey(name,"text"),resource));
+		else
+			button.setIcon(getIcon(icon,catalog,resource));
+		
+		// update text alignment
+		if(button.getIcon()!=null) {
+			button.setHorizontalTextPosition(SwingConstants.LEFT);
+		}
 		
 	}
 		
@@ -563,6 +582,10 @@ public class DiskoButtonFactory
 		if(button.getIcon()==null) 
 			button.setText(getText(e,resource));
 		
+		// update text alignment
+		if(button.getIcon()!=null) {
+			button.setHorizontalTextPosition(SwingConstants.LEFT);
+		}
 	}
 	
 	public static void setIcon(AbstractButton button, ICommunicatorIf communicator,String catalog) {
@@ -602,7 +625,7 @@ public class DiskoButtonFactory
 			// set button icon from unit type
 			setIcon(button,type,catalog,resource);
 			// command post name
-			name = cmdPost.getCallSign();
+			name = DiskoEnumFactory.getText(UnitType.CP) + " " + cmdPost.getCallSign();
 		}
 		else if(communicator instanceof IUnitIf) {
 			// cast to IUnitIf
@@ -614,11 +637,16 @@ public class DiskoButtonFactory
 			// get name
 			name = MsoUtils.getUnitName(unit, true);
 		}		
-		// set text?
-		if(button.getIcon()==null)
-			button.setText(name);
+		// set text
+		button.setText(name);
+		
 		// set tooltip
 		button.setToolTipText(name);
+		
+		// update text alignment
+		if(button.getIcon()!=null) {
+			button.setHorizontalTextPosition(SwingConstants.LEFT);
+		}
 	}	
 	
 	public static void setIcon(AbstractButton button, IAssignmentIf assignment) {		
@@ -637,9 +665,10 @@ public class DiskoButtonFactory
 		// apply tooltip
 		button.setToolTipText(name);
 		
-		// apply text
-		if(button.getIcon()==null)
-			button.setText(name);
+		// update text alignment
+		if(button.getIcon()!=null) {
+			button.setHorizontalTextPosition(SwingConstants.LEFT);
+		}
 		
 	}
 	

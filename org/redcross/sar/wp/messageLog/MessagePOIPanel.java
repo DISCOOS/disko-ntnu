@@ -144,7 +144,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	private JButton getFinishButton() {
 		if(m_finishButton==null) {
 			// create button
-			m_finishButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+			m_finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 			m_finishIcon = new DiskoIcon(m_finishButton.getIcon(),Color.GREEN,0.4f);
 			m_finishButton.setIcon(m_finishIcon);
 			// add action listener
@@ -163,8 +163,6 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		if(m_centerAtButton==null) {
 			// create button
 			m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
-			m_cancelIcon = new DiskoIcon(m_cancelButton.getIcon(),Color.RED,0.4f);
-			m_cancelButton.setIcon(m_cancelIcon);
 			// add action listener
 			m_centerAtButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
@@ -181,6 +179,8 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		if(m_cancelButton==null) {
 			// create button
 			m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+			m_cancelIcon = new DiskoIcon(m_cancelButton.getIcon(),Color.RED,0.4f);
+			m_cancelButton.setIcon(m_cancelIcon);
 			// add action listener
 			m_cancelButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {

@@ -151,28 +151,30 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 	@Override
 	public boolean finish() {
 		// get flag
-		boolean bFlag = false; 
-		// is changing
-		setChangeable(false);
-		try {
-			// any change?
-			if(super.finish()) {
+		boolean bFlag = false;
+		// any change?
+		if(super.finish()) {
+			// is changing
+			setChangeable(false);
+			try {
 				// get layers
 				List<IFeatureLayer> list = getSnapToLayers();
 				// apply snapping?
 				if(adapter!=null) adapter.setSnapToLayers(list);
 				// changes
 				bFlag = true;
+			} catch (AutomationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// is finished
+			setChangeable(true);
 		}
-		// is finished
-		setChangeable(true);
+		// notify?
+		if(bFlag) onSnapToChanged();
 		// finished
 		return bFlag;
 	}

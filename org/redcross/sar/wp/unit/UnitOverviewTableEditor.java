@@ -144,14 +144,15 @@ public class UnitOverviewTableEditor
 		private int m_editingRow = -1;
 
 		private JPanel m_panel;
-		private JButton m_pauseButton;
-		private JCheckBox m_releaseCheckButton;
+		//private JButton m_pauseButton;
+		private JButton m_releaseButton;
 
 		public UnitStatusCellEditor()
 		{
 			m_panel = new JPanel();
 			m_panel.setBackground(m_table.getBackground());
 
+			/*
 			String text = m_resources.getString("PauseButton.text");
 			String letter = m_resources.getString("PauseButton.letter");
 			m_pauseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
@@ -184,9 +185,12 @@ public class UnitOverviewTableEditor
 				}
 			});
 			m_panel.add(m_pauseButton);
-
-			m_releaseCheckButton = new JCheckBox();
-			m_releaseCheckButton.addActionListener(new ActionListener()
+			*/
+			
+	        String text = m_resources.getString("DissolveButton.text");
+	        String letter = m_resources.getString("DissolveButton.letter");        
+	        m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
+	        m_releaseButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
@@ -214,7 +218,7 @@ public class UnitOverviewTableEditor
 					fireEditingStopped();
 				}
 			});
-			m_panel.add(m_releaseCheckButton);
+			m_panel.add(m_releaseButton);
 		}
 
 		public Component getTableCellEditorComponent(JTable table,
@@ -245,8 +249,9 @@ public class UnitOverviewTableEditor
 			IUnitIf unit = model.getUnit(index);
 
 			// Update buttons
-			m_pauseButton.setSelected(unit.getStatus() == UnitStatus.PAUSED);
-			m_releaseCheckButton.setSelected(unit.getStatus() != UnitStatus.RELEASED);
+			//m_pauseButton.setSelected(unit.getStatus() == UnitStatus.PAUSED);
+			m_releaseButton.setSelected(unit.getStatus() != UnitStatus.RELEASED);
+			
 		}
 	}
 }

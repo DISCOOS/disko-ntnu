@@ -12,6 +12,8 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
+import org.redcross.sar.wp.unit.PersonnelUtilities;
+import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 import java.util.ResourceBundle;
 
@@ -31,22 +33,28 @@ public class UnitUtilities
 	 * @param unit
 	 * @throws IllegalOperationException Thrown if pause status can't be toggled (i.e. unit is initializing)
 	 */
-	public static void toggleUnitPause(IUnitIf unit) throws IllegalOperationException
+	public static UnitStatus toggleUnitPause(IUnitIf unit, UnitStatus resume) throws IllegalOperationException
 	{
 		if(unit.getStatus() == UnitStatus.INITIALIZING || unit.getStatus() == UnitStatus.RELEASED)
 		{
 			throw new IllegalOperationException();
 		}
 
+		// get current status
+		UnitStatus status = unit.getStatus(); 
+		
 		// Toggle pause
-		if(unit.getStatus() == UnitStatus.PAUSED)
+		if(status == UnitStatus.PAUSED)
 		{
-			unit.setStatus(UnitStatus.WORKING);
+			unit.setStatus(resume);
 		}
 		else
 		{
 			unit.setStatus(UnitStatus.PAUSED);
 		}
+		
+		// return status
+		return status;
 	}
 
 	/**
@@ -90,16 +98,11 @@ public class UnitUtilities
 			// Release unit
 			if(releaseUnit)
 			{
+				
 				// Abort assignment
 				if(activeAssignment != null)
 				{
 					activeAssignment.setStatus(AssignmentStatus.ABORTED);
-				}
-
-				// Release personnel, keep references for history
-				for(IPersonnelIf personnel : unit.getUnitPersonnelItems())
-				{
-					personnel.setStatus(PersonnelStatus.RELEASED);
 				}
 
 				// Release unit
@@ -136,16 +139,6 @@ public class UnitUtilities
 			{
 				throw new IllegalOperationException();
 			}
-		}
-
-		// TODO Check finding?
-		// TODO Check intelligence?
-		// TODO Check tasks?
-
-		// Release personnel
-		for(IPersonnelIf personnel : unit.getUnitPersonnelItems())
-		{
-			personnel.setStatus(PersonnelStatus.RELEASED);
 		}
 
 		unit.deleteObject();

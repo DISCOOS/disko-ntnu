@@ -5,6 +5,7 @@ import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
@@ -56,7 +57,6 @@ public class DeleteTaskDialog extends DefaultDialog
 	private void initialize() {
 		try {
 			this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(900, 300));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -118,6 +118,9 @@ public class DeleteTaskDialog extends DefaultDialog
 				});
 				// add components
 				m_contentsPanel.setBodyComponent(getAttributesPanel());
+				m_contentsPanel.setScrollBarPolicies(
+						BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -175,6 +178,7 @@ public class DeleteTaskDialog extends DefaultDialog
 				m_taskAttr = new TextFieldAttribute("Task",
 						m_wpTasks.getBundleText("Task.text"),
 						100,null,false);
+				m_taskAttr.setPreferredSize(new Dimension(300,30));
 				m_taskAttr.getTextField().setBorder(BorderFactory.createLineBorder(Color.lightGray));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -194,6 +198,7 @@ public class DeleteTaskDialog extends DefaultDialog
 				m_descAttr = new TextAreaAttribute("Description",
 						m_wpTasks.getBundleText("TaskDescription.text"),
 						100,null,false);
+				m_descAttr.setPreferredSize(new Dimension(300,100));
 				m_descAttr.getTextArea().setRows(5);
 				m_descAttr.getTextArea().setColumns(30);
 				m_descAttr.getTextArea().setBorder(BorderFactory.createLineBorder(Color.lightGray));

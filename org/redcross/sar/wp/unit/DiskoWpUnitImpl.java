@@ -415,42 +415,28 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	{
 		if(m_newPersonnel)
 		{
-			//m_personnelLeftDetailsPanel.setPersonnel(null);
-			//m_personnelLeftDetailsPanel.updateFieldContents();
-			
-			//m_personnelBottomDetailsPanel.setPersonnel(null);
-			//m_personnelBottomDetailsPanel.updateFieldContents();
-			
 			m_newPersonnel = false;
-			m_newPersonnelButton.setSelected(false);
-			
+			m_newPersonnelButton.setSelected(false);			
 			m_overviewTabPane.setEnabled(true);
 			m_personnelOverviewTable.setEnabled(true);
 		}
 		
 		if(m_newUnit)
 		{
-			//m_unitDetailsLeftPanel.setUnit(null);
-			//m_unitDetailsLeftPanel.updateFieldContents();
-			
 			m_newUnit = false;
-			m_newUnitButton.setSelected(false);
-			
+			m_newUnitButton.setSelected(false);			
 			m_overviewTabPane.setEnabled(true);
 		}
 		
 		if(m_newCallOut)
 		{
-			m_overviewTabPane.setEnabled(true);
-			
-			//m_calloutDetailsPanel.setCallOut(null);
-			//m_calloutDetailsPanel.updateFieldContents();
-			
 			m_newCallOut = false;
+			m_overviewTabPane.setEnabled(true);			
 			m_importCalloutButton.setSelected(false);
 		}
 		
-		this.getMsoModel().rollback();
+		// forward
+		super.rollback();
 		
 		// success
 		return true;
@@ -520,8 +506,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		
 		this.getMsoModel().resumeClientUpdate();
 		
-		// committ changes
-		this.getMsoModel().commit();
+		// forward
+		super.commit();
 
 		// success!
 		return true;
@@ -559,6 +545,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			
 			m_overviewTabPane.setEnabled(false);
 			m_personnelOverviewTable.setEnabled(false);
+			
+			// notify
+			fireOnWorkChange(m_leftViewId);
 		}
 		else
 			Utils.showWarning("Begrensning", "Du må først avslutte " + (m_newPersonnel ? "registrering av nytt personell" : 
@@ -588,14 +577,16 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			layout = (CardLayout)m_bottomPanel.getLayout();
 			layout.show(m_bottomPanel, MESSAGE_VIEW_ID);
 			
-			// Show type dialog
-			m_unitTypeDialog.setVisible(true);
-			
-			m_newUnitButton.setSelected(true);
-			
-			m_unitOverviewTable.setEnabled(false);
-			
+			// prepare buttons
+			m_newUnitButton.setSelected(true);			
+			m_unitOverviewTable.setEnabled(false);			
 			m_newUnit = true;
+			
+			// notify
+			fireOnWorkChange(m_leftViewId);
+			
+			// Show type dialog (is modal, will lock)
+			m_unitTypeDialog.setVisible(true);			
 			
 		}
 		else
@@ -616,6 +607,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_importCalloutButton.setSelected(true);
 			m_importCalloutDialog.setLocationRelativeTo(m_contentsPanel,
 					DefaultDialog.POS_CENTER, true, true);	
+			// notify
+			fireOnWorkChange(m_leftViewId);
+			// forward
 			m_importCalloutDialog.setVisible(true);
 		}
 		else {
@@ -671,6 +665,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			IUnitIf unit = m_unitDetailsLeftPanel.getUnit();
 			if(unit != null)
 			{
+
 				//  Confirm delete
 				String[] options = {this.getBundleText("Delete.text"), this.getBundleText("Cancel.text")};
 				int n = JOptionPane.showOptionDialog(
@@ -1064,7 +1059,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				m_newCallOut = false;
 				m_importCalloutButton.setSelected(false);
 				m_overviewTabPane.setEnabled(true);
-				this.getMsoModel().rollback();
+				// forward
+				rollback();
 			}
 			else if(m_newUnit)
 			{
@@ -1072,6 +1068,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				m_newUnit = false;
 				m_newUnitButton.setSelected(false);
 				m_unitTypeDialog.setVisible(false);
+				// forward
+				rollback();
 			}		
 			
 		}
@@ -1083,4 +1081,11 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public boolean isChanged() {
+		if(super.isChanged()) return true;
+		return m_newPersonnel || m_newUnit || m_newCallOut;
+	}
+
 }

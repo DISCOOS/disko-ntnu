@@ -40,4 +40,5 @@ public interface IDiskoWpUnit extends IDiskoWpModule, IDiskoWp
 	public void setNewUnit(boolean newUnit);
 	public boolean getNewCallOut();
 	public void setNewCallOut(boolean newCallOut);
+	
 }

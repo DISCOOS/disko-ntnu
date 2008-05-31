@@ -132,6 +132,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 				}
 				
 			});
+			addAction("editsnap");
 		}
 		return snapToAttr;
 	}

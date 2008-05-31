@@ -11,11 +11,13 @@ import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 
 public class NumPadDialog extends JDialog {
 
-	private DefaultPanel componentPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
+	private BasePanel buttonPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
 	private static final long serialVersionUID = 1L;
 	private JButton oneButton = null;
 	private JButton twoButton = null;
@@ -30,18 +32,19 @@ public class NumPadDialog extends JDialog {
 	private JButton delButton = null;
 	private JButton okButton = null;	
 	private JFormattedTextField jtf = null;
-	private Dimension size = new Dimension(50,50);
+	private Dimension size = new Dimension(32,32);
 
 	public NumPadDialog(Frame owner) {
+		// forward
 		super(owner);
+		// initialize gui
 		initialize();
-		this.getRootPane().setWindowDecorationStyle(JRootPane.NONE);		
 	}
 	
 	private void initialize(){
-		this.setSize(new Dimension(250, 250));
-        this.setContentPane(getComponentPanel());
-        this.setUndecorated(true);
+		this.setUndecorated(true);		
+        this.setContentPane(getButtonPanel());
+		Utils.setFixedSize(this,180, 250);
         this.pack();
 	}
 	
@@ -75,13 +78,13 @@ public class NumPadDialog extends JDialog {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private JPanel getComponentPanel() {
-		if (componentPanel == null) {
+	private JPanel getButtonPanel() {
+		if (buttonPanel == null) {
 			GridLayout gridLayout = new GridLayout();
 			gridLayout.setRows(4);
 			gridLayout.setColumns(3);
-			componentPanel = new DefaultPanel("Numerisk tastatur",false,false);
-			JPanel panel = (JPanel)componentPanel.getBodyComponent();
+			buttonPanel = new BasePanel("Numerisk tastatur");
+			JPanel panel = (JPanel)buttonPanel.getBodyComponent();
 			panel.setLayout(gridLayout);		
 			panel.setSize(new Dimension(215, 214));
 			panel.add(getOneButton(), null);
@@ -90,14 +93,14 @@ public class NumPadDialog extends JDialog {
 			panel.add(getFourButton(), null);
 			panel.add(getFiveButton(), null);
 			panel.add(getSixButton(), null);
-			panel.add(getSevenjButton(), null);
+			panel.add(getSevenButton(), null);
 			panel.add(getEightButton(), null);
 			panel.add(getNineButton(), null);
 			panel.add(getZeroButton(), null);
 			panel.add(getDelButton(), null);
 			panel.add(getOkButton(), null);
 		}
-		return componentPanel;
+		return buttonPanel;
 	}
 
 	/**
@@ -223,7 +226,7 @@ public class NumPadDialog extends JDialog {
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
-	private JButton getSevenjButton() {
+	private JButton getSevenButton() {
 		if (sevenjButton == null) {
 			sevenjButton = new JButton();
 			sevenjButton.setPreferredSize(size);

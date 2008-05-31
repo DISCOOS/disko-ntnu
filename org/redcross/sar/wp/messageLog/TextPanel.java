@@ -76,7 +76,21 @@ public class TextPanel extends JPanel implements IEditMessageComponentIf
 		gbc.gridx++;
 		gbc.weightx = 0.0;
 
-		m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
+		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+
+		m_cancelButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				// forward
+				cancel();
+			}
+		});
+		this.add(m_cancelButton, gbc);
+		
+		gbc.gridy = 1;
+
+		m_okButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
 		m_okButton.setDefaultCapable(true);
 		m_okButton.addActionListener(new ActionListener()
 		{
@@ -89,18 +103,6 @@ public class TextPanel extends JPanel implements IEditMessageComponentIf
 		});
 		this.add(m_okButton, gbc);
 
-		gbc.gridy = 1;
-		m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-
-		m_cancelButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				// forward
-				cancel();
-			}
-		});
-		this.add(m_cancelButton, gbc);
 		
 	}
 

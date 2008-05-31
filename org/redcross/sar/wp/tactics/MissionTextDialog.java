@@ -182,6 +182,8 @@ public class MissionTextDialog extends DefaultDialog {
 		// update gui?
 		if (gui && !mso) {
 			getTextArea().setText(text);
+			// request focus
+			getTextArea().requestFocus();
 		}
 		// update mso? (text is update from Mso Update event)
 		if(mso) {

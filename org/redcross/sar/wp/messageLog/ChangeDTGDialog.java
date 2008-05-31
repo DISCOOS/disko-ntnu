@@ -6,11 +6,14 @@ import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -36,7 +39,7 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 {
 	private static final long serialVersionUID = 1L;
 
-	private JPanel m_contentsPanel = null;
+	private BasePanel m_contentsPanel = null;
 
 	private JPanel m_createdPanel;
 	private JLabel m_createdLabel;
@@ -66,9 +69,9 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 		try
 		{
             this.setContentPane(getContentPanel());
+            this.setPreferredSize(new Dimension(180,250));
+            this.setUndecorated(true);
 			this.pack();
-			Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
-			this.setMinimumSize(new Dimension((int)(dim.width*3.5),(int)(dim.height*1.5)));
 			m_timeTextField.requestFocus();
 		}
 		catch (java.lang.Throwable e){}
@@ -94,29 +97,47 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 		if (m_contentsPanel == null) {
 			try
 			{
-				m_contentsPanel = new JPanel();
-				m_contentsPanel.setLayout(new GridLayout(2, 2));
-				m_contentsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
+				m_contentsPanel = new BasePanel("Dato-Tid-Gruppe");
+				m_contentsPanel.setPreferredSize(new Dimension(180,250));
+				m_contentsPanel.setScrollBarPolicies(
+						BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				JPanel panel = (JPanel)m_contentsPanel.getBodyComponent();
+				
+				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+			
 				m_createdPanel = new JPanel();
+				m_createdPanel.setLayout(new BoxLayout(m_createdPanel,BoxLayout.X_AXIS));
 				m_createdLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogCreated.text"));
 				m_createdLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_createdPanel.add(m_createdLabel);
+				m_createdLabel.setPreferredSize(new Dimension(70,30));
+				m_createdPanel.add(Box.createHorizontalStrut(5));
 				m_createdTextField = new JTextField(6);
 				m_createdTextField.setEditable(false);
 				m_createdPanel.add(m_createdTextField);
-				m_contentsPanel.add(m_createdPanel);
+				Utils.setFixedSize(m_createdPanel,170,30); 
+
+				panel.add(m_createdPanel);				
+				panel.add(Box.createVerticalStrut(5));
 
 				m_timePanel = new JPanel();
+				m_timePanel.setLayout(new BoxLayout(m_timePanel,BoxLayout.X_AXIS));
 				m_timeLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogTime.text"));
 				m_timeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_timePanel.add(m_timeLabel);
+				m_timeLabel.setPreferredSize(new Dimension(70,30));
+				m_createdPanel.add(Box.createHorizontalStrut(5));
 				m_timeTextField = new JFormattedTextField();
 				m_timeTextField.setDocument(new NumericDocument(6,0,false));
 				m_timeTextField.addKeyListener(this);
 				m_timePanel.add(m_timeTextField);
-				m_contentsPanel.add(m_timePanel);
-				m_contentsPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+				Utils.setFixedSize(m_timePanel,170,30); 
+
+				panel.add(m_timePanel);
+				panel.add(Box.createVerticalGlue());
+
+				
 				// initialize contents
 				clearContents();
 			}

@@ -101,13 +101,13 @@ public class DiskoIconFactory {
 	
 	public static String getPath(
 			String icon, String catalog) {
-		return getPath(icon,catalog);
+		return getPath(icon,catalog,null);
 	}
 	
 	public static String getPath(
 			String icon, String catalog, Object resource) {
 		
-		// is an absoulte path?
+		// is an absolute path?
 		if (BasicDiskoFactory.fileExist(icon)) {
 			return icon;
 		}

@@ -11,14 +11,14 @@ public interface IDiskoAttribute {
 
 	public boolean isDirty();
 	
-	public Dimension getAttributeSize();
-	public void setAttributeSize(Dimension size);
-	
 	public String getCaption();	
 	public void setCaption(String text);
 	
-	public double getCaptionWidth();
-	public void setCaptionWidth(double width);
+	public int getCaptionWidth();
+	public void setCaptionWidth(int width);
+	
+	public int getMaximumHeight();
+	public void setMaximumHeight(int height);
 	
 	public boolean isEditable();
 	public void setEditable(boolean isEditable);

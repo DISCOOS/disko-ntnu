@@ -11,7 +11,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -101,13 +100,15 @@ public class POIPanel extends DefaultToolPanel {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
 			gotoPanel.setGotoButtonVisible(false);
-			gotoPanel.setPreferredSize(new Dimension(200, 130));
+			gotoPanel.setPreferredSize(new Dimension(290, 140));
 			gotoPanel.addDiskoWorkListener(new IDiskoWorkListener() {
 
 				public void onWorkPerformed(DiskoWorkEvent e) {
+					
 					// consume?
 					if(!isChangeable()) return;
 
+					// consume changes
 					setChangeable(false);
 					
 					try {
@@ -115,11 +116,12 @@ public class POIPanel extends DefaultToolPanel {
 						// get position
 						Position p = getGotoPanel().getPositionField().getPosition();
 						
-						// get point
-						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());
-						
-						// update tool
-						getTool().setPoint(point);
+						// has point?
+						if(p!=null) {
+							// convert and update tool
+							Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
+							getTool().setPoint(point);							
+						}
 						
 					
 					} catch (AutomationException ex) {
@@ -130,6 +132,7 @@ public class POIPanel extends DefaultToolPanel {
 						ex.printStackTrace();
 					}
 					
+					// resume changes
 					setChangeable(true);
 					
 				}
@@ -359,27 +362,35 @@ public class POIPanel extends DefaultToolPanel {
 			// consume change events
 			setChangeable(false);
 			
-			try {
-				
+			// is position valid?
+			if(getGotoPanel().getPositionField().isPositionValid()) {
+			
 				// get position
 				Position p = getGotoPanel().getPositionField().getPosition();
 				
-				// set point from coordinates
-				Point point = MapUtil.getEsriPoint(p,getTool().getMap().getSpatialReference());
-				
 				// update point?
 				if(p!=null) {
-					// update
-					getTool().setPoint(point);
-					// forward
-					bFlag = getTool().finish();
+					try {
+						// convert and update tool
+						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
+						getTool().setPoint(point);							
+						// finish working
+						bFlag = getTool().finish();
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 				else 
 					Utils.showWarning("Ingen posisjon er oppgitt");
-			} catch (Exception ex) {
-				Utils.showWarning("Ugyldig format. Sjekk koordinater og prøv igjen");
 			}
-			
+			else {
+				Utils.showWarning("Oppgitt posisjon finnes ikke");
+			}
+				
 			// resume change events
 			setChangeable(true);
 		}
@@ -419,8 +430,16 @@ public class POIPanel extends DefaultToolPanel {
 						getTool().getMsoCode(), getTool().getDrawMode())); 
 			// update panel
 			getGotoPanel().getPositionField().setPoint(getTool().getPoint());
+			
+			/*
 			// set types enabled state
-			getPOITypesPanel().setSelectionAllowed(!getTool().isReplaceMode());
+			Object attr = getTool().getAttribute("SEARCHSUBTYPE");
+			if(attr instanceof SearchSubType) {
+				SearchSubType type = (SearchSubType)attr;
+				getPOITypesPanel().setSelectionAllowed(!getTool().isReplaceMode());
+			}
+			*/
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -126,6 +126,8 @@ public class EstimateDialog extends DefaultDialog {
 						// update
 						setDirty(false);						
 						
+						// request focus
+						getEtaAttribute().getTextField().requestFocus();
 					}	
 					
 					@Override

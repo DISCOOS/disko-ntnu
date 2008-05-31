@@ -1,5 +1,6 @@
 package org.redcross.sar.gui.model;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -25,11 +27,17 @@ public class UnitTableModel extends AbstractTableModel implements
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private Object[] rows = null;
 	private IMsoModelIf msoModel = null;
+	private EnumSet<UnitStatus> status = null;
 
 	public UnitTableModel(IMsoModelIf msoModel) {
+		this(msoModel,EnumSet.noneOf(UnitStatus.class));
+	}
+	
+	public UnitTableModel(IMsoModelIf msoModel,EnumSet<UnitStatus> status) {
 		// prepare
 		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 		this.msoModel = msoModel;
+		this.status = status;
 		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
@@ -52,22 +60,27 @@ public class UnitTableModel extends AbstractTableModel implements
 	
 	private void update(Object[] data) {
 		if(data!=null) {
-			// allocate memory
-			rows = new Object[data.length];
+			List<Object> list = new ArrayList<Object>(data.length);
 			// loop over all units
 			for (int i = 0; i < data.length; i++) {
-				// allocate memory
-				Object[] row = new Object[4];
 				// get unit
 				IUnitIf unit = (IUnitIf )data[i];
-				// update row
-				row[0] = unit;
-				row[1] = unit.getUnitPersonnelItems().size();
-				row[2] = getAllocated(unit);
-				row[3] = unit.getRemarks();
-				// save row
-				rows[i] = row;
+				// filter?
+				if(status.size()==0 || status.contains(unit.getStatus())) {
+					// allocate memory
+					Object[] row = new Object[5];
+					// update row
+					row[0] = unit;
+					row[1] = unit.getUnitPersonnelItems().size();
+					row[2] = getAllocated(unit);
+					row[3] = unit.getRemarks();
+					row[4] = unit.getStatus();
+					// save row
+					list.add(row);
+				}
 			}
+			// get array
+			rows = list.toArray();
 		}
 		else {
 			rows = null;
@@ -77,7 +90,7 @@ public class UnitTableModel extends AbstractTableModel implements
 	
 	private String getAllocated(IUnitIf unit) {
 		// initialize
-		String text = "<Ingen>";
+		String text = "Ingen";
 		// get assignment
 		List<IAssignmentIf> data = unit.getAllocatedAssignments();
 		// build string
@@ -90,7 +103,7 @@ public class UnitTableModel extends AbstractTableModel implements
 	}
     
 	public int getColumnCount() {
-		return 4;
+		return 5;
 	}
 
 	public int getRowCount() {
@@ -119,6 +132,8 @@ public class UnitTableModel extends AbstractTableModel implements
 			return AssignmentImpl.class;
 		case 3:
 			return AssignmentImpl.class;
+		case 4:
+			return UnitStatus.class;
 		default:
 			return Object.class;
 		}
@@ -135,6 +150,8 @@ public class UnitTableModel extends AbstractTableModel implements
 			return "Oppdrag i kø";
 		case 3:
 			return "Merknader";
+		case 4:
+			return "Status";
 		default:
 			return null;
 		}

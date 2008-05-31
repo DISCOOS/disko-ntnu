@@ -25,6 +25,7 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog.MessageLogActionType;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -65,7 +66,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final int PANEL_HEIGHT = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height * 5;
+	public static final int PANEL_HEIGHT = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height * 6;
 	public static final int SMALL_PANEL_WIDTH = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).width;
 
 	private static final String EMPTY_PANEL_ID = "EMPTY_PANEL";
@@ -666,35 +667,24 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		 return myInterests.contains(msoObject.getMsoClassCode());
 	}
 
-	/**
-	 * {@link IDiskoWorkListener#onWorkCancel(DiskoWorkEvent)}
-	 */
-	public void onWorkCancel(DiskoWorkEvent e)
-	{
-		//Object sender = e.getSource();
-		m_buttonGroup.clearSelection();
-		hideEditPanels();
-	}
-
-	/**
-	 * Gets new data from a dialog once a dialog finishes
-	 */
-	public void onWorkFinish(DiskoWorkEvent e)
-	{
-		// If no message is selected a new one should be created once a field is edited
-		if(m_currentMessage == null)
-		{
-			getCurrentMessage(true);
-		}
-		hideEditPanels();
-		m_buttonGroup.clearSelection();
-		m_messageDirty = true;
-		updateMessageGUI();
-	}
-
 	public void onWorkPerformed(DiskoWorkEvent e)
 	{
-		// not in use
+		if(e.isFinish()) {
+			// If no message is selected a new one should be created once a field is edited
+			if(m_currentMessage == null)
+			{
+				getCurrentMessage(true);
+			}
+			hideEditPanels();
+			m_buttonGroup.clearSelection();
+			m_messageDirty = true;
+			updateMessageGUI();			
+		}
+		else if(e.isCancel()) {
+			//Object sender = e.getSource();
+			m_buttonGroup.clearSelection();
+			hideEditPanels();
+		}
 	}
 
 
@@ -845,7 +835,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     
     private JToggleButton getChangeDTGButton()
     {
-    	m_changeDTGButton = DiskoButtonFactory.createToggleButton("FORMAT.DTG",ButtonSize.NORMAL);
+    	m_changeDTGButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_DTG,ButtonSize.NORMAL);
     	m_changeDTGButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     	m_changeDTGButton.addActionListener(new ActionListener()
     	{
@@ -876,10 +866,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_changeTasksButton == null)
     	{
-    		m_changeTasksButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+    		m_changeTasksButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_TASKS,ButtonSize.NORMAL);
     		m_changeTasksButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeTasksButton.setIcon(DiskoIconFactory.getIcon("GENERAL.TASKS","48x48"));
-    		m_changeTasksButton.setToolTipText(m_wpMessageLog.getBundleText("TasksButton.text"));
     		m_changeTasksButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -914,10 +902,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_changeFromButton == null)
     	{
-    		m_changeFromButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+    		m_changeFromButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_FROM,ButtonSize.NORMAL);
     		m_changeFromButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeFromButton.setIcon(DiskoIconFactory.getIcon("COM.FROM","48x48"));
-    		m_changeFromButton.setToolTipText(m_wpMessageLog.getBundleText("FromButton.text"));
     		m_changeFromButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent arg0)
@@ -966,10 +952,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_changeToButton == null)
     	{
-    		m_changeToButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+    		m_changeToButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_TO,ButtonSize.NORMAL);
     		m_changeToButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeToButton.setIcon(DiskoIconFactory.getIcon("COM.TO","48x48"));
-    		m_changeToButton.setToolTipText(m_wpMessageLog.getBundleText("ToButton.text"));
     		m_changeToButton.addActionListener(new ActionListener()
     		{
 				public void actionPerformed(ActionEvent e)
@@ -1000,7 +984,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     	if(m_cancelStatusButton == null)
     	{
     		try {
-    			m_cancelStatusButton = DiskoButtonFactory.createButton("SYSTEM.ROLLBACK",ButtonSize.NORMAL);
+    			m_cancelStatusButton = DiskoButtonFactory.createButton(MessageLogActionType.CANCEL,ButtonSize.NORMAL);
     			m_cancelStatusButton.setIcon(new DiskoIcon(m_cancelStatusButton.getIcon(),Color.RED,0.4f));
     			((DiskoIcon)m_cancelStatusButton.getIcon()).setColored(false);
         		m_cancelStatusButton.addActionListener(new ActionListener()
@@ -1023,9 +1007,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
     private void getDeleteButton()
 	{
-    	m_deleteButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
-    	m_deleteButton.setIcon(DiskoIconFactory.getIcon("GENERAL.DELETE","48x48"));
-    	m_deleteButton.setToolTipText(m_wpMessageLog.getBundleText("DeleteButton.text"));
+    	m_deleteButton = DiskoButtonFactory.createButton(MessageLogActionType.DELETE,ButtonSize.NORMAL);
 		m_deleteButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1087,9 +1069,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void getListButton()
 	{
-		m_listButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_listButton.setIcon(DiskoIconFactory.getIcon("GENERAL.LIST","48x48"));
-		m_listButton.setToolTipText(m_wpMessageLog.getBundleText("ListButton.text"));
+		m_listButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SHOW_LIST,ButtonSize.NORMAL);
 		m_listButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1114,9 +1094,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void getStartedButton()
 	{
-		m_startButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_startButton.setIcon(DiskoIconFactory.getIcon("STATUS.STARTED","48x48"));
-		m_startButton.setToolTipText(m_wpMessageLog.getBundleText("StartedButton.text"));
+		m_startButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_STARTED,ButtonSize.NORMAL);
 		m_startButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1157,9 +1135,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void getAssignedButton()
 	{
-		m_assignButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_assignButton.setIcon(DiskoIconFactory.getIcon("STATUS.ASSIGNED","48x48"));
-		m_assignButton.setToolTipText(m_wpMessageLog.getBundleText("AssignedButton.text"));
+		m_assignButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_ASSIGNMENT,ButtonSize.NORMAL);
 		m_assignButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1202,9 +1178,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 	
 	private void getCompletedButton()
 	{
-		m_completedButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_completedButton.setIcon(DiskoIconFactory.getIcon("STATUS.FINISHED","48x48"));
-		m_completedButton.setToolTipText(m_wpMessageLog.getBundleText("CompletedButton.text"));
+		m_completedButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_COMPLETED,ButtonSize.NORMAL);
 		m_completedButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1395,9 +1369,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void getPOIButton()
 	{
-		m_poiButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_poiButton.setIcon(DiskoIconFactory.getIcon("THEME.INCIDENT","48x48"));
-		m_poiButton.setToolTipText(m_wpMessageLog.getBundleText("POIButton.text"));
+		m_poiButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_POI,ButtonSize.NORMAL);
 		m_poiButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1419,9 +1391,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void getPositionButton()
 	{
-		m_positionButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_positionButton.setIcon(DiskoIconFactory.getIcon("MAP.POSITION","48x48"));
-		m_positionButton.setToolTipText(m_wpMessageLog.getBundleText("PositionButton.text"));
+		m_positionButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_POSITION,ButtonSize.NORMAL);
 		m_positionButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -1443,9 +1413,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 	private void getTextButton()
 	{
-		m_textButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		m_textButton.setIcon(DiskoIconFactory.getIcon("GENERAL.ABC","48x48"));
-		m_textButton.setToolTipText(m_wpMessageLog.getBundleText("TextButton.text"));
+		m_textButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_TEXT,ButtonSize.NORMAL);
 		m_textButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)

@@ -66,7 +66,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     private IUnitIf m_currentUnit;
 
     private JLabel m_topPanelLabel;
-    private JToggleButton m_pauseToggleButton;
+    //private JToggleButton m_pauseToggleButton;
     private JButton m_releaseButton;
     private JButton m_showReportButton;
 
@@ -107,6 +107,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         topButtonsPanel.setBorder(null);
         m_topPanelLabel = new JLabel();
         topPanel.add(m_topPanelLabel, BorderLayout.CENTER);
+        /*
         String text = m_resources.getString("PauseButton.text");
         String letter = m_resources.getString("PauseButton.letter");
         m_pauseToggleButton = DiskoButtonFactory.createToggleButton(letter,text,null,ButtonSize.NORMAL);
@@ -133,9 +134,10 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             }
         });
         topButtonsPanel.add(m_pauseToggleButton);
+        */
         
-        text = m_resources.getString("DissolveButton.text");
-        letter = m_resources.getString("DissolveButton.letter");        
+        String text = m_resources.getString("DissolveButton.text");
+        String letter = m_resources.getString("DissolveButton.letter");        
         m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.NORMAL);
         m_releaseButton.addActionListener(new ActionListener()
         {
@@ -280,7 +282,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_topPanelLabel.setText(topText);
 
             // Pause button
-            m_pauseToggleButton.setSelected(m_currentUnit.getStatus() == UnitStatus.PAUSED);
+            //m_pauseToggleButton.setSelected(m_currentUnit.getStatus() == UnitStatus.PAUSED);
 
             // Released button
             m_releaseButton.setSelected(m_currentUnit.getStatus() == UnitStatus.RELEASED);
@@ -523,6 +525,8 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                     return personnel.getFirstname() + " " + personnel.getLastname();
                 case 1:
                     return personnel.getTelephone1();
+                case 2:
+                	return personnel;
             }
             return null;
         }

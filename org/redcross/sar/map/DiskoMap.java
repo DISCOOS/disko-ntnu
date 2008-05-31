@@ -58,6 +58,7 @@ import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.map.tool.DrawAdapter;
 import org.redcross.sar.map.tool.IDiskoTool;
 import org.redcross.sar.map.tool.IDrawTool;
@@ -110,12 +111,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private EnumSet<IMsoFeatureLayer.LayerCode> myLayers = null;
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private List<IMsoFeatureLayer> msoLayers = null;
+	private List<IDiskoMapListener> mapListeners = null;
 	
 	// components
-	private JPanel northBar = null;
-	private JPanel southBar = null;
-	private MapStatusPanel mapStatusBar = null;
-	private MapFilterPanel mapFilterBar = null;
 	private DrawDialog drawDialog = null;
 	private ElementDialog elementDialog = null;
 	private SnapDialog snapDialog = null;
@@ -140,12 +138,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	// flags
 	private boolean isInitMode = true;
 	
-	// tracker
-	private Timer tracker = null;	
-	
-	// tracker control variable
-	private boolean isTrackingID[] = {false,false};
-	
 	// mouse tracking
 	private long previous = 0;		
 	private Point movePoint = null;
@@ -164,9 +156,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		this.msoModel = msoModel;
 		this.myLayers = myLayers;
 		this.msoLayerEventStack = new MsoLayerEventStack();
+		this.mapListeners = new ArrayList<IDiskoMapListener>();
 		
 		// adpaters
-		this.tracker = new MapTracker();
 		this.ctrlAdapter = new ControlEventsAdapter();
 		this.compAdapter = new MapCompEventsAdapter();
 		this.workRepeater = new DiskoWorkRepeater();		
@@ -187,11 +179,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		setShowScrollbars(false);
 		suppressResizeDrawing(true, 0);		
 
-		// add components
-		setLayout(new BorderLayout());
-		add(getNorthBar(),BorderLayout.NORTH);
-		add(getSouthBar(),BorderLayout.SOUTH);
-		
 		// set disko map progress
 		getTrackCancel().setCheckTime(250);
 		getTrackCancel().setProgressor(getProgressor());
@@ -207,9 +194,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 		// create refresh stack
 		refreshStack = new HashMap<String,Runnable>();
-		
-		// create timer to reduce flickering of mouse pointer over map
-		tracker = new MapTracker();
 		
 		// create points for last click and move events
 		movePoint = new Point();
@@ -379,6 +363,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	public List<IMsoFeatureLayer> getMsoLayers() {
 		return new ArrayList<IMsoFeatureLayer>(msoLayers);
+	}
+	
+	public EnumSet<LayerCode> getSupportedMsoLayers() {
+		return myLayers;
 	}
 
 	public List<IMsoFeatureLayer> getMsoLayers(IMsoManagerIf.MsoClassCode classCode) {
@@ -959,9 +947,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					affected.add(flayer);
 			}
 		}
-		if(mapStatusBar!=null) {
-			mapStatusBar.setSelected(selected ? msoObject : null);
-		}
 		return affected;
 	}
 
@@ -1012,9 +997,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			}
 		}
 		resumeNotify();
-		
-		if(mapStatusBar!=null)
-			mapStatusBar.setSelected(null);
 		
 		return cleared;
 	}
@@ -1466,65 +1448,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return false;
 	}
-
-	private JPanel getNorthBar() {
-		if(northBar==null) {
-			northBar = new JPanel();
-			northBar.setLayout(new CardLayout());
-			northBar.add(getMapStatusBar(),"MapStatusBar");
-			northBar.setBorder(null);			
-		}
-		return northBar;
-	}
-	
-	public MapStatusPanel getMapStatusBar() {
-		if(mapStatusBar==null) {
-			mapStatusBar = new MapStatusPanel();
-			
-		}
-		return mapStatusBar;		
-	}
-	
-	private JPanel getSouthBar() {
-		if(southBar==null) {
-			southBar = new JPanel();
-			southBar.setLayout(new CardLayout());
-			southBar.add(getMapFilterBar(),"MapFilterBar");
-			//southBar.add(getProgressor().getProgressBar(),"ProgressBar");
-			showBar(southBar,"MapFilterBar");
-			southBar.setBorder(null);			
-		}
-		return southBar;
-	}
-	
-	private void showBar(JPanel panel, String key) {		
-		((CardLayout)panel.getLayout()).show(panel, key);
-	}
-	
-	public MapFilterPanel getMapFilterBar() {
-		if(mapFilterBar==null) {
-			mapFilterBar = new MapFilterPanel();
-			mapFilterBar.setMap(this);			
-		}
-		return mapFilterBar;		
-	}
-	
-	public boolean isNorthBarVisible() {
-		return getNorthBar().isVisible();
-	}
-
-	public boolean isSouthBarVisible() {
-		return getSouthBar().isVisible();
-	}
-
-	public void setNorthBarVisible(boolean isVisible) {
-		getNorthBar().setVisible(isVisible);
-		
-	}
-
-	public void setSouthBarVisible(boolean isVisible) {
-		getSouthBar().setVisible(isVisible);
-	}	
 	
 	private DiskoMapProgressor getProgressor() {
 		if(progressor==null) {
@@ -1877,6 +1800,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						loadMxFile(mxdDoc, null, null);
 						// set mxd document
 						this.mxdDoc = mxdDoc;
+						// update spatial references
+						movePoint.setSpatialReferenceByRef(getSpatialReference());
+						clickPoint.setSpatialReferenceByRef(getSpatialReference());
 						// reset map base index
 						currentBase = 0;
 						// set default base layer
@@ -1931,17 +1857,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}			
 	}
 	
-	private void setTrackID(int id, boolean set) {
-		if(set && !isTrackingID[id]) {
-			isTrackingID[id] = true;
-			if(!tracker.isRunning()) tracker.start();
-		}
-		else if(!set && isTrackingID[id]) {
-			isTrackingID[id] = false;
-			if(tracker.isRunning()) tracker.stop();
-		}
-	}
-	
 	/*==========================================================
 	 * IDiskoWorkListener methods
 	 *==========================================================*/		
@@ -1964,113 +1879,89 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 		@Override
 		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
+			
+			// forward
+			clickPoint.setX(e.getMapX());
+			clickPoint.setY(e.getMapY());
+			
 			// save for later use
 			final double x = e.getMapX();
 			final double y = e.getMapY();
-			// invoke later on EDT
+
+			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					try {
-						// update status panel?
-						if (mapStatusBar != null) {
-							clickPoint.setX(x);
-							clickPoint.setY(y);
-							clickPoint.setSpatialReferenceByRef(getSpatialReference());
-							//mapStatusBar.onMouseDown(clickPoint);
-							setTrackID(TRACK_MAP_STATUS, true);
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					fireOnMouseClick();
 				}
-			});			
+			});	
+			
 		}
 		
 		@Override
 		public void onMouseMove(IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
-			// save for later use
-			final double x = e.getMapX();
-			final double y = e.getMapY();
-			// invoke later on EDT
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					try {
-						// update status panel?
-						if (mapStatusBar == null) {
-							// stop tracking
-							setTrackID(TRACK_MAP_STATUS, false);
-						} else {
-							// get tic
-							long tic = Calendar.getInstance()
-									.getTimeInMillis();
-							if (tic - previous > 190) {
-								previous = tic;
-								movePoint.setX(x);
-								movePoint.setY(y);
-								// start tracking
-								setTrackID(TRACK_MAP_STATUS, true);
-							}
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+			// get current tic
+			long tic = Calendar.getInstance()
+					.getTimeInMillis();
+			// update?
+			if (tic - previous > 100) {
+				previous = tic;
+				movePoint.setX(e.getMapX());
+				movePoint.setY(e.getMapY());
+				// notify later on EDT
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						fireOnMouseMove();
 					}
-				}
-			});					
+				});	
+			}
 		}
 		
 		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
                	throws java.io.IOException, AutomationException {
-			// invoke later on EDT
+
+			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					
 					try {
 						// set spatial references
 						movePoint.setSpatialReferenceByRef(getSpatialReference());
 						clickPoint.setSpatialReferenceByRef(getSpatialReference());
-						// update status panel?
-						if (mapStatusBar != null) {
-							mapStatusBar.reset();
-						}
-						// update draw element?
-						if (drawFrame != null) {
-							drawFrame.setActiveView(getActiveView());
-						}
+
+						// update draw support
+						if(drawFrame!=null) drawFrame.setActiveView(getActiveView());
+						
 						// update current selection models
 						setMsoLayerSelectionModel();
 						setMapLayerSelectionModel();
 						setWmsLayerSelectionModel();
-					} catch (Exception e) {
+						
+						// forward
+						fireOnMapReplaced();
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					
 				}
-			});			
+			});	
 		}
 		
 		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
     		throws java.io.IOException, AutomationException {
 			
-			// invoke later on EDT
+			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					// update status panel?
-					if (mapStatusBar == null) {
-						// stop tracking
-						setTrackID(TRACK_MAP_STATUS, false);
-					} else {
-						// get tic
-						long tic = Calendar.getInstance()
-								.getTimeInMillis();
-						if (tic - previous > 150) {
-							previous = tic;
-							// start tracking
-							setTrackID(TRACK_MAP_STATUS, true);
-						}
-					}
+					fireOnExtendChanged();
 				}
-			});					
+			});	
 			
 		}
 		
@@ -2152,45 +2043,36 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 
 	}
-	
-	class MapTracker extends Timer {
-		
-		private static final long serialVersionUID = 1L;
-		
-		MapTracker() {
-			
-			// forward
-			super(50, new ActionListener() {
-	
-				public void actionPerformed(ActionEvent arg0) {
-					
-					try {
-						// check flags
-						if(isTrackingID[TRACK_MAP_STATUS]) {
-							// notify?
-							if(mapStatusBar!=null) {
-								// set spatial references
-								movePoint.setSpatialReferenceByRef(getSpatialReference());
-								clickPoint.setSpatialReferenceByRef(getSpatialReference());
-								// forward
-								mapStatusBar.onMouseMove(movePoint);
-								mapStatusBar.onMouseDown(clickPoint);
-								mapStatusBar.setScale(getMapScale());
-							}
-							setTrackID(TRACK_MAP_STATUS, false);
-						}
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-					
-				}});
-			
-			// one shot and start at once
-			setRepeats(false);
-			setInitialDelay(0);
-			
-		}		
+
+	public boolean addDiskoMapListener(IDiskoMapListener listener) {
+		if(!mapListeners.contains(listener))
+			return mapListeners.add(listener);
+		return false;
 	}
 
+	public boolean removeDiskoMapListener(IDiskoMapListener listener) {
+		if(mapListeners.contains(listener))
+			return mapListeners.remove(listener);
+		return false;
+	}
+	
+	private void fireOnMouseClick() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onMouseClick();
+	}
+	
+	private void fireOnMouseMove() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onMouseMove();		
+	}
+	
+	private void fireOnExtendChanged() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onExtentChanged();		
+	}
+	
+	private void fireOnMapReplaced() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onExtentChanged();		
+	}
 }

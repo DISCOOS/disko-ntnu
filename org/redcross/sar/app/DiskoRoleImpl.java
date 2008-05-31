@@ -166,7 +166,6 @@ public class DiskoRoleImpl implements IDiskoRole {
 	 */
 	public IDiskoWpModule selectDiskoWpModule(IDiskoWpModule module) {
 		if (module != null) {
-	    	boolean isLocked = app.setLocked(true);
 	    	// any change?
 			if (module!=currentModule && currentModule!=null) {
 				// Require current WP to confirm switch (E.g. confirm abort for uncommitted changes).
@@ -178,7 +177,6 @@ public class DiskoRoleImpl implements IDiskoRole {
 					if (button != null) {
 						button.setSelected(true);
 					}
-					app.setLocked(isLocked);
 					return currentModule;
 				}
 				// deactivate previous module
@@ -194,6 +192,7 @@ public class DiskoRoleImpl implements IDiskoRole {
 				}
 				currentModule.deactivate();
 			}
+	    	boolean isLocked = app.setLocked(true);
 			String id = module.getName();
 			MainMenuPanel mainMenu = app.getUIFactory().getMainMenuPanel();
 			SubMenuPanel subMenu   = app.getUIFactory().getSubMenuPanel();

@@ -1,22 +1,17 @@
 package org.redcross.sar.gui.panel;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
@@ -25,6 +20,10 @@ import java.util.ResourceBundle;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.attribute.ComboAttribute;
+import org.redcross.sar.gui.attribute.DTGAttribute;
+import org.redcross.sar.gui.attribute.TextAreaAttribute;
+import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -56,23 +55,25 @@ public class TaskPanel extends DefaultPanel
     private static final ResourceBundle m_resources = 
     	Internationalization.getBundle(TaskPanel.class);
 	
-	private DefaultPanel m_contentsPanel = null;
-
 	private ITaskIf m_currentTask = null;
 
-	private JTextField m_taskTextField = null;
-	private JComboBox m_typeComboBox = null;
-	private JTextField m_createdTextField = null;
-	private JComboBox m_priorityComboBox = null;
-	private JComboBox m_dueComboBox = null;
-	private JComboBox m_responsibleComboBox = null;
-	private JComboBox m_alertComboBox = null;
-	private JComboBox m_statusComboBox = null;
-	private JComboBox m_progressComboBox = null;
+	private TextFieldAttribute m_nameField = null;
+	private ComboAttribute m_typeCombo = null;
+	private DTGAttribute m_createdField = null;
+	private ComboAttribute m_priorityCombo = null;
+	private ComboAttribute m_dueCombo = null;
+	private ComboAttribute m_responsibleCombo = null;
+	private ComboAttribute m_alertCombo = null;
+	private ComboAttribute m_statusCombo = null;
+	private ComboAttribute m_progressCombo = null;
 	private JButton m_useSourceButton = null;
-	private JTextArea m_descriptionTextArea = null;
-	private JTextArea m_sourceTextArea = null;
-	private JTextField m_objectTextField = null;
+	private TextAreaAttribute m_descriptionArea = null;
+	private TextAreaAttribute m_sourceArea = null;
+	private TextFieldAttribute m_objectField = null;
+	private JPanel m_centerPanel = null;
+	private JPanel m_westPanel = null;
+	private JPanel m_eastPanel = null;
+	private JPanel m_bottomPanel = null;
 
     public TaskPanel()
 	{
@@ -83,172 +84,250 @@ public class TaskPanel extends DefaultPanel
 		initialize();
 	}
 
+    
+    
+    
 	private void initialize()
 	{
 
+		// prepare
+		this.setScrollBarPolicies(
+			BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+			BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+		
 		// get body component
 		JPanel panel = (JPanel)getBodyComponent();
-		panel.setLayout(new GridBagLayout());
-
-		// prepare grid bag layout
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
-
-		// Task
-		m_taskTextField = new JTextField();
-		gbc.gridwidth = 3;
-		addComponent(0, m_resources.getString("Task.text"), m_taskTextField, 1, gbc);
-
-		// Type
-		m_typeComboBox = new JComboBox(TaskType.values());
-		m_typeComboBox.setSelectedIndex(3);
-		m_typeComboBox.setRenderer(new TaskEnumListCellRenderer());
-		m_typeComboBox.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				updateTaskText();
-			}
-		});
-		gbc.gridwidth = 1;
-		addComponent(0, m_resources.getString("TaskType.text"), m_typeComboBox, 0, gbc);
-
-		// Created
-		m_createdTextField = new JTextField();
-		m_createdTextField.setEditable(false);
-		addComponent(2, m_resources.getString("TaskCreated.text"), m_createdTextField, 1, gbc);
-
-		// Priority
-		m_priorityComboBox = new JComboBox(TaskPriority.values());
-		m_priorityComboBox.setSelectedIndex(1);
-		m_priorityComboBox.setRenderer(new TaskEnumListCellRenderer());
-		addComponent(0, m_resources.getString("TaskPriority.text"), m_priorityComboBox, 0, gbc);
-
-		// Due
-		m_dueComboBox = new JComboBox();
-		updateDueComboBox();
-		m_dueComboBox.setEditable(true);
-		m_dueComboBox.setSelectedIndex(2);
-
-		addComponent(2, m_resources.getString("TaskDue.text"), m_dueComboBox, 1, gbc);
-
-		// Responsible
-		Object[] responsible = {};
-		try
-		{
-			responsible = Utils.getApp().getModuleManager().getRoleTitles(false);
-		}
-		catch (Exception e1)
-		{
-			e1.printStackTrace();
-		}
-		m_responsibleComboBox = new JComboBox(responsible);
-		addComponent(0, m_resources.getString("TaskResponsible.text"), m_responsibleComboBox, 0, gbc);
-
-		// Alert
-		m_alertComboBox = new JComboBox();
-		updateAlertComboBox();
-		m_alertComboBox.setEditable(true);
-		addComponent(2, m_resources.getString("TaskAlert.text"), m_alertComboBox, 1, gbc);
-
-		// Status
-		TaskStatus[] statusItems =
-		{
-			TaskStatus.UNPROCESSED,
-			TaskStatus.STARTED,
-			TaskStatus.POSTPONED,
-			TaskStatus.FINISHED,
-		};
-		m_statusComboBox = new JComboBox(statusItems);
-		m_statusComboBox.setSelectedIndex(0);
-		m_statusComboBox.setRenderer(new TaskEnumListCellRenderer());
-		m_statusComboBox.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				// If status is set to finished, progress should be set to 100%
-				TaskStatus selectedStatus = (TaskStatus)m_statusComboBox.getSelectedItem();
-				if(selectedStatus == TaskStatus.FINISHED)
-				{
-					m_progressComboBox.setSelectedIndex(10);
-				}
-				updateFieldsEditable();
-			}
-		});
-		addComponent(0, m_resources.getString("TaskStatus.text"), m_statusComboBox, 0, gbc);
-
-		// Progress
-		String[] progressItems = {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"};
-		m_progressComboBox = new JComboBox(progressItems);
-//		m_progressTextField.setText(String.valueOf(0));
-		addComponent(2, m_resources.getString("TaskProgress.text"), m_progressComboBox, 1, gbc);
-
-		// Description
-		m_descriptionTextArea = new JTextArea();
-		JScrollPane scrollPane = new JScrollPane(m_descriptionTextArea);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		m_descriptionTextArea.setRows(10);
-		m_descriptionTextArea.setLineWrap(true);
-		m_descriptionTextArea.setWrapStyleWord(true);
-		gbc.gridwidth = 3;
-		addComponent(0, m_resources.getString("TaskDescription.text"), scrollPane, 10, gbc);
-
-		// Use source
-		String text = m_resources.getString("TaskUseSource.text");
-		m_useSourceButton = DiskoButtonFactory.createButton(text,text,null,ButtonSize.NORMAL);
-		m_useSourceButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent arg0)
-			{
-				m_descriptionTextArea.setText(m_sourceTextArea.getText());
-			}
-		});
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.gridy--;
-		gbc.gridx = 0;
-		panel.add(m_useSourceButton, gbc);
-		gbc.gridy++;
-		gbc.fill = GridBagConstraints.BOTH;
-
-		// Source
-		m_sourceTextArea = new JTextArea();
-		m_sourceTextArea.setBackground(m_createdTextField.getBackground());
-		m_sourceTextArea.setRows(4);
-		m_sourceTextArea.setBorder(BorderFactory.createLineBorder(Color.lightGray));
-		m_sourceTextArea.setLineWrap(true);
-		m_sourceTextArea.setWrapStyleWord(true);
-		m_sourceTextArea.setEditable(false);
-		gbc.gridwidth = 3;
-		addComponent(0, m_resources.getString("TaskSource.text"), m_sourceTextArea, 4, gbc);
-
-		// Object
-		m_objectTextField = new JTextField();
-		m_objectTextField.setEditable(false);
-		gbc.gridwidth = 3;
-		addComponent(0, m_resources.getString("TaskObject.text"), m_objectTextField, 1, gbc);
+		BoxLayout bl = new BoxLayout(panel,BoxLayout.Y_AXIS);
+		panel.setLayout(bl);
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
+		panel.add(getNamePanel());
+		panel.add(Box.createVerticalStrut(5));
+		panel.add(getCenterPanel());
+		panel.add(Box.createVerticalStrut(5));
+		panel.add(getBottomPanel());
+		panel.add(Box.createVerticalGlue());
+
 	}
 	
-	protected void afterFinish() {
+	private JPanel getNamePanel() {
+		if(m_nameField==null || true) {
+			m_nameField = new TextFieldAttribute("name",m_resources.getString("Task.text"),80,null,true);
+			Utils.setFixedSize(m_nameField,490,25);
+		}
+		return m_nameField;
+	}
+	
+	private JPanel getCenterPanel() {
+		
+		if(m_centerPanel == null || true) {
+			m_centerPanel = new JPanel();
+			Utils.setFixedSize(m_centerPanel,490,120);
+			BoxLayout bl = new BoxLayout(m_centerPanel,BoxLayout.X_AXIS);
+			m_centerPanel.setLayout(bl);
+			m_centerPanel.add(getWestPanel());
+			m_centerPanel.add(Box.createHorizontalStrut(5));
+			m_centerPanel.add(getEastPanel());
+		}
+		return m_centerPanel;
+	}
+	
+	private JPanel getWestPanel() {
+		
+		if(m_westPanel == null || true) {
+			
+			// create panel
+			m_westPanel = new JPanel();
+			m_westPanel.setLayout(new BoxLayout(m_westPanel,BoxLayout.Y_AXIS));
+			//Utils.setFixedSize(m_westPanel,245,100);
+		
+			// Type (0,0)
+			m_typeCombo = new ComboAttribute("type",m_resources.getString("TaskType.text"),80,null,false);
+			m_typeCombo.fill(TaskType.values());
+			m_typeCombo.getComboBox().setSelectedIndex(3);
+			m_typeCombo.getComboBox().setRenderer(new TaskEnumListCellRenderer());
+			m_typeCombo.getComboBox().addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent arg0)
+				{
+					updateTaskText();
+				}
+			});
+			m_typeCombo.addDiskoWorkListener(this);
+			m_westPanel.add(m_typeCombo);
+			
+			// Created date
+			m_createdField = new DTGAttribute("created",m_resources.getString("TaskCreated.text"),80,null,false);
+			m_createdField.addDiskoWorkListener(this);
+			m_westPanel.add(Box.createVerticalStrut(5));
+			m_westPanel.add(m_createdField);
+
+			// Responsible (2,0)
+			Object[] responsible = {};
+			try
+			{
+				responsible = Utils.getApp().getModuleManager().getRoleTitles(false);
+			}
+			catch (Exception e1)
+			{
+				e1.printStackTrace();
+			}
+			m_responsibleCombo = new ComboAttribute("responsible", 
+					m_resources.getString("TaskResponsible.text"),80,null,false);
+			m_responsibleCombo.fill(responsible);
+			m_responsibleCombo.getComboBox().setSelectedIndex(0);
+			m_responsibleCombo.addDiskoWorkListener(this);
+			m_westPanel.add(Box.createVerticalStrut(5));
+			m_westPanel.add(m_responsibleCombo);
+			
+			// Status
+			TaskStatus[] statusItems =
+			{
+				TaskStatus.UNPROCESSED,
+				TaskStatus.STARTED,
+				TaskStatus.POSTPONED,
+				TaskStatus.FINISHED,
+			};
+			m_statusCombo = new ComboAttribute("status",m_resources.getString("TaskStatus.text"),80,null,false);
+			m_statusCombo.fill(statusItems);
+			m_statusCombo.getComboBox().setSelectedIndex(0);
+			m_statusCombo.getComboBox().setRenderer(new TaskEnumListCellRenderer());
+			m_statusCombo.getComboBox().addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					// If status is set to finished, progress should be set to 100%
+					TaskStatus selectedStatus = (TaskStatus)m_statusCombo.getValue();
+					if(selectedStatus == TaskStatus.FINISHED)
+					{
+						m_progressCombo.getComboBox().setSelectedIndex(10);
+					}
+					updateFieldsEditable();
+				}
+			});
+			m_statusCombo.addDiskoWorkListener(this);
+			m_westPanel.add(Box.createVerticalStrut(5));
+			m_westPanel.add(m_statusCombo);
+
+		}
+		return m_westPanel;
+	}
+	
+	private JPanel getEastPanel() {
+		
+		if(m_eastPanel==null || true) {
+			
+			// create panel
+			m_eastPanel = new JPanel();
+			m_eastPanel.setLayout(new BoxLayout(m_eastPanel,BoxLayout.Y_AXIS));
+			//Utils.setFixedSize(m_eastPanel,245,100);
+			
+			// Priority
+			m_priorityCombo = new ComboAttribute("priority",m_resources.getString("TaskPriority.text"),80,null,false);
+			m_priorityCombo.fill(TaskPriority.values());
+			m_priorityCombo.getComboBox().setSelectedIndex(3);
+			m_priorityCombo.getComboBox().setRenderer(new TaskEnumListCellRenderer());
+			m_priorityCombo.addDiskoWorkListener(this);
+			m_eastPanel.add(m_priorityCombo);
+
+			// Due (2,1)
+			m_dueCombo = new ComboAttribute("due", m_resources.getString("TaskDue.text"),80,null,true);
+			updateDueComboBox();
+			m_dueCombo.getComboBox().setSelectedIndex(2);
+			m_dueCombo.addDiskoWorkListener(this);
+			m_eastPanel.add(Box.createVerticalStrut(5));
+			m_eastPanel.add(m_dueCombo);
+
+			// Alert (2,1)
+			m_alertCombo = new ComboAttribute("alert",m_resources.getString("TaskAlert.text"),80,null,true);
+			updateAlertComboBox();
+			m_alertCombo.getComboBox().setSelectedIndex(2);
+			m_alertCombo.addDiskoWorkListener(this);
+			m_eastPanel.add(Box.createVerticalStrut(5));
+			m_eastPanel.add(m_alertCombo);
+			
+			// Progress 
+			String[] progressItems = {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "50%", "80%", "90%", "100%"};
+			m_progressCombo = new ComboAttribute("progress",m_resources.getString("TaskProgress.text"),80,null,false);
+			m_progressCombo.fill(progressItems);
+			m_progressCombo.getComboBox().setSelectedIndex(0);
+			m_progressCombo.addDiskoWorkListener(this);
+			m_eastPanel.add(Box.createVerticalStrut(5));
+			m_eastPanel.add(m_progressCombo);
+		
+		}
+		return m_eastPanel;
+	}
+	
+	private JPanel getBottomPanel() {
+		
+		if(m_bottomPanel==null || true) {
+
+			// create panel
+			m_bottomPanel = new JPanel();
+			m_bottomPanel.setLayout(new BoxLayout(m_bottomPanel,BoxLayout.Y_AXIS));
+			Utils.setFixedSize(m_bottomPanel,490,250);
+			
+			// Description
+			m_descriptionArea = new TextAreaAttribute("description",
+					m_resources.getString("TaskDescription.text"),80,null,true);
+			Utils.setFixedSize(m_descriptionArea,490,100);
+			m_descriptionArea.getTextArea().setRows(0);
+
+			// add button
+			String text = m_resources.getString("TaskUseSource.text");
+			m_useSourceButton = DiskoButtonFactory.createButton(text,text,null,ButtonSize.NORMAL);
+			m_useSourceButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					m_descriptionArea.setValue(m_sourceArea.getValue());
+				}
+			});
+			m_descriptionArea.setButton(m_useSourceButton, true);
+			m_descriptionArea.addDiskoWorkListener(this);
+			m_bottomPanel.add(m_descriptionArea);
+			
+			
+			// Source
+			m_sourceArea = new  TextAreaAttribute("source",
+					m_resources.getString("TaskSource.text"),80,null,false);
+			Utils.setFixedSize(m_sourceArea,490,100);
+			m_sourceArea.getTextArea().setRows(0);
+			m_sourceArea.addDiskoWorkListener(this);
+			m_bottomPanel.add(Box.createVerticalStrut(5));
+			m_bottomPanel.add(m_sourceArea);
+
+			// Object
+			m_objectField = new TextFieldAttribute("object",
+					m_resources.getString("TaskObject.text"),80,null,false);
+			Utils.setFixedSize(m_objectField,490,25);
+			m_objectField.addDiskoWorkListener(this);
+			m_bottomPanel.add(Box.createVerticalStrut(5));
+			m_bottomPanel.add(m_objectField);
+		}
+		return m_bottomPanel;
+	}
+	
+	protected boolean beforeFinish() {
 
 		// validate 
 		if(timesValid())  {
 			// apply change
 			saveTask();
 			// success
-			return;
+			return true;
 		}
 		// notify
 		Utils.showError(
 				m_resources.getString("TimeError.header"),
 				m_resources.getString("TimeError.text"));
+		// failed
+		return false;
+		
 	}
 
-	private void addComponent(int column, String caption, JComponent c, 
+	/*private void addComponent(int column, String caption, JComponent c, 
 			int rows, GridBagConstraints gbc) {
 		
 		// prepare grid bag
@@ -269,6 +348,7 @@ public class TaskPanel extends DefaultPanel
 		// update grid bag
 		gbc.gridy += rows;
 	}
+	*/
 
 	public void setTask(ITaskIf task)
 	{
@@ -279,7 +359,7 @@ public class TaskPanel extends DefaultPanel
 
 	private boolean timesValid()
 	{
-		String selectedAlertTimeString = (String)m_alertComboBox.getSelectedItem();
+		String selectedAlertTimeString = (String)m_alertCombo.getValue();
 		if(selectedAlertTimeString.equals(m_resources.getString("TaskNoAlert.text")))
 		{
 			return true;
@@ -300,7 +380,7 @@ public class TaskPanel extends DefaultPanel
 
 			Calendar alertTime = null;
 			String alertString = selectedAlertTimeString.split(" ")[0];
-			String dueString = (String)m_dueComboBox.getSelectedItem();
+			String dueString = (String)m_dueCombo.getValue();
 			alertTime = DTG.DTGToCal(dueString);
 			alertTime.add(Calendar.MINUTE, -Integer.valueOf(alertString));
 			return alertTime.after(creationTime);
@@ -318,31 +398,22 @@ public class TaskPanel extends DefaultPanel
 	private void updateFieldsEditable()
 	{
 		// Check status
-		TaskStatus status = (TaskStatus)m_statusComboBox.getSelectedItem();
+		TaskStatus status = (TaskStatus)m_statusCombo.getValue();
 		IDiskoRole role = Utils.getApp().getCurrentRole();
 		boolean canChangeFields = TaskUtilities.canChangeFields(status);
 		boolean canChangeStatus = TaskUtilities.canChangeStatus(role, m_currentTask);
 		boolean editable =  canChangeFields && canChangeStatus;
 
-		m_statusComboBox.setEnabled(canChangeStatus);
-
-		m_alertComboBox.setEnabled(editable);
-		m_descriptionTextArea.setEditable(editable);
+		m_statusCombo.setEnabled(canChangeStatus);
+		m_alertCombo.setEnabled(editable);
+		m_descriptionArea.setEditable(editable);
 		m_useSourceButton.setEnabled(editable);
-		if(editable)
-		{
-			m_descriptionTextArea.setBackground(Color.white);
-		}
-		else
-		{
-			m_descriptionTextArea.setBackground(m_createdTextField.getBackground());
-		}
-		m_dueComboBox.setEnabled(editable);
-		m_priorityComboBox.setEnabled(editable);
-		m_progressComboBox.setEnabled(editable);
-		m_responsibleComboBox.setEnabled(editable);
-		m_taskTextField.setEditable(editable);
-		m_typeComboBox.setEnabled(editable);
+		m_dueCombo.setEnabled(editable);
+		m_priorityCombo.setEnabled(editable);
+		m_progressCombo.setEnabled(editable);
+		m_responsibleCombo.setEnabled(editable);
+		m_nameField.setEditable(editable);
+		m_typeCombo.setEnabled(editable);
 	}
 
 	/**
@@ -351,7 +422,7 @@ public class TaskPanel extends DefaultPanel
 	public void saveTask()
 	{
 		// Get due time
-		String dueTimeString = (String)m_dueComboBox.getSelectedItem();
+		String dueTimeString = (String)m_dueCombo.getValue();
 		Calendar dueTime = null;
 		try
 		{
@@ -375,26 +446,26 @@ public class TaskPanel extends DefaultPanel
 		}
 
 		// Get text
-		String text = m_taskTextField.getText();
+		String text = (String)m_nameField.getValue();
 		m_currentTask.setTaskText(text);
 
 		// Get type
-		TaskType type = (TaskType)m_typeComboBox.getSelectedItem();
+		TaskType type = (TaskType)m_typeCombo.getValue();
 		m_currentTask.setType(type);
 
 		// Get priority
-		TaskPriority priority = (TaskPriority)m_priorityComboBox.getSelectedItem();
+		TaskPriority priority = (TaskPriority)m_priorityCombo.getValue();
 		m_currentTask.setPriority(priority);
 
 		// Get responsible
-		String responsible = (String)m_responsibleComboBox.getSelectedItem();
+		String responsible = (String)m_responsibleCombo.getValue();
 		m_currentTask.setResponsibleRole(responsible);
 
 		// Get alert
 		Calendar alertTime = null;
 		try
 		{
-			String alertString = ((String)m_alertComboBox.getSelectedItem()).split(" ")[0];
+			String alertString = ((String)m_alertCombo.getValue()).split(" ")[0];
 			alertTime = new GregorianCalendar();
 			alertTime.set(dueTime.get(Calendar.YEAR),
 					dueTime.get(Calendar.MONTH),
@@ -412,15 +483,15 @@ public class TaskPanel extends DefaultPanel
 		m_currentTask.setAlert(alertTime);
 
 		// Get status
-		TaskStatus status = (TaskStatus)m_statusComboBox.getSelectedItem();
+		TaskStatus status = (TaskStatus)m_statusCombo.getValue();
     	m_currentTask.setStatus(status);
 
 		// Get progress
-		int progress = Integer.valueOf(((String)m_progressComboBox.getSelectedItem()).split("%")[0]);
+		int progress = Integer.valueOf(((String)m_progressCombo.getValue()).split("%")[0]);
 		m_currentTask.setProgress(progress);
 
 		// Get description
-		String description = m_descriptionTextArea.getText();
+		String description = (String)m_descriptionArea.getValue();
 		m_currentTask.setDescription(description);
 
 		// update mso model
@@ -441,42 +512,42 @@ public class TaskPanel extends DefaultPanel
 
 			// Task text
 			String taskText = m_currentTask.getTaskText();
-			m_taskTextField.setText(taskText);
+			m_nameField.setValue(taskText);
 
 			// Type
 			TaskType type = m_currentTask.getType();
-			m_typeComboBox.setSelectedItem(type);
+			m_typeCombo.setValue(type);
 
 			// Created
 			Calendar created = m_currentTask.getCreated();
-			m_createdTextField.setText(DTG.CalToDTG(created));
+			m_createdField.setValue(DTG.CalToDTG(created));
 
 			// Priority
 			TaskPriority priority = m_currentTask.getPriority();
-			m_priorityComboBox.setSelectedItem(priority);
+			m_priorityCombo.setValue(priority);
 
 			// Responsible
 			String responsible = m_currentTask.getResponsibleRole();
 			if(responsible == null || responsible.equals(""))
 			{
-				m_responsibleComboBox.setSelectedItem(null);
+				m_responsibleCombo.setValue(null);
 			}
 			else
 			{
-				m_responsibleComboBox.setSelectedItem(responsible);
+				m_responsibleCombo.setValue(responsible);
 			}
 
 			// Status
 			TaskStatus status = m_currentTask.getStatus();
-			m_statusComboBox.setSelectedItem(status);
+			m_statusCombo.setValue(status);
 
 			// Progress
 			int progress = m_currentTask.getProgress();
-			m_progressComboBox.setSelectedIndex(progress/10);
+			m_progressCombo.getComboBox().setSelectedIndex(progress/10);
 
 			// Description
 			String description = m_currentTask.getDescription();
-			m_descriptionTextArea.setText(description);
+			m_descriptionArea.setValue(description);
 
 			// initialize text
 			String source = m_currentTask.getSourceClassText();
@@ -499,26 +570,26 @@ public class TaskPanel extends DefaultPanel
 			}
 			
 			// save source text
-			m_sourceTextArea.setText(source);
+			m_sourceArea.setValue(source);
 
 			// Object
 			IMsoObjectIf object = m_currentTask.getDependentObject();
-			m_objectTextField.setText(object == null ? "" : object.shortDescriptor());
+			m_objectField.setValue(object == null ? "" : object.shortDescriptor());
 			
 		}
 		else
 		{
 			// Updating a new task
-			m_typeComboBox.setSelectedItem(TaskType.GENERAL);
-			m_createdTextField.setText(DTG.CalToDTG(Calendar.getInstance()));
-			m_priorityComboBox.setSelectedItem(TaskPriority.NORMAL);
-			m_responsibleComboBox.setSelectedItem(null);
-			m_alertComboBox.setSelectedIndex(0);
-			m_statusComboBox.setSelectedItem(TaskStatus.UNPROCESSED);
-			m_progressComboBox.setSelectedIndex(0);
-			m_descriptionTextArea.setText("");
-			m_sourceTextArea.setText("");
-			m_objectTextField.setText("");
+			m_typeCombo.setValue(TaskType.GENERAL);
+			m_createdField.setValue(DTG.CalToDTG(Calendar.getInstance()));
+			m_priorityCombo.setValue(TaskPriority.NORMAL);
+			m_responsibleCombo.setValue(null);
+			m_alertCombo.getComboBox().setSelectedIndex(0);
+			m_statusCombo.setValue(TaskStatus.UNPROCESSED);
+			m_progressCombo.getComboBox().setSelectedIndex(0);
+			m_descriptionArea.setValue("");
+			m_sourceArea.setValue("");
+			m_objectField.setValue("");
 		}
 
 		updateDueComboBox();
@@ -527,7 +598,7 @@ public class TaskPanel extends DefaultPanel
 	
 	private void updateDueComboBox()
 	{
-		m_dueComboBox.removeAllItems();
+		m_dueCombo.getComboBox().removeAllItems();
 		int intervalSize = 15;
 		int numItems = 5;
 		Calendar dueItem = null;
@@ -550,26 +621,25 @@ public class TaskPanel extends DefaultPanel
 
 		for(int i=0; i<numItems; i++)
 		{
-			m_dueComboBox.addItem(DTG.CalToDTG(dueItem));
+			m_dueCombo.getComboBox().addItem(DTG.CalToDTG(dueItem));
 			dueItem.add(Calendar.MINUTE, intervalSize);
 		}
-
-		m_dueComboBox.setSelectedIndex(0);
+		m_dueCombo.getComboBox().setSelectedIndex(0);
 	}
 
 	private void updateAlertComboBox()
 	{
 		int[] alertItems = {1, 5, 15, 30, 60};
 
-		m_alertComboBox.removeAllItems();
+		m_alertCombo.getComboBox().removeAllItems();
 
-		m_alertComboBox.addItem(m_resources.getString("TaskNoAlert.text"));
+		m_alertCombo.getComboBox().addItem(m_resources.getString("TaskNoAlert.text"));
 
 		String alertItem = null;
 		for(int i=0; i<alertItems.length; i++)
 		{
 			alertItem = String.valueOf(alertItems[i]) + " " + m_resources.getString("TaskAlertItem.text");
-			m_alertComboBox.addItem(alertItem);
+			m_alertCombo.getComboBox().addItem(alertItem);
 		}
 
 		if(m_currentTask != null)
@@ -577,7 +647,7 @@ public class TaskPanel extends DefaultPanel
 			Calendar alertTime = m_currentTask.getAlert();
 			if(alertTime == null)
 			{
-				m_alertComboBox.setSelectedIndex(0);
+				m_alertCombo.getComboBox().setSelectedIndex(0);
 			}
 			else
 			{
@@ -587,7 +657,7 @@ public class TaskPanel extends DefaultPanel
 				if(diffMin == 0)
 				{
 					// No alert
-					m_alertComboBox.setSelectedIndex(0);
+					m_alertCombo.getComboBox().setSelectedIndex(0);
 				}
 				else
 				{
@@ -598,7 +668,7 @@ public class TaskPanel extends DefaultPanel
 					{
 						if(diffMin == alertItems[i])
 						{
-							m_alertComboBox.setSelectedIndex(i+1);
+							m_alertCombo.getComboBox().setSelectedIndex(i+1);
 							customTime = false;
 						}
 					}
@@ -607,8 +677,8 @@ public class TaskPanel extends DefaultPanel
 					{
 						// User has written in own time, add this to combo box items
 						String oldAlertTime = diffMin + " " + m_resources.getString("TaskAlertItem.text");
-						m_alertComboBox.addItem(oldAlertTime);
-						m_alertComboBox.setSelectedItem(oldAlertTime);
+						m_alertCombo.getComboBox().addItem(oldAlertTime);
+						m_alertCombo.setValue(oldAlertTime);
 					}
 				}
 			}
@@ -625,7 +695,7 @@ public class TaskPanel extends DefaultPanel
 		{
 			String text = "";
 
-			TaskType type = (TaskType)m_typeComboBox.getSelectedItem();
+			TaskType type = (TaskType)m_typeCombo.getValue();
 			switch(type)
 			{
 			case TRANSPORT:
@@ -641,7 +711,9 @@ public class TaskPanel extends DefaultPanel
 				text = m_resources.getString("TaskGeneralText.text");
 				break;
 			}
-			m_taskTextField.setText(text);
+			m_nameField.setValue(text);
+			// is dirty
+			setDirty(true);
 		}
 	}
 

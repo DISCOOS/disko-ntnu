@@ -2,6 +2,7 @@ package org.redcross.sar.gui.dialog;
 
 import java.awt.Frame;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.TaskPanel;
 import org.redcross.sar.mso.data.ITaskIf;
 
@@ -32,7 +33,9 @@ public class TaskDialog extends DefaultDialog  {
 
 	private void initialize() {
 		try {
+	        Utils.setFixedSize(this, 500, 455);
 	        this.setContentPane(getTaskPanel());
+	        this.setModal(true);
 	        this.pack();
 		}
 		catch(Exception e) {

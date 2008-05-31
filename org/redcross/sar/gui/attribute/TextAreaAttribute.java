@@ -6,6 +6,8 @@ package org.redcross.sar.gui.attribute;
 import java.awt.Component;
 
 import javax.swing.JFormattedTextField;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -20,6 +22,8 @@ import org.redcross.sar.mso.data.IAttributeIf;
 public class TextAreaAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private JTextArea m_textArea;
 	
 	public TextAreaAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
@@ -42,9 +46,20 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 	
 	public Component getComponent() {
 		if(m_component==null) {
-			JTextArea area = new JTextArea();
-			area.setEditable(m_isEditable);
-			area.getDocument().addDocumentListener(new DocumentListener() {
+			JScrollPane scrollPane = new JScrollPane(getTextArea());
+			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			// save the component
+			m_component = scrollPane;
+		}
+		return m_component;
+	}
+			
+	public JTextArea getTextArea() {
+		if(m_textArea==null) {
+			m_textArea = new JTextArea();
+			m_textArea.setEditable(m_isEditable);
+			m_textArea.getDocument().addDocumentListener(new DocumentListener() {
 
 				public void changedUpdate(DocumentEvent e) { change(); }
 
@@ -58,14 +73,15 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 				}
 				
 			});
-			// save the component
-			m_component = area;			
+			m_textArea.setRows(10);
+			m_textArea.setLineWrap(true);
+			m_textArea.setWrapStyleWord(true);			
 		}
-		return m_component;
+		return m_textArea;
 	}
-			
-	public JTextArea getTextArea() {
-		return (JTextArea)m_component;
+	
+	public JScrollPane getScrollPane() {
+		return (JScrollPane)m_component;
 	}
 	
 	public void setAutoSave(boolean auto) {
@@ -77,12 +93,12 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 	}	
 	
 	public Object getValue() {
-		return ((JTextArea)m_component).getText();
+		return getTextArea().getText();
 	}
 	
 	public boolean setValue(Object value) {
 		// update
-		((JTextArea)m_component).setText(String.valueOf(value));
+		getTextArea().setText(String.valueOf(value));
 		// success
 		return true;
 	}

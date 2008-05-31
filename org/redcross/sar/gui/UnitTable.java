@@ -1,5 +1,7 @@
 package org.redcross.sar.gui;
 
+import java.util.EnumSet;
+
 import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -15,6 +17,7 @@ import org.redcross.sar.gui.renderer.UnitCellRenderer;
 import org.redcross.sar.gui.renderer.UnitStringConverter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 
 public class UnitTable extends JTable {
 
@@ -23,12 +26,19 @@ public class UnitTable extends JTable {
 	private TableRowSorter<UnitTableModel> tableRowSorter = null;
 	
 	public UnitTable(IMsoModelIf msoModel, String catalog) {
-		
-		// set default unit cell table renderer
+		this(msoModel,catalog,EnumSet.noneOf(UnitStatus.class));
+	}
+	
+	public UnitTable(IMsoModelIf msoModel, String catalog,EnumSet<UnitStatus> status) {
+			
+		// set default unit cell table renderers
 		setDefaultRenderer(AbstractUnit.class, new UnitCellRenderer(catalog));
+		setDefaultRenderer(UnitStatus.class, new UnitCellRenderer(catalog));		
 		
-		// prepare data model
-		UnitTableModel model = new UnitTableModel(msoModel); 
+		// create model
+		UnitTableModel model = new UnitTableModel(msoModel,status);
+		
+		// set data model
 		setModel(model);
 		
 		// add row sorter

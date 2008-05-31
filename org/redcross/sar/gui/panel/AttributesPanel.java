@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -28,6 +29,8 @@ import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
+import com.borland.jbcl.layout.VerticalFlowLayout;
+
 /**
  * @author kennetgu
  *
@@ -37,7 +40,6 @@ public class AttributesPanel extends DefaultPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private List<String> m_attributes = null;
-	private Map<String,Component> m_struts = null;
 	private Map<String,IDiskoAttribute> m_panels = null;
 	
 	private JPanel m_listPanel = null;
@@ -53,7 +55,6 @@ public class AttributesPanel extends DefaultPanel {
 		// forward
 		super(caption,finish,cancel);
 		// prepare
-		m_struts = new HashMap<String,Component>();
 		m_attributes = new ArrayList<String>();
 		m_panels = new HashMap<String, IDiskoAttribute>();		
 		// initialize GUI
@@ -81,6 +82,7 @@ public class AttributesPanel extends DefaultPanel {
 		if(m_listPanel==null) {
 			m_listPanel = new JPanel();
 			m_listPanel.setLayout(new BoxLayout(m_listPanel,BoxLayout.Y_AXIS));
+			m_listPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		}
 		return m_listPanel;
 	}
@@ -210,20 +212,15 @@ public class AttributesPanel extends DefaultPanel {
 		String name = attribute.getName();
 		// valid attribute?
 		if(attribute instanceof Component && !m_attributes.contains(name)) {
-			// create strut
-			Component strut = null;
-			// update glue
-			if(glue!=null) {
+			if(m_attributes.size()>0) {
 				getListPanel().remove(glue);
-				strut = Box.createVerticalStrut(5);
-				getListPanel().add(strut);
+				getListPanel().add(Box.createVerticalStrut(5));
 			}
 			else glue = Box.createVerticalGlue();
-			getListPanel().add((Component)attribute,null);
+			getListPanel().add((Component)attribute);
 			getListPanel().add(glue);
 			// add to list
 			m_attributes.add(name);			
-			m_struts.put(name,strut);			
 			m_panels.put(name,attribute);			
 			// add listener
 			attribute.addDiskoWorkListener(this);
@@ -249,19 +246,21 @@ public class AttributesPanel extends DefaultPanel {
 
 	public boolean removeAttribute(String name)  {
 		// get panel
-		Component it = (Component)getAttribute(name);
+		Component attr = (Component)getAttribute(name);
 		// has panel?
-		if(it!=null) {
+		if(attr!=null) {
 			// remove
 			m_panels.remove(name);
 			m_attributes.remove(name);
-			getListPanel().remove(it);
-			Component strut = m_struts.get(name);
-			if(strut!=null) getListPanel().remove(m_struts.get(name));
-			// remove glue?
-			if(glue!=null && m_panels.size()==0) {
-				getListPanel().remove(glue);
-				glue = null;
+			// rebuild
+			getListPanel().removeAll();
+			boolean isFirst = true;
+			for(IDiskoAttribute it : m_panels.values()) {
+				if(!isFirst)
+					getListPanel().add(Box.createVerticalStrut(5));
+				else
+					isFirst = false;
+				getListPanel().add((JComponent)it);
 			}
 		}
 		update();
@@ -278,29 +277,16 @@ public class AttributesPanel extends DefaultPanel {
 		}		
 	}
 	
-	public Dimension getAttributeSize(String name) {
-		return m_panels.get(name).getAttributeSize();
-	}
-
-	public void setAttributeSize(Dimension size) {
-		for(IDiskoAttribute it: m_panels.values())
-			it.setAttributeSize(size);		
-	}
-	
-	public void setAttributeSize(String name,Dimension size) {
-		m_panels.get(name).setAttributeSize(size);		
-	}
-	
 	public double getCaptionWidth(String name) {
 		return m_panels.get(name).getCaptionWidth();
 	}
 
-	public void setCaptionWidth(double width) {
+	public void setCaptionWidth(int width) {
 		for(IDiskoAttribute it: m_panels.values())
 			it.setCaptionWidth(width);		
 	}	
 	
-	public void setCaptionWidth(String name, double width) {
+	public void setCaptionWidth(String name, int width) {
 		m_panels.get(name).setCaptionWidth(width);		
 	}	
 	
@@ -369,11 +355,12 @@ public class AttributesPanel extends DefaultPanel {
   	
   	public void update() {
   		
+  		int max = 0;
+  		
   		// calculate dirty bit
   		for(IDiskoAttribute it : m_panels.values()) {
   			if(it.isDirty()) {
-  				setDirty(true);
-  				break;
+  				setDirty(true,false); break;
   			}
   		}
 

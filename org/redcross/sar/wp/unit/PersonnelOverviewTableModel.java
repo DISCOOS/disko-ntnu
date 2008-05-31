@@ -63,6 +63,7 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		m_displayPersonnel = new LinkedList<IPersonnelIf>();
 		IPersonnelListIf allPersonnel = m_wpModule.getCmdPost().getAttendanceList();
 		m_displayPersonnel.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
+		
 	}
 
 	public int getColumnCount()
@@ -99,7 +100,10 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
                 }
             }		
             return personnelUnit == null ? "" : MsoUtils.getUnitName(personnelUnit,false);
+		case 2:
+			return personnel;
 		}
+		// failure
 		return null;
 	}
 
@@ -120,8 +124,8 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		fireTableDataChanged();
 	}
 
-	EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(
-			IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL);
+	EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL);
+	
 	/**
 	 * Interested in personnel changes
 	 */

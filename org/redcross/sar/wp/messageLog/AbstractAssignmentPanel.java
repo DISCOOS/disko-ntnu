@@ -22,6 +22,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -33,8 +34,10 @@ import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -48,6 +51,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Selector;
+import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog.MessageLogActionType;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -88,7 +92,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     protected JScrollPane m_nextAssignmentScrollPane = null;
     protected ButtonGroup m_nextAssignmentButtonGroup = null;
 
-    protected JPanel m_assignmentPoolPanel = null;
+    protected BasePanel m_assignmentPoolPanel = null;
     protected JPanel m_assignmentPoolButtonPanel = null;
     protected JScrollPane m_assignmentPoolScrollPane = null;
     protected ButtonGroup m_assignmentPoolButtonGroup = null;
@@ -139,6 +143,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
                 Calendar time = DTG.DTGToCal(m_editAssignmentPanel
                 		.getAttribute("Time").getValue().toString());
                 m_editingLine.setOperationTime(time);
+                m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", "48x48"));
             }
             catch (IllegalMsoArgumentException e1)
             {
@@ -200,8 +205,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     
     protected void initSelectedPanel() {
     	// create
-    	m_selectedPanel = new AttributesPanel("Velg oppdrag","Ingen oppdrag tilgjengelig",false,false);
-    	m_selectedPanel.setMinimumSize(new Dimension(150,60));
+    	m_selectedPanel = new AttributesPanel("","Ingen oppdrag tilgjengelig",false,false);
+    	m_selectedPanel.setHeaderVisible(false);
     }
     
     protected void initMessageLinesPanel()
@@ -212,8 +217,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
         m_messageLineList = new JList(new MessageLineListModel(m_wpMessageLog));
         m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        m_messageLineList.setFixedCellHeight(25);
         m_messageLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_messageLineList, this));
-        m_messageLineList.setBorder(BorderFactory.createLineBorder(Color.black));
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
@@ -225,14 +230,18 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     protected void initEditAssignmentPanel()
     {
         
-    	m_editAssignmentPanel = new AttributesPanel("Velg oppdrag","Ingen oppdrag funnet",false,false);
-    	m_editAssignmentPanel.setMinimumSize(new Dimension(150,60));
+    	m_editAssignmentPanel = new AttributesPanel("Endre meldingslinje","Ingen oppdrag funnet",false,false);
+    	m_selectedPanel.setHeaderVisible(false);
     	
     	// add attributes
     	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Assignment",
     			m_wpMessageLog.getBundleText("AssignmentLabel.text"),150,"<velg oppdrag>",false));
     	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Time",
     			m_wpMessageLog.getBundleText("AssignedTimeLabel.text"),150,"<velg oppdrag>",true));    	
+    	m_editAssignmentPanel.setCaptionWidth(100);
+		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Assignment"),560,25);
+		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Time"),560,25);
+		m_selectedPanel.update();
 
         m_cardsPanel.add(m_editAssignmentPanel, EDIT_ASSIGNMENT_ID);
     }
@@ -252,14 +261,14 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
     protected void initAssignmentPoolPanel()
     {
-        m_assignmentPoolPanel = new JPanel();
-        m_assignmentPoolPanel.setLayout(new BorderLayout());
+        m_assignmentPoolPanel = new BasePanel("Velg i fra kø");
+
         m_assignmentPoolButtonPanel = new JPanel(new GridBagLayout());
 
         m_assignmentPoolScrollPane = new JScrollPane(m_assignmentPoolButtonPanel);
         m_assignmentPoolButtonGroup = new ButtonGroup();
 
-        m_assignmentPoolPanel.add(m_assignmentPoolScrollPane, BorderLayout.CENTER);
+        m_assignmentPoolPanel.setBodyComponent(m_assignmentPoolScrollPane);
 
         m_cardsPanel.add(m_assignmentPoolPanel, ASSIGNMENT_POOL_ID);
     }
@@ -270,39 +279,6 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	m_buttonPanel = new JPanel();
     	m_buttonPanel.setLayout(new BoxLayout(m_buttonPanel,BoxLayout.Y_AXIS));
     	
-    	// create OK button
-    	m_okButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);
-        
-    	m_okButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-            	if(MESSAGE_LINES_ID.equals(m_currentView)) 
-            		addNewMessageLine();
-            	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView)) 
-                    updateMessageLine();
-            	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView))
-                    addSelectedAssignment();
-            	else if(ASSIGNMENT_POOL_ID.equals(m_currentView))
-            		addSelectedAssignment();
-            }
-        });
-        
-        m_buttonPanel.add(m_okButton);
-        
-    	// create CENTERAT button
-    	m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
-        
-    	m_centerAtButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-            	centerAtSelected();
-            }
-        });
-        
-        m_buttonPanel.add(m_centerAtButton);
-        
         m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
         
         m_cancelButton.addActionListener(new ActionListener()
@@ -321,6 +297,44 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         });
 
         m_buttonPanel.add(m_cancelButton);
+        
+    	// create CENTERAT button
+    	m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
+        
+    	m_centerAtButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+            	centerAtSelected();
+            }
+        });
+        
+        m_buttonPanel.add(m_centerAtButton);
+        
+    	// create OK button
+    	m_okButton = DiskoButtonFactory.createButton("GENERAL.PLUS",ButtonSize.NORMAL);
+        
+    	m_okButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+            	if(MESSAGE_LINES_ID.equals(m_currentView)) {
+            		if(linesAdded())
+            			updateMessageLine();
+            		else
+            			addNewMessageLine();
+            	}
+            	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView)) 
+                    updateMessageLine();
+            	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView))
+                    addSelectedAssignment();
+            	else if(ASSIGNMENT_POOL_ID.equals(m_currentView))
+            		addSelectedAssignment();
+            }
+        });
+        
+        m_buttonPanel.add(m_okButton);
+                
         
     }
     
@@ -431,6 +445,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     protected void showAssignmentPool()
     {
         m_assignmentPoolButtonPanel.removeAll();
+        m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.PLUSS", "48x48"));
         m_assignmentPoolButtonGroup = new ButtonGroup();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
@@ -494,6 +509,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         m_nextAssignmentsButtonPanel.removeAll();
         m_nextAssignmentButtonGroup = new ButtonGroup();
+        m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.PLUSS", "48x48"));
 
         // Get assignments in receiving unit's queue
         IUnitIf unit = (IUnitIf) MessageLogBottomPanel.getCurrentMessage(true).getSingleReceiver();
@@ -549,11 +565,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     					selected.getPriorityText(),false));
     			m_selectedPanel.addAttribute(selected.getRemarksAttribute(),
     					m_wpMessageLog.getBundleText("RemarksLabel.text"),150,false);
-    			Dimension size = new Dimension(350,25);
-    			m_selectedPanel.setAttributeSize(size);
     			m_selectedPanel.setCaptionWidth(100);
-    			size = new Dimension(350,75);
-    			m_selectedPanel.setAttributeSize("Remarks",size);
+    			Utils.setFixedSize((JComponent)m_selectedPanel.getAttribute("Assignment"),360,25);
+    			Utils.setFixedSize((JComponent)m_selectedPanel.getAttribute("Priority"),360,25);
+    			Utils.setFixedSize((JComponent)m_selectedPanel.getAttribute("Remarks"),360,90);
     			m_selectedPanel.update();
     			m_selectedPanel.revalidate();
 	    	}
@@ -610,6 +625,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         MessageLineListModel model = (MessageLineListModel) m_messageLineList.getModel();
         m_editingLine = (IMessageLineIf) model.getElementAt(index);
+        m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", "48x48"));
+
         if (m_editingLine == null)
         {
             Log.error("showEditAssignment: edit line null");
@@ -621,6 +638,8 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         		MsoUtils.getAssignmentName(assignment, 1));
 		m_editAssignmentPanel.getAttribute("Time").setValue(
 				DTG.CalToDTG(m_editingLine.getOperationTime()));
+		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Assignment"),360,25);
+		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Time"),360,25);
 
         setView(EDIT_ASSIGNMENT_ID);
     }

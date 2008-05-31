@@ -112,7 +112,7 @@ public class MapFilterPanel extends ToggableTabPane {
 		if(status.size()>0) {
 			// apply assignment filters
 			setFilter(map.getMsoLayer(LayerCode.AREA_LAYER),
-					new Filter(MsoClassCode.CLASSCODE_ROUTE, status,0),0);
+					new Filter(MsoClassCode.CLASSCODE_AREA, status,0),0);
 			setFilter(map.getMsoLayer(LayerCode.ROUTE_LAYER),
 					new Filter(MsoClassCode.CLASSCODE_ROUTE, status,0),0);
 			setFilter(map.getMsoLayer(LayerCode.POI_LAYER),
@@ -198,8 +198,10 @@ public class MapFilterPanel extends ToggableTabPane {
 					if(area!=null) {
 						// get area
 						AssignmentStatus status = area.getOwningAssignment().getStatus();
+						// get set
+						EnumSet<AssignmentStatus> set = (EnumSet<AssignmentStatus>)compare;
 						// get filter operation
-						bSelect = (status.equals(compare));
+						bSelect = set.contains(status);
 					}
 					else {
 						// filter all

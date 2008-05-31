@@ -15,12 +15,15 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import java.util.EnumSet;
 
@@ -57,6 +60,10 @@ public class UnitTypeDialog extends DefaultDialog
 
 	private void initialize()
 	{
+		
+		// set modal
+		this.setModal(true);
+		
 		// prepare dialog
 		this.setPreferredSize(new Dimension(400, 500));
 		
@@ -79,6 +86,20 @@ public class UnitTypeDialog extends DefaultDialog
 				setDirty(true);	
 			}
 			
+		});
+		
+		// add mouse listener
+		m_typeList.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+			   if(e.getClickCount() == 2){
+			     int index = m_typeList.locationToIndex(e.getPoint());
+			     ListModel model = m_typeList.getModel();
+			     m_type =(UnitType)model.getElementAt(index);;
+			     m_typeList.ensureIndexIsVisible(index);
+			     m_typeList.setSelectedIndex(index);
+			     finish();
+			   }
+			}
 		});
 		
 		// set list as body
@@ -129,5 +150,10 @@ public class UnitTypeDialog extends DefaultDialog
 			}
 			return this;
 		}
+	}
+	
+	public void setVisible(boolean isVisible) {
+		super.setVisible(isVisible);
+		setDirty(true);		
 	}
 }

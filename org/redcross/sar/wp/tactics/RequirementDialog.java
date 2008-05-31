@@ -14,6 +14,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.EnumSet;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -32,7 +33,7 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class SearchRequirementDialog extends DefaultDialog {
+public class RequirementDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -47,7 +48,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 	
 	private IDiskoWpModule wp = null;
 	
-	public SearchRequirementDialog(IDiskoWpModule wp) {
+	public RequirementDialog(IDiskoWpModule wp) {
 		// forward
 		super(wp.getApplication().getFrame());
 		// prepare objeckts
@@ -64,7 +65,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(800, 175));
+            this.setPreferredSize(new Dimension(800, 200));
             this.setContentPane(getContentPanel());
             this.pack();
 		}
@@ -105,7 +106,6 @@ public class SearchRequirementDialog extends DefaultDialog {
 						setRemarks(getRemarks(),false,true);
 						setPriority(getPriority(), false, true);
 						setAccuracy(getAccuracy(),false,true);		
-						getRemarksTextArea().requestFocus();
 						// finished
 						return true;
 					}
@@ -118,7 +118,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 						ISearchIf search = null;
 						String remarks = null;
 						AssignmentPriority pri = AssignmentPriority.NORMAL;
-						int accuracy = 1;
+						int accuracy = 75;
 						int personnel = 3;
 						// try to get search assignment
 						if(msoObj instanceof ISearchIf) {
@@ -147,7 +147,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 						// update
 						super.setMsoObject(search);
 						setPriority((pri==null) ? AssignmentPriority.NORMAL : pri ,true,false);
-						setAccuracy(accuracy!=0 ? personnel : 75,true,false);
+						setAccuracy(accuracy!=0 ? accuracy : 75,true,false);
 						setPersonnel(personnel!=0 ? personnel : 3,true,false);
 						setRemarks(remarks,true,false);
 
@@ -186,6 +186,8 @@ public class SearchRequirementDialog extends DefaultDialog {
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+								BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.setBodyComponent(getRequirementPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -226,12 +228,16 @@ public class SearchRequirementDialog extends DefaultDialog {
 		if (attribsPanel == null) {
 			try {
 				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
-				attribsPanel.setPreferredBodySize(new Dimension(200, 150));
 				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				attribsPanel.setPreferredSize(new Dimension(200,100));
+				attribsPanel.setPreferredBodySize(new Dimension(200,100));
 				attribsPanel.addAttribute(getPriorityCombo());
 				attribsPanel.addAttribute(getAccuracyCombo());
 				attribsPanel.addAttribute(getPersonnelCombo());
+				Utils.setFixedSize(getPriorityCombo(), 200,30);
+				Utils.setFixedSize(getAccuracyCombo(), 200,30);
+				Utils.setFixedSize(getPersonnelCombo(), 200,30);
 				attribsPanel.addDiskoWorkListener(getContentPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -248,7 +254,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 	private ComboAttribute getPriorityCombo() {
 		if (priorityCombo == null) {
 			try {
-				priorityCombo = new ComboAttribute("priority", "Prioritet", 50, null, false);
+				priorityCombo = new ComboAttribute("priority", "Prioritet", 90, null, false);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				AssignmentPriority[] values = AssignmentPriority.values();
 				for (int i = 0; i < values.length; i++) {
@@ -274,7 +280,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 	private ComboAttribute getAccuracyCombo() {
 		if (accuracyCombo == null) {
 			try {
-				accuracyCombo = new ComboAttribute("accuracy", "Nøyaktighet", 50, null, true);
+				accuracyCombo = new ComboAttribute("accuracy", "Nøyaktighet", 90, null, true);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				for (int i = 1; i < 4; i++) {
 					model.addElement(new Integer(i*25));
@@ -297,7 +303,7 @@ public class SearchRequirementDialog extends DefaultDialog {
 	private ComboAttribute getPersonnelCombo() {
 		if (personnelCombo == null) {
 			try {
-				personnelCombo = new ComboAttribute("personnel", "Antall mnsk", 50, null, true);
+				personnelCombo = new ComboAttribute("personnel", "Antall mnsk", 90, null, true);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				for (int i = 1; i < 10; i++) {
 					model.addElement(new Integer(i));
@@ -443,6 +449,8 @@ public class SearchRequirementDialog extends DefaultDialog {
 	private void setRemarks(String remarks, boolean gui, boolean mso) {
 		if(gui) {
 			getRemarksTextArea().setText(remarks);
+			// request focus
+			getRemarksTextArea().requestFocus();
 		}
 		if(mso) {
 			ISearchIf search = (ISearchIf)getMsoObject();
@@ -476,12 +484,14 @@ public class SearchRequirementDialog extends DefaultDialog {
 					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Krav til <b>" + 
 					MsoUtils.getAssignmentName(search, 1).toLowerCase() + "</b></html>");
-			getContentPanel().setEnabled(true);
+			getRemarksPanel().setEnabled(true);
+			getAttribsPanel().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
-			getContentPanel().setEnabled(false);
+			getRemarksPanel().setEnabled(false);
+			getAttribsPanel().setEnabled(false);
 		}		
 		getAttribsPanel().update();
 		

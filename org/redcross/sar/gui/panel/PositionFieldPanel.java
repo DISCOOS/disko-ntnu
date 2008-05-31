@@ -16,6 +16,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -24,6 +25,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.text.MaskFormatter;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.document.UpperCaseDocument;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.mso.Position;
 
@@ -31,6 +33,10 @@ import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -76,9 +82,8 @@ public class PositionFieldPanel extends JPanel {
 	private JComboBox m_SquareCombo = null;
 	private JPanel m_positionPanel = null;
 	
-	private int workCount = 0;
-	
-	private Position current = null;
+	private int workCount = 0;	
+	private boolean isInvalid = false;
 	
 	private List<ChangeListener> m_listeners = null;
 	
@@ -104,7 +109,6 @@ public class PositionFieldPanel extends JPanel {
 	private void initialize() {
 		// setup content pane
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		Utils.setFixedSize(this, 250, 55);
 		// add components
 		this.add(getPositionPanel());
 		// set MGRS format
@@ -124,6 +128,14 @@ public class PositionFieldPanel extends JPanel {
 		return m_latitudeText.isEditable();
 	}
 	
+	public boolean isPositionValid() {
+		return !isInvalid;
+	}
+	
+	private void setInvalidPosiiton(boolean isInvalid) {
+		this.isInvalid = isInvalid;
+	}
+	
 	/**
 	 * This method set mgrs from text
 	 * 
@@ -139,7 +151,15 @@ public class PositionFieldPanel extends JPanel {
 		
 		// initialize flag
 		boolean bEmpty = true;
-				
+		
+		// get current caret positions
+		Position p = getPosition();
+		int ix = m_longetudeText.getCaretPosition();
+		int iy = m_latitudeText.getCaretPosition();
+		
+		// assume valid position
+		setInvalidPosiiton(false);
+		
 		try {
 			// is not null?
 			if (text != null) {
@@ -198,7 +218,7 @@ public class PositionFieldPanel extends JPanel {
 			}
 		}
 		catch(Exception e) {
-			// invalid format;
+			setInvalidPosiiton(true);
 		}
 		
 		if (bEmpty) {
@@ -207,6 +227,17 @@ public class PositionFieldPanel extends JPanel {
 			getLatitudeText().setText("");
 			getLongetudeText().setText("");
 		}	
+		
+		// update posiiton
+		setPosition(p);
+		
+		// resume caret positions
+		text = m_longetudeText.getText();		
+		if(text!=null)
+			m_longetudeText.setCaretPosition(Math.min(text.length(), ix));
+		text = m_latitudeText.getText();
+		if(text!=null)
+			m_latitudeText.setCaretPosition(Math.min(text.length(), iy));
 		
 		// finished
 		setIsNotWorking();
@@ -420,6 +451,21 @@ public class PositionFieldPanel extends JPanel {
 			m_ZoneCombo.setEditable(true);
 			m_ZoneCombo.setPreferredSize(new Dimension(60, 20));
 			m_ZoneCombo.getModel().addListDataListener(m_listDataListener);
+			JTextField editor = (JTextField)m_ZoneCombo.getEditor().getEditorComponent();
+			editor.setDocument( new UpperCaseDocument() );		
+			m_ZoneCombo.addFocusListener(new FocusListener() {
+
+				@Override
+				public void focusLost(FocusEvent arg0) { /* NOP */ }
+				
+				@Override
+				public void focusGained(FocusEvent e) {
+					JTextField editor = (JTextField)m_ZoneCombo.getEditor().getEditorComponent();
+					editor.selectAll();
+				}
+
+			});
+			m_ZoneCombo.setSelectedIndex(0);
 		}
 		return m_ZoneCombo;
 	}
@@ -436,7 +482,21 @@ public class PositionFieldPanel extends JPanel {
 			m_SquareCombo.setEditable(true);
 			m_SquareCombo.setPreferredSize(new Dimension(60, 20));
 			m_SquareCombo.getModel().addListDataListener(m_listDataListener);
+			JTextField editor = (JTextField)m_SquareCombo.getEditor().getEditorComponent();
+			editor.setDocument( new UpperCaseDocument() );		
+			m_SquareCombo.addFocusListener(new FocusListener() {
 
+				@Override
+				public void focusLost(FocusEvent arg0) { /* NOP */ }
+				
+				@Override
+				public void focusGained(FocusEvent e) {
+					JTextField editor = (JTextField)m_SquareCombo.getEditor().getEditorComponent();
+					editor.selectAll();
+				}
+
+			});
+			m_SquareCombo.setSelectedIndex(0);
 		}
 		return m_SquareCombo;
 	}
@@ -468,8 +528,6 @@ public class PositionFieldPanel extends JPanel {
 	public void setFormat(int format) {
 		// consume?
 		if(isWorking()) return;
-		// get current
-		Position p = getPosition();
 		// reset
 		setText(null);
 		// save format
@@ -506,15 +564,16 @@ public class PositionFieldPanel extends JPanel {
 			m_ZoneCombo.setVisible(false);
 			m_zoneLabel.setVisible(false);
 			break;
-		}
-		// foreward
-		setPosition(p);
+		}		
 		// notify
 		fireChangeEvent(this);
 	}
 
 	public Point getPoint(ISpatialReference srs) {
+		// initialize
 		Position p = null;
+		// assume valid position
+		setInvalidPosiiton(false);
 		try {
 			switch(getFormat()) {
 			case 1: // MGRS
@@ -531,12 +590,16 @@ public class PositionFieldPanel extends JPanel {
 			return p!=null ? MapUtil.getEsriPoint(p, srs) : null;
 		}
 		catch (Exception e) {
-			// invalid format;
+			setInvalidPosiiton(true);
 		}
 		return null;
 	}
 	
 	public Position getPosition() {
+		
+		// assume valid position
+		setInvalidPosiiton(false);
+		
 		try {
 			switch(getFormat()) {
 			case 1: // MGRS
@@ -552,12 +615,15 @@ public class PositionFieldPanel extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format;
+			setInvalidPosiiton(true);		
 		}
 		return null;
 	}
 		
 	public void setPosition(Position p) {
+		// assume valid position
+		setInvalidPosiiton(false);
+		
 		try {
 			switch(getFormat()) {
 			case 1: // MGRS
@@ -578,11 +644,15 @@ public class PositionFieldPanel extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format;
+			setInvalidPosiiton(true);
 		}
 	}	
 	
 	public void setPoint(Point p) {
+		
+		// assume valid position
+		setInvalidPosiiton(false);
+		
 		try {
 			switch(getFormat()) {
 			case 1: // MGRS
@@ -603,7 +673,7 @@ public class PositionFieldPanel extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			// invalid format;
+			setInvalidPosiiton(true);
 		}
 	}
 	
@@ -777,5 +847,14 @@ public class PositionFieldPanel extends JPanel {
 		}
 		
 	};
+	
+	@Override
+	public void setEnabled(boolean isEnabled) {
+		getSquareCombo().setEditable(isEnabled);
+		getZoneCombo().setEditable(isEnabled);
+		getLatitudeText().setEditable(isEnabled);
+		getLongetudeText().setEditable(isEnabled);
+		super.setEnabled(isEnabled);
+	}
 	
 }  //  @jve:decl-index=0:visual-constraint="7,7"

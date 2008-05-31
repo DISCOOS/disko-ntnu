@@ -10,6 +10,7 @@ import javax.swing.table.TableCellRenderer;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 
 public class UnitCellRenderer extends JLabel implements TableCellRenderer {
@@ -27,6 +28,7 @@ public class UnitCellRenderer extends JLabel implements TableCellRenderer {
 		setOpaque(true); 
 	}
 
+	@SuppressWarnings("unchecked")
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
 		if (value != null) {
@@ -40,6 +42,10 @@ public class UnitCellRenderer extends JLabel implements TableCellRenderer {
 				setIcon(null);
 				setText(String.valueOf(value));
 				setToolTipText(String.valueOf(value));
+			}
+			else if (column == 4) {
+				setText(DiskoEnumFactory.getText((Enum<UnitStatus>)value,"text"));
+				setToolTipText(DiskoEnumFactory.getText((Enum<UnitStatus>)value,"tooltip"));
 			}
 			else {
 				setText(null);

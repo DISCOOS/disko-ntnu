@@ -1,13 +1,19 @@
 package org.redcross.sar.wp.tactics;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -21,6 +27,7 @@ import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -37,9 +44,12 @@ public class ListDialog extends DefaultDialog {
 	private JButton printButton = null;
 	private JButton makeReadyButton = null;
 	private JButton makeDraftButton = null;
-	private JPanel statusPanel = null;
 	private JLabel statusLabel = null;
 	private JComboBox statusComboBox = null;
+	private JLabel scaleLabel = null;
+	private JComboBox scaleComboBox = null;	
+	private JPanel centerPanel = null;
+	private JPanel optionsPanel = null; 
 
 	private IDiskoWpModule wp = null;
 	private IDiskoApplication app = null;
@@ -53,6 +63,7 @@ public class ListDialog extends DefaultDialog {
 		// prepare
 		this.wp = wp;
 		this.app = wp.getApplication();
+		this.report = app.getReportManager();
 		// initialize gui
 		initialize();
 	}
@@ -63,7 +74,7 @@ public class ListDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(600, 600));
+            this.setPreferredSize(new Dimension(400, 400));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}
@@ -81,9 +92,10 @@ public class ListDialog extends DefaultDialog {
 		if (contentPanel == null) {
 			try {
 				contentPanel = new DefaultPanel("Oppdrag",false,true);
-				contentPanel.setBodyComponent(getAssignmentTable());
+				contentPanel.setBodyComponent(getCenterPanel());
+				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
-				contentPanel.insertItem("finish", getStatusPanel());
 				contentPanel.insertButton("finish",getPrintButton(), "print");
 				contentPanel.insertButton("finish",getMakeDraftButton(), "draft");
 				contentPanel.insertButton("finish",getMakeReadyButton(), "ready");
@@ -109,33 +121,6 @@ public class ListDialog extends DefaultDialog {
 			}
 		}
 		return contentPanel;
-	}
-
-	/**
-	 * This method initializes buttonPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getStatusPanel() {
-		if (statusPanel == null) {
-			try {
-				FlowLayout flowLayout = new FlowLayout();
-				flowLayout.setAlignment(FlowLayout.LEFT);
-				statusLabel = new JLabel();
-				statusLabel.setOpaque(false);
-				statusLabel.setText("Vis status:");
-				statusLabel.setForeground(Color.WHITE);
-				statusPanel = new JPanel();
-				statusPanel.setOpaque(false);
-				statusPanel.setLayout(flowLayout);
-				statusPanel.add(statusLabel);
-				statusPanel.add(getStatusComboBox());
-				statusPanel.setPreferredSize(new Dimension(200,30));
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return statusPanel;
 	}
 
 	/**
@@ -183,12 +168,46 @@ public class ListDialog extends DefaultDialog {
 			try {
 				printButton = DiskoButtonFactory.createButton(TacticsActionType.PRINT_SELECTED,ButtonSize.NORMAL);
 				printButton.setEnabled(false);
-				report = app.getReportManager();
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return printButton;
+	}
+	
+	private JPanel getCenterPanel() {
+		if(centerPanel==null) {
+			centerPanel = new JPanel(new BorderLayout());
+			centerPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+			centerPanel.add(getOptionsPanel(),BorderLayout.NORTH);
+			centerPanel.add(getAssignmentTable(),BorderLayout.CENTER);
+			centerPanel.setPreferredSize(new Dimension(400,300));
+		}
+		return centerPanel;
+	}
+	
+	private JPanel getOptionsPanel() {
+		if(optionsPanel ==null) {
+			optionsPanel = new JPanel();
+			BoxLayout bl = new BoxLayout(optionsPanel,BoxLayout.X_AXIS);
+			optionsPanel.setLayout(bl);
+			optionsPanel.setOpaque(false);
+			statusLabel = new JLabel();
+			statusLabel.setOpaque(false);
+			statusLabel.setText("Vis oppdrag");
+			optionsPanel.add(statusLabel);
+			optionsPanel.add(Box.createHorizontalStrut(5));
+			optionsPanel.add(getStatusComboBox());
+			optionsPanel.add(Box.createHorizontalStrut(5));
+			scaleLabel = new JLabel();
+			scaleLabel.setOpaque(false);
+			scaleLabel.setText("Skala kart");
+			optionsPanel.add(scaleLabel);
+			optionsPanel.add(Box.createHorizontalStrut(5));
+			optionsPanel.add(getScaleComboBox());
+			optionsPanel.add(Box.createHorizontalGlue());			
+		}
+		return optionsPanel;
 	}
 
 	/**
@@ -244,6 +263,29 @@ public class ListDialog extends DefaultDialog {
 		return statusComboBox;
 	}
 
+	/**
+	 * This method initializes scaleComboBox	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getScaleComboBox() {
+		if (scaleComboBox == null) {
+			try {
+				scaleComboBox = new JComboBox();
+				scaleComboBox.setPreferredSize(new Dimension(125, 25));
+				scaleComboBox.addItem("1: 5000");
+				scaleComboBox.addItem("1:10000");
+				scaleComboBox.addItem("1:15000");
+				scaleComboBox.addItem("1:25000");
+				scaleComboBox.addItem("1:50000");
+				setUserScale(report.getMapScale());
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return scaleComboBox;
+	}
+	
 	private void change(AssignmentStatus status) {
 		try {
 			app.getMsoModel().suspendClientUpdate();
@@ -278,9 +320,28 @@ public class ListDialog extends DefaultDialog {
 			}
 		}		
 		// forward
-		report.printAssignments(assignments);
+		report.printAssignments(assignments,getUserScale());
 		// finished
 		return true;
+	}
+	
+	public void setUserScale(double scale) {
+		if(scale>50000) {
+			scale = 50000;
+		}
+		DecimalFormat format = new DecimalFormat("00000");
+		getScaleComboBox().setSelectedItem("1:"+format.format(Math.round(scale)));
+	}
+	
+	public double getUserScale() {
+		String value = (String)getScaleComboBox().getSelectedItem();
+		if(value!=null && !value.isEmpty()) {
+			try {
+				value = value.replaceAll("1:", "");
+				return Double.valueOf(value.trim());
+			} catch (NumberFormatException e) { }
+		}
+		return -1;
 	}
 	
 	public void enableButtons() {

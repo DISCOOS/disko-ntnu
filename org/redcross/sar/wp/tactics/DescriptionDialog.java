@@ -117,8 +117,11 @@ public class DescriptionDialog extends DefaultDialog {
 					
 					@Override
 					public void update() {
+						// forward
 						setup();
-						super.update();
+						// finally, consume this to ensure that
+						// any dirty state does not update the 
+						// button icons accordingly.
 					}
 					
 				};

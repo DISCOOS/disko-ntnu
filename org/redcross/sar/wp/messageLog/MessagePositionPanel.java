@@ -125,7 +125,6 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 			m_actionsPanel.add(getCancelButton());
 			m_actionsPanel.add(getCenterAtButton());
 			m_actionsPanel.add(getFinishButton());
-			m_actionsPanel.add(Box.createVerticalGlue());
 		}
 		return m_actionsPanel;
 	
@@ -134,7 +133,7 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 	private JButton getFinishButton() {
 		if(m_finishButton==null) {
 			// create button
-			m_finishButton = DiskoButtonFactory.createButton("GENERAL.OK",ButtonSize.NORMAL);			
+			m_finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);			
 			m_finishIcon = new DiskoIcon(m_finishButton.getIcon(),Color.GREEN,0.4f);
 			m_finishButton.setIcon(m_finishIcon);
 			// add action listener

@@ -88,7 +88,7 @@ public class UIFactory {
 	}
 	
 	public TaskDialog getTaskDialog(){
-		if(taskDialog == null){
+		if(taskDialog == null || true){
 			taskDialog = new TaskDialog(app.getFrame());
 			register(taskDialog);
 		}

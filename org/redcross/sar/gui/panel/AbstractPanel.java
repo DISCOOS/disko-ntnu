@@ -195,7 +195,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel {
 		// get dirty flag
 		boolean bFlag = isDirty();
 		// consume?
-		if(!bFlag || !isChangeable()) return false;
+		if(!isChangeable()) return false;
 		// consume change events
 		setChangeable(false);
 		// suspend for faster update

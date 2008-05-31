@@ -6,6 +6,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -13,10 +14,13 @@ import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.table.AbstractTableModel;
+
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
@@ -74,6 +78,7 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 	}
 
 	EnumSet<IMsoManagerIf.MsoClassCode> interestedIn = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
+	
 	public boolean hasInterestIn(IMsoObjectIf msoObject)
 	{
 		return interestedIn.contains(msoObject.getMsoClassCode());
@@ -109,6 +114,9 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 			case 0:
 				// return name of unit
 				return MsoUtils.getUnitName(m_units.get(row), true);
+			case 1:
+				// return name of unit
+				return m_units.get(row);
 			}
 		}
 		return null;

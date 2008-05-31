@@ -52,14 +52,12 @@ public class PersonnelTransferHandler extends TransferHandler
 		if(model instanceof PersonnelOverviewTableModel)
 		{
 			// Exporting from personnel overview table
-			PersonnelOverviewTableModel overviewModel = (PersonnelOverviewTableModel)model;
-			personnel = overviewModel.getPersonnel(selectedRow);
+			personnel = (IPersonnelIf)table.getValueAt(selectedRow, 2);
 		}
 		else if(model instanceof UnitPersonnelTableModel)
 		{
 			// Exporting from unit personnel table
-			UnitPersonnelTableModel unitModel = (UnitPersonnelTableModel)model;
-			personnel = unitModel.getPersonnel(selectedRow);
+			personnel = (IPersonnelIf)table.getValueAt(selectedRow, 2);
 		}
 
 		PersonnelTransferable transferable = new PersonnelTransferable(personnel);
