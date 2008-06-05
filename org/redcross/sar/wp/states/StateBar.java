@@ -138,7 +138,7 @@ public class StateBar extends JPanel {
 		    if (i<m) {
 		    	g2d.setColor(co);
 		    }
-		    else if (i >= m & i < o) {
+		    else if (i >= m&&i < o) {
 		    	g2d.setColor(cy);
 		    }
 		    else {

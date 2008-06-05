@@ -75,8 +75,35 @@ public class RouteFeature extends AbstractMsoFeature {
 			geometry = null;
         asgStatus = getAssignmentStatus(getOwningArea(route));
 		IAreaIf area = getOwningArea(route);
-		IAssignmentIf assignment = area.getOwningAssignment();
-		caption = MsoUtils.getAssignmentName(assignment,2);        
+		
+		/* TODO: Correct serious error in MSO model
+		 * 
+		 * In some case a route objects arrives with no parent assignment. When this
+		 * happens, it is a model inconsistancy which should not happen. The direct cause 
+		 * is not known, although it usually only happens when after a while when the
+		 * log is large. Several scenarios may apply
+		 * 
+		 * 1. The drawing tool falsely allows creation of route without assignment
+		 * 2. The MSO model has an error
+		 * 3. The Sara model drive has an error
+		 * 
+		 * In addition to this, a potential linked error exists in the errouneous log
+		 * file, which has a double occurrence of this false object in it (is found by
+		 * inspection of log file using the MsoObject id.
+		 * 
+		 * 
+		 */
+		
+		
+		// TODO: THIS IS AN HACK AND SHOULD BE RESOLVED! Route objects MUST have a assignment
+		if(area!=null) {
+			IAssignmentIf assignment = area.getOwningAssignment();
+			caption = MsoUtils.getAssignmentName(assignment,2);   
+		}
+		else if(route!=null)
+			System.out.println("IRouteIf:="+route.getObjectId()+ " is dangling");
+		else
+			System.out.println("Empty IRouteIf found and discarded by RouteFeature");
 		super.msoGeometryChanged();
 	}
 	

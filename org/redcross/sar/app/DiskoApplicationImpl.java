@@ -237,7 +237,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			// show me
 			this.setVisible(true);
 			//initiate modeldriver
-			this.getMsoModel().getModelDriver().initiate();
+			this.getMsoModel().getModelDriver().initiate();			
 			this.getMsoModel().getModelDriver().setDiskoApplication(this);
 			// prepare reporting
 			diskoReport = new DiskoReportManager(this);

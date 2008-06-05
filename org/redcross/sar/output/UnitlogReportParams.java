@@ -161,7 +161,7 @@ public class UnitlogReportParams {
 		String keyUnit = KEY_UNIT_PREFIX + Integer.toString(iter2);
 		unitParams.put(keyCallSign, unit.getCallSign());
 		unitParams.put(keyUnit, unit.getUnitNumber());
-		while (unitIter.hasNext()){
+		while (unitIter.hasNext() && iter2 < maxCallSignsInPrint){
 			IUnitIf unit2 = (IUnitIf)unitIter.next();
 			if (!callSigns[0][0].equalsIgnoreCase(unit2.getUnitNumber())){
 				callSigns[iter2][0] = unit2.getUnitNumber();

@@ -640,7 +640,7 @@ public class ElementPanel extends DefaultPanel {
 			// get selected element class
 			Enum e = (Enum)typeList.getSelectedValue();
 			// belongs object to selected class?
-			if(e!=null & e.equals(code)) {
+			if(e!=null && e.equals(code)) {
 				// return list
 				if(exists)
 					return objects.contains(msoObject) ? getObjectList() : null;
@@ -654,7 +654,7 @@ public class ElementPanel extends DefaultPanel {
 			// get selected element class
 			Enum e = (Enum)typeList.getSelectedValue();
 			// belongs object to selected class?
-			if(e!=null & e.equals(subType)) {
+			if(e!=null && e.equals(subType)) {
 				// return list
 				if(exists)
 					return objects.contains(msoObject) ? getObjectList() : null;

@@ -653,27 +653,33 @@ public class PositionFieldPanel extends JPanel {
 		// assume valid position
 		setInvalidPosiiton(false);
 		
-		try {
-			switch(getFormat()) {
-			case 1: // MGRS
-				setText(MapUtil.getMGRSfromPoint(p));
-				break;
-			case 2: // UTM
-				setText(MapUtil.getUTMfromPoint(p));
-				break;
-			case 3: // DES
-				setText(MapUtil.getDESfromPoint(p));
-				break;
-			case 4: // DEM
-				setText(MapUtil.getDEMfromPoint(p));
-				break;
-			case 5: // DEG
-				setText(MapUtil.getDEGfromPoint(p));
-				break;
-			}
+		// is convertable
+		if(p==null) {
+			setText(null);
 		}
-		catch (Exception e) {
-			setInvalidPosiiton(true);
+		else {
+			try {
+				switch(getFormat()) {
+				case 1: // MGRS
+					setText(MapUtil.getMGRSfromPoint(p));
+					break;
+				case 2: // UTM
+					setText(MapUtil.getUTMfromPoint(p));
+					break;
+				case 3: // DES
+					setText(MapUtil.getDESfromPoint(p));
+					break;
+				case 4: // DEM
+					setText(MapUtil.getDEMfromPoint(p));
+					break;
+				case 5: // DEG
+					setText(MapUtil.getDEGfromPoint(p));
+					break;
+				}
+			}
+			catch (Exception e) {
+				setInvalidPosiiton(true);
+			}
 		}
 	}
 	
