@@ -64,7 +64,6 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 				}
 				
 			});
-			
 			// save the component
 			m_component = field;
 			
@@ -137,6 +136,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 				mf1 = new MaskFormatter("######");
 				mf1.setPlaceholder("00000");
 				mf1.setPlaceholderCharacter('0');
+				mf1.setCommitsOnValidEdit(true);
 			}
 			catch (Exception e) {
 				e.printStackTrace();

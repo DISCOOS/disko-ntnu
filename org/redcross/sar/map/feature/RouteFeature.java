@@ -8,12 +8,9 @@ import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.IGeodataIf;
-import org.redcross.sar.util.mso.Polygon;
 import org.redcross.sar.util.mso.Route;
 
 import java.io.IOException;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
 
 public class RouteFeature extends AbstractMsoFeature {
 
@@ -99,6 +96,7 @@ public class RouteFeature extends AbstractMsoFeature {
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
 			caption = MsoUtils.getAssignmentName(assignment,2);   
+			System.out.println("IRouteIf:="+route.getObjectId()+ " changed");
 		}
 		else if(route!=null)
 			System.out.println("IRouteIf:="+route.getObjectId()+ " is dangling");

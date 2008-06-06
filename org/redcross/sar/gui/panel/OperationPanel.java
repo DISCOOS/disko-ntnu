@@ -3,16 +3,24 @@ package org.redcross.sar.gui.panel;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.gui.OperationTable;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 public class OperationPanel extends DefaultPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private JButton m_createButton = null;
 	private OperationTable m_table = null;
 	
 	public OperationPanel() {
@@ -26,8 +34,10 @@ public class OperationPanel extends DefaultPanel {
 	 * Initialize this
 	 */
 	private void initialize() {
+		// insert button
+		insertButton("finish", getCreateButton(), "create");
 		// set table
-		setBodyComponent(getTable());
+		setBodyComponent(getTable());		
 	}
 	
 	/**
@@ -42,23 +52,46 @@ public class OperationPanel extends DefaultPanel {
 					// consume?
 					if(!isChangeable()) return;
 					// set dirty flag
-					setDirty(e.getFirstIndex()>=0);					
+					setDirty(e.getFirstIndex()>=0,false);					
 				}
 				
 			});
 			m_table.addKeyListener(new KeyAdapter() {
 
-				public void keyTyped(KeyEvent e) {
+				@Override
+				public void keyPressed(KeyEvent e) {
 					if(KeyEvent.VK_ENTER == e.getKeyCode())
 						finish();
 					else if(KeyEvent.VK_ESCAPE == e.getKeyCode())
 						cancel();					
 				}
-				
+
 			});
+			m_table.addMouseListener(new MouseAdapter() {
+
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if(e.getClickCount()==2) {
+						finish();
+					}
+				}
+
+			});
+			
 		}
 		return m_table;
 	}
+	
+	/**
+	 * Initialize the create button
+	 */
+	private JButton getCreateButton() {
+		if(m_createButton == null) {
+			m_createButton = DiskoButtonFactory.createButton("SYSTEM.CREATE", ButtonSize.NORMAL);
+		}
+		return m_createButton;
+	}
+		
 	
 	public String getSelectedOperation() {
 		return m_table.getValueAt(m_table.getSelectedRow(),0).toString();
@@ -78,6 +111,8 @@ public class OperationPanel extends DefaultPanel {
 		setDirty(true, false);
 		// resume changes
 		setChangeable(true);
+		// try to set focus on table
+		getTable().requestFocus();
 		// forward
 		super.update();
 	}

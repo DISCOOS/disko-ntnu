@@ -28,8 +28,7 @@ public class EstimateDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;	
 
-	private DefaultPanel contentPanel = null;
-	private AttributesPanel estimatePanel = null;
+	private AttributesPanel contentPanel = null;
 	private NumericAttribute attrEta = null;
 	
 	private IDiskoWpModule wp = null;
@@ -52,7 +51,7 @@ public class EstimateDialog extends DefaultDialog {
 	private void initialize() {
 		try {
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(400,125));
+            this.setPreferredSize(new Dimension(400,100));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -81,7 +80,7 @@ public class EstimateDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel() {
+				contentPanel = new AttributesPanel() {
 					
 					private static final long serialVersionUID = 1L;
 
@@ -124,7 +123,8 @@ public class EstimateDialog extends DefaultDialog {
 						setChangeable(true);
 						
 						// update
-						setDirty(false);						
+						setDirty(false,false);						
+						update();
 						
 						// request focus
 						getEtaAttribute().getTextField().requestFocus();
@@ -158,35 +158,17 @@ public class EstimateDialog extends DefaultDialog {
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.setBodyComponent(getEstimatePanel());
+				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
+						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				contentPanel.setPreferredBodySize(new Dimension(400,50));
+				contentPanel.addAttribute(getEtaAttribute());
+				Utils.setFixedSize(getEtaAttribute(), 400,25);				
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
-	}
-
-	/**
-	 * This method initializes estimatePanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private AttributesPanel getEstimatePanel() {
-		if (estimatePanel == null) {
-			try {
-				estimatePanel = new AttributesPanel("","",false,false);
-				estimatePanel.setHeaderVisible(false);
-				estimatePanel.setLayout(new BoxLayout(estimatePanel,BoxLayout.Y_AXIS));
-				estimatePanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
-						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-				estimatePanel.addAttribute(getEtaAttribute());
-				estimatePanel.addDiskoWorkListener(getContentPanel());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return estimatePanel;
 	}
 
 	/**
@@ -199,7 +181,7 @@ public class EstimateDialog extends DefaultDialog {
 			try {
 				
 				// create attribute
-				attrEta = new NumericAttribute("ETA","Estimert tidsbruk:",150,"000000",true);
+				attrEta = new NumericAttribute("ETA","Estimert tidsbruk",120,"000000",true);
 				
 				// set numeric properties
 				attrEta.setMaxDigits(6);
@@ -243,10 +225,11 @@ public class EstimateDialog extends DefaultDialog {
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getEtaAttribute().setEnabled(false);
 		}		
-		getEstimatePanel().update();
+		getContentPanel().update();
 		
 		// resume changes
 		setChangeable(true);
+		
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

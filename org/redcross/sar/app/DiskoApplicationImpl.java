@@ -451,8 +451,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 					selectActiveOperation(false);
 				} else {
 					// get maximum wait time
-					long maxTime = Long.parseLong(getProperty("max.wait.time",
-							"" + 60 * 1000));
+					long maxTime = Long.parseLong(getProperty("max.wait.time","" + 60 * 1000));
 					// The model driver is not initiated. Schedule the initiation work. 
 					// If initiation is successful the active operation is choosen. If initiation fails, 
 					// the system will be shut down.
@@ -616,7 +615,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		}
 		else
 			// forward
-			newOperation();
+			createOperation();
 	}
 
 	/* (non-Javadoc)
@@ -627,7 +626,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		Utils.showWarning("Beklager, fletting er foreløpig ikke støttet");
 	}
 
-	public void newOperation()
+	public boolean createOperation()
 	{
 		int ans = JOptionPane.showOptionDialog(
 				uiFactory.getContentPanel(),
@@ -639,17 +638,19 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		if(ans==JOptionPane.YES_OPTION) {
 			waitingForNewOp=true;
 			getMsoModel().getModelDriver().createNewOperation();
+			return true;
 		}
+		return false;		
 	}
 
-	public void onOperationAdded(String opId)
+	public void onOperationCreated(String opId)
 	{
 		// is waiting for this operation
 		if(waitingForNewOp){
 			// reset flag
 			waitingForNewOp=false;
 			// notify user of new operation created
-			Utils.showMessage(bundle.getString(OPERATION_CREATED_TEXT));
+			Utils.showMessage(String.format(bundle.getString(OPERATION_CREATED_TEXT),opId));
 			// schedule work
 			doSetActiveOperation(opId);
 		}
@@ -710,8 +711,13 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	}
 
 	private void fireAfterOperationChange() {
-		// auto select map from operation
-		getMapManager().selectMap(isLocked()); //) getMapManager().loadMxdDoc();
+		// show selection dialog later...
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				// auto select map from operation
+				getMapManager().selectMap(isLocked());
+			}
+		});
 		// notify current work processes?
 		if(currentRole!=null) {
 			currentRole.fireAfterOperationChange();
@@ -750,7 +756,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Kobler til server",100,true);
+					"Henter aksjonsliste",100,true,false);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -771,23 +777,20 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			long start = tic;
 			
 			try {
-				// is model not initiated?
-				if(!m_msoModel.getModelDriver().isInitiated()) {
-					// loop until maximum milliseconds is reached
-					while ((tic - start) < m_millisToWait) {
-						// get current list
-						List<String[]> active = m_msoModel.getModelDriver().getActiveOperations();
-						if (active.size()>0){
-							//Get back onto awt thread
-							return true;
-						}
-						else Thread.sleep(200);
-						// get current time tic 
-						tic = System.currentTimeMillis();
-					}
-					// failed to initiate model driver (timeout)
-					return false;
+				// loop until maximum milliseconds is reached
+				while ((tic - start) < m_millisToWait) {
+					// is initiated
+					if(m_msoModel.getModelDriver().isInitiated())
+						//Get back onto awt thread
+						return true;
+					else 
+						// still not initiated
+						Thread.sleep(200);
+					// get current time tic 
+					tic = System.currentTimeMillis();
 				}
+				// failed to initiate model driver (timeout)
+				return false;
 			}
 			catch (Exception e)
 			{
@@ -985,7 +988,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Aktiverer rolle",100,true);
+					"Aktiverer rolle",100,true,false);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;

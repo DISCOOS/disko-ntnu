@@ -36,7 +36,7 @@ public class OperationDialog extends DefaultDialog {
             this.setUndecorated(true);
             this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(275,160));
+            this.setPreferredSize(new Dimension(375,300));
             this.pack();
 				
 		}
@@ -62,7 +62,6 @@ public class OperationDialog extends DefaultDialog {
 					boolean auth = false;
 					// get values
 					String opId = getContentPanel().getSelectedOperation();
-					// was selected?
 					// forward
 					auth = Utils.getApp().activeOperation(opId);
 					// is not authorized?
@@ -73,12 +72,17 @@ public class OperationDialog extends DefaultDialog {
 					
 				}
 			};
-			contentPanel.setPreferredBodySize(new Dimension(275,300));
+			contentPanel.setPreferredBodySize(new Dimension(275,50));
 			contentPanel.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
 					String cmd = e.getActionCommand();
-					if("cancel".equalsIgnoreCase(cmd)) {
+					if("create".equalsIgnoreCase(cmd)) {
+						// forward
+						if(Utils.getApp().createOperation())
+							setVisible(false);						
+					}					
+					else if("cancel".equalsIgnoreCase(cmd)) {
 						// exit system?
 						if (exitAppOnCancel) System.exit(0);		
 					}										

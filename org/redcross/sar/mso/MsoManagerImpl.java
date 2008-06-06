@@ -6,6 +6,7 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.except.MsoNullPointerException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
@@ -103,7 +104,10 @@ public class MsoManagerImpl implements IMsoManagerIf
         ICmdPostIf retVal = getCmdPost();
         if (retVal == null)
         {
-            //throw new MsoException("No CmdPost exists.");
+            
+        	System.out.println("CMDPOST:=null");
+            
+        	//throw new MsoException("No CmdPost exists.");
         }
         return retVal;
     }

@@ -39,16 +39,6 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	public AbstractDiskoWork(boolean isThreadSafe, 
 			boolean isModal, WorkOnThreadType workOnThread, 
 			String message, long millisToPopup, 
-			boolean showProgress) throws Exception {
-		this(isThreadSafe,isModal,workOnThread,message,millisToPopup,showProgress,true);
-	}
-	
-	/**
-	 * Constructor
-	 */
-	public AbstractDiskoWork(boolean isThreadSafe, 
-			boolean isModal, WorkOnThreadType workOnThread, 
-			String message, long millisToPopup, 
 			boolean showProgress, boolean suspend) throws Exception {
 		// validate parameters
 		if(!isThreadSafe && m_workOnThread == 

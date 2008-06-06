@@ -20,6 +20,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
+import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
 public class DraftListDialog extends DefaultDialog {
 
@@ -114,7 +115,7 @@ public class DraftListDialog extends DefaultDialog {
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
 			try {
-				makeReadyButton = DiskoButtonFactory.createButton("STATUS.READY",ButtonSize.NORMAL);
+				makeReadyButton = DiskoButtonFactory.createButton(TacticsActionType.MAKE_READY,ButtonSize.NORMAL);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

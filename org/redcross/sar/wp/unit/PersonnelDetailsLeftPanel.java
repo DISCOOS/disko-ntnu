@@ -410,6 +410,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
             //m_changeStatusButton.setText(Internationalization.translate(status));
             m_changeStatusButton.setActionCommand(status.name());
         }
+        m_nameTextField.requestFocus();
     }
 
     private void updateEstimatedArrival()

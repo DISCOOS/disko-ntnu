@@ -8,6 +8,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -134,34 +135,44 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         IUnitIf owningUnit = anAssignment.getOwningUnit();
         IAssignmentIf.AssignmentStatus sourceStatus = anAssignment.getStatus();
 
+        // get names
+        String staName = Internationalization.translate(aTargetStatus);
+        String tarName = aTargetUnit != null ? MsoUtils.getUnitName(aTargetUnit,false) : "";
+        String assName = MsoUtils.getAssignmentName(anAssignment,1);
+
         String question;
         if (owningUnit == aTargetUnit)
         {
             if (aTargetStatus == IAssignmentIf.AssignmentStatus.QUEUED && sourceStatus == aTargetStatus)
             {
-                question = "confirm_assignmentTransfer_q4.text";
+                // change assignment priority sequence in queue
+                 question = String.format(getBundleText("confirm_assignmentTransfer_reorder.text"), tarName);
+            	
             } else
             {
-                question = "confirm_assignmentTransfer_q3.text";
+                // move assignment within same unit
+                question = String.format(getBundleText("confirm_assignmentTransfer_move.text"), assName, staName);
             }
         } else if (aTargetUnit != null)
         {
-            question = "confirm_assignmentTransfer_q2.text";
+            // replace units
+            question = String.format(getBundleText("confirm_assignmentTransfer_replace.text"), assName, tarName, staName);
         } else
         {
-            question = "confirm_assignmentTransfer_q1.text";
+            // revert assignment to status
+            question = String.format(getBundleText("confirm_assignmentTransfer_revert.text"), assName, staName);
         }
 
-        String unitNumber = aTargetUnit != null ? aTargetUnit.getUnitNumber() : "";
-        question = getBundleText(question);
-
-        int n = JOptionPane.showOptionDialog(m_logisticsPanel.getPanel(),
-                MessageFormat.format(question, anAssignment.getNumber(), Internationalization.translate(aTargetStatus), unitNumber),
+        // MessageFormat.format(question, MsoUtils.getAssignmentName(anAssignment,1), Internationalization.translate(aTargetStatus), targetName)
+        
+        // prompt user
+        int ans = JOptionPane.showOptionDialog(m_logisticsPanel.getPanel(),
+                question,
                 getBundleText("confirm_assignmentTransfer.header"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        return n == 0;
+        return ans == 0;
     }
 
     public void showTransferWarning()

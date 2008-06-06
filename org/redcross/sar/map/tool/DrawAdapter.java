@@ -72,6 +72,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	private int consumeCount = 0;
 	private int selectionCount = 0;
 	private boolean isDirty = false;
+	private boolean isExecutePending = false;
 	
 	private DiskoMap map = null;
 	private IDiskoTool replacedTool = null;
@@ -803,7 +804,8 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				// ensure that this is run on EDT!
 				if (SwingUtilities.isEventDispatchThread()) {
 					execute(name);
-				} else {
+				} else if(!isExecutePending){
+					isExecutePending = true;
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							execute(name);
@@ -838,6 +840,8 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			// change mode
 			setDrawMode(DrawMode.MODE_APPEND);
 		}		
+		// reset flag
+		isExecutePending = false;		
 	}
 	
 	public boolean finish() {

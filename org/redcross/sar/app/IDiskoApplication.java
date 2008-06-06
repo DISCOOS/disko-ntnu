@@ -152,11 +152,11 @@ public interface IDiskoApplication {
     void mergeOperations();
 
     /**
-     * Method for initiating av new rescueoperation
+     * Method for initiating a new rescue operation
      */
-    void newOperation();
+    boolean createOperation();
 
-    void onOperationAdded(String id);
+    void onOperationCreated(String id);
     
     void shutdown();
     

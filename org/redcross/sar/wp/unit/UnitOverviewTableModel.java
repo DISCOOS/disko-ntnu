@@ -8,6 +8,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
@@ -62,8 +63,38 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 		// todo use linked list directly
 		IUnitListIf allUnits = m_wpModule.getCmdPost().getUnitList();
 		m_units.addAll(allUnits.selectItems(m_unitSelector, m_unitComparator));
+		fireTableDataChanged();
+		
 	}
 
+	public void handleMsoUpdateEvent(Update e) {
+		
+		// get flags
+		int mask = e.getEventTypeMask();
+        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+		
+        // get mso object
+        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
+        
+        // add object?
+		if (createdObject) {
+			msoObjectCreated(msoObj,mask);
+		}
+		// is object modified?
+		if ( (addedReference || removedReference || modifiedObject)) {
+			msoObjectChanged(msoObj,mask);
+		}
+		// delete object?
+		if (deletedObject) {
+			msoObjectDeleted(msoObj,mask);		
+		}
+	}
+
+	/*
 	public void handleMsoUpdateEvent(Update e)
 	{
 		// Rebuild list
@@ -76,7 +107,32 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
         }
 		fireTableDataChanged();
 	}
+	*/
+	
+	private void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
+		IUnitIf msoUnit = (IUnitIf)msoObj; 
+		// add?        
+        if(m_unitSelector.select(msoUnit)) {
+			m_units.add(msoUnit);
+			fireTableDataChanged();		
+        }
+	}
+	
+	private void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+		// add?        
+        if(m_units.contains(msoObj)) {
+			fireTableDataChanged();		
+        }
+	}
 
+	private void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+		// add?        
+        if(m_units.contains(msoObj)) {
+        	m_units.remove(msoObj);
+			fireTableDataChanged();		
+        }
+	}
+	
 	EnumSet<IMsoManagerIf.MsoClassCode> interestedIn = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 	
 	public boolean hasInterestIn(IMsoObjectIf msoObject)

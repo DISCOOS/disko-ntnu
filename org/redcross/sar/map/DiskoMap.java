@@ -754,12 +754,16 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	@Override
 	public void setExtent(IEnvelope extent) throws IOException, AutomationException {
+		/*
 		IPoint p1 = MapUtil.getCenter(extent);
 		IPoint p2 = MapUtil.getCenter(getExtent());
+		boolean contained ((Envelope)getExtent()).contains(extent);
 		// any change?
-		if(!MapUtil.is2DEqual(p1, p2)) {
-			super.setExtent(extent);
+		if(!MapUtil.is2DEqual(p1, p2) || contained) {
+			
 		}
+		*/
+		super.setExtent(extent);
 	}
 	
 	public void zoomToSelected() throws IOException, AutomationException {
@@ -2062,6 +2066,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	}
 	
 	private void fireOnMouseMove() {
+		//System.out.println("fireOnMouseMove:="+System.currentTimeMillis());
 		for(IDiskoMapListener it : mapListeners)
 			it.onMouseMove();		
 	}

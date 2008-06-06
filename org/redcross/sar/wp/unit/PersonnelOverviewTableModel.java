@@ -7,6 +7,7 @@ import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
@@ -26,7 +27,7 @@ import java.util.List;
 public class PersonnelOverviewTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
-	private List<IPersonnelIf> m_displayPersonnel;
+	private List<IPersonnelIf> m_persons;
 	private IDiskoWpModule m_wpModule;
 
 	/**
@@ -60,10 +61,10 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	{
 		m_wpModule = wp;
 		wp.getMsoModel().getEventManager().addClientUpdateListener(this);
-		m_displayPersonnel = new LinkedList<IPersonnelIf>();
+		m_persons = new LinkedList<IPersonnelIf>();
 		IPersonnelListIf allPersonnel = m_wpModule.getCmdPost().getAttendanceList();
-		m_displayPersonnel.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
-		
+		m_persons.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
+		fireTableDataChanged();		
 	}
 
 	public int getColumnCount()
@@ -73,14 +74,14 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 
 	public int getRowCount()
 	{
-		return m_displayPersonnel.size();
+		return m_persons.size();
 	}
 
 	public Object getValueAt(int row, int column)
 	{
-		if(!(row<m_displayPersonnel.size())) return null;
+		if(!(row<m_persons.size())) return null;
 		
-		IPersonnelIf personnel = m_displayPersonnel.get(row);
+		IPersonnelIf personnel = m_persons.get(row);
 		switch(column)
 		{
 		case 0:
@@ -113,16 +114,81 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		return columnIndex == 2 || columnIndex == 3;
 	}
 	
-	/**
-	 * Table data changed if personnel data changed in MSO
-	 */
+	public void handleMsoUpdateEvent(Update e) {
+		
+		// get flags
+		int mask = e.getEventTypeMask();
+        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+		
+        // get mso object
+        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
+        
+        // add object?
+		if (createdObject) {
+			msoObjectCreated(msoObj,mask);
+		}
+		// is object modified?
+		if ( (addedReference || removedReference || modifiedObject)) {
+			msoObjectChanged(msoObj,mask);
+		}
+		// delete object?
+		if (deletedObject) {
+			msoObjectDeleted(msoObj,mask);		
+		}
+	}
+
+	/*
+	public void handleMsoUpdateEvent(Update e)
+	{
+		// Rebuild list
+		m_units.clear();                                                         
+		// todo use linked list directly
+        ICmdPostIf cmdPost = m_wpModule.getCmdPost();        
+        if(cmdPost!=null)	{
+	        IUnitListIf allUnits = cmdPost.getUnitList();
+			m_units.addAll(allUnits.selectItems(m_unitSelector, m_unitComparator));
+        }
+		fireTableDataChanged();
+	}
+	*/
+	
+	private void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
+		IPersonnelIf msoPersonnel = (IPersonnelIf)msoObj; 
+		// add?        
+        if(m_activePersonnelSelector.select(msoPersonnel)) {
+        	m_persons.add(msoPersonnel);
+			fireTableDataChanged();		
+        }
+	}
+	
+	private void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+		// add?        
+        if(m_persons.contains(msoObj)) {
+			fireTableDataChanged();		
+        }
+	}
+
+	private void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+		// add?        
+        if(m_persons.contains(msoObj)) {
+        	m_persons.remove(msoObj);
+			fireTableDataChanged();		
+        }
+	}
+	
+	/*
 	public void handleMsoUpdateEvent(Update e)
 	{
 		IPersonnelListIf allPersonnel = m_wpModule.getCmdPost().getAttendanceList();
-		m_displayPersonnel.clear();
-		m_displayPersonnel.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
+		m_persons.clear();
+		m_persons.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
 		fireTableDataChanged();
 	}
+	*/
 
 	EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL);
 	
@@ -142,7 +208,7 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	{
 		if(clickedRow >= 0)
 		{
-			return clickedRow < m_displayPersonnel.size() ? m_displayPersonnel.get(clickedRow) : null;
+			return clickedRow < m_persons.size() ? m_persons.get(clickedRow) : null;
 		}
 		else
 		{

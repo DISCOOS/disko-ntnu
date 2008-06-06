@@ -53,14 +53,6 @@ public class OperationTableModel extends AbstractTableModel {
 		else
 			return null;
 	}
-	
-	@Override
-	public Class<?> getColumnClass(int columnIndex) {
-		switch (columnIndex) {
-		default:
-			return Object.class;
-		}
-	}
 
 	@Override
 	public String getColumnName(int column) {

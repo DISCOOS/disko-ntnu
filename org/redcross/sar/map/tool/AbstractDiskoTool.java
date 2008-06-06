@@ -490,7 +490,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		public AbstractToolWork(boolean notify) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,notify);
+					"Vent litt",100,notify,true);
 		}
 
 		@Override

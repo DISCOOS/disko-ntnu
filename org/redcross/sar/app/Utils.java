@@ -108,20 +108,32 @@ public class Utils {
 		
 		if(SwingUtilities.isEventDispatchThread()) {
 			
+			DiskoProgressMonitor monitor = null;
+			
+			// get monitor
+			try { 
+				monitor = DiskoProgressMonitor.getInstance(); 
+			}
+			catch(Exception e) { e.printStackTrace(); }
+			
 			// create message dialog
 			messageDialog = new MessageDialog(getApp().getFrame());
 			messageDialog.setLocationRelativeTo(getApp().getFrame(), DefaultDialog.POS_CENTER, false,true);
 			
+			// set inhibit flag
+			boolean isInhibit= monitor.setInhibit(false);						
+			
 			// force progress dialog to hide
-			try { DiskoProgressMonitor.getInstance().hide(); }
-			catch(Exception e) { e.printStackTrace(); }
+			monitor.hide();
 			
 			// show dialog
 			messageDialog.showMessage(title, msg, options);
-
+			
 			// show progress dialog again
-			try { DiskoProgressMonitor.getInstance().showAgain(); }
-			catch(Exception e) { e.printStackTrace(); }
+			monitor.showAgain(); 
+			
+			// resume mode
+			monitor.setInhibit(isInhibit);
 			
 			// reset message dialog
 			messageDialog = null;

@@ -493,13 +493,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	public void onMouseDown(int button, int shift, int x, int y) {
 		try {
 			// get position in map units
-			Point p = toMapPoint(x,y);
+			p = toMapPoint(x,y);
 			// forward to draw adapter?
 			if(drawAdapter==null || !drawAdapter.onMouseDown(button,shift,p)){
 				// do snapping
 				p = snapTo(p);
 				// forward to extenders
-				onAction(onMouseDownAction, button, shift, x, y);				
+				onAction(onMouseDownAction, button, shift, x, y);			
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -565,7 +565,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	public void onMouseUp(int button, int shift, int x, int y) {
 		try {
 			// get position in map units
-			Point p = toMapPoint(x,y);
+			p = toMapPoint(x,y);
 			// forward to draw adapter?
 			if(drawAdapter==null || !drawAdapter.onMouseUp(button,shift,p)){
 				// do snapping
@@ -1866,7 +1866,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				// get command post
 				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
 	
-				// only route is 
+				// only route is polyline
 				if (msoCode == MsoClassCode.CLASSCODE_ROUTE) {
 					// create or update area
 					if(msoOwner == null || isCreateMode()) {

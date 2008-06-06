@@ -177,8 +177,10 @@ public class ListDialog extends DefaultDialog {
 	
 	private JPanel getCenterPanel() {
 		if(centerPanel==null) {
-			centerPanel = new JPanel(new BorderLayout());
-			centerPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+			BorderLayout bl = new BorderLayout();
+			//bl.setVgap(5);
+			//bl.setHgap(5);
+			centerPanel = new JPanel(bl);
 			centerPanel.add(getOptionsPanel(),BorderLayout.NORTH);
 			centerPanel.add(getAssignmentTable(),BorderLayout.CENTER);
 			centerPanel.setPreferredSize(new Dimension(400,300));
@@ -189,6 +191,7 @@ public class ListDialog extends DefaultDialog {
 	private JPanel getOptionsPanel() {
 		if(optionsPanel ==null) {
 			optionsPanel = new JPanel();
+			optionsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			BoxLayout bl = new BoxLayout(optionsPanel,BoxLayout.X_AXIS);
 			optionsPanel.setLayout(bl);
 			optionsPanel.setOpaque(false);
@@ -320,7 +323,7 @@ public class ListDialog extends DefaultDialog {
 			}
 		}		
 		// forward
-		report.printAssignments(assignments,getUserScale());
+		report.printAssignments(assignments,getUserScale(),false);
 		// finished
 		return true;
 	}

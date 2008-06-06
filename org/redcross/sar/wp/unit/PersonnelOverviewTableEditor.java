@@ -163,6 +163,9 @@ public class PersonnelOverviewTableEditor
 			{
 				public void actionPerformed(ActionEvent ae)
 				{
+					
+					m_wpUnit.getMsoModel().suspendClientUpdate();
+					
 					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.callOutPersonnel(personnel);
@@ -171,6 +174,9 @@ public class PersonnelOverviewTableEditor
 					{
 						m_wpUnit.getMsoModel().commit();
 					}
+					
+					m_wpUnit.getMsoModel().resumeClientUpdate();
+					
 				}
 			});
 			m_panel.add(m_calloutButton);
@@ -182,6 +188,8 @@ public class PersonnelOverviewTableEditor
 			{
 				public void actionPerformed(ActionEvent e)
 				{
+					m_wpUnit.getMsoModel().suspendClientUpdate();
+
 					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.arrivedPersonnel(personnel);
@@ -190,6 +198,9 @@ public class PersonnelOverviewTableEditor
 					{
 						m_wpUnit.getMsoModel().commit();
 					}
+
+					m_wpUnit.getMsoModel().resumeClientUpdate();
+
 				}
 			});
 			m_panel.add(m_arrivedButton);
@@ -201,6 +212,8 @@ public class PersonnelOverviewTableEditor
 			{
 				public void actionPerformed(ActionEvent e)
 				{
+					m_wpUnit.getMsoModel().suspendClientUpdate();
+
 					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.releasePersonnel(personnel);
@@ -209,6 +222,9 @@ public class PersonnelOverviewTableEditor
 					{
 						m_wpUnit.getMsoModel().commit();
 					}
+
+					m_wpUnit.getMsoModel().resumeClientUpdate();
+
 				}
 			});
 			m_panel.add(m_releasedButton);

@@ -146,10 +146,10 @@ public class DrawFrame {
 			container.addElement(getFrameElement(),0);
 			container.addElement(getTextBoxElement(), 0);
 			container.addElement(getTextElement(), 0);			
-			for(IconElement it : nameIcons.values()) {
+			container.addElement(getIconBoxElement(),0);
+			for(IconElement it : orderIcons) {
 				container.addElement(it,0);
 			}			
-			container.addElement(getIconBoxElement(),0);
 		}
 		else throw new IllegalArgumentException("IActiveView must have an focus map");		
 	}
@@ -158,6 +158,8 @@ public class DrawFrame {
 		if(textElement==null) {
 			// create text element
 			textElement = new TextElement();
+			// set name
+			textElement.setName("DRAWFRAME.TEXT");
 			// initialize geometry
 			textElement.setGeometry(MapUtil.createPoint());
 		}
@@ -173,8 +175,6 @@ public class DrawFrame {
 			// set frame border
 			frameElement.setBorder(MapUtil.getSymbolBorder());
 			frameElement.setBackground(null);
-			// initialize geometry
-			frameElement.setGeometry(MapUtil.createEnvelope());
 		}
 		return frameElement;
 	}
@@ -188,8 +188,6 @@ public class DrawFrame {
 			// set frame border
 			textBoxElement.setBorder(null);
 			textBoxElement.setBackground(MapUtil.getSymbolBackground(5,1));
-			// initialize geometry
-			textBoxElement.setGeometry(MapUtil.createEnvelope());
 		}
 		return textBoxElement;
 	}
@@ -203,8 +201,6 @@ public class DrawFrame {
 			// set frame border
 			iconBoxElement.setBorder(MapUtil.getSymbolBorder(0,255,255,esriSimpleLineStyle.esriSLSSolid));
 			iconBoxElement.setBackground(null);
-			// initialize geometry
-			iconBoxElement.setGeometry(MapUtil.createEnvelope());
 		}
 		return iconBoxElement;
 	}
@@ -215,8 +211,6 @@ public class DrawFrame {
 			groupElement = new GroupElement();
 			// set name
 			groupElement.setName("DRAWFRAME.GROUP");
-			// initialize geometry
-			groupElement.setGeometry(MapUtil.createEnvelope());
 		}
 		return groupElement;
 	}
@@ -429,8 +423,6 @@ public class DrawFrame {
 				// load picture
 				icon.importPictureFromFile(iconFile.getAbsolutePath());
 			}
-			// initialize geometry
-			icon.setGeometry(MapUtil.createEnvelope());
 			// update collections
 			orderIcons.add(icon);
 			nameIcons.put(name,icon);
@@ -486,7 +478,6 @@ public class DrawFrame {
 		e.centerAt(p);
 		// move icon 
 		icon.setGeometry(e);	
-		//System.out.println("y:="+y);
 		// finished
 		return y;		
 	}
@@ -515,8 +506,8 @@ public class DrawFrame {
 				// show layer
 				((IGraphicsLayer)container).activate(display());				
 				((ILayer)container).setVisible(true);
-				// set dirty
-				setDirtyRegion(getGroupElement());				
+				// invalidate all
+				setAllRegionsDirty();
 				// success
 				return true;
 			}
@@ -655,7 +646,7 @@ public class DrawFrame {
 			// set active flag
 			isIconBoxActive = true;
 			// update icon box position
-			moveIconBox(icon.getGeometry().getEnvelope());			
+			moveIconBox(icon.getGeometry().getEnvelope());
 		}
 		else if(!isSelected && isIconBoxActive) {
 			// forward
@@ -665,18 +656,30 @@ public class DrawFrame {
 		}
 	}
 
+	private void setAllRegionsDirty() throws AutomationException, IOException {
+		setDirtyRegion(getTextBoxElement());
+		setDirtyRegion(getFrameElement());
+		for(IElement it: orderIcons)
+			setDirtyRegion(it);
+	}
+	
 	private void setDirtyRegion(IElement element) throws AutomationException, IOException {
 		// only if active!
 		if(isActive) {
 			// get geometry
 			IGeometry g = element.getGeometry();
 			// has geometry?
-			if(!g.isEmpty()) {
-				// add to dirty area?
-				if(dirtyArea!=null)
-					dirtyArea.union(MapUtil.expand(1.25,g.getEnvelope()));
-				else
-					dirtyArea = MapUtil.expand(1.25,g.getEnvelope());
+			if(g!=null && !g.isEmpty()) {
+				// get envelope
+				IEnvelope e = g.getEnvelope();
+				// has envelope?
+				if(e!=null && !e.isEmpty()) {
+					// add to dirty
+					if(dirtyArea!=null)
+						dirtyArea.union(MapUtil.expand(1.25,e));
+					else
+						dirtyArea = MapUtil.expand(1.25,e);
+				}
 			}
 		}
 	}

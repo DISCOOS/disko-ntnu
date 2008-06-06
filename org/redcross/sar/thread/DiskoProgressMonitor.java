@@ -308,8 +308,10 @@ public class DiskoProgressMonitor {
 		return m_inhibit;
 	}
 	
-	public synchronized void setInhibit(boolean inhibit) {
+	public synchronized boolean setInhibit(boolean inhibit) {
+		boolean bFlag = m_inhibit; 
 		m_inhibit = inhibit;
+		return bFlag;
 	}
 	
 	public synchronized void hide() {

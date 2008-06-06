@@ -454,11 +454,14 @@ public class HypothesisDialog extends DefaultDialog {
 		if (attribsPanel == null) {
 			try {
 				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
-				attribsPanel.setPreferredBodySize(new Dimension(200, 150));
+				attribsPanel.setPreferredSize(new Dimension(200,100));
+				attribsPanel.setPreferredBodySize(new Dimension(200, 100));
 				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				attribsPanel.addAttribute(getPriorityCombo());
 				attribsPanel.addAttribute(getStatusCombo());
+				Utils.setFixedSize(getPriorityCombo(), 200,25);
+				Utils.setFixedSize(getStatusCombo(), 200,25);				
 				attribsPanel.addDiskoWorkListener(getContentPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

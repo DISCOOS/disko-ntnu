@@ -49,7 +49,7 @@ public class DiskoReportManager {
 	private final static double mapPrintWidthSize = 0.169;		
 	// print map units in meters. In iReport equals this 487, pixelsize = 0.000037 meters
 	private final static double mapPrintHeigthSize = 0.169;		
-	private final static String outputPrintFormat = ".PNG";
+	private final static String outputPrintFormat = ".JPG";
 	private static final String DATE_FORMAT_NOW = "ddHHmm";
 
 
@@ -92,9 +92,6 @@ public class DiskoReportManager {
 	 */
 	private void initialize() {
 
-		// reset previous prints
-		m_prints = null;
-		
 		// get map objects
 		try{
 			// map setup?
@@ -159,7 +156,7 @@ public class DiskoReportManager {
 	 * @param assignments
 	 */
 	public void printAssignments(List<IAssignmentIf> assignments){		
-		printAssignments(assignments,m_reportMapScale);
+		printAssignments(assignments,m_reportMapScale,false);
 	}
 	
 	/**
@@ -167,10 +164,13 @@ public class DiskoReportManager {
 	 * @param assignments
 	 * @param map scale
 	 */
-	public void printAssignments(List<IAssignmentIf> assignments, double scale){		
+	public void printAssignments(List<IAssignmentIf> assignments, double scale, boolean append){		
 		
 		// initialize report
 		initialize();		
+		
+		// reset previous prints?
+		if(!append) m_prints = null;			
 		
 		// update scale
 		m_reportMapScale = scale;
@@ -197,10 +197,14 @@ public class DiskoReportManager {
 			String exportMapPath = exportMap();
 			
 			// get assigment values 
-			Map assignmentsMap = getAssignmentValues(assignment, exportMapPath);
+			Map<String, Object> assignmentsMap = getAssignmentValues(assignment, exportMapPath);
 			
 			// fill assignment values to jasper report
 			JasperPrint jPrint = fill(jasperFileName, assignmentsMap);
+			
+			// delete map
+			File file = new File(exportMapPath);
+			if(file.exists()) file.delete();			
 			
 			// append pages?
 			if (m_prints!=null) {
@@ -224,8 +228,23 @@ public class DiskoReportManager {
 	}
 	
 	public void printUnitLog(IUnitIf unit){		
+		printUnitLog(unit,m_reportMapScale,false);
+	}
+	
+	public void printUnitLog(IUnitIf unit, double scale, boolean append){		
 				
+		// initialize report
+		initialize();		
+		
+		// reset previous prints?
+		if(!append) m_prints = null;			
+		
+		// update scale
+		m_reportMapScale = scale;
+		
+		// get report template file name
 		String jasperFileName = m_app.getProperty("report.UNITLOG_TEMPLATE")+".jasper";
+
 		//inntil videre kjøres kompilering også
 		
 		//String jrxmlFileName = m_app.getProperty("report.UNITLOG_TEMPLATE")+".jrxml";
@@ -236,17 +255,32 @@ public class DiskoReportManager {
 		IUnitListIf unitList = cmdPost.getUnitList();		
 				
 		UnitlogReportParams unitLogParams = new UnitlogReportParams();
+		
 		//ekstrahere unit verdier
 		Map unitsMap = unitLogParams.getUnitlogReportParams(unitList, unit);
 				
 		JasperPrint jPrint = fill(jasperFileName, unitsMap);
 		
+		// append pages?
+		if (m_prints!=null && append) {
+			// get all pages
+			List pages = jPrint.getPages();
+			// loop over all pages
+			for(int j=0;j<pages.size();j++) {
+				m_prints.addPage((JRPrintPage)pages.get(j));
+			}
+		}
+		else {
+			// initialize
+			m_prints = jPrint;
+		}
+		
 		//preview				
-		view(jPrint);	
+		view(m_prints);	
 		
 	}
 			
-	private JasperPrint fill(String jasperFileName, Map map){
+	private JasperPrint fill(String jasperFileName, Map<String,Object> data){
 		// initialize
 		JasperPrint jasperPrint = null;
 		
@@ -259,7 +293,7 @@ public class DiskoReportManager {
 			JasperReport jasperReport = (JasperReport)JRLoader.loadObject(sourceFile);
 			
 			// fill jasper report
-			jasperPrint = JasperFillManager.fillReport(jasperReport, map, new JREmptyDataSource());				
+			jasperPrint = JasperFillManager.fillReport(jasperReport, data, new JREmptyDataSource());				
 											
 		} catch(JRException jre){
 			jre.printStackTrace();
@@ -288,8 +322,7 @@ public class DiskoReportManager {
 		}
 	}
 		
-	private Map getAssignmentValues(IAssignmentIf assignment, String exportMapPath){
-		Map<String, Object> map = new HashMap<String,Object>();
+	private Map<String, Object> getAssignmentValues(IAssignmentIf assignment, String exportMapPath){
 		
 		String role_name = m_app.getCurrentRole().getTitle() + " (" + m_app.getCurrentRole().getName()+ ")";
 		
@@ -297,7 +330,7 @@ public class DiskoReportManager {
 		m_now = getTimeNow();
 		
 		MissionOrderReportParams missionOrderPrint = new MissionOrderReportParams();
-		map = missionOrderPrint.setPrintParams(assignment, exportMapPath, role_name, m_templatePath, m_srs, m_reportMapScale, m_now);
+		Map<String, Object> map = missionOrderPrint.setPrintParams(assignment, exportMapPath, role_name, m_templatePath, m_srs, m_reportMapScale, m_now);
 		
 		return map;
 		

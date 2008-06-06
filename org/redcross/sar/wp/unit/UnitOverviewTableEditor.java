@@ -199,6 +199,8 @@ public class UnitOverviewTableEditor
 					UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 
+					m_wpUnit.getMsoModel().suspendClientUpdate();
+
 					try
 					{
 						UnitUtilities.releaseUnit(unit);
@@ -215,6 +217,8 @@ public class UnitOverviewTableEditor
 								m_resources.getString("ReleaseUnitError.text"));
 					}
 
+					m_wpUnit.getMsoModel().resumeClientUpdate();
+					
 					fireEditingStopped();
 				}
 			});

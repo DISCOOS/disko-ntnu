@@ -33,7 +33,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// apply number document
-		((JTextField)m_component).setDocument(
+		getTextField().setDocument(
 				new NumericDocument(maxDigits,decimalPrecision,allowNegative));		
 		// get value from attribute
 		load();		
@@ -49,8 +49,22 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,width,null,isEditable);
 		// apply number document
-		((JTextField)m_component).setDocument(
+		getTextField().setDocument(
 				new NumericDocument(maxDigits,decimalPrecision,allowNegative));
+		getTextField().getDocument().addDocumentListener(new DocumentListener() {
+
+			public void changedUpdate(DocumentEvent e) { change(); }
+
+			public void insertUpdate(DocumentEvent e) { change(); }
+
+			public void removeUpdate(DocumentEvent e) { change(); }
+			
+			private void change() {
+				if(isWorking()) return;
+				fireOnWorkChange();
+			}
+			
+		});
 		
 	}
 	
@@ -65,20 +79,6 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 			JTextField field = new JTextField();
 			// set format
 			field.setEditable(m_isEditable);
-			field.getDocument().addDocumentListener(new DocumentListener() {
-
-				public void changedUpdate(DocumentEvent e) { change(); }
-
-				public void insertUpdate(DocumentEvent e) { change(); }
-
-				public void removeUpdate(DocumentEvent e) { change(); }
-				
-				private void change() {
-					if(isWorking()) return;
-					fireOnWorkChange();
-				}
-				
-			});
 			// save the component
 			m_component = field;
 		}

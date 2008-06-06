@@ -235,9 +235,9 @@ public class RequirementDialog extends DefaultDialog {
 				attribsPanel.addAttribute(getPriorityCombo());
 				attribsPanel.addAttribute(getAccuracyCombo());
 				attribsPanel.addAttribute(getPersonnelCombo());
-				Utils.setFixedSize(getPriorityCombo(), 200,30);
-				Utils.setFixedSize(getAccuracyCombo(), 200,30);
-				Utils.setFixedSize(getPersonnelCombo(), 200,30);
+				Utils.setFixedSize(getPriorityCombo(), 200,25);
+				Utils.setFixedSize(getAccuracyCombo(), 200,25);
+				Utils.setFixedSize(getPersonnelCombo(), 200,25);
 				attribsPanel.addDiskoWorkListener(getContentPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

@@ -332,7 +332,8 @@ public abstract class AbstractDiskoWpModule
 		        			// initialize
 		        			IEnvelope e = MapUtil.getOperationExtent(getMap());
 		        			// set extent?
-		        			if(e!=null) getMap().setExtent(MapUtil.expand(1.25,e));
+		        			if(e!=null && !e.isEmpty()) 
+		        				getMap().setExtent(MapUtil.expand(1.25,e));
 		        			// update
 		        			getMap().refreshGeography(null, map.getExtent());
 		        		}

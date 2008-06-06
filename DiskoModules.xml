@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <DiskoApplication>
 	<DiskoRole name="al" title="Aksjonsleder">
-		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+		<DiskoModule
+			classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl"
+			isDefault="true" />
 	</DiskoRole>
 	<DiskoRole name="nl" title="Nestleder">
 		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" isDefault="true"/>
