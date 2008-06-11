@@ -1,9 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -17,20 +14,16 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.esri.arcgis.geometry.IPoint;
-import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.POIPanel;
 import org.redcross.sar.gui.panel.POITypesPanel;
-import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.POITool;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
@@ -47,7 +40,6 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
@@ -60,8 +52,6 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	private final static long serialVersionUID = 1L;
 
 	protected JPanel m_actionsPanel = null;
-	protected DiskoIcon m_finishIcon = null;
-	protected DiskoIcon m_cancelIcon = null;
 	protected JButton m_finishButton = null;
 	protected JButton m_centerAtButton = null;
 	protected JButton m_cancelButton = null;
@@ -144,15 +134,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	private JButton getFinishButton() {
 		if(m_finishButton==null) {
 			// create button
-			m_finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
-			m_finishIcon = new DiskoIcon(m_finishButton.getIcon(),Color.GREEN,0.4f);
-			m_finishButton.setIcon(m_finishIcon);
-			// add action listener
-			m_finishButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e){
-					if(apply()) MessageLogBottomPanel.showListPanel();				
-				}
-			});
+			m_finishButton = (JButton)getPOIPanel().getButton("finish");
 
 		}
 		return m_finishButton;
@@ -162,14 +144,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	private JButton getCenterAtButton() {
 		if(m_centerAtButton==null) {
 			// create button
-			m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
-			// add action listener
-			m_centerAtButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e){
-					centerAtPosition();
-				}
-			});
-
+			m_centerAtButton = (JButton)getPOIPanel().getButton("centetat");
 		}
 		return m_centerAtButton;
 	
@@ -178,18 +153,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	private JButton getCancelButton() {
 		if(m_cancelButton==null) {
 			// create button
-			m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-			m_cancelIcon = new DiskoIcon(m_cancelButton.getIcon(),Color.RED,0.4f);
-			m_cancelButton.setIcon(m_cancelIcon);
-			// add action listener
-			m_cancelButton.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e) {
-					// cancel any changes
-					revert();
-					// return to list view
-					MessageLogBottomPanel.showListPanel();
-				}
-			});
+			m_cancelButton = (JButton)getPOIPanel().getButton("cancel");
 		}
 		return m_cancelButton;
 	
@@ -204,10 +168,32 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		if (m_poiPanel == null) {
 
 			// create a poi panel and register it with a tool
-			m_poiPanel = (POIPanel)m_tool.addPropertyPanel();			
+			m_poiPanel = (POIPanel)m_tool.addPropertyPanel();		
+
+			// forward work to this
+			m_poiPanel.addDiskoWorkListener(this);			
+			
 
 		}
 		return m_poiPanel;
+	}
+	
+	@Override
+	public void onWorkPerformed(DiskoWorkEvent e) {
+		
+		super.onWorkPerformed(e);
+		
+		if(e.isCancel()) {
+			// cancel any changes
+			revert();
+			// return to list view
+			MessageLogBottomPanel.showListPanel();
+		}
+		else if(e.isFinish()) {
+			// forward
+			if(apply()) MessageLogBottomPanel.showListPanel();										
+		}
+
 	}
 	
 	/**
@@ -263,9 +249,6 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		// consume
 		setChangeable(false);
 		
-		// initialize flag
-		boolean isSuccess = false;
-		
 		// suspend update events
 		m_wp.getMsoModel().suspendClientUpdate();
 		
@@ -275,76 +258,38 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		// prevent changes in panel
 		panel.setChangeable(false);
 		
-		// ensure that work is done synchroniously
-		boolean isWorkPoolMode = m_tool.setWorkPoolMode(false);				
-
-		// get current point
-		Point point = panel.getPoint();
+		// initialize status flag
+		boolean bFlag = false;
 		
-		try {
+		// get added poi
+		IPOIIf poi = m_tool.getPOI();
+		
+		if(poi!=null && poi.getPosition()!=null) {
+		
+			// create message and message line
+			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);	
+			IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POI, true);							
 			
-			// any change?
-			if(point!=null && point.isEmpty()) {
-				
-				// initialize flag
-				boolean isDirty = panel.isDirty();
-				
-				// get current message, do create if not exists
-				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-
-				// Get message line, do not create if not exist
-				IMessageLineIf messageLine = (message!=null ? message.findMessageLine(MessageLineType.POI, false) : null);
-
-				// get poi
-				IPOIIf poi = (messageLine!=null ? messageLine.getLinePOI() : null);
-				
-				// prepare to set poi
-				panel.setPOI(poi);
-				panel.setRemarks(null);
-				
-				// apply changes?
-				if(panel.finish()) {
-				
-					// get added poi
-					poi = m_tool.getPOI();
-					
-					// create message?
-					if(message==null) {
-						// create message and message line
-						message = MessageLogBottomPanel.getCurrentMessage(true);	
-						// get message line, create if not exists
-						messageLine = message.findMessageLine(MessageLineType.POI, true);							
-						// update line
-						messageLine.setLinePOI(poi);														
-					}
-					// get flag
-					boolean isIntelligence = 
-						  (POIType.FINDING.equals(poi.getType()) 
-						|| POIType.SILENT_WITNESS.equals(poi.getType()));
-					
-					// update task?
-					if(poi!=null && isIntelligence)
-						// forward
-						isDirty = isDirty || schedule(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
-					
-					// is dirty?
-					if(isDirty)
-						MessageLogBottomPanel.setIsDirty();
-					
-					// set flag
-					isSuccess = true;					
-				}									
-			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}			
-
-		// resume work pool mode
-		m_tool.setWorkPoolMode(isWorkPoolMode);				
+			// update line
+			messageLine.setLinePOI(poi);													
+			
+			// get flag
+			boolean isIntelligence = 
+				  (POIType.FINDING.equals(poi.getType()) 
+				|| POIType.SILENT_WITNESS.equals(poi.getType()));
+			
+			// update task?
+			if(poi!=null && isIntelligence)
+				// forward
+				schedule(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
+			
+			// is dirty?
+			MessageLogBottomPanel.setIsDirty();
+			
+			// changed
+			bFlag = true;
+			
+		}
 		
 		// enable changes in panel
 		panel.setChangeable(true);
@@ -355,8 +300,8 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		// resume changes
 		setChangeable(true);
 		
-		// return flag
-		return isSuccess;
+		// finished
+		return bFlag;
 	}
 
 	private boolean schedule(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {
@@ -395,7 +340,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 			task.setType(type);
 			task.setSourceClass(message.getMsoClassCode());
 			task.setCreatingWorkProcess(getName());
-			task.setDescription(MsoUtils.getMessageText(message,Internationalization.getBundle(IDiskoWpMessageLog.class)));
+			task.setDescription(MsoUtils.getMessageText(message));
 			task.setDependentObject(message.getSender());
 			message.addMessageTask(task);
 			// set flag
@@ -460,13 +405,20 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 			IPOIIf poi = centerAtPOI(true);
 			// save current state
 			m_toolState = m_tool.save();
-			// update panels
-			getPOIPanel().setPOITypes(m_types);
 			// make it the active property panel
 			m_tool.setPropertyPanel(getPOIPanel());
 			// prepare to draw
+			m_tool.setShowDialog(false);
+			m_tool.setWorkPoolMode(false);
+			m_tool.setShowDrawFrame(false);
 			m_tool.setMsoData(null, poi, MsoClassCode.CLASSCODE_POI);
 			m_tool.setDrawMode(poi==null ? DrawMode.MODE_CREATE : DrawMode.MODE_REPLACE);
+			// update POI panel
+			getPOIPanel().setPOITypes(m_types);
+			getPOIPanel().setPOI(poi);
+			getPOIPanel().setPosition(poi!=null ? poi.getPosition() : null);
+			// set tool point
+			m_tool.setPoint(poi!=null ? getPOIPanel().getPoint() : m_tool.getMap().getClickPoint());
 			// activate tool
 			m_wp.getMap().setActiveTool(m_tool, 0);
 			// show tool
@@ -623,47 +575,5 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		}
 		// return current poi
 		return poi;
-	}
-	
-	/**
-	 * center on position in map
-	 */
-	public boolean centerAtPosition()
-	{
-		
-		try
-		{
-			// initialize
-			IPoint p = getPOIPanel().getPoint();
-			
-			// can center at point?
-			if(p!=null) {
-				// forward
-	        	m_wp.getMap().centerAt(p);
-	        	// success
-	        	return true;
-			}
-		}
-		catch (AutomationException ex)
-		{
-			ex.printStackTrace();
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
-		// return unit
-		return false;
-	}
-
-	
-	public void update() { 
-		
-		// update attributes
-		m_finishIcon.setColored(isDirty());
-		m_cancelIcon.setColored(isDirty());
-		m_finishButton.repaint();
-		m_cancelButton.repaint();
-			
-	}
+	}	
 }

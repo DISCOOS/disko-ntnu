@@ -216,9 +216,9 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
 
     public long getIdleTimeInMillis();
     
-    public void logPosition();
+    public boolean logPosition();
     
-    public void logPosition(Position aPosition);
+    public boolean logPosition(Position aPosition);
     
 
     public Set<IMessageIf> getReferringMessages();

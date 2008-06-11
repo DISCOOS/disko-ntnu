@@ -1,4 +1,4 @@
-package org.redcross.sar.gui.renderer;
+package org.redcross.sar.wp.tactics;
 
 import java.awt.Component;
 import java.util.Hashtable;

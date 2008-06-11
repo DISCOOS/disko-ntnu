@@ -9,6 +9,7 @@ import org.redcross.sar.mso.data.AbstractDerivedList;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.mso.Selector;
 
@@ -87,7 +88,8 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 		gbc.gridx++;
 		m_contentsPanel.add(Box.createVerticalGlue(), gbc);
 
-		//this.setModalityType(ModalityType.MODELESS);
+		setMoveable(false);
+		
 		this.add(m_contentsPanel);
 		this.pack();
 	}
@@ -96,6 +98,7 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 	{
 		m_unitTypePanel = new JPanel(new BorderLayout());
 		m_unitTypeField = new JFormattedTextField(0);
+		m_unitTypeField.setEditable(false);
 
 		m_unitTypeField.addKeyListener(this);
 		m_unitTypePanel.add(m_unitTypeField, BorderLayout.NORTH);
@@ -126,6 +129,7 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 				m_unitNumberField.setText("");
 			}
 		};
+		
 		for(JButton button : m_unitTypePad.getButtons())
 		{
 			button.addActionListener(numberFieldClear);
@@ -199,11 +203,6 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 			return true;
 		}
 
-		if(typeText.equals("C") && numberText.isEmpty())
-		{
-			return true;
-		}
-
 		AbstractDerivedList<ICommunicatorIf> communicatorList = m_wp.getMsoManager().getCmdPost().getCommunicatorList();
 		try
 		{
@@ -213,15 +212,22 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 					{
 						public boolean select(ICommunicatorIf communicator)
 						{
+							String prefix1 = typeText.isEmpty() ? "" : typeText.substring(0, 1);
+							String prefix2 = String.valueOf(communicator.getCommunicatorNumberPrefix());
 							if((communicator.getCommunicatorNumber() == Integer.valueOf(numberText))
-									&& (typeText.charAt(0) == communicator.getCommunicatorNumberPrefix()))
+									&& (prefix1.equalsIgnoreCase(prefix2)))
 							{
+								if(communicator instanceof IUnitIf) {
+									IUnitIf unit = (IUnitIf)communicator;
+									UnitStatus status = unit.getStatus();
+									// is selectable?
+									return !(UnitStatus.EMPTY.equals(status) 
+											|| UnitStatus.RELEASED.equals(status));
+								}
+								// the rest is selectable by default
 								return true;
 							}
-							else
-							{
-								return false;
-							}
+							return false;
 						}
 					},
 					new Comparator<ICommunicatorIf>()

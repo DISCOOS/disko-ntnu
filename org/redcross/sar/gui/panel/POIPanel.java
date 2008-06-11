@@ -114,7 +114,7 @@ public class POIPanel extends DefaultToolPanel {
 					try {
 					
 						// get position
-						Position p = getGotoPanel().getPositionField().getPosition();
+						Position p = getGotoPanel().getCoordinatePanel().getPosition();
 						
 						// has point?
 						if(p!=null) {
@@ -244,11 +244,11 @@ public class POIPanel extends DefaultToolPanel {
 		if(getTool().getMap()!=null) {						
 			try {
 				// get position 
-				Position p = getGotoPanel().getPositionField().getPosition();
+				Position p = getGotoPanel().getCoordinatePanel().getPosition();
 				// center at position?
 				if(p!=null) {
-					getTool().getMap().flashPosition(p);
 					getTool().getMap().centerAtPosition(p);
+					getTool().getMap().flashPosition(p);
 				}
 				else
 					Utils.showWarning("Du må oppgi korrekte koordinater");
@@ -267,8 +267,7 @@ public class POIPanel extends DefaultToolPanel {
 	public Point getPoint() {
 		try {
 			if(getTool()!=null) 
-				return getGotoPanel().getPositionField()
-					.getPoint(getTool().getMap().getSpatialReference());
+				return getGotoPanel().getCoordinatePanel().getPoint(getTool().getMap().getSpatialReference());
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -302,15 +301,15 @@ public class POIPanel extends DefaultToolPanel {
 	}
 	
 	public void setPoint(Point p) {
-		getGotoPanel().getPositionField().setPoint(p);
+		getGotoPanel().getCoordinatePanel().setPoint(p);
 	}
 	
 	public Position getPosition() {
-		return getGotoPanel().getPositionField().getPosition();
+		return getGotoPanel().getCoordinatePanel().getPosition();
 	}
 	
 	public void setPosition(Position p) {
-		getGotoPanel().getPositionField().setPosition(p);
+		getGotoPanel().getCoordinatePanel().setPosition(p);
 	}
 	
 	public POIType[] getPOITypes() {
@@ -363,17 +362,17 @@ public class POIPanel extends DefaultToolPanel {
 			setChangeable(false);
 			
 			// is position valid?
-			if(getGotoPanel().getPositionField().isPositionValid()) {
+			if(getGotoPanel().getCoordinatePanel().isPositionValid()) {
 			
 				// get position
-				Position p = getGotoPanel().getPositionField().getPosition();
+				Position p = getGotoPanel().getCoordinatePanel().getPosition();
 				
 				// update point?
 				if(p!=null) {
 					try {
 						// convert and update tool
 						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
-						getTool().setPoint(point);							
+						getTool().setPoint(point);	
 						// finish working
 						bFlag = getTool().finish();
 					} catch (AutomationException e) {
@@ -395,8 +394,13 @@ public class POIPanel extends DefaultToolPanel {
 			setChangeable(true);
 		}
 
-		// reset bit?
-		if(bFlag) setDirty(false);
+		// work performed?
+		if(bFlag) {
+			// reset bit
+			setDirty(false);
+			// notify
+			fireOnWorkFinish(this, msoObject);
+		}
 		
 		// finished
 		return bFlag;
@@ -429,16 +433,7 @@ public class POIPanel extends DefaultToolPanel {
 				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
 						getTool().getMsoCode(), getTool().getDrawMode())); 
 			// update panel
-			getGotoPanel().getPositionField().setPoint(getTool().getPoint());
-			
-			/*
-			// set types enabled state
-			Object attr = getTool().getAttribute("SEARCHSUBTYPE");
-			if(attr instanceof SearchSubType) {
-				SearchSubType type = (SearchSubType)attr;
-				getPOITypesPanel().setSelectionAllowed(!getTool().isReplaceMode());
-			}
-			*/
+			getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

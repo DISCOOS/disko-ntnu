@@ -3,6 +3,8 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.AbstractPanel;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.ICmdPostIf.CmdPostStatus;
@@ -37,8 +39,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 {
 	private static final long serialVersionUID = 1L;
 
-	protected JPanel m_contentsPanel = null;
-	protected JScrollPane m_scrollPane = null;
+	protected BasePanel m_contentsPanel = null;
 	protected IDiskoWpMessageLog m_wpMessageLog;
 	protected UnitType m_unitTypeFilter = null;
 	protected AbstractDerivedList<ICommunicatorIf> m_communicatorList;
@@ -49,7 +50,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 	protected HashMap<ICommunicatorIf, JToggleButton> m_communicatorButtonMap = null;
 	protected JToggleButton m_currentButton = null;
 
-	final public static int PANEL_WIDTH = DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width * 5;
+	final public static int PANEL_WIDTH = DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width * 3;
 	private final int NUMBER_OF_ROWS = 6;
 
 	/**
@@ -74,6 +75,8 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 		
 		m_dirtyList = true;
 		buildList();
+		
+		setMoveable(false);
 		
 		this.pack();
 	}
@@ -130,16 +133,18 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 
 	private void initContentsPanel()
 	{
-		m_contentsPanel = new JPanel();
-		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.LINE_AXIS));
+		m_contentsPanel = new BasePanel("Velg enhet");
+		m_contentsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+				BasePanel.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		JPanel panel = (JPanel)m_contentsPanel.getBodyComponent();
+		BoxLayout bl = new BoxLayout(panel, BoxLayout.LINE_AXIS);
+		panel.setLayout(bl);
 
-		m_scrollPane = new JScrollPane(m_contentsPanel);
-		m_scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		m_scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		m_scrollPane.setPreferredSize(new Dimension(PANEL_WIDTH,
+		panel.setPreferredSize(new Dimension(PANEL_WIDTH,
 				DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*NUMBER_OF_ROWS + 20));
 
-		this.add(m_scrollPane);
+		setContentPane(m_contentsPanel);
 		
 		buildList();
 		
@@ -285,8 +290,10 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 	{
 		if(m_dirtyList)
 		{
+			
+			JPanel list = (JPanel)m_contentsPanel.getBodyComponent();
 			// Clear previous list, brute force maintenance
-			m_contentsPanel.removeAll();
+			list.removeAll();
 			m_buttonGroup = new ButtonGroup();
 
 			m_buttonCommunicatorMap.clear();
@@ -304,7 +311,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 				panel.setPreferredSize(new Dimension(DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width,
 						DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*NUMBER_OF_ROWS));
 				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-				m_contentsPanel.add(panel);
+				list.add(panel);
 				}
 				addUnitButton(commnicator, panel);
 				i++;
@@ -361,6 +368,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 				}				
 				
 				fireOnWorkFinish(this,message);
+				
 			}
 		});
 

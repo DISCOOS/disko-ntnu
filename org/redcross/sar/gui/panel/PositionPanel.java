@@ -121,7 +121,7 @@ public class PositionPanel extends DefaultToolPanel {
 					try {
 					
 						// get position
-						Position p = getGotoPanel().getPositionField().getPosition();
+						Position p = getGotoPanel().getCoordinatePanel().getPosition();
 						
 						// has point?
 						if(p!=null) {
@@ -158,7 +158,7 @@ public class PositionPanel extends DefaultToolPanel {
 		if (unitsPanel == null) {
 			// create
 			unitsPanel = new DefaultPanel("Velg enhet",false,false);
-			// replace body compontent
+			// replace body component
 			unitsPanel.setBodyComponent(getUnitList());
 			// set preferred body size
 			unitsPanel.setPreferredBodySize(new Dimension(200,200));
@@ -234,10 +234,12 @@ public class PositionPanel extends DefaultToolPanel {
 		if(getTool().getMap()!=null) {						
 			try {
 				// get position 
-				Position p = getGotoPanel().getPositionField().getPosition();
+				Position p = getGotoPanel().getCoordinatePanel().getPosition();
 				// center at position?
 				if(p!=null) {
 					getTool().getMap().centerAtPosition(p);
+					getTool().getMap().flashPosition(p);
+
 				}
 				else
 					Utils.showWarning("Du må oppgi korrekte koordinater");
@@ -256,7 +258,7 @@ public class PositionPanel extends DefaultToolPanel {
 	public Point getPoint() {
 		try {
 			if(getTool()!=null) 
-				return getGotoPanel().getPositionField().getPoint(getTool().getMap().getSpatialReference());
+				return getGotoPanel().getCoordinatePanel().getPoint(getTool().getMap().getSpatialReference());
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -269,15 +271,15 @@ public class PositionPanel extends DefaultToolPanel {
 	}
 	
 	public void setPoint(Point p) {
-		getGotoPanel().getPositionField().setPoint(p);
+		getGotoPanel().getCoordinatePanel().setPoint(p);
 	}
 	
 	public Position getPosition() {
-		return getGotoPanel().getPositionField().getPosition();
+		return getGotoPanel().getCoordinatePanel().getPosition();
 	}
 	
 	public void setPosition(Position p) {
-		getGotoPanel().getPositionField().setPosition(p);
+		getGotoPanel().getCoordinatePanel().setPosition(p);
 	}
 	
 	public IUnitIf getUnit() {
@@ -336,6 +338,10 @@ public class PositionPanel extends DefaultToolPanel {
 		isSingleUnitOnly = false;
 	}
 	
+	public void setSelectedUnit(IUnitIf unit) {
+		getUnitList().setSelectedValue(unit, true);
+	}
+	
 	/* ===========================================
 	 * IPropertyPanel implementation
 	 * ===========================================
@@ -357,23 +363,23 @@ public class PositionPanel extends DefaultToolPanel {
 		
 		// get unit
 		IUnitIf msoUnit = getUnit();
+		
 		// add or move poi?
 		if (msoUnit == null) {
 			Utils.showWarning("Du må først velge en enhet");
 		} 
 		else {
 			// is position valid?
-			if(getGotoPanel().getPositionField().isPositionValid()) {
+			if(getGotoPanel().getCoordinatePanel().isPositionValid()) {
 				// get point from coordinates
-				Position p = gotoPanel.getPositionField().getPosition();
+				Position p = gotoPanel.getCoordinatePanel().getPosition();
 				// has point?
 				if(p!=null) {
 					try {
 						// convert and update tool
 						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
-						getTool().setPoint(point);							
 						// forward
-						getTool().setMsoObject(msoUnit);
+						getTool().setUnit(msoUnit);
 						// set point
 						getTool().setPoint(point);
 						// forward
@@ -400,8 +406,13 @@ public class PositionPanel extends DefaultToolPanel {
 		// resume change events
 		setChangeable(true);
 		
-		// reset bit?
-		if(bFlag) setDirty(false);
+		// work performed?
+		if(bFlag) {
+			// reset bit
+			setDirty(false);
+			// notify
+			fireOnWorkFinish(this, msoObject);
+		}
 		
 		// finished
 		return bFlag;
@@ -424,16 +435,19 @@ public class PositionPanel extends DefaultToolPanel {
 		// forward
 		super.update();
 		
+		// consume?
+		if(!isChangeable()) return;
+		
 		// consume changes
 		setChangeable(false);
 		
 		try {
 			
 			// update attributes
-			getGotoPanel().getPositionField().setPoint(getTool().getPoint());
+			getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());
 			
 			// only update if unit is selected
-			getGotoPanel().getPositionField().setEnabled(getUnit()!=null);
+			getGotoPanel().getCoordinatePanel().setEnabled(getUnit()!=null);
 			
 			// units state
 			getUnitsPanel().setBodyEnabled(getTool().isCreateMode());

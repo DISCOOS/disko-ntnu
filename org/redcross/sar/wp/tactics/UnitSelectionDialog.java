@@ -11,7 +11,6 @@ import javax.swing.JTable;
 import javax.swing.JOptionPane;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.UnitTable;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;

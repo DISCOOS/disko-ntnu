@@ -1,9 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
@@ -16,23 +13,22 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.PositionPanel;
-import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.ITrackIf;
@@ -47,13 +43,11 @@ import org.redcross.sar.util.mso.Track;
  *
  * @author thomasl
  */
-public class MessagePositionPanel extends DefaultPanel implements IEditMessageComponentIf
+public class MessagePositionPanel extends BasePanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
 	protected JPanel m_actionsPanel = null;
-	protected DiskoIcon m_finishIcon = null;
-	protected DiskoIcon m_cancelIcon = null;
 	protected JButton m_finishButton = null;
 	protected JButton m_cancelButton = null;
 	protected JButton m_centerAtButton = null;
@@ -73,7 +67,7 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 	public MessagePositionPanel(IDiskoWpMessageLog wp)
 	{
 		// forward
-		super("",false,false);
+		super();
 		
 		// prepare
 		m_wp = wp;
@@ -133,15 +127,8 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 	private JButton getFinishButton() {
 		if(m_finishButton==null) {
 			// create button
-			m_finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);			
-			m_finishIcon = new DiskoIcon(m_finishButton.getIcon(),Color.GREEN,0.4f);
-			m_finishButton.setIcon(m_finishIcon);
-			// add action listener
-			m_finishButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e){
-					if(apply()) MessageLogBottomPanel.showListPanel();				
-				}
-			});
+			m_finishButton = (JButton)getPositionPanel().getButton("finish");	
+			
 		}
 		return m_finishButton;
 	
@@ -150,17 +137,7 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 	private JButton getCenterAtButton() {
 		if(m_centerAtButton==null) {
 			// create button
-			m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
-			// add action listener
-			m_centerAtButton.addActionListener(new ActionListener() {
-				/**
-				 * Center map at position
-				 */
-				public void actionPerformed(ActionEvent e){
-					centerAtPosition();
-				}
-			});
-
+			m_centerAtButton = (JButton)getPositionPanel().getButton("centerat");
 		}
 		return m_centerAtButton;
 	
@@ -169,18 +146,7 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 	private JButton getCancelButton() {
 		if(m_cancelButton==null) {
 			// create button
-			m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
-			m_cancelIcon = new DiskoIcon(m_cancelButton.getIcon(),Color.RED,0.4f);
-			m_cancelButton.setIcon(m_cancelIcon);
-			// add action listener
-			m_cancelButton.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e) {
-					// cancel any changes
-					revertPosition();
-					// return to list view
-					MessageLogBottomPanel.showListPanel();
-				}
-			});
+			m_cancelButton = (JButton)getPositionPanel().getButton("cancel");
 		}
 		return m_cancelButton;
 	
@@ -194,12 +160,32 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 	private PositionPanel getPositionPanel() {
 		if(m_positionPanel==null) {
 
-			// create a poi panel and register it with a tool
+			// create a new PositionPanel and register it with the tool
 			m_positionPanel = (PositionPanel)m_tool.addPropertyPanel();
+			// forward work to this
+			m_positionPanel.addDiskoWorkListener(this);
 			
 		}
 		return m_positionPanel;
 	
+	}
+	
+	@Override
+	public void onWorkPerformed(DiskoWorkEvent e) {
+		
+		super.onWorkPerformed(e);
+		
+		if(e.isCancel()) {
+			// cancel any changes
+			revertPosition();
+			// return to list view
+			MessageLogBottomPanel.showListPanel();
+		}
+		else if(e.isFinish()) {
+			// forward
+			if(apply()) MessageLogBottomPanel.showListPanel();										
+		}
+
 	}
 	
 	/**
@@ -272,82 +258,65 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 			try {
 				
 				// get point
-				Position p = panel.getPosition();
+				Position p = unit.getPosition();
 							
 				// add or move poi?
 				if(p!=null) {
 					
-					// get dirty flag
-					boolean isDirty = !unit.getPosition().equals(p);					
+					// get current message, create if not exist
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 					
-					// is dirty?
-					if(isDirty) {
+					// Get message line, create if not exist
+					IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POSITION, true);
+
+					// get current track
+					ITrackIf track = unit.getTrack();
 					
-						// get flag
-						boolean isWorkPoolMode = m_tool.isWorkPoolMode();
-						
-						// reset 
-						m_tool.setWorkPoolMode(false);				
-						
-						// update tool
-						m_tool.setUnit(unit);				
-						
-						// get current message, create if not exist
-						IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-						
-						// Get message line, create if not exist
-						IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POSITION, true);
-	
-						// get current track
-						ITrackIf track = unit.getTrack();
-						
-						// has no track?
-						if(track==null) {
-							track = m_wp.getMsoModel().getMsoManager().createTrack();
-							unit.setTrack(track);
-						}
-						
-						// create track?
-						if(track.getGeodata() == null) {
-							track.setGeodata(new Track(null, null, 1));
-						}
-						
-						// update position
-						unit.setPosition(p);
-						
-						// message line just created?
-						if(messageLine.getLineUnit()==null) {
-	
-							// save
-							messageLine.setLineUnit(unit);
-							messageLine.setOperationTime(Calendar.getInstance());
-							messageLine.setLinePosition(p);
-												
-						}
-						else {
-							// get current time position
-							TimePos timePos = new TimePos(
-									messageLine.getLinePosition(),
-									messageLine.getOperationTime());
-							// update position
-							messageLine.setLinePosition(p);					
-							// update last position in track?
-							if(track!=null) {
-								// remove position
-								track.removeTrackPoint(timePos);
-							}
-						}
-						
-						// log current position
-						unit.logPosition();
-						
-						// resume mode
-						m_tool.setWorkPoolMode(isWorkPoolMode);
-						
-						// notify
-						MessageLogBottomPanel.setIsDirty();					
-						
+					// has no track?
+					if(track==null) {
+						// get command post
+						ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
+						// create new track
+						track = cmdPost.getTrackList().createTrack();
+						// set track reference in unit
+						unit.setTrack(track);
 					}
+					
+					// create track?
+					if(track.getGeodata() == null) {
+						track.setGeodata(new Track(null, null, 1));
+					}
+					
+					// update position
+					unit.logPosition();
+					
+					// message line just created?
+					if(messageLine.getLineUnit()==null) {
+
+						// save
+						messageLine.setLineUnit(unit);
+						messageLine.setOperationTime(Calendar.getInstance());
+						messageLine.setLinePosition(p);
+											
+					}
+					else {
+						// get current time position
+						TimePos timePos = new TimePos(
+								messageLine.getLinePosition(),
+								messageLine.getOperationTime());
+						// update position
+						messageLine.setLinePosition(p);					
+						// update last position in track?
+						if(track!=null) {
+							track.removeTrackPoint(timePos);
+						}
+					}
+					
+					// log current position
+					unit.logPosition();
+					
+					// notify
+					MessageLogBottomPanel.setIsDirty();					
 
 					// set flag
 					isSuccess = true;
@@ -358,8 +327,7 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 					Utils.showWarning("Ingen posisjon er oppgitt");
 				}
 			} catch (Exception ex) {
-				// notify
-				Utils.showWarning("Ugyldig koordinat format");
+				ex.printStackTrace();
 			}
 			
 			// resume update events
@@ -417,27 +385,44 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 		try {
 			// center map at position of current unit
 			IUnitIf unit = centerAtUnit(true);			
-			// load all units?
-			if(unit==null) 
-				getPositionPanel().loadUnits();
-			else
-				getPositionPanel().loadUnit(unit);
 			// save current state
 			m_toolState = m_tool.save();
 			// set it the active property panel
 			m_tool.setPropertyPanel(getPositionPanel());
 			// prepare to draw
 			m_tool.setShowDialog(false);
+			m_tool.setWorkPoolMode(false);
 			m_tool.setShowDrawFrame(false);
 			m_tool.setMsoData(null, unit, MsoClassCode.CLASSCODE_UNIT);
 			m_tool.setDrawMode(unit==null ? DrawMode.MODE_CREATE : DrawMode.MODE_REPLACE);
 			// set tool active
 			m_wp.getMap().setActiveTool(m_tool,0);
+			// load all units?
+			if(unit==null) {
+				// load all
+				getPositionPanel().loadUnits();
+				// get current message, do not create if not exist
+				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+				if(message!=null && message.getSender() instanceof IUnitIf) {
+					// cast sender to IUnitIf
+					unit = (IUnitIf)message.getSender();
+					// select unit
+					getPositionPanel().setSelectedUnit(unit);
+				}
+			}
+			else {
+				getPositionPanel().loadUnit(unit);
+				getPositionPanel().setSelectedUnit(unit);
+				getPositionPanel().setPosition(unit!=null?unit.getPosition():null);
+				//m_tool.setPoint(unit!=null ? getPositionPanel().getPoint() : m_tool.getMap().getClickPoint());
+			}
 			// show tool
 			NavBarPanel bar = m_wp.getApplication().getNavBar();
 			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
 			bar.setEnabledButtons(types, true, true);
 			bar.setVisibleButtons(types, true, true);
+			// reset flag
+			getPositionPanel().setDirty(false);
 			// show this panel
 			this.setVisible(true);
 			// show map over log
@@ -530,37 +515,6 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * center on position in map
-	 */
-	public boolean centerAtPosition()
-	{
-		
-		try
-		{
-			// initialize
-			IPoint p = getPositionPanel().getPoint();
-			
-			// can center at point?
-			if(p!=null) {
-				// forward
-	        	m_wp.getMap().centerAt(p);
-	        	// success
-	        	return true;
-			}
-		}
-		catch (AutomationException ex)
-		{
-			ex.printStackTrace();
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
-		// return unit
-		return false;
-	}
 	
 	/**
 	 * center map at unit
@@ -612,16 +566,5 @@ public class MessagePositionPanel extends DefaultPanel implements IEditMessageCo
 		}
 		// return unit
 		return unit;
-	}
-	
-	public void update() { 
-		
-		// update attributes
-		m_finishIcon.setColored(isDirty());
-		m_cancelIcon.setColored(isDirty());
-		m_finishButton.repaint();
-		m_cancelButton.repaint();
-			
-	}
-	
+	}	
 }

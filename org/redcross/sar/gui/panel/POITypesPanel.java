@@ -43,6 +43,7 @@ public class POITypesPanel extends DefaultPanel {
 		try {
 			this.setCaptionText(SELECTION_ENABLED);
 			this.setBodyComponent(getTypeList());
+			this.setSelectionAllowed(true);
 		}
 		catch(Exception e) {
 			e.printStackTrace();

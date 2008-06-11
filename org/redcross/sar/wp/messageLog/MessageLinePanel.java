@@ -44,11 +44,15 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 
 		m_messageTableModel = new MessageLineTableModel(m_wpMessageLog);
 		m_messageListTable = new JTable(m_messageTableModel);
+		m_messageListTable.setDefaultRenderer(IMessageLineIf.class, new MessageLineTableRenderer());
 		m_messageListTable.setTableHeader(null);
+		m_messageListTable.setRowHeight(32);
 		m_textScrollPane = new JScrollPane(m_messageListTable);
 		m_messageListTable.setFillsViewportHeight(true);
 		m_messageListTable.setColumnSelectionAllowed(false);
 		m_messageListTable.setRowSelectionAllowed(true);
+		m_messageListTable.setShowVerticalLines(false);
+		m_messageListTable.setShowHorizontalLines(true);
 
 		m_messageListTable.addMouseListener(new MessageLineMouseAdapter(m_messageTableModel));
 

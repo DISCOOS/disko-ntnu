@@ -57,6 +57,7 @@ public class DeleteTaskDialog extends DefaultDialog
 	private void initialize() {
 		try {
 			this.setContentPane(getContentPanel());
+			this.setPreferredSize(new Dimension(400,200));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {

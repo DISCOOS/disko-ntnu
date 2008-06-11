@@ -1,4 +1,4 @@
-package org.redcross.sar.gui.renderer;
+package org.redcross.sar.wp.tactics;
 
 import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;

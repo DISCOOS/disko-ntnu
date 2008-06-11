@@ -58,7 +58,7 @@ public class AssignmentTransferUtilities
                 }
                 break;
             case EXECUTING:
-                firstLineType = IMessageLineIf.MessageLineType.COMPLETE;
+                firstLineType = IMessageLineIf.MessageLineType.COMPLETED;
                 break;
             default:
                 return;
@@ -76,7 +76,7 @@ public class AssignmentTransferUtilities
             case ABORTED:
             case FINISHED:
             case REPORTED:
-                finalLineType = IMessageLineIf.MessageLineType.COMPLETE;
+                finalLineType = IMessageLineIf.MessageLineType.COMPLETED;
                 break;
             default:
                 return;
@@ -93,7 +93,7 @@ public class AssignmentTransferUtilities
 
     final static IMessageLineIf.MessageLineType[] types = {IMessageLineIf.MessageLineType.ASSIGNED,
             IMessageLineIf.MessageLineType.STARTED,
-            IMessageLineIf.MessageLineType.COMPLETE};
+            IMessageLineIf.MessageLineType.COMPLETED};
 
     /**
      * Create a set of message lines for assignment transfers.

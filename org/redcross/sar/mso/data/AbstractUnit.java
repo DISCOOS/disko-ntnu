@@ -747,19 +747,25 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return 0; // todo find something better
     }
     
-    public void logPosition() {
-    	Point2D.Double p = m_position.getPosition().getPosition();
-    	// create time position
-    	TimePos tp = new TimePos(p,Calendar.getInstance());
-    	// add to track
-    	m_track.getReference().addTrackPoint(tp);
+    public boolean logPosition() {
+    	if(m_track!=null) {
+	    	Point2D.Double p = m_position.getPosition().getPosition();
+	    	// create time position
+	    	TimePos tp = new TimePos(p,Calendar.getInstance());
+	    	// add to track
+	    	m_track.getReference().addTrackPoint(tp);
+	    	// finished
+	    	return true;
+    	}
+    	// failure
+    	return false;
     }
     
-    public void logPosition(Position aPosition) {
+    public boolean logPosition(Position aPosition) {
     	// save
     	setPosition(aPosition);
     	// forward
-    	logPosition();
+    	return logPosition();
     }
     
 

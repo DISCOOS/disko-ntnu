@@ -1,10 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.util.mso.Position;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -58,115 +54,127 @@ public class MessageLineTableModel extends AbstractTableModel
 		return m_messageLines.size();
 	}
 
+	@Override
+	public Class<?> getColumnClass(int col) {
+		// translate column index to class
+		switch(col) {
+		case 0: return IMessageLineIf.class;
+		default: return Object.class;
+		}
+	}
+	
 	/**
 	 * {@link TableModel#getValueAt(int, int)}
 	 */
-	public Object getValueAt(int rowIndex, int coulumnIndex)
+	public Object getValueAt(int row, int col)
 	{
-		if(m_messageLines.isEmpty() || rowIndex>=m_messageLines.size())
+		if(!(m_messageLines.isEmpty() || row>=m_messageLines.size()))
 		{
-			return "";
+			// get message line
+			return m_messageLines.get(row);
 		}
-		else
+		
+		// failed
+		return "";
+	}
+	
+	/*
+	private String getMessageText(IMessageLineIf line) {
+		
+		// initialize
+		String lineText = null;
+		
+		// dispatch message line type
+		switch(line.getLineType())
 		{
-
-			// initialize
-			String lineText = null;
+		case TEXT:
+		{
+			lineText = String.format(m_wpMessageLog.getBundleText("ListItemText.text"),
+					line.getLineText());
+		}
+		break;
+		case POSITION:
+		{
+			// get posiyion
+			Position p = line.getLinePosition();
 			
-			// get meesage line
-			IMessageLineIf line = m_messageLines.get(rowIndex);
+			if(p != null)
+			{
+				// get unit name
+				String unit = MsoUtils.getUnitName(line.getLineUnit(),false);
 
-			// dispatch message line type
-			switch(line.getLineType())
-			{
-			case TEXT:
-			{
-				lineText = String.format(m_wpMessageLog.getBundleText("ListItemText.text"),
-						line.getLineText());
+				try {
+					String mgrs = MapUtil.getMGRSfromPosition(p);
+					// get zone
+					String zone = mgrs.subSequence(0, 3).toString();
+					String square = mgrs.subSequence(3, 5).toString();
+					String x = mgrs.subSequence(5, 10).toString();
+					String y = mgrs.subSequence(10, 15).toString();
+					// get text
+					lineText = String.format(m_wpMessageLog.getBundleText("ListItemPOI.text"),
+							unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-			break;
-			case POSITION:
+		}
+		break;
+		case POI:
+		{
+			IPOIIf poi = line.getLinePOI();
+			if(poi != null)
 			{
-				// get posiyion
-				Position p = line.getLinePosition();
-				
-				if(p != null)
+				String type = poi.getTypeText();
+				Position pos = line.getLinePOI().getPosition();
+				if(pos != null)
 				{
-					// get unit name
-					String unit = MsoUtils.getUnitName(line.getLineUnit(),false);
-
 					try {
-						String mgrs = MapUtil.getMGRSfromPosition(p);
+						String mgrs = MapUtil.getMGRSfromPosition(pos);
 						// get zone
 						String zone = mgrs.subSequence(0, 3).toString();
 						String square = mgrs.subSequence(3, 5).toString();
 						String x = mgrs.subSequence(5, 10).toString();
 						String y = mgrs.subSequence(10, 15).toString();
 						// get text
-						lineText = String.format(m_wpMessageLog.getBundleText("ListItemPOI.text"),
-								unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
+						lineText = String.format(m_wpMessageLog.getBundleText("ListItemFinding.text"),
+								type, zone, square, x, y);
 					}
 					catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
 			}
-			break;
-			case POI:
-			{
-				IPOIIf poi = line.getLinePOI();
-				if(poi != null)
-				{
-					String type = poi.getTypeText();
-					Position pos = line.getLinePOI().getPosition();
-					if(pos != null)
-					{
-						try {
-							String mgrs = MapUtil.getMGRSfromPosition(pos);
-							// get zone
-							String zone = mgrs.subSequence(0, 3).toString();
-							String square = mgrs.subSequence(3, 5).toString();
-							String x = mgrs.subSequence(5, 10).toString();
-							String y = mgrs.subSequence(10, 15).toString();
-							// get text
-							lineText = String.format(m_wpMessageLog.getBundleText("ListItemFinding.text"),
-									type, zone, square, x, y);
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-			break;
-			case ASSIGNED:
-			{
-				IAssignmentIf assignment = line.getLineAssignment();
-				lineText = String.format(m_wpMessageLog.getBundleText("ListItemAssigned.text"),
-						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
-
-			}
-			break;
-			case STARTED:
-			{
-				IAssignmentIf assignment = line.getLineAssignment();
-				lineText = String.format(m_wpMessageLog.getBundleText("ListItemStarted.text"),
-						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
-			}
-			break;
-			case COMPLETE:
-			{
-				IAssignmentIf assignment = line.getLineAssignment();
-				lineText = String.format(m_wpMessageLog.getBundleText("ListItemCompleted.text"),
-						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
-			}
-			break;
-			}
-
-			return lineText;
 		}
-	}
+		break;
+		case ASSIGNED:
+		{
+			IAssignmentIf assignment = line.getLineAssignment();
+			lineText = String.format(m_wpMessageLog.getBundleText("ListItemAssigned.text"),
+					MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
 
+		}
+		break;
+		case STARTED:
+		{
+			IAssignmentIf assignment = line.getLineAssignment();
+			lineText = String.format(m_wpMessageLog.getBundleText("ListItemStarted.text"),
+					MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
+		}
+		break;
+		case COMPLETE:
+		{
+			IAssignmentIf assignment = line.getLineAssignment();
+			lineText = String.format(m_wpMessageLog.getBundleText("ListItemCompleted.text"),
+					MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
+		}
+		break;
+		}
+
+		return lineText;		
+	}
+ 	*/
+	
 	/**
 	 * Remove all message lines from line list model
 	 */

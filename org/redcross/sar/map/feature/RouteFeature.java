@@ -28,9 +28,14 @@ public class RouteFeature extends AbstractMsoFeature {
 		IRouteIf route = (IRouteIf)msoObject;
 		boolean gChanged = (route.getGeodata() != null && !route.getGeodata().equals(getGeodata())) ||
         			getAssignmentStatus(getOwningArea(route)) != asgStatus;
+		boolean cChanged = false;	
 		IAreaIf area = getOwningArea(route);
-		IAssignmentIf assignment = area.getOwningAssignment();
-		boolean cChanged = !caption.equals(MsoUtils.getAssignmentName(assignment,2));
+		if(area!=null) {
+			IAssignmentIf assignment = area.getOwningAssignment();
+			if(assignment!=null) {
+				cChanged = !caption.equals(MsoUtils.getAssignmentName(assignment,2));
+			}
+		}
 		isDirty = gChanged || cChanged;
 		return gChanged || cChanged;
 	}
@@ -83,6 +88,8 @@ public class RouteFeature extends AbstractMsoFeature {
 		 * 1. The drawing tool falsely allows creation of route without assignment
 		 * 2. The MSO model has an error
 		 * 3. The Sara model drive has an error
+		 * 4. The change events are not grouped properly: When the Route is created, the add event is raised before
+		 *    the relation to assignment is established (change event), thus the error will occur below.
 		 * 
 		 * In addition to this, a potential linked error exists in the errouneous log
 		 * file, which has a double occurrence of this false object in it (is found by

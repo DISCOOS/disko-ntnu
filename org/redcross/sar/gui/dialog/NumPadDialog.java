@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
@@ -14,6 +15,8 @@ import javax.swing.text.BadLocationException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
+
+import sun.font.FontFamily;
 
 public class NumPadDialog extends JDialog {
 
@@ -44,7 +47,7 @@ public class NumPadDialog extends JDialog {
 	private void initialize(){
 		this.setUndecorated(true);		
         this.setContentPane(getButtonPanel());
-		Utils.setFixedSize(this,180, 250);
+		Utils.setFixedSize(this,165, 240);
         this.pack();
 	}
 	
@@ -83,10 +86,9 @@ public class NumPadDialog extends JDialog {
 			GridLayout gridLayout = new GridLayout();
 			gridLayout.setRows(4);
 			gridLayout.setColumns(3);
-			buttonPanel = new BasePanel("Numerisk tastatur");
+			buttonPanel = new BasePanel("Tastatur");
 			JPanel panel = (JPanel)buttonPanel.getBodyComponent();
 			panel.setLayout(gridLayout);		
-			panel.setSize(new Dimension(215, 214));
 			panel.add(getOneButton(), null);
 			panel.add(getTwoButton(), null);
 			panel.add(getThreeButton(), null);
@@ -113,6 +115,7 @@ public class NumPadDialog extends JDialog {
 			oneButton = new JButton();
 			oneButton.setPreferredSize(size);
 			oneButton.setText("1");
+			oneButton.setFont(oneButton.getFont().deriveFont(20));
 			oneButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					addTextFieldValue("1");

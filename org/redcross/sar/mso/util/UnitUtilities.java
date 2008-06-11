@@ -62,7 +62,7 @@ public class UnitUtilities
 	 * @param unit The unit
 	 * @throws IllegalOperationException Thrown if unit can not be released
 	 */
-	public static void releaseUnit(IUnitIf unit) throws IllegalOperationException
+	public static boolean releaseUnit(IUnitIf unit) throws IllegalOperationException
 	{
 		if(unit.getStatus() != UnitStatus.RELEASED)
 		{
@@ -108,7 +108,9 @@ public class UnitUtilities
 				// Release unit
 				unit.setStatus(UnitStatus.RELEASED);
 			}
+			return releaseUnit;
 		}
+		return false;
 	}
 
 	/**

@@ -14,41 +14,32 @@ import javax.swing.Timer;
  * 
  * @author kenneth
  */
-public class DiskoMouseAdapter extends MouseAdapter
+public class DiskoMouseAdapter extends MouseAdapter implements DiskoMouseListener
 {
 	private static int PAUSE_MILLIS = 100;
-	private static int MILLIS_TO_SHOW = 1000;
+	private static int MILLIS_TO_SHOW = 500;
 	
 	private final DialogWorker m_worker;
 	
-	private final ArrayList<DiskoMouseDelayListener> m_listeners;
-	
 	public DiskoMouseAdapter() {
+		this(MILLIS_TO_SHOW);
+	}
+	
+	public DiskoMouseAdapter(int millisToWait) {
 		// prepare
-		m_worker = new DialogWorker(MILLIS_TO_SHOW);
-		m_listeners = new ArrayList<DiskoMouseDelayListener>();
+		m_worker = new DialogWorker(millisToWait);
 	}
 	
-	public DiskoMouseAdapter(int millisToShow) {
-		// prepare
-		m_worker = new DialogWorker(millisToShow);
-		m_listeners = new ArrayList<DiskoMouseDelayListener>();
+	public long getMillisToWait() {
+		return m_worker.m_millisToWait;
 	}
 	
-	public void addDiskoMouseDelayListener(DiskoMouseDelayListener listener) {
-		m_listeners.add(listener);
-	}
-	
-	public void removeDiskoMouseDelayListener(DiskoMouseDelayListener listener) {
-		m_listeners.remove(listener);
-	}
-	
-	public long getMillisToShow() {
-		return m_worker.m_millisToShow;
+	public void setMillisToWait(int millisToWait) {
+		m_worker.m_millisToWait = millisToWait;
 	}
 	
   	/*========================================================
-  	 * Override mouse events
+  	 * Override methods
   	 *========================================================
   	 */
 	
@@ -69,36 +60,28 @@ public class DiskoMouseAdapter extends MouseAdapter
 	}
 
   	/*========================================================
-  	 * Helper methods
+  	 * DiskoMouseListener implementation
   	 *========================================================
   	 */
 	
-	private void fireMouseDownExpired(MouseEvent e) {
-		for(DiskoMouseDelayListener it: (List<DiskoMouseDelayListener>)m_listeners) {
-			it.mouseDownExpired(e);
-		}
-	}
+	public void mouseDownExpired(MouseEvent e) { /* NOP */ }
 	
   	/*========================================================
   	 * Inner classes
   	 *========================================================
   	 */
-  	
-	public interface DiskoMouseDelayListener {
-		public void mouseDownExpired(MouseEvent e);
-	}
 	
 	private class DialogWorker implements ActionListener {
 		
 		private long m_start = 0;
-		private long m_millisToShow = 0;
+		private long m_millisToWait = 0;
 		private Timer m_timer = null;
 		private boolean m_isCancelled = false;
 		private MouseEvent m_event = null;
 		
-		public DialogWorker(long millisToShow) {
+		public DialogWorker(long millisToWait) {
 			// save decision delay
-			m_millisToShow = millisToShow;
+			m_millisToWait = millisToWait;
 			// create timer
 			m_timer = new Timer(PAUSE_MILLIS, this);
 		}
@@ -148,11 +131,11 @@ public class DiskoMouseAdapter extends MouseAdapter
 		@Override		
 		public void actionPerformed(ActionEvent e) {
 			// delay expired?
-			if(!m_isCancelled && System.currentTimeMillis()- m_start > m_millisToShow) {
+			if(!m_isCancelled && System.currentTimeMillis()- m_start > m_millisToWait) {
 				// stop timer
 				m_timer.stop();
 				// notify
-				fireMouseDownExpired(m_event);
+				mouseDownExpired(m_event);
 				// stop timer
 				m_timer.stop();
 			}

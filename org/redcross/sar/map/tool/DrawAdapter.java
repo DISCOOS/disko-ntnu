@@ -610,8 +610,9 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				drawFrame.setFrame(frame);
 				// update display
 				display.finishDrawing();
-				// activate frame
-				drawFrame.activate();
+				// activate frame?
+				if(getSelectedTool()!=null && getSelectedTool().isShowDrawFrame())
+					drawFrame.activate();
 			}
 			else {
 				// hide
@@ -1015,8 +1016,6 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			if(this.msoObject==msoObject) {
 				// forward
 				setup(msoObject,msoOwner,true);
-				// notify
-				//Utils.showMessage(MsoUtils.getMsoObjectName(msoObject, 1)+ " er blitt endret av en annen bruker");
 			}
 		}
 	}
@@ -1029,8 +1028,6 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			if(this.msoObject==msoObject) {
 				// forward
 				setup(null,msoOwner,true);
-				// notify
-				//Utils.showMessage(MsoUtils.getMsoObjectName(msoObject, 1)+ " er blitt slettet av en annen bruker");
 			}
 		}
 	}	

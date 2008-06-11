@@ -234,9 +234,6 @@ public class POITool extends AbstractDrawTool {
 				IPOIIf msoPOI = (IPOIIf)msoObj;
 				setPoint(MapUtil.getEsriPoint(msoPOI.getPosition(), map.getSpatialReference()));
 			}
-			else {
-				setPoint(null);
-			}
 			
 			// forward
 			super.setMsoData(msoOwn, msoObj, msoCode);

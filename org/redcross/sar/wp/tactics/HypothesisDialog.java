@@ -23,10 +23,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.ComboAttribute;
@@ -40,7 +38,6 @@ import org.redcross.sar.gui.model.HypothesisListModel;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.renderer.HypothesisListCellRenderer;
 import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -433,8 +430,8 @@ public class HypothesisDialog extends DefaultDialog {
 					private void change() {
 						// consume?
 						if(!isChangeable()) return;
-						// update model directly
-						setDescription(getDescriptionTextArea().getText(), false, true) ;
+						// force an update
+						setDirty(true);
 					}
 					
 				});

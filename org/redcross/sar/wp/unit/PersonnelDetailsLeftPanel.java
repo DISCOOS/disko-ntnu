@@ -53,7 +53,6 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 {
     private static final long serialVersionUID = 1L;
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
-    private static final ResourceBundle m_personnelBundle = Internationalization.getBundle(IPersonnelIf.class);
 
     private IPersonnelIf m_currentPersonnel = null;
     private IDiskoWpUnit m_wpUnit;
@@ -87,7 +86,6 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 	private void initialize()
 	{
-		setEnabled(false);
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(4, 4, 4, 4);
@@ -213,6 +211,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		layoutComponent(0, m_resources.getString("Notes.text"), notesScrollPane, gbc, 1);
+		
 	}
 
 	private void layoutComponent(int column, String label, JComponent component, GridBagConstraints gbc, int height)
@@ -328,7 +327,6 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
      */
     public void updateFieldContents()
     {
-    	setEnabled(true);
         if (m_currentPersonnel == null)
         {
             m_topLabel.setText("");
@@ -515,7 +513,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
     {
         m_currentPersonnel = personnel;
     }
-
+    
     /**
      * Update fields if any changes occur in the personnel object
      */
@@ -526,8 +524,8 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         {
             updateFieldContents();
         }
-    }
-
+    }    
+    
     public boolean hasInterestIn(IMsoObjectIf msoObject)
     {
         return msoObject.getMsoClassCode() == IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;

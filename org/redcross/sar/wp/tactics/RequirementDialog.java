@@ -155,7 +155,8 @@ public class RequirementDialog extends DefaultDialog {
 						setChangeable(true);
 						
 						// update
-						setDirty(false);
+						setDirty(false,false);
+						update();
 												
 					}	
 					

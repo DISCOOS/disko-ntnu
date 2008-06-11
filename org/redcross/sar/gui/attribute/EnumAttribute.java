@@ -90,8 +90,6 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	}
 	
 	public boolean setValue(Object value) {
-		// allowed?
-		if(!m_isEditable) return false;
 		// get list
 		JList list = ((JList)m_component);
 		// select new item?

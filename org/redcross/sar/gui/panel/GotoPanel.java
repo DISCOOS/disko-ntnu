@@ -40,7 +40,7 @@ public class GotoPanel extends DefaultPanel {
 	private JPanel m_degPanel = null;
 	private JPanel m_demPanel = null;
 	private JPanel m_desPanel = null;
-	private PositionFieldPanel m_positionField = null;
+	private CoordinatePanel m_coordinatePanel = null;
 	private JButton m_gotoButton = null;
 	
 	private IDiskoMap m_map = null;
@@ -193,11 +193,11 @@ public class GotoPanel extends DefaultPanel {
 	 * 	
 	 * @return getPositionField	
 	 */
-	public PositionFieldPanel getPositionField() {
-		if (m_positionField == null) {
+	public CoordinatePanel getCoordinatePanel() {
+		if (m_coordinatePanel == null) {
 			try {
-				m_positionField = new PositionFieldPanel();
-				m_positionField.addChangeListener(new ChangeListener() {
+				m_coordinatePanel = new CoordinatePanel();
+				m_coordinatePanel.addChangeListener(new ChangeListener() {
 
 					public void stateChanged(ChangeEvent e) {
 						fireOnWorkChange(e.getSource(),null);
@@ -209,7 +209,7 @@ public class GotoPanel extends DefaultPanel {
 				e.printStackTrace();
 			}
 		}
-		return m_positionField;
+		return m_coordinatePanel;
 	}
 
 	/**
@@ -245,7 +245,7 @@ public class GotoPanel extends DefaultPanel {
 		if(m_map!=null) 
 			getClickPoint();
 		else
-			getPositionField().setText(null);		
+			getCoordinatePanel().setText(null);		
 	}
 	
 	public void setMap(IDiskoMap map) {
@@ -261,12 +261,12 @@ public class GotoPanel extends DefaultPanel {
 	
 	public void getClickPoint() {
 		if(m_map!=null)
-			getPositionField().setPoint(m_map.getClickPoint());
+			getCoordinatePanel().setPoint(m_map.getClickPoint());
 	}
 	
 	public void getMovePoint() {
 		if(m_map!=null)
-			getPositionField().setPoint(m_map.getMovePoint());
+			getCoordinatePanel().setPoint(m_map.getMovePoint());
 	}
 	
 	private void centerAt() {
@@ -274,7 +274,7 @@ public class GotoPanel extends DefaultPanel {
 		if(m_map!=null) {						
 			try {
 				// get position 
-				Position p = getPositionField().getPosition();
+				Position p = getCoordinatePanel().getPosition();
 				// center at position?
 				if(p!=null) {
 					m_map.centerAtPosition(p);
@@ -323,7 +323,7 @@ public class GotoPanel extends DefaultPanel {
 	
 	public void formatChanged(int format) {
 		// remove old
-		switch(getPositionField().getFormat()) {
+		switch(getCoordinatePanel().getFormat()) {
 		case 1:
 			getMGRSPanel().removeAll();
 			break;
@@ -344,32 +344,32 @@ public class GotoPanel extends DefaultPanel {
 		switch(format) {
 		case 1:
 			this.setCaptionText("Gå til posisjon (MGRS)");
-			getMGRSPanel().add(getPositionField(),BorderLayout.WEST);
+			getMGRSPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getMGRSPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 2:			
 			this.setCaptionText("Gå til posisjon (UTM)");
-			getUTMPanel().add(getPositionField(),BorderLayout.WEST);
+			getUTMPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getUTMPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 3:			
 			this.setCaptionText("Gå til posisjon (desimal grader)");
-			getDESPanel().add(getPositionField(),BorderLayout.WEST);
+			getDESPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getDESPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 4:			
 			this.setCaptionText("Gå til posisjon (desimal minutter)");
-			getDEMPanel().add(getPositionField(),BorderLayout.WEST);
+			getDEMPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getDEMPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 5:			
 			this.setCaptionText("Gå til posisjon (grad-minutt-sekund)");
-			getDEGPanel().add(getPositionField(),BorderLayout.WEST);
+			getDEGPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getDEGPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		}
 		// forward
-		getPositionField().setFormat(format);
+		getCoordinatePanel().setFormat(format);
 	}
 	
 	private void registerMouseListener(boolean register) {

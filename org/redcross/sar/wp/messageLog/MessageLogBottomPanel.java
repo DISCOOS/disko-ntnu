@@ -193,6 +193,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	m_newMessage = true;
     	m_editComponents = new LinkedList<IEditMessageComponentIf>();
+    	
     }
 
     /**
@@ -302,7 +303,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
     {
     	if(m_messagePOIPanel == null)
     	{
-    		POIType[] poiTypes = {POIType.FINDING, POIType.SILENT_WITNESS};
+    		POIType[] poiTypes = {POIType.GENERAL,POIType.INTELLIGENCE,POIType.OBSERVATION,POIType.FINDING, POIType.SILENT_WITNESS};
     		m_messagePOIPanel = new MessagePOIPanel(m_wpMessageLog, poiTypes);
     		m_editComponents.add(m_messagePOIPanel);
     		m_cardsPanel.add(m_messagePOIPanel, FINDING_PANEL_ID);
@@ -572,7 +573,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 				}
 				else
 				{
-					m_wpMessageLog.getMsoManager().rollback();
+					rollback();
 				}
 			}
 		}
@@ -685,6 +686,8 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 			m_buttonGroup.clearSelection();
 			hideEditPanels();
 		}
+		// forward
+		m_wpMessageLog.onWorkPerformed(e);
 	}
 
 
@@ -737,7 +740,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 							MessageLogPanel.setTableData();
 						
 						// forward
-						m_wpMessageLog.getMsoModel().commit();
+						commit();
 
 						m_messageDirty = false;
 
@@ -813,7 +816,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 			updateAssignments();
 			
 			// Commit changes
-			m_wpMessageLog.getMsoModel().commit();
+			commit();
 
 			m_currentMessage = null;
 			m_messageDirty = false;
@@ -831,6 +834,16 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 		}
 		// failed
 		return true;    	
+    }
+    
+    private static void commit() {
+		m_wpMessageLog.getMsoModel().commit();
+		m_wpMessageLog.onWorkPerformed(new DiskoWorkEvent(m_wpMessageLog,DiskoWorkEvent.EVENT_COMMIT));
+    }
+    
+    private static void rollback() {
+		m_wpMessageLog.getMsoModel().rollback();
+		m_wpMessageLog.onWorkPerformed(new DiskoWorkEvent(m_wpMessageLog,DiskoWorkEvent.EVENT_ROLLBACK));
     }
     
     private JToggleButton getChangeDTGButton()
@@ -1032,7 +1045,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 						}
 						m_messageStartedPanel.lineRemoved(null);
 						break;
-					case COMPLETE:
+					case COMPLETED:
 						for(IMessageLineIf line : m_messageCompletedPanel.getAddedLines())
 						{
 							line.deleteObject();
@@ -1212,7 +1225,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 				else
 				{
 					getCompletedPanel();
-					m_currentMessageLineType = MessageLineType.COMPLETE;
+					m_currentMessageLineType = MessageLineType.COMPLETED;
 
 					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
 					layout.show(m_cardsPanel, COMPLETED_PANEL_ID);
@@ -1339,7 +1352,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 								String.format(m_wpMessageLog.getBundleText("CanNotStartError.details"), unit.getTypeAndNumber(), assignment.getTypeAndNumber()));
 					}
 					break;
-				case COMPLETE:
+				case COMPLETED:
 					try
 					{
 						communicator = m_currentMessage.getSender();
@@ -1531,7 +1544,7 @@ public class MessageLogBottomPanel extends JPanel implements IMsoUpdateListenerI
 
 		clearPanelContents();
 		
-		m_wpMessageLog.getMsoModel().rollback();
+		rollback();
 		
 	}
 }

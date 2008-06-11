@@ -1789,6 +1789,7 @@ public class MapUtil {
 	}
 	
 	public static IEnvelope getConstrainExtent(IPoint p, IDiskoMap map) throws AutomationException, IOException {
+		if(p==null || p.isEmpty()) return null;
 		// get minimum envelope
 		if(map.isEditSupportInstalled())
 			return getEnvelope(p, map.getSnapAdapter().getSnapTolerance()*10);
@@ -1918,6 +1919,10 @@ public class MapUtil {
 	
 	public static boolean is2DEqual(IPoint p1, IPoint p2) throws AutomationException, IOException {
 		return (p1.getX()==p2.getX() && p1.getY()==p2.getY());
+	}
+	
+	public static boolean is2DEqual(IPoint p1, double x, double y) throws AutomationException, IOException {
+		return (p1.getX()==x && p1.getY()==y);
 	}
 	
 	public static IEnvelope getOperationExtent(IDiskoMap map) throws AutomationException, IOException {

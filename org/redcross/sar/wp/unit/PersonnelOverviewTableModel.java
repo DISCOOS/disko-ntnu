@@ -232,9 +232,9 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	public String getColumnName(int column) {
 		switch (column) {
 		case 0:
-			return "Fornavn";
+			return "Navn";
 		case 1:
-			return "Tildelt";
+			return "Underordnet";
 		case 2:
 			return "Vis";
 		case 3:

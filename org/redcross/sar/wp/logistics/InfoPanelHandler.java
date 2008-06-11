@@ -272,7 +272,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         return " ";
     }
 
-    void setUnitSelection(IUnitIf aUnit, int aSelectionIndex)
+    void setUnitAssignmentSelection(IUnitIf aUnit, int aSelectionIndex)
     {
         m_displayedUnit = aUnit;
         m_displayedUnitSelection = aSelectionIndex;
@@ -417,7 +417,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
                 calledModule.setCallingWp(m_wpModule.getName());
                 try
                 {
-                	IDiskoMap map = m_wpModule.getMap();
+                	IDiskoMap map = calledModule.getMap();
                 	map.suspendNotify();
                 	map.setSelected(m_displayedAsssignment, true);
                 	// this will refresh all layers

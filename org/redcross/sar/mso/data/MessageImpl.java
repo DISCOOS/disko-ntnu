@@ -521,7 +521,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     }
 
     private static EnumSet<IMessageLineIf.MessageLineType> assignmentLines = EnumSet.of(MessageLineImpl.MessageLineType.ASSIGNED,
-            MessageLineImpl.MessageLineType.STARTED, MessageLineImpl.MessageLineType.COMPLETE);
+            MessageLineImpl.MessageLineType.STARTED, MessageLineImpl.MessageLineType.COMPLETED);
 
     public IMessageLineIf findMessageLine(IMessageLineIf.MessageLineType aType, boolean makeNewLine)
     {

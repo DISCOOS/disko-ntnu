@@ -4,13 +4,10 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer;
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -19,19 +16,21 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 
-import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.SeparatorUI;
 import javax.swing.table.JTableHeader;
 
 import java.awt.BorderLayout;
@@ -76,6 +75,7 @@ public class LogisticsPanel implements
     private IUnitListIf m_unitList;
     private IAssignmentListIf m_assignmentList;
 
+    private IUnitIf m_mapSelectedUnit;
     private IAssignmentIf m_mapSelectedAssignment;
     private AssignmentScrollPanel m_selectableAssignmentsPanel;
     private AssignmentScrollPanel m_priAssignmentsPanel;
@@ -214,8 +214,7 @@ public class LogisticsPanel implements
         {
             public void handleClick(IUnitIf aUnit)
             {
-                setSelectedAssignmentInPanels(null);
-                getInfoPanelHandler().setUnit(aUnit);
+            	singelUnitClick(aUnit);
             }
 
             public void handleClick(IAssignmentIf anAssignment)
@@ -226,59 +225,85 @@ public class LogisticsPanel implements
             public void handleClick(IUnitIf aUnit, int aSelectorIndex)
             {
                 setSelectedAssignmentInPanels(null);
-                getInfoPanelHandler().setUnitSelection(aUnit, aSelectorIndex);
+                getInfoPanelHandler().setUnitAssignmentSelection(aUnit, aSelectorIndex);
             }
         };
     }
 
+    private void singelUnitClick(IUnitIf anUnit)
+    {
+
+        setSelectedAssignmentInPanels(null);
+        getInfoPanelHandler().setUnit(anUnit);
+        
+        try
+        {
+            
+        	// suspend events
+        	m_map.suspendNotify();
+        	
+        	// reset current?
+        	if (m_mapSelectedUnit != null)
+            {
+                m_map.setSelected(m_mapSelectedUnit, false);
+                m_mapSelectedUnit = null;
+            }
+
+        	// select next?
+            if (anUnit != null)
+            {
+            	m_mapSelectedUnit = anUnit;
+                m_mapSelectedByButton = true;
+                m_map.setSelected(m_mapSelectedUnit, true);
+                m_mapSelectedByButton = false;
+            }
+            
+            // resume events 
+            m_map.resumeNotify();
+
+        }
+        catch (AutomationException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }    
+    
     private void singelAssignmentClick(IAssignmentIf anAssignment, boolean calledFromListPanel)
     {
         setSelectedAssignmentInPanels(anAssignment);
         getInfoPanelHandler().setAssignment(anAssignment, calledFromListPanel);
         try
         {
+        	
+        	// suspend events
+        	m_map.suspendNotify();
+        	
+        	// reset current?
+        	if (m_mapSelectedAssignment != null)
+            {
+                m_map.setSelected(m_mapSelectedAssignment, false);
+                m_mapSelectedAssignment = null;
+            }
+
+        	// select next?
+            if (anAssignment.getPlannedArea() != null)
+            {
+                m_mapSelectedAssignment = anAssignment;
+                m_mapSelectedByButton = true;
+                m_map.setSelected(m_mapSelectedAssignment, true);
+                m_mapSelectedByButton = false;
+            }
             
-        	// any change?
-        	if(m_mapSelectedAssignment!=anAssignment) {
-        		
-	        	boolean isDirty = false;
-	        	
-	        	// suspend events
-	        	m_map.suspendNotify();
-	        	
-	        	// reset current?
-	        	if (m_mapSelectedAssignment != null)
-	            {
-	                m_map.setSelected(m_mapSelectedAssignment, false);
-	                m_mapSelectedAssignment = null;
-	                isDirty = true;
-	            }
-	
-	        	// select next?
-	            if (anAssignment.getPlannedArea() != null)
-	            {
-	                m_mapSelectedAssignment = anAssignment;
-	                m_mapSelectedByButton = true;
-	                m_map.setSelected(m_mapSelectedAssignment, true);
-	                m_mapSelectedByButton = false;
-	                isDirty = true;
-	            }
-	            
-	            // set unit
-	            getInfoPanelHandler().setUnit(anAssignment.getOwningUnit());
-	            
-	            // refresh dirty layers
-	            if(isDirty) {
-		            if(m_mapSelectedAssignment!=null) {
-			            m_map.centerAtMsoObject(m_mapSelectedAssignment);
-		            }
-		            else {
-		            	m_map.refreshMsoLayers(m_map.getSelectionExtent());
-		            }
-	            }
-	            // resume events 
-	            m_map.resumeNotify();
-        	}
+            // set unit
+            getInfoPanelHandler().setUnit(anAssignment.getOwningUnit());
+            
+            // resume events 
+            m_map.resumeNotify();
+
         }
         catch (AutomationException e)
         {
@@ -298,7 +323,8 @@ public class LogisticsPanel implements
 
     private void initAssignmentPanels()
     {
-        m_AssignmentSubPaneLeft.setPreferredSize(new Dimension(120, 0));
+        m_AssignmentSubPaneRight.setMinimumSize(new Dimension(180, 0));
+        m_AssignmentSubPaneLeft.setPreferredSize(new Dimension(180, 0));
         m_AssignmentSubPaneLeft.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         m_AssignmentSubPaneLeft.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -485,6 +511,9 @@ public class LogisticsPanel implements
 	                }
             	}
             }
+            else if(msoObject instanceof IUnitIf) {
+            	m_map.zoomToMsoObject(msoObject);
+            }
         }
     }
 
@@ -510,7 +539,7 @@ public class LogisticsPanel implements
         m_unitTable = new JTable();
         m_scrollPane1.setViewportView(m_unitTable);
         m_assignmentPanel = new JPanel();
-        m_assignmentPanel.setLayout(new BorderLayout(0, 0));
+        m_assignmentPanel.setLayout(new BorderLayout(5,5));
         m_splitter2.setLeftComponent(m_assignmentPanel);
         m_AssignmentSubPaneLeft = new JScrollPane();
         m_assignmentPanel.add(m_AssignmentSubPaneLeft, BorderLayout.CENTER);

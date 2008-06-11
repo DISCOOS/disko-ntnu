@@ -1,8 +1,9 @@
 package org.redcross.sar.wp.messageLog;
 
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public interface IDiskoWpMessageLog extends IDiskoWpModule
+public interface IDiskoWpMessageLog extends IDiskoWpModule, IDiskoWorkListener
 {
     public final static String bundleName = "org.redcross.sar.wp.messageLog.messageLog";
     

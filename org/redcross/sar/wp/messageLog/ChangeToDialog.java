@@ -10,12 +10,16 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.DiskoWorkRepeater;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -47,6 +51,8 @@ public class ChangeToDialog extends DefaultDialog
 	protected boolean m_broadcast = false;
 
 	protected IDiskoWpMessageLog m_wpMessageLog;
+	
+	protected DiskoWorkRepeater workRepeater = new DiskoWorkRepeater();
 
 	/**
 	 * @param wp Message log work process reference
@@ -109,19 +115,31 @@ public class ChangeToDialog extends DefaultDialog
 	{
 		m_buttonGroup = new ButtonGroup();
 		String text = m_wpMessageLog.getBundleText("NonBroadcastButton.text");
-		m_nonBroadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
+		m_nonBroadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.NORMAL,25,0);
 		//m_nonBroadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
 		m_nonBroadcastButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				m_broadcast = false;
-				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-				if(message!=null) message.setBroadcast(false);
-
-				m_broadcastDialog.hideComponent();
-				m_broadcastDialog.clearSelection();
-				showNonBroadcast();
+				if(m_broadcast) {
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+					// prompt?
+					if(message.getBroadcastConfirmed().size()>0) {
+						int ans = Utils.showConfirm("Bekreftelse", 
+								"Du er i ferd med å fjerne bekreftede mottak av melding. Vil du fortsette?", 
+								JOptionPane.YES_NO_OPTION);
+						// consume?
+						if(ans==JOptionPane.NO_OPTION) { 
+							m_broadcastButton.setSelected(true);
+							return;
+						}
+					}
+					m_broadcast = false;
+					if(message!=null) message.setBroadcast(false);
+					m_broadcastDialog.hideComponent();
+					m_broadcastDialog.clearSelection();
+					showNonBroadcast();
+				}
 			}
 		});
 		m_nonBroadcastButton.setSelected(true);
@@ -129,21 +147,23 @@ public class ChangeToDialog extends DefaultDialog
 		m_contentsPanel.add(m_nonBroadcastButton);
 		
 		text = m_wpMessageLog.getBundleText("BroadcastButton.text");
-		m_broadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
+		m_broadcastButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.NORMAL,25,0);
 		//m_broadcastButton.setHorizontalAlignment(SwingConstants.LEFT);
 		m_broadcastButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
-			{
-				m_broadcast = true;
-				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-				if(message!=null) message.setBroadcast(true);
-
-				m_nbFieldDialog.hideComponent();
-				m_nbListDialog.hideComponent();
-				m_nbListDialog.clearSelection();
-				
-				showBroadcast();
+			{				
+				if(!m_broadcast) {
+					m_broadcast = true;
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+					if(message!=null) message.setBroadcast(true);
+	
+					m_nbFieldDialog.hideComponent();
+					m_nbListDialog.hideComponent();
+					m_nbListDialog.clearSelection();
+					
+					showBroadcast();
+				}
 			}
 		});
 		m_buttonGroup.add(m_broadcastButton);
@@ -298,4 +318,25 @@ public class ChangeToDialog extends DefaultDialog
 	{
 		return m_broadcast;
 	}
+	
+	@Override
+	protected void fireOnWorkFinish(Object source, Object data) {
+		workRepeater.fireOnWorkPerformed(new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_FINISH));
+    }
+	
+	@Override
+	public void addDiskoWorkListener(IDiskoWorkListener listener) {
+		m_nbListDialog.addDiskoWorkListener(listener);
+		m_broadcastDialog.addDiskoWorkListener(listener);
+		workRepeater.addDiskoWorkListener(listener);
+	}
+
+	@Override
+	public void removeDiskoWorkListener(IDiskoWorkListener listener) {
+		m_nbListDialog.removeDiskoWorkListener(listener);
+		m_broadcastDialog.removeDiskoWorkListener(listener);
+		workRepeater.removeDiskoWorkListener(listener);
+	}
+
+	
 }

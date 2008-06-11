@@ -4,9 +4,11 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
 import java.awt.BorderLayout;
@@ -24,6 +26,7 @@ import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.attribute.DTGAttribute;
 import org.redcross.sar.gui.attribute.TextAreaAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
+import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -91,9 +94,7 @@ public class TaskPanel extends DefaultPanel
 	{
 
 		// prepare
-		this.setScrollBarPolicies(
-			BasePanel.VERTICAL_SCROLLBAR_NEVER, 
-			BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+		this.setNotScrollBars();
 		
 		// get body component
 		JPanel panel = (JPanel)getBodyComponent();
@@ -111,7 +112,7 @@ public class TaskPanel extends DefaultPanel
 	}
 	
 	private JPanel getNamePanel() {
-		if(m_nameField==null || true) {
+		if(m_nameField==null) {
 			m_nameField = new TextFieldAttribute("name",m_resources.getString("Task.text"),80,null,true);
 			Utils.setFixedSize(m_nameField,490,25);
 		}
@@ -120,7 +121,7 @@ public class TaskPanel extends DefaultPanel
 	
 	private JPanel getCenterPanel() {
 		
-		if(m_centerPanel == null || true) {
+		if(m_centerPanel == null) {
 			m_centerPanel = new JPanel();
 			Utils.setFixedSize(m_centerPanel,490,120);
 			BoxLayout bl = new BoxLayout(m_centerPanel,BoxLayout.X_AXIS);
@@ -134,7 +135,7 @@ public class TaskPanel extends DefaultPanel
 	
 	private JPanel getWestPanel() {
 		
-		if(m_westPanel == null || true) {
+		if(m_westPanel == null) {
 			
 			// create panel
 			m_westPanel = new JPanel();
@@ -157,7 +158,7 @@ public class TaskPanel extends DefaultPanel
 			m_westPanel.add(m_typeCombo);
 			
 			// Created date
-			m_createdField = new DTGAttribute("created",m_resources.getString("TaskCreated.text"),80,null,false);
+			m_createdField = new DTGAttribute("created",m_resources.getString("TaskCreated.text"),80,"",false);
 			m_createdField.addDiskoWorkListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_createdField);
@@ -215,12 +216,11 @@ public class TaskPanel extends DefaultPanel
 	
 	private JPanel getEastPanel() {
 		
-		if(m_eastPanel==null || true) {
+		if(m_eastPanel==null) {
 			
 			// create panel
 			m_eastPanel = new JPanel();
 			m_eastPanel.setLayout(new BoxLayout(m_eastPanel,BoxLayout.Y_AXIS));
-			//Utils.setFixedSize(m_eastPanel,245,100);
 			
 			// Priority
 			m_priorityCombo = new ComboAttribute("priority",m_resources.getString("TaskPriority.text"),80,null,false);
@@ -234,6 +234,9 @@ public class TaskPanel extends DefaultPanel
 			m_dueCombo = new ComboAttribute("due", m_resources.getString("TaskDue.text"),80,null,true);
 			updateDueComboBox();
 			m_dueCombo.getComboBox().setSelectedIndex(2);
+			JTextField field = (JTextField)m_dueCombo.getComboBox()
+									.getEditor().getEditorComponent();
+			field.setDocument(new NumericDocument(6,0,false));
 			m_dueCombo.addDiskoWorkListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_dueCombo);
@@ -242,6 +245,9 @@ public class TaskPanel extends DefaultPanel
 			m_alertCombo = new ComboAttribute("alert",m_resources.getString("TaskAlert.text"),80,null,true);
 			updateAlertComboBox();
 			m_alertCombo.getComboBox().setSelectedIndex(2);
+			field = (JTextField)m_alertCombo.getComboBox()
+				.getEditor().getEditorComponent();
+			field.setDocument(new NumericDocument(6,0,false));
 			m_alertCombo.addDiskoWorkListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_alertCombo);
@@ -261,7 +267,7 @@ public class TaskPanel extends DefaultPanel
 	
 	private JPanel getBottomPanel() {
 		
-		if(m_bottomPanel==null || true) {
+		if(m_bottomPanel==null) {
 
 			// create panel
 			m_bottomPanel = new JPanel();
@@ -326,29 +332,6 @@ public class TaskPanel extends DefaultPanel
 		return false;
 		
 	}
-
-	/*private void addComponent(int column, String caption, JComponent c, 
-			int rows, GridBagConstraints gbc) {
-		
-		// prepare grid bag
-		gbc.gridheight = Math.max(1, rows);
-		gbc.gridx = column + 1;
-		
-		// add component to body panel
-		JPanel panel = (JPanel)getBodyComponent();
-		panel.add(c, gbc);
-
-		// add label for this label
-		JLabel label = new JLabel(caption);
-		gbc.gridx = column;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		panel.add(label, gbc);
-		
-		// update grid bag
-		gbc.gridy += rows;
-	}
-	*/
 
 	public void setTask(ITaskIf task)
 	{
@@ -563,7 +546,7 @@ public class TaskPanel extends DefaultPanel
 					// get resource bundle
 					ResourceBundle bundle = Internationalization.getBundle(IDiskoWpMessageLog.class);
 					// get source text
-					source = MsoUtils.getMessageText(message,bundle);
+					source = MsoUtils.getMessageText(message);
 				}				
 			}
 			else {

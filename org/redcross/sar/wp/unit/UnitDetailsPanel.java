@@ -14,6 +14,7 @@ import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.output.DiskoReportManager;
@@ -272,7 +273,13 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         m_currentUnit = unit;
     }
 
-    public void updateFieldContents()
+    public void updateContents()
+    {
+        updateFieldContents();
+        updateUnitPersonnel();        
+    }
+
+    private void updateFieldContents()
     {
         if (m_currentUnit != null)
         {
@@ -311,10 +318,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
             updateStopTime();
 
-            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
-            model.setPersonnel(m_currentUnit.getUnitPersonnel());
-        } else
-        {
+        } else {
             // Unit is null, clear fields
             m_topPanelLabel.setText("");
             m_leaderTextField.setText("");
@@ -325,11 +329,25 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_fieldTimeTextField.setText("");
             m_assignmentTextField.setText("");
             m_stopTimeTextField.setText("");
-            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
-            model.setPersonnel(null);
         }
     }
+    
+    private void updateUnitPersonnel() {
+        if (m_currentUnit != null)
+        {
 
+            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
+            int row = m_personnelTable.getSelectedRow();
+            model.setPersonnel(m_currentUnit.getUnitPersonnel());
+            if(row!=-1) m_personnelTable.getSelectionModel().setSelectionInterval(row,row);
+            
+        } else 
+        {
+            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
+            model.setPersonnel(null);
+        }    	
+    }
+    
     private void updateFieldTime()
     {
         if (m_currentUnit != null)
@@ -372,22 +390,34 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         return m_currentUnit;
     }
 
-    /**
-     * Display any updates made to current editing unit
-     */
-    public void handleMsoUpdateEvent(Update e)
-    {
-        IUnitIf unit = (IUnitIf) e.getSource();
-        if (unit == m_currentUnit)
-        {
-        	if(e.isDeleteObjectEvent())
-        	{
-        		m_currentUnit = null;
-        	}
-            updateFieldContents();
-        }
-    }
-
+	public void handleMsoUpdateEvent(Update e) {
+		
+		// get flags
+		int mask = e.getEventTypeMask();
+        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+		
+        // get unit
+        IUnitIf unit = (IUnitIf)e.getSource();
+        
+		// is object modified?
+		if (modifiedObject) {
+			updateFieldContents();
+		}		
+		if (addedReference || removedReference) {
+			updateUnitPersonnel();
+		}
+		
+		// delete object?
+		if (deletedObject && unit == m_currentUnit) {
+    		m_currentUnit = null;
+            updateContents();
+		}
+		
+	}
+	
     /**
      * Interested in unit updates
      */

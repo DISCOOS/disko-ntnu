@@ -22,10 +22,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.text.MaskFormatter;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.document.UpperCaseDocument;
+import org.redcross.sar.gui.format.DEGFormat;
+import org.redcross.sar.gui.format.DEMFormat;
+import org.redcross.sar.gui.format.DESFormat;
+import org.redcross.sar.gui.format.MGRSFormat;
+import org.redcross.sar.gui.format.UTMFormat;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.mso.Position;
 
@@ -33,8 +36,6 @@ import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -44,7 +45,7 @@ import java.beans.PropertyChangeListener;
  * @author kennetgu
  *
  */
-public class PositionFieldPanel extends JPanel {
+public class CoordinatePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -85,6 +86,8 @@ public class PositionFieldPanel extends JPanel {
 	private int workCount = 0;	
 	private boolean isInvalid = false;
 	
+	private Position current = null;
+	
 	private List<ChangeListener> m_listeners = null;
 	
 	/**
@@ -92,7 +95,7 @@ public class PositionFieldPanel extends JPanel {
 	 * 
 	 * @throws ParseException 
 	 */
-	public PositionFieldPanel() throws ParseException {
+	public CoordinatePanel() throws ParseException {
 		// forward
 		super();
 		// prepare
@@ -153,7 +156,6 @@ public class PositionFieldPanel extends JPanel {
 		boolean bEmpty = true;
 		
 		// get current caret positions
-		Position p = getPosition();
 		int ix = m_longetudeText.getCaretPosition();
 		int iy = m_latitudeText.getCaretPosition();
 		
@@ -228,8 +230,8 @@ public class PositionFieldPanel extends JPanel {
 			getLongetudeText().setText("");
 		}	
 		
-		// update posiiton
-		setPosition(p);
+		// get current position
+		current = getPositionFromText();
 		
 		// resume caret positions
 		text = m_longetudeText.getText();		
@@ -410,6 +412,8 @@ public class PositionFieldPanel extends JPanel {
 				public void propertyChange(PropertyChangeEvent e) {
 				    // consume?
 					if(isWorking()) return;
+					// get position
+					current = getPositionFromText();
 					// notify
 					fireChangeEvent(e.getSource());
 				}		
@@ -431,6 +435,8 @@ public class PositionFieldPanel extends JPanel {
 				public void propertyChange(PropertyChangeEvent e) {
 				    // consume?
 					if(isWorking()) return;
+					// get position
+					current = getPositionFromText();
 					// notify
 					fireChangeEvent(e.getSource());
 				}		
@@ -448,7 +454,7 @@ public class PositionFieldPanel extends JPanel {
 		if (m_ZoneCombo == null) {
 			Arrays.sort(zones);
 			m_ZoneCombo = new JComboBox(zones);
-			m_ZoneCombo.setEditable(true);
+			//m_ZoneCombo.setEditable(true);
 			m_ZoneCombo.setPreferredSize(new Dimension(60, 20));
 			m_ZoneCombo.getModel().addListDataListener(m_listDataListener);
 			JTextField editor = (JTextField)m_ZoneCombo.getEditor().getEditorComponent();
@@ -479,7 +485,7 @@ public class PositionFieldPanel extends JPanel {
 		if (m_SquareCombo == null) {
 			Arrays.sort(squares);
 			m_SquareCombo = new JComboBox(squares);
-			m_SquareCombo.setEditable(true);
+			//m_SquareCombo.setEditable(true);
 			m_SquareCombo.setPreferredSize(new Dimension(60, 20));
 			m_SquareCombo.getModel().addListDataListener(m_listDataListener);
 			JTextField editor = (JTextField)m_SquareCombo.getEditor().getEditorComponent();
@@ -528,8 +534,6 @@ public class PositionFieldPanel extends JPanel {
 	public void setFormat(int format) {
 		// consume?
 		if(isWorking()) return;
-		// reset
-		setText(null);
 		// save format
 		m_format = format;
 		// get formaters
@@ -565,6 +569,8 @@ public class PositionFieldPanel extends JPanel {
 			m_zoneLabel.setVisible(false);
 			break;
 		}		
+		// apply current position again
+		setPosition(current);
 		// notify
 		fireChangeEvent(this);
 	}
@@ -574,77 +580,103 @@ public class PositionFieldPanel extends JPanel {
 		Position p = null;
 		// assume valid position
 		setInvalidPosiiton(false);
+		// get text
+		String text = getText();		
+
 		try {
 			switch(getFormat()) {
 			case 1: // MGRS
-				p = MapUtil.getPositionFromMGRS(getText());
+				p = MapUtil.getPositionFromMGRS(text);
+				break;
 			case 2: // UTM
-				p = MapUtil.getPositionFromUTM(getText());
+				p = MapUtil.getPositionFromUTM(text);
+				break;
 			case 3: // DES
-				p = MapUtil.getPositionFromDES(getText());
+				p = MapUtil.getPositionFromDES(text);
+				break;
 			case 4: // DEM
-				p = MapUtil.getPositionFromDEM(getText());
+				p = MapUtil.getPositionFromDEM(text);
+				break;
 			case 5: // DEG
-				p = MapUtil.getPositionFromDEG(getText());
+				p = MapUtil.getPositionFromDEG(text);
+				break;
 			}
 			return p!=null ? MapUtil.getEsriPoint(p, srs) : null;
 		}
 		catch (Exception e) {
 			setInvalidPosiiton(true);
 		}
+
 		return null;
 	}
 	
 	public Position getPosition() {
+		return current;
+	}
 		
+	private Position getPositionFromText() {
 		// assume valid position
 		setInvalidPosiiton(false);
+		
+		// get text
+		String text = getText();
 		
 		try {
 			switch(getFormat()) {
 			case 1: // MGRS
-				return MapUtil.getPositionFromMGRS(getText());
+				return MapUtil.getPositionFromMGRS(text);
 			case 2: // UTM
-				return MapUtil.getPositionFromUTM(getText());
+				return MapUtil.getPositionFromUTM(text);
 			case 3: // DES
-				return MapUtil.getPositionFromDES(getText());
+				return MapUtil.getPositionFromDES(text);
 			case 4: // DEM
-				return MapUtil.getPositionFromDEM(getText());
+				return MapUtil.getPositionFromDEM(text);
 			case 5: // DEG
-				return MapUtil.getPositionFromDEG(getText());
+				return MapUtil.getPositionFromDEG(text);
 			}
 		}
 		catch (Exception e) {
 			setInvalidPosiiton(true);		
 		}
+
 		return null;
 	}
 		
 	public void setPosition(Position p) {
+		
 		// assume valid position
 		setInvalidPosiiton(false);
 		
-		try {
-			switch(getFormat()) {
-			case 1: // MGRS
-				setText(MapUtil.getMGRSfromPosition(p));
-				break;
-			case 2: // UTM
-				setText(MapUtil.getUTMfromPosition(p));
-				break;
-			case 3: // DEG
-				setText(MapUtil.getDESfromPosition(p));
-				break;
-			case 4: // DEM
-				setText(MapUtil.getDEMfromPosition(p));
-				break;
-			case 5: // DEG
-				setText(MapUtil.getDEGfromPosition(p));
-				break;
-			}
+		// is convertable
+		if(p==null) {
+			setText(null);
+			current = null;
 		}
-		catch (Exception e) {
-			setInvalidPosiiton(true);
+		else {
+			try {
+				switch(getFormat()) {
+				case 1: // MGRS
+					setText(MapUtil.getMGRSfromPosition(p));
+					break;
+				case 2: // UTM
+					setText(MapUtil.getUTMfromPosition(p));
+					break;
+				case 3: // DEG
+					setText(MapUtil.getDESfromPosition(p));
+					break;
+				case 4: // DEM
+					setText(MapUtil.getDEMfromPosition(p));
+					break;
+				case 5: // DEG
+					setText(MapUtil.getDEGfromPosition(p));
+					break;
+				}
+				// get current position
+				current = p;
+			}
+			catch (Exception e) {
+				setInvalidPosiiton(true);
+			}
 		}
 	}	
 	
@@ -656,6 +688,7 @@ public class PositionFieldPanel extends JPanel {
 		// is convertable
 		if(p==null) {
 			setText(null);
+			current = null;
 		}
 		else {
 			try {
@@ -676,6 +709,8 @@ public class PositionFieldPanel extends JPanel {
 					setText(MapUtil.getDEGfromPoint(p));
 					break;
 				}
+				// get current position
+				current = MapUtil.getMsoPosistion(p);
 			}
 			catch (Exception e) {
 				setInvalidPosiiton(true);
@@ -750,92 +785,9 @@ public class PositionFieldPanel extends JPanel {
 			return null;
 		}
 	   
-   }
+    }
 	
-	@SuppressWarnings("serial")
-	class MGRSFormat extends MaskFormatter { // JFormattedTextField.AbstractFormatterFactory {
-		
-		String direction;
-		
-		MGRSFormat(String direction) throws ParseException {
-			super("#####"+direction);
-			this.setPlaceholder("00000"+direction);
-			this.setPlaceholderCharacter('0');
-			this.setAllowsInvalid(false);
-			this.setCommitsOnValidEdit(true);
-			this.direction = direction;
-		}
-		
-	}
-
-	@SuppressWarnings("serial")
-	class UTMFormat extends MaskFormatter { //JFormattedTextField.AbstractFormatterFactory {
-
-		String direction;
-		
-		UTMFormat(String direction) throws ParseException {
-			super("#######"+direction);
-			this.setPlaceholder("0000000"+direction);
-			this.setPlaceholderCharacter('0');
-			this.setAllowsInvalid(false);
-			this.setCommitsOnValidEdit(true);
-			this.direction = direction;
-		}
-			
-	}
-
-	@SuppressWarnings("serial")
-	class DEGFormat extends  MaskFormatter { // JFormattedTextField.AbstractFormatterFactory {
-
-		String direction;
-		
-		DEGFormat(String direction) throws ParseException {
-			super("##"+"-"+"##"+"-"+"##"+ direction);
-			String init = "00-00-00"+ direction;
-			this.setPlaceholder(init);
-			this.setPlaceholderCharacter('0');
-			this.setAllowsInvalid(false);
-			this.setCommitsOnValidEdit(true);
-			this.direction = direction;
-		}
-		
-	}
-	
-	@SuppressWarnings("serial")
-	class DEMFormat extends  MaskFormatter { // JFormattedTextField.AbstractFormatterFactory {
-
-		String direction;
-		
-		DEMFormat(String direction) throws ParseException {
-			super("##-##,######"+ direction);
-			String init = "00-00,000000"+ direction;
-			this.setPlaceholder(init);
-			this.setPlaceholderCharacter('0');
-			this.setAllowsInvalid(false);
-			this.setCommitsOnValidEdit(true);
-			this.direction = direction;
-		}
-		
-	}
-	
-	@SuppressWarnings("serial")
-	class DESFormat extends  MaskFormatter { // JFormattedTextField.AbstractFormatterFactory {
-
-		String direction;
-		
-		DESFormat(String direction) throws ParseException {
-			super("##,####"+ direction);
-			String init = "00,0000"+ direction;
-			this.setPlaceholder(init);
-			this.setPlaceholderCharacter('0');
-			this.setAllowsInvalid(false);
-			this.setCommitsOnValidEdit(true);
-			this.direction = direction;
-		}
-		
-	}
-	
-	private final ListDataListener m_listDataListener = new ListDataListener() {
+    private final ListDataListener m_listDataListener = new ListDataListener() {
 
 		public void contentsChanged(ListDataEvent e) {
 			if(isWorking()) return;

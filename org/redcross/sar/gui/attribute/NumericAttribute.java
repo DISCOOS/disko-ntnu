@@ -103,8 +103,6 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	}
 	
 	public boolean setValue(Object value) {
-		// allowed?
-		if(!m_isEditable) return false;
 		// is null?
 		if(value==null) value = 0;
 		// update

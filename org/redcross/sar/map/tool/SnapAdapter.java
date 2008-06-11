@@ -243,12 +243,13 @@ public class SnapAdapter {
 	public boolean setSnapToLayers(List<IFeatureLayer> snapTo) 
 		throws IOException, AutomationException {
 		// reset flag
-		isDirty = snapTo!=null && this.snapTo==null;
+		isDirty = snapTo!=null && this.snapTo==null || 
+			(snapTo!=null && this.snapTo!=null && snapTo.size()!=this.snapTo.size());
 		// valid?
-		if(snapTo!=null && this.snapTo!=null) {
+		if(!isDirty && snapTo!=null && this.snapTo!=null) {
 			// check if dirty
-			for(int i = 0;i<this.snapTo.size();i++) {
-				if(!snapTo.contains(this.snapTo.get(i))) {
+			for(int i = 0;i<snapTo.size();i++) {
+				if(!this.snapTo.contains(snapTo.get(i))) {
 					// set dirty
 					isDirty = true;
 					// finished

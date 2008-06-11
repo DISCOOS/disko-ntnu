@@ -2,31 +2,38 @@ package org.redcross.sar.map.tool;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
+import org.redcross.sar.gui.panel.POIPanel;
 import org.redcross.sar.gui.panel.PositionPanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IPOIIf.POIType;
+import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
+import org.redcross.sar.util.mso.Track;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
 /**
- * A custom draw tool.
- * @author geira
+ * A unit position tool.
+ * @author kennetgu
  *
  */
 public class PositionTool extends AbstractDrawTool {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	/**
 	 * Constructs the DrawTool
 	 */
@@ -69,7 +76,8 @@ public class PositionTool extends AbstractDrawTool {
 		dialog.register(this);
 		
 	}
-
+	
+	@Override
 	public boolean onFinish(int button, int shift, int x, int y) {
 		
 		try {
@@ -150,9 +158,6 @@ public class PositionTool extends AbstractDrawTool {
 			if(msoObject instanceof IUnitIf) {
 				IUnitIf msoUnit = (IUnitIf)msoObject;
 				setPoint(MapUtil.getEsriPoint(msoUnit.getPosition(), map.getSpatialReference()));
-			}
-			else {
-				setPoint(null);
 			}
 			
 			// forward

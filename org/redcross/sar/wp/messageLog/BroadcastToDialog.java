@@ -1,8 +1,12 @@
 package org.redcross.sar.wp.messageLog;
 
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.DiskoWorkRepeater;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -46,7 +50,8 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 
 	protected IDiskoWpMessageLog m_wpMessageLog = null;
 
-	protected JPanel m_contentsPanel = null;
+	protected BasePanel m_contentsPanel = null;
+	protected JPanel m_bodyPanel = null;
 	protected JPanel m_buttonRowPanel = null;
 
 	protected JToggleButton m_selectionButton = null;
@@ -76,6 +81,8 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 	protected HashMap<JToggleButton, ICommunicatorIf> m_buttonCommunicatorMap = null;
 	protected HashMap<ICommunicatorIf, JToggleButton> m_communicatorButtonMap = null;
 
+	protected DiskoWorkRepeater workRepeater = new DiskoWorkRepeater();
+	
 	/**
 	 * @param wp Reference to message log work process
 	 */
@@ -94,10 +101,12 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		initContentsPanel();
 		initActionButtons();
 
-		m_contentsPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+		m_bodyPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
 
 		initUnitListArea();
 
+		setMoveable(false);
+		
 		this.pack();
 	}
 
@@ -109,12 +118,13 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		m_listArea.setAlignmentY(Component.TOP_ALIGNMENT);
 
 		m_scrollPane = new JScrollPane(m_listArea);
+		m_scrollPane.setBorder(null);
 		m_scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		m_scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 		m_scrollPane.setPreferredSize(new Dimension(SingleUnitListSelectionDialog.PANEL_WIDTH+250,
 				DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*(NUM_ROWS_COMMUNICATOR_LIST)+20));
-		m_contentsPanel.add(m_scrollPane);
+		m_bodyPanel.add(m_scrollPane);
 	}
 
 	/**
@@ -180,6 +190,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 						}
 					}
 					updateStatusLabel();
+					
 				}
 			});
 
@@ -267,7 +278,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		m_buttonGroup = new ButtonGroup();
 
 		String text = m_wpMessageLog.getBundleText("SelectionButton.text");
-		m_selectionButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
+		m_selectionButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.NORMAL,25,0);
 		m_selectionButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_selectionButton.addActionListener(new ActionListener()
 		{
@@ -285,7 +296,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		m_buttonRowPanel.add(m_selectionButton);
 
 		text = m_wpMessageLog.getBundleText("ConfirmButton.text");
-		m_confirmButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.LONG);
+		m_confirmButton = DiskoButtonFactory.createToggleButton(text,text,null,ButtonSize.NORMAL,25,0);
 		m_confirmButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_confirmButton.addActionListener(new ActionListener()
 		{
@@ -399,7 +410,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		m_confirmationStatusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_buttonRowPanel.add(m_confirmationStatusLabel);
 
-		m_contentsPanel.add(m_buttonRowPanel, BorderLayout.NORTH);
+		m_bodyPanel.add(m_buttonRowPanel, BorderLayout.NORTH);
 	}
 
 	private JToggleButton createUnitButton(final UnitType type)
@@ -429,10 +440,11 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 
 	private void initContentsPanel()
 	{
-		m_contentsPanel = new JPanel();
-		m_contentsPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
-		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.PAGE_AXIS));
-		this.add(m_contentsPanel);
+		m_contentsPanel = new BasePanel("Velg enhet");
+		m_contentsPanel.setNotScrollBars();
+		m_bodyPanel = (JPanel)m_contentsPanel.getBodyComponent();
+		m_bodyPanel.setLayout(new BoxLayout(m_bodyPanel, BoxLayout.PAGE_AXIS));
+		setContentPane(m_contentsPanel);
 	}
 
 	/**
@@ -610,4 +622,20 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		m_selectedCommuicators.clear();
 		updateButtonSelection();
 	}
+	
+	@Override
+	protected void fireOnWorkFinish(Object source, Object data) {
+		workRepeater.fireOnWorkPerformed(new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_FINISH));
+    }
+	
+	@Override
+	public void addDiskoWorkListener(IDiskoWorkListener listener) {
+		workRepeater.addDiskoWorkListener(listener);
+	}
+
+	@Override
+	public void removeDiskoWorkListener(IDiskoWorkListener listener) {
+		workRepeater.removeDiskoWorkListener(listener);
+	}
+	
 }

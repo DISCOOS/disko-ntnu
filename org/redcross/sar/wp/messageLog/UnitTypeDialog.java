@@ -1,16 +1,18 @@
 package org.redcross.sar.wp.messageLog;
 
 import no.cmr.tools.Log;
+
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.Internationalization;
 
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,7 +36,7 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 {
 	private static final long serialVersionUID = 1L;
 
-	private JPanel m_contentsPanel = null;
+	private BasePanel m_contentsPanel = null;
 
 	private JFormattedTextField m_textField = null;
 	private LinkedList<JButton> m_buttons;
@@ -49,11 +51,15 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 
 		m_textField = textField;
 
-		m_contentsPanel = new JPanel(new GridLayout(3, 2));
-
+		m_contentsPanel = new BasePanel("Vis enheter");
+		m_contentsPanel.setBodyLayout(new GridLayout(3, 2));
+		m_contentsPanel.setScrollBarPolicies(
+				BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+		Utils.setFixedSize(m_contentsPanel,150,185);
 		initButtons();
 
-		this.add(m_contentsPanel);
+		this.setContentPane(m_contentsPanel);
 		this.pack();
 	}
 
@@ -99,6 +105,7 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 				        
 			allUnits = DiskoButtonFactory.createButton("GENERAL.ALL", ButtonSize.NORMAL);
 			m_buttons.add(allUnits);
+			((JPanel)m_contentsPanel.getBodyComponent()).add(allUnits);
 			
 		}
 		catch(MissingResourceException e)
@@ -120,7 +127,7 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 	{
 
     	// create button
-		JButton button = DiskoButtonFactory.createButton(name,ButtonSize.NORMAL);
+		JButton button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 		
 		// set unit type name?
 		if(unitType!=null)
@@ -147,7 +154,7 @@ public class UnitTypeDialog extends DefaultDialog implements IEditMessageCompone
 		});
 
 		// add button
-		m_contentsPanel.add(button);
+		((JPanel)m_contentsPanel.getBodyComponent()).add(button);
 
 		// return new button
 		return button;

@@ -184,94 +184,10 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
             	// loop over all lines
             	for(IMessageLineIf line : lines.getItems())
             	{
-            		String lineText = "";
-            		switch(line.getLineType())
-        			{
-        			case TEXT:
-        			{
-        				lineText = String.format(m_wpModule.getBundleText("ListItemText.text"),
-        						line.getLineText());
-        			}
-        			break;
-        			case POSITION:
-        			{
-        				// get posiyion
-        				Position p = line.getLinePosition();
-        				
-        				if(p != null)
-        				{
-        					// get unit name
-        					String unit = MsoUtils.getUnitName(line.getLineUnit(),false);
-        					
-    						try {
-    							String mgrs = MapUtil.getMGRSfromPosition(p);
-    							// get zone
-    							String zone = mgrs.subSequence(0, 3).toString();
-    							String square = mgrs.subSequence(3, 5).toString();
-    							String x = mgrs.subSequence(5, 10).toString();
-    							String y = mgrs.subSequence(10, 15).toString();
-    							// get text
-    							lineText = String.format(m_wpModule.getBundleText("ListItemPOI.text"),
-    									unit, zone, square, x, y, DTG.CalToDTG(line.getOperationTime()));
-    						}
-    						catch (Exception e) {
-    							e.printStackTrace();
-    						}
-        				}
-        			}
-        			break;
-        			case POI:
-        			{
-        				IPOIIf poi = line.getLinePOI();
-        				if(poi != null)
-        				{
-        					String type = poi.getTypeText();
-        					Position pos = line.getLinePOI().getPosition();
-        					if(pos != null)
-        					{
-        						try {
-        							String mgrs = MapUtil.getMGRSfromPosition(pos);
-        							// get zone
-        							String zone = mgrs.subSequence(0, 3).toString();
-        							String square = mgrs.subSequence(3, 5).toString();
-        							String x = mgrs.subSequence(5, 10).toString();
-        							String y = mgrs.subSequence(10, 15).toString();
-        							// get text
-        							lineText = String.format(m_wpModule.getBundleText("ListItemFinding.text"),
-        									type, zone, square, x, y);
-        						}
-        						catch (Exception e) {
-        							e.printStackTrace();
-        						}
-        					}
-        				}
-        			}
-        			break;
-        			case ASSIGNED:
-        			{
-        				IAssignmentIf assignment = line.getLineAssignment();
-        				lineText = String.format(m_wpModule.getBundleText("ListItemAssigned.text"),
-        						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
-        			}
-        			break;
-        			case STARTED:
-        			{
-        				IAssignmentIf assignment = line.getLineAssignment();
-        				lineText = String.format(m_wpModule.getBundleText("ListItemStarted.text"),
-        						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
-        			}
-        			break;
-        			case COMPLETE:
-        			{
-        				IAssignmentIf assignment = line.getLineAssignment();
-        				lineText = String.format(m_wpModule.getBundleText("ListItemCompleted.text"),
-        						MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
-        			}
-        			break;
-        			}
-                    stringBuilder.append(lineText + "LINEEND");
+                     stringBuilder.append(line.toString() + "LINEEND");
                 }
                 return stringBuilder.toString().split("LINEEND");
+                
             case 5:
                 StringBuilder taskBuilder = new StringBuilder();
                 for (ITaskIf task : message.getMessageTasksItems())

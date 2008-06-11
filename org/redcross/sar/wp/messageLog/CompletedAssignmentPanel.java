@@ -75,7 +75,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	protected void updateAssignmentLineList()
 	{
 		MessageLineListModel model = (MessageLineListModel)m_messageLineList.getModel();
-		model.setMessageLineType(MessageLineType.COMPLETE);
+		model.setMessageLineType(MessageLineType.COMPLETED);
 	}
 
 	/**
@@ -120,17 +120,17 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 				if(executingAssignment == null)
 				{
 					// Adding both started and completed lines
-					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, MessageLineType.STARTED, MessageLineType.COMPLETE,
+					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, MessageLineType.STARTED, MessageLineType.COMPLETED,
 							Calendar.getInstance(), assignment);
 					m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, assignment, false));
 				}
 				else
 				{
-					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, MessageLineType.COMPLETE, MessageLineType.COMPLETE,
+					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, MessageLineType.COMPLETED, MessageLineType.COMPLETED,
 							Calendar.getInstance(), assignment);
 				}
 
-				m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETE, assignment, false));
+				m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETED, assignment, false));
 				
 				MessageLogBottomPanel.showCompletePanel();
 			}
@@ -162,13 +162,13 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
 					MessageLineType.ASSIGNED,
-					MessageLineType.COMPLETE,
+					MessageLineType.COMPLETED,
 					Calendar.getInstance(),
 					m_selectedAssignment);
 
 			m_addedLines.add(message.findMessageLine(MessageLineType.ASSIGNED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, m_selectedAssignment, false));
-			m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETE, m_selectedAssignment, false));
+			m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETED, m_selectedAssignment, false));
 		}
 
 		MessageLogBottomPanel.showCompletePanel();

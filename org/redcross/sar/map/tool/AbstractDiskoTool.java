@@ -204,8 +204,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		this.msoObject = msoObject;
 		// set mso object
 		this.msoCode = msoClassCode;
-		// set class code
-		this.msoCode = msoClassCode;
 		
 	}
 

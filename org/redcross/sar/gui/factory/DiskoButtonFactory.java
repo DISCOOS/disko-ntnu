@@ -582,10 +582,6 @@ public class DiskoButtonFactory
 		if(button.getIcon()==null) 
 			button.setText(getText(e,resource));
 		
-		// update text alignment
-		if(button.getIcon()!=null) {
-			button.setHorizontalTextPosition(SwingConstants.LEFT);
-		}
 	}
 	
 	public static void setIcon(AbstractButton button, ICommunicatorIf communicator,String catalog) {
@@ -637,16 +633,13 @@ public class DiskoButtonFactory
 			// get name
 			name = MsoUtils.getUnitName(unit, true);
 		}		
+		
 		// set text
 		button.setText(name);
 		
 		// set tooltip
 		button.setToolTipText(name);
 		
-		// update text alignment
-		if(button.getIcon()!=null) {
-			button.setHorizontalTextPosition(SwingConstants.LEFT);
-		}
 	}	
 	
 	public static void setIcon(AbstractButton button, IAssignmentIf assignment) {		
@@ -664,11 +657,6 @@ public class DiskoButtonFactory
 		
 		// apply tooltip
 		button.setToolTipText(name);
-		
-		// update text alignment
-		if(button.getIcon()!=null) {
-			button.setHorizontalTextPosition(SwingConstants.LEFT);
-		}
 		
 	}
 	

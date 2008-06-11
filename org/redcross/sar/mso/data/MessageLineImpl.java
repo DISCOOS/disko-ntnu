@@ -1,16 +1,19 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.gui.factory.BasicDiskoFactory;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Position;
 
-import java.text.MessageFormat;
 import java.util.Calendar;
+
 /**
  * Created by IntelliJ IDEA.
  * User: vinjar
@@ -278,33 +281,75 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         {
             return "";
         }
-        switch (getLineType())
+        
+        // get line type
+        MessageLineType type = getLineType();
+        
+        // get text template
+        String template = getText(BasicDiskoFactory.getKey(type,"text"));
+        
+        // translate type to text
+        switch (type)
         {
-            case ASSIGNED:
-            case STARTED:
-            case COMPLETE:
-                if (getLineAssignment() != null)
-                {
-                    return MessageFormat.format("{0} {1} {2} {3} {4}",
-                            getLineNumber(), getLineAssignment().getTypeText(), getLineAssignment().getNumber(), getLineTypeText(), DTG.CalToDTG(getOperationTime()));
-                } else
-                {
-                    return "";
-                }
+        case TEXT:
+			return String.format(template,getLineText());
+        case POSITION:
+        	
+			// get position
+			Position p = getLinePosition();
+			
+			if(p != null)
+			{
+				// get unit name
+				String unit = MsoUtils.getUnitName(getLineUnit(),false);
 
-            case POSITION:
-            case POI:
-                IPOIIf poi = getLinePOI();
-                if (poi != null)
-                {
-                    return getLineNumber() + " " + getLineTypeText() + " " + poi.getTypeText() + " " + poi.getPosition();
-                }
-                return getLineNumber() + " " + getLineTypeText() + " NULL";
-            case TEXT:
-                return getLineNumber() + " " + getLineText();
-            default:
-                return getLineNumber() + " " + getLineTypeText() + " " + getLineText();
+				try {
+					String mgrs = MapUtil.getMGRSfromPosition(p);
+					// get zone
+					String zone = mgrs.subSequence(0, 3).toString();
+					String square = mgrs.subSequence(3, 5).toString();
+					String x = mgrs.subSequence(5, 10).toString();
+					String y = mgrs.subSequence(10, 15).toString();
+					// get text
+					return String.format(template, unit, zone, square, x, y, DTG.CalToDTG(getOperationTime()));
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+        	break;
+        case POI:
+			IPOIIf poi = getLinePOI();
+			if(poi != null)
+			{
+				String poiName = poi.getTypeText();
+				Position pos = getLinePOI().getPosition();
+				if(pos != null)
+				{
+					try {
+						String mgrs = MapUtil.getMGRSfromPosition(pos);
+						// get zone
+						String zone = mgrs.subSequence(0, 3).toString();
+						String square = mgrs.subSequence(3, 5).toString();
+						String x = mgrs.subSequence(5, 10).toString();
+						String y = mgrs.subSequence(10, 15).toString();
+						// get text
+						return String.format(template, poiName, zone, square, x, y);
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			break;
+        case ASSIGNED:
+        case STARTED:
+        case COMPLETED:
+			return String.format(template, 
+					MsoUtils.getAssignmentName(getLineAssignment(),1), DTG.CalToDTG(getOperationTime()));
         }
+        // failure
+        return null;
     }
 
     private final static SelfSelector<IMessageLineIf, IMessageIf> owningMessageSelector = new SelfSelector<IMessageLineIf, IMessageIf>()

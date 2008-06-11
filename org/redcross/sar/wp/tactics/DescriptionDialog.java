@@ -111,7 +111,8 @@ public class DescriptionDialog extends DefaultDialog {
 						setChangeable(true);
 						
 						// update
-						setDirty(false);						
+						setDirty(false,false);
+						update();
 						
 					}	
 					

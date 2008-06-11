@@ -115,8 +115,7 @@ public class PersonnelAddressBottomPanel extends JPanel
 	public void setPersonnel(IPersonnelIf personnel)
 	{
 		m_currentPersonnel = personnel;
-		setEnabled(personnel!=null);
-	}
+    }
 
 	/**
 	 * Update field contents with current personnel values

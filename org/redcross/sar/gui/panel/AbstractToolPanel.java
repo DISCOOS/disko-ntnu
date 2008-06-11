@@ -47,9 +47,9 @@ public abstract class AbstractToolPanel extends AbstractPanel implements IToolPa
 	protected boolean beforeCancel() {
 		// forward
 		if(super.beforeCancel()) {
-			return tool.cancel();
+			tool.cancel();
 		}
-		return false;
+		return true;
 	}
 
 	@Override

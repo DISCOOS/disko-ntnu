@@ -91,7 +91,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private static final double ZOOM_RATIO = 1.25;
 	private static final double MAX_DRAW_SCALE = 75000;
 	private static final double MAX_SNAP_SCALE = 50000;
-	private static final int TRACK_MAP_STATUS = 0;
 	
 	// properties
 	private String mxdDoc = null;
@@ -637,7 +636,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	public void centerAtSelected() throws IOException, AutomationException {
 		IEnvelope env = getSelectionExtent();
-		if (env != null) {
+		if (env != null && !env.isEmpty()) {
 			centerAt(MapUtil.getCenter(env));
 		}
 	}
@@ -645,7 +644,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	public void centerAtFeature(IFeature feature) throws IOException, AutomationException {
 		if(feature!=null) {
 			IEnvelope env = feature.getExtent();
-			if(env!=null) {
+			if(env!=null && !env.isEmpty()) {
 				centerAt(MapUtil.getCenter(env));
 			}			
 		}
@@ -653,7 +652,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 
 	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
 		IEnvelope env = getMsoObjectExtent(msoObject);
-		if(env!=null) {
+		if(env!=null && !env.isEmpty()) {
 			centerAt(MapUtil.getCenter(env));
 		}
 	}
@@ -801,7 +800,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		else {
 			IEnvelope env = getMsoObjectExtent(msoObject);
-			if(env!=null) {
+			if(env!=null && !env.isEmpty()) {
 				setExtent(MapUtil.expand(ratio,env));
 			}			
 		}
@@ -830,7 +829,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				}
 			}
 		}*/
-		return MapUtil.getMsoExtent(getGeodataMsoObject(msoObj), this, false);
+		return MapUtil.getMsoExtent(getGeodataMsoObject(msoObj), this, true);
 	}
 	
 	public void zoomToPrintMapExtent(IMsoObjectIf msoObject, double scale, int pixHeigth, int pixWidth) throws IOException, AutomationException {
@@ -1189,7 +1188,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				public void run() {
 					try {				
 						// trace event
-						System.out.println(getProgressor().toString() + "::refresh(DATA)::started");		
+						//System.out.println(getProgressor().toString() + "::refresh(DATA)::started");		
 						// forward
 						showProgressor(false); // setTrackID(TRACK_PROGRESS, true);
 						// get key
@@ -1211,7 +1210,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						// forward
 						hideProgressor();
 						// trace event
-						System.out.println(getProgressor().toString() + "::refresh(DATA)::finished");						
+						//System.out.println(getProgressor().toString() + "::refresh(DATA)::finished");						
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -1884,14 +1883,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		@Override
 		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
 			
-			// forward
+			// update
 			clickPoint.setX(e.getMapX());
 			clickPoint.setY(e.getMapY());
 			
-			// save for later use
-			final double x = e.getMapX();
-			final double y = e.getMapY();
-
 			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -1903,14 +1898,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 		@Override
 		public void onMouseMove(IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
+			
+			// update
+			double x = e.getMapX(); 
+			double y = e.getMapY();
+			
 			// get current tic
-			long tic = Calendar.getInstance()
-					.getTimeInMillis();
+			long tic = Calendar.getInstance().getTimeInMillis();
+			//System.out.println("onMouseMove:="+tic);
 			// update?
-			if (tic - previous > 100) {
+			if (tic - previous > 100 && (movePoint.isEmpty() || !MapUtil.is2DEqual(movePoint,x,y))) {
+				// update point
+				movePoint.setX(x);
+				movePoint.setY(y);
 				previous = tic;
-				movePoint.setX(e.getMapX());
-				movePoint.setY(e.getMapY());
 				// notify later on EDT
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -1918,6 +1919,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					}
 				});	
 			}
+			
 		}
 		
 		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)

@@ -12,10 +12,10 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.model.OperationTableModel;
 import org.redcross.sar.gui.model.UnitTableModel;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
-import org.redcross.sar.gui.renderer.UnitCellRenderer;
-import org.redcross.sar.gui.renderer.UnitStringConverter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
+import org.redcross.sar.wp.tactics.UnitCellRenderer;
+import org.redcross.sar.wp.tactics.UnitStringConverter;
 
 public class OperationTable extends JTable {
 

@@ -12,7 +12,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.gui.panel.PositionFieldPanel;
+import org.redcross.sar.gui.panel.CoordinatePanel;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.util.mso.Position;
@@ -38,7 +38,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// save format
-		((PositionFieldPanel)m_component).setFormat(format);
+		((CoordinatePanel)m_component).setFormat(format);
 		// get value from attribute
 		load();		
 	}
@@ -52,7 +52,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,width,value,isEditable);
 		// save format
-		((PositionFieldPanel)m_component).setFormat(format);
+		((CoordinatePanel)m_component).setFormat(format);
 	}
 	
 	/*==================================================================
@@ -63,7 +63,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	public Component getComponent() {
 		try {
 			if(m_component==null) {
-				PositionFieldPanel field = new PositionFieldPanel();
+				CoordinatePanel field = new CoordinatePanel();
 				field.setEditable(m_isEditable);
 				field.addChangeListener(new ChangeListener() {
 
@@ -82,24 +82,22 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 
-	public PositionFieldPanel getPositionField() {
-		return (PositionFieldPanel)m_component;
+	public CoordinatePanel getCoordinatePanel() {
+		return (CoordinatePanel)m_component;
 	}
 	
 	public Object getValue() {
-		return ((PositionFieldPanel)m_component).getPosition();
+		return ((CoordinatePanel)m_component).getPosition();
 	}
 	
 	public boolean setValue(Object value) {
-		// allowed?
-		if(!m_isEditable) return false;
 		// validate data type
 		if(value instanceof Point)
-			((PositionFieldPanel)m_component).setPoint((Point)value);
+			((CoordinatePanel)m_component).setPoint((Point)value);
 		else if(value instanceof Position) 
-			((PositionFieldPanel)m_component).setPosition((Position)value);
+			((CoordinatePanel)m_component).setPosition((Position)value);
 		else if(value instanceof String) 
-			((PositionFieldPanel)m_component).setText((String)value);
+			((CoordinatePanel)m_component).setText((String)value);
 		else {
 			// failure
 			return false;
@@ -128,18 +126,18 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	public void setFormat(int format) {
 		// save format
-		((PositionFieldPanel)m_component).setFormat(format);		
+		((CoordinatePanel)m_component).setFormat(format);		
 	}
 			
 	public int getFormat() {
 		// get format
-		return ((PositionFieldPanel)m_component).getFormat();		
+		return ((CoordinatePanel)m_component).getFormat();		
 	}
 	
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
-		getPositionField().setEditable(isEditable);		
+		getCoordinatePanel().setEditable(isEditable);		
 	}
 	
 }

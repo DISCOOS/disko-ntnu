@@ -663,7 +663,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
                 break;
             case FINISHED:
             case REPORTED:
-                searchLineType = IMessageLineIf.MessageLineType.COMPLETE;
+                searchLineType = IMessageLineIf.MessageLineType.COMPLETED;
                 break;
             default:
                 return true;

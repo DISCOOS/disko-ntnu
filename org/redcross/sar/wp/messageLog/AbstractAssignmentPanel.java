@@ -191,7 +191,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
                 line = message.findMessageLine(MessageLineType.STARTED, false);
             } else if (this instanceof CompletedAssignmentPanel)
             {
-                line = message.findMessageLine(MessageLineType.COMPLETE, false);
+                line = message.findMessageLine(MessageLineType.COMPLETED, false);
             }
 
             if (line != null)
@@ -216,8 +216,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         gbc.fill = GridBagConstraints.BOTH;
 
         m_messageLineList = new JList(new MessageLineListModel(m_wpMessageLog));
+        m_messageLineList.setCellRenderer(new MessageLineListRenderer());
         m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        m_messageLineList.setFixedCellHeight(25);
+        //m_messageLineList.setFixedCellHeight(25);
         m_messageLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_messageLineList, this));
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
@@ -722,7 +723,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
         if (message != null)
         {
-            IMessageLineIf messageLine = message.findMessageLine(MessageLineType.COMPLETE, false);
+            IMessageLineIf messageLine = message.findMessageLine(MessageLineType.COMPLETED, false);
             return messageLine != null;
         }
         return false;

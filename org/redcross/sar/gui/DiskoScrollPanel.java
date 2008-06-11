@@ -63,7 +63,9 @@ public class DiskoScrollPanel extends JPanel implements Scrollable
         super(aLayoutManager);
         m_surroundingScrollPane = aScrollPane;
         m_layoutManager = aLayoutManager;
-
+        
+        m_surroundingScrollPane.setBorder(null);
+        
         m_hgap = aHgap;
         m_vgap = aVgap;
         m_horizontalFlow = isHorizontalFlow;

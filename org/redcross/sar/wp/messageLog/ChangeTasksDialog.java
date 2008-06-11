@@ -254,7 +254,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 		}
 		
 		// set description
-		task.setDescription(MsoUtils.getMessageText(message,Internationalization.getBundle(IDiskoWpMessageLog.class)));
+		task.setDescription(MsoUtils.getMessageText(message));
 
 		// Due time
 		Calendar dueTime = Calendar.getInstance();

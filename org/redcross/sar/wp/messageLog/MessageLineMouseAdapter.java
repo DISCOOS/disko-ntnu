@@ -5,7 +5,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.JTable;
 
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
-import org.redcross.sar.gui.event.DiskoMouseAdapter.DiskoMouseDelayListener;
 import org.redcross.sar.mso.data.IMessageLineIf;
 
 /**
@@ -13,7 +12,7 @@ import org.redcross.sar.mso.data.IMessageLineIf;
  * 
  * @author kenneth
  */
-public class MessageLineMouseAdapter extends DiskoMouseAdapter implements DiskoMouseDelayListener
+public class MessageLineMouseAdapter extends DiskoMouseAdapter
 {
 	protected MessageLineTableModel m_tableModel;
 	
@@ -26,8 +25,6 @@ public class MessageLineMouseAdapter extends DiskoMouseAdapter implements DiskoM
 		super();
 		// prepare
 		m_tableModel = listTableModel;
-		// add listers
-		addDiskoMouseDelayListener(this);
 	}
 	
 
@@ -80,7 +77,7 @@ public class MessageLineMouseAdapter extends DiskoMouseAdapter implements DiskoM
 				case STARTED:
 					MessageLogBottomPanel.showStartPanel();
 					break;
-				case COMPLETE:
+				case COMPLETED:
 					MessageLogBottomPanel.showCompletePanel();
 					break;
 				}

@@ -11,6 +11,7 @@ import com.esri.arcgis.system.ITrackCancel;
 import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoSymbolFactory;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.UnitFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -18,7 +19,6 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
-import org.redcross.sar.mso.util.MsoUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 
 	private static final long serialVersionUID = 1L;
 	private static final double fontSize = 12;
-	private static final double fontOffset = 27;
+	private static final double fontOffset = 32;
 	private static final double pointSize = 32;
 	private static final double referenceScale = 50000;
 	
@@ -37,6 +37,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 	private RgbColor selectionColor = null;
 	private Hashtable<UnitType, PictureMarkerSymbol> symbols = null;
 	private TextSymbol textSymbol = null;
+	private BalloonCallout textBackground = null;
 
  	public UnitLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT,
@@ -79,6 +80,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 			
 			// update
 			textSymbol.setSize(zoomFontSize);
+			textSymbol.setXOffset(-zoomFontOffset); 
 			textSymbol.setYOffset(-zoomFontOffset); 
 			
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
@@ -181,8 +183,19 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 		 		}
 			}
 			
+			textBackground = new BalloonCallout();
+			textBackground.setBottomMargin(1);
+			textBackground.setTopMargin(1);
+			textBackground.setLeftMargin(1);
+			textBackground.setRightMargin(1);
+			textBackground.setStyle(esriBalloonCalloutStyle.esriBCSRoundedRectangle); 
+			textBackground.setSymbolByRef(MapUtil.getFillSymbol(esriSimpleFillStyle.esriSFSSolid, esriSimpleLineStyle.esriSLSSolid));
+			
 			textSymbol = new TextSymbol();
-			textSymbol.setYOffset(pointSize);
+			textSymbol.setXOffset(pointSize);
+			textSymbol.setHorizontalAlignment(esriTextHorizontalAlignment.esriTHALeft);
+			textSymbol.setVerticalAlignment(esriTextHorizontalAlignment.esriTHACenter);
+			textSymbol.setBackgroundByRef(textBackground);
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

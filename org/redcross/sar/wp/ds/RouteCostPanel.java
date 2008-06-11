@@ -31,7 +31,6 @@ import javax.swing.JSplitPane;
 import org.redcross.sar.ds.RouteCost;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.gui.AssignmentTable;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
@@ -51,6 +50,7 @@ import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.mso.data.RouteImpl;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
+import org.redcross.sar.wp.tactics.AssignmentTable;
 
 import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.interop.AutomationException;

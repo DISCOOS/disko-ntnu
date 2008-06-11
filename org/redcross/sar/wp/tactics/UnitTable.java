@@ -1,4 +1,4 @@
-package org.redcross.sar.gui;
+package org.redcross.sar.wp.tactics;
 
 import java.util.EnumSet;
 
@@ -13,8 +13,6 @@ import javax.swing.table.TableRowSorter;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.model.UnitTableModel;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
-import org.redcross.sar.gui.renderer.UnitCellRenderer;
-import org.redcross.sar.gui.renderer.UnitStringConverter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;

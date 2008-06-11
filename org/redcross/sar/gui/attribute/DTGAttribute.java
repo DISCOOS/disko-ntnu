@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.MaskFormatter;
 
+import org.redcross.sar.gui.format.DTGFormat;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.util.mso.DTG;
@@ -48,7 +49,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 			// create
 			JFormattedTextField field = new JFormattedTextField();
 			// set format
-			field.setFormatterFactory(new DTGFormat());
+			field.setFormatterFactory(new DTGFormatterFactory());
 			field.setEditable(m_isEditable);
 			field.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -88,8 +89,6 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	}
 	
 	public boolean setValue(Object value) {
-		// allowed?
-		if(!m_isEditable) return false;
 		// validate data type
 		if(value instanceof Calendar)
 			((JFormattedTextField)m_component).setText(DTG.CalToDTG((Calendar)value));
@@ -127,16 +126,13 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	class DTGFormat extends JFormattedTextField.AbstractFormatterFactory {
+	class DTGFormatterFactory extends JFormattedTextField.AbstractFormatterFactory {
 
 		@Override
 		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
-			MaskFormatter mf1 = null;
+			DTGFormat mf1 = null;
 			try {
-				mf1 = new MaskFormatter("######");
-				mf1.setPlaceholder("00000");
-				mf1.setPlaceholderCharacter('0');
-				mf1.setCommitsOnValidEdit(true);
+				mf1 = new DTGFormat();
 			}
 			catch (Exception e) {
 				e.printStackTrace();

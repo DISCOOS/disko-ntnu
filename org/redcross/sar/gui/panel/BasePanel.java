@@ -335,6 +335,11 @@ public class BasePanel extends AbstractPanel {
 		return false;
 	}
 	
+	public void setNotScrollBars() {
+		getScrollPane().setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
+		getScrollPane().setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);		
+	}
+	
 	public void setScrollBarPolicies(int vert, int horz) {
 		getScrollPane().setVerticalScrollBarPolicy(vert);
 		getScrollPane().setHorizontalScrollBarPolicy(horz);

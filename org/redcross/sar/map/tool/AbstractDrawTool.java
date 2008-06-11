@@ -32,6 +32,7 @@ import org.redcross.sar.mso.data.IRouteListIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ISearchAreaListIf;
 import org.redcross.sar.mso.data.ISearchIf;
+import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -40,6 +41,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Route;
+import org.redcross.sar.util.mso.Track;
 
 import com.esri.arcgis.carto.InvalidArea;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
@@ -711,7 +713,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			if(msoObj!=null && !supportsPoint) msoObj=null; // invalid object reference
 		}
 		else {
-			// get point flag
+			// get line support flag
 			boolean supportsLine = msoObj!=null &&
 				(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObj.getMsoClassCode()) ||
 						MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObj.getMsoClassCode()) ||
@@ -2008,10 +2010,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						poi.setPosition(MapUtil.getMsoPosistion(geoPoint));
 					}
 					else {
+						
 						// cast to unit
 						IUnitIf msoUnit = (IUnitIf)msoObject;
+						
 						// update
 						msoUnit.setPosition(MapUtil.getMsoPosistion(geoPoint));					
+												
 					}
 					
 					// forward

@@ -32,6 +32,8 @@ import javax.swing.table.TableColumn;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -198,6 +200,17 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         m_taskTable.setDefaultRenderer(Object.class, new TaskTableRenderer());
         m_taskTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        m_taskTable.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount()==2) {
+					changeTask();
+				}
+			}
+
+		});
+		
         TableColumn column = m_taskTable.getColumnModel().getColumn(0);
         column.setMaxWidth(75);
         column.setPreferredWidth(75);
@@ -312,8 +325,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             hideDialogs();
             TaskDialog taskDialog = this.getApplication().getUIFactory().getTaskDialog();
             taskDialog.setLocationRelativeTo(m_contentsPanel, DefaultDialog.POS_CENTER, false, true);
-            taskDialog.setVisible(true);
             taskDialog.getTaskPanel().setTask(m_currentTask);
+            taskDialog.setVisible(true);
         }
     }
 

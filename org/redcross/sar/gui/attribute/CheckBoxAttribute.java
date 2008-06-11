@@ -74,8 +74,6 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 	}
 	
 	public boolean setValue(Object value) {
-		// allowed?
-		if(!m_isEditable) return false;
 		if(value instanceof String)
 			((JCheckBox)m_component).setSelected(Boolean.valueOf((String)value));
 		else if(value instanceof Boolean) 

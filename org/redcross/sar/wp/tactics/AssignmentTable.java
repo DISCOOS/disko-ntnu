@@ -1,4 +1,4 @@
-package org.redcross.sar.gui;
+package org.redcross.sar.wp.tactics;
 
 import java.awt.Dimension;
 import java.util.Hashtable;
@@ -12,8 +12,6 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.model.AssignmentTableModel;
-import org.redcross.sar.gui.renderer.AssignmentCellRenderer;
-import org.redcross.sar.gui.renderer.AssignmentStringConverter;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;

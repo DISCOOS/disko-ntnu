@@ -73,6 +73,8 @@ public class CalloutOverviewTableModel extends AbstractTableModel implements IMs
 			return DTG.CalToDTG(callout.getCreated());
 		case 1:
 			return callout.getTitle();
+		case 2:
+			return callout;
 		default:
 			return null;
 		}

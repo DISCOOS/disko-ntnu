@@ -12,6 +12,7 @@ import org.redcross.sar.util.except.IllegalOperationException;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
@@ -194,7 +195,8 @@ public class UnitOverviewTableEditor
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					// Release unit
+					
+					// release unit
 					int index = m_table.convertRowIndexToModel(m_editingRow);
 					UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
@@ -203,13 +205,14 @@ public class UnitOverviewTableEditor
 
 					try
 					{
-						UnitUtilities.releaseUnit(unit);
-
-						// Commit
-						if(!m_wpUnit.getNewUnit())
-						{
-							m_wpUnit.getMsoModel().commit();
+						// commit?
+						if(UnitUtilities.releaseUnit(unit)) {
+							if(!m_wpUnit.getNewUnit())
+							{
+								m_wpUnit.getMsoModel().commit();
+							}
 						}
+						
 					}
 					catch (IllegalOperationException e1)
 					{
@@ -254,7 +257,7 @@ public class UnitOverviewTableEditor
 
 			// Update buttons
 			//m_pauseButton.setSelected(unit.getStatus() == UnitStatus.PAUSED);
-			m_releaseButton.setSelected(unit.getStatus() != UnitStatus.RELEASED);
+			m_releaseButton.setSelected(unit.getStatus() == UnitStatus.RELEASED);
 			
 		}
 	}

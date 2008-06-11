@@ -144,20 +144,6 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
         return getBundleText("MESSAGELOG");
     }
 
-    /* (non-Javadoc)
-     * @see com.geodata.engine.disko.task.DiskoAp#cancel()
-     */
-    public void cancel()
-    {
-    }
-
-    /* (non-Javadoc)
-     * @see com.geodata.engine.disko.task.DiskoAp#finish()
-     */
-    public void finish()
-    {
-    }
-
 	/**
 	 * Adds or updates the message poi line and generates 
 	 * or update the assosiated task
