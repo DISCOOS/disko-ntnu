@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.logistics;
 
 import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
@@ -9,12 +10,12 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,12 +202,22 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 				getMsoModel().suspendClientUpdate();
 				
 				// allocate assignment to unit?
-		        if (aStatus == AssignmentStatus.QUEUED){
+		        switch(aStatus) {
+		        case QUEUED:
 		        	bSuccess = aUnit.addAllocatedAssignment(anAssignment, null);
-		        } 
-		        else {
-		        	anAssignment.setStatusAndOwner(aStatus, aUnit);
+		        	break;
+		        case ASSIGNED:
+		        	AssignmentTransferUtilities.unitAssignAssignment(aUnit, anAssignment);
 		        	bSuccess = true;
+		        	break;
+		        case EXECUTING:
+		        	AssignmentTransferUtilities.unitStartAssignment(aUnit, anAssignment);
+		        	bSuccess = true;
+		        	break;
+		        case FINISHED:
+		        	AssignmentTransferUtilities.unitCompleteAssignment(aUnit, anAssignment);
+		        	bSuccess = true;
+		        	break;
 		        }
 	
 		        // transfer OK?
@@ -217,14 +228,11 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 		            		getMsoManager(), aUnit, anAssignment, oldStatus);
 	
 		            // comitt changes
-		            getMsoModel().commit();
-		            /*if (unitTableModel != null)
-		            {
-		                unitTableModel.scrollToTableCellPosition(tableDropRow);
-		            }*/
+		            commit();
+		            
 		        } 
 		        else {
-		            getMsoModel().rollback();
+		            rollback();
 		            showTransferWarning();
 		        }
 		        
@@ -240,5 +248,113 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         // return state
         return bSuccess;
 	}
+	
+    @Override
+	public boolean commit() {
+		// TODO Auto-generated method stub
+		return doCommitWork();
+	}
+
+	@Override
+	public boolean rollback() {
+		// TODO Auto-generated method stub
+		return doRollbackWork();
+	}
+
+    
+	private boolean doCommitWork() {
+		try {
+			// forward work
+			DiskoWorkPool.getInstance().schedule(new LogisticsWork(1));
+			// do work
+			return true;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	private boolean doRollbackWork() {
+		try {
+			DiskoWorkPool.getInstance().schedule(new LogisticsWork(2));
+			return true;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}	
+	
+	private class LogisticsWork extends ModuleWork<Boolean> {
+
+		private int m_task = 0;
+		
+		/**
+		 * Constructor
+		 * 
+		 * @param task
+		 */
+		LogisticsWork(int task) throws Exception {
+			super();
+			// prepare
+			m_task = task;
+		}
+		
+		@Override
+		public Boolean doWork() {
+			try {
+				// dispatch task
+				switch(m_task) {
+				case 1: commit(); return true;
+				case 2: rollback(); return true;
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		
+
+		@Override
+		public void done() {
+			
+			try {
+				// dispatch task
+				switch(m_task) {
+				case 1: 
+					onWorkPerformed(new DiskoWorkEvent(this,DiskoWorkEvent.EVENT_COMMIT));
+					break;
+				case 2: 
+					onWorkPerformed(new DiskoWorkEvent(this,DiskoWorkEvent.EVENT_ROLLBACK));						
+					break;					
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}			
+			// do the rest
+			super.done();
+		}
+		
+		private void commit() {
+			try{
+				getMsoModel().commit();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		private void rollback() {
+			try{
+				getMsoModel().rollback();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}		
+	}		
 
 }

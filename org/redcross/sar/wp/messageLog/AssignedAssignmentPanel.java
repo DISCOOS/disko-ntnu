@@ -1,11 +1,13 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import java.util.Calendar;
 
@@ -31,34 +33,19 @@ public class AssignedAssignmentPanel extends AbstractAssignmentPanel
 	}
 
 	/**
-	 * Deletes all message lines that was added since last commit
-	 */
-	public void cancelUpdate()
-	{
-		// Remove all added lines
-		for(int i=0; i<m_addedLines.size(); i++)
-		{
-			m_addedLines.get(i).deleteObject();
-		}
-
-		m_addedLines.clear();
-	}
-
-
-	/**
 	 *
 	 */
 	@Override
 	protected void updateMessageLine()
 	{
 		super.updateMessageLine();
-		MessageLogBottomPanel.showListPanel();
+		super.showComponent();
 	}
 
 	/**
 	 * Sets the line type to {@link MessageLineType#ASSIGNED} in list mode, which in turn causes list to update.
 	 */
-	protected void updateAssignmentLineList()
+	public void updateAssignmentLineList()
 	{
 		MessageLineListModel model = (MessageLineListModel)m_messageLineList.getModel();
 		model.setMessageLineType(MessageLineType.ASSIGNED);
@@ -70,29 +57,52 @@ public class AssignedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	protected void addNewMessageLine()
 	{
-		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-		IUnitIf unit = (IUnitIf)message.getSingleReceiver();
+				
+		// violation?
+		if(!MessageLogBottomPanel.isNewMessage()) {
+			
+			// notify reason
+			Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
+					m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
+			
+			// finished
+			return;
+			
+		}
+		
+		// get unit if exists
+		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+		IUnitIf unit = getAvailableUnit(message);
+				
+		// violation?
+		if(unitHasAssignedAssignment(unit) || unitHasStartedAssignment(unit)) {
+		
+			// notify reason
+			Utils.showWarning(String.format("%s kan ikke tildeles mer enn ett oppdrag om gangen", MsoUtils.getUnitName(unit, false)));
+			
+			// finished
+			return;
+			
+		}
+		
+		if(unitHasNextAssignment(unit))
+		{
+			// If unit has next in assignment buffer, let user choose from these
+			showNextAssignment();
+		}
+		else if(unit!=null)
+		{
+			// Unit could have started from assignment pool
+			showAssignmentPool();
+		}
+		else {
+			Utils.showWarning("Du må først oppgi lovlig mottaker. Mottaker er den som skal utføre oppdraget og kan derfor ikke være et KO");
+			MessageLogBottomPanel.showChangeToPanel();
+			return;
 
-		// Assure that unit can accept assignment
-		if(AssignmentTransferUtilities.unitCanAccept(unit, AssignmentStatus.ASSIGNED))
-		{
-			if(unitHasNextAssignment())
-			{
-				// If unit has next in assignment buffer, let user choose from these
-				showNextAssignment();
-			}
-			else
-			{
-				// Else get assignments from assignment pool
-				showAssignmentPool();
-			}
 		}
-		else
-		{
-			Utils.showWarning(m_wpMessageLog.getBundleText("CanNotAssignError.header"),
-					String.format(m_wpMessageLog.getBundleText("CanNotAssignError.details"), 
-							unit.getTypeAndNumber(), ""));
-		}
+		// success
+		m_assignmentUnit = unit;
 	}
 
 	/**
@@ -100,19 +110,29 @@ public class AssignedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	protected void addSelectedAssignment()
 	{
-		if(m_selectedAssignment != null)
+		if(m_assignmentUnit!=null && m_selectedAssignment!=null)
 		{
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-			AssignmentTransferUtilities.createAssignmentChangeMessageLines(
-					message,
-					MessageLineType.ASSIGNED,
-					MessageLineType.ASSIGNED,
-					Calendar.getInstance(),
-					m_selectedAssignment);
-
+			
+			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
+					MessageLineType.ASSIGNED, MessageLineType.ASSIGNED,
+					Calendar.getInstance(), m_assignmentUnit, m_selectedAssignment);
+			
+			// add to lines
 			m_addedLines.add(message.findMessageLine(MessageLineType.ASSIGNED, m_selectedAssignment, false));
+			
 		}
-
+		
 		MessageLogBottomPanel.showAssignPanel();
 	}
+	
+    public void showComponent()
+    {
+    	super.showComponent();
+    	
+    	m_messageLinesPanel.setCaptionText("Tildelt oppdrag");
+        
+    }
+    
+	
 }

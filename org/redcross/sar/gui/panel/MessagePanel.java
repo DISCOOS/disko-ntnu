@@ -46,6 +46,9 @@ public class MessagePanel extends DefaultPanel {
 	
 	public void setMessage(String msg) {
 		getMessageLabel().setText("<html>"+msg+"</html>");
+		if(getManager()!=null) {
+			getManager().requestResize(getWidth(),getHeaderPanel().getHeight()+getMessageLabel().getHeight());
+		}
 	}
 	
 }

@@ -197,8 +197,6 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     {
     	m_linePosition.setValue(aPosition);
     	IUnitIf unit = getLineUnit();
-    	if(unit!=null)
-    		unit.setPosition(aPosition);
     }
     
 	public Position getLinePosition() {
@@ -322,7 +320,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 			IPOIIf poi = getLinePOI();
 			if(poi != null)
 			{
-				String poiName = poi.getTypeText();
+				String poiName = MsoUtils.getPOIName(poi,false,true);
 				Position pos = getLinePOI().getPosition();
 				if(pos != null)
 				{

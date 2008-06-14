@@ -35,8 +35,8 @@ public class OperationDialog extends DefaultDialog {
             this.setModal(true);
             this.setUndecorated(true);
             this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            this.setContentPane(getContentPanel());
             this.setPreferredSize(new Dimension(375,300));
+            this.setContentPane(getContentPanel());
             this.pack();
 				
 		}
@@ -72,7 +72,6 @@ public class OperationDialog extends DefaultDialog {
 					
 				}
 			};
-			contentPanel.setPreferredBodySize(new Dimension(275,50));
 			contentPanel.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {

@@ -48,7 +48,7 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 			cb.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					if(isWorking()) return;
+					if(isConsume()) return;
 					fireOnWorkChange();
 				}
 				

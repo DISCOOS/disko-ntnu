@@ -100,7 +100,7 @@ public class MessageDialog extends DefaultDialog {
 		getMessagePanel().setCaptionIcon(icon);
 		getMessagePanel().setCaptionText(title);
 		getMessagePanel().setMessage(msg);
-		//getMessagePanel().setButtonVisible("cancel", type == QUESTION_MESSAGE);
+		getMessagePanel().setButtonVisible("cancel", type == QUESTION_MESSAGE);
 		// show modal dialog
 		super.setVisible(true);
 		// finished

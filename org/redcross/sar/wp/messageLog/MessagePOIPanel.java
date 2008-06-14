@@ -126,6 +126,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 			m_actionsPanel.add(getCancelButton());
 			m_actionsPanel.add(getCenterAtButton());
 			m_actionsPanel.add(getFinishButton());
+			m_actionsPanel.add(Box.createVerticalGlue());
 		}
 		return m_actionsPanel;
 	
@@ -144,7 +145,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	private JButton getCenterAtButton() {
 		if(m_centerAtButton==null) {
 			// create button
-			m_centerAtButton = (JButton)getPOIPanel().getButton("centetat");
+			m_centerAtButton = (JButton)getPOIPanel().getButton("centerat");
 		}
 		return m_centerAtButton;
 	
@@ -168,7 +169,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		if (m_poiPanel == null) {
 
 			// create a poi panel and register it with a tool
-			m_poiPanel = (POIPanel)m_tool.addPropertyPanel();		
+			m_poiPanel = (POIPanel)m_tool.addToolPanel();		
 
 			// forward work to this
 			m_poiPanel.addDiskoWorkListener(this);			
@@ -399,33 +400,21 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	public void showComponent()
 	{
 		try {
-			// do not show dialog in map
-			m_tool.setShowDialog(false);
 			// show poi in map
 			IPOIIf poi = centerAtPOI(true);
-			// save current state
-			m_toolState = m_tool.save();
-			// make it the active property panel
-			m_tool.setPropertyPanel(getPOIPanel());
-			// prepare to draw
-			m_tool.setShowDialog(false);
-			m_tool.setWorkPoolMode(false);
-			m_tool.setShowDrawFrame(false);
-			m_tool.setMsoData(null, poi, MsoClassCode.CLASSCODE_POI);
-			m_tool.setDrawMode(poi==null ? DrawMode.MODE_CREATE : DrawMode.MODE_REPLACE);
-			// update POI panel
-			getPOIPanel().setPOITypes(m_types);
-			getPOIPanel().setPOI(poi);
-			getPOIPanel().setPosition(poi!=null ? poi.getPosition() : null);
-			// set tool point
-			m_tool.setPoint(poi!=null ? getPOIPanel().getPoint() : m_tool.getMap().getClickPoint());
+			// show tool
+			setToolVisible(true);
+			// prepare tool
+			m_tool.setShowDialog(false);				// do not show tool dialog 
+			m_tool.setWorkPoolMode(false);				// ensures that mso model is 
+														// updated on this thread (in sync)
+			m_tool.setToolPanel(getPOIPanel());			// ensures that this position panel 
+														// is used to apply change to mso model
+			m_tool.setShowDrawFrame(false);				// do not show draw frame
+			// get draw adapter
+			m_tool.getDrawAdapter().setup(MsoClassCode.CLASSCODE_POI, null, poi, true);
 			// activate tool
 			m_wp.getMap().setActiveTool(m_tool, 0);
-			// show tool
-			NavBarPanel bar = m_wp.getApplication().getNavBar();
-			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
-			bar.setEnabledButtons(types, true, true);
-			bar.setVisibleButtons(types, true, true);
 			// show panel
 			this.setVisible(true);
 			// show map
@@ -439,10 +428,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	public void hideComponent()
 	{
 		// hide tool
-		NavBarPanel bar = m_wp.getApplication().getNavBar();
-		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
-		bar.setEnabledButtons(types, false, true);
-		bar.setVisibleButtons(types, false, true);
+		setToolVisible(false);
 		// hide num pad
 		m_wp.getApplication().getUIFactory().getNumPadDialog().setVisible(false);
 		// resume old tool state
@@ -454,6 +440,12 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 
     }
 
+	private void setToolVisible(boolean isVisible) {
+		NavBarPanel bar = m_wp.getApplication().getNavBar();
+		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
+		bar.setVisibleButtons(types, isVisible, true);		
+	}
+	
 	private void update(IMessageIf message)
 	{
 		// create or get current fining message line

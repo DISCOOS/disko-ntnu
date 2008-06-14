@@ -47,10 +47,10 @@ public class MessageLineListModel extends AbstractListModel
 	 */
 	public void updateList()
 	{
+		m_messageLines.clear();
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		if(message != null)
 		{
-			m_messageLines.clear();
 			Selector<IMessageLineIf> lineSelector = new Selector<IMessageLineIf>()
 			{
 				public boolean select(IMessageLineIf anObject)

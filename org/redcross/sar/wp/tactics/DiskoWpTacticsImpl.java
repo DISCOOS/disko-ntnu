@@ -27,9 +27,6 @@ import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AbstractPanel;
-import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
@@ -125,12 +122,19 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 		
 	private void initialize() {
-		assignWpBundle(IDiskoWpTactics.class);		
+		// get properties
+		assignWpBundle(IDiskoWpTactics.class);
+		
+		// prepare map
 		installMap();
+		
+		// set map as primary layout component
 		MapPanel panel = new MapPanel((DiskoMap)getMap());
 		panel.setNorthBarVisible(true);
 		panel.setSouthBarVisible(true);
 		layoutComponent(panel);
+		
+		// add layout buttons on sub menu
 		layoutButton(getElementToggleButton(), true);
 		layoutButton(getListToggleButton(), true);
 		layoutButton(getMissionToggleButton(), true);
@@ -141,12 +145,17 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		layoutButton(getDescriptionToggleButton(), true);
 		layoutButton(getUnitToggleButton(), true);
 
+		// load primary dialogs
+		getMissionTextDialog();
+		getHypothesesDialog();
+		getRequirementDialog();
+		
 		// install draw support
 		getMap().installEditSupport();
 		
 		// register listeners
-		getMap().addDiskoWorkListener(this);
 		getMap().getDrawAdapter().addDrawAdapterListener(this);
+		getMap().getDrawAdapter().addDiskoWorkEventListener(this);
 		
 		// add map dialogs
 		dialogs.add(getMap().getDrawDialog());
@@ -235,7 +244,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				return true;
 			case JOptionPane.NO_OPTION:
 				//schedule the cancel task to work pool
-				return doCancelWork(false);						
+				return doRollbackWork(false);						
 			case JOptionPane.CANCEL_OPTION:
 				return false;
 			}			
@@ -371,7 +380,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// do a rollback
 			if(ans == JOptionPane.OK_OPTION) {
 				//schedule the finish task to work pool
-				return doCancelWork(keep);						
+				return doRollbackWork(keep);						
 			}
 		}
 		else {			
@@ -423,6 +432,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				dialog.setVisible(false);
 			}
 		}
+		try {
+			// repaint map
+			getMap().refreshGraphics(null, getMap().getExtent());
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private MissionTextDialog getMissionTextDialog() {
@@ -438,6 +457,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				}
 				
 			});
+			missionTextDialog.addDiskoWorkListener(this);
 		}
 		return missionTextDialog;
 	}
@@ -451,10 +471,12 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				@Override
 				public void onWorkPerformed(DiskoWorkEvent e) {
 					if(e.isFinish() && inferNextElement)
-						getMap().getDrawAdapter().nextElement();					
+						getMap().getDrawAdapter().nextElement();
 				}
 				
 			});
+			hypothesesDialog.addDiskoWorkListener(this);
+
 		}
 		return hypothesesDialog;
 	}
@@ -462,6 +484,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PriorityDialog getPriorityDialog() {
 		if (priorityDialog == null) {
 			priorityDialog = new PriorityDialog(this);
+			priorityDialog.addDiskoWorkListener(this);
 			dialogs.add(priorityDialog);
 		}
 		return priorityDialog;
@@ -470,6 +493,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private RequirementDialog getRequirementDialog() {
 		if (requirementDialog == null) {
 			requirementDialog = new RequirementDialog(this);
+			requirementDialog.addDiskoWorkListener(this);
 			dialogs.add(requirementDialog);
 		}
 		return requirementDialog;
@@ -479,6 +503,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (estimateDialog == null) {
 			estimateDialog = new EstimateDialog(this);
 			dialogs.add(estimateDialog);
+			estimateDialog.addDiskoWorkListener(this);
 		}
 		return estimateDialog;
 	}
@@ -495,6 +520,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (unitSelectionDialog == null) {
 			unitSelectionDialog = new UnitSelectionDialog(this);
 			dialogs.add(unitSelectionDialog);
+			unitSelectionDialog.addDiskoWorkListener(this);
 		}
 		return unitSelectionDialog;
 	}
@@ -526,10 +552,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getEstimateToggleButton().setVisible(false);
 		getDescriptionToggleButton().setVisible(false);
 		getUnitToggleButton().setVisible(false);
-
-		// apply change of visible button
-		//NavBar navBar = getApplication().getNavBar();
-		//navBar.setVisibleButtons(getDefaultNavBarButtons(true, false),true,true);
 		
 	}
 
@@ -543,10 +565,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getDescriptionToggleButton().setVisible(false);
 		getUnitToggleButton().setVisible(false);
 
-		// apply change of visible button
-		//NavBar navBar = getApplication().getNavBar();
-		//navBar.setVisibleButtons(getDefaultNavBarButtons(true, false),true,true);
-		
 	}
 
 	private void showSearchButtons() {
@@ -845,8 +863,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		super.afterOperationChange();
 		// forward
 		reset(false);
-		// update title bar text
-		setFrameText("<" + getElementToggleButton().getToolTipText() + ">");	
+		// update title bar text?
+		if(isActive()) setFrameText("<" + getElementToggleButton().getToolTipText() + ">");	
 	}
 
 	public void handleMsoCommitEvent(Commit e) throws CommitException {
@@ -885,8 +903,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		String tooltip = DiskoEnumFactory.getTooltip(TacticsActionType.MANAGE_ELEMENTS);
 		tooltip = String.format(tooltip,name);
 		b.setToolTipText(tooltip);
-		// update frame text
-		setFrameText("<" + tooltip + ">");
+		// update frame text?
+		if(isActive()) setFrameText("<" + tooltip + ">");
 	}
 
 	public void onDrawWorkFinished(DrawMode mode, IMsoObjectIf msoObject) {
@@ -934,7 +952,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return false;
 	}
 	
-	private boolean doCancelWork(boolean keep) {
+	private boolean doRollbackWork(boolean keep) {
 		try {
 			DiskoWorkPool.getInstance().schedule(new TacticsWork(2,keep));
 			return true;

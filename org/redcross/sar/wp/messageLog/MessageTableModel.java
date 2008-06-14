@@ -92,7 +92,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
 	    	// get message log
 	        IMessageLogIf messageLog = m_wpModule.getCmdPost().getMessageLog();
 	        // exlude message when selection
-	        m_messageSelector.exclude(MessageLogBottomPanel.isNewMessage()? null : exclude);
+	        m_messageSelector.exclude(MessageLogBottomPanel.isNewMessage() ? null : exclude);
 	        // select messages
 	        m_messageList = messageLog.selectItems(m_messageSelector, IMessageIf.MESSAGE_NUMBER_COMPARATOR);        
 	        // Update hash map
@@ -253,6 +253,8 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                 return m_wpModule.getBundleText("MessageLines.text");
             case 5:
                 return m_wpModule.getBundleText("Tasks.text");
+            case 6:
+                return m_wpModule.getBundleText("Status.text");
         }
         return null;
     }
@@ -297,7 +299,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     {
         buildTable(aMessage);
         fireTableDataChanged();
-        //m_table.revalidate();
+        m_table.revalidate();
     }
 
     private void messageChanged(IMessageIf aMessage)

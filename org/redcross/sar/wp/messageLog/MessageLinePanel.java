@@ -9,6 +9,7 @@ import javax.swing.JTable;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
+import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.util.mso.Selector;
 
 /**
@@ -101,5 +102,15 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 	public void clearContents()
 	{
 		m_messageTableModel.clearMessageLines();
+	}
+	
+	public MessageLineType getSelectedMessageLineType() {
+		int row = m_messageListTable.getSelectedRow();
+		int col = m_messageListTable.getSelectedColumn();
+		if(row!=-1 && col!=-1) {
+			IMessageLineIf line = (IMessageLineIf)m_messageTableModel.getValueAt(row, col);
+			return line!=null ? line.getLineType() : null;
+		}
+		return null;
 	}
 }

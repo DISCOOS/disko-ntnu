@@ -75,7 +75,7 @@ public class MessageLineTableModel extends AbstractTableModel
 		}
 		
 		// failed
-		return "";
+		return null;
 	}
 	
 	/*

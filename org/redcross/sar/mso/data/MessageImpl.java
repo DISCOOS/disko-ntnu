@@ -534,7 +534,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         {
             if (ml.getLineType() == aType)
             {
-                if (assignmentLines.contains(ml.getLineType()))
+                if (anAssignment!=null && assignmentLines.contains(ml.getLineType()))
                 {
                     if (anAssignment == ml.getLineAssignment())
                     {

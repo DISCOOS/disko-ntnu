@@ -257,32 +257,6 @@ public class IconRenderer implements Icon
                     IUnitIf.UnitType.BOAT,
                     IUnitIf.UnitType.VEHICLE
             };
-
-            /*
-            EnumSet<IBoatIf.BoatSubType> allBoatSubTypes = EnumSet.allOf(IBoatIf.BoatSubType.class);
-
-            for (IUnitIf.UnitType unitType : EnumSet.allOf(IUnitIf.UnitType.class))
-            {
-                String unitTypeName = unitType.name();
-                if (unitType == IUnitIf.UnitType.AIRCRAFT)
-                {
-                    for (IAircraftIf.AircraftSubType aircraftSubType : EnumSet.allOf(IAircraftIf.AircraftSubType.class))
-                    {
-                        String subTypeName = unitTypeName + "_" + aircraftSubType.name();
-                        String iconName = subTypeName.toLowerCase() + ".icon";
-                        System.out.println(subTypeName + " " + iconName);
-                    }
-                } else if (unitType == IUnitIf.UnitType.BOAT)
-                {
-                    for (IBoatIf.BoatSubType BoatSubType : EnumSet.allOf(IBoatIf.BoatSubType.class))
-                    {
-                        String subTypeName = unitTypeName + "_" + BoatSubType.name();
-                        String iconName = subTypeName.toLowerCase() + ".icon";
-                        System.out.println(subTypeName + " " + iconName);
-                    }
-                }
-            }
-            */
             
             for (int i = 0; i < unitTypes.length; i++)
             {
@@ -426,6 +400,10 @@ public class IconRenderer implements Icon
             setMultiple(isMultiple);
         }
 
+        public boolean isSingleAssigmentIcon() {
+        	return m_singleAssigmentIcon;
+        }
+        
         public void setAssignment(IAssignmentIf anAssignment)
         {
             // todo test on m_singleAssigmentIcon

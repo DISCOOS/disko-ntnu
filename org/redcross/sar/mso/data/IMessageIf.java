@@ -167,7 +167,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
      * Find a (optionally create a new) message line of given type (and corresponding assignment for certain line types).
      *
      * @param aType       Type of line to create.
-     * @param anAssignment Associated assigment for certain line types.
+     * @param anAssignment Associated assignment for certain line types.
      * @param makeNewLine If set, create a new line if non-existing.
      * @return Actual line if found or created, otherwise null.
      */

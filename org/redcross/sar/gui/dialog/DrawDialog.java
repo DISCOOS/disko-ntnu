@@ -420,7 +420,9 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 	public void setBatchUpdate(boolean isBatchUpdate) {
 		Iterator<IDrawTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
-			tools.next().setBatchUpdate(isBatchUpdate);
+			IDrawTool tool =  tools.next();
+			tool.setBatchUpdate(isBatchUpdate);
+			tool.resetDirtyFlag();
 		}		
 	}
 	
@@ -498,7 +500,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 			m_tools.put(tool.getType(), tool);
 			
 			// get property panel
-			IToolPanel panel = tool.getPropertyPanel();
+			IToolPanel panel = tool.getToolPanel();
 			
 			// register panel?
 			if(panel!=null && (panel instanceof Component)) {

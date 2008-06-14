@@ -1,5 +1,7 @@
 package org.redcross.sar.map.layer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import com.esri.arcgis.display.*;
@@ -62,6 +64,24 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
  		System.out.println("Created RouteFeature " + msoObject);
  		return msoFeature;
  	}
+
+ 	@Override
+	protected List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1); 		
+		if (msoObject instanceof IAssignmentIf) {
+			IAssignmentIf assignment = (IAssignmentIf)msoObject;
+			IAreaIf area = assignment.getPlannedArea();
+			// add all routes
+			for(IMsoObjectIf msoObj: area.getAreaGeodataItems()) {
+				if(msoObj instanceof IRouteIf)
+					objects.add(msoObj);
+			}
+		}
+		else {
+			objects.add(msoObject);
+		}
+		return objects;
+	}
 
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
@@ -250,54 +270,4 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Override to ensure that area poi's also are marked as editing
-	 */
-	/*
-	public List startEdit(IMsoObjectIf msoObj) throws IOException, AutomationException {
-		List poiList = null;
-		// do default operation
-		super.startEdit(msoObj);
-		// is area?
-		if(msoObj instanceof IRouteIf) {
-			// get owning area
-			IAreaIf area = MsoUtils.getOwningArea((IRouteIf)msoObj);
-			// has owning area?
-			if(area!=null) {
-				// get collection
-				java.util.Collection<IPOIIf> c = area.getAreaPOIsItems();
-				// get poi's
-				poiList = new ArrayList<IPOIIf>(c);
-			}					
-		}		
-		// return poi list
-		return poiList;
-	}
-	*/
-	
-	/**
-	 * Override to ensure that area poi's also are marked as editing
-	 */
-	/*
-	public List stopEdit(IMsoObjectIf msoObj) throws IOException, AutomationException {
-		List poiList = null;
-		// do default operation
-		super.stopEdit(msoObj);
-		// is area?
-		if(msoObj instanceof IRouteIf) {
-			// get owning area
-			IAreaIf area = MsoUtils.getOwningArea((IRouteIf)msoObj);
-			// has owning area?
-			if(area!=null) {
-				// get collection
-				java.util.Collection<IPOIIf> c = area.getAreaPOIsItems();
-				// get poi's
-				poiList = new ArrayList<IPOIIf>(c);
-			}					
-		}
-		// return poi list
-		return poiList;
-	}		
-	*/	
 }

@@ -200,6 +200,7 @@ public class GotoPanel extends DefaultPanel {
 				m_coordinatePanel.addChangeListener(new ChangeListener() {
 
 					public void stateChanged(ChangeEvent e) {
+						if(!isChangeable()) return;
 						fireOnWorkChange(e.getSource(),null);
 					}
 					

@@ -19,38 +19,44 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.mso.Selector;
 
 public class UnitTableModel extends AbstractTableModel implements
 		IMsoUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;
+	
+	private Selector<IUnitIf> unitSelector = null;
+	
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
 	private Object[] rows = null;
 	private IMsoModelIf msoModel = null;
-	private EnumSet<UnitStatus> status = null;
 
 	public UnitTableModel(IMsoModelIf msoModel) {
-		this(msoModel,EnumSet.noneOf(UnitStatus.class));
+		this(msoModel,IUnitIf.ACTIVE_RANGE);
 	}
 	
-	public UnitTableModel(IMsoModelIf msoModel,EnumSet<UnitStatus> status) {
+	public UnitTableModel(IMsoModelIf msoModel,final EnumSet<UnitStatus> status) {
 		// prepare
 		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 		this.msoModel = msoModel;
-		this.status = status;
+		this.unitSelector = new Selector<IUnitIf>() {
+	        public boolean select(IUnitIf aUnit)
+	        {
+	            return (status.contains(aUnit.getStatus()));
+	        }
+	    };
 		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
 		// update table data
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		update(cmdPost.getUnitListItems().toArray());
+		update();
 	}
 
 	public void handleMsoUpdateEvent(Update e) {
 		
 		// update table
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		update((cmdPost!=null ? cmdPost.getUnitListItems().toArray() : null));
+		update();
 		
 	}
 
@@ -58,15 +64,26 @@ public class UnitTableModel extends AbstractTableModel implements
 		return myInterests.contains(aMsoObject.getMsoClassCode());
 	}
 	
-	private void update(Object[] data) {
-		if(data!=null) {
-			List<Object> list = new ArrayList<Object>(data.length);
-			// loop over all units
-			for (int i = 0; i < data.length; i++) {
-				// get unit
-				IUnitIf unit = (IUnitIf )data[i];
-				// filter?
-				if(status.size()==0 || status.contains(unit.getStatus())) {
+	private void update() {
+		// reset data
+		rows = null;
+		// get command post
+		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();		
+		// has command post?
+		if(cmdPost!=null) {
+			
+			// get sorted unit list
+			List<IUnitIf> units = cmdPost.getUnitList().selectItems(
+					unitSelector, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+
+			// has units?
+			if(units.size()>0) {
+				
+				// get data
+				List<Object[]> list = new ArrayList<Object[]>(units.size());
+				
+				// loop over all units
+				for(IUnitIf unit : units) {
 					// allocate memory
 					Object[] row = new Object[5];
 					// update row
@@ -78,12 +95,9 @@ public class UnitTableModel extends AbstractTableModel implements
 					// save row
 					list.add(row);
 				}
+				// get array
+				rows = list.toArray();
 			}
-			// get array
-			rows = list.toArray();
-		}
-		else {
-			rows = null;
 		}
 		super.fireTableDataChanged();
 	}

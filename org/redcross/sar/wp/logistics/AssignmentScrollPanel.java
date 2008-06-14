@@ -12,6 +12,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -426,17 +427,32 @@ public class AssignmentScrollPanel extends DiskoScrollPanel implements IDiskoDro
 		try{
 			// try to get assignment
 			IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
+			
 			// valid assignment?
 			if(assignment!=null) {
+			
+				// initialize
+				String msg = "Du kan kun flytte oppdrag tilbake til Klar";
+				
+				// get status change
 				AssignmentStatus newStatus = getSelectedStatus()==null ? AssignmentStatus.READY : getSelectedStatus();
-				// validate transfer
-		        if (AssignmentTransferUtilities.assignmentCanChangeToStatus(
-		        		assignment, newStatus, getSelectedUnit())) {
-		        	// allowed
-		        	return true;
-		        }
-	        	// notify
-				Utils.showWarning("Du kan ikke flytte oppdrag hit");		        
+				
+				// check if assignment change is allowed
+				int ans = AssignmentTransferUtilities.assignmentCanChangeToStatus(assignment, newStatus, null);
+				
+				// If unit has assigned or started assignment, ask user if this is completed
+				if(ans==0)
+				{
+					// success
+					return true;					
+				}
+				
+				// get error message
+				msg = AssignmentTransferUtilities.getErrorMessage(newStatus, ans, getSelectedUnit(), assignment,true);
+				
+				// notify reason
+				Utils.showWarning(msg);
+				
 			}
 		}
 		catch(UnsupportedFlavorException e1) {

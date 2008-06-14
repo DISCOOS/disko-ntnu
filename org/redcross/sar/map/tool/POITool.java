@@ -75,7 +75,7 @@ public class POITool extends AbstractDrawTool {
 		this.dialog = (DefaultDialog)dialog;
 				
 		// create default property panel
-		propertyPanel = addPropertyPanel();
+		toolPanel = addToolPanel();
 		
 		// registrate me in dialog
 		dialog.register(this);
@@ -210,7 +210,7 @@ public class POITool extends AbstractDrawTool {
 	 */
 	
 	public POIPanel getPOIPanel() {
-		return (POIPanel)propertyPanel;
+		return (POIPanel)toolPanel;
 	}
 	
 	public IPOIIf getPOI() {
@@ -286,7 +286,7 @@ public class POITool extends AbstractDrawTool {
 			// handle this?
 			if(!isDefined) { 
 				// get panel
-				POIPanel panel = ((POIPanel)getPropertyPanel());
+				POIPanel panel = ((POIPanel)getToolPanel());
 				// is poi?
 				if(msoObj instanceof IPOIIf) {
 					// cast to IPOIIf
@@ -317,7 +317,7 @@ public class POITool extends AbstractDrawTool {
 	}
 	
 	@Override
-	public IToolPanel addPropertyPanel() {
+	public IToolPanel addToolPanel() {
 		// create panel list?
 		if(panels==null)
 			panels = new ArrayList<IToolPanel>(1);			

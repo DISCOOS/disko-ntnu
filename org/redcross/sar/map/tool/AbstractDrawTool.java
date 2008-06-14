@@ -40,7 +40,9 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
+import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
 import com.esri.arcgis.carto.InvalidArea;
@@ -245,30 +247,37 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}
 	
 	public boolean setPoint(Point p) {
+		return setPoint(p,false);
+	}
+	
+	public boolean setPoint(Point p, boolean isDirty) {
 		try {
+			//System.out.println(p!=null ? MapUtil.getMGRSfromPoint(p) : "null");
 			// is valid?
 			if(p!=null && !p.isEmpty()) {
 				// update 
 				this.p = p;
 				this.geoPoint = p;				
 				// forward
-				setDirty(true);
-				// update frame later
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						try {
-							// forward?
-							if (!prepareDrawFrame() && isGeometriesDrawn())
-								refresh();
-						} catch (AutomationException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+				setDirty(isDirty);
+				// update frame later?
+				if(isShowDrawFrame()) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							try {
+								// forward?
+								if (!prepareDrawFrame() && isGeometriesDrawn())
+									refresh();
+							} catch (AutomationException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
-					}
-				});				
+					});
+				}
 				// finished
 				return true;
 			}
@@ -286,7 +295,11 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}
 	
 	public boolean setPointFromMap() {
-		return setPoint(map.getClickPoint());
+		return setPointFromMap(false);
+	}	
+	
+	public boolean setPointFromMap(boolean isDirty) {
+		return setPoint(map.getClickPoint(),isDirty);
 	}	
 	
 	/* =========================================================
@@ -328,9 +341,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			// allowed?
 			if(flag) {
 				// update modes in panel
-				getPropertyPanel().update();		
+				getToolPanel().update();		
 				// forward?
-				if(!isDirty) setGeometries();
+				if(!isDirty()) setGeometries();
 				// turn on snapping?
 				if(snapAdapter!=null) {
 					// forward
@@ -719,7 +732,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObj.getMsoClassCode()) ||
 						MsoClassCode.CLASSCODE_ROUTE.equals(msoObj.getMsoClassCode())); 
 			// point not supported?
-			if(msoObj!=null && !supportsLine) msoObj=null; // invalid object referense
+			if(msoObj!=null && !supportsLine) msoObj=null; // invalid object reference
 		}
 		// set mso owner object
 		this.msoOwner = msoOwn;
@@ -776,7 +789,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	private boolean setGeometries() {
 			
 		// initialize flag
-		setDirty(geoPath!=null || geoPoint!=null);
+		boolean isDirty = (geoPath!=null || geoPoint!=null);
 			
 		try {
 			
@@ -806,11 +819,11 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					if(featureType!=null){ 
 						// do work depending on type of feature
 						if(FeatureType.FEATURE_POLYGON.equals(featureType))
-							setDirty(setPolygon());
+							isDirty = setPolygon();
 						else if(FeatureType.FEATURE_POLYLINE.equals(featureType))
-							setDirty(setPolyline());
+							isDirty = setPolyline();
 						else if(FeatureType.FEATURE_POINT.equals(featureType))
-							setDirty(setPoint());
+							isDirty = setPoint();
 						// set flag?
 						isContinued = isDirty;
 					}
@@ -1219,7 +1232,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// set flag
 		this.isDrawing = isDrawing;
 		// update panel
-		getPropertyPanel().update();		
+		getToolPanel().update();		
 	}
 	
 	
@@ -1467,6 +1480,23 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// valid zoom?
 		if(!map.isDrawAllowed())  {
 			Utils.showWarning("Tegning er kun mulig fra skala 1:" + ((int)map.getMaxDrawScale()) + " og lavere");
+			map.showProgressor(true);
+			Runnable r = new Runnable() {
+				public void run() {
+					try {
+						map.centerAt(p);
+						map.setMapScale(75000);
+					} catch (AutomationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					map.hideProgressor();
+				}
+			};
+			SwingUtilities.invokeLater(r);
 			return false;
 		}
 		
@@ -1797,6 +1827,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						ISearchIf search = assignmentList.createSearch();
 						// forward
 						doPrepare(search,true);
+						// set planned area
+						search.setPlannedArea((IAreaIf)msoOwner);
 					}
 					// cast owner area to interface IAreaIf
 		            IAreaIf area = (IAreaIf)msoOwner;
@@ -1967,7 +1999,10 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						// update
 						poi.setPosition(MapUtil.getMsoPosistion(geoPoint));
 						
-						// dispatch the mso draw data
+						// initialize update flag
+						boolean bUpdateSeqNum = true;
+						
+						// is drawing an area?
 						if (msoCode == MsoClassCode.CLASSCODE_ROUTE) {
 							
 							// get poi type
@@ -1977,8 +2012,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 							boolean isAreaPOI = (poiType == IPOIIf.POIType.START) || 
 								(poiType == IPOIIf.POIType.VIA) || (poiType == IPOIIf.POIType.STOP);
 							
-							// add to area poi list?
-							if(isAreaPOI) {
+							//is an area poi type?
+							if(isAreaPOI) {									
 								
 								// create owner?
 								if(msoOwner==null || isCreateMode()) {
@@ -1991,11 +2026,20 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 								}
 								// get area
 								IAreaIf area = (IAreaIf)msoOwner;
-								area.getAreaPOIs().add(poi);								
+								area.getAreaPOIs().add(poi);
+								// use local sequence number set by area 
+								bUpdateSeqNum = false;
 							}
 						}
+						
+						// update area sequence number?
+						if(bUpdateSeqNum) {
+							poi.setAreaSequenceNumber(cmdPost.getPOIList().getNextSequenceNumber(poi.getType()));
+						}
+						
 						// forward?
 						if(msoOwner!=null) doPrepare(msoOwner,false);
+						
 						// success
 						return true;
 					}
@@ -2011,11 +2055,68 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					}
 					else {
 						
+						// get attributes
+						Calendar logTimeStamp = (Calendar)
+								getAttribute("LOGTIMESTAMP");
+						boolean bLogPosition = Boolean.valueOf(
+								getAttribute("LOGPOSITION").toString());
+						TimePos timePos = (TimePos)
+								getAttribute("UPDATETRACKPOSITION");
+																	
 						// cast to unit
 						IUnitIf msoUnit = (IUnitIf)msoObject;
 						
-						// update
-						msoUnit.setPosition(MapUtil.getMsoPosistion(geoPoint));					
+						// get track
+						ITrackIf track = msoUnit.getTrack();
+						
+						// create track?
+						if(track==null && (bLogPosition || timePos!=null)) {
+							// get command post
+							ICmdPostIf cmdPost = Utils.getApp().getMsoModel()
+															   .getMsoManager().getCmdPost();
+							// create new track
+							track = cmdPost.getTrackList().createTrack();
+							// set geodata
+							track.setGeodata(new Track(null, null, 1));
+							// set track reference in unit
+							msoUnit.setTrack(track);
+						}
+						
+						// get position
+						Position p = MapUtil.getMsoPosistion(geoPoint);
+													
+						// initialize update flag
+						boolean bUpdatePosition = true;
+						
+						// update track point?
+						if(timePos!=null) {
+							// try to find position
+							int i = track.getGeodata().find(timePos);
+							// found?
+							if(i!=-1) {
+								// get found position
+								TimePos found = track.getGeodata().get(i);
+								// only update unit position if logged point equals current position
+								bUpdatePosition = MapUtil.isFloatEqual(
+										found.getPosition(),msoUnit.getPosition().getPosition()); 
+								// update logged position
+								found.setPosition(p.getPosition());
+								//
+								TimePos test = track.getGeodata().get(i);
+								System.out.println(test.equals(found));
+							}
+							else {
+								System.out.println("Error! Did not find required track point in log");
+							}
+						}
+						
+						// update unit position?
+						if(bUpdatePosition)
+							msoUnit.setPosition(p);
+						
+						// log position?
+						if(bLogPosition)
+							msoUnit.logPosition(logTimeStamp);
 												
 					}
 					

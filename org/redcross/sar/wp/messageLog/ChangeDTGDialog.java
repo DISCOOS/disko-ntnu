@@ -4,14 +4,11 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -20,10 +17,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,7 +64,7 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 		try
 		{
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(180,250));
+            this.setPreferredSize(new Dimension(170,240));
             this.setUndecorated(true);
 			this.pack();
 			m_timeTextField.requestFocus();
@@ -111,12 +106,14 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 				m_createdLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogCreated.text"));
 				m_createdLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_createdPanel.add(m_createdLabel);
-				m_createdLabel.setPreferredSize(new Dimension(70,30));
+				Utils.setFixedSize(m_createdLabel,70,30);
 				m_createdPanel.add(Box.createHorizontalStrut(5));
 				m_createdTextField = new JTextField(6);
 				m_createdTextField.setEditable(false);
 				m_createdPanel.add(m_createdTextField);
-				Utils.setFixedSize(m_createdPanel,170,30); 
+				m_createdPanel.add(Box.createHorizontalGlue());
+				Utils.setFixedSize(m_createdPanel,160,30);
+				
 
 				panel.add(m_createdPanel);				
 				panel.add(Box.createVerticalStrut(5));
@@ -126,13 +123,14 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 				m_timeLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogTime.text"));
 				m_timeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				m_timePanel.add(m_timeLabel);
-				m_timeLabel.setPreferredSize(new Dimension(70,30));
+				Utils.setFixedSize(m_timeLabel,70,30);
 				m_createdPanel.add(Box.createHorizontalStrut(5));
 				m_timeTextField = new JFormattedTextField();
 				m_timeTextField.setDocument(new NumericDocument(6,0,false));
 				m_timeTextField.addKeyListener(this);
 				m_timePanel.add(m_timeTextField);
-				Utils.setFixedSize(m_timePanel,170,30); 
+				m_timePanel.add(Box.createHorizontalGlue());
+				Utils.setFixedSize(m_timePanel,160,30); 
 
 				panel.add(m_timePanel);
 				panel.add(Box.createVerticalGlue());
@@ -199,6 +197,7 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 	 */
 	public void newMessageSelected(IMessageIf message)
 	{
+    	// forward
 		setCreated(message.getCreated());
 		setTime(message.getOccuredTime());
 	}

@@ -4,6 +4,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoCastException;
@@ -165,7 +166,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public void setStatusAndOwner(AssignmentStatus aStatus, IUnitIf aUnit) throws IllegalOperationException
     {
-        if (!AssignmentTransferUtilities.assignmentCanChangeToStatus(this, aStatus, aUnit))
+        if (AssignmentTransferUtilities.assignmentCanChangeToStatus(this, aStatus, aUnit)!=0)
         {
             throw new IllegalOperationException("Cannont change status from " + getStatus() + " to " + aStatus);
         }
@@ -209,6 +210,11 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
             if (changeOwner)
             {
                 aUnit.addUnitReference(this);
+                // set position of unit automatically?
+                if(AssignmentStatus.EXECUTING.equals(aStatus)) {
+            		aUnit.setPosition(MsoUtils.getStartPosition(this));
+                }
+                
             } else // prioritySequence can have been changed even if status is unchanged.
             {
                 aUnit.rearrangeAsgPrioritiesAfterStatusChange(this, oldStatus);
@@ -610,10 +616,10 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public void verifyAllocatable(AssignmentStatus newStatus, IUnitIf aUnit, boolean unassignIfPossible) throws IllegalOperationException
     {
-        // todo Test on type of assigment compared to type of unit.
-        if (!AssignmentTransferUtilities.assignmentCanChangeToStatus(this, AssignmentStatus.QUEUED, aUnit))
+        // TODO: Test on type of assignment compared to type of unit.
+        if (AssignmentTransferUtilities.assignmentCanChangeToStatus(this, AssignmentStatus.QUEUED, aUnit)!=0)
         {
-            throw new IllegalOperationException("Assignment " + this + " cannot change status to ALLOCATED.");
+            throw new IllegalOperationException("Assignment " + this + " cannot change status to QUEUED.");
         }
         if (getStatus() == AssignmentStatus.QUEUED && !unassignIfPossible)
         {

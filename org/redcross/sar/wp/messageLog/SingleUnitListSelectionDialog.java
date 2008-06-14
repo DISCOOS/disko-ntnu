@@ -103,7 +103,6 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 	/**
 	 * Selects active units based on the unit type filter
 	 */
-	private final EnumSet<UnitStatus> m_activeUnitStatusSet = EnumSet.range(UnitStatus.READY, UnitStatus.PENDING);
 	private final EnumSet<CmdPostStatus> m_activeCmdPostStatusSet = EnumSet.of(CmdPostStatus.IDLE, CmdPostStatus.OPERATING, CmdPostStatus.PAUSED);
 	private Selector<ICommunicatorIf> m_communicatorSelector = new Selector<ICommunicatorIf>()
 	{
@@ -121,7 +120,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 			{
 				// Unit should be selected if it is active, and the unit type filter match
 				IUnitIf unit = (IUnitIf)communicator;
-				return m_activeUnitStatusSet.contains(unit.getStatus()) &&
+				return IUnitIf.ACTIVE_RANGE.contains(unit.getStatus()) &&
 						(m_unitTypeFilter == unit.getType() || m_unitTypeFilter == null);
 			}
 			else

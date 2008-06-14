@@ -808,8 +808,8 @@ public class CoordinatePanel extends JPanel {
 	
 	@Override
 	public void setEnabled(boolean isEnabled) {
-		getSquareCombo().setEditable(isEnabled);
-		getZoneCombo().setEditable(isEnabled);
+		getSquareCombo().setEnabled(isEnabled);
+		getZoneCombo().setEnabled(isEnabled);
 		getLatitudeText().setEditable(isEnabled);
 		getLongetudeText().setEditable(isEnabled);
 		super.setEnabled(isEnabled);

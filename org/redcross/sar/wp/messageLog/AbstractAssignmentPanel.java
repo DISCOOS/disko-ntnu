@@ -3,12 +3,12 @@ package org.redcross.sar.wp.messageLog;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -18,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -28,13 +27,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import no.cmr.tools.Log;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -42,6 +41,7 @@ import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -51,7 +51,6 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Selector;
-import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog.MessageLogActionType;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -73,32 +72,33 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
     protected JPanel m_cardsPanel = null;
 
-    protected JPanel m_messageLinesPanel = null;
+    protected BasePanel m_messageLinesPanel = null;
     protected JList m_messageLineList = null;
     
     protected IAssignmentIf m_selectedAssignment = null;
     protected AttributesPanel m_selectedPanel = null;
+    protected IUnitIf m_assignmentUnit = null;
     
     protected JPanel m_buttonPanel = null;
-    protected JButton m_okButton = null;
     protected JButton m_cancelButton = null;
     protected JButton m_centerAtButton = null;
+    protected JButton m_addButton = null;
+    protected JButton m_okButton = null;
 
     protected AttributesPanel m_editAssignmentPanel = null;
     protected IMessageLineIf m_editingLine = null;
     
-    protected JPanel m_nextAssignmentsPanel = null;
+    protected BasePanel m_nextAssignmentsPanel = null;
     protected JPanel m_nextAssignmentsButtonPanel = null;
     protected JScrollPane m_nextAssignmentScrollPane = null;
     protected ButtonGroup m_nextAssignmentButtonGroup = null;
 
     protected BasePanel m_assignmentPoolPanel = null;
     protected JPanel m_assignmentPoolButtonPanel = null;
-    protected JScrollPane m_assignmentPoolScrollPane = null;
     protected ButtonGroup m_assignmentPoolButtonGroup = null;
 
 
-    protected List<IMessageLineIf> m_addedLines = new LinkedList<IMessageLineIf>();
+    protected static List<IMessageLineIf> m_addedLines = new LinkedList<IMessageLineIf>();
 
     protected boolean m_notebookMode = true;
 
@@ -143,7 +143,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
                 Calendar time = DTG.DTGToCal(m_editAssignmentPanel
                 		.getAttribute("Time").getValue().toString());
                 m_editingLine.setOperationTime(time);
-                m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", "48x48"));
+                //m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", "48x48"));
             }
             catch (IllegalMsoArgumentException e1)
             {
@@ -153,22 +153,41 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     }
 
     /**
-     * Overridden by sub-classes in order to revert the changes. This includes removing any
-     * message lines added
+     * Remove last additions
      */
-    public abstract void cancelUpdate();
+    public void cancelUpdate() {
+    	
+    	clearContents();
+		
+    }
 
     /**
      * Update assignment list model with the relevant lines. E.g. in the started dialog only message lines of type
      * started should be shown in the message line list
      */
-    protected abstract void updateAssignmentLineList();
+    public abstract void updateAssignmentLineList();
 
     /**
      * Add new message line(s). Rules and logic is handled in sub-classes
      */
     protected abstract void addNewMessageLine();
 
+	/**
+	 * Add selected assignment to selected
+	 */
+    /*
+	protected IMessageLineIf addToSelected(IMessageLineIf line) {
+		
+		if(line!=null)
+		{
+			if(!m_selected.contains(line)) {
+				m_selected.add(line);
+			}	
+		}		
+		return line;
+	}	
+	*/
+    
     /**
      * Adds an message line with the currently selected assignment.
      */
@@ -211,19 +230,12 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     
     protected void initMessageLinesPanel()
     {
-        m_messageLinesPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-
+        m_messageLinesPanel = new BasePanel("");
         m_messageLineList = new JList(new MessageLineListModel(m_wpMessageLog));
         m_messageLineList.setCellRenderer(new MessageLineListRenderer());
         m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        //m_messageLineList.setFixedCellHeight(25);
         m_messageLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_messageLineList, this));
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.anchor = GridBagConstraints.CENTER;
-        m_messageLinesPanel.add(m_messageLineList, gbc);
+        m_messageLinesPanel.setBodyComponent(m_messageLineList);
         
         m_cardsPanel.add(m_messageLinesPanel, MESSAGE_LINES_ID);
     }
@@ -231,7 +243,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     protected void initEditAssignmentPanel()
     {
         
-    	m_editAssignmentPanel = new AttributesPanel("Endre meldingslinje","Ingen oppdrag funnet",false,false);
+    	m_editAssignmentPanel = new AttributesPanel("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
     	m_selectedPanel.setHeaderVisible(false);
     	
     	// add attributes
@@ -249,12 +261,14 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     
     protected void initNextAssignmentPanel()
     {
-        m_nextAssignmentsPanel = new JPanel();
-        m_nextAssignmentsPanel.setLayout(new BorderLayout());
+        m_nextAssignmentsPanel = new BasePanel("Velg i fra kø");
+        
         m_nextAssignmentsButtonPanel = new JPanel();
+        m_nextAssignmentsButtonPanel.setBackground(Color.WHITE);
         m_nextAssignmentsButtonPanel.setLayout(new BoxLayout(m_nextAssignmentsButtonPanel, BoxLayout.PAGE_AXIS));
-        m_nextAssignmentScrollPane = new JScrollPane(m_nextAssignmentsButtonPanel);
-        m_nextAssignmentsPanel.add(m_nextAssignmentScrollPane, BorderLayout.CENTER);
+        
+        m_nextAssignmentsPanel.setBodyComponent(m_assignmentPoolButtonPanel);
+                
         m_nextAssignmentButtonGroup = new ButtonGroup();
 
         m_cardsPanel.add(m_nextAssignmentsPanel, NEXT_ASSIGNMENT_ID);
@@ -262,14 +276,14 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
     protected void initAssignmentPoolPanel()
     {
-        m_assignmentPoolPanel = new BasePanel("Velg i fra kø");
+        m_assignmentPoolPanel = new BasePanel("Velg et oppdrag");
 
         m_assignmentPoolButtonPanel = new JPanel(new GridBagLayout());
+        m_assignmentPoolButtonPanel.setBackground(Color.WHITE);
 
-        m_assignmentPoolScrollPane = new JScrollPane(m_assignmentPoolButtonPanel);
         m_assignmentPoolButtonGroup = new ButtonGroup();
 
-        m_assignmentPoolPanel.setBodyComponent(m_assignmentPoolScrollPane);
+        m_assignmentPoolPanel.setBodyComponent(m_assignmentPoolButtonPanel);
 
         m_cardsPanel.add(m_assignmentPoolPanel, ASSIGNMENT_POOL_ID);
     }
@@ -286,8 +300,13 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         {
             public void actionPerformed(ActionEvent e)
             {
-            	if(MESSAGE_LINES_ID.equals(m_currentView)) 
-            		hideComponent(); 
+        		// update view
+            	if(MESSAGE_LINES_ID.equals(m_currentView)) {
+                	// remove all 
+            		cancelUpdate();
+                	// forward
+            		MessageLogBottomPanel.showListPanel(); 
+            	}
             	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView))             	
                     revertEditPanel();
             	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView))
@@ -312,23 +331,34 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         
         m_buttonPanel.add(m_centerAtButton);
         
+    	// create add button
+    	m_addButton = DiskoButtonFactory.createButton("GENERAL.PLUS",ButtonSize.NORMAL);
+        
+    	m_addButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+            	if(MESSAGE_LINES_ID.equals(m_currentView))
+        			addNewMessageLine();
+            }
+        });
+    	
+        m_buttonPanel.add(m_addButton);
+    	
     	// create OK button
-    	m_okButton = DiskoButtonFactory.createButton("GENERAL.PLUS",ButtonSize.NORMAL);
+    	m_okButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
         
     	m_okButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
             {
             	if(MESSAGE_LINES_ID.equals(m_currentView)) {
-            		if(linesAdded())
-            			updateMessageLine();
-            		else
-            			addNewMessageLine();
+            		MessageLogBottomPanel.showListPanel();
             	}
             	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView)) 
                     updateMessageLine();
             	else if(NEXT_ASSIGNMENT_ID.equals(m_currentView))
-                    addSelectedAssignment();
+            		addSelectedAssignment();
             	else if(ASSIGNMENT_POOL_ID.equals(m_currentView))
             		addSelectedAssignment();
             }
@@ -344,6 +374,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
      */
     public void clearContents()
     {
+    	removeAddedLine(null,true);
+    	//m_selected.clear();
+    	updateAssignmentLineList();
     }
 
     /**
@@ -351,6 +384,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
      */
     public void newMessageSelected(IMessageIf message)
     {
+    	// forward
         updateAssignmentLineList();
     }
 
@@ -358,6 +392,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         this.setVisible(true);
         setView(MESSAGE_LINES_ID);
+    	
+        // initialize buttons
+        m_addButton.setEnabled(true);        
         
     }
     
@@ -376,6 +413,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	// do view spesific tasks
     	if(MESSAGE_LINES_ID.equals(m_currentView)) { 
     		m_selectedPanel.setVisible(false);
+    		m_messageLinesPanel.setCaptionText (
+    				m_messageLineList.getModel().getSize()==0 ?
+    					"Ingen endringer i oppdragsstatus registrert"
+    				:   "Endringer i oppdragsstatus");
     		MessageLogPanel.hideMap();
     	}
     	else if(EDIT_ASSIGNMENT_ID.equals(m_currentView)) {
@@ -402,22 +443,29 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 		if(m_selectedAssignment != null)
 		{
 			
-			try
-			{
-            	IDiskoMap map = m_wpMessageLog.getMap();
-            	map.suspendNotify();
-				map.centerAtMsoObject(m_selectedAssignment);
-				map.refreshMsoLayers();
-            	map.resumeNotify();
-			}
-			catch (AutomationException e1)
-			{
-				e1.printStackTrace();
-			}
-			catch (IOException e1)
-			{
-				e1.printStackTrace();
-			}
+			/*
+			if(MessageLogPanel.isMapShown())
+				MessageLogPanel.hideMap();
+			else {
+				*/
+				MessageLogPanel.showMap();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							IDiskoMap map = m_wpMessageLog.getMap();
+							map.suspendNotify();
+							map.centerAtMsoObject(m_selectedAssignment);
+							map.flashMsoObject(m_selectedAssignment);
+							map.refreshMsoLayers();
+							map.resumeNotify();
+						} catch (AutomationException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				});
+			//}
 		}
 		else {
 			Utils.showWarning("Du må først velge ett oppdrag");
@@ -445,8 +493,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
     protected void showAssignmentPool()
     {
+    	m_addButton.setEnabled(false);
         m_assignmentPoolButtonPanel.removeAll();
-        m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.PLUSS", "48x48"));
+
         m_assignmentPoolButtonGroup = new ButtonGroup();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
@@ -457,49 +506,79 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         {
             return;
         }
+        
         Collection<IAssignmentIf> assignments = cmdPost.getAssignmentList().selectItems(m_assignmentPoolSelector);
         int i = 0;
         int numButtonsInRow = m_assignmentPoolButtonPanel.getWidth() / 
         		DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).width;
+
+        // get consumed assignments
+        List<IAssignmentIf> consumed = new ArrayList<IAssignmentIf>();
+        IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+        if (message != null) {
+        	List<IMessageLineIf> lines = new ArrayList<IMessageLineIf>();
+    		Selector<IMessageLineIf> lineSelector = new Selector<IMessageLineIf>()
+    		{
+    			public boolean select(IMessageLineIf anObject)
+    			{
+    				return (anObject!=null && anObject.getLineType().equals(MessageLineType.ASSIGNED));
+    			}
+    		};
+    		lines.addAll(message.getMessageLines().selectItems(lineSelector));
+    		// loop over all and add assignments
+    		for(IMessageLineIf it : lines) {
+    			consumed.add(it.getLineAssignment());
+    		}
+        }                
+        
         for (final IAssignmentIf assignment : assignments)
         {
-            JToggleButton button = DiskoButtonFactory.createToggleButton(assignment,ButtonSize.NORMAL);
-            button.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent e)
-                {
-                    // Select button
-                    JToggleButton sourceButton = (JToggleButton) e.getSource();
-                    selectAssignmentButton(sourceButton, m_assignmentPoolButtonGroup);
-                    selectAssignment(assignment);
-                }
-            });
-            m_assignmentPoolButtonGroup.add(button);
-
-
-            if (i % numButtonsInRow == 0)
-            {
-                gbc.gridx = 0;
-                gbc.gridy++;
-            }
-            gbc.gridx++;
-            m_assignmentPoolButtonPanel.add(button, gbc);
-            i++;
+        	// add?
+        	if(!consumed.contains(assignment)) {        	
+	            JToggleButton button = DiskoButtonFactory.createToggleButton(assignment,ButtonSize.NORMAL);
+	            button.addActionListener(new ActionListener()
+	            {
+	                public void actionPerformed(ActionEvent e)
+	                {
+	                    // Select button
+	                    JToggleButton sourceButton = (JToggleButton) e.getSource();
+	                    selectAssignmentButton(sourceButton, m_assignmentPoolButtonGroup);
+	                    selectAssignment(assignment);
+	                }
+	            });
+	            m_assignmentPoolButtonGroup.add(button);
+	
+	
+	            if (i % numButtonsInRow == 0)
+	            {
+	                gbc.gridx = 0;
+	                gbc.gridy++;
+	            }
+	            gbc.gridx++;
+	            m_assignmentPoolButtonPanel.add(button, gbc);
+	            i++;
+        	}
         }
 
-        // Select button with highest priority
-        try
-        {
-            JToggleButton selectedButton = (JToggleButton) m_assignmentPoolButtonGroup.getElements().nextElement();
-            selectAssignmentButton(selectedButton, m_assignmentPoolButtonGroup);
-            Iterator<IAssignmentIf> assignmentIt = assignments.iterator();
-            selectAssignment(assignmentIt.hasNext() ? assignmentIt.next() : null);
+        // anything added?
+        if(i>0) {
+	        // Select button with highest priority
+	        try
+	        {
+	            JToggleButton selectedButton = (JToggleButton) m_assignmentPoolButtonGroup.getElements().nextElement();
+	            selectAssignmentButton(selectedButton, m_assignmentPoolButtonGroup);
+	            Iterator<IAssignmentIf> assignmentIt = assignments.iterator();
+	            selectAssignment(assignmentIt.hasNext() ? assignmentIt.next() : null);
+	        }
+	        catch (Exception e)
+	        {
+	        }
+	
+	        setView(ASSIGNMENT_POOL_ID);
         }
-        catch (Exception e)
-        {
+        else {
+        	Utils.showWarning("Det er ingen flere ledige oppdrag");
         }
-
-        setView(ASSIGNMENT_POOL_ID);
         
     }
 
@@ -510,7 +589,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         m_nextAssignmentsButtonPanel.removeAll();
         m_nextAssignmentButtonGroup = new ButtonGroup();
-        m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.PLUSS", "48x48"));
+        //m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.PLUS", "48x48"));
 
         // Get assignments in receiving unit's queue
         IUnitIf unit = (IUnitIf) MessageLogBottomPanel.getCurrentMessage(true).getSingleReceiver();
@@ -626,17 +705,21 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         MessageLineListModel model = (MessageLineListModel) m_messageLineList.getModel();
         m_editingLine = (IMessageLineIf) model.getElementAt(index);
-        m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", "48x48"));
+
+        m_addButton.setEnabled(false);        
+
 
         if (m_editingLine == null)
         {
             Log.error("showEditAssignment: edit line null");
             return;
         }
-        IAssignmentIf assignment = m_editingLine.getLineAssignment();
+        
+        // get selected assignment
+        m_selectedAssignment = m_editingLine.getLineAssignment();
 
         m_editAssignmentPanel.getAttribute("Assignment").setValue(
-        		MsoUtils.getAssignmentName(assignment, 1));
+        		MsoUtils.getAssignmentName(m_selectedAssignment, 1));
 		m_editAssignmentPanel.getAttribute("Time").setValue(
 				DTG.CalToDTG(m_editingLine.getOperationTime()));
 		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Assignment"),360,25);
@@ -645,55 +728,87 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         setView(EDIT_ASSIGNMENT_ID);
     }
 
+    protected IUnitIf getAvailableUnit(IMessageIf message) {
+    	IUnitIf unit = null;
+		
+    	// get unit if exists
+		ICommunicatorIf com = message!=null ? message.getSingleReceiver() : null;
+		unit =(com instanceof IUnitIf) ? (IUnitIf)com : null;
+		
+		// found
+		if(unit!=null) return unit;
+		
+		// get unit if exists
+		message = MessageLogBottomPanel.getCurrentMessage(false);
+		com = message!=null ? message.getSender() : null;
+		unit =(com instanceof IUnitIf) ? (IUnitIf)com : null;
+
+		// finished
+    	return unit;
+    }
+    
     /**
      * @return Whether sending unit has next assignment in assignment queue
      */
-    protected boolean unitHasNextAssignment()
+    protected static boolean unitHasNextAssignment(IUnitIf unit)
     {
-        IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-        if (message != null)
+        if (unit != null)
         {
-            IUnitIf unit = (IUnitIf) message.getSender();
             return unit!=null && unit.getAllocatedAssignments().size() != 0;
         } else
         {
             return false;
         }
     }
-
+    
     /**
      * @return Whether sending unit has any assigned assignments
      */
-    protected boolean unitHasAssignedAssignment()
+    protected static boolean unitHasAssignedAssignment(IUnitIf unit)
     {
-        IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-        if (message != null)
+        if (unit != null)
         {
-            IUnitIf unit = (IUnitIf) message.getSender();
-            return unit!=null && !unit.getAssignedAssignments().isEmpty();
+            return unit!=null && !unit.getAssignedAssignments().isEmpty() || linesAdded(MessageLineType.ASSIGNED)>0;
         } else
         {
             return false;
         }
     }
 
-    protected boolean unitHasStartedAssignment()
+    protected static boolean unitHasStartedAssignment(IUnitIf unit)
     {
-        IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-        if (message != null)
+        if (unit != null)
         {
-            IUnitIf unit = (IUnitIf) message.getSender();
-            return unit!=null && unit.getExecutingAssigment() != null;
+            return unit!=null && unit.getExecutingAssigment() != null || linesAdded(MessageLineType.STARTED)>0;
         } else
         {
             return false;
         }
     }
 
+    protected static boolean unitHasCompletedAssignment()
+    {
+        IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+        if (message != null)
+        {
+            IMessageLineIf line = message.findMessageLine(MessageLineType.COMPLETED, false);
+            return line!=null || linesAdded(MessageLineType.COMPLETED)>0;
+        } else
+        {
+            return false;
+        }
+    }    
+    
+    public static boolean messageHasAssignments() {
+    	return messageHasAssignedAssignment() 
+    		|| messageHasStartedAssignment() 
+    		|| messageHasCompletedAssignment();
+    }
+    
     /**
      * @return Whether the current message already has a assigned message line
      */
-    protected boolean messageHasAssignedAssignment()
+    protected static boolean messageHasAssignedAssignment()
     {
         IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
         if (message != null)
@@ -707,7 +822,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     /**
      * @return Whether the current message has a started message line
      */
-    protected boolean messageHasStartedAssignment()
+    protected static boolean messageHasStartedAssignment()
     {
         IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
         if (message != null)
@@ -718,7 +833,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         return false;
     }
 
-    protected boolean messageHasCompletedAssignment()
+    protected static boolean messageHasCompletedAssignment()
     {
         IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
         if (message != null)
@@ -746,29 +861,71 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     }
 
 
-    public List<IMessageLineIf> getAddedLines()
+    public static List<IMessageLineIf> getAddedLines()
     {
         return m_addedLines;
     }
 
-    public boolean linesAdded()
+    public static int linesAdded(MessageLineType type)
     {
-        return m_addedLines.size() != 0;
+    	int count=0;
+    	for(IMessageLineIf it: m_addedLines) {
+    		if(it.getLineType().equals(type)) count++;
+    	}
+        return count;
     }
-
+    
+    public static IMessageLineIf getAddedLine(MessageLineType type)
+    {
+    	for(IMessageLineIf it: m_addedLines) {
+    		if(it.getLineType().equals(type)) return it;
+    	}
+        return null;
+    }
+    
     /**
      * Removes an added line
      *
      * @param line If {@code null} all lines are removed
      */
-    public void lineRemoved(IMessageLineIf line)
+    public static void removeAddedLine(IMessageLineIf line, boolean delete)
     {
         if (line == null)
         {
+        	if(delete) {
+	        	for(IMessageLineIf it: m_addedLines) {
+	        		it.deleteObject();
+	        	}
+        	}
             m_addedLines.clear();
         } else
         {
+        	if(delete) line.deleteObject();
             m_addedLines.remove(line);
+        }
+    }
+    
+    public static void removeAddedLineType(MessageLineType type, boolean delete)
+    {
+        if (type == null)
+        {
+        	if(delete) {
+	        	for(IMessageLineIf it: m_addedLines) {
+	        		it.deleteObject();
+	        	}
+        	}
+            m_addedLines.clear();
+        } else
+        {
+        	List<IMessageLineIf> removed = new ArrayList<IMessageLineIf>();
+        	for(IMessageLineIf it: m_addedLines) {
+        		if(it.getLineType().equals(type))
+        			removed.add(it);
+        	}
+        	for(IMessageLineIf it: removed) {
+        		if(delete) it.deleteObject();
+        		m_addedLines.remove(it);
+        	}        	        		
         }
     }
     

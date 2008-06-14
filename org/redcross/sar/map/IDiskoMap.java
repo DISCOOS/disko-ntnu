@@ -154,6 +154,8 @@ public interface IDiskoMap {
 	public boolean isInitMode();
 	public void setInitMode(boolean isInitMode);
 	
+	public IEnvelope getFullExtent() throws IOException, AutomationException;
+	
 	public IEnvelope getExtent() throws IOException, AutomationException;
 	public void setExtent(IEnvelope e) throws IOException, AutomationException;
 	

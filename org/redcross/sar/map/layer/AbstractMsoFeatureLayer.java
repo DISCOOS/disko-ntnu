@@ -17,6 +17,7 @@ import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.EventType;
@@ -106,13 +107,14 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return msoModel;
 	}
 
+	protected List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
+		objects.add(msoObject);
+		return objects;
+	}
+	
 	public void handleMsoUpdateEvent(Update e) {
 		try {
-
-			// try to get mso feature
-			MsoFeatureClass msoFC = (MsoFeatureClass)featureClass;
-			IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-			IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
 
 			// get event flags
 			int mask = e.getEventTypeMask();
@@ -122,31 +124,42 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			boolean addedReference = (mask & EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
 			boolean removedReference = (mask & EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
 			
-			// get other flags
-			boolean isFeature = msoObj.getMsoClassCode().equals(classCode);
+			// try to get mso feature
+			MsoFeatureClass msoFC = (MsoFeatureClass)featureClass;
+			List<IMsoObjectIf> msoObjs = getGeodataMsoObjects((IMsoObjectIf)e.getSource());
 			
-			// add object?
-			if (createdObject && msoFeature == null && isFeature) {
-				// create and att to feature class				
-				msoFeature = createMsoFeature(msoObj);
-				msoFC.addFeature(msoFeature);
-				// update dirty flag
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
-			}
-			// is object modified?
-			if ( (addedReference || removedReference || modifiedObject) 
-					&& msoFeature != null && msoFeature.geometryIsChanged(msoObj)) {
-				// change geometry
-				msoFeature.msoGeometryChanged();
-				// update dirty flag
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
-			}			
-			// delete object?
-			if ((deletedObject) && msoFeature != null && isFeature) {
-				// remove from feature class
-				msoFC.removeFeature(msoFeature);
-				// update dirty flag
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
+			// loop over all object
+			for(IMsoObjectIf msoObj : msoObjs) {
+				
+				// get feature	
+				IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
+	
+				// get other flags
+				boolean isFeature = msoObj.getMsoClassCode().equals(classCode);
+				
+				// add object?
+				if (createdObject && msoFeature == null && isFeature) {
+					// create and att to feature class				
+					msoFeature = createMsoFeature(msoObj);
+					msoFC.addFeature(msoFeature);
+					// update dirty flag
+					isDirty = isDirty || isFeatureDirty(msoFeature);			
+				}
+				// is object modified?
+				if ( (addedReference || removedReference || modifiedObject) 
+						&& msoFeature != null && msoFeature.geometryIsChanged(msoObj)) {
+					// change geometry
+					msoFeature.msoGeometryChanged();
+					// update dirty flag
+					isDirty = isDirty || isFeatureDirty(msoFeature);			
+				}			
+				// delete object?
+				if ((deletedObject) && msoFeature != null && isFeature) {
+					// remove from feature class
+					msoFC.removeFeature(msoFeature);
+					// update dirty flag
+					isDirty = isDirty || isFeatureDirty(msoFeature);			
+				}
 			}
 			
 		} catch (AutomationException e1) {

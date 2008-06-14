@@ -76,7 +76,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		p1.setY(0);
 
 		// create default property panel
-		propertyPanel = addPropertyPanel();
+		toolPanel = addToolPanel();
 		
 		// save dialog
 		this.dialog = (DefaultDialog)dialog;
@@ -96,7 +96,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		if(map!=null) {
 			
 			// get property panel
-			FreeHandPanel panel = (FreeHandPanel)propertyPanel;
+			FreeHandPanel panel = (FreeHandPanel)toolPanel;
 			
 			// release current?
 			if(snapAdapter!=null) {
@@ -155,7 +155,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		// forward
 		super.setMsoData(msoOwner, msoObject, msoClassCode);
 		// select mso object
-		getPropertyPanel().setMsoObject((msoOwner!=null ? msoOwner : msoObject));
+		getToolPanel().setMsoObject((msoOwner!=null ? msoOwner : msoObject));
 	}
 
 	@Override
@@ -299,7 +299,7 @@ public class FreeHandTool extends AbstractDrawTool {
 	}
 
 	@Override
-	public IToolPanel addPropertyPanel() {
+	public IToolPanel addToolPanel() {
 		// create panel list?
 		if(panels==null)
 			panels = new ArrayList<IToolPanel>(1);			
@@ -388,7 +388,7 @@ public class FreeHandTool extends AbstractDrawTool {
 			tool.p1 = this.p1;
 			tool.p2 = this.p2;
 			tool.searchSubType = this.searchSubType;
-			tool.getPropertyPanel().update();
+			tool.getToolPanel().update();
 		}
 	}
 

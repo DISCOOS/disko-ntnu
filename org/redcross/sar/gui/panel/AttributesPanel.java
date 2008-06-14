@@ -17,6 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
 import org.redcross.sar.gui.attribute.CheckBoxAttribute;
 import org.redcross.sar.gui.attribute.DTGAttribute;
@@ -391,5 +392,14 @@ public class AttributesPanel extends DefaultPanel {
   		}
   	}
   	
+  	@Override
+	public void setChangeable(boolean isChangeable) {
+  		// forward
+  		super.setChangeable(isChangeable);
+  		// loop over all attributes
+  		for(IDiskoAttribute it : m_panels.values()) {
+  			it.setConsume(!isChangeable);
+  		}
+	}
   	
 }

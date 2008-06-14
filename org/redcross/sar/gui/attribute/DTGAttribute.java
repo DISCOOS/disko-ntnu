@@ -60,7 +60,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 				public void removeUpdate(DocumentEvent e) { change(); }
 				
 				private void change() {
-					if(isWorking()) return;
+					if(isConsume()) return;
 					fireOnWorkChange();
 				}
 				

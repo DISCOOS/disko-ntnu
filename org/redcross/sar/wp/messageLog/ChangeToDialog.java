@@ -25,6 +25,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IUnitIf;
 
 /**
  * Provides a dialog for selecting broadcast or non-broadcast receiver. This dialog also handles sub-dialogs
@@ -85,7 +86,7 @@ public class ChangeToDialog extends DefaultDialog
 				ICommunicatorIf singleReceiver = m_nbFieldDialog.getCommunicator();
 				if(singleReceiver != null)
 				{
-					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);					
 					message.setSingleReceiver(singleReceiver);
 					fireOnWorkFinish(this,message);
 				}
@@ -124,7 +125,7 @@ public class ChangeToDialog extends DefaultDialog
 				if(m_broadcast) {
 					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 					// prompt?
-					if(message.getBroadcastConfirmed().size()>0) {
+					if(message!=null && message.getBroadcastConfirmed().size()>0) {
 						int ans = Utils.showConfirm("Bekreftelse", 
 								"Du er i ferd med å fjerne bekreftede mottak av melding. Vil du fortsette?", 
 								JOptionPane.YES_NO_OPTION);

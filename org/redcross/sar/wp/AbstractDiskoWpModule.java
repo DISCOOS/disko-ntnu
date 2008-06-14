@@ -160,8 +160,6 @@ public abstract class AbstractDiskoWpModule
                 map = manager.createMap(mapLayers);
                 // hide map
                 ((DiskoMap)map).setVisible(false);
-                // add disko work listener
-                map.addDiskoWorkListener(this);
                 // success
                 return true;
             }
@@ -248,8 +246,9 @@ public abstract class AbstractDiskoWpModule
 
 	public void onWorkPerformed(DiskoWorkEvent e) {
     	// update change stack?
-		if(e.isChange() || e.isFinish())
+		if(e.isChange() || e.isFinish())			
 			changeStack.add(e);
+		
 	    // forward
 		repeater.fireOnWorkPerformed(e);
 	}
@@ -401,6 +400,8 @@ public abstract class AbstractDiskoWpModule
 		if (navButton.isSelected() != isSelected) {
 			navButton.doClick();			
 		}
+    	// save state
+		m_navState =  navBar.save();
 		// do not need to do setup any more
 		isNavBarSetupNeeded = false;
     }

@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -36,7 +37,7 @@ import org.redcross.sar.gui.dialog.ProgressDialog;
  * This is the final version of the GlassPane 
  * it is transparent for MouseEvents, 
  * and respects underneath component's cursors by default, 
- * it is also friedly for other users, 
+ * it is also friendly for other users, 
  * if someone adds a mouseListener to this GlassPane 
  * or set a new cursor it will respect them 
  * 
@@ -111,23 +112,38 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
         if (e instanceof KeyEvent) { 
         	// dispatch event
         	KeyEvent ke = (KeyEvent)e; 
-        	// belongs to this application?
-            if (!Utils.inApp(ke.getComponent())) return; 
+            Component c = ke.getComponent();
+            Component root = SwingUtilities.getRoot(c);
+        	// do not belong to this application?
+            if (!(Utils.inApp(c) || Utils.getApp().getMapManager().isMap(root))) return; 
             // consume?
-            if(m_isLocked) ke.consume();
+            if(m_isLocked) { 
+            	if(Utils.isMessageDialog(root)) {
+            		root.repaint();
+            	}
+            	else
+            		ke.consume();
+            }
         }
         else if (e instanceof MouseEvent) { 
             MouseEvent me = (MouseEvent)e;
             Component c = me.getComponent();
-        	// belongs to this application?
-            if (!(Utils.inApp(me.getComponent()) || Utils.getApp().getMapManager().isMap(c))) return; 
+            Component root = SwingUtilities.getRoot(c);
+        	// do not belong to this application?
+            if (!(Utils.inApp(c) || Utils.getApp().getMapManager().isMap(root))) return; 
             // consume? (allow message dialog boxes)
-            if(m_isLocked && !Utils.isMessageDialog(SwingUtilities.getRoot(c)))
-            	me.consume();
-            else if (me.getID() == MouseEvent.MOUSE_EXITED && me.getComponent() == m_frame) { 
+            if(m_isLocked) {
+            	if(Utils.isMessageDialog(root) || Utils.isMessageDialogShown()) {
+            		root.repaint();
+            	}
+            	else
+            		me.consume();
+            }
+            else if (me.getID() == MouseEvent.MOUSE_EXITED && c == m_frame) { 
                 m_point = null; 
             } else { 
-                MouseEvent converted = SwingUtilities.convertMouseEvent(me.getComponent(), me, m_frame.getGlassPane()); 
+                MouseEvent converted = 
+                	SwingUtilities.convertMouseEvent(c, me, m_frame.getGlassPane()); 
                 m_point = converted.getPoint(); 
             } 
             repaint(); 
@@ -181,8 +197,7 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	            if (isLocked) {
 	                Component focusOwner = KeyboardFocusManager.
 	                        getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-	                if (focusOwner != null &&
-	                        SwingUtilities.isDescendingFrom(focusOwner, rootPane)) {
+	                if (focusOwner != null && SwingUtilities.isDescendingFrom(focusOwner, rootPane)) {
 	                    m_recentFocusOwner = focusOwner;
 	                }
 	                requestFocusInWindow();

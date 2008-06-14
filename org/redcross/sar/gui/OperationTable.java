@@ -43,9 +43,11 @@ public class OperationTable extends JTable {
 		setRowSelectionAllowed(true);
 		setCellSelectionEnabled(true);
 		setColumnSelectionAllowed(false);
-		setFillsViewportHeight(true);
+		//setFillsViewportHeight(true);
 		setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		
 		
 		// prepare header
         JTableHeader tableHeader = getTableHeader();

@@ -85,20 +85,27 @@ public class Track implements IGeodataIf, Cloneable
      * @return
      */
     public boolean remove(TimePos aTimePos) {
-    	return m_track.remove(aTimePos);
+    	boolean bFlag = m_track.remove(aTimePos);
+    	if(bFlag)
+    		Collections.sort(m_track);
+    	return bFlag;
     }
     
     /**
-     * Finds the index of equal time position in collection
+     * Finds the index of equal time and position in collection
      * 
      * @param aTimePos
      * @return index of found position, else -1
      */
     public int find(TimePos aTimePos) {
+    	System.out.println("find::start");
     	for(int i=0;i<m_track.size();i++) {
-    		if(m_track.get(i).equals(aTimePos))
+    		if(m_track.get(i).equals(aTimePos)) {
+    	    	System.out.println("find::stop("+i+")");
     			return i;
+    		}
     	}
+    	System.out.println("find::stop(-1)");
     	// found
     	return -1;
     }

@@ -4,9 +4,12 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.util.mso.Selector;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +19,30 @@ import java.util.Set;
 public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNumberedIf, IEnumStatusHolder<IUnitIf.UnitStatus>
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Unit";
+    
+    public static final EnumSet<UnitStatus> ACTIVE_RANGE = EnumSet.range(UnitStatus.READY, UnitStatus.PENDING);
+    
+    public static final Selector<IUnitIf> ACTIVE_UNIT_SELECTOR = new Selector<IUnitIf>()
+    {
+        public boolean select(IUnitIf aUnit)
+        {
+            return (IUnitIf.ACTIVE_RANGE.contains(aUnit.getStatus()));
+        }
+    };
+	    
+
+    public static final Comparator<IUnitIf> UNIT_TYPE_AND_NUMBER_COMPARATOR = new Comparator<IUnitIf>()
+    {
+        public int compare(IUnitIf u1, IUnitIf u2)
+        {
+            int typeCompare = u1.getType().compareTo(u2.getType());
+            if (typeCompare != 0)
+            {
+                return typeCompare;
+            }
+            return u1.getNumber() - u2.getNumber();
+        }
+    };
 
     public enum UnitType
     {
@@ -37,19 +64,6 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
         PENDING,
         RELEASED
     }
-
-    public static final Comparator<IUnitIf> UNIT_TYPE_AND_NUMBER_COMPARATOR = new Comparator<IUnitIf>()
-    {
-        public int compare(IUnitIf u1, IUnitIf u2)
-        {
-            int typeCompare = u1.getType().compareTo(u2.getType());
-            if (typeCompare != 0)
-            {
-                return typeCompare;
-            }
-            return u1.getNumber() - u2.getNumber();
-        }
-    };
 
     /*-------------------------------------------------------------------------------------------
     * Methods for ENUM attributes
@@ -218,8 +232,9 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     
     public boolean logPosition();
     
-    public boolean logPosition(Position aPosition);
+    public boolean logPosition(Calendar aTime);
     
+    public boolean logPosition(Position aPosition, Calendar aTime);    
 
     public Set<IMessageIf> getReferringMessages();
 

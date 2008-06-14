@@ -748,10 +748,17 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     }
     
     public boolean logPosition() {
+    	return logPosition(Calendar.getInstance());
+    }
+    
+    public boolean logPosition(Calendar aTime) {
+    	// ensure a time stamp is given
+    	if(aTime==null) aTime = Calendar.getInstance();
+    	// is possible to log position?
     	if(m_track!=null) {
 	    	Point2D.Double p = m_position.getPosition().getPosition();
 	    	// create time position
-	    	TimePos tp = new TimePos(p,Calendar.getInstance());
+	    	TimePos tp = new TimePos(p,aTime);
 	    	// add to track
 	    	m_track.getReference().addTrackPoint(tp);
 	    	// finished
@@ -761,11 +768,11 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     	return false;
     }
     
-    public boolean logPosition(Position aPosition) {
+    public boolean logPosition(Position aPosition, Calendar aTime) {
     	// save
     	setPosition(aPosition);
     	// forward
-    	return logPosition();
+    	return logPosition(aTime);
     }
     
 

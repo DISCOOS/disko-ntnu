@@ -3,6 +3,7 @@ package org.redcross.sar.wp.logistics;
 import org.redcross.sar.gui.DiskoRoundBorder;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.util.MsoUtils;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -100,6 +101,8 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
                 ((IconRenderer.AssignmentIcon)icon).setSelected(isSelected);
             }
         }
+        //if(!isSelected)
+        //	System.out.println();
         // repaint label
         repaint();
     }
@@ -131,11 +134,11 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
         m_assignment = anAssignment;
         if (m_assignment.getStatus() == IAssignmentIf.AssignmentStatus.QUEUED)
         {
-            setText(MessageFormat.format("{0}: {1} {2}", anAssignment.getPrioritySequence(), Integer.toString(anAssignment.getNumber()),
-                            anAssignment.getTypeText()));
+            setText(MessageFormat.format("{0}: {1}", anAssignment.getPrioritySequence(), MsoUtils.getAssignmentName(anAssignment,1)));
         } else
         {
-            setText(MessageFormat.format("{0} {1}", Integer.toString(anAssignment.getNumber()), anAssignment.getTypeText()));
+        	//IMessageLineIf line = anAssignment.getLatestStatusChangeMessageLine(MessageLineType.COMPLETED);
+            setText(MsoUtils.getAssignmentName(anAssignment,1));
         }
         setIcon(null);
     }
@@ -158,7 +161,7 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
     /**
      * Handle mouse click.
      * <p/>
-     * The click is forwarded to the defined ation handler.
+     * The click is forwarded to the defined action handler.
      *
      * @param e The event
      */

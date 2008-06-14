@@ -4,6 +4,7 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
+import org.redcross.sar.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
@@ -16,21 +17,18 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.SeparatorUI;
 import javax.swing.table.JTableHeader;
 
 import java.awt.BorderLayout;
@@ -198,6 +196,7 @@ public class LogisticsPanel implements
         {
             public void handleClick(IAssignmentIf anAssignment)
             {
+            	getUnitTable().clearSelection();
                 singelAssignmentClick(anAssignment, false);
             }
         };
@@ -224,95 +223,117 @@ public class LogisticsPanel implements
 
             public void handleClick(IUnitIf aUnit, int aSelectorIndex)
             {
-                setSelectedAssignmentInPanels(null);
+            	setSelectedAssignmentInPanels(null);
                 getInfoPanelHandler().setUnitAssignmentSelection(aUnit, aSelectorIndex);
             }
         };
     }
 
-    private void singelUnitClick(IUnitIf anUnit)
+    private void singelUnitClick(final IUnitIf anUnit)
     {
 
+    	//getUnitTable().clearSelection();
         setSelectedAssignmentInPanels(null);
-        getInfoPanelHandler().setUnit(anUnit);
+        getInfoPanelHandler().setUnit(anUnit,true);
         
-        try
-        {
-            
-        	// suspend events
-        	m_map.suspendNotify();
-        	
-        	// reset current?
-        	if (m_mapSelectedUnit != null)
-            {
-                m_map.setSelected(m_mapSelectedUnit, false);
-                m_mapSelectedUnit = null;
-            }
+		// show progress
+		m_map.showProgressor(true);
+		
+        // select later
+        SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
 
-        	// select next?
-            if (anUnit != null)
-            {
-            	m_mapSelectedUnit = anUnit;
-                m_mapSelectedByButton = true;
-                m_map.setSelected(m_mapSelectedUnit, true);
-                m_mapSelectedByButton = false;
-            }
-            
-            // resume events 
-            m_map.resumeNotify();
+					// consume selection events
+					m_mapSelectedByButton = true;
+					
+					// suspend events
+					m_map.suspendNotify();
 
-        }
-        catch (AutomationException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+					// reset current?
+					if (m_mapSelectedUnit != null) {
+						m_map.setSelected(m_mapSelectedUnit, false);
+						m_mapSelectedUnit = null;
+					}
+
+					// select next?
+					if (anUnit != null) {
+						m_mapSelectedUnit = anUnit;
+						m_map.setSelected(m_mapSelectedUnit, true);
+						m_map.zoomToMsoObject(m_mapSelectedUnit);
+					}
+					
+					// resume events 
+					m_map.resumeNotify();
+
+					// hide progress
+					m_map.hideProgressor();
+					
+					// listen for selection events
+					m_mapSelectedByButton = false;
+					
+
+				} catch (AutomationException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
     }    
     
-    private void singelAssignmentClick(IAssignmentIf anAssignment, boolean calledFromListPanel)
+    private void singelAssignmentClick(final IAssignmentIf anAssignment, boolean calledFromListPanel)
     {
-        setSelectedAssignmentInPanels(anAssignment);
+    	
+    	setSelectedAssignmentInPanels(anAssignment);        
         getInfoPanelHandler().setAssignment(anAssignment, calledFromListPanel);
-        try
-        {
-        	
-        	// suspend events
-        	m_map.suspendNotify();
-        	
-        	// reset current?
-        	if (m_mapSelectedAssignment != null)
-            {
-                m_map.setSelected(m_mapSelectedAssignment, false);
-                m_mapSelectedAssignment = null;
-            }
+		getInfoPanelHandler().setUnit(anAssignment.getOwningUnit(),false);
+        
+		// show progress
+		m_map.showProgressor(true);
+		
+        // select later
+        SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
 
-        	// select next?
-            if (anAssignment.getPlannedArea() != null)
-            {
-                m_mapSelectedAssignment = anAssignment;
-                m_mapSelectedByButton = true;
-                m_map.setSelected(m_mapSelectedAssignment, true);
-                m_mapSelectedByButton = false;
-            }
-            
-            // set unit
-            getInfoPanelHandler().setUnit(anAssignment.getOwningUnit());
-            
-            // resume events 
-            m_map.resumeNotify();
+					// consume selection events
+					m_mapSelectedByButton = true;
+					
+					// suspend events
+					m_map.suspendNotify();
 
-        }
-        catch (AutomationException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+					// reset current?
+					if (m_mapSelectedAssignment != null) {
+						m_map.setSelected(m_mapSelectedAssignment, false);
+						m_mapSelectedAssignment = null;
+					}
+
+					// select next?
+					if (anAssignment.getPlannedArea() != null) {
+						m_mapSelectedAssignment = anAssignment;
+						m_map.suspendNotify();
+						m_map.setSelected(m_mapSelectedAssignment, true);
+						m_map.zoomToMsoObject(m_mapSelectedAssignment);
+						m_map.resumeNotify();
+					}
+
+					// resume events 
+					m_map.resumeNotify();
+
+					// hide progress dialog
+					m_map.hideProgressor();
+					
+					// handle selection events
+					m_mapSelectedByButton = false;
+					
+				} catch (AutomationException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
     }
 
     private void setSelectedAssignmentInPanels(IAssignmentIf anAssignment)
@@ -380,10 +401,10 @@ public class LogisticsPanel implements
                 {
                     return;
                 }
-
-                m_unitTableModel.setSelectedCell(m_unitTable.getSelectionModel().getLeadSelectionIndex(),
-                        m_unitTable.getColumnModel().getSelectionModel().
-                                getLeadSelectionIndex());
+                boolean isSelected = !m_unitTable.getSelectionModel().isSelectionEmpty();
+                int row = m_unitTable.getSelectionModel().getLeadSelectionIndex();
+                int col = m_unitTable.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                m_unitTableModel.setSelectedCell(row,col,isSelected);
 
             }
         };
@@ -396,7 +417,8 @@ public class LogisticsPanel implements
             {
                 /*m_unitTableModel.setSelectedCell(m_unitTable.getSelectionModel().getLeadSelectionIndex(),
                         m_unitTable.getColumnModel().getSelectionModel().
-                                getLeadSelectionIndex());*/
+                                getLeadSelectionIndex());
+                                */
             }
 
             public void focusLost(FocusEvent e)
@@ -501,19 +523,32 @@ public class LogisticsPanel implements
 	                IAssignmentIf assignment = area.getOwningAssignment();
 	                if (assignment != null)
 	                {
-	                    m_mapSelectedAssignment = assignment;
-	                    setSelectedAssignmentInPanels(m_mapSelectedAssignment);
 	                    if (!m_mapSelectedByButton)
 	                    {
-	                        getInfoPanelHandler().setAssignment(m_mapSelectedAssignment, false);
+	                    	m_mapSelectedAssignment = assignment;
+		                    if(!m_unitTableModel.setSelected(assignment, MsoLayerEventType.SELECTED_EVENT.equals(e.getEventType()))) {
+			                    setSelectedAssignmentInPanels(m_mapSelectedAssignment);
+		                        getInfoPanelHandler().setAssignment(m_mapSelectedAssignment, false);
+		                    }
+		                    m_map.zoomToMsoObject(m_mapSelectedAssignment);
 	                    }
-	                    m_map.zoomToMsoObject(m_mapSelectedAssignment);
 	                }
             	}
             }
             else if(msoObject instanceof IUnitIf) {
-            	m_map.zoomToMsoObject(msoObject);
-            }
+                if (!m_mapSelectedByButton)
+                {
+                    m_unitTableModel.setSelected(msoObject, MsoLayerEventType.SELECTED_EVENT.equals(e.getEventType()));
+                	m_map.zoomToMsoObject(msoObject);
+                }
+            }            
+        }
+        else {
+        	m_mapSelectedAssignment = null;
+        	m_unitTable.clearSelection();
+            setSelectedAssignmentInPanels(null);
+            getInfoPanelHandler().setUnit(null, false);
+            getInfoPanelHandler().setAssignment(null, false);
         }
     }
 

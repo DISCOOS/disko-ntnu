@@ -21,6 +21,7 @@ import javax.swing.border.Border;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoBorder;
+import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.attribute.IDiskoAttribute;
 
 public class BasePanel extends AbstractPanel {
@@ -417,6 +418,23 @@ public class BasePanel extends AbstractPanel {
   		getBodyComponent().setEnabled(isEnabled);
   	}
   	
+  	@Override
+	public void setChangeable(boolean isChangeable) {
+  		// forward
+  		super.setChangeable(isChangeable);
+  		// loop over all children?
+  		if(getBodyComponent() instanceof JComponent) {
+  			// cast to JComponent
+  			JComponent c = (JComponent)getBodyComponent();
+  			// loop over all children
+  	  		for(int i=0; i < c.getComponentCount(); i++)
+  	  			// implements IChangeable?
+  	  			if(c.getComponent(i) instanceof IChangeable) {
+  	  				((IChangeable)c.getComponent(i)).setChangeable(isChangeable); 
+  	  			}
+  		}
+	}
+  	  	
 	/* ===========================================
 	 * IPanel implementation
 	 * ===========================================

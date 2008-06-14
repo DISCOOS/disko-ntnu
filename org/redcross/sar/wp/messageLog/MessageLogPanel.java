@@ -4,7 +4,6 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -12,7 +11,6 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
@@ -163,21 +161,26 @@ public class MessageLogPanel
 
         // Set column widths
         TableColumn column = m_logTable.getColumnModel().getColumn(0);
+        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH);
         column = m_logTable.getColumnModel().getColumn(1);
+        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 10);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 10);
         column = m_logTable.getColumnModel().getColumn(2);
+        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 1);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 1);
         column = m_logTable.getColumnModel().getColumn(3);
+        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 1);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 1);
+        // Column 4 is flexible
         column = m_logTable.getColumnModel().getColumn(5);
-        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
         column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
+        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
         column = m_logTable.getColumnModel().getColumn(6);
-        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 40);
-        column.setPreferredWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH + 40);
+        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+40);
+        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+40);
 
-        // Init custom renderer
+        // initialize custom renderer
         m_logTable.setDefaultRenderer(Object.class, new MessageTableRenderer());
 
         JTableHeader tableHeader = m_logTable.getTableHeader();

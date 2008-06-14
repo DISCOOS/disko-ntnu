@@ -423,7 +423,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			}
 			else {
 				// only allow create mode when on inferable
-				drawMode = DrawMode.MODE_CREATE;				
+				drawMode = getDefaultDrawMode(msoCode);
 			}
 			
 		} catch (Exception e) {
@@ -671,8 +671,8 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			// forward?
 			if(refresh) refreshFrame();
 			// update property panel?
-			if(getSelectedTool()!=null) 
-				getSelectedTool().getPropertyPanel().update();
+			if(getSelectedTool()!=null) // && getSelectedTool().isShowDrawFrame()) 
+				getSelectedTool().getToolPanel().update();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -924,16 +924,16 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		return bFlag;
 	}
 	
-	private void fireOnWorkChange(Object data) {
+	private void fireOnWorkFinish(Object data) {
 		
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEvent.EVENT_CHANGE);
+		DiskoWorkEvent e = new DiskoWorkEvent(this,data,DiskoWorkEvent.EVENT_FINISH);
 
 		// forward
-		fireOnWorkChange(e);    	
+		fireOnWorkPerformed(e);    	
     }
     
-    private void fireOnWorkChange(DiskoWorkEvent e)
+    private void fireOnWorkPerformed(DiskoWorkEvent e)
     {
 		// notify workListeners
 		for (int i = 0; i < workListeners.size(); i++) {
@@ -1015,7 +1015,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			
 			if(this.msoObject==msoObject) {
 				// forward
-				setup(msoObject,msoOwner,true);
+				setup(msoOwner,msoObject,true);
 			}
 		}
 	}
@@ -1027,7 +1027,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			
 			if(this.msoObject==msoObject) {
 				// forward
-				setup(null,msoOwner,true);
+				setup(msoOwner,null,true);
 			}
 		}
 	}	
@@ -1135,7 +1135,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				}
 			}
 			// forward
-			setup(type, msoObject, msoOwner, msoObject!=null || msoOwner != null);
+			setup(type, msoOwner, msoObject, msoObject!=null || msoOwner != null);
 		} catch (Exception ex) {
 			// TODO Auto-generated catch block
 			ex.printStackTrace();
@@ -1196,19 +1196,19 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		if(elementList != null && elementList.getSelectedValue()!=element)
 			elementList.setSelectedValue(element, true);
 		else
-			setup(element,msoObject,msoOwner,true);
+			setup(element,msoOwner,msoObject,true);
 		
 		// success
 		return true;
 		
 	}
 	
-	public void setup(IMsoObjectIf msoObj, IMsoObjectIf msoOwn, boolean setTool) {
-		setup(element,msoObj,msoOwn,setTool);
+	public void setup(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, boolean setTool) {
+		setup(element,msoOwn,msoObj,setTool);
 	}
 	
 	public void setup(final Enum element, 
-			final IMsoObjectIf msoObj, final IMsoObjectIf msoOwn, final boolean setTool) {
+			final IMsoObjectIf msoOwn, final IMsoObjectIf msoObj, final boolean setTool) {
 
 		// consume?
 		if(!isChangeable()) return;
@@ -1239,7 +1239,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				msoOwner = null;
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_OPERATIONAREA,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject);
+				mode = translateToDrawMode(msoOwner, msoObject,code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getFreeHandTool());
@@ -1250,7 +1250,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				msoOwner = null;
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_SEARCHAREA,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject);
+				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getFreeHandTool());
@@ -1261,7 +1261,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,msoOwn);
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_ROUTE,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject);
+				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getFreeHandTool());
@@ -1273,7 +1273,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,msoOwn);
 				msoObject = constrainToCode(code,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject);
+				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) ? map.getActiveTool() : 
 					(msoObj instanceof IPOIIf ? navBar.getPOITool() : navBar.getFreeHandTool()));
@@ -1284,7 +1284,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,msoOwn);
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_POI,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject);
+				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getPOITool());
@@ -1295,7 +1295,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				msoOwner = null;
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_UNIT,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject);
+				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getPositionTool());
@@ -1328,7 +1328,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					setup(element, msoObj, msoOwn, setTool);
+					setup(element, msoOwn, msoObj, setTool);
 				}
 			});
 		}		
@@ -1359,7 +1359,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		return null;
 	}
 	
-	private DrawMode translateToDrawMode(IMsoObjectIf msoOwn, IMsoObjectIf msoObj) {
+	private DrawMode translateToDrawMode(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, MsoClassCode code) {
 		// flags
 		boolean isReplaceable = 
 				(msoObj instanceof IOperationAreaIf 
@@ -1387,8 +1387,16 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		if(isAppendable) {
 			return DrawMode.MODE_APPEND;
 		}
-		// only create mode possible
-		return DrawMode.MODE_CREATE;
+		// get default draw mode
+		return getDefaultDrawMode(code);
+	}
+	
+	private DrawMode getDefaultDrawMode(MsoClassCode code) {
+		// get default draw mode for given mso class
+		if(MsoClassCode.CLASSCODE_UNIT.equals(code))
+			return DrawMode.MODE_REPLACE;
+		else
+			return DrawMode.MODE_CREATE;
 	}
 	
 	private void syncLists() {
@@ -1480,7 +1488,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			drawDialog.setBatchUpdate(true);
 			// dispatch type of data
 			if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code)) {
-				// set attibutes
+				// set attributes
 				drawDialog.setAttribute(DiskoToolType.POI_TOOL, null,"POITYPES");
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(true, "DRAWPOLYGON");
@@ -1615,7 +1623,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			}
 			// forward
 			drawDialog.getToolCaption();
-			// reset batch mode
+			// reset batch mode, consuming any changes
 			drawDialog.setBatchUpdate(false);
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -1688,7 +1696,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 					// get element
 					Enum element = (Enum)e.getElement();
 					// force setup
-					setup(element,msoObject,msoOwner,true);
+					setup(element,msoOwner,msoObject,true);
 				}
 				
 			}	
@@ -1845,7 +1853,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				}
 				
 				// forward
-				setup(element,msoObject,msoOwner,true);
+				setup(element,msoOwner,msoObject,true);
 				
 				// expand extent
 				extent = MapUtil.expand(1.25, extent);
@@ -1903,7 +1911,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 								// do cleanup
 								reset();
 								// notify change?
-								fireOnWorkChange(msoObj);
+								fireOnWorkFinish(msoObj);
 							} else {
 								// delete failed
 								Utils.showError("Sletting kunne ikke utføres");
@@ -1962,9 +1970,10 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 					setChangeable(true);
 				}
 				// notify
+				fireOnWorkFinish(msoObject);
 				fireOnDrawFinished(drawMode, msoObject);
 				// prepare for next
-				setup(msoObject,tool.getMsoOwner(),false);
+				setup(tool.getMsoOwner(),msoObject,false);
 			}
 			else if(e.isCancel()) {
 				// resume 

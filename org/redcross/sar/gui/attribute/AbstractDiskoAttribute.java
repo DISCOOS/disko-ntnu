@@ -55,7 +55,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	protected int m_captionWidth = 80;
 	protected int m_maximumHeight = 25;
 	
-	private int m_isWorking = 0;
+	private int m_isConsume = 0;
 	
 	
 	private List<IDiskoWorkListener> listeners = null;
@@ -129,16 +129,19 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return m_captionLabel;
 	}
 	
-	protected boolean isWorking() {
-		return (m_isWorking>0);
+	public boolean isConsume() {
+		return (m_isConsume>0);
 	}
 	
-	protected void setIsWorking() {
-		m_isWorking++;
+	public void setConsume(boolean isConsume) {
+		if(isConsume)
+			m_isConsume++;
+		else if (m_isConsume>0)
+			m_isConsume--;
 	}
 	
 	protected void setIsNotWorking() {
-		if(m_isWorking>0) m_isWorking--;
+		if(m_isConsume>0) m_isConsume--;
 	}
 	
 	protected void fireOnWorkChange() {
@@ -260,7 +263,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	public boolean setValue(Object value) {
 		// update dirty bit?
-		if(!isWorking()) m_isDirty = true;
+		if(!isConsume()) m_isDirty = true;
 		// failure, is not implemented
 		return false;
 	}
@@ -269,11 +272,11 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	public boolean load() {
 		// consume?
-		if(isWorking()) return false;
+		if(isConsume()) return false;
 		// initialise
 		boolean bFlag = false;
 		// consume change
-		setIsWorking();
+		setConsume(true);
 		// load from mso model?
 		if(isMsoAttribute()) {
 			try {
@@ -288,20 +291,20 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 			bFlag = setValue(getValue());
 		}
 		// resume change
-		setIsNotWorking();
+		setConsume(false);
 		// finished
 		return bFlag;
 	}
 	
 	public boolean save() {
 		// allowed?
-		if(isWorking() || !isMsoAttribute() || ! m_isEditable) return false;
+		if(isConsume() || !isMsoAttribute() || ! m_isEditable) return false;
 		
 		// initialize
 		boolean bFlag = false;
 		
 		// consume changes
-		setIsWorking();
+		setConsume(true);
 		
 		try {
 			// forward
@@ -314,7 +317,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		}
 
 		// resume changes
-		setIsNotWorking();
+		setConsume(false);
 		
 		// finished
 		return bFlag;

@@ -30,7 +30,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.JFormattedTextField;
@@ -234,6 +233,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			this.getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
 			// add this as window listener
 			this.addWindowListener(this);
+			// initialize work pool to ensure that this is done on the EDT
+			DiskoWorkPool.getInstance();
 			// show me
 			this.setVisible(true);
 			//initiate modeldriver
@@ -243,9 +244,11 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			diskoReport = new DiskoReportManager(this);
 			// set loading bit
 			setLoading(true);
+			// forward
+			getUIFactory().getLoginDialog().showLogin(true);
 			// show login later (this allows the main application frame to show first)
-			SwingUtilities.invokeLater(new Runnable() {public void 
-				run() { getUIFactory().getLoginDialog().showLogin(true); }}); 
+			//SwingUtilities.invokeLater(new Runnable() {public void 
+			//	run() { getUIFactory().getLoginDialog().showLogin(true); }}); 
 		}
 		catch (Exception e)
 		{
@@ -438,27 +441,31 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		// TODO: implement authorization
 		boolean auth = true;
 		
-		// do the login later
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// update login properties
-				loggedin[0] = role;
-				loggedin[1] = user;
-				loggedin[2] = password;
-				// is model driver initiated?
-				if (getMsoModel().getModelDriver().isInitiated()) {
-					// forward
-					selectActiveOperation(false);
-				} else {
-					// get maximum wait time
-					long maxTime = Long.parseLong(getProperty("max.wait.time","" + 60 * 1000));
-					// The model driver is not initiated. Schedule the initiation work. 
-					// If initiation is successful the active operation is choosen. If initiation fails, 
-					// the system will be shut down.
-					doInitiateModelDriver(maxTime, true, false);
-				}
+		if (SwingUtilities.isEventDispatchThread()) {
+			// update login properties
+			loggedin[0] = role;
+			loggedin[1] = user;
+			loggedin[2] = password;
+			// is model driver initiated?
+			if (getMsoModel().getModelDriver().isInitiated()) {
+				// forward
+				selectActiveOperation(false);
+			} else {
+				// get maximum wait time
+				long maxTime = Long.parseLong(getProperty("max.wait.time",
+						"" + 60 * 1000));
+				// The model driver is not initiated. Schedule the initiation work. 
+				// If initiation is successful the active operation is choosen. If initiation fails, 
+				// the system will be shut down.
+				doInitiateModelDriver(maxTime, true, false);
 			}
-		});		
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					login(role, user, password);
+				}
+			});
+		}
 		
 		// finished
 		return auth;
@@ -571,51 +578,52 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	public void operationFinished()
 	{
 
-		// force finish progress
-		try {
-			DiskoProgressMonitor.getInstance().finish(true);
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		// get active operations
-		java.util.List<String[]> opList = getMsoModel().getModelDriver().getActiveOperations();
-
-		// prompt user for actions
-		String[] options = {bundle.getString("QUIT.APPLICATION.TEXT"), bundle.getString(CHOOSETEXT), bundle.getString("NEWACTION.TEXT")};
-		int ans = JOptionPane.showOptionDialog(
-				uiFactory.getContentPanel(),
-				bundle.getString(OPERATION_FINISHED_TEXT),
-				bundle.getString(OPERATION_FINISHED_TITLE),
-				JOptionPane.YES_NO_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE,
-				null,
-				options,
-				options[0]);
-
-		// user choose to exit the application
-		if(ans==JOptionPane.YES_OPTION){
-			shutdown();
-		}
-		else if(ans==JOptionPane.NO_OPTION){	
-			
-			// the user choose to select another active operation (if it exists)
-			if(opList.size()>0) {
-				// choose operation without prompt
-				selectActiveOperation(false);
+		if (SwingUtilities.isEventDispatchThread()) {
+			// force finish progress
+			try {
+				DiskoProgressMonitor.getInstance().finish(true);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			else {
-				// get maximum wait time
-				long maxTime = Long.parseLong(getProperty("max.wait.time", "" + 60 * 1000));
-				// add work to work pool. If initiation succeeds, the active operation 
-				// is choosen. If initiation fails, the system will be shut down.
-				doInitiateModelDriver(maxTime,true,false);
-			}
+			// get active operations
+			java.util.List<String[]> opList = getMsoModel().getModelDriver()
+					.getActiveOperations();
+			// prompt user for actions
+			String[] options = { bundle.getString("QUIT.APPLICATION.TEXT"),
+					bundle.getString(CHOOSETEXT),
+					bundle.getString("NEWACTION.TEXT") };
+			int ans = JOptionPane.showOptionDialog(uiFactory.getContentPanel(),
+					bundle.getString(OPERATION_FINISHED_TEXT), bundle
+							.getString(OPERATION_FINISHED_TITLE),
+					JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+			// user choose to exit the application
+			if (ans == JOptionPane.YES_OPTION) {
+				shutdown();
+			} else if (ans == JOptionPane.NO_OPTION) {
+
+				// the user choose to select another active operation (if it exists)
+				if (opList.size() > 0) {
+					// choose operation without prompt
+					selectActiveOperation(false);
+				} else {
+					// get maximum wait time
+					long maxTime = Long.parseLong(getProperty("max.wait.time",
+							"" + 60 * 1000));
+					// add work to work pool. If initiation succeeds, the active operation 
+					// is choosen. If initiation fails, the system will be shut down.
+					doInitiateModelDriver(maxTime, true, false);
+				}
+			} else
+				// forward
+				createOperation();
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					operationFinished();
+				}
+			});
 		}
-		else
-			// forward
-			createOperation();
 	}
 
 	/* (non-Javadoc)
@@ -643,16 +651,26 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		return false;		
 	}
 
-	public void onOperationCreated(String opId)
+	public void onOperationCreated(final String opId)
 	{
-		// is waiting for this operation
-		if(waitingForNewOp){
-			// reset flag
-			waitingForNewOp=false;
-			// notify user of new operation created
-			Utils.showMessage(String.format(bundle.getString(OPERATION_CREATED_TEXT),opId));
-			// schedule work
-			doSetActiveOperation(opId);
+		if (SwingUtilities.isEventDispatchThread()) {
+			// is waiting for this operation
+			if (waitingForNewOp) {
+				// reset flag
+				waitingForNewOp = false;
+				// notify user of new operation created?
+				if (!isLocked())
+					Utils.showMessage(String.format(bundle
+							.getString(OPERATION_CREATED_TEXT), opId));
+				// schedule work
+				doSetActiveOperation(opId);
+			}
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					onOperationCreated(opId);
+				}
+			});
 		}
 	}
 

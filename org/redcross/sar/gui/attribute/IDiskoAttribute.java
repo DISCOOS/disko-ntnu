@@ -11,6 +11,9 @@ public interface IDiskoAttribute {
 
 	public boolean isDirty();
 	
+	public boolean isConsume();
+	public void setConsume(boolean isConsume);
+	
 	public String getCaption();	
 	public void setCaption(String text);
 	

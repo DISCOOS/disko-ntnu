@@ -9,12 +9,12 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.Internationalization;
 
-public class POITypesPanel extends DefaultPanel {
+public class POITypesPanel extends BasePanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private static final String SELECTION_ENABLED = "Velg type punkt";
-	private static final String SELECTION_DISABLED = "Endring er ikke lov";
+	private static final String SELECTION_DISABLED = "Kan ikke endres";
 
 	private JList typeList = null;
 
@@ -25,13 +25,10 @@ public class POITypesPanel extends DefaultPanel {
 	public POITypesPanel(String caption) {
 		
 		// forward
-		super(caption,false,false);
+		super(caption);
 		
 		// initialize gui
 		initialize();
-		
-		// force caption
-		setCaptionText(caption);
 		
 	}
 	
@@ -41,7 +38,6 @@ public class POITypesPanel extends DefaultPanel {
 	 */
 	private void initialize() {
 		try {
-			this.setCaptionText(SELECTION_ENABLED);
 			this.setBodyComponent(getTypeList());
 			this.setSelectionAllowed(true);
 		}
@@ -91,7 +87,7 @@ public class POITypesPanel extends DefaultPanel {
 	
 	public void setPOIType(POIType type) {
 		if(type==null)
-			getTypeList().setSelectedIndex(-1);
+			getTypeList().clearSelection();
 		else
 			getTypeList().setSelectedValue(type,true);
 	}

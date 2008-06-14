@@ -4,8 +4,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -28,8 +29,13 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.util.mso.TimePos;
+import org.redcross.sar.util.mso.Track;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
@@ -38,19 +44,25 @@ public class PositionPanel extends DefaultToolPanel {
 
 	private static final long serialVersionUID = 1L;
 	
+	private static final String SELECTION_ENABLED = "Velg enhet";
+	private static final String SELECTION_DISABLED = "Kan ikke endres";
+	
+	private static final String CREATE_POSITION = "Skriv inn ny posisjon";
+	private static final String UPDATE_POSITION = "Endre posisjon nr %s (DTG %s)";
+
 	private IMsoModelIf msoModel;
 	private JButton centerAtButton = null;
 	private GotoPanel gotoPanel = null;
 	private DefaultPanel unitsPanel = null;
 	private JList unitList = null;
 	
+	private TimePos logEntry = null;
 	private boolean isSingleUnitOnly = false;
 	
 	public PositionPanel(PositionTool tool) {
 		// forward
 		this("Plassér enhet",tool);
 	}
-	
 	
 	public PositionPanel(String caption,PositionTool tool) {
 		
@@ -127,7 +139,7 @@ public class PositionPanel extends DefaultToolPanel {
 						if(p!=null) {
 							// convert and update tool
 							Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
-							getTool().setPoint(point);							
+							getTool().setPoint(point,true);							
 						}
 						
 					
@@ -157,7 +169,7 @@ public class PositionPanel extends DefaultToolPanel {
 	public DefaultPanel getUnitsPanel() {
 		if (unitsPanel == null) {
 			// create
-			unitsPanel = new DefaultPanel("Velg enhet",false,false);
+			unitsPanel = new DefaultPanel(SELECTION_ENABLED,false,false);
 			// replace body component
 			unitsPanel.setBodyComponent(getUnitList());
 			// set preferred body size
@@ -177,6 +189,7 @@ public class PositionPanel extends DefaultToolPanel {
             unitList.setVisibleRowCount(0);
             unitList.setCellRenderer(new IconListCellRenderer(0,"32x32"));
             unitList.setModel(new DefaultComboBoxModel());
+            
             // add listener
             unitList.addListSelectionListener(new ListSelectionListener() {
 
@@ -185,17 +198,14 @@ public class PositionPanel extends DefaultToolPanel {
 					// consume?
 					if(!isChangeable() || e.getValueIsAdjusting()) return;
 					
-					// consume changes
-					setChangeable(false);
+					// forward
+					setSelectedUnit();
 					
 					// forward
-					getTool().setUnit(getUnit());
+					setDirty(true,false);
 					
-					// resume changes
-					setChangeable(true);
-					
-					// forward
-					setDirty(true);
+					// force a update
+					update();
 					
 				}
             	
@@ -204,6 +214,75 @@ public class PositionPanel extends DefaultToolPanel {
 		return unitList;
 	}
 
+	private void setSelectedUnit() {
+		
+		// initialize
+		Position p = null;
+		
+		// consume changes
+		setChangeable(false);
+		
+		// get unit and tool
+		IUnitIf unit = getUnit();
+		PositionTool tool = getTool(); 
+		
+		// forward
+		tool.setUnit(unit);
+		
+		// has unit?
+		if(unit!=null) {
+			// try to get log entry index
+			int index = getLogEntryIndex(unit);
+			// update position with log entry?
+			if(index!=-1) {
+				p = new Position("",logEntry.getPosition());
+				getGotoPanel().setCaptionText(String.format(UPDATE_POSITION,index+1,DTG.CalToDTG(logEntry.getTime())));
+			}
+			else {
+				p = unit.getPosition();
+				getGotoPanel().setCaptionText(CREATE_POSITION);
+			}
+		}
+		
+		// update coordinate panel and tool, this will not result in dirty state!
+		try {
+			setPosition(p);
+			getTool().setPoint(p!=null ? MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference()) : null);
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// resume changes
+		setChangeable(true);
+
+	}
+	
+	private int getLogEntryIndex(IUnitIf unit) {
+		int index = -1;
+		if(logEntry!=null && unit!=null) {
+			ITrackIf msoTrack = unit.getTrack();
+			if(msoTrack!=null) {
+				Track track = msoTrack.getGeodata();
+				if(track!=null)
+					return track.find(logEntry);
+			}
+			try {
+				System.out.println("getLogEntryIndex:: Unit:="+MsoUtils.getUnitName(unit, true) 
+						+ " # Point:="+ MapUtil.getMGRSfromPosition(logEntry.getPosition())
+						+ " # DTG:="+ logEntry.getDTG()
+						+ " # Index:="+ index);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return index;
+	}
+	
 	/**
 	 * This method initializes CenterAtButton	
 	 * 	
@@ -255,6 +334,14 @@ public class PositionPanel extends DefaultToolPanel {
 	 * ===========================================
 	 */
 	
+	public TimePos getLogEntry() {
+		return logEntry;
+	}
+	
+	public void setLogEntry(TimePos logEntry) {
+		this.logEntry = logEntry;
+	}
+	
 	public Point getPoint() {
 		try {
 			if(getTool()!=null) 
@@ -287,10 +374,16 @@ public class PositionPanel extends DefaultToolPanel {
 	}
 	
 	public void setUnit(IUnitIf msoUnit) {
-		if(msoUnit!=null)
+		setChangeable(false);
+		if(msoUnit!=null) {
 			getUnitList().setSelectedValue(msoUnit,true);
-		else
-			getUnitList().setSelectedIndex(-1);
+		}
+		else {
+			getUnitList().clearSelection();
+		}
+		setChangeable(true);
+		setSelectedUnit();
+		update();
 	}
 	
 	public boolean isSingleUnitOnly() {
@@ -306,40 +399,38 @@ public class PositionPanel extends DefaultToolPanel {
 		model.addElement(unit);
 		// apply to list
 		getUnitList().setModel(model);
-		// select unit
-		setUnit(unit);
 		// resume changes
 		setChangeable(true);
+		// select unit
+		setUnit(unit);
 		// set flag
 		isSingleUnitOnly = true;
-		// set dirty flag
-		setDirty(true);
+		// update caption
+		getUnitsPanel().setCaptionText(SELECTION_DISABLED);
 	}
 	
 	public void loadUnits() {
-		// create new model
-		DefaultComboBoxModel model = new DefaultComboBoxModel();
+		// initialize
+		Object[] data = null;
 		// get command post
-		ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();
+		ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();		
 		// has command post?
 		if(cp!=null) {
-			// get units
-			Collection<IUnitIf> c = cp.getUnitListItems();
-			// has units?
-			if(c!=null) {
-				for(IUnitIf u:c) {
-					model.addElement(u);
-				}
-			}
+			// get unit list
+			List<IUnitIf> c = cp.getUnitList().selectItems(
+					IUnitIf.ACTIVE_UNIT_SELECTOR, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+			// sort objects
+			MsoUtils.sortByName(new ArrayList<IMsoObjectIf>(c),1);
+			data = c.toArray();
 		}
+		// create new model
+		DefaultComboBoxModel model = data != null ? new DefaultComboBoxModel(data) : new DefaultComboBoxModel();
 		// apply to list
 		getUnitList().setModel(model);
 		// reset flag
 		isSingleUnitOnly = false;
-	}
-	
-	public void setSelectedUnit(IUnitIf unit) {
-		getUnitList().setSelectedValue(unit, true);
+		// update caption
+		getUnitsPanel().setCaptionText(SELECTION_ENABLED);
 	}
 	
 	/* ===========================================
@@ -356,55 +447,63 @@ public class PositionPanel extends DefaultToolPanel {
 	public boolean finish() {
 		
 		// initialize
-		boolean bFlag = false;
+		boolean bFlag = isDirty();
 		
-		// consume change events
-		setChangeable(false);
+		// any change?
+		if(bFlag) {
+
+			// reset flag
+			bFlag = true;
+			
+			// consume change events
+			setChangeable(false);
 		
-		// get unit
-		IUnitIf msoUnit = getUnit();
-		
-		// add or move poi?
-		if (msoUnit == null) {
-			Utils.showWarning("Du må først velge en enhet");
-		} 
-		else {
-			// is position valid?
-			if(getGotoPanel().getCoordinatePanel().isPositionValid()) {
-				// get point from coordinates
-				Position p = gotoPanel.getCoordinatePanel().getPosition();
-				// has point?
-				if(p!=null) {
-					try {
-						// convert and update tool
-						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
-						// forward
-						getTool().setUnit(msoUnit);
-						// set point
-						getTool().setPoint(point);
-						// forward
-						getTool().finish();
-						// finished
-						bFlag = true;
-					} catch (AutomationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}		
-				else 
-					Utils.showWarning("Ingen posisjon er oppgitt");
-			}
+			// get unit
+			IUnitIf msoUnit = getUnit();
+			
+			// add or move poi?
+			if (msoUnit == null) {
+				Utils.showWarning("Du må først velge en enhet");
+			} 
 			else {
-				Utils.showWarning("Oppgitt posisjon finnes ikke");
+				// is position valid?
+				if(getGotoPanel().getCoordinatePanel().isPositionValid()) {
+					// get point from coordinates
+					Position p = gotoPanel.getCoordinatePanel().getPosition();
+					// has point?
+					if(p!=null) {
+						try {
+							// convert and update tool
+							Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
+							// forward
+							getTool().setUnit(msoUnit);
+							// set point
+							getTool().setPoint(point,true);
+							// forward
+							getTool().finish();
+							// finished
+							bFlag = true;
+						} catch (AutomationException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}		
+					else 
+						Utils.showWarning("Ingen posisjon er oppgitt");
+				}
+				else {
+					Utils.showWarning("Oppgitt posisjon finnes ikke");
+				}
+					
 			}
-				
+			
+			// resume change events
+			setChangeable(true);
+			
 		}
-		
-		// resume change events
-		setChangeable(true);
 		
 		// work performed?
 		if(bFlag) {
@@ -415,7 +514,7 @@ public class PositionPanel extends DefaultToolPanel {
 		}
 		
 		// finished
-		return bFlag;
+		return false;
 	}
 	
 	public void reset() {
@@ -430,6 +529,7 @@ public class PositionPanel extends DefaultToolPanel {
 		setChangeable(true);
 	}	
 	
+	@Override
 	public void update() {
 		
 		// forward
@@ -439,7 +539,7 @@ public class PositionPanel extends DefaultToolPanel {
 		if(!isChangeable()) return;
 		
 		// consume changes
-		setChangeable(false);
+ 		setChangeable(false);
 		
 		try {
 			
@@ -449,9 +549,9 @@ public class PositionPanel extends DefaultToolPanel {
 			// only update if unit is selected
 			getGotoPanel().getCoordinatePanel().setEnabled(getUnit()!=null);
 			
-			// units state
-			getUnitsPanel().setBodyEnabled(getTool().isCreateMode());
-			getUnitsPanel().setCaptionText(getTool().isCreateMode() ? "Velg enhet" : "Kan ikke endres");
+			// update captions
+			getUnitsPanel().setCaptionText(isSingleUnitOnly ? "Kan ikke endres" : "Velg enhet");
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -466,15 +566,11 @@ public class PositionPanel extends DefaultToolPanel {
 	public void setMsoObject(IMsoObjectIf msoObj) {		
 		// consume?
 		if (!isChangeable()) return;
-		// consume changes
-		setChangeable(false);
 		// update comments and type
 		if(msoObj instanceof IUnitIf)
 			setUnit((IUnitIf)msoObj);
 		else
 			setUnit(null);
-		// resume changes
-		setChangeable(true);
 		// finished
 		update();
 	}

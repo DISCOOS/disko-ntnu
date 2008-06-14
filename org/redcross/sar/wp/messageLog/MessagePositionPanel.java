@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.Calendar;
@@ -23,20 +24,19 @@ import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.PositionPanel;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
-import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
+import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
-import org.redcross.sar.util.mso.Track;
 
 /**
  * Dialog used to update message position lines when editing the message log. 
@@ -60,6 +60,8 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 	protected PositionTool m_tool = null;
 	protected IDiskoToolState m_toolState = null;
 
+	protected Calendar logTimeStamp = null;
+	
 	/**
 	 * @param wp Message log work process
 	 * @param poiTypes Which POI types are valid in panel
@@ -119,6 +121,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 			m_actionsPanel.add(getCancelButton());
 			m_actionsPanel.add(getCenterAtButton());
 			m_actionsPanel.add(getFinishButton());
+			m_actionsPanel.add(Box.createVerticalGlue());
 		}
 		return m_actionsPanel;
 	
@@ -161,7 +164,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 		if(m_positionPanel==null) {
 
 			// create a new PositionPanel and register it with the tool
-			m_positionPanel = (PositionPanel)m_tool.addPropertyPanel();
+			m_positionPanel = (PositionPanel)m_tool.addToolPanel();
 			// forward work to this
 			m_positionPanel.addDiskoWorkListener(this);
 			
@@ -231,6 +234,93 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 	/**
 	 * Apply position in current message based on values in GUI fields
 	 */
+	private boolean apply()
+	{
+		
+		// consume?
+		if(!isChangeable()) return false;
+
+		// consume changes
+		setChangeable(false);
+		
+		// initialize flag
+		boolean isSuccess = false;
+
+		// get panel
+		PositionPanel panel = getPositionPanel();
+		
+		// get current unit			
+		IUnitIf unit = panel.getUnit();
+		
+		// has unit?
+		if(unit!=null) {
+			
+			// suspend update events
+			m_wp.getMsoModel().suspendClientUpdate();
+			
+			try {
+				
+				// use panel instead of unit. updated position				
+				// may not be the unit position. A track position
+				// might be updated if passed logEntry was found 
+				// in unit track
+				Position p = panel.getPosition();
+							
+				// add or move poi?
+				if(p!=null) {
+					
+					// get current message, create if not exist
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+					
+					// Get message line, create if not exist
+					IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POSITION, true);
+
+					// message line just created?
+					if(messageLine.getLineUnit()==null) {
+
+						// save
+						messageLine.setLineUnit(unit);
+						messageLine.setOperationTime(logTimeStamp);
+						messageLine.setLinePosition(p);
+											
+					}
+					else {
+						// update position
+						messageLine.setLinePosition(p);					
+					}
+					
+					// notify
+					MessageLogBottomPanel.setIsDirty();					
+
+					// set flag
+					isSuccess = true;
+					
+				}
+				else {
+					// notify
+					Utils.showWarning("Ingen posisjon er oppgitt");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			
+			// resume update events
+			m_wp.getMsoModel().resumeClientUpdate();
+
+		}
+		else {
+			Utils.showWarning("Du må først velge en enhet");
+		}
+
+		// resume change
+		setChangeable(true);
+		
+		// return flag
+		return isSuccess;
+		
+	}
+
+	/*
 	private boolean apply()
 	{
 		
@@ -345,7 +435,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 		return isSuccess;
 		
 	}
-	
+	*/
 	/**
 	 * Reverts contents of text fields to what is stored in MSO
 	 */
@@ -363,10 +453,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 			// has line
 			if(line != null)
 			{
-				IUnitIf unit = line.getLineUnit();
-				Position p = line.getLinePosition();
-				getPositionPanel().setUnit(unit);
-				getPositionPanel().setPosition(p);
+				getPositionPanel().setUnit(line.getLineUnit());
 			}
 		}
 	}
@@ -381,76 +468,143 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 	 */
 	public void showComponent()
 	{
+		// initialize
+		boolean bFlag = false;
+		
+		// disable update
+		setChangeable(false);	
 		
 		try {
+			// initialize
+			TimePos logEntry = null;
+			
 			// center map at position of current unit
-			IUnitIf unit = centerAtUnit(true);			
-			// save current state
-			m_toolState = m_tool.save();
-			// set it the active property panel
-			m_tool.setPropertyPanel(getPositionPanel());
-			// prepare to draw
-			m_tool.setShowDialog(false);
-			m_tool.setWorkPoolMode(false);
-			m_tool.setShowDrawFrame(false);
-			m_tool.setMsoData(null, unit, MsoClassCode.CLASSCODE_UNIT);
-			m_tool.setDrawMode(unit==null ? DrawMode.MODE_CREATE : DrawMode.MODE_REPLACE);
-			// set tool active
-			m_wp.getMap().setActiveTool(m_tool,0);
-			// load all units?
+			IUnitIf unit = centerAtUnit(true);
+			
+			// show tool
+			setToolVisible(true);
+			// prepare tool
+			m_tool.setShowDialog(false);				// do not show tool dialog 
+			m_tool.setWorkPoolMode(false);				// ensures that mso model is 
+														// updated on this thread (in sync)
+			m_tool.setToolPanel(getPositionPanel());	// ensures that this position panel 
+														// is used to apply change to mso model
+			m_tool.setShowDrawFrame(false);				// do not show draw frame			
+			// update draw adapter
+			m_tool.getDrawAdapter().setup(MsoClassCode.CLASSCODE_UNIT, null, unit, true);
+			
+			/* ==================================================================
+			 * IMPORTANT: 
+			 * 
+			 * It it important that updates complies to the position logging 
+			 * regime. Unit positions should only be logged if the units has
+			 * truly moved from one position to another. If the position change
+			 * is a correction (user update of wrong position input), thus a 
+			 * change that do not reflect a move in the terrain, the old input
+			 * should be updated: no new log action should be performed!
+			 *  
+			 * If the exists no MessagePositionLine, entered position should 
+			 * update the unit position, and then be logged (added to track)
+			 * 
+			 * This is done by setting the following position tool attributes:
+			 * 
+			 * UPDATETRACKPOSITION:=null;
+			 * LOGPOSITION:=true;
+			 * 
+			 * If there already exist a message with a MessagePositionLine, 
+			 * THE NEW UNIT POSITION SHOULD NOT BE LOGGED, IT SHOULD BE UPDATED. 
+			 * 
+			 * Update in this context implies
+			 * 
+			 * 1. Update unit position if current unit position is the last 
+			 *    logged
+			 * 2. Update unit track log if current unit position exist in log, 
+			 *    else, new position should be added to log.
+			 * 
+			 * This is done by setting the following position tool attributes:
+			 * 
+			 * UPDATETRACKPOSITION:=line.getLinePosition()
+			 * LOGPOSITION:=false;
+			 * 
+			 * ================================================================== */
+			
+			// get current message, do not create if not exist
+			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+			// get position message line, do not create if not exist
+			IMessageLineIf line = message!=null ? 
+					message.findMessageLine(MessageLineType.POSITION, false) : null;
+					
+			// comply to logging regime
+			if(line==null) {
+				logTimeStamp = Calendar.getInstance();
+				m_tool.setAttribute(logTimeStamp,"LOGTIMESTAMP");
+				m_tool.setAttribute(null,"UPDATETRACKPOSITION");
+				m_tool.setAttribute(true,"LOGPOSITION");
+			}
+			else {
+				// get log time stamp
+				logTimeStamp = line.getOperationTime();
+				// re-create time position
+				logEntry = new TimePos( line.getLinePosition(), logTimeStamp);
+				System.out.println("logEntry:={"+MapUtil.getMGRSfromPosition(line.getLinePosition()) + "," + DTG.CalToDTG(logTimeStamp)+"}");
+				// update
+				m_tool.setAttribute(logTimeStamp,"LOGTIMESTAMP");
+				m_tool.setAttribute(logEntry,"UPDATETRACKPOSITION");
+				m_tool.setAttribute(false,"LOGPOSITION");
+			}
+					
+			// prepare tool panel
+			getPositionPanel().setLogEntry(logEntry);
 			if(unit==null) {
 				// load all
 				getPositionPanel().loadUnits();
-				// get current message, do not create if not exist
-				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+				// infer unit from message?
 				if(message!=null && message.getSender() instanceof IUnitIf) {
 					// cast sender to IUnitIf
 					unit = (IUnitIf)message.getSender();
 					// select unit
-					getPositionPanel().setSelectedUnit(unit);
+					getPositionPanel().setUnit(unit);
 				}
 			}
 			else {
+				// load single unit
 				getPositionPanel().loadUnit(unit);
-				getPositionPanel().setSelectedUnit(unit);
-				getPositionPanel().setPosition(unit!=null?unit.getPosition():null);
-				//m_tool.setPoint(unit!=null ? getPositionPanel().getPoint() : m_tool.getMap().getClickPoint());
 			}
-			// show tool
-			NavBarPanel bar = m_wp.getApplication().getNavBar();
-			List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
-			bar.setEnabledButtons(types, true, true);
-			bar.setVisibleButtons(types, true, true);
-			// reset flag
-			getPositionPanel().setDirty(false);
-			// show this panel
-			this.setVisible(true);
-			// show map over log
-			MessageLogPanel.showMap();
+			// success
+			bFlag = true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		// enable update
+		setChangeable(true);
+		// success?
+		if(bFlag) {
+			// enable update
+			getPositionPanel().update();
+			// show this panel
+			this.setVisible(true);
+			// show map over log
+			MessageLogPanel.showMap();			
 		}
 	}
 
 	public void hideComponent()
 	{
-
 		// hide tool
-		NavBarPanel bar = m_wp.getApplication().getNavBar();
-		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
-		bar.setEnabledButtons(types, false, true);
-		bar.setVisibleButtons(types, false, true);
-		// hide num pad
-		m_wp.getApplication().getUIFactory().getNumPadDialog().setVisible(false);
-		// resume old tool state
-		m_tool.load(m_toolState);
+		setToolVisible(false);
 		// hide map
         MessageLogPanel.hideMap();
 		// hide me
 		this.setVisible(false);
     }
 
+	private void setToolVisible(boolean isVisible) {
+		NavBarPanel bar = m_wp.getApplication().getNavBar();
+		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
+		bar.setVisibleButtons(types, isVisible, true);		
+	}
+	
 	private void updatePosition(IMessageIf message)
 	{
 		
@@ -483,7 +637,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 	public void newMessageSelected(IMessageIf message)
 	{
 		// consume?
-		if(!isChangeable()) return;
+		if(!isChangeable() || !isVisible()) return;
 		
 		// Update dialog
 		updatePosition(message);
@@ -552,7 +706,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 					if(isSelected)
 						map.centerAtMsoObject(unit);
 					map.refreshMsoLayers();
-                	map.resumeNotify();
+                	map.consumeNotify();
 				}
 				catch (AutomationException ex)
 				{
@@ -564,7 +718,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 				}
 			}
 		}
-		// return unit
+		// finished
 		return unit;
 	}	
 }

@@ -6,11 +6,13 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 
 import java.util.Calendar;
 import java.util.EnumSet;
+import java.util.ResourceBundle;
 /**
  * Created by IntelliJ IDEA.
  * User: vinjar
@@ -23,14 +25,15 @@ import java.util.EnumSet;
  */
 public class AssignmentTransferUtilities
 {
-    final static EnumSet<IAssignmentIf.AssignmentStatus> acceptedStatuses = EnumSet.range(IAssignmentIf.AssignmentStatus.ASSIGNED, IAssignmentIf.AssignmentStatus.REPORTED);
-
+	final static ResourceBundle resource = ResourceBundle.getBundle("org.redcross.sar.mso.util.assignmentTransferUtilities");
+    final static EnumSet<AssignmentStatus> acceptedStatuses = EnumSet.range(AssignmentStatus.ASSIGNED, AssignmentStatus.REPORTED);
+    
     /**
      * Create an assignment transfer message and put it in the message log.
      * <p/>
      * The message is generated with status {@link org.redcross.sar.mso.data.IMessageIf.MessageStatus#UNCONFIRMED}.
      * <p/>
-     * For each status change between {@link org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus#READY} and {@link org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus#FINISHED}
+     * For each status change between {@link org.redcross.sar.mso.data.AssignmentStatus#READY} and {@link org.redcross.sar.mso.data.AssignmentStatus#FINISHED}
      * is generated one message line.
      *
      * @param anMsoManager The Mso Manager.
@@ -38,45 +41,45 @@ public class AssignmentTransferUtilities
      * @param anAssignment The assignment that is transferred
      * @param oldStatus    Former assignmnet status
      */
-    public static void createAssignmentChangeMessage(IMsoManagerIf anMsoManager, IUnitIf aUnit, IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus oldStatus)
+    public static void createAssignmentChangeMessage(IMsoManagerIf anMsoManager, IUnitIf aUnit, IAssignmentIf anAssignment, AssignmentStatus oldStatus)
     {
-        IMessageLineIf.MessageLineType firstLineType;
+        MessageLineType firstLineType;
         switch (oldStatus)
         {
             case READY:
             case QUEUED:
-                firstLineType = IMessageLineIf.MessageLineType.ASSIGNED;
+                firstLineType = MessageLineType.ASSIGNED;
                 break;
             case ASSIGNED:
                 // Special consideration when moving assigned assignments between units.
-                if (anAssignment.getStatus() ==  IAssignmentIf.AssignmentStatus.ASSIGNED)
+                if (anAssignment.getStatus() ==  AssignmentStatus.ASSIGNED)
                 {
-                    firstLineType = IMessageLineIf.MessageLineType.ASSIGNED;
+                    firstLineType = MessageLineType.ASSIGNED;
                 } else
                 {
-                    firstLineType = IMessageLineIf.MessageLineType.STARTED;
+                    firstLineType = MessageLineType.STARTED;
                 }
                 break;
             case EXECUTING:
-                firstLineType = IMessageLineIf.MessageLineType.COMPLETED;
+                firstLineType = MessageLineType.COMPLETED;
                 break;
             default:
                 return;
         }
 
-        IMessageLineIf.MessageLineType finalLineType;
+        MessageLineType finalLineType;
         switch (anAssignment.getStatus())
         {
             case ASSIGNED:
-                finalLineType = IMessageLineIf.MessageLineType.ASSIGNED;
+                finalLineType = MessageLineType.ASSIGNED;
                 break;
             case EXECUTING:
-                finalLineType = IMessageLineIf.MessageLineType.STARTED;
+                finalLineType = MessageLineType.STARTED;
                 break;
             case ABORTED:
             case FINISHED:
             case REPORTED:
-                finalLineType = IMessageLineIf.MessageLineType.COMPLETED;
+                finalLineType = MessageLineType.COMPLETED;
                 break;
             default:
                 return;
@@ -88,12 +91,12 @@ public class AssignmentTransferUtilities
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         message.addConfirmedReceiver(aUnit);
         message.setSender(anMsoManager.getCmdPostCommunicator());
-        createAssignmentChangeMessageLines(message, firstLineType, finalLineType, now, anAssignment);
+        createAssignmentChangeMessageLines(message, firstLineType, finalLineType, now, aUnit, anAssignment);
     }
 
-    final static IMessageLineIf.MessageLineType[] types = {IMessageLineIf.MessageLineType.ASSIGNED,
-            IMessageLineIf.MessageLineType.STARTED,
-            IMessageLineIf.MessageLineType.COMPLETED};
+    final static MessageLineType[] types = {MessageLineType.ASSIGNED,
+            MessageLineType.STARTED,
+            MessageLineType.COMPLETED};
 
     /**
      * Create a set of message lines for assignment transfers.
@@ -104,9 +107,11 @@ public class AssignmentTransferUtilities
      * @param aDTG          Time when the message was created.
      * @param anAssignment  The assignment that is transferred
      */
-    public static void createAssignmentChangeMessageLines(IMessageIf message, IMessageLineIf.MessageLineType firstLineType, IMessageLineIf.MessageLineType lastLineType, Calendar aDTG, IAssignmentIf anAssignment)
+    public static void createAssignmentChangeMessageLines(IMessageIf message, 
+    		MessageLineType firstLineType, MessageLineType lastLineType, Calendar aDTG, 
+    		IUnitIf unit, IAssignmentIf anAssignment)
     {
-        for (IMessageLineIf.MessageLineType t : types)
+        for (MessageLineType t : types)
         {
             if (t.ordinal() >= firstLineType.ordinal() && t.ordinal() <= lastLineType.ordinal())
             {
@@ -114,6 +119,7 @@ public class AssignmentTransferUtilities
                 if (line != null)
                 {
                     line.setOperationTime(aDTG);
+                    line.setLineUnit(unit);
                     line.setLineAssignment(anAssignment);
                 }
             }
@@ -125,53 +131,75 @@ public class AssignmentTransferUtilities
      *
      * @param aUnit   The unit that receives the assignment.
      * @param aStatus The status to be checked.
-     * @return <code>true</code> if accepted, <code>false </code> otherwise.
+     * @return <code>0</code> if accepted, <code>negative</code> otherwise. 
+     * <p> Following errors are returned: 
+     * <p> <code>(-1)-></code> Unit is already assigned an assignment  
+     * <p> <code>(-2)-></code> Unit is already executing an assignment 
+     * <p> <code>(-3)-></code> Unit is released. Only reported assignments change is accepted 
      */
-    public static boolean unitCanAccept(IUnitIf aUnit, IAssignmentIf.AssignmentStatus aStatus)
+    public static int unitCanAcceptChange(IUnitIf aUnit, AssignmentStatus aStatus)
     {
-        switch (aUnit.getStatus())
+        // is null?
+    	if(aUnit==null) return 0;
+    	
+    	switch (aUnit.getStatus())
         {
-            case READY:
-            case INITIALIZING:
-            case PAUSED:
-            case WORKING:
-            case PENDING:
-                if (aStatus == IAssignmentIf.AssignmentStatus.QUEUED)
-                {
-                    return true;
-                } else if (aStatus == IAssignmentIf.AssignmentStatus.ASSIGNED)
-                {
-                    return (aUnit.getAssignedAssignments().size() == 0);
-                } else if (aStatus == IAssignmentIf.AssignmentStatus.EXECUTING)
-                {
-                    return (aUnit.getExecutingAssigments().size() == 0);
-                } else
-                {
-                    return true;
-                }
-            case RELEASED:
-                return aStatus == IAssignmentIf.AssignmentStatus.REPORTED;
-            default:
-                return false;
+        case INITIALIZING:
+        case EMPTY:
+        case READY:
+        case PAUSED: 
+        case WORKING:
+        case PENDING:
+            if (aStatus == AssignmentStatus.QUEUED)
+            {
+                return 0;
+            } else if (aStatus == AssignmentStatus.ASSIGNED )
+            {
+                if (aUnit.getAssignedAssignments().size() > 0) return -1;
+                if (aUnit.getExecutingAssigments().size() > 0) return -2;
+            }
+            else if(aStatus == AssignmentStatus.EXECUTING) {
+                if (aUnit.getExecutingAssigments().size() > 0) return -2;            	
+            }
+            if(aStatus != null)
+            {
+                return 0;
+            }
+            // failed
+            throw new IllegalArgumentException("Assignment status is " + aStatus);
+        case RELEASED:
+            return aStatus == AssignmentStatus.REPORTED ? 0 : -3;
         }
+        // failed
+        throw new IllegalArgumentException("Unit status is " + aUnit.getStatus());
     }
-
+    
     /**
-     * Test if an assignment can change satus and owner.
+     * Test if an assignment can change status and owner.
      *
      * @param anAssignment The assignment to change
      * @param newStatus    The new status
      * @param newUnit      The new owner
-     * @return <code>true</code> if the change is legal, <code>false</code> otherwise.
+     * @return <code>0</code> if the change is legal, <code>negative</code> otherwise.
+     * <p> Following errors are returned: 
+     * <p> <code>(-4)-></code> Assignments can be reordered within same unit if status is QUEUED.  
+     * <p> <code>(-5)-></code> Assignment status can only change from <code>EMPTY</code> to <code>DRAFT</code> or <code>READY</code>. No unit can be assigned. 
+     * <p> <code>(-6)-></code> Assignment status can only change from <code>DRAFT</code> to <code>READY</code>. No unit can be assigned.
+     * <p> <code>(-7)-></code> Assignment status can only change from <code>READY</code> to <code>DRAFT</code> if no unit will be assigned.
+     * <p> <code>(-8)-></code> Assignment status can only change from <code>READY</code> to <code>ACTIVE_SET</code> if an unit will be assigned.
+     * <p> <code>(-9)-></code> Assignment status can only change from <code>{QUEUED, ASSIGNED}</code> to <code>READY</code> if no unit will be assigned
+     * <p> <code>(-10)-></code> Assignment status can only change from <code>{QUEUED, ASSIGNED}</code> to <code>ACTIVE_SET</code> if new status is in <code>ACTIVE_SET</code> and the assigned unit accepts the change.  
+     * <p> <code>(-11)-></code> Assignment status can only change from <code>EXECUTING</code> to <code>FINISHED_AND_REPORTED_SET</code> if assigned remains the same.
+     * <p> <code>(-12)-></code> Assignment status can only change from <code>{ABORTED, FINISHED}</code> to <code>REPORTED</code> if assigned unit will not change.
      */
-    public static boolean assignmentCanChangeToStatus(IAssignmentIf anAssignment, String newStatus, IUnitIf newUnit)
+    public static int assignmentCanChangeToStatus(IAssignmentIf anAssignment, String newStatus, IUnitIf newUnit)
     {
-        IAssignmentIf.AssignmentStatus status = anAssignment.getStatusAttribute().enumValue(newStatus);
-        if (status == null)
-        {
-            return false;
-        }
+        // get status from string
+    	AssignmentStatus status = anAssignment.getStatusAttribute().enumValue(newStatus);
+    	
+    	// forward
         return assignmentCanChangeToStatus(anAssignment, status, newUnit);
+        
     }
 
     /**
@@ -180,46 +208,118 @@ public class AssignmentTransferUtilities
      * @param anAssignment The assignment to check.
      * @param newStatus    New status for assignment.
      * @param newUnit      Unit that shall receive the assignment.
-     * @return <code>true</code> if can change, <code>false </code> otherwise.
+     * @return <code>0</code> if can change, <code>negative</code> otherwise.
+     * <p> Following errors are returned: 
+     * <p> <code>(-4)-></code> Assignments can be reordered within same unit if status is QUEUED.  
+     * <p> <code>(-5)-></code> Assignment status can only change from <code>EMPTY</code> to <code>DRAFT</code> or <code>READY</code>. No unit can be assigned. 
+     * <p> <code>(-6)-></code> Assignment status can only change from <code>DRAFT</code> to <code>READY</code>. No unit can be assigned.
+     * <p> <code>(-7)-></code> Assignment status can only change from <code>READY</code> to <code>DRAFT</code> if no unit will be assigned.
+     * <p> <code>(-8)-></code> Assignment status can only change from <code>READY</code> to <code>ACTIVE_SET</code> if an unit will be assigned.
+     * <p> <code>(-9)-></code> Assignment status can only change from <code>{QUEUED, ASSIGNED}</code> to <code>READY</code> if no unit will be assigned
+     * <p> <code>(-10)-></code> Assignment status can only change from <code>{QUEUED, ASSIGNED}</code> to <code>ACTIVE_SET</code> if new status is in <code>ACTIVE_SET</code> and the assigned unit accepts the change.  
+     * <p> <code>(-11)-></code> Assignment status can only change from <code>EXECUTING</code> to <code>FINISHED_AND_REPORTED_SET</code> if assigned remains the same.
+     * <p> <code>(-12)-></code> Assignment status can only change from <code>{ABORTED, FINISHED}</code> to <code>REPORTED</code> if assigned unit will not change.
      */
-    public static boolean assignmentCanChangeToStatus(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus newStatus, IUnitIf newUnit)
+    public static int assignmentCanChangeToStatus(IAssignmentIf anAssignment, AssignmentStatus newStatus, IUnitIf newUnit)
     {
         IUnitIf currentUnit = anAssignment.getOwningUnit();
-        IAssignmentIf.AssignmentStatus currentStatus = anAssignment.getStatus();
+        AssignmentStatus currentStatus = anAssignment.getStatus();
 
-        if (newStatus == currentStatus && newUnit == currentUnit)
+        if (newStatus == currentStatus)
         {
-            return newStatus == IAssignmentIf.AssignmentStatus.QUEUED;     // Can drop on the same in order to change priority
+            return (newStatus == AssignmentStatus.QUEUED) ? 0 : -4;     // Can drop on the same in order to change priority
         }
 
         switch (currentStatus)
         {
             case EMPTY:
-                return newUnit == null && (newStatus == IAssignmentIf.AssignmentStatus.DRAFT || newStatus == IAssignmentIf.AssignmentStatus.READY);
+                return (newUnit == null && (newStatus == AssignmentStatus.DRAFT 
+                		|| newStatus == AssignmentStatus.READY)) ? 0 : -5;
             case DRAFT:
-                return newUnit == null && newStatus == IAssignmentIf.AssignmentStatus.READY;
+                return (newUnit == null && newStatus == AssignmentStatus.READY) ? 0 : -6;
             case READY:
-                return newUnit != null && IAssignmentIf.ACTIVE_SET.contains(newStatus) && AssignmentTransferUtilities.unitCanAccept(newUnit, newStatus);
+            	// move to draft?
+            	if(newUnit == null) {
+	                return (newStatus == AssignmentStatus.DRAFT) ? 0 : -7;            		
+            	}
+            	// get unit acceptance
+            	int ans = unitCanAcceptChange(newUnit, newStatus);
+            	if(ans!=0) return ans;
+            	// valid status?
+            	if(IAssignmentIf.ACTIVE_SET.contains(newStatus)) {
+            		// check if new assignment violates the work flow requirements: 
+            		int count = newUnit.getAssignedAssignments().size() + newUnit.getExecutingAssigments().size();
+            		// allowed without any more checks?
+            		if(AssignmentStatus.QUEUED.equals(newStatus) || count==0)                			
+            			return 0;
+            		if(newUnit.getAssignedAssignments().size()>0)
+            			return -1;
+					// failed
+					return -8;
+            	}
+            	else if(IAssignmentIf.FINISHED_AND_REPORTED_SET.contains(newStatus)) {
+            		return 0;
+            	}
+            	return -9;
             case QUEUED:
             case ASSIGNED:
-                return newUnit == null ? newStatus == IAssignmentIf.AssignmentStatus.READY : (IAssignmentIf.ACTIVE_SET.contains(newStatus) && AssignmentTransferUtilities.unitCanAccept(newUnit, newStatus));
+            	// move to ready?
+                if (newUnit == null) { 
+                	return (newStatus == AssignmentStatus.READY ? 0 : -10);
+                }
+            	// get unit acceptance
+            	ans = unitCanAcceptChange(newUnit, newStatus);
+            	if(ans!=0) return ans;
+            	// valid status?
+            	if(IAssignmentIf.ACTIVE_SET.contains(newStatus)) {
+            		// check if new assignment violates the work flow requirements: 
+            		int count = newUnit.getAssignedAssignments().size() + newUnit.getExecutingAssigments().size();
+            		if(count==0 || anAssignment.equals(newUnit.getAssignedAssignment()) 
+            					|| anAssignment.equals(newUnit.getExecutingAssigment()))                			
+            			return 0;
+            	}
+            	// failure
+            	return -11;
             case EXECUTING:
-                return newUnit == currentUnit && IAssignmentIf.FINISHED_AND_REPORTED_SET.contains(newStatus);
+                return (newUnit == currentUnit && IAssignmentIf.FINISHED_AND_REPORTED_SET.contains(newStatus)) ? 0 : -12;
             case ABORTED:
             case FINISHED:
-                return newUnit == currentUnit && newStatus == IAssignmentIf.AssignmentStatus.REPORTED;
+                return (newUnit == currentUnit && newStatus == AssignmentStatus.REPORTED) ? 0 : -13;
         }
-        return false;
+        // failed
+        throw new IllegalArgumentException("Status is " + newStatus);
     }
 
-
+    public static String getErrorMessage(AssignmentStatus changeTo, int reason, IUnitIf unit, IAssignmentIf assignment, boolean isHtml) {
+    	// get initialize
+    	String unitName = unit!=null ? MsoUtils.getUnitName(unit, false) : "";
+    	String assignmentName = assignment!=null ? MsoUtils.getAssignmentName(assignment, 1) : "";
+    	String template ="";
+    	// get error message
+    	if(changeTo!=null)
+    		template = resource.getString("ChangeTo."+changeTo.name()+".text");
+    	if(reason<0) {
+    		if(!template.isEmpty()) template = template.concat(" " + resource.getString("Argument.text") + " ");
+    		template = template.concat(resource.getString("Reason."+String.valueOf(Math.abs(reason))+".text"));
+    	}
+    	// finished
+    	if(isHtml)
+    		return String.format(template,getBold(unitName),getBold(assignmentName),getBold(unitName));
+    	else
+    		return String.format(template,unitName,assignmentName,unitName);
+    }
+    
+    private static String getBold(String text) {
+    	return "<b>"+text+"</b>";
+    }
+ 
     /**
      * Assigns an assignment to some unit. All statuses are updated.
      * @param assignment The assignment
      * @param unit The unit to get the assignment
      * @throws IllegalOperationException 
      */
-    public static void assignAssignmentToUnit(IAssignmentIf assignment, IUnitIf unit) throws IllegalOperationException
+    public static void unitAssignAssignment(IUnitIf unit,IAssignmentIf assignment) throws IllegalOperationException
     {
     	unit.addUnitAssignment(assignment, AssignmentStatus.ASSIGNED);
     	unit.setStatus(UnitStatus.INITIALIZING);
@@ -234,7 +334,8 @@ public class AssignmentTransferUtilities
     public static void unitStartAssignment(IUnitIf unit, IAssignmentIf assignment) throws IllegalOperationException
     {
 		unit.addUnitAssignment(assignment, AssignmentStatus.EXECUTING);
-		unit.setStatus(UnitStatus.WORKING);
+    	unit.setPosition(MsoUtils.getStartPosition(assignment));
+		unit.setStatus(UnitStatus.WORKING);		
     }
 
     /**

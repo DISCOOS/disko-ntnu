@@ -3,6 +3,8 @@ package org.redcross.sar.util.mso;
 import java.awt.geom.Point2D;
 import java.util.Calendar;
 
+import org.redcross.sar.map.MapUtil;
+
 /**
  * Class for handling a position object with time
  */
@@ -88,6 +90,7 @@ public class TimePos extends GeoPos implements Comparable<TimePos>
 
     public boolean equals(Object obj)
     {
+    	
         if (this == obj)
         {
             return true;
@@ -104,7 +107,19 @@ public class TimePos extends GeoPos implements Comparable<TimePos>
             return false;
         }
 
-        return floatEquals(in.getPosition());
+        boolean bFlag = floatEquals(in.getPosition());
+        
+    	try {
+    		
+    		String prefix = bFlag ? "(p1==p2): " : "(p1!=p2): ";
+    		
+			System.out.println(prefix + "p1:={"+MapUtil.getMGRSfromPosition(getPosition())+","+DTG.CalToDTG(m_time)+"} " 
+					+ "p2:={"+MapUtil.getMGRSfromPosition(((TimePos) obj).getPosition())+","+DTG.CalToDTG(((TimePos) obj).m_time)+"}");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return bFlag; 
     }
 
     public int hashCode()

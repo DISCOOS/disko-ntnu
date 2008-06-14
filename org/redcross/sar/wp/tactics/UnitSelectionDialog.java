@@ -239,8 +239,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private UnitTable getUnitTable() {
 		if (unitTable == null) {
 			try {
-				EnumSet<UnitStatus> status = EnumSet.complementOf(EnumSet.of(UnitStatus.RELEASED,UnitStatus.EMPTY));
-				unitTable = new UnitTable(msoModel,"32x32",status);
+				unitTable = new UnitTable(msoModel,"32x32",IUnitIf.ACTIVE_RANGE);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -415,7 +414,7 @@ public class UnitSelectionDialog extends DefaultDialog {
     					// reallocate?
     					if(reallocate) {
 	                        // change status and owner (will raise 
-	                    	// illegal operation is not possible)
+	                    	// illegal operation if not possible)
     						assignment.setStatusAndOwner(AssignmentStatus.QUEUED, unit);
     					}
     					else {

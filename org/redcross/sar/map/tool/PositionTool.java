@@ -2,25 +2,21 @@ package org.redcross.sar.map.tool;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Calendar;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
-import org.redcross.sar.gui.panel.POIPanel;
 import org.redcross.sar.gui.panel.PositionPanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-import org.redcross.sar.util.mso.Track;
+import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.util.mso.TimePos;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
@@ -33,6 +29,25 @@ import com.esri.arcgis.interop.AutomationException;
 public class PositionTool extends AbstractDrawTool {
 
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * If true, geoPos will be logged to Track 
+	 * If track is <code>null</code>, a track will be created
+	 */
+	private boolean logPosition = false;
+
+	/**
+	 * If a TimePos is given, geoPos will update the 
+	 * TimePos position. Time stamp is unchanged. 
+	 * If track is <code>null</code>, a track will be created
+	 */
+	private TimePos updateTrackPosition = null;
+	
+	/**
+	 * If a Calendar value is given, this will be used when
+	 * logging a position, else, current time will be used
+	 */	
+	private Calendar logTimeStamp = null;
 	
 	/**
 	 * Constructs the DrawTool
@@ -70,7 +85,7 @@ public class PositionTool extends AbstractDrawTool {
 		this.dialog = (DefaultDialog)dialog;
 		
 		// create default property panel
-		propertyPanel = addPropertyPanel();
+		toolPanel = addToolPanel();
 		
 		// registrate me in dialog
 		dialog.register(this);
@@ -152,35 +167,21 @@ public class PositionTool extends AbstractDrawTool {
 	
 	@Override
 	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoCode) {
-		try {
+		
+		// forward
+		super.setMsoData(msoOwner, msoObject, msoCode);
+		
+		// forward
+		getPositionPanel().setMsoObject(msoObject);
 			
-			// update tool point
-			if(msoObject instanceof IUnitIf) {
-				IUnitIf msoUnit = (IUnitIf)msoObject;
-				setPoint(MapUtil.getEsriPoint(msoUnit.getPosition(), map.getSpatialReference()));
-			}
-			
-			// forward
-			super.setMsoData(msoOwner, msoObject, msoCode);
-			
-			// forward
-			getPositionPanel().setMsoObject(msoObject);
-			
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	public PositionPanel getPositionPanel() {
-		return (PositionPanel)propertyPanel;
+		return (PositionPanel)toolPanel;
 	}
 	
 	@Override
-	public IToolPanel addPropertyPanel() {
+	public IToolPanel addToolPanel() {
 		// create panel list?
 		if(panels==null)
 			panels = new ArrayList<IToolPanel>(1);			
@@ -207,6 +208,37 @@ public class PositionTool extends AbstractDrawTool {
 	}		
 	
 	@Override
+	public Object getAttribute(String attribute) {
+		if("LOGTIMESTAMP".equalsIgnoreCase(attribute)) {
+			return logTimeStamp;
+		}
+		if("LOGPOSITION".equalsIgnoreCase(attribute)) {
+			return logPosition;
+		}
+		if("UPDATETRACKPOSITION".equalsIgnoreCase(attribute)) {
+			return updateTrackPosition;
+		}
+		return super.getAttribute(attribute);
+	}
+
+	@Override
+	public void setAttribute(Object value, String attribute) {
+		super.setAttribute(value, attribute);
+		if("LOGTIMESTAMP".equalsIgnoreCase(attribute)) {
+			logTimeStamp = (Calendar)value;
+			return;
+		}
+		if("LOGPOSITION".equalsIgnoreCase(attribute)) {
+			logPosition = (Boolean)value;
+			return;
+		}
+		if("UPDATETRACKPOSITION".equalsIgnoreCase(attribute)) {
+			updateTrackPosition = (TimePos)value;
+			return;
+		}
+	}	
+	
+	@Override
 	public IDiskoToolState save() {
 		// get new state
 		return new PositionToolState(this);
@@ -231,6 +263,9 @@ public class PositionTool extends AbstractDrawTool {
 
 		private IUnitIf unit = null;
 		private boolean isDirty = false;
+		private boolean logPosition = false;
+		private Calendar logTimeStamp = null;
+		private TimePos updateTrackPosition = null;
 		
 		// create state
 		public PositionToolState(PositionTool tool) {
@@ -239,12 +274,18 @@ public class PositionTool extends AbstractDrawTool {
 		}		
 		public void save(PositionTool tool) {
 			super.save((AbstractDiskoTool)tool);
+			this.logPosition = tool.logPosition;
+			this.logTimeStamp = tool.logTimeStamp;
+			this.updateTrackPosition = tool.updateTrackPosition;
 			this.unit = tool.getPositionPanel().getUnit();
 			this.isDirty = tool.getPositionPanel().isDirty();
 		}
 		
 		public void load(PositionTool tool) {
 			super.load((AbstractDiskoTool)tool);
+			tool.logPosition = this.logPosition;
+			tool.logTimeStamp = this.logTimeStamp;
+			tool.updateTrackPosition = this.updateTrackPosition;
 			tool.getPositionPanel().setChangeable(false);
 			tool.getPositionPanel().setUnit(this.unit);
 			tool.getPositionPanel().setChangeable(true);

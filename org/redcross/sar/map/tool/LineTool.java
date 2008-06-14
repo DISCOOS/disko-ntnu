@@ -73,7 +73,7 @@ public class LineTool extends AbstractDrawTool {
 		p1 = (Point)MapUtil.createPoint();
 
 		// create default property panel
-		propertyPanel = addPropertyPanel();
+		toolPanel = addToolPanel();
 		
 		// save dialog
 		this.dialog = (DefaultDialog)dialog;
@@ -93,7 +93,7 @@ public class LineTool extends AbstractDrawTool {
 		if(map!=null) {
 			
 			// get property panel
-			LinePanel panel = (LinePanel)propertyPanel;
+			LinePanel panel = (LinePanel)toolPanel;
 			
 			// release current?
 			if(snapAdapter!=null) {
@@ -150,7 +150,7 @@ public class LineTool extends AbstractDrawTool {
 		// forward
 		super.setMsoData(msoOwner, msoObject, msoClassCode);
 		// set mso object in panel
-		((LinePanel)getPropertyPanel()).setMsoObject((msoObject!=null ? msoObject : msoOwner));
+		((LinePanel)getToolPanel()).setMsoObject((msoObject!=null ? msoObject : msoOwner));
 	}
 
 	@Override
@@ -292,7 +292,7 @@ public class LineTool extends AbstractDrawTool {
 		return true;
 	}
 
-	public IToolPanel addPropertyPanel() {
+	public IToolPanel addToolPanel() {
 		// create panel list?
 		if(panels==null)
 			panels = new ArrayList<IToolPanel>(1);			

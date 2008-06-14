@@ -770,7 +770,6 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     }
 
 
-    private final EnumSet<UnitStatus> m_activeUnitStatusSet = EnumSet.range(UnitStatus.READY, UnitStatus.PENDING);
     private final EnumSet<CmdPostStatus> m_activeCmdPostStatusSet = EnumSet.of(CmdPostStatus.IDLE, CmdPostStatus.OPERATING, CmdPostStatus.PAUSED);
     private Selector<ICommunicatorIf> m_activeCommunicatorsSelector = new Selector<ICommunicatorIf>()
     {
@@ -789,7 +788,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
             } else if (anObject instanceof IUnitIf)
             {
                 IUnitIf unit = (IUnitIf) anObject;
-                if (m_activeUnitStatusSet.contains(unit.getStatus()))
+                if (IUnitIf.ACTIVE_RANGE.contains(unit.getStatus()))
                 {
                     return true;
                 } else

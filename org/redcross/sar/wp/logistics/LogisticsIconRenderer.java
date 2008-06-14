@@ -55,7 +55,7 @@ public class LogisticsIconRenderer extends JLabel implements TableCellRenderer
                     }
                 }
             }
-            iconValue.setSelected(isSelected && hasFocus);
+            iconValue.setSelected(isSelected);// && hasFocus);
             setText("");
             setIcon(iconValue);
         } else

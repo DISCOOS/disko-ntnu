@@ -3,6 +3,7 @@ package org.redcross.sar.wp.logistics;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 import java.awt.BorderLayout;
@@ -207,13 +208,14 @@ public class LogisticsInfoPanel extends JPanel
         {
             if (i < theButtonTexts.length)
             {
-                String buttonText = theButtonTexts[i];
-                boolean iconSet = false;
-                if (buttonText.contains("."))
+                String text = theButtonTexts[i];
+                String tooltip = theButtonTexts[i];
+                boolean iconSet = false;                
+                if (text.contains("."))
                 {
                     try
                     {
-                        ImageIcon icon = DiskoIconFactory.getIcon(buttonText, "48x48");
+                        ImageIcon icon = DiskoIconFactory.getIcon(text, "48x48");
                         if (icon != null)
                         {
                             b.setIcon(icon);
@@ -222,13 +224,16 @@ public class LogisticsInfoPanel extends JPanel
                         }
                     }
                     catch (Exception e){ /* CONSUME */ }
+                    
+                    tooltip = DiskoButtonFactory.getText(tooltip+".tooltip",null);
 
                 }
                 if (!iconSet)
                 {
-                    b.setText(buttonText.toLowerCase());
+                    b.setText(text.toLowerCase());
                     b.setIcon(null);
                 }
+                b.setToolTipText(tooltip);
                 b.setVisible(true);
                 b.setEnabled(true);
             }
@@ -321,7 +326,7 @@ public class LogisticsInfoPanel extends JPanel
                 m_headerLabel.setText(m_headerText);
             } else
             {
-                m_headerLabel.setText(m_headerText + " " + m_displayText);
+                m_headerLabel.setText("<html>"+m_headerText + " " + m_displayText+"</html>");
             }
         }
 
@@ -356,7 +361,7 @@ public class LogisticsInfoPanel extends JPanel
 //                m_textArea.setVisible(m_displayText.length() > 0);
             } else
             {
-                m_headerLabel.setText(m_headerText + " " + m_displayText);
+                m_headerLabel.setText("<html>" + m_headerText + " " + m_displayText + "</html>");
 //                m_textArea.setVisible(false);
             }
         }

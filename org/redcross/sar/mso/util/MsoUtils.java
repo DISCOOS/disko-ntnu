@@ -38,8 +38,11 @@ import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
+import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
@@ -453,18 +456,17 @@ public class MsoUtils {
 				Point stopPoint  = (Point)stopPline.getToPoint();
 				stopPoint.setSpatialReferenceByRef(map.getSpatialReference());
 				// add poi's
-				addPOI((IAreaIf)area, startPoint, POIType.START,false);
-				addPOI((IAreaIf)area, stopPoint, POIType.STOP,false);
+				setPOI((IAreaIf)area, startPoint, POIType.START, false);
+				setPOI((IAreaIf)area, stopPoint, POIType.STOP, false);
 			}
 		}
 	}
 
-	public static void addPOI(IAreaIf area, Point point, POIType poiType, boolean force)
+	public static void setPOI(IAreaIf area, Point point, POIType poiType, boolean force)
 									throws IOException, AutomationException {
 		// try to get poi
 		IPOIIf poi = null;
-		if(!force)
-			poi = getPOI(area, poiType);
+		if(!force) poi = getPOI(area, poiType);
 		
 		// has no poi of requested type?
 		if (poi == null) {
@@ -873,6 +875,38 @@ public class MsoUtils {
 		}
 		// not supported
 		return null;
+	}
+	
+	public static Position getStartPosition(IAssignmentIf assignment) {
+		
+		// initialize
+		Position p = null;
+		
+		// get assignment type
+		Enum type = assignment.getType();
+		
+		if(AssignmentType.SEARCH.equals(type)) {
+			// get sub type
+			type = getType(assignment,true);
+			// get start poi
+			IAreaIf area = assignment.getPlannedArea();
+			if(area!=null) {
+				IPOIIf poi = getPOI(area,POIType.START);
+				if(poi!=null) p = poi.getPosition();
+				// get first position in geodata list?
+				if(p==null) {
+					IMsoObjectIf data = area.getGeodataAt(0);
+					if(data instanceof IRouteIf) {
+						IRouteIf route = (IRouteIf)data;
+						List<GeoPos> geoPos = new ArrayList<GeoPos>(route.getGeodata().getPositions());
+						if(geoPos.size()>0)
+							p = new Position("",geoPos.get(0).getPosition());
+					}
+				}
+			}
+			
+		}
+		return p;
 	}
 	
 }

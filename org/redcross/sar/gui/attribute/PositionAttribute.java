@@ -68,7 +68,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 				field.addChangeListener(new ChangeListener() {
 
 					public void stateChanged(ChangeEvent e) {
-						if(isWorking()) return;
+						if(isConsume()) return;
 						fireOnWorkChange();
 					}
 					

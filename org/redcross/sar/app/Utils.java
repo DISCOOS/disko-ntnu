@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -26,7 +28,6 @@ import org.redcross.sar.thread.DiskoProgressMonitor;
  */
 public class Utils {
 
-	//private static Properties properties = null;
 	private static MessageDialog messageDialog = null;
 	private static ProgressMonitor progressMonitor = null;
 	private static IDiskoApplication diskoApp = null;
@@ -72,8 +73,15 @@ public class Utils {
 	public static int showConfirm(String title, String msg,int option) {
 		// get frame (if frame is locked use null)
 		Frame frame = Utils.getApp().isLocked() ? null : getApp().getFrame();
+		// set isMessageDialog flag
+		messageDialog = new MessageDialog(frame);
 		// forwar
-		return JOptionPane.showConfirmDialog(frame, msg, title, option, MessageDialog.QUESTION_MESSAGE);		
+		int ans = JOptionPane.showConfirmDialog(frame, msg, title, option, MessageDialog.QUESTION_MESSAGE);
+		// reset dialog
+		messageDialog = null;
+		// finished
+		return ans;		
+		
 	}
 	
 	public static void showMessage(String msg) {
@@ -100,11 +108,10 @@ public class Utils {
 		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);		
 	}
 	
-	public static void showMessage(final String title, final String msg, final int options)
-	{
-		
+	public static boolean showMessage(final String title, final String msg, final int options)
+	{		
 		// consume?
-		if(isMessageDialogShown()) return;
+		if(isMessageDialogShown()) return false;
 		
 		if(SwingUtilities.isEventDispatchThread()) {
 			
@@ -119,6 +126,13 @@ public class Utils {
 			// create message dialog
 			messageDialog = new MessageDialog(getApp().getFrame());
 			messageDialog.setLocationRelativeTo(getApp().getFrame(), DefaultDialog.POS_CENTER, false,true);
+			messageDialog.addFocusListener(new FocusAdapter() {
+            	@Override
+                public void focusGained(FocusEvent e) {
+            		// if
+            		messageDialog.requestFocusInWindow();
+                }
+            });    		
 			
 			// set inhibit flag
 			boolean isInhibit= monitor.setInhibit(false);						
@@ -147,6 +161,8 @@ public class Utils {
 			};
 			SwingUtilities.invokeLater(r);
 		}
+		// success 
+		return true;
 	}
 	
 	public static boolean isMessageDialogShown() {
@@ -154,7 +170,7 @@ public class Utils {
 	}
 	
 	public static boolean isMessageDialog(Component c) {
-		return (messageDialog!=null && messageDialog==c);
+		return (c!=null) && (messageDialog==c || c instanceof JOptionPane);
 	}
 	
 	public static String getPackageName(Class c) {

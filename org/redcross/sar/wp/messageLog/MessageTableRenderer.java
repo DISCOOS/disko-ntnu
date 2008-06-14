@@ -111,9 +111,15 @@ public class MessageTableRenderer extends JTextArea implements TableCellRenderer
 	        {
 	        	setForeground(table.getForeground());
 	
-	        	if(((MessageStatus)model.getValueAt(table.convertRowIndexToModel(row), 6)) == MessageStatus.POSTPONED)
+	        	MessageStatus status = ((MessageStatus)model.getValueAt(table.convertRowIndexToModel(row), 6)); 
+	        	
+	        	if(MessageStatus.POSTPONED.equals(status))
 	        	{
 	        		setBackground(Color.ORANGE);
+	        	}
+	        	else if(MessageStatus.UNCONFIRMED.equals(status))
+	        	{
+	        		setBackground(Color.YELLOW);
 	        	}
 	        	else
 	        	{

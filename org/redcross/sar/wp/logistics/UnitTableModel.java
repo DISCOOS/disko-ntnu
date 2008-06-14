@@ -10,11 +10,13 @@ import org.redcross.sar.gui.dnd.IconDragGestureListener;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
 import org.redcross.sar.gui.renderer.IconRenderer.IconActionHandler;
+import org.redcross.sar.gui.renderer.IconRenderer.UnitIcon;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -93,6 +95,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
     private EnumSet<IUnitIf.UnitType> m_unitTypeSelection;
     private IDiskoWpLogistics m_wpModule;
     private IconActionHandler m_actionHandler;
+    private boolean consume = false;
     
 
     
@@ -190,7 +193,7 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
     {
         public boolean select(IUnitIf aUnit)
         {
-            return (EnumSet.range(IUnitIf.UnitStatus.READY, IUnitIf.UnitStatus.PENDING).contains(aUnit.getStatus()) &&
+            return (IUnitIf.ACTIVE_RANGE.contains(aUnit.getStatus()) &&
                     m_unitTypeSelection.contains(aUnit.getType()));
         }
     };
@@ -339,29 +342,73 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
         return true;
     }
 
-    public void setSelectedCell(int aRow, int aColumn)
+    public boolean setSelected(IMsoObjectIf msoObject, boolean isSelected)
     {
-//        if (aRow != m_selectedRow || aColumn != m_selectedCol)
+    	// loop over all cells
+    	for(int i=0;i<getRowCount();i++) {
+    		for(int j=0;j<getColumnCount();j++) {
+    			IconRenderer icon = (IconRenderer)getValueAt(i, j);
+    			if(icon instanceof UnitIcon) {
+    				UnitIcon unitIcon = (UnitIcon)icon;
+    				if(unitIcon.getUnit()==msoObject) {
+    					setSelection(i,j);
+        				return true;
+    				}
+    			}
+    			else if(icon instanceof AssignmentIcon) {
+    				AssignmentIcon assignmentIcon = (AssignmentIcon)icon;
+    				if(assignmentIcon.isSingleAssigmentIcon() && assignmentIcon.getAssignment()==msoObject) {
+    					setSelection(i,j);    					
+    					return true;
+    				}
+    				if(assignmentIcon.getAssignmentList().contains(msoObject)) {
+    					setSelection(i,j);    					
+        				return true;
+    				}
+    			}
+    		}
+    	}
+    	return false;
+    }
+    
+    private void setSelection(int row, int col) {
+		consume = true;
+    	m_table.getSelectionModel().setValueIsAdjusting(true);
+		m_table.getSelectionModel().setSelectionInterval(row, row);
+		m_table.getColumnModel().getSelectionModel().setSelectionInterval(col, col);
+    	m_table.getSelectionModel().setValueIsAdjusting(false);
+		consume = false;
+		setSelectedCell(row,col,true);
+    }
+    
+    public void setSelectedCell(int aRow, int aColumn, boolean isSelected)
+    {
+        if (consume || aRow < 0 || aRow >= getRowCount() || aColumn < 0 || aColumn >= getColumnCount())
         {
-            if (aRow < 0 || aRow >= getRowCount() || aColumn < 0 || aColumn >= getColumnCount())
-            {
-                return;
-            }
-            try
-            {
-                m_selectedRow = m_table.convertRowIndexToModel(aRow);
-                m_selectedCol = m_table.convertColumnIndexToModel(aColumn);
-                Object value = getValueAt(m_selectedRow, m_selectedCol);
-                if (value instanceof IconRenderer)
-                {
-                    ((IconRenderer) value).iconSelected();
+            return;
+        }
+        try
+        {
+            // convert?
+        	int row = isSelected ? m_table.convertRowIndexToModel(aRow) : -1;
+            int col = isSelected ? m_table.convertColumnIndexToModel(aColumn) : -1;
+            // any change?
+            if(m_selectedRow != row || m_selectedCol != col)  {
+                m_selectedRow = row;
+                m_selectedCol = col;                	
+                if(isSelected) {
+	                Object value = getValueAt(m_selectedRow, m_selectedCol);
+	                if (value instanceof IconRenderer)
+	                {
+	                    ((IconRenderer) value).iconSelected();
+	                }
                 }
             }
-            catch (IndexOutOfBoundsException e)
-            {
-            	e.printStackTrace();
-            }
         }
+        catch (IndexOutOfBoundsException e)
+        {
+        	e.printStackTrace();
+            }
     }
 
     public static final Comparator<IconRenderer.AssignmentIcon> ListLengthComparator = new Comparator<IconRenderer.AssignmentIcon>()
@@ -447,17 +494,6 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
     public IUnitIf getUnitAt(int aRow)
     {
         return ((IconRenderer.UnitIcon) m_iconRows.get(aRow)[0]).getUnit();
-    }
-
-    public boolean canAcceptAssignment(IAssignmentIf anAssignment, int aRow, int aColumn)
-    {
-        if (aColumn == 0 || aColumn == 5)
-        {
-            return false;
-        }
-        IUnitIf rowUnit = getUnitAt(aRow);
-        IAssignmentIf.AssignmentStatus columnStatus = UnitTableModel.getSelectedAssignmentStatus(aColumn - 1);
-        return AssignmentTransferUtilities.assignmentCanChangeToStatus(anAssignment, columnStatus, rowUnit);
     }
 
     public abstract static class TimeComparator implements Comparator<IconRenderer.AssignmentIcon>
@@ -959,22 +995,48 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
 			// get data
 			try{
 				
-				// try to get assignment
-				IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
-				
-				// valid assignment?
-				if(assignment!=null) {
-	                // validate
-	                if (canAcceptAssignment(assignment, dropRow, dropCol)) {
-	                	// valid
-	                	return true;
-	                }
-		        	// notify
-					Utils.showWarning("Du kan ikke flytte oppdrag hit");
-				}
-				else {
-					// TODO: Raise exception!					
-				}
+				// valid row?
+		        if (!(dropCol == 0 || dropCol == 5))
+		        {
+					// try to get assignment
+					IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
+					
+					// valid assignment?
+					if(assignment!=null) {
+						
+				        	
+				        	// get unit
+					        IUnitIf unit = getUnitAt(dropRow);
+					        
+					        // get assignment status
+					        AssignmentStatus newStatus = UnitTableModel.getSelectedAssignmentStatus(dropCol - 1);
+					        
+							// check if unit accepts requested change 
+							int ansUnits = AssignmentTransferUtilities.unitCanAcceptChange(unit, newStatus);
+							
+							// check if assignment change is allowed
+							int ansAssignment = AssignmentTransferUtilities.assignmentCanChangeToStatus(assignment, newStatus, unit);
+							
+							// If unit has assigned or started assignment, ask user if this is completed
+							if(!(ansUnits!=0 || ansAssignment!=0))
+							{
+			                	// valid
+			                	return true;
+							}
+
+							// get error message
+							String msg = "";
+							if(ansUnits!=0) msg = AssignmentTransferUtilities.getErrorMessage(newStatus, ansUnits, unit, assignment,true);
+							if(msg.isEmpty() && ansAssignment!=0) msg = AssignmentTransferUtilities.getErrorMessage(newStatus, ansAssignment, unit, assignment,true);
+							
+							// notify reason
+							Utils.showWarning("<html>"+msg+"</html>");
+							
+				        }
+						
+					}				
+		        else
+		        	Utils.showWarning("Du kan ikke flytte oppdrag hit");			        
 			}
 			catch(UnsupportedFlavorException e) {
 				Utils.showWarning("Mottatt objekt er ikke et oppdrag");

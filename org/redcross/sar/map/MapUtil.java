@@ -73,6 +73,7 @@ import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeographicCoordinateSystem;
 import com.esri.arcgis.geometry.IGeometry;
+import com.esri.arcgis.geometry.IGeometryCollection;
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.IPolyline;
@@ -466,6 +467,21 @@ public class MapUtil {
 		polyline.addPoint(e.getLowerRight(), null, null);
 		polyline.addPoint(e.getLowerLeft(), null, null);		
 		polyline.addPoint(e.getUpperLeft(), null, null);
+		return polyline;
+	}
+	
+	public static Polyline getPolyline(GeometryBag bag) 
+		throws IOException, AutomationException {
+		Polyline polyline = new Polyline();
+		// only add valid geometries
+		for(int i=0;i<bag.getGeometryCount();i++) {
+			IGeometry geo = bag.getGeometry(i);
+			if(geo instanceof IGeometryCollection)
+				polyline.addGeometryCollection((IGeometryCollection)geo);
+			else if(geo instanceof IPoint)
+				polyline.addPoint((IPoint)geo, null, null);
+		}
+		polyline.setSpatialReferenceByRef(bag.getSpatialReference());
 		return polyline;
 	}
 	
@@ -1960,6 +1976,8 @@ public class MapUtil {
     			}
 			}
 		}
+		if(e==null || e.isEmpty())
+			e = map.getFullExtent();
 		// finished
 		return e;	
 	}
@@ -2142,6 +2160,19 @@ public class MapUtil {
 		arc.putCoordsByAngle(p, 0, 2*Math.PI, r);
 		polygon.geometriesChanged();
 		return polygon;		
+	}
+	
+	public static boolean isFloatEqual(Point2D.Double p1, Point2D.Double p2) {
+		
+		// is same instance?
+		if(p1==p2) return true;
+		
+		// is just one null?
+		if(p1==null && p2!=null || p1!=null && p2==null) return false;
+		
+		// compare float
+		return (float)p1.x == (float)p2.x && (float)p1.y == (float)p2.y;
+		
 	}
 	
 }

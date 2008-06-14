@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.Icon;
@@ -38,6 +39,7 @@ import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -48,6 +50,9 @@ import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
+
+import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * Implementation of the Unit work process

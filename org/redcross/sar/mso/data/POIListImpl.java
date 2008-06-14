@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.mso.Position;
 
 public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
@@ -40,6 +40,28 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
         checkCreateOp();
         IPOIIf retVal = getItem(anObjectId);
         return retVal != null ? retVal : createdItem(new POIImpl(anObjectId, aType, aPosition));
+    }
+    
+    public int getNextSequenceNumber() {
+    	int retVal=-1;
+    	for(IPOIIf poi : m_items.values()) {
+			retVal = Math.max(poi.getAreaSequenceNumber(), retVal);
+    	}
+    	return retVal + 1;    	
+    }
+    
+    public int getNextSequenceNumber(POIType type) {
+    	if(type==null)
+    		return getNextSequenceNumber();
+    	else {
+	    	int retVal=-1;
+	    	for(IPOIIf poi : m_items.values()) {
+	    		if(poi.getType().equals(type)) {
+	    			retVal = Math.max(poi.getAreaSequenceNumber(), retVal);
+	    		}
+	    	}
+	    	return retVal + 1;
+    	}
     }
 
 

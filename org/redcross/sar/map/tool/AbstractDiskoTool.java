@@ -50,8 +50,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	// GUI components
 	protected DiskoMap map = null;
 	protected DefaultDialog dialog = null;
-	protected IToolPanel propertyPanel = null;
-	protected IToolPanel defaultPropertyPanel = null;
+	protected IToolPanel toolPanel = null;
+	protected IToolPanel defaultToolPanel = null;
 	protected AbstractButton button = null;
 
 	// types
@@ -89,15 +89,26 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return isDirty;
 	}
 	
+	public boolean resetDirtyFlag() {
+		boolean bFlag = isDirty;
+		setDirty(false);
+		return bFlag;
+	}
+	
 	/**
 	 * Set dirty bit
 	 * 
 	 */	
 	protected void setDirty(boolean isDirty) {
-		// set flag
-		this.isDirty = isDirty;
-		// update panel
-		getPropertyPanel().update();		
+		// get change flag
+		boolean isChanged = this.isDirty != isDirty;
+		// any change
+		if(isChanged) {
+			// set flag
+			this.isDirty = isDirty;
+			// forward
+			getToolPanel().update();		
+		}
 	}	
 	
 	/**
@@ -425,12 +436,12 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return;
 	}
 
-	public IToolPanel addPropertyPanel() {
+	public IToolPanel addToolPanel() {
 		// override this if needed
 		return null;
 	}
 
-	public boolean removePropertyPanel(IToolPanel panel) {
+	public boolean removeToolPanel(IToolPanel panel) {
 		// has panels?
 		if(panels!=null) {
 			return panels.remove(panel);			
@@ -438,31 +449,31 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		return false;
 	}		
 	
-	public IToolPanel getDefaultPropertyPanel() {
-		return defaultPropertyPanel;
+	public IToolPanel getDefaultToolPanel() {
+		return defaultToolPanel;
 	}
 	
 	public boolean setDefaultPropertyPanel() {
-		return setPropertyPanel(defaultPropertyPanel);
+		return setToolPanel(defaultToolPanel);
 	}
 	
-	public boolean setPropertyPanel(IToolPanel panel) {
+	public boolean setToolPanel(IToolPanel panel) {
 		// has panels?
 		if(panels!=null) {
 			// in array?
 			if(panels.contains(panel)) {
 				// set as default?
-				if(propertyPanel==null)
-					defaultPropertyPanel = panel;
+				if(toolPanel==null)
+					defaultToolPanel = panel;
 				// save hook
-				propertyPanel = panel;
+				toolPanel = panel;
 			}
 		}
-		return (panel!=null && propertyPanel == panel);			
+		return (panel!=null && toolPanel == panel);			
 	}
 	
-	public IToolPanel getPropertyPanel() {
-		return propertyPanel;		
+	public IToolPanel getToolPanel() {
+		return toolPanel;		
 	}
 
 	public boolean cancel() {
@@ -562,7 +573,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			this.msoClassCode = tool.msoCode;
 			this.msoObject = tool.msoObject;
 			this.msoOwner = tool.msoOwner;
-			this.propertyPanel = tool.propertyPanel;
+			this.propertyPanel = tool.toolPanel;
 		}
 		
 		public void load(AbstractDiskoTool tool) {
@@ -572,9 +583,9 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			tool.msoCode = this.msoClassCode;
 			tool.msoObject = this.msoObject;
 			tool.msoOwner = this.msoOwner;
-			tool.propertyPanel = this.propertyPanel;
-			if(tool.propertyPanel!=null)
-				tool.propertyPanel.update();
+			tool.toolPanel = this.propertyPanel;
+			if(tool.toolPanel!=null)
+				tool.toolPanel.update();
 		}
 	}
 }

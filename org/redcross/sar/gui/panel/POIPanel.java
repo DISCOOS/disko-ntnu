@@ -120,7 +120,7 @@ public class POIPanel extends DefaultToolPanel {
 						if(p!=null) {
 							// convert and update tool
 							Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
-							getTool().setPoint(point);							
+							getTool().setPoint(point,true);
 						}
 						
 					
@@ -297,7 +297,7 @@ public class POIPanel extends DefaultToolPanel {
 			setRemarks(null);			
 		}
 		// forward
-		setDirty(true);
+		setDirty(false);
 	}
 	
 	public void setPoint(Point p) {
@@ -372,7 +372,7 @@ public class POIPanel extends DefaultToolPanel {
 					try {
 						// convert and update tool
 						Point point = MapUtil.getEsriPoint(p, getTool().getMap().getSpatialReference());							
-						getTool().setPoint(point);	
+						getTool().setPoint(point,true);	
 						// finish working
 						bFlag = getTool().finish();
 					} catch (AutomationException e) {

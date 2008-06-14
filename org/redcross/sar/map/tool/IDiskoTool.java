@@ -50,6 +50,7 @@ public interface IDiskoTool extends ITool {
 	public boolean deactivate();
 	
 	public boolean isDirty();
+	public boolean resetDirtyFlag();
 
 	public IMsoObjectIf getMsoObject();
 	public void setMsoObject(IMsoObjectIf msoObj);
@@ -81,17 +82,17 @@ public interface IDiskoTool extends ITool {
 		
 	public void setShowDialog(boolean isShowDialog);
 	
-	public boolean setPropertyPanel(IToolPanel panel);
+	public boolean setToolPanel(IToolPanel panel);
 	
 	public boolean setDefaultPropertyPanel();
 	
-	public IToolPanel getDefaultPropertyPanel();
+	public IToolPanel getDefaultToolPanel();
 	
-	public IToolPanel getPropertyPanel();
+	public IToolPanel getToolPanel();
 	
-	public IToolPanel addPropertyPanel();
+	public IToolPanel addToolPanel();
 	
-	public boolean removePropertyPanel(IToolPanel panel);
+	public boolean removeToolPanel(IToolPanel panel);
 	
 	public IDiskoToolState save();
 	

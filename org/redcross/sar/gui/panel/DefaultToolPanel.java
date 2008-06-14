@@ -97,13 +97,12 @@ public class DefaultToolPanel extends BaseToolPanel {
 	 */
 
 	@Override
+	public boolean isDirty() {
+		return super.isDirty() || getTool().isDirty();		
+	}
+	
+	@Override
 	public void update() {
-		
-		// suspend events
-		setChangeable(false);
-		
-		// update dirty bit without update
-		setDirty(isDirty() || getTool().isDirty(),false);
 		
 		// update attributes
 		finishIcon.setColored(isDirty());
@@ -111,9 +110,6 @@ public class DefaultToolPanel extends BaseToolPanel {
 		finishButton.repaint();
 		cancelButton.repaint();
 			
-		// resume events
-		setChangeable(true);
-		
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

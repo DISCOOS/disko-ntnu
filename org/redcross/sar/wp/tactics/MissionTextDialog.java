@@ -181,7 +181,7 @@ public class MissionTextDialog extends DefaultDialog {
 	
 	private void setText(String text, boolean gui, boolean mso) {
 		// update gui?
-		if (gui && !mso) {
+		if (gui) {
 			getTextArea().setText(text);
 			// request focus
 			getTextArea().requestFocus();
@@ -199,6 +199,7 @@ public class MissionTextDialog extends DefaultDialog {
 	}
 
 	private void setup() {
+		
 		// consume?
 		if(!isChangeable()) return;
 		
@@ -224,7 +225,7 @@ public class MissionTextDialog extends DefaultDialog {
 			getContentPanel().setCaptionText("Du må først velge et operasjonsområde");			
 			getTextArea().setVisible(false);
 		}		
-		
+		getTextArea().requestFocusInWindow();
 		// resume changes
 		setChangeable(true);
 	}	

@@ -1,12 +1,9 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.MsoModelImpl;
-import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
-import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -16,12 +13,10 @@ import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.table.AbstractTableModel;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
@@ -94,21 +89,6 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 		}
 	}
 
-	/*
-	public void handleMsoUpdateEvent(Update e)
-	{
-		// Rebuild list
-		m_units.clear();                                                         
-		// todo use linked list directly
-        ICmdPostIf cmdPost = m_wpModule.getCmdPost();        
-        if(cmdPost!=null)	{
-	        IUnitListIf allUnits = cmdPost.getUnitList();
-			m_units.addAll(allUnits.selectItems(m_unitSelector, m_unitComparator));
-        }
-		fireTableDataChanged();
-	}
-	*/
-	
 	private void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
 		IUnitIf msoUnit = (IUnitIf)msoObj; 
 		// add?        

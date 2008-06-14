@@ -48,7 +48,7 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 			field.setEditable(m_isEditable);
 			field.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
-					if(isWorking()) return;
+					if(isConsume()) return;
 					fireOnWorkChange();
 					
 				}

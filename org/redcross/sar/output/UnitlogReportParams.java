@@ -164,12 +164,13 @@ public class UnitlogReportParams {
 		while (unitIter.hasNext() && iter2 < maxCallSignsInPrint){
 			IUnitIf unit2 = (IUnitIf)unitIter.next();
 			if (!callSigns[0][0].equalsIgnoreCase(unit2.getUnitNumber())){
-				callSigns[iter2][0] = unit2.getUnitNumber();
+				String unitName = MsoUtils.getUnitName(unit2,false);
+				callSigns[iter2][0] = unitName;
 				callSigns[iter2][1] = unit2.getCallSign();
 				keyCallSign = KEY_CALLSIGN_PREFIX + Integer.toString(iter2);
 				keyUnit = KEY_UNIT_PREFIX + Integer.toString(iter2);
-				unitParams.put(keyCallSign, MsoUtils.getUnitName(unit2,false));
-				unitParams.put(keyUnit, unit2.getUnitNumber());
+				unitParams.put(keyCallSign, unitName);
+				unitParams.put(keyUnit, unitName);
 			}
 			iter2++;
 		}		

@@ -36,7 +36,7 @@ public class RouteFeature extends AbstractMsoFeature {
 				cChanged = !caption.equals(MsoUtils.getAssignmentName(assignment,2));
 			}
 		}
-		isDirty = gChanged || cChanged;
+		isDirty = isDirty || gChanged || cChanged;
 		return gChanged || cChanged;
 	}
 
@@ -95,7 +95,7 @@ public class RouteFeature extends AbstractMsoFeature {
 		 * file, which has a double occurrence of this false object in it (is found by
 		 * inspection of log file using the MsoObject id.
 		 * 
-		 * 
+		 * POSSIBLE SOLUTION FOUND: When assignments with polygon geodata was created, search area was not set
 		 */
 		
 		

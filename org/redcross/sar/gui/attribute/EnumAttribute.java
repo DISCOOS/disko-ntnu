@@ -62,7 +62,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 			list.addListSelectionListener(new ListSelectionListener() {
 
 				public void valueChanged(ListSelectionEvent e) {
-					if(isWorking()) return;
+					if(isConsume()) return;
 					fireOnWorkChange();					
 				}
 				

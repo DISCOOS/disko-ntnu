@@ -1,16 +1,16 @@
 
 package org.redcross.sar.gui.panel;
 
+import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.gui.OperationTable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -91,7 +91,13 @@ public class OperationPanel extends DefaultPanel {
 		}
 		return m_createButton;
 	}
-		
+	
+	@Override
+	public void setPreferredBodySize(Dimension dimension) {
+		getTable().setPreferredSize(dimension);
+		getTable().setPreferredScrollableViewportSize(dimension);
+		getScrollPane().setPreferredSize(dimension);
+	}
 	
 	public String getSelectedOperation() {
 		return m_table.getValueAt(m_table.getSelectedRow(),0).toString();

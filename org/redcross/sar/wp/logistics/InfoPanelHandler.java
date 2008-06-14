@@ -205,9 +205,8 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         m_assignmentInfoPanel.setButtons(
         		new String[]{"GENERAL.EDIT",          
                 "GENERAL.PRINT",
-                "GENERAL.EMPTY",
-                "GENERAL.LEFT"}, 
-                new String[]{ASG_CHANGE, ASG_PRINT, ASG_RESULT, ASG_RETURN}, this);
+                "GENERAL.NEXT"}, 
+                new String[]{ASG_CHANGE, ASG_PRINT, ASG_RETURN}, this);
     }
 
     private void initAssignmentListPanel()
@@ -239,7 +238,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
             IUnitIf unit = m_displayedAsssignment.getOwningUnit();
             if (unit != null)
             {
-                m_assignmentInfoPanel.setTopText(2, unit.getUnitNumber());
+                m_assignmentInfoPanel.setTopText(2, MsoUtils.getUnitName(unit,false));
             } else
             {
                 m_assignmentInfoPanel.setTopText(2, "");
@@ -254,8 +253,8 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         }
         m_assignmentInfoPanel.setButtonEnabled(0, m_displayedAsssignment != null);
         m_assignmentInfoPanel.setButtonEnabled(1, m_displayedAsssignment != null);
-        m_assignmentInfoPanel.setButtonEnabled(2, m_displayedAsssignment != null && m_displayedAsssignment.hasBeenFinished());
-        m_assignmentInfoPanel.setButtonVisible(3, m_shallReturnToList);
+        //m_assignmentInfoPanel.setButtonEnabled(2, m_displayedAsssignment != null && m_displayedAsssignment.hasBeenFinished());
+        m_assignmentInfoPanel.setButtonVisible(2, m_shallReturnToList);
         m_assignmentInfoPanel.repaint();
     }
 
@@ -284,9 +283,9 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private void setupUnitAssignmentPanel()
     {
         JLabel hl = m_unitAssignmentsPanel.getHeaderLabel();
-        hl.setText(MessageFormat.format(m_wpModule.getBundleText("AsgListInfoPanel_hdr.text"),
+        hl.setText("<html><b>"+MessageFormat.format(m_wpModule.getBundleText("AsgListInfoPanel_hdr.text")+"<html><b>",
                 UnitTableModel.getSelectedAssignmentText(m_wpModule, m_displayedUnitSelection).toLowerCase(),
-                m_displayedUnit.getUnitNumber()));
+                MsoUtils.getUnitName(m_displayedUnit,false)));
         m_unitAssignmentsPanel.setSelectedUnit(m_displayedUnit);
         m_unitAssignmentsPanel.setSelectedStatus(UnitTableModel.getSelectedAssignmentStatus(m_displayedUnitSelection));
     }
@@ -303,18 +302,20 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         m_unitAssignmentsPanel.renderPanel();
     }
 
-    void setUnit(IUnitIf aUnit)
+    void setUnit(IUnitIf aUnit, boolean showUnit)
     {
         m_displayedUnit = aUnit;
-        renderUnit();
-        showPanel(UNIT_PANEL_NAME);
+        if(showUnit) {
+	        renderUnit();
+	        showPanel(UNIT_PANEL_NAME);
+        }
     }
 
     void renderUnit()
     {
         if (m_displayedUnit != null)
         {
-            m_unitInfoPanel.setTopText(0, m_displayedUnit.getUnitNumber() + " " + m_displayedUnit.getStatusText());
+            m_unitInfoPanel.setTopText(0, MsoUtils.getUnitName(m_displayedUnit,true));
             m_unitInfoPanel.setTopText(1, m_displayedUnit.getCallSign());
             IAssignmentIf activeAsg = m_displayedUnit.getActiveAssignment();
             if (activeAsg != null)
@@ -419,9 +420,10 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
                 {
                 	IDiskoMap map = calledModule.getMap();
                 	map.suspendNotify();
-                	map.setSelected(m_displayedAsssignment, true);
-                	// this will refresh all layers
+                	map.clearSelected();
+                	map.setSelected(m_displayedAsssignment,true);
                 	map.zoomToMsoObject(m_displayedAsssignment);
+                	map.flashMsoObject(m_displayedAsssignment);
                 	map.resumeNotify();
                 }
                 catch (AutomationException e1)

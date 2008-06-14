@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -56,6 +55,7 @@ public class POITableModel extends AbstractTableModel implements
 	
 	
 	public void handleMsoUpdateEvent(Update e) {
+		
         // get object
         IPOIIf poi = (IPOIIf)e.getSource();
 		

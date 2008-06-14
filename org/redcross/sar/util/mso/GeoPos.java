@@ -2,6 +2,8 @@ package org.redcross.sar.util.mso;
 
 import java.awt.geom.Point2D;
 
+import org.redcross.sar.map.MapUtil;
+
 /**
  *
  */
@@ -140,9 +142,12 @@ public class GeoPos
 
     protected boolean floatEquals(Point2D.Double aPoint)
     {
-        return (m_position != null ?
+        return MapUtil.isFloatEqual(m_position, aPoint); 
+        
+        /*(m_position != null ?
                 (aPoint != null && (float)m_position.x == (float)aPoint.x && (float)m_position.y == (float)aPoint.y) :
                 aPoint != null);
+        */
     }
 
     public int hashCode()
