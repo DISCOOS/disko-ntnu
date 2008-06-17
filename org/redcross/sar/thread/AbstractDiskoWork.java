@@ -160,9 +160,6 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		// decrement resume suspend counter?
-		if(m_suspend)
-			MsoModelImpl.getInstance().resumeClientUpdate();
 		// is on event dispatch thread?
 		if(SwingUtilities.isEventDispatchThread())
 			done();
@@ -173,6 +170,9 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	 * 
 	 */
 	public void done() {
+		// decrement resume suspend counter?
+		if(m_suspend)
+			MsoModelImpl.getInstance().resumeClientUpdate();
 		// resume previous state
 		Utils.getApp().setLocked(m_wasLocked);
 		// notify progress monitor ?

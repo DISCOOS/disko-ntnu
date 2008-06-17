@@ -774,7 +774,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Henter aksjonsliste",100,true,false);
+					"Henter aksjonsliste",100,true,true);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -890,7 +890,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		SetActiveOperation(String opId) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Kobler til aksjon " + opId,100,true,false);
+					"Kobler til aksjon " + opId,100,true,true);
 			// save
 			m_opID = opId;
 			// set loading bit
@@ -1006,7 +1006,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Aktiverer rolle",100,true,false);
+					"Aktiverer rolle",100,true,true);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;

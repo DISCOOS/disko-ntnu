@@ -34,8 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import javax.swing.SwingUtilities;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -43,6 +43,9 @@ import javax.swing.SwingUtilities;
  */
 public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, SaraChangeListener
 {
+	
+	static int SARA_CHANGE_EVENT_BUFFER_DELAY = 2000;
+	
     boolean loadingOperation = false;
     Random m_rand = new Random(89652467667623L);
     SarAccessService sarSvc;
@@ -50,8 +53,13 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     Map<SarBaseObject, IMsoObjectIf> saraMsoMap = new HashMap<SarBaseObject, IMsoObjectIf>();
     Map<IMsoObjectIf, SarBaseObject> msoSaraMap = new HashMap<IMsoObjectIf, SarBaseObject>();
 
+    long saraChangeTic = System.currentTimeMillis();
+    
     boolean initiated = false;
     private IDiskoApplication diskoApp;
+    
+    Timer timer = new Timer();
+    DelaySchedule schedule = null;
 
     public SarModelDriver()
     {
@@ -722,11 +730,14 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 	|| type == SaraChangeEvent.TYPE_CHANGE
                 	|| type == SaraChangeEvent.TYPE_REMOVE )
                 {
-            		// prepare work
-                	SaraChangeWork work = new SaraChangeWork(change);            	
-            		// schedule work
-                	//SwingUtilities.invokeAndWait(work);
-            		DiskoWorkPool.getInstance().schedule(work);
+            		
+                	// forward
+                	scheduleSaraChangeWork(change);
+            		                	
+                	// schedule work
+                	//SwingUtilities.invokeLater(work);
+                	                	                	
+            		//DiskoWorkPool.getInstance().schedule(work);
                 }        		
             	
         		//SwingUtilities.invokeAndWait(work);
@@ -783,6 +794,18 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         }
     }
 
+    private void scheduleSaraChangeWork(SaraChangeEvent e) {
+    	// get new schedule from old
+    	schedule = new DelaySchedule(schedule);
+    	// add to schedule
+    	schedule.add(e);
+		// cancel schedule
+		timer.cancel();
+		// set new timer
+		timer = new Timer();
+		// schedule Sara Change Work
+		timer.schedule(schedule, SARA_CHANGE_EVENT_BUFFER_DELAY);
+    }
 
     public void saraException(SaraException sce)
     {
@@ -1088,16 +1111,49 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
      *===============================================================
      */
     	
+    class DelaySchedule extends TimerTask {
+
+    	List<SaraChangeEvent> changes = new ArrayList<SaraChangeEvent>();
+    	
+    	
+    	DelaySchedule(DelaySchedule schedule) {
+    		if(schedule!=null) changes = schedule.changes;
+    	}
+    	
+    	public void add(SaraChangeEvent e) {
+    		changes.add(e);
+    	}
+    	    	
+    	public List<SaraChangeEvent> getBuffer() {
+    		return changes;
+    	}
+    	
+		@Override
+		public void run() {
+    		try {
+        		// schedule on work pool
+				DiskoWorkPool.getInstance().schedule(
+						new SaraChangeWork(new ArrayList<SaraChangeEvent>(changes)));
+				// cleanup
+				changes.clear();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}    					
+		}
+    	
+    }
+    
 	class SaraChangeWork extends AbstractDiskoWork<Void> {
 		
-		private SaraChangeEvent change = null;
+		private List<SaraChangeEvent> changes = null;
 		
-		public SaraChangeWork(SaraChangeEvent change) throws Exception {
+		public SaraChangeWork(List<SaraChangeEvent> changes) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Mottar endring",100,false,false);
+					"Behandler endring",100,true,true);
 			// save event
-			this.change = change;
+			this.changes = changes;
  		}
 		
 		/** 
@@ -1111,27 +1167,30 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         	// catch errors and log them
             try
             {
-            	// do the update
-                if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
-                {
-                    if (change.getSource() instanceof SarOperation){
-                        createMsoOperation((SarOperation) change.getSource());
-                    } 
-                    else if (change.getSource() instanceof SarObject){
-                        addMsoObject((SarObject) change.getSource());
-                    } 
-                    else{
-                        Log.warning("SaraChange not handled for objectType " + change.getSource().getClass().getName());
-                    }
-                    //TODO implementer for de andre objekttypene fact og object
-                } 
-                else if (change.getChangeType() == SaraChangeEvent.TYPE_CHANGE){
-                    changeMsoFromSara(change);
-
-                } 
-                else if (change.getChangeType() == SaraChangeEvent.TYPE_REMOVE){
-                    removeInMsoFromSara(change);
-                }
+            	// loop over all changes
+            	for(SaraChangeEvent change : changes) {
+	            	// do the update
+	                if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
+	                {
+	                    if (change.getSource() instanceof SarOperation){
+	                        createMsoOperation((SarOperation) change.getSource());
+	                    } 
+	                    else if (change.getSource() instanceof SarObject){
+	                        addMsoObject((SarObject) change.getSource());
+	                    } 
+	                    else{
+	                        Log.warning("SaraChange not handled for objectType " + change.getSource().getClass().getName());
+	                    }
+	                    //TODO implementer for de andre objekttypene fact og object
+	                } 
+	                else if (change.getChangeType() == SaraChangeEvent.TYPE_CHANGE){
+	                    changeMsoFromSara(change);
+	
+	                } 
+	                else if (change.getChangeType() == SaraChangeEvent.TYPE_REMOVE){
+	                    removeInMsoFromSara(change);
+	                }
+            	}
             }
             catch (Exception e)
             {

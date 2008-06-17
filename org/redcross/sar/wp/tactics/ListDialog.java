@@ -106,7 +106,7 @@ public class ListDialog extends DefaultDialog {
 							print();
 						else if("draft".equalsIgnoreCase(cmd)) 
 							change(AssignmentStatus.DRAFT);
-						else if("draft".equalsIgnoreCase(cmd)) 
+						else if("ready".equalsIgnoreCase(cmd)) 
 							change(AssignmentStatus.READY);
 						
 					}
@@ -302,6 +302,7 @@ public class ListDialog extends DefaultDialog {
 					}
 				}
 			}	
+			setDirty(false);
 			app.getMsoModel().resumeClientUpdate();
 		} catch (IllegalOperationException e1) {
 			// TODO Auto-generated catch block

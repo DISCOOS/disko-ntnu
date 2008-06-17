@@ -192,7 +192,6 @@ public class DiskoRoleImpl implements IDiskoRole {
 				}
 				currentModule.deactivate();
 			}
-	    	boolean isLocked = app.setLocked(true);
 			String id = module.getName();
 			MainMenuPanel mainMenu = app.getUIFactory().getMainMenuPanel();
 			SubMenuPanel subMenu   = app.getUIFactory().getSubMenuPanel();
@@ -216,7 +215,6 @@ public class DiskoRoleImpl implements IDiskoRole {
 			if (button != null) {
 				button.setSelected(true);
 			}
-			app.setLocked(isLocked);
   		}		
 		return currentModule;
 	}

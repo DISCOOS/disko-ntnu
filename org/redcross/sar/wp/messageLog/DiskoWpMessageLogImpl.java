@@ -226,12 +226,8 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			try {
 				// dispatch task
 				switch(m_task) {
-				case 1: 
-					onWorkPerformed(new DiskoWorkEvent(this,DiskoWorkEvent.EVENT_COMMIT));
-					break;
-				case 2: 
-					onWorkPerformed(new DiskoWorkEvent(this,DiskoWorkEvent.EVENT_ROLLBACK));						
-					break;					
+				case 1: fireOnWorkCommit(); break;
+				case 2: fireOnWorkRollback(); break;
 				}
 			}
 			catch(Exception e) {

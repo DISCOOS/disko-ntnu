@@ -651,6 +651,7 @@ public class ElementPanel extends DefaultPanel {
 		else if(MsoClassCode.CLASSCODE_AREA.equals(code)) {
 			// get search sub type
 			Enum subType = MsoUtils.getType(msoObject,true);
+			subType = MsoUtils.getType(msoObject,true);
 			// get selected element class
 			Enum e = (Enum)typeList.getSelectedValue();
 			// belongs object to selected class?
@@ -715,7 +716,7 @@ public class ElementPanel extends DefaultPanel {
 			}
 		}	
 
-		// did not identiy the type, try local lookup?
+		// did not identify the type, try local lookup?
 		if (exists) {
 			if(objects.contains(msoObject)) {
 				return getObjectList();

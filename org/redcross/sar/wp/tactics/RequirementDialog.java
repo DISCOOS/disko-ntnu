@@ -13,6 +13,8 @@ import java.awt.Dimension;
 import java.util.EnumSet;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -237,7 +239,15 @@ public class RequirementDialog extends DefaultDialog {
 				Utils.setFixedSize(getPriorityCombo(), 200,25);
 				Utils.setFixedSize(getAccuracyCombo(), 200,25);
 				Utils.setFixedSize(getPersonnelCombo(), 200,25);
-				attribsPanel.addDiskoWorkListener(getContentPanel());
+				attribsPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+
+					@Override
+					public void onWorkPerformed(DiskoWorkEvent e) {
+						if(e.isChange() || e.isFinish())
+							setDirty(true);						
+					}
+					
+				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

@@ -200,11 +200,13 @@ public class DefaultDialog extends JDialog implements IDialog {
 	@Override 
 	public void setVisible(boolean isVisible) {
 		// update?
-		if(getContentPane() instanceof IPanel) {
-			((AbstractPanel)getContentPane()).update();
+		if(isVisible) {
+			if(getContentPane() instanceof IPanel) {
+				((AbstractPanel)getContentPane()).update();
+			}
+			// forward
+			snapTo(false);
 		}
-		// forward
-		snapTo(false);
 		// forward
 		super.setVisible(isVisible);
 	}

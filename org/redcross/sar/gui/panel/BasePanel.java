@@ -425,15 +425,24 @@ public class BasePanel extends AbstractPanel {
   		// loop over all children?
   		if(getBodyComponent() instanceof JComponent) {
   			// cast to JComponent
-  			JComponent c = (JComponent)getBodyComponent();
-  			// loop over all children
-  	  		for(int i=0; i < c.getComponentCount(); i++)
-  	  			// implements IChangeable?
-  	  			if(c.getComponent(i) instanceof IChangeable) {
-  	  				((IChangeable)c.getComponent(i)).setChangeable(isChangeable); 
-  	  			}
+  			setChangeable((JComponent)getBodyComponent(),isChangeable);
   		}
 	}
+  	
+  	private void setChangeable(JComponent c, boolean isChangeable) {
+		// loop over all children
+  		for(int i=0; i < c.getComponentCount(); i++){
+  			Component it = c.getComponent(i);
+  			// implements IChangeable?
+  			if(it instanceof IChangeable) {
+  				((IChangeable)c.getComponent(i)).setChangeable(isChangeable); 
+  			}
+  			else if(it instanceof JComponent) {
+  				setChangeable((JComponent)it,isChangeable);
+  			}
+  		}
+  		
+  	}
   	  	
 	/* ===========================================
 	 * IPanel implementation

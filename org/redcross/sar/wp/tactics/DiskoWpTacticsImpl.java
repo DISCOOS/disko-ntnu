@@ -528,6 +528,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private ListDialog getListDialog() {
 		if (listDialog == null) {
 			listDialog = new ListDialog(this);
+			listDialog.addDiskoWorkListener(this);
 			dialogs.add(listDialog);
 		}
 		return listDialog;

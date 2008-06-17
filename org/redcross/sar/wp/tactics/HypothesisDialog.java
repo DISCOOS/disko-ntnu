@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -130,7 +132,26 @@ public class HypothesisDialog extends DefaultDialog {
 					private static final long serialVersionUID = 1L;
 
 					@Override
+					protected boolean beforeCancel() {
+						
+						IHypothesisIf h = getSelectedHypothesis();
+						if(h==null) {
+							Utils.showWarning("Begrensning","Du må velge en hypotese");
+							return false;
+						}				
+						return true;
+						
+					}
+					
+					@Override
 					protected boolean beforeFinish() {
+						
+						IHypothesisIf h = getSelectedHypothesis();
+						if(h==null) {
+							Utils.showWarning("Begrensning","Du må velge en hypotese");
+							return false;
+						}
+							
 						// forward
 						setDescription(getDescriptionTextArea().getText(),false,true);
 						setHypothesis(getSelectedHypothesis(), false, true);
@@ -164,7 +185,8 @@ public class HypothesisDialog extends DefaultDialog {
 						setChangeable(true);
 						
 						// update
-						setDirty(false);
+						setDirty(false,false);
+						setup();
 												
 					}	
 					
@@ -341,6 +363,7 @@ public class HypothesisDialog extends DefaultDialog {
 						if (e.getValueIsAdjusting() || !isChangeable()) return;
 						// forward
 						setHypothesis(getSelectedHypothesis(), true, false);
+						setDirty(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -459,7 +482,16 @@ public class HypothesisDialog extends DefaultDialog {
 				attribsPanel.addAttribute(getStatusCombo());
 				Utils.setFixedSize(getPriorityCombo(), 200,25);
 				Utils.setFixedSize(getStatusCombo(), 200,25);				
-				attribsPanel.addDiskoWorkListener(getContentPanel());
+				attribsPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+
+					@Override
+					public void onWorkPerformed(DiskoWorkEvent e) {
+						if(e.isChange() || e.isFinish())
+							setDirty(true);						
+					}
+					
+				});
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -575,6 +607,7 @@ public class HypothesisDialog extends DefaultDialog {
 	private void setHypothesis(IHypothesisIf h, boolean gui, boolean mso) {
 		// update gui?
 		if (gui) {
+			setChangeable(false);
 			// get hypothesis name
 			String name = (h!=null ? DiskoEnumFactory.getText(IMsoManagerIf
 					.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null);
@@ -587,8 +620,8 @@ public class HypothesisDialog extends DefaultDialog {
 			setStatus(h!=null ? h.getStatus() : HypothesisStatus.ACTIVE ,true,mso);
 			// request focus
 			getDescriptionTextArea().requestFocus();
-			// force an update
-			setDirty(true);
+			// update
+			setChangeable(true);
 			
 		}
 		// update mso?
@@ -639,8 +672,8 @@ public class HypothesisDialog extends DefaultDialog {
 			}
 			// update mso?
 			if(mso) { 
-				if (h.getPriorityIndex() != priority) {
-					h.setPriorityIndex(priority);
+				if (h.getPriorityIndex() != priority-1) {
+					h.setPriorityIndex(priority-1);
 				}
 			}
 		}

@@ -178,9 +178,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		getTrackCancel().setCheckTime(250);
 		getTrackCancel().setProgressor(getProgressor());
 		
-        // listen to mso client event update events
-		msoModel.getEventManager().addClientUpdateListener(this);
-                
 		// listen to do actions when the map is loaded
 		addIMapControlEvents2Listener(ctrlAdapter);
 
@@ -201,6 +198,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// forward
 		if(!isMxdDocLoaded()) return;
 		
+        // remove listen to mso client event update events
+		msoModel.getEventManager().removeClientUpdateListener(this);
+                
 		// add custom layers
 		IMap focusMap = getActiveView().getFocusMap();
 		ISpatialReference srs = getSpatialReference();
@@ -218,58 +218,63 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			LayerCode layerCode = list.get(i);
 			if(layerCode == LayerCode.POI_LAYER) {
 				msoLayers.add(new POILayer(msoModel,srs,msoLayerEventStack));				
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_POI)) { 
-					classCodes.add(MsoClassCode.CLASSCODE_POI);
+				if(addClass(MsoClassCode.CLASSCODE_POI)) { 
 					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
 				}
 			}
 			else if(layerCode == LayerCode.AREA_LAYER) {
 				msoLayers.add(new AreaLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_AREA)) {
-					classCodes.add(MsoClassCode.CLASSCODE_AREA);
+				if(addClass(MsoClassCode.CLASSCODE_AREA)) {
 					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
 				}
 			}
 			else if(layerCode == LayerCode.ROUTE_LAYER) {
 				msoLayers.add(new RouteLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_ROUTE)) {
-					classCodes.add(MsoClassCode.CLASSCODE_AREA);
+				if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+					addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
 					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
 				}
 			}
 			else if(layerCode == LayerCode.FLANK_LAYER) {
 				msoLayers.add(new FlankLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_AREA)) {
-					classCodes.add(MsoClassCode.CLASSCODE_AREA);
-					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
+				if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
 				}
 			}
 			else if(layerCode == LayerCode.SEARCH_AREA_LAYER) {
 				msoLayers.add(new SearchAreaLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_SEARCHAREA))
-					classCodes.add(MsoClassCode.CLASSCODE_SEARCHAREA);
+				addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
 			}
 			else if(layerCode == LayerCode.OPERATION_AREA_LAYER) {
 				msoLayers.add(new OperationAreaLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_OPERATIONAREA))
-					classCodes.add(MsoClassCode.CLASSCODE_OPERATIONAREA);
+				addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
 			}
 			else if(layerCode == LayerCode.OPERATION_AREA_MASK_LAYER) {
 				msoLayers.add(new OperationAreaMaskLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_OPERATIONAREA))
-					classCodes.add(MsoClassCode.CLASSCODE_OPERATIONAREA);
+				addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
 			}
 			else if(layerCode == LayerCode.UNIT_LAYER) {
 				msoLayers.add(new UnitLayer(msoModel,srs,msoLayerEventStack));
-				if(!classCodes.contains(MsoClassCode.CLASSCODE_UNIT))
-					classCodes.add(MsoClassCode.CLASSCODE_UNIT);
+				addClass(MsoClassCode.CLASSCODE_UNIT);
 			}
 		}
 		
 		// add co-classes that affects registered classes 
-		for(MsoClassCode code : coClassCodes.keySet())
-			classCodes.add(code);			
+		for(MsoClassCode code : coClassCodes.keySet()) {
+			addClass(code);	
+		}
 		
+		/* =====================================================
+		 * 
+		 * It is important that the map receives handleMsoChange()
+		 * AFTER all layers has received it. this ensures that
+		 * all layers is updated before the map handles the event
+		 * 
+		 * ===================================================== */
+		
+        // add listen to mso client event update events. 
+		msoModel.getEventManager().addClientUpdateListener(this);
+
 		// create a the mso group layer
 		GroupLayer msoGroup = new GroupLayer();
 		msoGroup.setName("MSO_GROUP_LAYER");
@@ -316,7 +321,15 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}		
 	}
 	
-	private void addCoClass(MsoClassCode from, MsoClassCode to) {
+	private boolean addClass(MsoClassCode code) {
+		if(!classCodes.contains(code)) {
+			return classCodes.add(code);
+		}
+		return false;
+		
+	}
+	
+	private boolean addCoClass(MsoClassCode from, MsoClassCode to) {
 		EnumSet<MsoClassCode> list = null;
 		if(!coClassCodes.containsKey(from)) {
 			list = EnumSet.noneOf(MsoClassCode.class);
@@ -325,8 +338,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		else {
 			list = coClassCodes.get(from);
 		}
-		if(!list.contains(to))
+		if(!list.contains(to)) {
 			list.add(to);
+			return true;
+		}
+		return false;
 	}
 	
 	public void handleMsoUpdateEvent(Update e) {
@@ -388,7 +404,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	}
 
 	public List<IMsoFeatureLayer> getMsoLayers(MsoClassCode classCode) {
-		ArrayList<IMsoFeatureLayer> result = new ArrayList<IMsoFeatureLayer>();
+		List<IMsoFeatureLayer> result = new ArrayList<IMsoFeatureLayer>();
 		for (int i = 0; i < msoLayers.size(); i++) {
 			IMsoFeatureLayer msoFeatureLayer = (IMsoFeatureLayer)msoLayers.get(i);
 			if (msoFeatureLayer.getClassCode() == classCode) {
@@ -398,8 +414,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// get co classes
 		EnumSet<MsoClassCode> relations = coClassCodes.get(classCode);
 		if(relations!=null) {
-			for(MsoClassCode c : relations)
-				result.addAll(getMsoLayers(c));
+			for(MsoClassCode c : relations) {
+				List<IMsoFeatureLayer> list = getMsoLayers(c);
+				for(IMsoFeatureLayer it:list) {
+					if(!result.contains(it)) result.add(it);					
+				}
+			}
 		}
 		return result;
 	}

@@ -245,9 +245,9 @@ public class TaskPanel extends DefaultPanel
 			m_alertCombo = new ComboAttribute("alert",m_resources.getString("TaskAlert.text"),80,null,true);
 			updateAlertComboBox();
 			m_alertCombo.getComboBox().setSelectedIndex(2);
-			field = (JTextField)m_alertCombo.getComboBox()
+			/*field = (JTextField)m_alertCombo.getComboBox()
 				.getEditor().getEditorComponent();
-			field.setDocument(new NumericDocument(6,0,false));
+			field.setDocument(new NumericDocument(6,0,false));*/
 			m_alertCombo.addDiskoWorkListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_alertCombo);
