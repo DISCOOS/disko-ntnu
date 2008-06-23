@@ -72,4 +72,9 @@ public interface IModelDriverIf
     public void setDiskoApplication(IDiskoApplication diskoApp);
 
     void shutDown();
+    
+    public boolean addModelDriverListener(IModelDriverListenerIf listener);
+    
+    public boolean removeModelDriverListener(IModelDriverListenerIf listener);
+    
 }

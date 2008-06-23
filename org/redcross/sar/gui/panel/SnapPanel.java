@@ -69,21 +69,6 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 	private void initialize() {
 		try {
 			
-			insertButton("finish",getNoneButton(), "none");
-			insertButton("finish",getAllButton(), "all");
-			addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					String cmd = e.getActionCommand();
-					// canceled?
-					if("all".equalsIgnoreCase(cmd)) 
-						checkAll();
-					else if("none".equalsIgnoreCase(cmd)) 
-						checkNone();					
-				}
-				
-			});
-			
 			VerticalFlowLayout vfl = new VerticalFlowLayout();
 			vfl.setAlignment(VerticalFlowLayout.LEFT);
 			vfl.setHgap(5);
@@ -109,7 +94,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 	 */
 	private JButton getAllButton() {
 		if (allButton == null) {
-			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);			
+			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.SMALL);			
 		}
 		return allButton;
 	}
@@ -121,7 +106,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 	 */
 	private JButton getNoneButton() {
 		if (noneButton == null) {
-			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);			
+			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.SMALL);			
 		}
 		return noneButton;
 	}
@@ -198,6 +183,22 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			try {
 				// get body component
 				layersPanel = new DefaultPanel("Snap til lag",false,false);
+				layersPanel.insertButton("finish",getNoneButton(), "none");
+				layersPanel.insertButton("finish",getAllButton(), "all");
+				layersPanel.addActionListener(new ActionListener() {
+
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						// canceled?
+						if("all".equalsIgnoreCase(cmd)) 
+							checkAll();
+						else if("none".equalsIgnoreCase(cmd)) 
+							checkNone();					
+					}
+					
+				});
+				
+				
 				JPanel body = ((JPanel)layersPanel.getBodyComponent());
 				VerticalFlowLayout vfl = new VerticalFlowLayout();
 				vfl.setAlignment(VerticalFlowLayout.LEFT);

@@ -69,7 +69,7 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
-	public Object getValue() {
+	public Boolean getValue() {
 		return ((JCheckBox)m_component).isSelected();
 	}
 	

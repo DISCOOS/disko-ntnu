@@ -230,7 +230,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     
     protected void initMessageLinesPanel()
     {
-        m_messageLinesPanel = new BasePanel("");
+        m_messageLinesPanel = new BasePanel();
         m_messageLineList = new JList(new MessageLineListModel(m_wpMessageLog));
         m_messageLineList.setCellRenderer(new MessageLineListRenderer());
         m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

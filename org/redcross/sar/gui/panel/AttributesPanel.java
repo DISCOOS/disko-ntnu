@@ -3,7 +3,6 @@ package org.redcross.sar.gui.panel;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,7 +16,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
 import org.redcross.sar.gui.attribute.CheckBoxAttribute;
 import org.redcross.sar.gui.attribute.DTGAttribute;
@@ -29,8 +27,6 @@ import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-
-import com.borland.jbcl.layout.VerticalFlowLayout;
 
 /**
  * @author kennetgu
@@ -46,7 +42,10 @@ public class AttributesPanel extends DefaultPanel {
 	private JPanel m_listPanel = null;
 	private JLabel m_emptyLabel = null;
 	
-	private Component glue = null; 
+	private Component glue = null;
+	
+	private float m_attribAlignX = Component.LEFT_ALIGNMENT;
+	private float m_attribAlignY = Component.CENTER_ALIGNMENT;
 	
 	public AttributesPanel() {
 		this("Egenskaper","Ingen egenskaper funnet",true,true);
@@ -91,6 +90,8 @@ public class AttributesPanel extends DefaultPanel {
 	private JLabel getEmptyLabel() {
 		if(m_emptyLabel==null) {
 			m_emptyLabel = new JLabel();
+			m_emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+			m_emptyLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
 		}
 		return m_emptyLabel;
 	}
@@ -113,10 +114,27 @@ public class AttributesPanel extends DefaultPanel {
 			attributes.add(it.next());
 		}
 		// forward
-		create(msoObject,attributes,width,true,isEditable);
+		create(msoObject,attributes,attributes,width,true,isEditable);
 	}
 	
-	public int create(IMsoObjectIf msoObject, List<String> attributes, int width, boolean include, boolean isEditable) {
+	public int create(IMsoObjectIf msoObject, String[] attributes, String[] captions, int width, boolean include, boolean isEditable) {
+		List<String> attrList = new ArrayList<String>();
+		List<String> capsList = new ArrayList<String>();
+		if(attributes!=null) {
+			for(int i=0;i<attributes.length;i++) {
+				attrList.add(attributes[i]);
+			}			
+		}
+		if(captions!=null) {
+			for(int i=0;i<captions.length;i++) {
+				capsList.add(captions[i]);
+			}			
+		}
+		return create(msoObject, attrList, capsList, width, include, isEditable);
+	}
+	
+	public int create(IMsoObjectIf msoObject, List<String> attributes, List<String> captions, int width, boolean include, boolean isEditable) {
+
 		// initialize
 		int added = 0;
 		// remove old panels
@@ -126,7 +144,8 @@ public class AttributesPanel extends DefaultPanel {
 		// select decision method
 		if(include) {
 			// insert only passed attribues 
-			for(String it:attributes) {
+			for(int i=0;i<attributes.size();i++) {
+				String it = attributes.get(i);
 				// add to panel?
 				if(map.containsKey(it)) {
 					// get attribute
@@ -134,7 +153,7 @@ public class AttributesPanel extends DefaultPanel {
 					// is supported?
 					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
-						added += (addAttribute(attr,attr.getName(),width,isEditable)!=null ? 1 : 0);
+						added += (addAttribute(attr,captions.get(i),width,isEditable)!=null ? 1 : 0);
 					}
 				}
 			}		
@@ -212,7 +231,11 @@ public class AttributesPanel extends DefaultPanel {
 		// string get name
 		String name = attribute.getName();
 		// valid attribute?
-		if(attribute instanceof Component && !m_attributes.contains(name)) {
+		if(attribute instanceof JComponent && !m_attributes.contains(name)) {
+			// apply current alignment
+			((JComponent)attribute).setAlignmentX(m_attribAlignX);
+			((JComponent)attribute).setAlignmentY(m_attribAlignY);
+			// add strut?
 			if(m_attributes.size()>0) {
 				getListPanel().remove(glue);
 				getListPanel().add(Box.createVerticalStrut(5));
@@ -376,6 +399,20 @@ public class AttributesPanel extends DefaultPanel {
   		// forward 
   		super.update();
   	}
+
+  	public void setAutoSave(boolean autoSave) {
+  		for(IDiskoAttribute it : m_panels.values()) {
+			it.setAutoSave(autoSave);
+  		}
+  	}
+  	
+  	public int getAutoSave() {
+  		int count = 0;
+  		for(IDiskoAttribute it : m_panels.values()) {
+			if(it.getAutoSave()) count++;
+  		}
+  		return count;
+  	}
   	
   	public void setEditable(boolean isEditable) {
   		for(IDiskoAttribute it : m_panels.values()) {
@@ -401,5 +438,27 @@ public class AttributesPanel extends DefaultPanel {
   			it.setConsume(!isChangeable);
   		}
 	}
+  	  	  	
+	public void setAttributeAlignmentX(float position) {
+		// prepare
+		m_attribAlignX = position;
+  		// loop over all attributes
+  		for(IDiskoAttribute it : m_panels.values()) {
+  			if(it instanceof JComponent) {
+  				((JComponent)it).setAlignmentX(position);
+  			}
+  		}
+	}
   	
+	public void setAttributeAlignmentY(float position) {
+		// prepare
+		m_attribAlignY = position;
+  		// loop over all attributes
+  		for(IDiskoAttribute it : m_panels.values()) {
+  			if(it instanceof JComponent) {
+  				((JComponent)it).setAlignmentX(position);
+  			}
+  		}
+	}
+	
 }

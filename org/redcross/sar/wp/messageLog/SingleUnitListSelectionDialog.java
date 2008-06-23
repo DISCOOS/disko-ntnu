@@ -252,7 +252,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 			if(cmd!=null) {
 				AbstractDerivedList<ICommunicatorIf> lst = cmd.getCommunicatorList();
 				if (lst!=null) {
-					m_dirtyList = m_communicatorList.size() != m_wpMessageLog.getMsoManager().getCmdPost().getCommunicatorList().size();
+					m_dirtyList = true; //m_communicatorList.size() != m_wpMessageLog.getMsoManager().getCmdPost().getCommunicatorList().size();
 					if(this.isVisible())
 					{
 						buildList();

@@ -12,6 +12,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 import java.io.IOException;
+import java.lang.instrument.IllegalClassFormatException;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -85,8 +86,10 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	/**
 	 * Constructs a DiskoApTaktikkImpl
 	 * @param rolle A reference to the DiskoRolle
+	 * 
+	 * @throws IllegalClassFormatException 
 	 */
-	public DiskoWpTacticsImpl() {
+	public DiskoWpTacticsImpl() throws IllegalClassFormatException {
 		
 		// forward
 		super(getWpInterests(),getMapLayers());
@@ -122,14 +125,15 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 		
 	private void initialize() {
+
 		// get properties
 		assignWpBundle(IDiskoWpTactics.class);
 		
-		// prepare map
+		// forward
 		installMap();
 		
 		// set map as primary layout component
-		MapPanel panel = new MapPanel((DiskoMap)getMap());
+		MapPanel panel = new MapPanel(getMap());
 		panel.setNorthBarVisible(true);
 		panel.setSouthBarVisible(true);
 		layoutComponent(panel);

@@ -4,7 +4,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
-import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.Internationalization;
@@ -19,13 +20,13 @@ public class POITypesPanel extends BasePanel {
 	private JList typeList = null;
 
 	public POITypesPanel() {
-		this("");
+		this("",ButtonSize.NORMAL);
 	}
 
-	public POITypesPanel(String caption) {
+	public POITypesPanel(String caption, ButtonSize buttonSize) {
 		
 		// forward
-		super(caption);
+		super(caption,buttonSize);
 		
 		// initialize gui
 		initialize();
@@ -101,7 +102,7 @@ public class POITypesPanel extends BasePanel {
 		if (typeList == null) {
             typeList = new JList();
             typeList.setVisibleRowCount(4);
-            typeList.setCellRenderer(new SimpleListCellRenderer(Internationalization.getBundle(IPOIIf.class)));
+            typeList.setCellRenderer(new BundleListCellRenderer(Internationalization.getBundle(IPOIIf.class)));
 		}
 		return typeList;
 	}

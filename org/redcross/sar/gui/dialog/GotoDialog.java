@@ -47,7 +47,7 @@ public class GotoDialog extends DefaultDialog {
 		}
 	}
 	
-	public void onLoad(IDiskoMap map) throws IOException {
+	public void onLoad(IDiskoMap map) {
 		getGotoPanel().setMap(map);
 	}	
 	

@@ -19,8 +19,8 @@ import java.util.logging.Logger;
 
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.util.mso.Route;
-import org.redcross.sar.wp.ds.RouteCostPanel;
-import org.redcross.sar.ds.RouteCost;
+import org.redcross.sar.wp.ds.old.RouteCostPanel;
+import org.redcross.sar.ds.ete.RouteCost;
 
 //import java.util.Random;
 

@@ -11,7 +11,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.model.AssignmentTableModel;
+import org.redcross.sar.gui.model.mso.AssignmentTableModel;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;
@@ -20,6 +20,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 public class AssignmentTable extends JTable {
 
 	private static final long serialVersionUID = 1L;
+	
 	private TableRowSorter<AssignmentTableModel> tableRowSorter = null;
 	private Hashtable<AssignmentStatus, RowFilter<?, ?>> rowFilters = null;
 	
@@ -50,7 +51,6 @@ public class AssignmentTable extends JTable {
         // misc.
 		setRowHeight(34);
 		setColumnSelectionAllowed(false);
-		setIntercellSpacing(new Dimension(10, 1));
 		setColumnWidths();
 		
 	}

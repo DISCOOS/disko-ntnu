@@ -128,6 +128,14 @@ public class Position implements IGeodataIf
     }
 
     /**
+     * Return position as GeoPos
+     *
+     */
+    public GeoPos getGeoPos() {
+    	return m_position;
+    }
+    
+    /**
      * Calculate bearing between two positions.
      *
      * @param aPos1 The first position.

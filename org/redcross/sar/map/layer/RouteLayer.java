@@ -71,10 +71,12 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 		if (msoObject instanceof IAssignmentIf) {
 			IAssignmentIf assignment = (IAssignmentIf)msoObject;
 			IAreaIf area = assignment.getPlannedArea();
-			// add all routes
-			for(IMsoObjectIf msoObj: area.getAreaGeodataItems()) {
-				if(msoObj instanceof IRouteIf)
-					objects.add(msoObj);
+			if(area!=null) {
+				// add all routes
+				for(IMsoObjectIf msoObj: area.getAreaGeodataItems()) {
+					if(msoObj instanceof IRouteIf)
+						objects.add(msoObj);
+				}
 			}
 		}
 		else {

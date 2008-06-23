@@ -4,15 +4,21 @@
 package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
-import java.text.ParseException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.PositionSelectorDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.CoordinatePanel;
+import org.redcross.sar.gui.panel.GotoPanel;
+import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.util.mso.Position;
@@ -27,9 +33,13 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private CoordinatePanel m_coordinatePanel;
+	private GotoPanel m_gotoPanel = null;
+	private PositionSelectorDialog m_selectorDialog = null;
+	
 	public PositionAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
-		this(attribute,caption,width,0,isEditable);		
+		this(attribute,caption,width,1,isEditable);		
 	}
 	
 	public PositionAttribute(IAttributeIf attribute, String caption, int width, int format, boolean isEditable) {
@@ -38,9 +48,11 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// save format
-		((CoordinatePanel)m_component).setFormat(format);
+		getCoordinatePanel().setFormat(format);
 		// get value from attribute
 		load();		
+		// forward
+		initalizeEdit();
 	}
 	
 	public PositionAttribute(String name, String caption, int width, Object value, boolean isEditable) {
@@ -50,9 +62,13 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	public PositionAttribute(String name, String caption, int width, Object value, int format, boolean isEditable) {
 		// forward
-		super(name,caption,width,value,isEditable);
-		// save format
-		((CoordinatePanel)m_component).setFormat(format);
+		super(name,caption,width,null,isEditable);
+		// set value
+		setValue(value);
+		// set format
+		setFormat(format);
+		// forward
+		initalizeEdit();
 	}
 	
 	/*==================================================================
@@ -61,47 +77,54 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	 */
 	
 	public Component getComponent() {
-		try {
-			if(m_component==null) {
-				CoordinatePanel field = new CoordinatePanel();
-				field.setEditable(m_isEditable);
-				field.addChangeListener(new ChangeListener() {
-
-					public void stateChanged(ChangeEvent e) {
-						if(isConsume()) return;
-						fireOnWorkChange();
-					}
-					
-				});
-				m_component = field;
-			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(m_component==null) {
+			JFormattedTextField field = new JFormattedTextField();
+			field.setEditable(false);
+			// save the component
+			m_component = field;			
 		}
 		return m_component;
 	}
 
+	public JFormattedTextField getTextField() {
+		return (JFormattedTextField)m_component;
+	}
+	
+	public void setAutoSave(boolean auto) {
+		m_autoSave = auto;
+	}
+	
+	public boolean getAutoSave() {
+		return m_autoSave;
+	}	
+	
 	public CoordinatePanel getCoordinatePanel() {
-		return (CoordinatePanel)m_component;
+		if(m_coordinatePanel==null) {
+			m_coordinatePanel = getGotoPanel().getCoordinatePanel();
+		}
+		return m_coordinatePanel;
 	}
 	
 	public Object getValue() {
-		return ((CoordinatePanel)m_component).getPosition();
+		return getCoordinatePanel().getPosition();
 	}
 	
 	public boolean setValue(Object value) {
 		// validate data type
 		if(value instanceof Point)
-			((CoordinatePanel)m_component).setPoint((Point)value);
+			getCoordinatePanel().setPoint((Point)value);
 		else if(value instanceof Position) 
-			((CoordinatePanel)m_component).setPosition((Position)value);
+			getCoordinatePanel().setPosition((Position)value);
 		else if(value instanceof String) 
-			((CoordinatePanel)m_component).setText((String)value);
+			getCoordinatePanel().setText((String)value);
 		else {
 			// failure
 			return false;
 		}
+		// update text panel
+		getTextField().setText(getCoordinatePanel().getText());
+		// notify change?
+		if(!isConsume()) fireOnWorkChange();
 		// success
 		return true;
 	}
@@ -126,18 +149,66 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	public void setFormat(int format) {
 		// save format
-		((CoordinatePanel)m_component).setFormat(format);		
+		getCoordinatePanel().setFormat(format);		
 	}
 			
 	public int getFormat() {
 		// get format
-		return ((CoordinatePanel)m_component).getFormat();		
+		return getCoordinatePanel().getFormat();		
+	}
+
+	/*==================================================================
+	 * Private methods
+	 *================================================================== 
+	 */
+	
+	private GotoPanel getGotoPanel() {
+		if(m_gotoPanel==null) {
+			m_gotoPanel = getSelectorDialog().getGotoPanel();
+		}
+		return m_gotoPanel;
 	}
 	
-	@Override
-	public void setEditable(boolean isEditable) {
-		super.setEditable(isEditable);
-		getCoordinatePanel().setEditable(isEditable);		
+	private PositionSelectorDialog getSelectorDialog() {
+		if(m_selectorDialog==null) {
+			m_selectorDialog = new PositionSelectorDialog(Utils.getApp().getFrame());
+		}
+		return m_selectorDialog;
 	}
 	
+	private void initalizeEdit() {
+		// initialize gui
+		setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
+		// handle actions
+		getButton().addActionListener(new ActionListener() {
+	
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// get old value
+				Position resume = (Position)getValue();
+				// get install map and prepare goto panel
+				IDiskoMap map = getInstalledMap();
+				getSelectorDialog().onLoad(map);
+				if(map!=null)
+					getSelectorDialog().setLocationRelativeTo((JComponent)map, DefaultDialog.POS_EAST, false, true);
+				else
+					getSelectorDialog().setLocationRelativeTo(getButton(), DefaultDialog.POS_WEST, false, false);
+				// select position
+				Position p = getSelectorDialog().select();
+				// update or resume?
+				if(p!=null)
+					setValue(p);
+				else {
+					// consume
+					setConsume(true);
+					// forward
+					setValue(resume);
+					// resume
+					setConsume(false);
+				}
+				
+			}
+			
+		});
+	}
 }

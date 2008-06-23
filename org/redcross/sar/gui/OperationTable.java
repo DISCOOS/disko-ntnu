@@ -1,6 +1,5 @@
 package org.redcross.sar.gui;
 
-import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
@@ -8,14 +7,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.model.OperationTableModel;
-import org.redcross.sar.gui.model.UnitTableModel;
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.AbstractUnit;
-import org.redcross.sar.wp.tactics.UnitCellRenderer;
-import org.redcross.sar.wp.tactics.UnitStringConverter;
 
 public class OperationTable extends JTable {
 
@@ -70,7 +63,21 @@ public class OperationTable extends JTable {
         
 	}	
 	
-	public void update() {
-		((OperationTableModel)getModel()).update();
+	public int update() {
+		// forward
+		int select = ((OperationTableModel)getModel()).update();
+		// select row if possible
+		if(select!=-1) {
+			// convert to model index
+			select = tableRowSorter.convertRowIndexToModel(select);
+			// set selected
+			getSelectionModel().setSelectionInterval(select, 0);
+		}
+		else if(getRowCount()>0)
+			getSelectionModel().setSelectionInterval(0, 0);
+		// update
+		doLayout();
+		// finshed
+		return select;		
 	}
 }

@@ -122,7 +122,7 @@ public class MapStatusPanel extends JPanel {
 	public void onMouseClick(Point p) {
 		try {
 			if(p!=null && !p.isEmpty())
-				clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true));		
+				clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p,5),5,3,true));		
 			else {
 				mouseOverLabel.setEmpty();
 			}
@@ -136,7 +136,7 @@ public class MapStatusPanel extends JPanel {
 	public void onMouseMove(Point p) {
 		try {
 			if(p!=null && !p.isEmpty()) {
-				String text = MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p),3,true);
+				String text = MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p,5),5,3,true);
 				mouseOverLabel.setValue(text);
 				mouseOverLabel.updateUI();
 			}

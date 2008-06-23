@@ -385,7 +385,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		public AbstractToolWork(boolean notify) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,notify,true);
+					"Vent litt",100,notify,true,false,0);
 		}
 
 		@Override

@@ -8,7 +8,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -109,10 +108,6 @@ public class OperationPanel extends DefaultPanel {
 		setChangeable(false);
 		// update table
 		getTable().update();
-		// select first?
-		if(getTable().getRowCount()>0) {
-			getTable().getSelectionModel().setSelectionInterval(0, 0);
-		}
 		// set dirty
 		setDirty(true, false);
 		// resume changes

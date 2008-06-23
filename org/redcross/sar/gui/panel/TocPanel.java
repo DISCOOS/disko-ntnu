@@ -164,7 +164,7 @@ public class TocPanel extends DefaultPanel {
 	 */
 	private JButton getAllButton() {
 		if (allButton == null) {
-			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.NORMAL);			
+			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.SMALL);			
 		}
 		return allButton;
 	}
@@ -176,7 +176,7 @@ public class TocPanel extends DefaultPanel {
 	 */
 	private JButton getNoneButton() {
 		if (noneButton == null) {
-			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.NORMAL);			
+			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.SMALL);			
 		}
 		return noneButton;
 	}

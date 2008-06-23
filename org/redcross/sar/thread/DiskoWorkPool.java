@@ -3,7 +3,9 @@
  */
 package org.redcross.sar.thread;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -13,13 +15,13 @@ import javax.swing.SwingWorker;
 import org.redcross.sar.thread.IDiskoWork.WorkOnThreadType;
 
 /**
- * Singleton disko work pool class. Ensures that work can be executed in
- * another thread in a mso safe manner. Methods that are not mso thread safe 
- * are executed on the AWT thread. Disko only supports ONE thread in 
+ * Singleton DISKO work pool class. Ensures that work can be executed in
+ * another thread in a MSO safe manner. Methods that are not MSO thread safe 
+ * are executed on the AWT thread. DISKO only supports ONE thread in 
  * addition to the AWT thread. This class schedules all work that must be
  * multitasked (executed either on the AWT (EDT) or SwingWorker thread). 
  * 
- * The first invocation of getInstance() MUST be done from the AWT thread!
+ * The first invocation of getInstance() MUST be done from the EDT thread!
  * 
  * @author kennetgu
  *
@@ -28,17 +30,18 @@ public class DiskoWorkPool {
 
 	private static DiskoWorkPool m_this;
 	
-	private boolean m_isWorking = false;
-	private DiskoWorker m_waitOn = null;
-	private Map<IDiskoWork,DiskoWorker> m_workers = null;
-	private ConcurrentLinkedQueue<IDiskoWork> m_queue = null;
+	private long m_nextID = 1;
+	private List<IDiskoWork<?>> m_isUnsafe = null;
+	private Map<IDiskoWork<?>,DiskoWorker> m_workers = null;
+	private ConcurrentLinkedQueue<IDiskoWork<?>> m_queue = null;
   	
   	/**
 	 *  private constructor
 	 */		
 	DiskoWorkPool() {
-		m_workers = new HashMap<IDiskoWork,DiskoWorker>();
-		m_queue = new ConcurrentLinkedQueue<IDiskoWork>();
+		m_isUnsafe = new ArrayList<IDiskoWork<?>>(); 
+		m_workers = new HashMap<IDiskoWork<?>,DiskoWorker>();
+		m_queue = new ConcurrentLinkedQueue<IDiskoWork<?>>();
 	}
 	
   	/*========================================================
@@ -79,110 +82,204 @@ public class DiskoWorkPool {
   	 *========================================================
   	 */
   	
-  	public synchronized int schedule(IDiskoWork work) {
+  	public synchronized long schedule(IDiskoWork<?> work) {
   		// is null?
   		if(work==null) throw new NullPointerException("Work can not be null");
+  		// create id
+  		long id = createID();   		
+  		// allocate id
+  		work.setID(id);
   		// execute on new thread?
   		if(work.getWorkOnThread()==
 				WorkOnThreadType.WORK_ON_NEW) {
-  			// run work on a new swingworker new thread that is not 
+  			// run work on a new swing worker new thread that is not 
   			// concurrent. Thus, should not contain unsafe work.
-  			return execute(work,true);
+  	  		// is not thread safe?
+  	  		if(!work.isThreadSafe()) throw new IllegalArgumentException("Work on new thread must be thread safe");
+  	  		// forward to work pool
+  			execute(work,false);
   		}
   		else {
-
   			// add to list 
-			m_queue.add(work);  // (throws NullPointer Exception if work is null)
+			m_queue.add(work);  
 			// forward
 			doWork();
-			// return size
-	  		return m_queue.size();	
   		}
+  		// finished
+  		return id;
   	}
   	
-  	public synchronized boolean isWorking() {
-		return m_isWorking;
+  	public synchronized boolean isUnsafe() {
+		return m_isUnsafe.size()>0;
   	}
+  	
+  	
   	
 	public synchronized int getWorkCount() {
   		return m_queue.size();
   	}
-
+	
+	public synchronized IDiskoWork<?> getWork(long id) {
+		for(DiskoWorker it : m_workers.values()) { 
+			IDiskoWork<?> work = it.getWork();
+			if(id == work.getID())
+				return work;
+		}
+		return null;
+	}
+	
+	public synchronized boolean containsWork(long id) {
+		return (getWork(id)!=null);
+	}
+	
+	public synchronized boolean containsWork(IDiskoWork<?> work) {
+		return m_workers.containsKey(work);
+	}
+	
+	public synchronized boolean isWorking(IDiskoWork<?> work) {
+		if(work!=null) {
+			if(containsWork(work)) {
+				return m_workers.get(work).isWorking();				
+			}
+		}
+		return false;
+	}
+	
+	public synchronized boolean isWorking(long id) {
+		return isWorking(getWork(id));
+	}
+	
+	public synchronized boolean suspend(long id) {
+		return suspend(getWork(id));
+	}
+	
+	public synchronized boolean suspend(IDiskoWork<?> work) {
+		if(containsWork(work) && work.isLoop()) {
+			return m_workers.get(work).suspend();
+		}
+		return false;
+	}
+	
+	public synchronized boolean resume(long id) {
+		return resume(getWork(id));
+	}
+	
+	public synchronized boolean resume(IDiskoWork<?> work) {
+		if(containsWork(work) && work.isLoop()) {
+			return m_workers.get(work).resume();
+		}
+		return false;
+	}
+	
+	public synchronized boolean stop(long id) {
+		return stop(getWork(id));
+	}
+	
+	public synchronized boolean stop(IDiskoWork<?> work) {
+		if(work!=null && work.isLoop()) {
+			DiskoWorker worker = m_workers.get(work);
+			if(!worker.isCancelled()) {
+				worker.resume();
+				return worker.cancel(false);
+			}
+		}
+		return false;
+	}
+	
   	/*========================================================
   	 * private pool methods (thread safe)
   	 *========================================================
   	 */
+	
+	private void pushUnsafe(IDiskoWork<?> work) {
+		if(!m_isUnsafe.contains(work))
+			m_isUnsafe.add(work);
+	}
+	
+	private void popUnsafe(IDiskoWork<?> work) {
+		if(m_isUnsafe.contains(work))
+			m_isUnsafe.remove(work);
+	}
+	
+	private long createID() {
+		long id = m_nextID; 
+		m_nextID++;
+		return id;
+	}
   	
-  	private IDiskoWork getWork() {
+  	private IDiskoWork<?> getWork() {
 		// get work
 		return m_queue.poll();
   	}
   	
   	private synchronized void doWork() {
 		// is worker available?
-		if(!isWorking()) {
+		if(!isUnsafe()) {
 	  		// get first work in queue
-	  		IDiskoWork work = getWork();
-	  		// 
+	  		IDiskoWork<?> work = getWork();
+	  		// execute consecutive EDT work on stack
 	  		while(work!=null &&
 	  				work.getWorkOnThread()==
 	  				WorkOnThreadType.WORK_ON_EDT) {
-				// execute work
-	            execute(work); 
+	  	  		// execute work on EDT
+	            execute(work,true);
 	  	  		// get next work in queue
 	  	  		work = getWork();
 	  		}
 	  		// execute on other thread then EDT?
 	  		if(work!=null && work.getWorkOnThread()
 	  				==WorkOnThreadType.WORK_ON_SAFE) {
-	  			// forward
+	  			// forward on safe thread
 	  			execute(work,false);
 			}		  			
   		}
 	}
   	
-  	private int execute(IDiskoWork work, boolean isThreadSafe) {
-		// set work flag?
-  		if(!isThreadSafe)
-  			m_isWorking = true;
-		// create worker
-  		DiskoWorker worker = new DiskoWorker(work);
-  		// add to workers
-		m_workers.put(work,worker);
-		// execute work
-		worker.execute();
-		// return number in set
-		return m_workers.size();
-  	}
-  	
-  	private void execute(IDiskoWork work) {
-  		// create runnable
+  	private void execute(final IDiskoWork<?> work, boolean onEDT) {
   		
-  		if(SwingUtilities.isEventDispatchThread()) {
-			// execute
-			work.run();
+  		// execute on EDT?
+  		if(onEDT) {
+	  		// ensure work on EDT
+			if (SwingUtilities.isEventDispatchThread()) {
+				// increment unsafe state?
+				if(!work.isThreadSafe()) pushUnsafe(work);
+				// execute
+				work.run();
+				// forward
+				done(work);
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						execute(work,true);
+					}
+				});
+			}
   		}
+  		/* This will start a new swing worker thread. If work
+  		 * is unsafe, isUnsafe is set to prevent the new work scheduled
+  		 * is not executed until this work is finished (concurrent execution)
+  		*/ 
   		else {
-  			// invoke on EDT thread and wait for result
-			SwingUtilities.invokeLater(work);
+  			// increment unsafe state?
+  	  		if(!work.isThreadSafe()) pushUnsafe(work);
+  			// create worker
+  	  		DiskoWorker worker = new DiskoWorker(work);
+  	  		// add to workers
+  			m_workers.put(work,worker);
+  			// execute work
+  			worker.execute();
   		}
-		// forward
-		done(work);
   	}
   	
-  	private synchronized void done(IDiskoWork work) {
-		// set work flag?
-  		if(work.isThreadSafe())
-  			m_isWorking = false;
+  	private synchronized void done(IDiskoWork<?> work) {
 		// get result
 		work.done();
 		// remove from worker map
 		m_workers.remove(work);
-		// do next work?
-		if(work.isThreadSafe()) {
-			// continue
-			doWork();
-		}
+		// decrement unsafe state
+  		popUnsafe(work);
+		// continue
+		doWork();
   	}
   	
   	/*========================================================
@@ -192,21 +289,110 @@ public class DiskoWorkPool {
   	
 	private class DiskoWorker extends SwingWorker<Object,Integer> {
 
-		private IDiskoWork m_work = null;
+		private final static long RESUME_DELAY = 1000;		// check if resume should occur every second
+		private final static long MINIMUM_DUTY_CYCLE = 10;	// duty cycle can not be less then 10 milliseconds.
 		
-		DiskoWorker(IDiskoWork work) {
+		private IDiskoWork<?> m_work = null;
+		private boolean m_isWorking = false;
+		
+		DiskoWorker(IDiskoWork<?> work) {
 			m_work = work;
+		}
+		
+		public IDiskoWork<?> getWork() {
+			return m_work;
+		}
+		
+		public boolean isWorking() {
+			return m_isWorking;
+		}
+		
+		public boolean suspend() {
+			if(m_work.isLoop() && m_isWorking) {
+				m_isWorking = false;
+				return true;
+			}
+			return false;
+		}
+		
+		public boolean resume() {
+			if(m_work.isLoop() && !(m_isWorking || isCancelled())) {
+				m_isWorking = true;		
+				return true;
+			}
+			return false;
 		}
 		
 		@Override
 		protected Object doInBackground() throws Exception {
 			// catch cancel events
 			try {	
-				// execute
-				m_work.run(); 
+				
+				// initialize time tic
+				long tic = 0;
+				
+				// set flag
+				m_isWorking = true;
+				
+				// is work cycle?
+				if(m_work.isLoop()) {
+
+					// prepare to work
+					m_work.prepare();
+					
+					// execute until cancel
+					while(!isCancelled()) {
+						
+						// ensure that access to m_isWorking is done concurrently
+			            try {
+			            	
+			            	// get duty cycle
+			            	long duty = m_work.getDutyCycle();
+			            	
+			            	// sleep for specified time before checking again
+			            	Thread.sleep(RESUME_DELAY);
+			            	
+			            	// try to resume
+			                synchronized(this) {
+			                	// stop if suspended, or canceled
+			                    while (m_isWorking && !isCancelled()) {
+			                    	// get current time tic
+			                    	tic = System.currentTimeMillis();
+			    					// execute work
+			    					m_work.run();
+			    					// get current work time
+			    					long worked = System.currentTimeMillis() - tic;
+			    					// log work time
+			    					m_work.logWorkTime(worked);
+			    					// calculate time left before new work cycle starts, limit to minimum duty cycle.
+			    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked);
+			    					// sleep for reminder of time
+			    					Thread.sleep(remainder);
+			                    }
+			                }
+			                
+			            } catch (InterruptedException e) { /* NOP */ }
+			            
+					}
+					
+					// finished
+					m_work.done();
+					
+				}
+				else {
+                	// get current time tic
+                	tic = System.currentTimeMillis();
+					// execute once (prepare() and done() is automatically handled
+					m_work.run();
+					// log work time
+					m_work.logWorkTime(System.currentTimeMillis() - tic);
+					
+				}
+				// reset flag
+				m_isWorking = false;				
 	            // return result
 	            return m_work.get();
-			}
+            } 
 			catch(Exception e) {
 				// not a interrupt?
 				if(!(e instanceof InterruptedException)) 
@@ -222,5 +408,6 @@ public class DiskoWorkPool {
 			DiskoWorkPool.this.done(m_work);
 		}		
 	}	
+	
 }
 

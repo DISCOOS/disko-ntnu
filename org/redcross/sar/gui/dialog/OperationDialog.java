@@ -93,7 +93,7 @@ public class OperationDialog extends DefaultDialog {
 	}
 
 	public void setFixedSize() {
-		getContentPanel().setFixedSize();
+		getContentPanel().onResize();
 	}	
 	
 	public void load() {

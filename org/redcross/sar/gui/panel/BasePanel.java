@@ -22,7 +22,7 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
-import org.redcross.sar.gui.attribute.IDiskoAttribute;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 public class BasePanel extends AbstractPanel {
 
@@ -38,6 +38,7 @@ public class BasePanel extends AbstractPanel {
 	private Insets insets = null;
 	private boolean isBorderVisible = true;
 	private Color borderColor = Color.GRAY;
+	private ButtonSize buttonSize = ButtonSize.NORMAL;
 	
 	private HeaderPanel headerPanel = null;
 	private JScrollPane scrollPane = null;
@@ -49,14 +50,23 @@ public class BasePanel extends AbstractPanel {
 	 */
 	
 	public BasePanel() {
-		this("");
+		this("",ButtonSize.NORMAL);
 	}
 	
 	public BasePanel(String caption) {
+		this(caption,ButtonSize.NORMAL);
+	}
+	
+	public BasePanel(ButtonSize buttonSize) {
+		this("",buttonSize);
+	}
+	
+	public BasePanel(String caption,ButtonSize buttonSize) {
 		// forward
 		super();
 		// prepare
-		insets = new Insets(1,1,1,1);
+		this.buttonSize = buttonSize;
+		this.insets = new Insets(1,1,1,1);
 		// initialize GUI
 		initialize();
 		// set caption
@@ -85,12 +95,12 @@ public class BasePanel extends AbstractPanel {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				// forward
-				setFixedSize();	
+				onResize();	
 		    }
 			@Override
 			public void componentShown(ComponentEvent e) {
 				// forward
-				setFixedSize();	
+				onResize();	
 			}			
 		});		
 		this.setBorderColor(borderColor);
@@ -113,8 +123,8 @@ public class BasePanel extends AbstractPanel {
 	 * ===========================================
 	 */
 	
-	public void setFixedSize() {
-		getHeaderPanel().setFixedSize();		
+	public void onResize() {
+		getHeaderPanel().onResize();
 	}
 	
 	/**
@@ -125,7 +135,7 @@ public class BasePanel extends AbstractPanel {
 	public HeaderPanel getHeaderPanel() {
 		if (headerPanel == null) {
 			try {
-				headerPanel = new HeaderPanel();
+				headerPanel = new HeaderPanel("",buttonSize);
 				headerPanel.setInsets(0,0,0,1);
 				headerPanel.addDiskoWorkEventListener(new IDiskoWorkListener() {
 

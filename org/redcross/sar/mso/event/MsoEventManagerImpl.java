@@ -83,6 +83,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         {
             return;
         }
+        
         MsoEvent.Update event = new MsoEvent.Update(aSource, anEventTypeMask);
         for (IMsoUpdateListenerIf listener : theListeners)
         {

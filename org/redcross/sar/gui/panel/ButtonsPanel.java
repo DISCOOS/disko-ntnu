@@ -12,6 +12,9 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+
 public class ButtonsPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -23,6 +26,7 @@ public class ButtonsPanel extends JPanel {
 	public static final int TRAILING = FlowLayout.TRAILING;
 	
 	private int m_alignment = FlowLayout.LEFT;
+	private ButtonSize m_buttonSize = ButtonSize.NORMAL;
 	
 	private List<JComponent> m_items = null;
 	private Map<String, AbstractButton> m_commands = null;
@@ -36,9 +40,10 @@ public class ButtonsPanel extends JPanel {
 		initialize();
 	}
 	
-	public ButtonsPanel(int alignment) {
+	public ButtonsPanel(int alignment, ButtonSize buttonSize) {
 		// prepare
 		m_alignment = alignment;
+		m_buttonSize = buttonSize;
 		// initialize GUI
 		initialize();
 	}
@@ -121,7 +126,8 @@ public class ButtonsPanel extends JPanel {
 	public AbstractButton addButton(String command, String caption) {
 		// exists?
 		if(!m_commands.containsKey(command)) {
-			JButton button = new JButton(caption);
+			JButton button = DiskoButtonFactory.createButton(
+					caption,caption,null,m_buttonSize);
 			button.setActionCommand(command);
 			this.add(button);
 			m_items.add(button);

@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 
@@ -86,7 +87,7 @@ public class NumPadDialog extends JDialog {
 			GridLayout gridLayout = new GridLayout();
 			gridLayout.setRows(4);
 			gridLayout.setColumns(3);
-			buttonPanel = new BasePanel("Tastatur");
+			buttonPanel = new BasePanel("Tastatur",ButtonSize.NORMAL);
 			JPanel panel = (JPanel)buttonPanel.getBodyComponent();
 			panel.setLayout(gridLayout);		
 			panel.add(getOneButton(), null);

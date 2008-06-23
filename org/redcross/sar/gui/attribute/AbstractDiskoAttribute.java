@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.redcross.sar.gui.attribute;
 
 import java.awt.BorderLayout;
@@ -9,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -22,13 +18,11 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
-import org.redcross.sar.util.mso.Polygon;
-import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.util.mso.Route;
-import org.redcross.sar.util.mso.TimePos;
-import org.redcross.sar.util.mso.Track;
+import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
  * @author kennetgu
@@ -61,24 +55,75 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	private List<IDiskoWorkListener> listeners = null;
 	
 	/*==================================================================
-	 * Protected methods
+	 * Constructors
 	 *================================================================== 
 	 */
 	
 	protected AbstractDiskoAttribute(String name, String caption, int width, Object value, boolean isEditable) {
 		// prepare
-		m_caption = caption;
-		m_isEditable = isEditable;
-		listeners = new ArrayList<IDiskoWorkListener>(); 
+		listeners = new ArrayList<IDiskoWorkListener>();
 		// initialize GUI
 		initialize();
-		// forward
-		setCaptionWidth(width);
-		// set component name
+		// update
 		setName(name);
-		// set value
+		setCaption(caption);
 		setValue(value);
+		setEditable(isEditable);		
+		setCaptionWidth(width);
 	}
+	
+	/*==================================================================
+	 * Protected methods
+	 *================================================================== 
+	 */
+	
+	protected JLabel getCaptionLabel() {
+		if(m_captionLabel==null) {
+			m_captionLabel = new JLabel(m_caption);
+			m_captionLabel.setVerticalAlignment(SwingConstants.TOP);
+			m_captionLabel.setLabelFor(getComponent());
+		}
+		return m_captionLabel;
+	}
+	
+	protected void setIsNotWorking() {
+		if(m_isConsume>0) m_isConsume--;
+	}
+	
+	protected void fireOnWorkChange() {
+		if(m_autoSave) {
+			save();
+			fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEvent.EVENT_FINISH));
+		}
+		else {			
+			m_isDirty = true;
+			fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEvent.EVENT_CHANGE));
+		}
+	}
+			
+	protected void fireOnWorkChange(DiskoWorkEvent e) {
+		// forward
+		for(IDiskoWorkListener it: listeners) {
+			it.onWorkPerformed(e);
+		}
+	}
+		
+	protected IDiskoMap getInstalledMap() {
+		// try to get map from current 
+		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+		if(module!=null) {
+			if(module.isMapInstalled())
+				return module.getMap();
+		}
+		// no map available
+		return null;
+	}
+	
+	
+	/*==================================================================
+	 * Private methods
+	 *================================================================== 
+	 */
 	
 	private void initialize() {
 		BorderLayout bl = new BorderLayout();
@@ -103,7 +148,12 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		});
 		
 	}
-					
+						
+	/*==================================================================
+	 * Public methods
+	 *================================================================== 
+	 */
+	
 	public int getVerticalAlignment() {
 		return getCaptionLabel().getVerticalAlignment();
 	}
@@ -120,15 +170,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		getCaptionLabel().setHorizontalAlignment(alignment);
 	}
 	
-	protected JLabel getCaptionLabel() {
-		if(m_captionLabel==null) {
-			m_captionLabel = new JLabel(m_caption);
-			m_captionLabel.setVerticalAlignment(SwingConstants.TOP);
-			m_captionLabel.setLabelFor(getComponent());
-		}
-		return m_captionLabel;
-	}
-	
 	public boolean isConsume() {
 		return (m_isConsume>0);
 	}
@@ -139,50 +180,13 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		else if (m_isConsume>0)
 			m_isConsume--;
 	}
-	
-	protected void setIsNotWorking() {
-		if(m_isConsume>0) m_isConsume--;
-	}
-	
-	protected void fireOnWorkChange() {
-		fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEvent.EVENT_CHANGE));
-	}
-			
-	protected void fireOnWorkChange(DiskoWorkEvent e) {
-		// forward
-		for(IDiskoWorkListener it: listeners) {
-			it.onWorkPerformed(e);
-		}
-	}
-	
-	public abstract Component getComponent();
-	
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
-	
+
 	public boolean isDirty() {
 		if(m_attribute!=null)
 			return m_attribute.isUncommitted();
 		else
 			return m_isDirty;
 	}
-	
-	/*
-	public Dimension getFixedSize() {
-		return m_fixedSize;
-	}
-	public void setFixedSize(Dimension size) {
-		// save
-		m_fixedSize = size;
-		// constain to size
-		Utils.setFixedSize(this, size.width,size.height);
-		// constrain caption width
-		setCaptionWidth(getCaptionWidth());
-		
-	}
-	*/
 	
 	public int getCaptionWidth() {
 		return m_captionWidth ==-1 ? getCaptionLabel().getWidth() : m_captionWidth ;
@@ -211,7 +215,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		int cw = getCaptionWidth();
 		int mh = Math.max(getMaximumHeight(), getHeight());
 		// set as absolute caption size
-		Utils.setFixedSize(getCaptionLabel(), cw,mh);
+		Utils.setFixedSize(getCaptionLabel(),cw,mh);
 		// set width
 		int mw = Math.max(getWidth() - getCaptionWidth() - getButton().getWidth() - 10, 75);
 		// set absolute component size
@@ -254,20 +258,6 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		getCaptionLabel().setText(text);
 	}
 
-	/**
-	 * Updates the attribute value
-	 * 
-	 * If overridden by extending class, remember
-	 * to forward the call to this super class.
-	 */
-	
-	public boolean setValue(Object value) {
-		// update dirty bit?
-		if(!isConsume()) m_isDirty = true;
-		// failure, is not implemented
-		return false;
-	}
-
 	public boolean fill(Object values) { return true; };
 	
 	public boolean load() {
@@ -281,7 +271,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		if(isMsoAttribute()) {
 			try {
 				// forward
-				bFlag = setValue(getAttribValue(m_attribute));
+				bFlag = setValue(MsoUtils.getAttribValue(m_attribute));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	
@@ -290,6 +280,8 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 			// reapply current value
 			bFlag = setValue(getValue());
 		}
+		// reset flag
+		m_isDirty = false;
 		// resume change
 		setConsume(false);
 		// finished
@@ -297,8 +289,15 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	}
 	
 	public boolean save() {
-		// allowed?
-		if(isConsume() || !isMsoAttribute() || ! m_isEditable) return false;
+		
+		// consume?
+		if(isConsume()) return false;
+		
+		// reset flag
+		m_isDirty = false;
+		
+		// consume?
+		if(!isMsoAttribute()) return false;
 		
 		// initialize
 		boolean bFlag = false;
@@ -308,7 +307,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		
 		try {
 			// forward
-			if(setAttribValue(m_attribute,getValue())) {
+			if(MsoUtils.setAttribValue(m_attribute,getValue())) {
 				// success
 				bFlag = true;
 			}
@@ -354,7 +353,12 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		if(button!=null) this.add(button, BorderLayout.EAST);
 		// prepare
 		m_button = button;
-		m_button.setVisible(isVisible);
+		// update?
+		if(m_button!=null) {
+			// update 
+			m_button.setVisible(isVisible);
+			m_button.setEnabled(isEnabled() && isEditable());
+		}
 	}
 	
 	/**
@@ -374,137 +378,14 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 * Abstract public methods
 	 *================================================================== 
 	 */
-
+	
 	public abstract Object getValue();
+	
+	public abstract boolean setValue(Object value);
+	
+	public abstract Component getComponent();	
 	
 	public abstract boolean setMsoAttribute(IAttributeIf attribute);
 	
-	
-	/*==================================================================
-	 * Static protected methods
-	 *================================================================== 
-	 */
-	
-	protected static Object getAttribValue(IAttributeIf attribute) {
-		// dispatch attribute type
-		if (attribute instanceof AttributeImpl.MsoBoolean) {
-		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
-		    return lAttr.booleanValue();
-		}
-		else if (attribute instanceof AttributeImpl.MsoInteger) {
-		    AttributeImpl.MsoInteger lAttr = (AttributeImpl.MsoInteger) attribute;
-		    return lAttr.intValue();
-		}
-		else if (attribute instanceof AttributeImpl.MsoDouble) {
-		    AttributeImpl.MsoDouble lAttr = (AttributeImpl.MsoDouble) attribute;
-		    return lAttr.doubleValue();
-		}
-		else if (attribute instanceof AttributeImpl.MsoString) {
-		    AttributeImpl.MsoString lAttr = (AttributeImpl.MsoString) attribute;
-		    return lAttr.getString();
-		}
-		else if (attribute instanceof AttributeImpl.MsoCalendar) {
-		    AttributeImpl.MsoCalendar lAttr = (AttributeImpl.MsoCalendar) attribute;
-		    return lAttr.getCalendar();
-		}
-		else if (attribute instanceof AttributeImpl.MsoPosition) {
-		    AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) attribute;
-		    return lAttr.getPosition();
-		}
-		else if (attribute instanceof AttributeImpl.MsoTimePos) {
-		    AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) attribute;
-		    return lAttr.getTimePos().getPosition();
-		}
-		else if (attribute instanceof AttributeImpl.MsoPolygon) {
-		    AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
-		    return lAttr.getPolygon();
-		}
-		else if (attribute instanceof AttributeImpl.MsoRoute) {
-		    AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) attribute;
-		    return lAttr.getRoute();
-		}
-		else if (attribute instanceof AttributeImpl.MsoTrack) {
-		    AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
-		    return lAttr.getTrack();
-		}
-		else if (attribute instanceof AttributeImpl.MsoEnum) {
-		    AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) attribute;
-		    return lAttr.getValue();
-		}
-		// failed
-		return null;
-	}
-	
-	protected static boolean setAttribValue(IAttributeIf attribute, Object value) {
-		// dispatch attribute type
-		if (attribute instanceof AttributeImpl.MsoBoolean) {
-		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
-		    if(value instanceof Boolean) {
-		    	lAttr.set((Boolean)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoInteger) {
-		    AttributeImpl.MsoInteger lAttr = (AttributeImpl.MsoInteger) attribute;
-		    if(value instanceof Integer) {
-		    	lAttr.set((Integer)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoDouble) {
-		    AttributeImpl.MsoDouble lAttr = (AttributeImpl.MsoDouble) attribute;
-		    if(value instanceof Double) {
-		    	lAttr.set((Double)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoString) {
-		    AttributeImpl.MsoString lAttr = (AttributeImpl.MsoString) attribute;
-		    if(value instanceof String) {
-		    	lAttr.set((String)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoCalendar) {
-		    AttributeImpl.MsoCalendar lAttr = (AttributeImpl.MsoCalendar) attribute;
-		    if(value instanceof Calendar) {
-		    	lAttr.set((Calendar)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoPosition) {
-		    AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) attribute;
-		    if(value instanceof Position) {
-		    	lAttr.set((Position)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoTimePos) {
-		    AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) attribute;
-		    if(value instanceof TimePos) {
-		    	lAttr.set((TimePos)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoPolygon) {
-		    AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
-		    if(value instanceof Polygon) {
-		    	lAttr.set((Polygon)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoRoute) {
-		    AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) attribute;
-		    if(value instanceof Route) {
-		    	lAttr.set((Route)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoTrack) {
-		    AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
-		    if(value instanceof Track) {
-		    	lAttr.set((Track)value); return true;
-		    }
-		}
-		else if (attribute instanceof AttributeImpl.MsoEnum) {
-		    AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) attribute;
-		    if(value instanceof Enum) {
-		    	lAttr.set((Enum)value); return true;
-		    }
-		}
-		// failed
-		return false;
-	}		
 	
 }

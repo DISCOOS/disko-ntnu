@@ -19,7 +19,7 @@ public class MsoCompareRoute implements Comparator<IMsoObjectIf> {
 			if(r2.getAreaSequenceNumber() < r1.getAreaSequenceNumber()) return -1;
 		}
 		// finished
-		return 0;
+		return 0; //(r1==null && r2==null) ? 0 : ((r1==null) ? -1 : 1);
 	}
 
 }

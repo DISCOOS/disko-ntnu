@@ -36,11 +36,11 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.model.HypothesisListModel;
+import org.redcross.sar.gui.model.mso.HypothesisListModel;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -539,7 +539,7 @@ public class HypothesisDialog extends DefaultDialog {
 				}
 				statusCombo.fill(model);
 				JComboBox cb = (JComboBox)statusCombo.getComponent();
-				cb.setRenderer(new SimpleListCellRenderer());
+				cb.setRenderer(new BundleListCellRenderer());
 				cb.setSelectedIndex(0);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

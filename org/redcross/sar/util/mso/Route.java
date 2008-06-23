@@ -145,12 +145,20 @@ public class Route implements IGeodataIf, Cloneable
 
     @Override
     public Object clone() throws CloneNotSupportedException
-    { // todo test!!!!!
-        super.clone();
-        Route retVal = new Route(m_id,m_name);
-        retVal.setLayout(m_layout);
-        retVal.m_route.addAll(m_route);
-        return retVal;
+    {  // TODO: test!!!!!
+       super.clone();
+       Route retVal = new Route(m_id,m_name);
+       retVal.setLayout(m_layout);
+       retVal.m_route.addAll(m_route);
+       return retVal;
+    }
+    
+    public void addAll(Route r) {
+    	m_route.addAll(r.m_route);
+    }
+    
+    public void removeAll(Route r) {
+    	m_route.removeAll(r.m_route);
     }
 
 }

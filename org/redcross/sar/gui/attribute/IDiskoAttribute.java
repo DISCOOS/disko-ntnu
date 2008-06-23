@@ -1,11 +1,9 @@
 package org.redcross.sar.gui.attribute;
 
-import java.awt.Dimension;
-
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.mso.data.IAttributeIf;
 
-public interface IDiskoAttribute {
+public interface IDiskoAttribute { 
 
 	public String getName();
 
@@ -13,6 +11,9 @@ public interface IDiskoAttribute {
 	
 	public boolean isConsume();
 	public void setConsume(boolean isConsume);
+
+	public boolean getAutoSave();
+	public void setAutoSave(boolean autoSave);	
 	
 	public String getCaption();	
 	public void setCaption(String text);
@@ -38,6 +39,5 @@ public interface IDiskoAttribute {
 	
 	public boolean addDiskoWorkListener(IDiskoWorkListener listener);
 	public boolean removeDiskoWorkListener(IDiskoWorkListener listener);
-	
 	
 }

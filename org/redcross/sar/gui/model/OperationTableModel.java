@@ -5,16 +5,27 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.modelDriver.IModelDriverIf;
+import org.redcross.sar.modelDriver.IModelDriverListenerIf;
 
-public class OperationTableModel extends AbstractTableModel {
+public class OperationTableModel extends AbstractTableModel implements IModelDriverListenerIf {
 
 	private static final long serialVersionUID = 1L;
 
 	private Object[] rows = null;
+	private IModelDriverIf modelDriver = null;
+	
+	public OperationTableModel() {
+		// prepare
+		modelDriver = Utils.getApp().getMsoModel().getModelDriver();
+		// add to listeners
+		modelDriver.addModelDriverListener(this);
+	}
 
-	public void update() {
+	public int update() {
+		int current = -1;
 		// get active operations locally / on sara server
-		List<String[]> data = Utils.getApp().getMsoModel().getModelDriver().getActiveOperations();
+		List<String[]> data = modelDriver.getActiveOperations();
 		// has active operations?
 		if(data!=null) {
 			// allocate memory
@@ -23,8 +34,13 @@ public class OperationTableModel extends AbstractTableModel {
 			for (int i = 0; i < data.size(); i++) {
 				// allocate memory
 				Object[] row = new Object[1];
+				// get operation id
+				String oprID = (String)data.get(i)[0];
 				// update row
-				row[0] = data.get(i)[0];
+				row[0] = oprID;
+				// is current?
+				if(modelDriver.getActiveOperationID()==oprID)
+					current = i;
 				// save row
 				rows[i] = row;
 			}
@@ -32,7 +48,10 @@ public class OperationTableModel extends AbstractTableModel {
 		else {
 			rows = null;
 		}
+		// notify
 		super.fireTableDataChanged();
+		// finished
+		return current;
 	}
     
 	public int getColumnCount() {
@@ -62,5 +81,18 @@ public class OperationTableModel extends AbstractTableModel {
 		default:
 			return null;
 		}
+	}
+
+	@Override
+	public void onOperationCreated(String oprID, boolean current) {
+		// forward
+		update();
+		
+	}
+
+	@Override
+	public void onOperationFinished(String oprID, boolean current) {
+		// forward
+		update();
 	}	
 }

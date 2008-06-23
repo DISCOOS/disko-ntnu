@@ -30,12 +30,21 @@ public class DefaultPanel extends BasePanel {
 	
 	public DefaultPanel(String caption) {
 		// forward
-		this(caption,true,true);
+		this(caption,true,true,ButtonSize.NORMAL);
+	}
+	
+	public DefaultPanel(ButtonSize buttonSize) {
+		// forward
+		this("",true,true,buttonSize);
 	}
 	
 	public DefaultPanel(String caption, boolean finish, boolean cancel) {
+		this(caption,finish,cancel,ButtonSize.NORMAL);
+	}
+	
+	public DefaultPanel(String caption, boolean finish, boolean cancel, ButtonSize buttonSize) {
 		// forward
-		super(caption);
+		super(caption,buttonSize);
 		// initialize gui
 		initialize();
 		// hide default buttons

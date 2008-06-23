@@ -69,14 +69,8 @@ public abstract class AbstractDiskoWpModule
 
     private int isWorking = 0;
     
-    private final ArrayList<ITickEventListenerIf> tickListeners;
-
     protected final ArrayList<DiskoWorkEvent> changeStack;
     
-    private final TickEvent tickEvent;
-    
-    private long tickTime = 0;
-
     /**
      */
     public AbstractDiskoWpModule() throws IllegalClassFormatException
@@ -88,8 +82,6 @@ public abstract class AbstractDiskoWpModule
 
     	// prepare
         this.repeater = new DiskoWorkRepeater();
-        this.tickListeners = new ArrayList<ITickEventListenerIf>();
-        this.tickEvent = new TickEvent(this);
         this.changeStack = new ArrayList<DiskoWorkEvent>();
 
         // initialize interests
@@ -107,12 +99,15 @@ public abstract class AbstractDiskoWpModule
      * @param role
      */
     public AbstractDiskoWpModule(EnumSet<IMsoManagerIf.MsoClassCode> wpInterests,
-    		EnumSet<IMsoFeatureLayer.LayerCode> mapLayers)
+    		EnumSet<IMsoFeatureLayer.LayerCode> mapLayers) throws IllegalClassFormatException
     {
+    	
+    	// valid package name?
+    	if(Utils.getPackageName(getClass()) == null) 
+    		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
+    	
         // initialize objects
         this.repeater = new DiskoWorkRepeater();
-        this.tickListeners = new ArrayList<ITickEventListenerIf>();
-        this.tickEvent = new TickEvent(this);
         this.changeStack = new ArrayList<DiskoWorkEvent>();
         this.wpInterests  = wpInterests;
         this.mapLayers = mapLayers;
@@ -487,90 +482,6 @@ public abstract class AbstractDiskoWpModule
         wpBundle = Internationalization.getBundle(aClass);
     }
 
-    private static final int TIMER_DELAY = 1000; // 1 second
-    private final WpTicker ticker = new WpTicker();
-
-    /**
-     * Creates a timer for generating {@link TickEvent} objects periodically.
-     */
-    private void initTickTimer()
-    {
-        Timer timer = new Timer(true);
-        timer.schedule(new TimerTask()
-        {
-            public void run()
-            {
-                long newTickTime = Calendar.getInstance().getTimeInMillis();
-                if (tickTime == 0)
-                {
-                    tickTime = newTickTime;
-                } else if (newTickTime > tickTime)
-                {
-                    ticker.setElapsedTime(newTickTime - tickTime);
-                    SwingUtilities.invokeLater(ticker);
-                    tickTime = newTickTime;
-                }
-
-            }
-        }, 0, TIMER_DELAY);
-    }
-
-    public void addTickEventListener(ITickEventListenerIf listener)
-    {
-        tickListeners.add(listener);
-    }
-
-    public void removeTickEventListener(ITickEventListenerIf listener)
-    {
-        tickListeners.remove(listener);
-    }
-
-    /**
-     * Count down the interval timer for each listern and fire tick events to all listeners where interval time has expired.
-     *
-     * @param aMilli Time in milliseconds since previous call.
-     */
-    protected void fireTick(long aMilli)
-    {
-        if (tickListeners.size() == 0 || aMilli == 0)
-        {
-            return;
-        }
-
-        for (ITickEventListenerIf listener : tickListeners)
-        {
-            long timer = listener.getTimeCounter() - aMilli;
-            if (timer > 0)
-            {
-                listener.setTimeCounter(timer);
-            } else
-            {
-                listener.handleTick(tickEvent);
-                listener.setTimeCounter(listener.getInterval());
-            }
-        }
-    }
-
-    /**
-     * Class that embeds a runnable that performs the GUI updates by firing the ticks to the listeners.
-     *
-     * The class is not thread-safe. The run() method is run with the latest given elapsed time.
-     */
-    class WpTicker implements Runnable
-    {
-        long m_elapsedTime;
-
-        void setElapsedTime(long aTime)
-        {
-            m_elapsedTime = aTime;
-        }
-
-        public void run()
-        {
-            fireTick(m_elapsedTime);
-        }
-    }
-    
     public boolean confirmDeactivate()
     {
     	// TODO: Override this method
@@ -612,6 +523,8 @@ public abstract class AbstractDiskoWpModule
 				e.printStackTrace();
 			}
 		}		
+		// update title bar text?
+		if(isActive()) setFrameText(null);	
 	}
 
 	public void suspendUpdate() {
@@ -624,20 +537,16 @@ public abstract class AbstractDiskoWpModule
 	
 	public void resumeUpdate() {
 		Utils.getApp().getMsoModel().resumeClientUpdate();
-		//SwingUtilities.invokeLater(new Runnable() {
-		//	public void run() {
-				if(map!=null) {
-					try {
-						map.setSupressDrawing(false);
-						map.refreshMsoLayers();
-						map.resumeNotify();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}		
-		//	}			
-		//});
+		if(map!=null) {
+			try {
+				map.setSupressDrawing(false);
+				map.refreshMsoLayers();
+				map.resumeNotify();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}		
 	}
 	
 	public boolean isWorking() {
@@ -661,11 +570,113 @@ public abstract class AbstractDiskoWpModule
 	}
 	
 	/*============================================================
+	 * Global timer implementation 
+	 *============================================================ 
+	 */
+	
+    private static final int TIMER_DELAY = 1000; // 1 second
+    private static final Timer timer = new Timer(true);
+    private static final WpTicker ticker = new WpTicker();
+    private static final ArrayList<ITickEventListenerIf> tickListeners = new ArrayList<ITickEventListenerIf>();
+    
+    private static boolean isTimerRunning = false;
+    private static long tickTime = 0;
+
+    /**
+     * Creates a timer for generating {@link TickEvent} objects periodically.
+     */
+    private static void initTickTimer()
+    {
+    	// initialize?
+    	if(!isTimerRunning) {
+    		// set flag to prevent more than one timer running
+    		isTimerRunning = true;
+    		// schedule ticker work
+	        timer.schedule(new TimerTask()
+	        {
+	            public void run()
+	            {
+	                long newTickTime = Calendar.getInstance().getTimeInMillis();
+	                if (tickTime == 0)
+	                {
+	                    tickTime = newTickTime;
+	                } else if (newTickTime > tickTime)
+	                {
+	                    ticker.setElapsedTime(newTickTime - tickTime);
+	                    SwingUtilities.invokeLater(ticker);
+	                    tickTime = newTickTime;
+	                }
+	
+	            }
+	        }, 0, TIMER_DELAY);
+    	}
+    }
+
+    public void addTickEventListener(ITickEventListenerIf listener)
+    {
+        tickListeners.add(listener);
+    }
+
+    public void removeTickEventListener(ITickEventListenerIf listener)
+    {
+        tickListeners.remove(listener);
+    }
+
+    /**
+     * Count down the interval timer for each listener and fire tick events to all listeners where interval time has expired.
+     *
+     * @param aMilli Time in milliseconds since previous call.
+     */
+    protected static void fireTick(long aMilli)
+    {
+        if (tickListeners.size() == 0 || aMilli == 0)
+        {
+            return;
+        }
+
+        for (ITickEventListenerIf listener : tickListeners)
+        {
+        	TickEvent e = new TickEvent(listener);
+
+            long timer = listener.getTimeCounter() - aMilli;
+            if (timer > 0)
+            {
+                listener.setTimeCounter(timer);
+            } else
+            {
+                listener.handleTick(e);
+                listener.setTimeCounter(listener.getInterval());
+            }
+        }
+    }
+
+
+	/*============================================================
 	 * Inner classes
 	 *============================================================ 
 	 */
 	
-	public abstract class ModuleWork<T> extends AbstractDiskoWork<T> {
+    /**
+     * Class that embeds a runnable that performs the GUI updates by firing the ticks to the listeners.
+     *
+     * The class is not thread-safe. The run() method is run with the latest given elapsed time.
+     */
+    private static class WpTicker implements Runnable
+    {
+        long m_elapsedTime;
+
+        void setElapsedTime(long aTime)
+        {
+            m_elapsedTime = aTime;
+        }
+
+        public void run()
+        {
+            fireTick(m_elapsedTime);
+        }
+    }
+    
+    public abstract class ModuleWork<T> extends AbstractDiskoWork<T> {
 		
 		private boolean m_suspend = true;
 		
@@ -682,7 +693,7 @@ public abstract class AbstractDiskoWpModule
 		public ModuleWork(String msg, boolean show, boolean suspend) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					msg,100,show,false);
+					msg,100,show,false,false,0);
 			// save flag
 			m_suspend = suspend;
 		}

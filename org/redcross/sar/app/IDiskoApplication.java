@@ -8,6 +8,7 @@ import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.SysBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
+import org.redcross.sar.modelDriver.IModelDriverListenerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.output.DiskoReportManager;
 
@@ -17,7 +18,7 @@ import org.redcross.sar.output.DiskoReportManager;
  * @author geira
  *
  */
-public interface IDiskoApplication {
+public interface IDiskoApplication extends IModelDriverListenerIf {
 	
 	public final static String bundleName = "org.redcross.sar.app.application";
 	
@@ -138,11 +139,6 @@ public interface IDiskoApplication {
     void finishOperation();
 
     /**
-     * For cleanup and module handling when active operation has been finished
-     */
-    void operationFinished();
-
-    /**
      * merges current active operation into another
      * 
      * NOT IMPLEMENTED!
@@ -156,7 +152,16 @@ public interface IDiskoApplication {
      */
     boolean createOperation();
 
-    void onOperationCreated(String id);
+    /**
+     * Handle created and active operation 
+     */
+    void onOperationCreated(String oprID, boolean current);
+
+    /**
+     * For cleanup and module handling when active operation has been finished
+     */
+    void onOperationFinished(String oprID, boolean current);
+
     
     void shutdown();
     

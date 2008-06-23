@@ -2,7 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -86,7 +86,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
         ResourceBundle personnelResources = Internationalization.getBundle(IPersonnelIf.class);
         m_propertyComboBox = new JComboBox(PersonnelType.values());
         m_propertyComboBox.setEnabled(false);
-        m_propertyComboBox.setRenderer(new SimpleListCellRenderer(personnelResources));
+        m_propertyComboBox.setRenderer(new BundleListCellRenderer(personnelResources));
         layoutComponent(2, m_resources.getString("Property.text"), m_propertyComboBox, gbc, 0);
 
         m_estimatedArrivalTextField = new JTextField();

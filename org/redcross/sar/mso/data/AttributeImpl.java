@@ -29,7 +29,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         m_class = aClass;
         m_owner = theOwner;
-        m_name = theName;
+        m_name = theName.toLowerCase();
         m_indexNo = theIndexNo;
         if (theValue != null)
         {

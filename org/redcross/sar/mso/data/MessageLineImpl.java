@@ -302,12 +302,13 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 				String unit = MsoUtils.getUnitName(getLineUnit(),false);
 
 				try {
-					String mgrs = MapUtil.getMGRSfromPosition(p);
+					String mgrs = MapUtil.getMGRSfromPosition(p,5);
 					// get zone
 					String zone = mgrs.subSequence(0, 3).toString();
 					String square = mgrs.subSequence(3, 5).toString();
-					String x = mgrs.subSequence(5, 10).toString();
-					String y = mgrs.subSequence(10, 15).toString();
+					String[] coords = MapUtil.getCoords(mgrs.subSequence(5,mgrs.length()).toString());
+					String x = coords[0];
+					String y = coords[1];
 					// get text
 					return String.format(template, unit, zone, square, x, y, DTG.CalToDTG(getOperationTime()));
 				}
@@ -325,12 +326,13 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 				if(pos != null)
 				{
 					try {
-						String mgrs = MapUtil.getMGRSfromPosition(pos);
+						String mgrs = MapUtil.getMGRSfromPosition(pos,5);
 						// get zone
 						String zone = mgrs.subSequence(0, 3).toString();
 						String square = mgrs.subSequence(3, 5).toString();
-						String x = mgrs.subSequence(5, 10).toString();
-						String y = mgrs.subSequence(10, 15).toString();
+						String[] coords = MapUtil.getCoords(mgrs.subSequence(5,mgrs.length()).toString());
+						String x = coords[0];
+						String y = coords[1];
 						// get text
 						return String.format(template, poiName, zone, square, x, y);
 					}

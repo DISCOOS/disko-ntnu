@@ -4,7 +4,9 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -19,6 +21,13 @@ public interface IMsoObjectIf
      */
     public String getObjectId();
 
+    /**
+     * Get Object creation tiome
+     *
+     * @return The Object ID
+     */
+    public Calendar getCreationTime();
+    
     /**
      * Get short descriptor of object.
      * @return Short description, default = toString(), can be overridden.
@@ -424,6 +433,9 @@ public interface IMsoObjectIf
     public interface IObjectIdIf
     {
         public String getId();
+        public Calendar getCreatedTime();
+		//public void setCreatedTime(Calendar created);	
+		//public void setCreatedTime(Date created);
     }
 
 }

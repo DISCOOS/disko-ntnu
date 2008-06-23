@@ -71,8 +71,8 @@ public interface IDiskoMap {
 	public IEnvelope getSelectionExtent() throws IOException, AutomationException;
 
 	public void setSelected(String layerName, String fieldName, Object value) throws IOException, AutomationException;
-	public void setSelected(FeatureLayer layer, String fieldName, Object value) throws IOException, AutomationException;
-	public void setSelected(FeatureLayer layer, String whereclause) throws IOException, AutomationException;	
+	public void setSelected(IFeatureLayer layer, String fieldName, Object value) throws IOException, AutomationException;
+	public void setSelected(IFeatureLayer layer, String whereclause) throws IOException, AutomationException;	
 
 	public int isSelected(IMsoObjectIf msoObj) throws AutomationException, IOException;
 	public int getSelectionCount(boolean update) throws IOException, AutomationException;	
@@ -104,7 +104,7 @@ public interface IDiskoMap {
 	
 	public IEnvelope getMsoObjectExtent(IMsoObjectIf msoObj) throws IOException, AutomationException;
 	
-	public FeatureLayer getFeatureLayer(String name) throws IOException, AutomationException;
+	public IFeatureLayer getFeatureLayer(String name) throws IOException, AutomationException;
 
 	public void refresh() throws IOException, AutomationException;
 	public void refreshGraphics(Object data, IEnvelope extent) throws IOException,  AutomationException;

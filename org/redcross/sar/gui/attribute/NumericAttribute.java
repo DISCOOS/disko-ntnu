@@ -9,6 +9,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -20,6 +21,8 @@ import org.redcross.sar.mso.data.IAttributeIf;
 public class NumericAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private Class<? extends Number> m_numericClass = Integer.class;
 	
 	public NumericAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
 		// forward
@@ -33,8 +36,9 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// set attribute
 		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
 		// apply number document
-		getTextField().setDocument(
-				new NumericDocument(maxDigits,decimalPrecision,allowNegative));		
+		getTextField().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
+		// forward
+		registerChangeListener();
 		// get value from attribute
 		load();		
 	}
@@ -49,23 +53,9 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,width,null,isEditable);
 		// apply number document
-		getTextField().setDocument(
-				new NumericDocument(maxDigits,decimalPrecision,allowNegative));
-		getTextField().getDocument().addDocumentListener(new DocumentListener() {
-
-			public void changedUpdate(DocumentEvent e) { change(); }
-
-			public void insertUpdate(DocumentEvent e) { change(); }
-
-			public void removeUpdate(DocumentEvent e) { change(); }
-			
-			private void change() {
-				if(isConsume()) return;
-				fireOnWorkChange();
-			}
-			
-		});
-		
+		getTextField().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
+		// forward
+		registerChangeListener();		
 	}
 	
 	/*==================================================================
@@ -98,17 +88,35 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	}	
 	
 	public Object getValue() {
-		String value = ((JTextField)m_component).getText();
-		return value!=null && value.length()>0? Integer.valueOf(value) : 0;
+		// as numeric class?
+		if(m_numericClass!=null) {
+			// get string
+			String value = getTextField().getText();
+			// validate
+			if(Utils.isNumeric(value, m_numericClass)) {
+				// get number in correct class
+				return Utils.parseNumeric(value, m_numericClass);
+			}
+		}
+		return null;
 	}
 	
 	public boolean setValue(Object value) {
 		// is null?
 		if(value==null) value = 0;
-		// update
-		((JTextField)m_component).setText(String.valueOf(value));
-		// success
-		return true;
+		// get number class
+		Class<? extends Number> c = Utils.getNumericClass(value);
+		// is a number?
+		if(c!=null) {
+			// save class
+			m_numericClass = c;
+			// update
+			getTextField().setText(String.valueOf(value));
+			// success
+			return true;			
+		}
+		// failure
+		return false;
 	}
 	
 	public boolean setMsoAttribute(IAttributeIf attribute) {
@@ -138,38 +146,60 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	
 	public void setMaxDigits(int digits) {
 		// set precision
-		((NumericDocument)((JTextField)m_component).getDocument()).setMaxDigits(digits); 
+		((NumericDocument)getTextField().getDocument()).setMaxDigits(digits); 
 	}
  
 	public int getMaxDigits() {
 		// get precision
-		return ((NumericDocument)((JTextField)m_component).getDocument()).getMaxDigits(); 
+		return ((NumericDocument)getTextField().getDocument()).getMaxDigits(); 
 	}
 	
 	public void setDecimalPrecision(int precision) {
 		// set precision
-		((NumericDocument)((JTextField)m_component).getDocument()).setDecimalPrecision(precision); 
+		((NumericDocument)getTextField().getDocument()).setDecimalPrecision(precision); 
 	}
  
 	public int getDecimalPrecision() {
 		// get precision
-		return ((NumericDocument)((JTextField)m_component).getDocument()).getDecimalPrecision(); 
+		return ((NumericDocument)getTextField().getDocument()).getDecimalPrecision(); 
 	}
    
 	public void setAllowNegative(boolean allow) {
 		// set flag
-		((NumericDocument)((JTextField)m_component).getDocument()).setAllowNegative(allow); 
+		((NumericDocument)getTextField().getDocument()).setAllowNegative(allow); 
 	}
  
 	public boolean getAllowNegative() {
 		// get flag
-		return ((NumericDocument)((JTextField)m_component).getDocument()).getAllowNegative(); 
+		return ((NumericDocument)getTextField().getDocument()).getAllowNegative(); 
 	}
 
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
 		getTextField().setEditable(isEditable);		
+	}
+	
+	/*==================================================================
+	 * Private methods
+	 *================================================================== 
+	 */
+	
+	private void registerChangeListener() {
+		getTextField().getDocument().addDocumentListener(new DocumentListener() {
+
+			public void changedUpdate(DocumentEvent e) { change(); }
+
+			public void insertUpdate(DocumentEvent e) { change(); }
+
+			public void removeUpdate(DocumentEvent e) { change(); }
+			
+			private void change() {
+				if(isConsume()) return;
+				fireOnWorkChange();
+			}
+			
+		});		
 	}
 	
 }

@@ -1,7 +1,6 @@
 package org.redcross.sar.wp.logistics;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
@@ -108,23 +107,6 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 		return getBundleText("LOGISTICS");
 	}
 	
-    /* (non-Javadoc)
-     * @see com.geodata.engine.disko.task.DiskoAp#cancel()
-     */
-    public void cancel()
-    {
-        // TODO Auto-generated method stub
-    }
-
-    /* (non-Javadoc)
-     * @see com.geodata.engine.disko.task.DiskoAp#finish()
-     */
-    public void finish()
-    {
-        // TODO Auto-generated method stub
-    }
-
-
     private String[] options = null;
 
     public boolean confirmTransfer(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus aTargetStatus, IUnitIf aTargetUnit)

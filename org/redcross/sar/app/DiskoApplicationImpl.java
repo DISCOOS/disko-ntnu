@@ -2,6 +2,8 @@ package org.redcross.sar.app;
 
 import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.ds.DiskoDecisionSupport;
+import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -235,6 +237,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			this.addWindowListener(this);
 			// initialize work pool to ensure that this is done on the EDT
 			DiskoWorkPool.getInstance();
+			// initialize decision support to ensure that this is done on the EDT
+			DiskoDecisionSupport.getInstance();
 			// show me
 			this.setVisible(true);
 			//initiate modeldriver
@@ -575,9 +579,38 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		}
 	}
 
-	public void operationFinished()
+	public void onOperationCreated(final String oprId, final boolean current)
 	{
-
+		
+		// only handle if current
+		if(!current) return;
+		
+		if (SwingUtilities.isEventDispatchThread()) {
+			// is waiting for this operation
+			if (waitingForNewOp) {
+				// reset flag
+				waitingForNewOp = false;
+				// notify user of new operation created?
+				if (!isLocked())
+					Utils.showMessage(String.format(bundle
+							.getString(OPERATION_CREATED_TEXT), oprId));
+				// schedule work
+				doSetActiveOperation(oprId);
+			}
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					onOperationCreated(oprId,current);
+				}
+			});
+		}
+	}
+	
+	public void onOperationFinished(final String oprID, final boolean current)
+	{
+		// only handle if current
+		if(!current) return;
+		
 		if (SwingUtilities.isEventDispatchThread()) {
 			// force finish progress
 			try {
@@ -620,7 +653,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					operationFinished();
+					onOperationFinished(oprID,current);
 				}
 			});
 		}
@@ -651,28 +684,6 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		return false;		
 	}
 
-	public void onOperationCreated(final String opId)
-	{
-		if (SwingUtilities.isEventDispatchThread()) {
-			// is waiting for this operation
-			if (waitingForNewOp) {
-				// reset flag
-				waitingForNewOp = false;
-				// notify user of new operation created?
-				if (!isLocked())
-					Utils.showMessage(String.format(bundle
-							.getString(OPERATION_CREATED_TEXT), opId));
-				// schedule work
-				doSetActiveOperation(opId);
-			}
-		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					onOperationCreated(opId);
-				}
-			});
-		}
-	}
 
 
 	public void shutdown()
@@ -774,7 +785,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Henter aksjonsliste",100,true,true);
+					"Henter aksjonsliste",100,true,true,false,0);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -890,7 +901,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		SetActiveOperation(String opId) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Kobler til aksjon " + opId,100,true,true);
+					"Kobler til aksjon " + opId,100,true,true,false,0);
 			// save
 			m_opID = opId;
 			// set loading bit
@@ -1006,7 +1017,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Aktiverer rolle",100,true,true);
+					"Aktiverer rolle",100,true,true,false,0);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;
@@ -1039,6 +1050,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				else {
 					// get role from list
 					currentRole = roles.get(loginRole);
+					// activate current module
+					currentRole.selectDiskoWpModule(currentRole.getCurrentDiskoWpModule());
 				}
 				
 				// success

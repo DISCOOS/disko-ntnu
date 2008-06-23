@@ -5,8 +5,6 @@ package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
 
-import javax.swing.JFormattedTextField;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;

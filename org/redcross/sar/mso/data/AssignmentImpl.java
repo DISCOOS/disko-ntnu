@@ -464,6 +464,21 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return getMessageLineTimeAttribute(IMessageLineIf.MessageLineType.STARTED);
     }
 
+    public Calendar getTimeFinished()
+    {
+        return getMessageLineTime(IMessageLineIf.MessageLineType.COMPLETED);
+    }
+
+    public IMsoModelIf.ModificationState getTimeFinishedState()
+    {
+        return getMessageLineTimeState(IMessageLineIf.MessageLineType.COMPLETED);
+    }
+
+    public IAttributeIf.IMsoCalendarIf getTimeFinishedAttribute()
+    {
+        return getMessageLineTimeAttribute(IMessageLineIf.MessageLineType.COMPLETED);
+    }
+    
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/

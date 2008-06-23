@@ -28,10 +28,36 @@ public interface IDiskoWork<T> extends Runnable {
 	
 	public WorkOnThreadType getWorkOnThread();
 	
+	public void prepare();
+	
 	public T doWork();
 	
 	public void done();
 	
 	public T get();
+	
+	public long getID();
+	
+	public void setID(long id);
+	
+	public boolean isLoop();
+	
+	public long getDutyCycle();		
+	
+	public double getUtilization();
+	
+	public long getMaxWorkTime();		
+	
+	public long getAverageWorkTime();
+	
+	public void logWorkTime(long delay);
+	
+	public boolean suspend();
+	
+	public boolean resume();
+	
+	public boolean stop();
+	
+	public boolean isWorking();
 	
 }

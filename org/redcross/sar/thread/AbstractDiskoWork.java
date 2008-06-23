@@ -4,6 +4,8 @@
 package org.redcross.sar.thread;
 
 import java.util.Calendar;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.SwingUtilities;
 
@@ -15,10 +17,14 @@ import org.redcross.sar.mso.MsoModelImpl;
  * @author kennetgu
  *
  */
-public abstract class AbstractDiskoWork<S> implements IDiskoWork {
+public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 
+	private final static int MAX_TIME_LOG_SIZE = 100;
+	private final static Random RANDOM = new Random(89652467667623L);
+	
 	protected S m_result = null;
 	protected long m_millisToPopup = 0;
+	protected long m_dutyCycle = 1000;		// execute doWork every second
 	protected String m_message = null;
 	protected boolean m_isModal = false;
 	protected boolean m_showProgress = false;
@@ -26,12 +32,18 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	protected boolean m_suspend = false;
 	protected boolean m_wasLocked = false;
 	protected boolean m_isNotified = false;
+	protected boolean m_isLoop = false;
+	protected boolean m_isThreadSafe = false;
+	protected DiskoWorkPool m_workPool = null;
 	protected DiskoProgressMonitor m_monitor = null;
 	protected WorkOnThreadType m_workOnThread = null;	
-	
+
+	private long m_id = 0;
 	private long m_tic = 0;
 	
 	protected DiskoGlassPane m_glassPane;
+	
+	protected final ConcurrentLinkedQueue<Long> m_workTimeLog = new ConcurrentLinkedQueue<Long>(); 
 	
 	/**
 	 * Constructor
@@ -39,11 +51,13 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	public AbstractDiskoWork(boolean isThreadSafe, 
 			boolean isModal, WorkOnThreadType workOnThread, 
 			String message, long millisToPopup, 
-			boolean showProgress, boolean suspend) throws Exception {
+			boolean showProgress, boolean suspend, 
+			boolean isLoop, int dutyCycle) throws Exception {
+		
 		// validate parameters
 		if(!isThreadSafe && m_workOnThread == 
 			WorkOnThreadType.WORK_ON_NEW) {
-			// Only work that do not invoke GUI or Disko model methods
+			// Only work that do not invoke Swing or MSO model methods
 			// is safe to invoke on a new thread
 			throw new IllegalArgumentException("Only thread safe work " +
 					"can be executed on a new thread");
@@ -51,31 +65,54 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		// progress dialog message
 		m_message = message;						
 		// instructs the work pool to schedule 
-		// on spesified thread type
+		// on specified thread type
 		m_workOnThread = workOnThread;
 		// instructs the work pool do do the work 
 		// application modal: no user input is accepted
-		m_isModal = isModal || !isThreadSafe();
-		// number of milli seconds before 
+		m_isModal = isModal || !isThreadSafe;
+		// set safe flag
+		m_isThreadSafe = isThreadSafe;
+		// number of milliseconds before 
 		// the progress dialog is shown
 		m_millisToPopup = millisToPopup;
 		// instructs the progress monitor to show the progress
 		// dialog to be shown when millisToPopup has expired
 		m_showProgress = showProgress;
+		// get work pool
+		m_workPool = DiskoWorkPool.getInstance();
 		// get monitor
 		m_monitor = DiskoProgressMonitor.getInstance();
 		// set suspend flag
 		m_suspend = suspend;
+		// set loop mode
+		m_isLoop = isLoop;
+		// save duty cycle
+		m_dutyCycle = dutyCycle;
 
+	}
+	
+	/**
+	 * Unique work id assigned by DiskoWorkPool 
+	 */
+	public long getID() {
+		// TODO Auto-generated method stub
+		return m_id;
 	}
 
 	/**
-	 * Used to indicate that work does not interact with 
-	 * the mso model at all. 
+	 * Unique work id assigned by DiskoWorkPool 
+	 */
+	public void setID(long id) {
+		if(m_id==0) m_id = id;		
+	}
+	
+	/**
+	 * If true, indicates that work does access either Swing components 
+	 * (which are not threading safe) nor the MSO model (which is 
+	 * not threading safe).
 	 */
 	public boolean isThreadSafe() {
-		return (m_workOnThread != 
-			WorkOnThreadType.WORK_ON_NEW);
+		return m_isThreadSafe;
 	}	
 	
 	/**
@@ -94,7 +131,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	}
 
 	/**
-	 * The time in milli seconds to wait before progress
+	 * The time in milliseconds to wait before progress
 	 * dialog is shown
 	 */
 	public long getmillisToPopup() {
@@ -117,6 +154,26 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 	}
 	
 	/** 
+	 * If true, <code>doWork()</code> should be executed 
+	 * in loops (work cycles) with given <code>getDutyCycle()</code>.<p>
+	 * If work is scheduled on DiskoWorkPool, the work cycle can be
+	 * executed, suspended, resumed and stopped automatically. 
+	 */
+	public boolean isLoop() {
+		return m_isLoop;
+	}
+
+	/** 
+	 * The value return indicates the requested duty cycle (time between
+	 * two calls to <code>doWork()</code>) for the work cycle.<p>
+	 * If work is scheduled on DiskoWorkPool, the work cycle can be
+	 * executed, suspended, resumed and stopped automatically. 
+	 */
+	public long getDutyCycle() {
+		return m_dutyCycle;
+	}
+		
+	/** 
 	 * Can only show progress if work is executed on 
 	 * another thread then the event dispatch thread (EDT)  
 	 */
@@ -124,16 +181,78 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		return !SwingUtilities.isEventDispatchThread();
 	}
 	
-	/** 
-	 * Implement the work in this method. 
-	 */
-	public abstract S doWork();
-	
 	/**
-	 * Implements the run() method of interface Runnable
-	 * This method is called by the DiskoWorkPool
+	 * Returns average work time
 	 */
-	public void run() {
+	public synchronized long getAverageWorkTime() {
+		long sum = 0;
+		// get count
+		int count = m_workTimeLog.size();
+		// can calculate?
+		if(count>0) {
+			// loop over all
+			for(long it : m_workTimeLog) {
+				sum += it;
+			}
+			// calculate average
+			return sum/count;
+		}
+		return 0;
+	}
+
+	/**
+	 * Returns maximum work time
+	 */
+	public synchronized long getMaxWorkTime() {
+		long max = 0;
+		// loop over all
+		for(long it : m_workTimeLog) {
+			max = Math.max(max,it);
+		}
+		// finished
+		return max;
+	}
+
+	/**
+	 * Returns work time utilization as the ratio of average work time on duty cycle
+	 */
+	public synchronized double getUtilization() {
+		// can calculate?
+		if(getDutyCycle()>0)
+			return ((double)getAverageWorkTime())/((double)getDutyCycle());
+		else
+			return -1;
+	}
+
+	@Override
+	public synchronized void logWorkTime(long delay) {
+		// remove a random number from log?
+		if(m_workTimeLog.size()==MAX_TIME_LOG_SIZE) {
+			// get a random index
+			int i = RANDOM.nextInt(MAX_TIME_LOG_SIZE-1);
+			// remove
+			m_workTimeLog.remove(i);
+		}
+		// add new number to log
+		m_workTimeLog.add(delay);		
+	}
+
+	
+	
+	/** 
+	 * Prepares application to execute work safely.<p>
+	 * It is called automatically from <code>run()</code> if 
+	 * <code>doWork()</code> is executed once (<code>isLoop()</code> 
+	 * is <code>false</code>).<p>
+	 * <b>IMPORTANT</b><p>
+	 * 1. If work is executed more than once, <code>prepare()</code> 
+	 * must be called <b>before</b> first invocation of <code>run()</code>.<p>
+	 * 2. If work is executed more than once, <code>done()</code> must
+	 * be called when work is finished.<p>
+	 * If you schedule the work on the DiskoWorkPool, DiskoWorkPool will do all
+	 * for you.
+	 */
+	public void prepare() {
 		// get flag
 		boolean canShowProgress = canShowProgess();
 		// show progress?
@@ -147,11 +266,41 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 			m_isNotified = true;
 		}
 		m_tic = Calendar.getInstance().getTimeInMillis();
-		// prevent user input (keeps work pool concurrent)
-		m_wasLocked = Utils.getApp().setLocked(true);
+		// prevent user input? (keeps work pool concurrent)
+		if(!WorkOnThreadType.WORK_ON_NEW.equals(m_workOnThread))
+			m_wasLocked = Utils.getApp().setLocked(true);
 		// increment suspend counter?
 		if(m_suspend)
-			MsoModelImpl.getInstance().suspendClientUpdate();
+			MsoModelImpl.getInstance().suspendClientUpdate();		
+	}
+
+	/**
+	 * This method executes work safely in application by ensuring that 
+	 * unsafe work (Swing and MSO model) is executed concurrently within 
+	 * the Swing and MSO Model limitations.<p>
+	 * This method may call all of the following methods:<p>
+	 * <code>prepare()</code>, <code>doWork()</code>, and <code>done()</code>.<p>
+	 * This depends on which thread <code>run()</code> is invoked on, and 
+	 * if the work should be executed more then once (<code>isLoop()</code> 
+	 * is <code>true</code>).<p>
+	 * Method <code>prepare()</code> is only called if <code>doWork()</code> 
+	 * is executed once (<code>isLoop()</code> is <code>false</code>).<p>
+	 * Method <code>done()</code> is only called if <code>doWork()</code> 
+	 * is executed once and <code>run()</code> was invoking on Event 
+	 * Dispatch Thread (EDT).<p>
+	 * <b>IMPORTANT</b><p> 
+	 * 1. If work is executed more than once, <code>prepare()</code> 
+	 * must be called <b>before</b> first invocation of <code>run()</code>.<p>
+	 * 2. If work is executed more than once, <code>done()</code> must
+	 * be called when work is finished.<p>
+	 * If you schedule the work on the DiskoWorkPool, DiskoWorkPool will do all
+	 * for you.
+	 */	
+	public void run() {
+
+		// forward?
+		if(!m_isLoop) prepare();
+		
 		// catch any errors
 		try {
 			// forward
@@ -160,21 +309,40 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		
 		// is on event dispatch thread?
-		if(SwingUtilities.isEventDispatchThread())
-			done();
+		if(SwingUtilities.isEventDispatchThread()) {
+			if(!m_isLoop) done();
+		}
 	}
 	
 	/** 
-	 * Is called by the DiskoWorkPool instance if scheduled. If not scheduled
-	 * 
+	 * Override and implement the work in this method. 
+	 */
+	public abstract S doWork();
+	
+	/** 
+	 * This method is called after work is finished.<p> 
+	 * It is called automatically by the DiskoWorkPool instance if scheduled, or by 
+	 * <code>run()</code> if <code>doWork()</code> is executed once 
+	 * (<code>isLoop()</code> is <code>true</code>) and <code>run()</code> 
+	 * was invoking on Event Dispatch Thread (EDT).<p>
+	 * <b>IMPORTANT</b><p> 
+	 * 1. If work is executed more than once, <code>prepare()</code> 
+	 * must be called <b>before</b> first invocation of <code>run()</code>.<p>
+	 * 2. If work is executed more than once, <code>done()</code> must
+	 * be called when work is finished.<p>
+	 * If you schedule the work on the DiskoWorkPool, DiskoWorkPool will do all
+	 * for you.<p>
 	 */
 	public void done() {
 		// decrement resume suspend counter?
 		if(m_suspend)
 			MsoModelImpl.getInstance().resumeClientUpdate();
-		// resume previous state
-		Utils.getApp().setLocked(m_wasLocked);
+		// resume previous state?
+		// prevent user input? (keeps work pool concurrent)
+		if(!WorkOnThreadType.WORK_ON_NEW.equals(m_workOnThread))
+			Utils.getApp().setLocked(m_wasLocked);
 		// notify progress monitor ?
 		if(m_isNotified) {
 			// notify progress monitor
@@ -203,4 +371,22 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork {
 		// return the result
 		return result;
 	}
+
+	public boolean resume() {
+		return m_workPool.resume(this);
+	}
+
+	public boolean suspend() {
+		return m_workPool.suspend(this);
+	}
+	
+	public boolean stop() {
+		return m_workPool.stop(this);
+	}
+	
+	public boolean isWorking() {
+		return m_workPool.isWorking(this);
+	}
+	
+	
 }

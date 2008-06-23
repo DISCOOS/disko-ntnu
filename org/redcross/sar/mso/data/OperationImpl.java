@@ -7,6 +7,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 
+import java.util.Calendar;
 import java.util.Collection;
 
 public class OperationImpl extends AbstractMsoObject implements IOperationIf
@@ -147,4 +148,5 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         MsoModelImpl.getInstance().resumeClientUpdate();
         return true;
     }
+
 }

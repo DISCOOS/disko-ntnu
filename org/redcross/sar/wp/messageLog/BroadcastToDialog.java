@@ -339,6 +339,11 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 					m_commandPostButton.setSelected(true);
 					m_dogButton.setSelected(true);
 					m_vehicleButton.setSelected(true);
+					
+					// Refresh list of communicators
+					updateCommunicatorList();
+					
+					
 				}
 				else
 				{
@@ -598,6 +603,16 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		this.setVisible(true);		
 		m_listArea.revalidate();
 
+		// Set unit type filter buttons
+		m_allButton.setSelected(false);
+		m_noneButton.setSelected(false);
+		m_teamButton.setSelected(false);
+		m_aircraftButton.setSelected(false);
+		m_boatButton.setSelected(false);
+		m_commandPostButton.setSelected(false);
+		m_dogButton.setSelected(false);
+		m_vehicleButton.setSelected(false);
+		
 		// Refresh list of communicators
 		updateCommunicatorList();
 

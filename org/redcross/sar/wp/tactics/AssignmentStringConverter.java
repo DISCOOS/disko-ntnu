@@ -3,10 +3,10 @@ package org.redcross.sar.wp.tactics;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.mso.DTG;
 
 public class AssignmentStringConverter extends TableStringConverter {
 
@@ -29,4 +29,5 @@ public class AssignmentStringConverter extends TableStringConverter {
 		else
 			return null;
 	}
+	
 }

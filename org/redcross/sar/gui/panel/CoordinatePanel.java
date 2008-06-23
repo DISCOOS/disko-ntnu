@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 public class CoordinatePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
+	private static final String NULL_POSITION = "Ingen posisjon";
 	
 	private static final String[] zones = {"32V","33V","32W","33W","34W","35W","36W"};  //  @jve:decl-index=0:
 	private static final String[] squares = {"KR","KQ","KP","KN","KM","KL",
@@ -84,7 +85,7 @@ public class CoordinatePanel extends JPanel {
 	private JPanel m_positionPanel = null;
 	
 	private int workCount = 0;	
-	private boolean isInvalid = false;
+	private boolean isInvalid = true;
 	
 	private Position current = null;
 	
@@ -168,11 +169,15 @@ public class CoordinatePanel extends JPanel {
 				// is empty?
 				if (text.length() > 0) { 
 					switch(getFormat()) {
-					case 1: // MGRS
+					case 1: // MGRS						
 						String zone = text.subSequence(0, 3).toString();
 						String square = text.subSequence(3, 5).toString();
-						String x = text.subSequence(5, 10).toString();
-						String y = text.subSequence(10, 15).toString();
+						// get coordinates
+						String coords[] = MapUtil.getCoords(text.subSequence(5, text.length()).toString());						
+						// get x and y coordinates
+						String x = coords[0];
+						String y = coords[1];
+						
 						getZoneCombo().setSelectedItem(zone);
 						getSquareCombo().setSelectedItem(square);
 						getLatitudeText().setValue(x);
@@ -181,8 +186,12 @@ public class CoordinatePanel extends JPanel {
 						break;
 					case 2: // UTM
 						zone = text.subSequence(0, 3).toString();
-						x = text.subSequence(3, 10).toString();
-						y = text.subSequence(11, 18).toString();
+						// get coordinates
+						coords = MapUtil.getCoords(text.subSequence(3, text.length()).toString());						
+						// get x and y coordinates
+						x = coords[0];
+						y = coords[1];
+						
 						getZoneCombo().setSelectedItem(zone);
 						getLatitudeText().setValue(x);
 						getLongetudeText().setValue(y);
@@ -255,30 +264,40 @@ public class CoordinatePanel extends JPanel {
 	 * @return String
 	 */
 	public String getText() {
-		String text = null;
-		switch(getFormat()) {
-		case 1: // MGRS
-			text = (getZoneCombo().getSelectedItem()==null ? "" : 
+		
+		// initalize
+		String text = NULL_POSITION;
+		
+		// is allowed?
+		if(isPositionValid()) { 
+			
+			// translate to format
+			switch(getFormat()) {
+			case 1: // MGRS
+				text = (getZoneCombo().getSelectedItem()==null ? "" : 
+						getZoneCombo().getSelectedItem().toString()) +
+						(getSquareCombo().getSelectedItem()==null ? "" : 
+							getSquareCombo().getSelectedItem().toString()) +
+					getLatitudeText().getText() + getLongetudeText().getText();
+				break;	
+			case 2:	// UTM
+				text = (getZoneCombo().getSelectedItem()==null ? "" : 
 					getZoneCombo().getSelectedItem().toString()) +
-					(getSquareCombo().getSelectedItem()==null ? "" : 
-						getSquareCombo().getSelectedItem().toString()) +
-				getLatitudeText().getText() + getLongetudeText().getText();
-			break;	
-		case 2:	// UTM
-			text = (getZoneCombo().getSelectedItem()==null ? "" : 
-				getZoneCombo().getSelectedItem().toString()) +
-				getLatitudeText().getText() + getLongetudeText().getText();
-			break;	
-		case 3: // DES
-			text = getLatitudeText().getText() + getLongetudeText().getText();
-			break;	
-		case 4: // DEM
-			text = getLatitudeText().getText() + getLongetudeText().getText();
-			break;	
-		case 5: // DEG
-			text = getLatitudeText().getText() + getLongetudeText().getText();
-			break;	
+					getLatitudeText().getText() + getLongetudeText().getText();
+				break;	
+			case 3: // DES
+				text = getLatitudeText().getText() + getLongetudeText().getText();
+				break;	
+			case 4: // DEM
+				text = getLatitudeText().getText() + getLongetudeText().getText();
+				break;	
+			case 5: // DEG
+				text = getLatitudeText().getText() + getLongetudeText().getText();
+				break;	
+			}
 		}
+		
+		// finished
 		return text;
 	}
 	
@@ -534,8 +553,8 @@ public class CoordinatePanel extends JPanel {
 	public void setFormat(int format) {
 		// consume?
 		if(isWorking()) return;
-		// save format
-		m_format = format;
+		// limit format to legal range of [1,5]
+		m_format = Math.min(5,Math.max(1,format));
 		// get formaters
 		switch(format) {
 		case 1: // MGRS
@@ -576,10 +595,10 @@ public class CoordinatePanel extends JPanel {
 	}
 
 	public Point getPoint(ISpatialReference srs) {
+		
 		// initialize
 		Position p = null;
-		// assume valid position
-		setInvalidPosiiton(false);
+
 		// get text
 		String text = getText();		
 
@@ -604,7 +623,7 @@ public class CoordinatePanel extends JPanel {
 			return p!=null ? MapUtil.getEsriPoint(p, srs) : null;
 		}
 		catch (Exception e) {
-			setInvalidPosiiton(true);
+			// consume;
 		}
 
 		return null;
@@ -656,7 +675,7 @@ public class CoordinatePanel extends JPanel {
 			try {
 				switch(getFormat()) {
 				case 1: // MGRS
-					setText(MapUtil.getMGRSfromPosition(p));
+					setText(MapUtil.getMGRSfromPosition(p,5));
 					break;
 				case 2: // UTM
 					setText(MapUtil.getUTMfromPosition(p));
@@ -694,7 +713,7 @@ public class CoordinatePanel extends JPanel {
 			try {
 				switch(getFormat()) {
 				case 1: // MGRS
-					setText(MapUtil.getMGRSfromPoint(p));
+					setText(MapUtil.getMGRSfromPoint(p,5));
 					break;
 				case 2: // UTM
 					setText(MapUtil.getUTMfromPoint(p));

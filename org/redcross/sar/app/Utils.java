@@ -7,8 +7,10 @@ import java.awt.Window;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -226,4 +228,161 @@ public class Utils {
 		return false;
 	}
 	
+    public static boolean isNumeric(String str)
+    {
+    	return isNumeric(str,Number.class);
+    }
+    
+    public static Class<? extends Number> getNumericClass(Object value)
+    {
+    	if(value instanceof Number) {
+    		return ((Number)value).getClass();
+    	}
+    	else if(value instanceof String) {
+    		String str = value.toString();
+        	if(isNumeric(str,Integer.class))
+        		return Integer.class;
+        	else if(isNumeric(str,Double.class))
+        		return Double.class;
+        	else if(isNumeric(str,Long.class))
+        		return Long.class;
+        	else if(isNumeric(str,Float.class))
+        		return Float.class;
+        	if(isNumeric(str,Byte.class))
+        		return Byte.class;
+        	else if(isNumeric(str,Short.class))
+        		return Short.class;
+        	
+    	}
+    	return null;
+    }
+    
+    
+    public static boolean isNumeric(String str, Class<? extends Number> c)
+    {
+        try
+        {
+            if (c.equals(Number.class))
+            {
+            	if(isNumeric(str,Integer.class))
+            		return true;
+            	else if(isNumeric(str,Double.class))
+            		return true;
+            	else if(isNumeric(str,Long.class))
+            		return true;
+            	else if(isNumeric(str,Float.class))
+            		return true;
+            	if(isNumeric(str,Byte.class))
+            		return true;
+            	else if(isNumeric(str,Short.class))
+            		return true;
+            	
+                return false;
+                
+            }
+            else if (c.equals(Integer.class))
+            {
+                Integer.parseInt(str);
+            }
+            else if (c.equals(Double.class))
+            {
+            	Double.parseDouble(str);
+            }
+            else if (c.equals(Long.class))
+            {
+                Long.parseLong(str);
+            }
+            else if (c.equals(Float.class))
+            {
+                Float.parseFloat(str);
+            }
+            else if (c.equals(Byte.class))
+            {
+                Byte.parseByte(str);
+            }
+            else if (c.equals(Short.class))
+            {
+                Short.parseShort(str);
+            }
+            else {
+            	return false;
+            }
+        }
+        catch (NumberFormatException nfe)
+        {
+            return false;
+        }
+ 
+        return true;
+    }
+
+    public static Object parseNumeric(String str)
+    {
+    	return parseNumeric(str,Number.class);
+    }
+    
+    public static Object parseNumeric(String str, Class<? extends Number> c)
+    {
+        try
+        {
+            if (c.equals(Number.class))
+            {
+            	if(isNumeric(str,Integer.class))
+            		return parseNumeric(str,Integer.class);
+            	else if(isNumeric(str,Double.class))
+            		return parseNumeric(str,Double.class);
+            	else if(isNumeric(str,Long.class))
+            		return parseNumeric(str,Long.class);
+            	else if(isNumeric(str,Float.class))
+            		return parseNumeric(str,Float.class);
+            	if(isNumeric(str,Byte.class))
+            		return parseNumeric(str,Byte.class);
+            	else if(isNumeric(str,Short.class))
+            		return parseNumeric(str,Short.class);
+            	
+            }
+            else if (c.equals(Byte.class))
+            {
+                return Byte.parseByte(str);
+            }
+            else if (c.equals(Double.class))
+            {
+            	return Double.parseDouble(str);
+            }
+            else if (c.equals(Float.class))
+            {
+            	return Float.parseFloat(str);
+            }
+            else if (c.equals(Integer.class))
+            {
+            	return Integer.parseInt(str);
+            }
+            else if (c.equals(Long.class))
+            {
+            	return Long.parseLong(str);
+            }
+            else if (c.equals(Short.class))
+            {
+            	return Short.parseShort(str);
+            }
+        }
+        catch (NumberFormatException nfe)
+        {
+            return null;
+        }
+ 
+        return null;
+    }
+    
+	public static String getTime(int seconds) {
+		int hours = seconds / 3600;
+		seconds = seconds % 3600;
+		int minutes = seconds / 60;
+		seconds = seconds % 60;
+		//GregorianCalendar date = new GregorianCalendar(1900,1,1,hours,minutes,seconds);
+		//SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+		//return formatter.format(date.getTime());
+		return hours + ":" + minutes + ":" + seconds; // + "s"; 
+	}    
+    
 }

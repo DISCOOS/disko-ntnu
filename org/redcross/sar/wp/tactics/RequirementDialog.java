@@ -22,7 +22,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -271,7 +271,7 @@ public class RequirementDialog extends DefaultDialog {
 				}
 				priorityCombo.fill(model);
 				JComboBox cb = (JComboBox)priorityCombo.getComponent();
-				cb.setRenderer(new SimpleListCellRenderer());
+				cb.setRenderer(new BundleListCellRenderer());
 				cb.setSelectedIndex(0);
 
 			} catch (java.lang.Throwable e) {

@@ -82,13 +82,17 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute();
 
-//    public void setTimeAssigned(Calendar aTimeAssigned);
-
     public Calendar getTimeAssigned();
 
     public IMsoModelIf.ModificationState getTimeAssignedState();
 
     public IAttributeIf.IMsoCalendarIf getTimeAssignedAttribute();
+
+    public Calendar getTimeStarted();
+
+    public IMsoModelIf.ModificationState getTimeStartedState();
+
+    public IAttributeIf.IMsoCalendarIf getTimeStartedAttribute();
 
     public void setTimeEstimatedFinished(Calendar aTimeEstimatedFinished);
 
@@ -98,14 +102,12 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute();
 
-//    public void setTimeStarted(Calendar aTimeStarted);
+    public Calendar getTimeFinished();
 
-    public Calendar getTimeStarted();
+    public IMsoModelIf.ModificationState getTimeFinishedState();
 
-    public IMsoModelIf.ModificationState getTimeStartedState();
-
-    public IAttributeIf.IMsoCalendarIf getTimeStartedAttribute();
-
+    public IAttributeIf.IMsoCalendarIf getTimeFinishedAttribute();
+    
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
@@ -194,7 +196,6 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     int getTypenr();
 
-    //    public static final EnumSet<AssignmentStatus> CAN_START_SET = EnumSet.of(AssignmentStatus.ALLOCATED, AssignmentStatus.ASSIGNED);
     public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ASSIGNED, AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> FINISHED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED);
     public static final EnumSet<AssignmentStatus> FINISHED_AND_REPORTED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED, AssignmentStatus.REPORTED);

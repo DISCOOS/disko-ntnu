@@ -141,21 +141,6 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		}
 	}
 
-	/*
-	public void handleMsoUpdateEvent(Update e)
-	{
-		// Rebuild list
-		m_units.clear();                                                         
-		// todo use linked list directly
-        ICmdPostIf cmdPost = m_wpModule.getCmdPost();        
-        if(cmdPost!=null)	{
-	        IUnitListIf allUnits = cmdPost.getUnitList();
-			m_units.addAll(allUnits.selectItems(m_unitSelector, m_unitComparator));
-        }
-		fireTableDataChanged();
-	}
-	*/
-	
 	private void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
 		IPersonnelIf msoPersonnel = (IPersonnelIf)msoObj; 
 		// add?        
@@ -180,16 +165,6 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
         }
 	}
 	
-	/*
-	public void handleMsoUpdateEvent(Update e)
-	{
-		IPersonnelListIf allPersonnel = m_wpModule.getCmdPost().getAttendanceList();
-		m_persons.clear();
-		m_persons.addAll(allPersonnel.selectItems(m_activePersonnelSelector, m_personnelComparator));
-		fireTableDataChanged();
-	}
-	*/
-
 	EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL);
 	
 	/**

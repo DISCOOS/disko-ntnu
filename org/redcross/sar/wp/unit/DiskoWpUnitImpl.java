@@ -6,9 +6,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.Icon;
@@ -23,8 +21,6 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
@@ -39,7 +35,6 @@ import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -50,9 +45,6 @@ import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
-
-import com.esri.arcgis.geometry.IEnvelope;
-import com.esri.arcgis.interop.AutomationException;
 
 /**
  * Implementation of the Unit work process
@@ -162,41 +154,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_bottomMessageLabel.setHorizontalAlignment(SwingUtilities.CENTER);
 		bottomMessagePanel.add(m_bottomMessageLabel,BorderLayout.CENTER);
 		m_bottomPanel.add(bottomMessagePanel, MESSAGE_VIEW_ID);
-		
-		
+				
 		// Overview panels
 		m_overviewTabPane = new JTabbedPane();
-		
-		/*
-		m_overviewTabPane.addChangeListener(new ChangeListener()
-		{
-			public void stateChanged(ChangeEvent ce)
-			{
-				switch(m_overviewTabPane.getSelectedIndex())
-				{
-				case 0:
-					// get unit
-					IUnitIf unit = m_unitDetailsLeftPanel.getUnit();
-					// nothing selected?  
-					if(!m_newPersonnel)
-					{
-						showSelectedPersonnel();
-					}
-					break;
-				case 1:
-					if(!m_newUnit)
-					{
-						showSelectedUnit();
-					}
-					break;
-				case 2:
-					showSelectedCallOut();
-					break;
-				}
-					
-			}
-		});
-		*/
 		
 		// Set up splitters
 		JSplitPane horSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -266,10 +226,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(dim.width * 3 + 20);
 		column.setMaxWidth(dim.width * 3 + 20);
 	    
-		//m_personnelOverviewTable.setTableHeader(null);
-		
 		JScrollPane personnelOverviewScrollPane = new JScrollPane(m_personnelOverviewTable);
-		m_overviewTabPane.addTab(getBundleText("Personnel.text"), personnelOverviewScrollPane);
+		m_overviewTabPane.addTab(getBundleText("Personnel.text"), 
+				DiskoIconFactory.getIcon("GENERAL.PERSONNEL", "32x32"), personnelOverviewScrollPane);
 		
 		// Unit
 		UnitOverviewTableModel unitModel = new UnitOverviewTableModel(this);
@@ -293,7 +252,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_unitOverviewTable.setTableHeader(null);
 
 		JScrollPane unitOverviewScrollPane = new JScrollPane(m_unitOverviewTable);
-		m_overviewTabPane.addTab(getBundleText("Unit.text"), unitOverviewScrollPane);
+		m_overviewTabPane.addTab(getBundleText("Unit.text"), 
+				DiskoIconFactory.getIcon("GENERAL.UNIT", "32x32"), unitOverviewScrollPane);
 		
 		// Call-out
 		CalloutOverviewTableModel calloutModel = new CalloutOverviewTableModel(this);
@@ -309,7 +269,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_calloutOverviewTable.setTableHeader(null);
 		
 		JScrollPane OverviewScrollPane = new JScrollPane(m_calloutOverviewTable);
-		m_overviewTabPane.addTab(getBundleText("CallOut.text"), OverviewScrollPane);
+		m_overviewTabPane.addTab(getBundleText("CallOut.text"), 
+				DiskoIconFactory.getIcon("GENERAL.CALLOUT", "32x32"), OverviewScrollPane);
 	}
 	
 	private void initButtons()

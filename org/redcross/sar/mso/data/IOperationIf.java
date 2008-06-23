@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf;
 
+import java.util.Calendar;
 import java.util.Collection;
 
 /**

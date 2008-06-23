@@ -1,17 +1,21 @@
-/**
- * 
- */
 package org.redcross.sar.gui.attribute;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JFormattedTextField;
 import javax.swing.JList;
-import javax.swing.ListModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
+import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ListSelectorDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.ListSelectorPanel;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 
@@ -22,13 +26,19 @@ import org.redcross.sar.mso.data.IAttributeIf;
 public class EnumAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private Enum<?> m_value = null;
+	private Enum<?>[] m_values = null;
+	private ListSelectorPanel m_selectorPanel = null;
+	private ListSelectorDialog m_selectorDialog = null;
 
-	public EnumAttribute(AttributeImpl.MsoEnum attribute, String caption, int width, boolean isEditable) {
+	
+	public EnumAttribute(AttributeImpl.MsoEnum<?> attribute, String caption, int width, boolean isEditable) {
 		// forward
 		this(attribute,caption,width,getAllEnumValues(attribute),isEditable);						
 	}
 	
-	public EnumAttribute(IAttributeIf attribute, String caption, int width, Enum[] values, boolean isEditable) {
+	public EnumAttribute(IAttributeIf<?> attribute, String caption, int width, Enum<?>[] values, boolean isEditable) {
 		// forward
 		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
@@ -37,44 +47,40 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		setValues(values);	
 		// get value from attribute
 		load();		
+		// forward
+		initalizeEdit();
 	}
 	
-	public EnumAttribute(String name, String caption, int width, Enum value, boolean isEditable) {
+	public EnumAttribute(String name, String caption, int width, Enum<?> value, boolean isEditable) {
 		this(name,caption,width,value,null,isEditable);
 	}
 	
-	public EnumAttribute(String name, String caption, int width, Enum value, Enum[] values, boolean isEditable) {
+	public EnumAttribute(String name, String caption, int width, Enum<?> value, Enum<?>[] values, boolean isEditable) {
 		// forward
 		super(name,caption,width,null,isEditable);
 		// fill values
 		setValues(values);	
+		// forward
+		initalizeEdit();
 	}
-				
+	
 	/*==================================================================
 	 * Public methods
 	 *================================================================== 
 	 */
-	
+
 	public Component getComponent() {
 		if(m_component==null) {
-			JList list = new JList();
-			list.setEnabled(m_isEditable);
-			list.addListSelectionListener(new ListSelectionListener() {
-
-				public void valueChanged(ListSelectionEvent e) {
-					if(isConsume()) return;
-					fireOnWorkChange();					
-				}
-				
-			});
-			
-			m_component = list;
+			JFormattedTextField field = new JFormattedTextField();
+			field.setEditable(false);
+			// save the component
+			m_component = field;			
 		}
 		return m_component;
 	}
 
-	public JList getList() {
-		return (JList)m_component;
+	public JFormattedTextField getTextField() {
+		return (JFormattedTextField)m_component;
 	}
 	
 	public void setAutoSave(boolean auto) {
@@ -85,40 +91,41 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
-	public Object getValue() {
-		return ((JList)m_component).getSelectedValue();
+	public Enum<?> getValue() {
+		return m_value;
 	}
 	
 	public boolean setValue(Object value) {
-		// get list
-		JList list = ((JList)m_component);
-		// select new item?
-		if(list.getSelectedValue()!=value) {
-			list.setSelectedValue(value,true);
+		if(value instanceof Enum) {
+			// save
+			m_value = (Enum<?>)value;
+			// get text
+			String text = DiskoEnumFactory.getText((Enum<?>)value);
+			// update
+			getTextField().setText(text);
+			// notify change?
+			if(!isConsume()) fireOnWorkChange();
+			// finished
+			return true;
 		}
-		// success
-		return true;
+		// failure
+		return false;
+	}
+
+	
+	public Enum<?>[] getValues() {
+		return m_values;
 	}
 	
-	public Enum[] getValues() {
-		// get list
-		JList list = ((JList)m_component);
-		// get current model
-		ListModel model = list.getModel();
-		Enum[] values = new Enum[model.getSize()];
-		for (int i = 0; i < model.getSize(); i++) {
-			values[i]=(Enum)model.getElementAt(i);
-		}
-		return values;
-	}
-	
-	public void setValues(Enum[] values) {
+	public void setValues(Enum<?>[] values) {
+		// prepare
+		m_values = values;
 		// get new model
 		DefaultListModel model = new DefaultListModel();
 		// get list
-		JList list = ((JList)m_component);
+		JList list = getSelectorPanel().getList();
 		// get current selected value
-		Enum current = (Enum)list.getSelectedValue();
+		Enum<?> current = (Enum<?>)list.getSelectedValue();
 		// fill new values?
 		if(values!=null) {
 			for (int i = 0; i < values.length; i++) {
@@ -163,8 +170,55 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	
 	@Override
 	public void setEditable(boolean isEditable) {
+		// forward
 		super.setEditable(isEditable);
-		getList().setEnabled(isEditable && isEnabled());		
+		// force
+		getTextField().setEditable(false);		
+	}
+	
+	/*==================================================================
+	 * Private methods
+	 *================================================================== 
+	 */
+	
+	private ListSelectorPanel getSelectorPanel() {
+		if(m_selectorPanel==null) {
+			m_selectorPanel = getSelectorDialog().getListSelectorPanel();
+		}
+		return m_selectorPanel;
+	}
+	
+	private ListSelectorDialog getSelectorDialog() {
+		if(m_selectorDialog==null) {
+			m_selectorDialog = new ListSelectorDialog(Utils.getApp().getFrame());
+		}
+		return m_selectorDialog;
+	}
+	
+	private void initalizeEdit() {
+		// initialize gui
+		setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
+		// handle actions
+		getButton().addActionListener(new ActionListener() {
+	
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getSelectorDialog().setLocationRelativeTo(getButton(), DefaultDialog.POS_WEST, false, false);
+				Enum<?> value = (Enum<?>)getSelectorDialog().select();
+				if(value!=null) {
+					setValue(value);
+				}
+				else {
+					// consume
+					setConsume(true);
+					// forward
+					setValue(getValue());
+					// resume
+					setConsume(false);
+				}
+			}
+			
+		});
 	}
 	
 	/*==================================================================
@@ -172,9 +226,15 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	private static Enum[] getAllEnumValues(AttributeImpl attribute) {
-		Class c = attribute.getClass();
-		EnumSet set = EnumSet.allOf(c);
-		return (Enum[])set.toArray();
+	@SuppressWarnings("unchecked")
+	private static Enum[] getAllEnumValues(AttributeImpl.MsoEnum attribute) {
+		Enum value = attribute.getValue();
+		if(value!=null) {
+			EnumSet set = EnumSet.allOf(value.getClass());
+			Enum[] values = new Enum[set.size()];
+			set.toArray(values);
+			return values;
+		}
+		return null;
 	}
 }

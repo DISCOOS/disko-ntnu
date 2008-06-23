@@ -481,7 +481,8 @@ public class SnapAdapter {
 		public SnapWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Oppdaterer snapping buffer",100,notify,false);
+					"Oppdaterer snapping buffer",
+					100,notify,false,false,0);
 			// prepare
 			this.extent = extent;
 			this.snapTo = snapTo;			

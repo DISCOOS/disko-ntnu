@@ -25,6 +25,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoBorder;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 public class HeaderPanel extends JPanel {
 
@@ -36,6 +37,7 @@ public class HeaderPanel extends JPanel {
 	private Insets m_insets = null;
 	private boolean m_isBorderVisible = true;
 	private Color m_borderColor = Color.GRAY;
+	private ButtonSize m_buttonSize = ButtonSize.NORMAL;
 	
 	private JPanel m_captionPanel = null;
 	private JLabel m_iconLabel = null;
@@ -53,11 +55,12 @@ public class HeaderPanel extends JPanel {
 	 * ======================================================= */
 	
 	public HeaderPanel() {
-		this("");
+		this("",ButtonSize.NORMAL);
 	}
 	
-	public HeaderPanel(String caption) {
+	public HeaderPanel(String caption, ButtonSize buttonSize) {
 		// prepare
+		m_buttonSize = buttonSize;
 		m_insets = new Insets(1,1,1,1);
 		m_actions = new HashMap<String, ActionEvent>();
 		m_actionListeners = new ArrayList<ActionListener>();
@@ -67,7 +70,7 @@ public class HeaderPanel extends JPanel {
 		// set caption
 		this.setCaptionText(caption);
 		// set height
-		this.setFixedSize();
+		this.onResize();
 		// set caption color
 		this.setCaptionColor(Color.WHITE,Color.LIGHT_GRAY);
 	}
@@ -171,7 +174,7 @@ public class HeaderPanel extends JPanel {
 	public void setCaptionIcon(Icon icon) {
 		getIconLabel().setIcon(icon);
 		setCaptionVisible();
-		setFixedSize();
+		onResize();
 	}	
 	
 	/**
@@ -190,7 +193,7 @@ public class HeaderPanel extends JPanel {
 	public void setCaptionText(String caption) {
 		getCaptionLabel().setText(caption);
 		setCaptionVisible();
-		setFixedSize();
+		onResize();
 	}	
 	
 	/**
@@ -247,17 +250,16 @@ public class HeaderPanel extends JPanel {
 	public ButtonsPanel getButtonsPanel() {
 		if (m_buttons == null) {
 			try {
-				m_buttons = new ButtonsPanel(FlowLayout.RIGHT);
+				m_buttons = new ButtonsPanel(FlowLayout.RIGHT,m_buttonSize);
 				m_buttons.setOpaque(true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return m_buttons;
-	}	
-	
+	}				
 
-	public void setFixedSize() {
+	public void onResize() {
 		Container parent = getParent();
 		if(parent != null) {
 			Insets insets = parent.getInsets();

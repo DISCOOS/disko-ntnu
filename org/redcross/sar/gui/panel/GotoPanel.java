@@ -1,10 +1,10 @@
 package org.redcross.sar.gui.panel;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 
 import org.redcross.sar.app.Utils;
@@ -14,8 +14,18 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMap.CoordinateFormat;
 import org.redcross.sar.util.mso.Position;
 
+import com.esri.arcgis.beans.map.MapBean;
+import com.esri.arcgis.carto.IActiveView;
+import com.esri.arcgis.carto.InvalidArea;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
+import com.esri.arcgis.controls.IMapControlEvents2OnAfterScreenDrawEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnMouseDownEvent;
+import com.esri.arcgis.display.IScreenDisplay;
+import com.esri.arcgis.display.RgbColor;
+import com.esri.arcgis.display.SimpleMarkerSymbol;
+import com.esri.arcgis.display.esriScreenCache;
+import com.esri.arcgis.display.esriSimpleMarkerStyle;
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.interop.AutomationException;
 
 import javax.swing.BorderFactory;
@@ -33,6 +43,7 @@ import javax.swing.event.ChangeListener;
 public class GotoPanel extends DefaultPanel {
 
 	private static final long serialVersionUID = 1L;
+	private static final double MARKER_SIZE = 12;
 	
 	private JTabbedPane m_tabbedPane = null;
 	private JPanel m_mgrsPanel = null;
@@ -43,9 +54,13 @@ public class GotoPanel extends DefaultPanel {
 	private CoordinatePanel m_coordinatePanel = null;
 	private JButton m_gotoButton = null;
 	
+	private IPoint m_p = null;
 	private IDiskoMap m_map = null;
+	protected SimpleMarkerSymbol markerSymbol = null;
 	
 	private boolean m_isAutoUpdate = false;
+	private boolean m_isCaptionUpdate = true;
+	private boolean m_isPositionMarked = false;
 	
 	/**
 	 * Constructor 
@@ -60,14 +75,56 @@ public class GotoPanel extends DefaultPanel {
 	 * Constructor 
 	 * 
 	 * @param caption
+	 * @param isAutoUpdate Update coordinate from clicks in map
 	 */
 	public GotoPanel(String caption, boolean isAutoUpdate) {
+		this(caption,isAutoUpdate,true,false,false,ButtonSize.NORMAL);
+	}
 		
+	/**
+	 * Constructor 
+	 * 
+	 * @param caption
+	 * @param isAutoUpdate Update coordinate from clicks in map
+	 * @param isAutoCaption Update caption according to selected format
+	 */
+	public GotoPanel(String caption, boolean isAutoUpdate, boolean isCaptionUpdate) {
+		this(caption,isAutoUpdate,isCaptionUpdate,false,false,ButtonSize.NORMAL);
+	}
+	
+	/**
+	 * Constructor 
+	 * 
+	 * @param caption
+	 */
+	public GotoPanel(String caption, boolean isAutoUpdate, boolean isCaptionUpdate, boolean finish, boolean cancel, ButtonSize buttonSize) {
+
 		// forward
-		super(caption,false,false);
+		super(caption,finish,cancel,buttonSize);
 		
 		// prepare
 		m_isAutoUpdate = isAutoUpdate;
+		m_isCaptionUpdate = isCaptionUpdate;
+
+		try {
+			// create the symbol to draw with
+			markerSymbol = new SimpleMarkerSymbol();
+			RgbColor markerColor = new RgbColor();
+			markerColor.setRed(255);
+			markerColor.setGreen(128);
+			markerSymbol.setColor(markerColor);
+			markerSymbol.setStyle(esriSimpleMarkerStyle.esriSMSCross);
+			markerSymbol.setSize(MARKER_SIZE);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// initialize GUI
 		initialize();
@@ -103,6 +160,27 @@ public class GotoPanel extends DefaultPanel {
 		return m_isAutoUpdate;
 	}
 
+	public void setCaptionUpdate(boolean isCaptionUpdate) {
+		// save state
+		m_isCaptionUpdate = isCaptionUpdate;
+	}
+	
+	public boolean isCaptionUpdate() {
+		return m_isCaptionUpdate;
+	}
+	
+	public void setPositionMarked(boolean isPositionMarked) {
+		// save state
+		m_isPositionMarked = isPositionMarked;
+		// update
+		refresh(true);
+	}
+	
+	public boolean isPositionMarked() {
+		return m_isPositionMarked;
+	}
+	
+	
 	/**
 	 * This method initializes m_mgrsPanel	
 	 * 	
@@ -201,6 +279,7 @@ public class GotoPanel extends DefaultPanel {
 
 					public void stateChanged(ChangeEvent e) {
 						if(!isChangeable()) return;
+						refresh(false);
 						fireOnWorkChange(e.getSource(),null);
 					}
 					
@@ -341,38 +420,121 @@ public class GotoPanel extends DefaultPanel {
 			getDEGPanel().removeAll();
 			break;
 		}
+		// initialize
+		String caption = null;
 		// set new
 		switch(format) {
 		case 1:
-			this.setCaptionText("Gå til posisjon (MGRS)");
+			caption = "Gå til posisjon (MGRS)";
 			getMGRSPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getMGRSPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 2:			
-			this.setCaptionText("Gå til posisjon (UTM)");
+			caption = "Gå til posisjon (UTM)";
 			getUTMPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getUTMPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 3:			
-			this.setCaptionText("Gå til posisjon (desimal grader)");
+			caption = "Gå til posisjon (desimal grader)";
 			getDESPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getDESPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 4:			
-			this.setCaptionText("Gå til posisjon (desimal minutter)");
+			caption = "Gå til posisjon (desimal minutter)";
 			getDEMPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getDEMPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 5:			
-			this.setCaptionText("Gå til posisjon (grad-minutt-sekund)");
+			caption = "Gå til posisjon (grad-minutt-sekund)";
 			getDEGPanel().add(getCoordinatePanel(),BorderLayout.WEST);
 			getDEGPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		}
+		if(m_isCaptionUpdate)
+			this.setCaptionText("Gå til posisjon (grad-minutt-sekund)");
+			
 		// forward
 		getCoordinatePanel().setFormat(format);
 	}
 	
+	/**
+	 * Draws the point on screen
+	 * 
+	 */
+	protected void refresh(boolean cleanup) {
+		
+		// consume?
+		if(!m_isPositionMarked) return;
+		
+		try {
+			// has map?
+			if(m_map instanceof MapBean) {
+			
+				// get point
+				IPoint p = getCoordinatePanel().getPoint(m_map.getSpatialReference());
+				
+				// draw in screen display
+				if (p != null && !p.isEmpty()) {
+					// get active view
+					IActiveView activeView = ((MapBean)m_map).getActiveView();
+					// get invalid area
+					InvalidArea invalidArea = new InvalidArea();
+					// add current?
+					if(!cleanup)
+						invalidArea.add(p);
+					if(m_p!=null)
+						invalidArea.add(m_p);
+					// invalidate
+					invalidArea.setDisplayByRef(activeView.getScreenDisplay());
+					invalidArea.invalidate((short) esriScreenCache.esriNoScreenCache);
+				}
+				// update point
+				m_p = p;
+			}
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void draw() throws IOException, AutomationException {
+		
+		// consume?
+		if(!m_isPositionMarked) return;
+		
+		// has map?
+		if(m_map instanceof MapBean) {
+		
+			// get point
+			IPoint p = getCoordinatePanel().getPoint(m_map.getSpatialReference());
+			
+			// draw in screen display
+			if (p != null && !p.isEmpty()) {
+
+				// get active view
+				IActiveView activeView = ((MapBean)m_map).getActiveView();
+				
+				// get screen display and start drawing on it
+				IScreenDisplay screenDisplay = activeView.getScreenDisplay();
+				screenDisplay.startDrawing(screenDisplay.getHDC(),(short) esriScreenCache.esriNoScreenCache);
+	
+				screenDisplay.setSymbol(markerSymbol);
+				screenDisplay.drawPoint(p);
+				
+				// notify that drawing is finished
+				screenDisplay.finishDrawing();
+				
+			}
+		}
+		
+	}
+
 	private void registerMouseListener(boolean register) {
 		try {
 			if(m_map!=null) {
@@ -391,6 +553,13 @@ public class GotoPanel extends DefaultPanel {
 
 		private static final long serialVersionUID = 1L;
 
+		@Override
+		public void onAfterScreenDraw(IMapControlEvents2OnAfterScreenDrawEvent e)
+				throws IOException, AutomationException {
+			// forward?
+			draw();
+		}
+		
 		@Override
 		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
 			SwingUtilities.invokeLater(new Runnable() {

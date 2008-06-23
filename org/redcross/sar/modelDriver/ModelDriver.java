@@ -10,6 +10,7 @@ import org.redcross.sar.mso.event.IMsoCommitListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -25,7 +26,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
     {
         int rand = m_rand.nextInt(1000);
         long time = new Date().getTime();
-        return new AbstractMsoObject.ObjectId(Long.toString(time) + "." + Integer.toString(rand));
+        return new AbstractMsoObject.ObjectId(Long.toString(time) + "." + Integer.toString(rand),null);
 
     }
 
@@ -117,6 +118,18 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
         }
 
     }
+
+	@Override
+	public boolean addModelDriverListener(IModelDriverListenerIf listener) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean removeModelDriverListener(IModelDriverListenerIf listener) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 
 }

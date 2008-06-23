@@ -93,15 +93,9 @@ public class MissionOrderReportParams {
 			poi.getAreaSequenceNumber();
 			//System.out.println(poi.getRemarks());
 			Position pos = poi.getPosition();	
-			/*Point p = null;
-			int x = 0;
-			int y = 0;*/
+
 			try{
-				//p = MapUtil.getEsriPoint(pos, srs);
-				mgrs = MapUtil.formatMGRS(MapUtil.getMGRSfromPosition(pos),3);
-				//System.out.println("Posisjon: x = " + p.getX() + ", y = " + p.getY() + ". mgrs = " + mgrs);
-				//x = (int) p.getX();
-				//y = (int) p.getY();
+				mgrs = MapUtil.formatMGRS(MapUtil.getMGRSfromPosition(pos,5),3,5,true);
 			}catch(Exception e){
 				e.printStackTrace();
 			}			

@@ -23,6 +23,7 @@ import javax.swing.border.Border;
 import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.tool.IDiskoTool;
 
 public class BaseToolPanel extends AbstractToolPanel {
@@ -130,8 +131,8 @@ public class BaseToolPanel extends AbstractToolPanel {
 	
 	public void setFixedSize() {
 		// forward
-		getCaptionPanel().setFixedSize();	
-		getActionsPanel().setFixedSize();
+		getCaptionPanel().onResize();	
+		getActionsPanel().onResize();
 	}
 	
 	private HeaderPanel getCaptionPanel() {
@@ -148,7 +149,7 @@ public class BaseToolPanel extends AbstractToolPanel {
 	private HeaderPanel getActionsPanel() {
 		if (actionsPanel == null) {
 			try {
-				actionsPanel = new HeaderPanel("Utfør");
+				actionsPanel = new HeaderPanel("Utfør",ButtonSize.SMALL);
 				actionsPanel.addDiskoWorkEventListener(new IDiskoWorkListener() {
 
 					public void onWorkPerformed(DiskoWorkEvent e) {

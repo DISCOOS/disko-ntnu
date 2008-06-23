@@ -3,6 +3,7 @@ package org.redcross.sar.mso.util;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -20,8 +21,10 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.AbstractUnit;
+import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -44,8 +47,11 @@ import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
+import org.redcross.sar.util.mso.Polygon;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
+import org.redcross.sar.util.mso.TimePos;
+import org.redcross.sar.util.mso.Track;
 
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IPolyline;
@@ -908,5 +914,128 @@ public class MsoUtils {
 		}
 		return p;
 	}
+	
+	public static Object getAttribValue(IAttributeIf attribute) {
+		// dispatch attribute type
+		if (attribute instanceof AttributeImpl.MsoBoolean) {
+		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
+		    return lAttr.booleanValue();
+		}
+		else if (attribute instanceof AttributeImpl.MsoInteger) {
+		    AttributeImpl.MsoInteger lAttr = (AttributeImpl.MsoInteger) attribute;
+		    return lAttr.intValue();
+		}
+		else if (attribute instanceof AttributeImpl.MsoDouble) {
+		    AttributeImpl.MsoDouble lAttr = (AttributeImpl.MsoDouble) attribute;
+		    return lAttr.doubleValue();
+		}
+		else if (attribute instanceof AttributeImpl.MsoString) {
+		    AttributeImpl.MsoString lAttr = (AttributeImpl.MsoString) attribute;
+		    return lAttr.getString();
+		}
+		else if (attribute instanceof AttributeImpl.MsoCalendar) {
+		    AttributeImpl.MsoCalendar lAttr = (AttributeImpl.MsoCalendar) attribute;
+		    return lAttr.getCalendar();
+		}
+		else if (attribute instanceof AttributeImpl.MsoPosition) {
+		    AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) attribute;
+		    return lAttr.getPosition();
+		}
+		else if (attribute instanceof AttributeImpl.MsoTimePos) {
+		    AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) attribute;
+		    return lAttr.getTimePos().getPosition();
+		}
+		else if (attribute instanceof AttributeImpl.MsoPolygon) {
+		    AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
+		    return lAttr.getPolygon();
+		}
+		else if (attribute instanceof AttributeImpl.MsoRoute) {
+		    AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) attribute;
+		    return lAttr.getRoute();
+		}
+		else if (attribute instanceof AttributeImpl.MsoTrack) {
+		    AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
+		    return lAttr.getTrack();
+		}
+		else if (attribute instanceof AttributeImpl.MsoEnum) {
+		    AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) attribute;
+		    return lAttr.getValue();
+		}
+		// failed
+		return null;
+	}
+	
+	public static boolean setAttribValue(IAttributeIf attribute, Object value) {
+		// dispatch attribute type
+		if (attribute instanceof AttributeImpl.MsoBoolean) {
+		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
+		    if(value instanceof Boolean) {
+		    	lAttr.set((Boolean)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoInteger) {
+		    AttributeImpl.MsoInteger lAttr = (AttributeImpl.MsoInteger) attribute;
+		    if(value instanceof Integer) {
+		    	lAttr.set((Integer)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoDouble) {
+		    AttributeImpl.MsoDouble lAttr = (AttributeImpl.MsoDouble) attribute;
+		    if(value instanceof Double) {
+		    	lAttr.set((Double)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoString) {
+		    AttributeImpl.MsoString lAttr = (AttributeImpl.MsoString) attribute;
+		    if(value instanceof String) {
+		    	lAttr.set((String)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoCalendar) {
+		    AttributeImpl.MsoCalendar lAttr = (AttributeImpl.MsoCalendar) attribute;
+		    if(value instanceof Calendar) {
+		    	lAttr.set((Calendar)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoPosition) {
+		    AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) attribute;
+		    if(value instanceof Position) {
+		    	lAttr.set((Position)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoTimePos) {
+		    AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) attribute;
+		    if(value instanceof TimePos) {
+		    	lAttr.set((TimePos)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoPolygon) {
+		    AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
+		    if(value instanceof Polygon) {
+		    	lAttr.set((Polygon)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoRoute) {
+		    AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) attribute;
+		    if(value instanceof Route) {
+		    	lAttr.set((Route)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoTrack) {
+		    AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
+		    if(value instanceof Track) {
+		    	lAttr.set((Track)value); return true;
+		    }
+		}
+		else if (attribute instanceof AttributeImpl.MsoEnum) {
+		    AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) attribute;
+		    if(value instanceof Enum) {
+		    	lAttr.set((Enum)value); return true;
+		    }
+		}
+		// failed
+		return false;
+	}		
+		
 	
 }

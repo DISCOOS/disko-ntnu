@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -95,8 +94,15 @@ import com.esri.arcgis.system.IArray;
 
 public class MapUtil {
 	
-	private static IGeographicCoordinateSystem  geographicCS = null;
+	/*
+	private static final String TAG_HTML_O = "<html>";
+	private static final String TAG_HTML_C = "</html>";
+	private static final String TAG_BOLD_O = "<b>";
+	private static final String TAG_BOLD_C = "</b>";
+	*/
+	
 	private static Workspace workspace = null;
+	private static IGeographicCoordinateSystem  geographicCS = null;
 	
 	public static Workspace getWorkspace() throws AutomationException, IOException {
 		if (workspace == null) {
@@ -175,20 +181,28 @@ public class MapUtil {
 		return text; 
 	}
 	
-	private static String formatCoord(double coord, int max, int presision){
+	public static String[] getCoords(String text) {
+		// remove any directions
+		String coords = text.replace("E", "").replace("N", "");
+		// get x and y coordinates
+		int length = coords.length();
+		int divide = length/2;
+		String x = coords.subSequence(0, divide).toString();
+		String y = coords.subSequence(divide, length).toString();
+		// finished
+		return new String[]{x,y};
+	}
+	
+	public static String formatCoord(double coord, int max, int presision){
 		// round up to nearest long value
 		long c = Math.round(coord);
-		// get length of coordinate
-		//int length = Long.toString(c).length();
-		// limit presision to [1,max]
+		// limit precision to [1,max]
 		presision = Math.max(1,Math.min(max, presision));
-		// limit maximum on coordinate length
-		//max = Math.min(max, length);
-		// get minimum of limited max and presision
+		// get minimum of limited max and precision
 		int min = Math.max(1,Math.min(max, presision));
-		// devide on presision
+		// divide on precision
 		String s = Long.toString(Math.round(c/Math.pow(10,max-min)));
-		// cut to presision if coordinate value was to long
+		// cut to precision if coordinate value was to long
 		if(s.length() > presision){
 			s = s.substring(s.length()-presision);
 		}
@@ -202,11 +216,11 @@ public class MapUtil {
 		return s;
 	}
 	
-	public static String formatMGRS(String mgrs, int presision){
-		return formatMGRS(mgrs,presision,false);
+	public static String formatMGRS(String mgrs, int max, int precision){
+		return formatMGRS(mgrs,max,precision,false);
 	}
 	
-	public static String formatMGRS(String mgrs, int presision, boolean html){
+	public static String formatMGRS(String mgrs, int max, int precision, boolean html){
 		String s = null;
 		// is not null?
 		if (mgrs != null) {
@@ -215,16 +229,19 @@ public class MapUtil {
 				// get elements
 				String zone = mgrs.subSequence(0, 3).toString();
 				String square = mgrs.subSequence(3, 5).toString();
-				double x = Double.valueOf(mgrs.subSequence(5, 10).toString());
-				double y = Double.valueOf(mgrs.subSequence(10, 15).toString());
+				// remove any directions and get coordinates
+				String coords[] = MapUtil.getCoords(mgrs.subSequence(5, mgrs.length()).toString().replace("E", "").replace("N", ""));						
+				// get x and y coordinates
+				double x = Double.valueOf(coords[0]);
+				double y = Double.valueOf(coords[1]);
 				// build formated mgrs
 				if(html) {
-					s = zone + " " + square + " <b>" + formatCoord(x,5,presision) 
-						+ " " + formatCoord(y,5,presision);
+					s = zone + " " + square + " <b>" + formatCoord(x,5,precision) 
+						+ " " + formatCoord(y,max,precision);
 				}
 				else {
-					s = zone + " " + square + " " + formatCoord(x,5,presision) 
-							+ " " +formatCoord(y,5,presision);					
+					s = zone + " " + square + " " + formatCoord(x,5,precision) 
+							+ " " +formatCoord(y,max,precision);					
 				}
 			}
 		}
@@ -497,9 +514,9 @@ public class MapUtil {
 		return env;
 	}
 
-	public static String getMGRSfromPoint(Point p) 
+	public static String getMGRSfromPoint(Point p, int precision) 
 			throws Exception {
-		return p.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		return p.createMGRS(precision, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 	}
 
 	public static String getUTMfromPoint(Point p) 
@@ -610,10 +627,10 @@ public class MapUtil {
 		
 	}	
 	
-	public static String getMGRSfromPosition(Position pos) 
+	public static String getMGRSfromPosition(Position pos, int precision) 
 		throws Exception {
 		if(pos!=null)
-			return getMGRSfromPosition(pos.getPosition());
+			return getMGRSfromPosition(pos.getPosition(),precision);
 		else
 			return null;
 	}	
@@ -638,13 +655,13 @@ public class MapUtil {
 		return getDEMfromPosition(pos.getPosition());
 	}
 	
-	public static String getMGRSfromPosition(Point2D p) 
+	public static String getMGRSfromPosition(Point2D p,int precision) 
 		throws Exception {
 		Point point = new Point();
 		point.setSpatialReferenceByRef(getGeographicCS());
 		point.setX(p.getX());
 		point.setY(p.getY());
-		return point.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		return point.createMGRS(precision, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 	}
 	
 	public static String getUTMfromPosition(Point2D p) 

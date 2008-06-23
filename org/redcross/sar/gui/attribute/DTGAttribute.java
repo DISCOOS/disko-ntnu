@@ -10,11 +10,12 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.MaskFormatter;
 
 import org.redcross.sar.gui.format.DTGFormat;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
 /**
@@ -84,8 +85,18 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
-	public Object getValue() {
-		return ((JFormattedTextField)m_component).getText();
+	@Override
+	public Calendar getValue() {
+		// initialize to current attribute value
+		Calendar time = m_attribute!=null 
+				? (Calendar)MsoUtils.getAttribValue(m_attribute) : null;
+		// try to get DTG from text field
+		try {
+			time = DTG.DTGToCal(((JFormattedTextField)m_component).getText());
+		} catch (IllegalMsoArgumentException e) {
+			// consume
+		}
+		return time;
 	}
 	
 	public boolean setValue(Object value) {
@@ -129,7 +140,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	class DTGFormatterFactory extends JFormattedTextField.AbstractFormatterFactory {
 
 		@Override
-		public AbstractFormatter getFormatter(JFormattedTextField arg0) {
+		public AbstractFormatter getFormatter(JFormattedTextField t) {
 			DTGFormat mf1 = null;
 			try {
 				mf1 = new DTGFormat();

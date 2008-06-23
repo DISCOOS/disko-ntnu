@@ -6,12 +6,16 @@ package org.redcross.sar.gui.attribute;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.lang.reflect.Array;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 
@@ -53,6 +57,9 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 					
 				}
 			});
+			// forward
+			field.setRenderer(new BundleListCellRenderer());
+			
 			// save the component
 			m_component = field;			
 		}
@@ -118,5 +125,42 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 		super.setEditable(isEditable);
 		getComboBox().setEditable(isEditable);		
 	}
+	
+	
+	/*
+		private JLabel m_label;
 		
+		@Override
+		public Component getListCellRendererComponent(JList list,
+				Object value, int index, boolean isSelected, boolean hasFocus) {
+			
+			if(m_label==null) m_label = new JLabel();
+			
+			// translate
+			if(value instanceof Enum) {			
+				m_label.setText(DiskoEnumFactory.getText((Enum)value));
+			}
+			else if (value!=null) {
+				m_label.setText(value.toString());
+			}
+			else {
+				m_label.setText("");				
+			}
+			
+			// update selection state
+			if (isSelected){
+				m_label.setBackground(list.getSelectionBackground());
+				m_label.setForeground(list.getSelectionForeground());
+			} 
+			else {
+				m_label.setBackground(list.getBackground());
+				m_label.setForeground(list.getForeground());
+			}
+			// finished
+			return m_label;
+		}
+		
+	};
+	*/
+
 }

@@ -98,9 +98,9 @@ public class LoginDialog extends DefaultDialog {
 		return contentPanel;
 	}
 
-	public void setFixedSize() {
+	public void onResize() {
 		int offset = 0;
-		getContentPanel().setFixedSize();
+		getContentPanel().onResize();
 		Utils.setFixedSize(getRoles(),getWidth()-offset, 25);	
 		Utils.setFixedSize(getUserName(),getWidth()-offset, 25);	
 		Utils.setFixedSize(getPassword(),getWidth()-offset, 25);	

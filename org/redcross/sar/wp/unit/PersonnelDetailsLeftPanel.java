@@ -6,7 +6,7 @@ import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -158,7 +158,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		m_propertyComboBox = new JComboBox(PersonnelType.values());
 		m_propertyComboBox.setSelectedItem(null);
 		ResourceBundle personnelResources = Internationalization.getBundle(IPersonnelIf.class);
-		m_propertyComboBox.setRenderer(new SimpleListCellRenderer(personnelResources));
+		m_propertyComboBox.setRenderer(new BundleListCellRenderer(personnelResources));
 		gbc.gridwidth = 3;
 		layoutComponent(0, m_resources.getString("Property.text"), m_propertyComboBox, gbc, 1);
 

@@ -3,6 +3,7 @@ package org.redcross.sar.mso.data;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -165,6 +166,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_MsoObjectId.getId();
     }
 
+    public Calendar getCreationTime()
+    {
+        return m_MsoObjectId.getCreatedTime();
+    }
+    
     public String shortDescriptor()
     {
         return toString();
@@ -960,16 +966,41 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     public static class ObjectId implements IObjectIdIf
     {
         private final String m_id;
+        private Calendar m_created;
 
-        public ObjectId(String anId)
+        public ObjectId(String anId, Date created)
         {
             m_id = anId;
+            m_created = convert(created);
         }
 
         public String getId()
         {
             return m_id;
         }
+
+		public Calendar getCreatedTime() {
+			return m_created;
+		}
+		
+		/*
+		public void setCreatedTime(Calendar created) {
+			m_created = created;
+		}
+		
+		public void setCreatedTime(Date created) {
+			m_created = convert(created);
+		}
+		*/
+		
+		private Calendar convert(Date date) {
+            if(date!=null) {
+	            Calendar cal = Calendar.getInstance();
+	            cal.setTime(date);
+	            return cal;
+            }
+            return null;
+		}
     }
 
     /**

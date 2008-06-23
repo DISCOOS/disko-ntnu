@@ -19,13 +19,11 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.DiskoWorkRepeater;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IUnitIf;
 
 /**
  * Provides a dialog for selecting broadcast or non-broadcast receiver. This dialog also handles sub-dialogs
@@ -86,9 +84,8 @@ public class ChangeToDialog extends DefaultDialog
 				ICommunicatorIf singleReceiver = m_nbFieldDialog.getCommunicator();
 				if(singleReceiver != null)
 				{
-					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);					
-					message.setSingleReceiver(singleReceiver);
-					fireOnWorkFinish(this,message);
+					MessageLogBottomPanel.getCurrentMessage(true).setSingleReceiver(singleReceiver);
+					MessageLogBottomPanel.hideEditPanels();
 				}
 			}	
 		});
@@ -223,12 +220,13 @@ public class ChangeToDialog extends DefaultDialog
 	{
 		// show me
 		this.setVisible(true);
+		
 		// get current message, do not create if not exist
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		// get flag
-		boolean isBroadcast = (message!=null ? message.isBroadcast() : false); 
+		setBroadcast((message!=null ? message.isBroadcast() : false)); 
 		// setup
-		if(isBroadcast)
+		if(isBroadcast())
 		{
 			showBroadcast();
 		}
@@ -259,6 +257,7 @@ public class ChangeToDialog extends DefaultDialog
 		m_nbFieldDialog.setLocation(location);
 		m_nbFieldDialog.showComponent();
 		
+		m_nonBroadcastButton.setSelected(true);
 		location = m_nonBroadcastButton.getLocationOnScreen();
 		location.y -= m_nbListDialog.getHeight();
 		location.x += m_nbFieldDialog.getWidth();
@@ -268,7 +267,8 @@ public class ChangeToDialog extends DefaultDialog
 
 	private void showBroadcast()
 	{
-		Point location = m_nonBroadcastButton.getLocationOnScreen();
+		m_broadcastButton.setSelected(true);
+		Point location = m_broadcastButton.getLocationOnScreen();
 		location.y -= m_broadcastDialog.getHeight();
 		m_broadcastDialog.setLocation(location);
 		m_broadcastDialog.showComponent();
@@ -315,7 +315,7 @@ public class ChangeToDialog extends DefaultDialog
 	/**
 	 * @return Whether in broadcast mode or not
 	 */
-	public boolean getBroadcast()
+	public boolean isBroadcast()
 	{
 		return m_broadcast;
 	}

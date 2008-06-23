@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.messageLog;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.Calendar;
@@ -24,17 +23,14 @@ import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.PositionPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
-import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 
@@ -546,7 +542,6 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 				logTimeStamp = line.getOperationTime();
 				// re-create time position
 				logEntry = new TimePos( line.getLinePosition(), logTimeStamp);
-				System.out.println("logEntry:={"+MapUtil.getMGRSfromPosition(line.getLinePosition()) + "," + DTG.CalToDTG(logTimeStamp)+"}");
 				// update
 				m_tool.setAttribute(logTimeStamp,"LOGTIMESTAMP");
 				m_tool.setAttribute(logEntry,"UPDATETRACKPOSITION");

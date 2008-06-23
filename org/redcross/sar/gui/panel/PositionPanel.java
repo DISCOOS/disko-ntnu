@@ -22,7 +22,8 @@ import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderer.IconListCellRenderer;
+import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
+import org.redcross.sar.gui.renderer.MsoIconRenderer;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -187,7 +188,7 @@ public class PositionPanel extends DefaultToolPanel {
 		if (unitList == null) {
             unitList = new JList();
             unitList.setVisibleRowCount(0);
-            unitList.setCellRenderer(new IconListCellRenderer(0,"32x32"));
+            unitList.setCellRenderer(new MsoIconListCellRenderer(0,"32x32"));
             unitList.setModel(new DefaultComboBoxModel());
             
             // add listener
@@ -269,15 +270,6 @@ public class PositionPanel extends DefaultToolPanel {
 				Track track = msoTrack.getGeodata();
 				if(track!=null)
 					return track.find(logEntry);
-			}
-			try {
-				System.out.println("getLogEntryIndex:: Unit:="+MsoUtils.getUnitName(unit, true) 
-						+ " # Point:="+ MapUtil.getMGRSfromPosition(logEntry.getPosition())
-						+ " # DTG:="+ logEntry.getDTG()
-						+ " # Index:="+ index);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		return index;

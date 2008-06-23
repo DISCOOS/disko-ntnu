@@ -102,7 +102,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",150,false,true);
 			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
 			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
-			snapToAttr.setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.NORMAL),true);
+			snapToAttr.setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL),true);
 			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
 
 				public void itemStateChanged(ItemEvent e) {
@@ -284,7 +284,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		super.setFixedSize();
 		int w = getWidth()-20;
 		int h = getConstraintAttr().getHeight();
-		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
+		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
 		Utils.setFixedSize(getSnapToAttr(),w,dim.height);	
 		Utils.setFixedSize(getConstraintAttr(),w,h);	
 		Utils.setFixedSize(getMinStepAttr(),w,h);	
@@ -303,7 +303,12 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
 	}
 
-	public void onSnapableChanged() { /* NOP */}
+	public void onSnapableChanged() { 
+		// get adapter
+		SnapAdapter adapter = getTool().getSnapAdapter();
+		// enable auto snapping check?
+		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
+	}
 	
 	
 	/* ===========================================

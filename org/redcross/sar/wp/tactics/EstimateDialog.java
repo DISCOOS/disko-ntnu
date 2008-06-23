@@ -3,9 +3,6 @@ package org.redcross.sar.wp.tactics;
 import java.awt.Dimension;
 import java.util.EnumSet;
 
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;

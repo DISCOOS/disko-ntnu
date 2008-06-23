@@ -611,7 +611,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					// consume remoteobject exception on IMsoFeatureLayers
 				}				
 			}
-			List layers = getMsoLayers();			
+			List<IMsoFeatureLayer> layers = getMsoLayers();			
 			for(int i=0;i<layers.size();i++) {
 				// get mso feature layer
 				IMsoFeatureLayer layer = (IMsoFeatureLayer)layers.get(i);
@@ -635,7 +635,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		ArrayList<IMsoFeature> selection = new ArrayList<IMsoFeature>();
 		int count = getMsoSelectionCount(true);
 		if (count > 0) {
-			List layers = getMsoLayers();			
+			List<IMsoFeatureLayer> layers = getMsoLayers();			
 			for(int i=0;i<layers.size();i++) {
 				// get mso feature layer
 				IMsoFeatureLayer layer = (IMsoFeatureLayer)layers.get(i);
@@ -776,7 +776,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			// forward?
 			msoObj = getGeodataMsoObject(msoObj);
 			if (msoObj != null) {
-				List layers = getMsoLayers(msoObj.getMsoClassCode());
+				List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
 				for (int i = 0; i < layers.size(); i++) {
 					IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 					MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
@@ -872,28 +872,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	}
 
 	public IEnvelope getMsoObjectExtent(IMsoObjectIf msoObj) throws IOException, AutomationException {
-		/*
-		if (msoObj != null) {
-			List layers = getMsoLayers(msoObj.getMsoClassCode());
-			for (int i = 0; i < layers.size(); i++) {
-				IFeatureLayer flayer = (IFeatureLayer)layers.get(i);
-				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-				IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
-				IEnvelope extent = null;
-				if(msoObj instanceof IPOIIf) {
-					extent = getExtent();
-					extent.centerAt((IPoint)msoFeature.getShape());
-				}
-				else {
-					extent = msoFeature.getExtent();
-				}
-				if (extent != null) {
-					if (env == null)
-						env = extent.getEnvelope();
-					else env.union(extent);
-				}
-			}
-		}*/
 		return MapUtil.getMsoExtent(getGeodataMsoObject(msoObj), this, true);
 	}
 	
@@ -901,7 +879,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
 			IEnvelope env = null;
-			List layers = getMsoLayers(msoObject.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IFeatureLayer flayer = (IFeatureLayer)layers.get(i);
 				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
@@ -951,7 +929,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
 			IEnvelope env = null;
-			List layers = getMsoLayers(msoObject.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 
 			for (int i = 0; i < layers.size(); i++) {
 				
@@ -1001,7 +979,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		List<IMsoFeatureLayer> affected = new ArrayList<IMsoFeatureLayer>();
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
-			List layers = getMsoLayers(msoObject.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
@@ -1029,7 +1007,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#setSelected(com.esri.arcgis.carto.FeatureLayer, java.lang.String, java.lang.Object)
 	 */
-	public void setSelected(FeatureLayer layer, String fieldName, Object value)
+	public void setSelected(IFeatureLayer layer, String fieldName, Object value)
 			throws IOException, AutomationException {
 		String whereclause = "\""+fieldName+"\"=";
 		if (value instanceof String) {
@@ -1044,18 +1022,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#setSelected(com.esri.arcgis.carto.FeatureLayer, java.lang.String)
 	 */
-	public void setSelected(FeatureLayer layer, String whereclause)
+	public void setSelected(IFeatureLayer layer, String whereclause)
 			throws IOException, AutomationException {
-		QueryFilter queryFilter = new QueryFilter();
-		queryFilter.setWhereClause(whereclause);
-		layer.selectFeatures(queryFilter,com.esri.arcgis.carto.
-				esriSelectionResultEnum.esriSelectionResultNew, false);
+		if(layer instanceof FeatureLayer) {
+			QueryFilter queryFilter = new QueryFilter();
+			queryFilter.setWhereClause(whereclause);
+			((FeatureLayer)layer).selectFeatures(queryFilter,com.esri.arcgis.carto.
+					esriSelectionResultEnum.esriSelectionResultNew, false);
+		}
 	}
 
 	public List<IMsoFeatureLayer> clearSelected() 
 		throws IOException, AutomationException {
 		suspendNotify();
-		List msoLayers = getMsoLayers();
+		List<IMsoFeatureLayer> msoLayers = getMsoLayers();
 		List<IMsoFeatureLayer> cleared = new ArrayList<IMsoFeatureLayer>();
 		for (int i = 0; i < msoLayers.size(); i++) {
 			IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)msoLayers.get(i);
@@ -1072,16 +1052,39 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getFeatureLayer(java.lang.String)
 	 */
-	public FeatureLayer getFeatureLayer(String name)
+	public IFeatureLayer getFeatureLayer(String name)
 			throws IOException, AutomationException {
 		// get map in focus
 		IMap m = getActiveView().getFocusMap();
 		for (int i = 0; i < m.getLayerCount(); i++) {
 			ILayer layer = m.getLayer(i);
-			if (layer instanceof FeatureLayer && layer.getName().equalsIgnoreCase(name)) {
-				return (FeatureLayer)layer;
+			if (layer instanceof FeatureLayer) {
+				if(layer.getName().equalsIgnoreCase(name)) {
+					return (FeatureLayer)layer;
+				}
 			}
+			else if (layer instanceof GroupLayer) {
+				// forward
+				IFeatureLayer found = getFeatureLayerInGroupLayer(name, (GroupLayer) layer);
+				// found?
+				if(found!=null) return found;
+			}
+			
 		}
+		return null;
+	}
+	
+	private IFeatureLayer getFeatureLayerInGroupLayer(String name, GroupLayer group) throws AutomationException, IOException {
+		// get layer count
+		int count = group.getCount();
+		// loop over all group layers
+		for(int j=0;j<count;j++) {
+			// get layer
+			ILayer l = group.getLayer(j);
+			if (l instanceof FeatureLayer) {
+				return (IFeatureLayer)l;
+			}
+		}	
 		return null;
 	}
 
@@ -1454,8 +1457,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// drawing is typically done at much lower scales. furthermore, allowing scales beyond
 		// MAX_SNAP_SCALE will reduce system performance because of a very large number of indexes features
 		// must be buffered. Ultimately, the application may become unresponsive for a very long time
-		// halting the system progres.
-		if(MAX_SNAP_SCALE>=scale) {
+		// halting the system progress.
+		if(scale<=MAX_SNAP_SCALE) {
 			// loop over all layers
 			for (int i = 0; i < focusMap.getLayerCount(); i++) {
 				// get layer

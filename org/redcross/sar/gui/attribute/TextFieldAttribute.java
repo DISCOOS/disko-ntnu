@@ -6,7 +6,6 @@ package org.redcross.sar.gui.attribute;
 import java.awt.Component;
 
 import javax.swing.JFormattedTextField;
-import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -42,7 +41,7 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 	
 	public Component getComponent() {
 		if(m_component==null) {
-			JTextField field = new JTextField();
+			JFormattedTextField field = new JFormattedTextField();
 			field.setEditable(m_isEditable);
 			field.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -64,8 +63,8 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 		return m_component;
 	}
 
-	public JTextField getTextField() {
-		return (JTextField)m_component;
+	public JFormattedTextField getTextField() {
+		return (JFormattedTextField)m_component;
 	}
 	
 	public void setAutoSave(boolean auto) {
@@ -77,12 +76,12 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 	}	
 	
 	public Object getValue() {
-		return ((JTextField)m_component).getText();
+		return ((JFormattedTextField)m_component).getText();
 	}
 	
 	public boolean setValue(Object value) {
 		// update
-		((JTextField)m_component).setText(String.valueOf(value));
+		((JFormattedTextField)m_component).setText(String.valueOf(value));
 		// success
 		return true;
 	}

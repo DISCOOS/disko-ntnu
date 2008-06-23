@@ -28,7 +28,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.renderer.SimpleListCellRenderer;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.output.DiskoReportManager;
@@ -246,7 +246,7 @@ public class ListDialog extends DefaultDialog {
 		if (statusComboBox == null) {
 			try {
 				statusComboBox = new JComboBox();
-				statusComboBox.setRenderer(new SimpleListCellRenderer());
+				statusComboBox.setRenderer(new BundleListCellRenderer());
 				statusComboBox.setPreferredSize(new Dimension(125, 25));
 				statusComboBox.addItem("SHOW_ALL");
 				AssignmentStatus[] values = AssignmentStatus.values();
