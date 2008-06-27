@@ -14,7 +14,7 @@ public class EventLogImpl extends MsoListImpl<IEventIf> implements IEventLogIf
 
     public EventLogImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public IEventIf createEvent(Calendar aCalendar)

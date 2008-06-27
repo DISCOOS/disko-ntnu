@@ -12,7 +12,7 @@ public class MessageLogImpl extends MsoListImpl<IMessageIf> implements IMessageL
 
     public MessageLogImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public IMessageIf createMessage()

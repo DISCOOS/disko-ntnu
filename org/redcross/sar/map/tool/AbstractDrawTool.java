@@ -17,6 +17,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.element.DrawFrame;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAreaListIf;
@@ -549,14 +550,16 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			p = toMapPoint(x,y);
 			
 			// get flag
-			isMouseOverIcon = isShowDrawFrame || (drawFrame!=null) 
-									? drawFrame.hitIcon(p.getX(), p.getY(), 1)!=null : false;
+			isMouseOverIcon = isShowDrawFrame;			
+			if(!isMouseOverIcon && drawFrame!=null && p!=null && !p.isEmpty()) { 
+				isMouseOverIcon = drawFrame.hitIcon(p.getX(), p.getY(), 1)!=null;
+			}
 			
 			// get screen-to-map transformation and try to snap
 			p = snapTo(p);
 			
 			// only forward to extenders of this class if 
-			// drawing or mouse not over draw fram icon
+			// drawing or mouse not over draw frame icon
 			if(!isMouseOverIcon || isDrawing)
 				onAction(onMouseMoveAction,button,shift,x,y);		
 			else {
@@ -1630,13 +1633,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	protected boolean prepareDrawFrame() throws AutomationException, IOException {
 		// update both draw frame and geometries? 
 		if(isShowDrawFrame && drawAdapter!=null) {
-			// reapply mso frame;
+			// re-apply MSO frame;
 			drawAdapter.setMsoFrame();
 			// forward
 			drawAdapter.setFrameUnion(getGeoEnvelope());
 			// forward
 			drawAdapter.prepareFrame(true);
-			// finshed
+			// finished
 			return true;
 		}		
 		return false;
@@ -1735,28 +1738,32 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		@Override
 		public Boolean doWork() {
 			
-			// has been deleted?
-			if(msoObject!=null && msoObject.hasBeenDeleted()) 
-				doMsoInit();
+			// does model exists?
+			if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {		
 			
-			// is type defined?
-			if(featureType!=null){ 
-				// do work depending on type of feature
-				if(featureType==
-						FeatureType.FEATURE_POLYLINE) {
-					// forward
-					return doPolylineWork();
+				// has been deleted?
+				if(msoObject!=null && msoObject.hasBeenDeleted()) 
+					doMsoInit();
+				
+				// is type defined?
+				if(featureType!=null){ 
+					// do work depending on type of feature
+					if(featureType==
+							FeatureType.FEATURE_POLYLINE) {
+						// forward
+						return doPolylineWork();
+					}
+					else if(featureType
+							==FeatureType.FEATURE_POINT) {
+						// forward
+						return doPointWork();
+					}
+					else if(featureType
+							==FeatureType.FEATURE_POLYGON) {
+						// forward
+						return doPolygonWork();
+					}			
 				}
-				else if(featureType
-						==FeatureType.FEATURE_POINT) {
-					// forward
-					return doPointWork();
-				}
-				else if(featureType
-						==FeatureType.FEATURE_POLYGON) {
-					// forward
-					return doPolygonWork();
-				}			
 			}
 			// failed
 			return false;
@@ -2147,16 +2154,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		 * 
 		 */
 		@Override
-		public void done() {		
+		public void afterDone() {		
 			
 			// get result
 			boolean isDone = (Boolean)get();
 			
 			// reset tool
 			reset();
-			
-			// refresh map
-			super.done();
 			
 			// is type defined?
 			if(featureType!=null){ 

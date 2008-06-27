@@ -30,15 +30,15 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     private final AttributeImpl.MsoPosition m_position = new AttributeImpl.MsoPosition(this, "Position");
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
     private final AttributeImpl.MsoInteger m_speed = new AttributeImpl.MsoInteger(this, "Speed");
-    private final AttributeImpl.MsoEnum<UnitType> m_type = new AttributeImpl.MsoEnum<UnitType>(this, "Type", UnitType.CP);
-    private final AttributeImpl.MsoEnum<UnitStatus> m_status = new AttributeImpl.MsoEnum<UnitStatus>(this, "Status", UnitStatus.EMPTY);
+    private final AttributeImpl.MsoEnum<UnitType> m_type = new AttributeImpl.MsoEnum<UnitType>(this, "Type", 1, UnitType.CP);
+    private final AttributeImpl.MsoEnum<UnitStatus> m_status = new AttributeImpl.MsoEnum<UnitStatus>(this, "Status", 1, UnitStatus.EMPTY);
 
     private final AssignmentListImpl m_unitAssignments = new AssignmentListImpl(this, "UnitAssignments", false);
     private final PersonnelListImpl m_unitPersonnel = new PersonnelListImpl(this, "UnitPersonnel", false);
 
-    private final MsoReferenceImpl<IHierarchicalUnitIf> m_superiorUnit = new MsoReferenceImpl<IHierarchicalUnitIf>(this, "SuperiorUnit", false);
-    private final MsoReferenceImpl<IPersonnelIf> m_unitLeader = new MsoReferenceImpl<IPersonnelIf>(this, "UnitLeader", true);
-    private final MsoReferenceImpl<ITrackIf> m_track = new MsoReferenceImpl<ITrackIf>(this, "Track", true);
+    private final MsoReferenceImpl<IHierarchicalUnitIf> m_superiorUnit = new MsoReferenceImpl<IHierarchicalUnitIf>(this, "SuperiorUnit", 0, false);
+    private final MsoReferenceImpl<IPersonnelIf> m_unitLeader = new MsoReferenceImpl<IPersonnelIf>(this, "UnitLeader", 0, true);
+    private final MsoReferenceImpl<ITrackIf> m_track = new MsoReferenceImpl<ITrackIf>(this, "Track", 0, true);
     
     public static String getText(String aKey)
     {

@@ -1,8 +1,5 @@
 package org.redcross.sar.wp.simulator;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import org.redcross.sar.thread.AbstractDiskoWork;
 
 public class Simulator extends AbstractDiskoWork<Boolean> {

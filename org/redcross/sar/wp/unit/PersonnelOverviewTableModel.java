@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.unit;
 
+import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -89,17 +90,19 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		case 1:
           // Set unit
             IUnitIf personnelUnit = null;
-            for (IUnitIf unit : m_wpModule.getMsoManager().getCmdPost().getUnitListItems())
-            {
-                if (unit.getStatus() != UnitStatus.RELEASED)
-                {
-                    if (unit.getUnitPersonnel().contains(personnel))
-                    {
-                        personnelUnit = unit;
-                        break;
-                    }
-                }
-            }		
+            if(m_wpModule.getMsoManager().operationExists()) {            
+	            for (IUnitIf unit : m_wpModule.getMsoManager().getCmdPost().getUnitListItems())
+	            {
+	                if (unit.getStatus() != UnitStatus.RELEASED)
+	                {
+	                    if (unit.getUnitPersonnel().contains(personnel))
+	                    {
+	                        personnelUnit = unit;
+	                        break;
+	                    }
+	                }
+	            }
+            }
             return personnelUnit == null ? "" : MsoUtils.getUnitName(personnelUnit,false);
 		case 2:
 			return personnel;
@@ -116,29 +119,41 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	
 	public void handleMsoUpdateEvent(Update e) {
 		
-		// get flags
+		// get mask
 		int mask = e.getEventTypeMask();
-        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 		
         // get mso object
         IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
         
-        // add object?
-		if (createdObject) {
-			msoObjectCreated(msoObj,mask);
-		}
-		// is object modified?
-		if ( (addedReference || removedReference || modifiedObject)) {
-			msoObjectChanged(msoObj,mask);
-		}
-		// delete object?
-		if (deletedObject) {
-			msoObjectDeleted(msoObj,mask);		
-		}
+        // get flag
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+		
+        // clear all?
+        if(clearAll) {
+        	m_persons.clear();
+			fireTableDataChanged();		
+        }
+        else {
+        	// get flags
+	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			
+	        // add object?
+			if (createdObject) {
+				msoObjectCreated(msoObj,mask);
+			}
+			// is object modified?
+			if ( (addedReference || removedReference || modifiedObject)) {
+				msoObjectChanged(msoObj,mask);
+			}
+			// delete object?
+			if (deletedObject) {
+				msoObjectDeleted(msoObj,mask);		
+			}
+        }
 	}
 
 	private void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
@@ -158,7 +173,7 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	}
 
 	private void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
-		// add?        
+		// remove?        
         if(m_persons.contains(msoObj)) {
         	m_persons.remove(msoObj);
 			fireTableDataChanged();		

@@ -82,9 +82,9 @@ public class HypothesisDialog extends DefaultDialog {
 		this.wp = wp;
 		// setup objects
 		this.msoModel = wp.getMsoModel();
-		// initialize ui
+		// initialize gu
 		initialize();
-		// initialise
+		// initialize data
 		setup();
 	}
 
@@ -197,14 +197,14 @@ public class HypothesisDialog extends DefaultDialog {
 					}
 					
 					@Override
-					public void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
+					protected void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
 						if(msoObj instanceof IHypothesisIf) {
 							addHypothesis((IHypothesisIf)msoObj);
 						}
 					}
 
 					@Override
-					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+					protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
 						// is same as selected?
 						if(msoObj == msoObject) {
 							setMsoObject(msoObj);
@@ -216,7 +216,7 @@ public class HypothesisDialog extends DefaultDialog {
 					}
 
 					@Override
-					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+					protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
 						// is same as selected?
 						if(msoObj == msoObject) {
 							// reset selection
@@ -225,10 +225,17 @@ public class HypothesisDialog extends DefaultDialog {
 						else if(msoObj instanceof IHypothesisIf) {
 							removeHypothesis((IHypothesisIf)msoObj);
 						}
-					}							
+					}
+					
+					@Override
+					protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
+						clearHypotheses();
+					}
+					
+					
 				};
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.setInterests(msoModel,getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setBodyComponent(getHypothesisPanel());
 			} catch (java.lang.Throwable e) {
@@ -506,19 +513,13 @@ public class HypothesisDialog extends DefaultDialog {
 	 */
 	private ComboAttribute getPriorityCombo() {
 		if (priorityCombo == null) {
-			try {
-				priorityCombo = new ComboAttribute("priority", "Prioritet", 50, null, false);
-				DefaultComboBoxModel model = new DefaultComboBoxModel();
-				for (int i = 1; i < 6; i++) {
-					model.addElement(new Integer(i));
-				}
-				priorityCombo.fill(model);
-				JComboBox cb = (JComboBox)priorityCombo.getComponent();
-				cb.setSelectedIndex(0);
-
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
+			priorityCombo = new ComboAttribute("priority", "Prioritet", 50, null, false);
+			DefaultComboBoxModel model = new DefaultComboBoxModel();
+			for (int i = 1; i < 6; i++) {
+				model.addElement(new Integer(i));
 			}
+			priorityCombo.fill(model);
+			priorityCombo.getComboBox().setSelectedIndex(0);
 		}
 		return priorityCombo;
 	}
@@ -549,14 +550,21 @@ public class HypothesisDialog extends DefaultDialog {
 	}	
 	
 	private void loadHypotheses() {
-		Collection<IHypothesisIf> c = msoModel.getMsoManager().
-			getCmdPost().getHypothesisListItems();
-		DefaultListModel model = new DefaultListModel();
-		for(IHypothesisIf h:c) {
-			model.addElement(DiskoEnumFactory.getText(IMsoManagerIf
-					.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
+		if(msoModel.getMsoManager().operationExists()) {		
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			Collection<IHypothesisIf> c = msoModel.getMsoManager().
+				getCmdPost().getHypothesisListItems();
+			DefaultListModel model = new DefaultListModel();
+			for(IHypothesisIf h:c) {
+				model.addElement(DiskoEnumFactory.getText(IMsoManagerIf
+						.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
+			}
+			hypothesisList.setModel(model);
 		}
-		hypothesisList.setModel(model);
+	}
+	
+	private void clearHypotheses() {
+		hypothesisList.setModel(new DefaultListModel());
 	}
 	
 	private void addHypothesis(IHypothesisIf h) {
@@ -575,15 +583,19 @@ public class HypothesisDialog extends DefaultDialog {
 		
 		if(name==null || name.isEmpty()) return null;
 		
-		Collection<IHypothesisIf> c = msoModel.getMsoManager()
-			.getCmdPost().getHypothesisListItems();
-	
-		for(IHypothesisIf h:c) {
-			if(name.equalsIgnoreCase(getHypothesisName(h))) { 
-				// found!
-				return h;
+		if(msoModel.getMsoManager().operationExists()) {		
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			Collection<IHypothesisIf> c = msoModel.getMsoManager()
+				.getCmdPost().getHypothesisListItems();
+		
+			for(IHypothesisIf h:c) {
+				if(name.equalsIgnoreCase(getHypothesisName(h))) { 
+					// found!
+					return h;
+				}
 			}
 		}
+		
 		return null;
 	}
 	
@@ -659,7 +671,7 @@ public class HypothesisDialog extends DefaultDialog {
 	}
 	
 	private int getPriority()  {
-		return ((JComboBox)getPriorityCombo().getComponent()).getSelectedIndex()+1;
+		return getPriorityCombo().getComboBox().getSelectedIndex()+1;
 	}
 	
 	private void setPriority(int priority, boolean gui, boolean mso) {
@@ -668,7 +680,7 @@ public class HypothesisDialog extends DefaultDialog {
 		if(h!=null) {
 			// update gui?
 			if (gui) {
-				((JComboBox)getPriorityCombo().getComponent()).setSelectedIndex(priority-1);
+				getPriorityCombo().getComboBox().setSelectedIndex(priority-1);
 			}
 			// update mso?
 			if(mso) { 
@@ -753,13 +765,15 @@ public class HypothesisDialog extends DefaultDialog {
 	
 	private boolean create() {
 		// create a new Hypothesis
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		IHypothesisIf h = cmdPost.getHypothesisList().createHypothesis();
-		if(h!=null) {
-			// forward
-			setHypothesis(h, true, false);
-			// finished
-			return true;
+		if(msoModel.getMsoManager().operationExists()) {		
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			IHypothesisIf h = cmdPost.getHypothesisList().createHypothesis();
+			if(h!=null) {
+				// forward
+				setHypothesis(h, true, false);
+				// finished
+				return true;
+			}
 		}
 		return false;
 	}

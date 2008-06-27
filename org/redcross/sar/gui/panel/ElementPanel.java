@@ -28,9 +28,9 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
-import org.redcross.sar.gui.renderer.MsoIconRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -471,7 +471,7 @@ public class ElementPanel extends DefaultPanel {
 		getTypeList().setListData(listData);
 	}
 		
-	private void loadObjects(Enum e) {
+	private void loadObjects(Enum<?> e) {
 		
 		// initialize data
 		Object[] data = null;
@@ -480,62 +480,64 @@ public class ElementPanel extends DefaultPanel {
 		// clear buffer
 		objects.clear();
 		
-		// get command post
-		ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();
-
-		// has command post?
-		if(cp!=null) {
-			// set current type
-			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(e)) {
-				// get operation areas
-				c = new ArrayList<IMsoObjectIf>(cp.getOperationAreaListItems());
-				// get data?
-				if(!c.isEmpty()) {
-					data = c.toArray();
-					objects.addAll(c);
+		if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+			// get command post
+			ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();
+	
+			// has command post?
+			if(cp!=null) {
+				// set current type
+				if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(e)) {
+					// get operation areas
+					c = new ArrayList<IMsoObjectIf>(cp.getOperationAreaListItems());
+					// get data?
+					if(!c.isEmpty()) {
+						data = c.toArray();
+						objects.addAll(c);
+					}
+	
+				}	
+				else if(MsoClassCode.CLASSCODE_SEARCHAREA.equals(e)) {
+					// get search areas
+					c = new ArrayList<IMsoObjectIf>(cp.getSearchAreaListItems());
+					// get data?
+					if(!c.isEmpty()) {
+						data = c.toArray();
+						objects.addAll(c);
+					}
+	
 				}
-
-			}	
-			else if(MsoClassCode.CLASSCODE_SEARCHAREA.equals(e)) {
-				// get search areas
-				c = new ArrayList<IMsoObjectIf>(cp.getSearchAreaListItems());
-				// get data?
-				if(!c.isEmpty()) {
-					data = c.toArray();
-					objects.addAll(c);
+				else if(e instanceof SearchSubType ||
+						MsoClassCode.CLASSCODE_AREA.equals(e) ) {
+					// get areas
+					c = new ArrayList<IMsoObjectIf>(cp.getAreaList().selectItems(getAreaSelector((SearchSubType)e), null));
 				}
-
+				else if(MsoClassCode.CLASSCODE_POI.equals(e)) {
+					// get areas
+					c = new ArrayList<IMsoObjectIf>(cp.getPOIList().selectItems(getPOISelector(),null));
+				}		
 			}
-			else if(e instanceof SearchSubType ||
-					MsoClassCode.CLASSCODE_AREA.equals(e) ) {
-				// get areas
-				c = new ArrayList<IMsoObjectIf>(cp.getAreaList().selectItems(getAreaSelector((SearchSubType)e), null));
+			// set flag
+			listsAreChangeing = true;
+			
+			// get data?
+			if(!c.isEmpty()) {
+				// sort objects
+				MsoUtils.sortByName(c,1);
+				data = c.toArray();
+				objects.addAll(c);
 			}
-			else if(MsoClassCode.CLASSCODE_POI.equals(e)) {
-				// get areas
-				c = new ArrayList<IMsoObjectIf>(cp.getPOIList().selectItems(getPOISelector(),null));
-			}		
+			
+			// update model
+			if(data==null)
+				getObjectList().setModel(new DefaultListModel());
+			else
+				getObjectList().setListData(data);
+			// reset flag
+			listsAreChangeing = false;
+			// hide buttons panel
+			getObjectButtonsPanel().setVisible(false);
 		}
-		// set flag
-		listsAreChangeing = true;
-		
-		// get data?
-		if(!c.isEmpty()) {
-			// sort objects
-			MsoUtils.sortByName(c,1);
-			data = c.toArray();
-			objects.addAll(c);
-		}
-		
-		// update model
-		if(data==null)
-			getObjectList().setModel(new DefaultListModel());
-		else
-			getObjectList().setListData(data);
-		// reset flag
-		listsAreChangeing = false;
-		// hide buttons panel
-		getObjectButtonsPanel().setVisible(false);
 		// forward
 		loadParts();
 	}
@@ -554,32 +556,35 @@ public class ElementPanel extends DefaultPanel {
 		// has selected item?
 		if(msoObject!=null) {
 		
-			// get command post
-			ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();
+			if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+
+				// get command post
+				ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();
 	
-			// has command post?
-			if(cp!=null) {
-				// set current type
-				if(msoObject instanceof IOperationAreaIf || 
-						msoObject instanceof ISearchAreaIf ||
-						msoObject instanceof IPOIIf) {
-					// has no parts
-					getPartList().setEnabled(false);
-				}	
-				else if(msoObject instanceof IAreaIf) {
-					// get area
-					IAreaIf area = (IAreaIf)msoObject;
-					// get geodata items
-					Collection<IMsoObjectIf> c = area.getAreaGeodataItems();
-		        	// add area POIs
-					c.addAll(area.getAreaPOIsItems());
-					// get data?
-					if(!c.isEmpty()) {
-						data = c.toArray();
-						parts.addAll(c);
+				// has command post?
+				if(cp!=null) {
+					// set current type
+					if(msoObject instanceof IOperationAreaIf || 
+							msoObject instanceof ISearchAreaIf ||
+							msoObject instanceof IPOIIf) {
+						// has no parts
+						getPartList().setEnabled(false);
+					}	
+					else if(msoObject instanceof IAreaIf) {
+						// get area
+						IAreaIf area = (IAreaIf)msoObject;
+						// get geodata items
+						Collection<IMsoObjectIf> c = area.getAreaGeodataItems();
+			        	// add area POIs
+						c.addAll(area.getAreaPOIsItems());
+						// get data?
+						if(!c.isEmpty()) {
+							data = c.toArray();
+							parts.addAll(c);
+						}
+						// parts
+						getPartList().setEnabled(true);
 					}
-					// parts
-					getPartList().setEnabled(true);
 				}
 			}
 		}
@@ -633,62 +638,40 @@ public class ElementPanel extends DefaultPanel {
 	}
 		
 	private JList getList(IMsoObjectIf msoObject, boolean exists) {
-		// get class code
-		MsoClassCode code = msoObject.getMsoClassCode();
-		// dispatch class code
-		if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
-				MsoClassCode.CLASSCODE_SEARCHAREA.equals(code)) {
-			// get selected element class
-			Enum e = (Enum)typeList.getSelectedValue();
-			// belongs object to selected class?
-			if(e!=null && e.equals(code)) {
-				// return list
-				if(exists)
-					return objects.contains(msoObject) ? getObjectList() : null;
-				else
-					return getObjectList();
-			}
-		}
-		else if(MsoClassCode.CLASSCODE_AREA.equals(code)) {
-			// get search sub type
-			Enum subType = MsoUtils.getType(msoObject,true);
-			subType = MsoUtils.getType(msoObject,true);
-			// get selected element class
-			Enum e = (Enum)typeList.getSelectedValue();
-			// belongs object to selected class?
-			if(e!=null && e.equals(subType)) {
-				// return list
-				if(exists)
-					return objects.contains(msoObject) ? getObjectList() : null;
-				else
-					return getObjectList();				
-			}
-		}
-		else if(MsoClassCode.CLASSCODE_ROUTE.equals(code) ||
-				MsoClassCode.CLASSCODE_TRACK.equals(code)) {
-			// get owning area
-			IAreaIf area = MsoUtils.getOwningArea(msoObject);
-			// has area?
-			if(area!=null) {
-				// is selected?
-				if(getObjectList().getSelectedValue()==area) {
-					// validate
+		if(msoObject!=null) {
+			// get class code
+			MsoClassCode code = msoObject.getMsoClassCode();
+			// dispatch class code
+			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
+					MsoClassCode.CLASSCODE_SEARCHAREA.equals(code)) {
+				// get selected element class
+				Enum e = (Enum)typeList.getSelectedValue();
+				// belongs object to selected class?
+				if(e!=null && e.equals(code)) {
+					// return list
 					if(exists)
-						return parts.contains(msoObject) ? getPartList() : null;
+						return objects.contains(msoObject) ? getObjectList() : null;
 					else
-						return getPartList();				
+						return getObjectList();
 				}
 			}
-		}
-		else if(MsoClassCode.CLASSCODE_POI.equals(code)) {
-			// get type
-			POIType poiType = ((IPOIIf)msoObject).getType();
-			// is area poi?
-			boolean isAreaPOI = (poiType.equals(POIType.START) ||
-					poiType.equals(POIType.VIA) || 
-					poiType.equals(POIType.STOP));
-			// is standalone poi?
-			if(isAreaPOI) {
+			else if(MsoClassCode.CLASSCODE_AREA.equals(code)) {
+				// get search sub type
+				Enum subType = MsoUtils.getType(msoObject,true);
+				subType = MsoUtils.getType(msoObject,true);
+				// get selected element class
+				Enum e = (Enum)typeList.getSelectedValue();
+				// belongs object to selected class?
+				if(e!=null && e.equals(subType)) {
+					// return list
+					if(exists)
+						return objects.contains(msoObject) ? getObjectList() : null;
+					else
+						return getObjectList();				
+				}
+			}
+			else if(MsoClassCode.CLASSCODE_ROUTE.equals(code) ||
+					MsoClassCode.CLASSCODE_TRACK.equals(code)) {
 				// get owning area
 				IAreaIf area = MsoUtils.getOwningArea(msoObject);
 				// has area?
@@ -703,32 +686,57 @@ public class ElementPanel extends DefaultPanel {
 					}
 				}
 			}
-			else {
-				// get selected element class
-				Enum e = (Enum)typeList.getSelectedValue();
-				// is pui class selected?
-				if(MsoClassCode.CLASSCODE_POI.equals(e)) {
-					// validate
-					if(exists)
-						return objects.contains(msoObject) ? getObjectList() : null;
-					else
-						return getObjectList();				
+			else if(MsoClassCode.CLASSCODE_POI.equals(code)) {
+				// get type
+				POIType poiType = ((IPOIIf)msoObject).getType();
+				// is area poi?
+				boolean isAreaPOI = (poiType.equals(POIType.START) ||
+						poiType.equals(POIType.VIA) || 
+						poiType.equals(POIType.STOP));
+				// is standalone poi?
+				if(isAreaPOI) {
+					// get owning area
+					IAreaIf area = MsoUtils.getOwningArea(msoObject);
+					// has area?
+					if(area!=null) {
+						// is selected?
+						if(getObjectList().getSelectedValue()==area) {
+							// validate
+							if(exists)
+								return parts.contains(msoObject) ? getPartList() : null;
+							else
+								return getPartList();				
+						}
+					}
 				}
-			}
-		}	
-
-		// did not identify the type, try local lookup?
-		if (exists) {
-			if(objects.contains(msoObject)) {
-				return getObjectList();
-			}
-			else if(parts.contains(msoObject)) {
-				return getPartList();
+				else {
+					// get selected element class
+					Enum e = (Enum)typeList.getSelectedValue();
+					// is pui class selected?
+					if(MsoClassCode.CLASSCODE_POI.equals(e)) {
+						// validate
+						if(exists)
+							return objects.contains(msoObject) ? getObjectList() : null;
+						else
+							return getObjectList();				
+					}
+				}
+			}	
+	
+			// did not identify the type, try local lookup?
+			if (exists) {
+				if(objects.contains(msoObject)) {
+					return getObjectList();
+				}
+				else if(parts.contains(msoObject)) {
+					return getPartList();
+				}
 			}
 		}
 		
 		// failed
 		return null;
+		
 	}
 	
 	private List<IMsoObjectIf> getData(IMsoObjectIf msoObject) {
@@ -768,6 +776,7 @@ public class ElementPanel extends DefaultPanel {
 		return list;
 	}
 	
+	@Override
 	public void msoObjectCreated(IMsoObjectIf msoObject, int mask) {
 		// get list
 		JList list = getList(msoObject,false);		
@@ -801,6 +810,7 @@ public class ElementPanel extends DefaultPanel {
 		}
 	}
 	
+	@Override
 	public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
 		// Update lists?
 		if(isVisible()) {
@@ -810,6 +820,7 @@ public class ElementPanel extends DefaultPanel {
 		}
 	}
 
+	@Override
 	public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
 		// get list
 		JList list = getList(msoObject,true);		
@@ -843,6 +854,11 @@ public class ElementPanel extends DefaultPanel {
 				
 		}
 	}	
+	
+	@Override
+	protected void msoObjectClearAll(IMsoObjectIf msoObject, int mask) {
+		loadObjects(null);
+	}
 	
 	private class ButtonPanel extends JPanel {
 		

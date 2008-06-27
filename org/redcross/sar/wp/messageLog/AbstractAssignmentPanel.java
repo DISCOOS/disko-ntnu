@@ -501,7 +501,12 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         gbc.gridy = 0;
         gbc.gridx = 0;
 
-        ICmdPostIf cmdPost = m_wpMessageLog.getMsoManager().getCmdPost();
+        ICmdPostIf cmdPost = null;
+		if(m_wpMessageLog.getMsoManager().operationExists()) {		
+			cmdPost = m_wpMessageLog.getMsoManager().getCmdPost();
+		}
+		
+		// exists?
         if (cmdPost == null)
         {
             return;

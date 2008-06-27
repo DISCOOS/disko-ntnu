@@ -30,5 +30,20 @@ public interface IMsoReferenceIf<T extends IMsoObjectIf>
     public boolean isUncommitted();
 
     public void setReference(T aReference);
+    
+    /**
+     * Get value cardinality
+     * 
+     *@return cardinality, if >0, then getReference can not be null. 
+     */
+    public int getCardinality();
+    
+    /**
+     * Validates getAttrValue against the value cardinality
+     * <p/>
+     * @return  <code>true<code> if getReference is not null, <code>false<code> otherwise.
+     */
+    public boolean validate();
+    
 
 }

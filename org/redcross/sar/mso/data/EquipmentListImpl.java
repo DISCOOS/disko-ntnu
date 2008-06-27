@@ -12,7 +12,7 @@ public class EquipmentListImpl extends MsoListImpl<IEquipmentIf> implements IEqu
 
     public EquipmentListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public IEquipmentIf createEquipment()

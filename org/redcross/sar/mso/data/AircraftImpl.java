@@ -17,7 +17,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
     private final AttributeImpl.MsoInteger m_seats = new AttributeImpl.MsoInteger(this, "Seats");
     private final AttributeImpl.MsoBoolean m_video = new AttributeImpl.MsoBoolean(this, "Video");
     private final AttributeImpl.MsoInteger m_visibility = new AttributeImpl.MsoInteger(this, "Visibility");
-    private final AttributeImpl.MsoEnum<AircraftSubType> m_subType = new AttributeImpl.MsoEnum<AircraftSubType>(this, "SubType", AircraftSubType.LIGHT_AIRCRAFT);
+    private final AttributeImpl.MsoEnum<AircraftSubType> m_subType = new AttributeImpl.MsoEnum<AircraftSubType>(this, "SubType", 1, AircraftSubType.LIGHT_AIRCRAFT);
 
     public AircraftImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
     {

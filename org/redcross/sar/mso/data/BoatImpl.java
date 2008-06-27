@@ -17,7 +17,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
     private final AttributeImpl.MsoInteger m_height = new AttributeImpl.MsoInteger(this, "Height");
     private final AttributeImpl.MsoInteger m_length = new AttributeImpl.MsoInteger(this, "Length");
     private final AttributeImpl.MsoInteger m_maxSpeed = new AttributeImpl.MsoInteger(this, "MaxSpeed");
-    private final AttributeImpl.MsoEnum<BoatSubType> m_subType = new AttributeImpl.MsoEnum<BoatSubType>(this, "SubType", BoatSubType.SEARCH_AND_RESCUE);
+    private final AttributeImpl.MsoEnum<BoatSubType> m_subType = new AttributeImpl.MsoEnum<BoatSubType>(this, "SubType", 1, BoatSubType.SEARCH_AND_RESCUE);
 
 
     public BoatImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)

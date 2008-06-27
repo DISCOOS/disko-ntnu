@@ -25,12 +25,13 @@ public class MsoEvent extends java.util.EventObject
         CREATED_OBJECT_EVENT(8),
         DELETED_OBJECT_EVENT(16),
         MODIFIED_DATA_EVENT(32),
-        COMMIT_EVENT(64);
+        COMMIT_EVENT(64),
+        CLEAR_ALL_EVENT(128);
 
         private final int m_maskValue;
 
         /**
-         * Constructof of Enum members
+         * Constructor of Enum members
          *
          * @param value Value related to member.
          */
@@ -97,6 +98,10 @@ public class MsoEvent extends java.util.EventObject
                 EventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
     }
 
+    public boolean isClearAllEvent()
+    {
+    	return (m_eventTypeMask & EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+    }
 
     /**
      * Event that triggers an update of the user interface and/or the server handler.

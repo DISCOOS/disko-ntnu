@@ -6,7 +6,7 @@ import org.redcross.sar.util.except.MsoCastException;
 
 public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
 {
-    private final MsoReferenceImpl<ITaskIf> m_checkpointTask = new MsoReferenceImpl<ITaskIf>(this, "CheckpointTask", true);
+    private final MsoReferenceImpl<ITaskIf> m_checkpointTask = new MsoReferenceImpl<ITaskIf>(this, "CheckpointTask", 0, true);
 
     private final AttributeImpl.MsoBoolean m_checked = new AttributeImpl.MsoBoolean(this, "Checked");
     private final AttributeImpl.MsoString m_description = new AttributeImpl.MsoString(this, "Description");

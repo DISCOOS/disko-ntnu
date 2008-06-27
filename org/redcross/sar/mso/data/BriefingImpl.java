@@ -13,7 +13,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
     private final EnvironmentListImpl m_briefingEnvironments = new EnvironmentListImpl(this, "BriefingEnvironments", false);
     private final SubjectListImpl m_briefingSubjects = new SubjectListImpl(this, "BriefingSubjects", false);
 
-    private final MsoReferenceImpl<IHypothesisIf> m_briefingHypothesis = new MsoReferenceImpl<IHypothesisIf>(this, "BriefingHypothesis", true);
+    private final MsoReferenceImpl<IHypothesisIf> m_briefingHypothesis = new MsoReferenceImpl<IHypothesisIf>(this, "BriefingHypothesis", 0, true);
 
     private final AttributeImpl.MsoBoolean m_active = new AttributeImpl.MsoBoolean(this, "Active");
     private final AttributeImpl.MsoString m_channel1 = new AttributeImpl.MsoString(this, "Channel1");

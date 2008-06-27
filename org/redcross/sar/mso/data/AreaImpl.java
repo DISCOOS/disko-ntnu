@@ -21,7 +21,7 @@ import org.redcross.sar.util.mso.Selector;
 public class AreaImpl extends AbstractMsoObject implements IAreaIf
 {
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
-    private final POIListImpl m_areaPOIs = new POIListImpl(this, "AreaPOIs", false);
+    private final POIListImpl m_areaPOIs = new POIListImpl(this, "AreaPOIs", false, 2, 2);
     private final MsoListImpl<IMsoObjectIf> m_areaGeodata = new MsoListImpl<IMsoObjectIf>(this, "AreaGeodata", false);
 
     private final boolean m_hostile;

@@ -368,13 +368,11 @@ public class SelectFeatureTool extends AbstractDiskoTool {
 		}
 		
 		@Override
-		public void done() {
+		public void beforeDone() {
 
 			// update selected feature
 			currentFeature = msoFeature;
 
-			// forward
-			super.done();
 		}		
 	}		
 }

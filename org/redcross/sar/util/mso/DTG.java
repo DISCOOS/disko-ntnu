@@ -2,6 +2,7 @@ package org.redcross.sar.util.mso;
 
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -75,6 +76,9 @@ public class DTG
      */
     public static String CalToDTG(Calendar aCalendar)
     {
+		//SimpleDateFormat format = new SimpleDateFormat("HH:MM:ss");
+		//System.out.println("CalToDTG:: " + format.format(aCalendar.getTime()));
+		//Calendar c = Calendar.getInstance();
         return aCalendar != null ? String.format("%1$td%1$tH%1$tM", aCalendar) : "";
     }
 

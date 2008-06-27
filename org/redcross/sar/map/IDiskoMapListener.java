@@ -6,6 +6,7 @@ public interface IDiskoMapListener {
 	public void onMouseMove();
 	public void onExtentChanged();
 	public void onMapReplaced();
+	public void onSelectionChanged();
 	
 	
 }

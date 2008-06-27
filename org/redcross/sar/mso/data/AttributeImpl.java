@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.Vector;
 
 /**
- * Generic class for all MSO attrubutes
+ * Generic class for all MSO attributes
  */
 public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<AttributeImpl<T>>
 {
@@ -20,16 +20,19 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     private final String m_name;
     private int m_indexNo;
     private boolean m_required = false;
+    //private boolean m_changed = false;
+    private final int m_cardinality;
 
     protected T m_localValue = null;
     protected T m_serverValue = null;
     protected IMsoModelIf.ModificationState m_state = IMsoModelIf.ModificationState.STATE_UNDEFINED;
 
-    protected AttributeImpl(Class aClass, AbstractMsoObject theOwner, String theName, int theIndexNo, T theValue)
+    protected AttributeImpl(Class aClass, AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, T theValue)
     {
         m_class = aClass;
         m_owner = theOwner;
         m_name = theName.toLowerCase();
+        m_cardinality = theCardinality;
         m_indexNo = theIndexNo;
         if (theValue != null)
         {
@@ -114,12 +117,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
                 }
                 break;
             }
-            default:
+            default: // LOCAL_UPDATE_MODE
             {
                 if (equal(m_serverValue, aValue))
                 {
                     newState = IMsoModelIf.ModificationState.STATE_SERVER;
-//                    valueChanged = true;  // VW todo kan denne utelates??? ?????
+//                    valueChanged = true;  // VW TODO: kan denne utelates??? ?????
                 } else
                 {
                     newState = IMsoModelIf.ModificationState.STATE_LOCAL;
@@ -140,6 +143,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         {
             m_owner.registerModifiedData();
         }
+    	//m_changed = valueChanged;
     }
 
     /**
@@ -179,6 +183,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         m_localValue = null;
         boolean isChanged = m_state == IMsoModelIf.ModificationState.STATE_LOCAL || m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING;
         m_state = IMsoModelIf.ModificationState.STATE_SERVER;
+        //m_changed = isChanged;
         return isChanged;
     }
 
@@ -191,6 +196,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             m_localValue = null;
             m_state = IMsoModelIf.ModificationState.STATE_SERVER;
         }
+       // m_changed = isChanged;
         return isChanged;
     }
 
@@ -242,21 +248,40 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         return m_required;
     }
 
+    /*
+    public boolean isChanged()
+    {
+        return m_changed;
+    }
+    */
+    
+    public int getCardinality()
+    {
+        return m_cardinality;
+    }
+    
+    public boolean validate() {
+    	if(m_cardinality>0) {
+    		return (getAttrValue()!=null);
+    	}
+    	return true;
+    }
+    
     public static class MsoBoolean extends AttributeImpl<Boolean> implements IMsoBooleanIf
     {
         public MsoBoolean(AbstractMsoObject theOwner, String theName)
         {
-            super(Boolean.class, theOwner, theName, Integer.MAX_VALUE, false);
+            super(Boolean.class, theOwner, theName, 0, Integer.MAX_VALUE, false);
         }
 
         public MsoBoolean(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Boolean.class, theOwner, theName, theIndexNo, false);
+            super(Boolean.class, theOwner, theName, 0, theIndexNo, false);
         }
 
-        public MsoBoolean(AbstractMsoObject theOwner, String theName, int theIndexNo, Boolean aBool)
+        public MsoBoolean(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Boolean aBool)
         {
-            super(Boolean.class, theOwner, theName, theIndexNo, aBool);
+            super(Boolean.class, theOwner, theName, theCardinality, theIndexNo, aBool);
         }
 
         @Override
@@ -292,7 +317,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
         public MsoInteger(AbstractMsoObject theOwner, String theName, boolean isSequenceNumber)
         {
-            super(Integer.class, theOwner, theName, Integer.MAX_VALUE, 0);
+            super(Integer.class, theOwner, theName, 0,Integer.MAX_VALUE, 0);
             m_isSequenceNumber = isSequenceNumber;
         }
 
@@ -303,18 +328,18 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
         public MsoInteger(AbstractMsoObject theOwner, String theName, boolean isSequenceNumber, int theIndexNo)
         {
-            super(Integer.class, theOwner, theName, theIndexNo, 0);
+            super(Integer.class, theOwner, theName, 0, theIndexNo, 0);
             m_isSequenceNumber = isSequenceNumber;
         }
 
         public MsoInteger(AbstractMsoObject theOwner, String theName, int theIndexNo, Integer anInt)
         {
-            this(theOwner, theName,false, theIndexNo, anInt);
+            this(theOwner, theName,false, 0, theIndexNo, anInt);
         }
 
-        public MsoInteger(AbstractMsoObject theOwner,  String theName, boolean isSequenceNumber,int theIndexNo, Integer anInt)
+        public MsoInteger(AbstractMsoObject theOwner,  String theName, boolean isSequenceNumber, int theCardinality, int theIndexNo, Integer anInt)
         {
-            super(Integer.class, theOwner, theName, theIndexNo, anInt);
+            super(Integer.class, theOwner, theName, theCardinality, theIndexNo, anInt);
             m_isSequenceNumber = isSequenceNumber;
         }
 
@@ -360,17 +385,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoDouble(AbstractMsoObject theOwner, String theName)
         {
-            super(Long.class, theOwner, theName, Integer.MAX_VALUE, (double) 0);
+            super(Long.class, theOwner, theName, 0,Integer.MAX_VALUE, (double) 0);
         }
 
         public MsoDouble(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Double.class, theOwner, theName, theIndexNo, (double) 0);
+            super(Double.class, theOwner, theName, 0,theIndexNo, (double) 0);
         }
 
-        public MsoDouble(AbstractMsoObject theOwner, String theName, int theIndexNo, Double aDouble)
+        public MsoDouble(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Double aDouble)
         {
-            super(Double.class, theOwner, theName, theIndexNo, aDouble);
+            super(Double.class, theOwner, theName, theCardinality, theIndexNo, aDouble);
         }
 
         @Override
@@ -430,17 +455,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoString(AbstractMsoObject theOwner, String theName)
         {
-            super(String.class, theOwner, theName, Integer.MAX_VALUE, "");
+            super(String.class, theOwner, theName, 0, Integer.MAX_VALUE, "");
         }
 
         public MsoString(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(String.class, theOwner, theName, theIndexNo, "");
+            super(String.class, theOwner, theName, 0, theIndexNo, "");
         }
 
-        public MsoString(AbstractMsoObject theOwner, String theName, int theIndexNo, String aString)
+        public MsoString(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, String aString)
         {
-            super(String.class, theOwner, theName, theIndexNo, aString);
+            super(String.class, theOwner, theName, theCardinality, theIndexNo, aString);
         }
 
         @Override
@@ -465,17 +490,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         public MsoCalendar(AbstractMsoObject theOwner, String theName)
         {
 //            super(Calendar.class, theOwner, theName, Integer.MAX_VALUE, Calendar.getInstance());
-            super(Calendar.class, theOwner, theName, Integer.MAX_VALUE, null);
+            super(Calendar.class, theOwner, theName, 0, Integer.MAX_VALUE, null);
         }
 
         public MsoCalendar(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Calendar.class, theOwner, theName, theIndexNo, null);
+            super(Calendar.class, theOwner, theName, 0, theIndexNo, null);
         }
 
-        public MsoCalendar(AbstractMsoObject theOwner, String theName, int theIndexNo, Calendar aCalendar)
+        public MsoCalendar(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Calendar aCalendar)
         {
-            super(Calendar.class, theOwner, theName, theIndexNo, aCalendar);
+            super(Calendar.class, theOwner, theName, theCardinality, theIndexNo, aCalendar);
         }
 
         public void setDTG(String aDTG) throws IllegalMsoArgumentException
@@ -526,17 +551,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoPosition(AbstractMsoObject theOwner, String theName)
         {
-            super(Position.class, theOwner, theName, Integer.MAX_VALUE, null);
+            super(Position.class, theOwner, theName, 0, Integer.MAX_VALUE, null);
         }
 
         public MsoPosition(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Position.class, theOwner, theName, theIndexNo, null);
+            super(Position.class, theOwner, theName, 0, theIndexNo, null);
         }
 
-        public MsoPosition(AbstractMsoObject theOwner, String theName, int theIndexNo, Position aPosition)
+        public MsoPosition(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Position aPosition)
         {
-            super(Position.class, theOwner, theName, theIndexNo, aPosition);
+            super(Position.class, theOwner, theName, theCardinality, theIndexNo, aPosition);
         }
 
         @Override
@@ -566,17 +591,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoTimePos(AbstractMsoObject theOwner, String theName)
         {
-            super(TimePos.class, theOwner, theName, Integer.MAX_VALUE, null);
+            super(TimePos.class, theOwner, theName, 0, Integer.MAX_VALUE, null);
         }
 
         public MsoTimePos(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(TimePos.class, theOwner, theName, theIndexNo, null);
+            super(TimePos.class, theOwner, theName, 0, theIndexNo, null);
         }
 
-        public MsoTimePos(AbstractMsoObject theOwner, String theName, int theIndexNo, TimePos aTimePos)
+        public MsoTimePos(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, TimePos aTimePos)
         {
-            super(TimePos.class, theOwner, theName, theIndexNo, aTimePos);
+            super(TimePos.class, theOwner, theName, theCardinality, theIndexNo, aTimePos);
         }
 
         @Override
@@ -605,17 +630,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoPolygon(AbstractMsoObject theOwner, String theName)
         {
-            super(Polygon.class, theOwner, theName, Integer.MAX_VALUE, null);
+            super(Polygon.class, theOwner, theName, 0, Integer.MAX_VALUE, null);
         }
 
         public MsoPolygon(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Polygon.class, theOwner, theName, theIndexNo, null);
+            super(Polygon.class, theOwner, theName, 0, theIndexNo, null);
         }
 
-        public MsoPolygon(AbstractMsoObject theOwner, String theName, int theIndexNo, Polygon aPolygon)
+        public MsoPolygon(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Polygon aPolygon)
         {
-            super(Polygon.class, theOwner, theName, theIndexNo, aPolygon);
+            super(Polygon.class, theOwner, theName, theCardinality, theIndexNo, aPolygon);
         }
 
         @Override
@@ -644,17 +669,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoRoute(AbstractMsoObject theOwner, String theName)
         {
-            super(Route.class, theOwner, theName, Integer.MAX_VALUE, null);
+            super(Route.class, theOwner, theName, 0, Integer.MAX_VALUE, null);
         }
 
         public MsoRoute(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Route.class, theOwner, theName, theIndexNo, null);
+            super(Route.class, theOwner, theName, 0, theIndexNo, null);
         }
 
-        public MsoRoute(AbstractMsoObject theOwner, String theName, int theIndexNo, Route aRoute)
+        public MsoRoute(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Route aRoute)
         {
-            super(Route.class, theOwner, theName, theIndexNo, aRoute);
+            super(Route.class, theOwner, theName, theCardinality, theIndexNo, aRoute);
         }
 
         @Override
@@ -683,17 +708,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         public MsoTrack(AbstractMsoObject theOwner, String theName)
         {
-            super(Track.class, theOwner, theName, Integer.MAX_VALUE, null);
+            super(Track.class, theOwner, theName, 0, Integer.MAX_VALUE, null);
         }
 
         public MsoTrack(AbstractMsoObject theOwner, String theName, int theIndexNo)
         {
-            super(Track.class, theOwner, theName, theIndexNo, null);
+            super(Track.class, theOwner, theName, 0, theIndexNo, null);
         }
 
-        public MsoTrack(AbstractMsoObject theOwner, String theName, int theIndexNo, Track aTrack)
+        public MsoTrack(AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, Track aTrack)
         {
-            super(Track.class, theOwner, theName, theIndexNo, aTrack);
+            super(Track.class, theOwner, theName, theCardinality, theIndexNo, aTrack);
         }
 
         @Override
@@ -720,9 +745,9 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public static class MsoEnum<E extends Enum> extends AttributeImpl<E> implements IMsoEnumIf<E>
     {
-        public MsoEnum(AbstractMsoObject theOwner, String theName, E anInstance)
+        public MsoEnum(AbstractMsoObject theOwner, String theName, int theCardinality, E anInstance)
         {
-            super(anInstance.getClass(), theOwner, theName, Integer.MAX_VALUE, anInstance);
+            super(anInstance.getClass(), theOwner, theName, theCardinality, Integer.MAX_VALUE, anInstance);
         }
 
         @Override

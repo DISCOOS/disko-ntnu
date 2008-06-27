@@ -23,7 +23,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
     private final AttributeImpl.MsoCalendar m_start = new AttributeImpl.MsoCalendar(this, "Start");
     private final AttributeImpl.MsoCalendar m_stop = new AttributeImpl.MsoCalendar(this, "Stop");
 
-    private final AttributeImpl.MsoEnum<SearchSubType> m_subType = new AttributeImpl.MsoEnum<SearchSubType>(this,"SubType", SearchSubType.PATROL);
+    private final AttributeImpl.MsoEnum<SearchSubType> m_subType = new AttributeImpl.MsoEnum<SearchSubType>(this,"SubType", 1, SearchSubType.PATROL);
 
     public static String getSubTypeText(ISearchIf.SearchSubType aType)
     {

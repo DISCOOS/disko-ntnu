@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,20 +14,23 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.IDsIf;
 import org.redcross.sar.modelDriver.IModelDriverIf;
+import org.redcross.sar.mso.ICommitManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoCompareRoute;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.DiskoWorkPool;
-import org.redcross.sar.thread.IDiskoWork;
+import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.Track;
@@ -35,7 +39,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 								implements IDsIf<Boolean>, 
 								           IMsoUpdateListenerIf {
 
-	private static final long MAX_WORK_TIME = 150; // max work cycle time 
+	private static final long DUTY_CYCLE_TIME = 2000;	// Invoke every DUTY_CYCLE_TIME
 	
 	/**
 	 * Listen for Updates of assignments, routes and units
@@ -114,18 +118,29 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		Collections.synchronizedMap(new HashMap<IAssignmentIf, RouteCost>());
 	
 	/**
-	 * Local list of routes
+	 * Update event queue. Buffer between received update and
+	 * handling thread. Only updates that is interesting will
+	 * be added.
 	 */
-	private final List<RouteCost> m_heavy =  new ArrayList<RouteCost>();
+	private final ConcurrentLinkedQueue<Update> m_queue = 
+		new ConcurrentLinkedQueue<Update>();
+	
+	/**
+	 * Local list of cost that requires a full spatial estimation 
+	 * (isReplaced() is <code>true</code>, indicating that the 
+	 * route is replaced and a full estimation must be executed, which
+	 * is time consuming)
+	 */
+	private final List<RouteCost> m_heavySet =  new ArrayList<RouteCost>();
 	
 	/**
 	 * Update event queue. Buffer between received update and
 	 * handling thread. Only updates that is interesting will
 	 * be added.
 	 */
-	private final ConcurrentLinkedQueue<Update> m_queue = 
-		new ConcurrentLinkedQueue<Update>();;
-	
+	private final List<RouteCost> m_workSet = 
+		new ArrayList<RouteCost>();
+			
 	/**
 	 * Estimator id
 	 */
@@ -135,6 +150,16 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	 * Model driver
 	 */
 	private final IModelDriverIf m_driver;
+	
+	/**
+	 * MSO model 
+	 */
+	private final IMsoModelIf m_model;
+	
+	/**
+	 * Commit manager
+	 */
+	private final ICommitManagerIf m_comitter;
 	
 	/**
 	 * Work pool hook
@@ -148,12 +173,14 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	public RouteCostEstimator(String oprID) throws Exception {
 		// forward
 		super(true,false,WorkOnThreadType.WORK_ON_NEW,
-				"Estimerer",0,false,false,true,2000);
+				"Estimerer",0,false,false,true,DUTY_CYCLE_TIME);
 		
 		// prepare
 		m_oprID = oprID;
 		m_workPool = DiskoWorkPool.getInstance();
-		m_driver = MsoModelImpl.getInstance().getModelDriver();
+		m_model = MsoModelImpl.getInstance();
+		m_comitter = (ICommitManagerIf)m_model;
+		m_driver = m_model.getModelDriver();
 		
 		// add listener
 		MsoModelImpl.getInstance().getEventManager().addClientUpdateListener(this);
@@ -298,6 +325,15 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	}
 	
 	/* ===========================================
+	 * Public methods
+	 * ===========================================
+	 */
+	
+	public RouteCost getCost(IAssignmentIf assignment) {
+		return m_costs.get(assignment);
+	}
+	
+	/* ===========================================
 	 * IMsoUpdateListenerIf implementation
 	 * ===========================================
 	 */
@@ -311,21 +347,28 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		// consume?
 		if(!m_oprID.equals(m_driver.getActiveOperationID())) return;
 		
-		// get flags
-        boolean deletedObject  = e.isDeleteObjectEvent();
-        boolean modifiedObject = e.isModifyObjectEvent();
-        boolean modifiedReference = e.isChangeReferenceEvent();
-        boolean resume = false;
-        
-		// is object modified?
-		if (deletedObject || modifiedObject || modifiedReference) {
-			resume = m_queue.add(e);
-		}
+		// not a clear all event?
+		if(!e.isClearAllEvent()) {
 		
-		// estimate expired? 
-		if(resume) {
-			// this ensures faster service when estimates expires on updates
-			m_workPool.resume(this);
+			// get flags
+	        boolean deletedObject  = e.isDeleteObjectEvent();
+	        boolean modifiedObject = e.isModifyObjectEvent();
+	        boolean modifiedReference = e.isChangeReferenceEvent();
+	        boolean resume = false;
+	        
+			// is object modified?
+			if (deletedObject || modifiedObject || modifiedReference) {
+				resume = m_queue.add(e);
+			}
+			
+			/*
+			// estimate expired? 
+			if(resume) {
+				// this ensures faster service when estimates expires on updates
+				m_workPool.resume(this);
+			}
+			*/
+			
 		}
 		
 	}	
@@ -611,8 +654,8 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				RouteCost cost = m_costs.get(assignment);
 				// has cost?
 				if(cost!=null) {
-					// set start time
-					cost.setStartTime(assignment.getTimeStarted());
+					// set start time and position
+					cost.shift(assignment.getTimeStarted(),0);
 					// get owning unit
 					IUnitIf unit = assignment.getOwningUnit();
 					// set position?
@@ -621,7 +664,8 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 						Position p = unit.getPosition();
 						if(p!=null) {
 							try {
-								cost.setOffsetPosition(cost.findNearest(p.getGeoPos()));
+								int offset = cost.findNearest(p.getGeoPos());
+								cost.setStartPosition(offset!=-1?offset:0);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -648,7 +692,8 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 					// update offset position?
 					if(cost==null) {
 						try {
-							cost.setOffsetPosition(cost.findNearest(p.getGeoPos()));
+							int offset = cost.findNearest(p.getGeoPos());
+							cost.setStartPosition(offset!=-1?offset:0);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -660,9 +705,11 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	}
 	
 	public void load() {
-		// forward
-		for(IAssignmentIf it : MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentListItems()) {
-			setEstimate(it);
+		if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+			// forward
+			for(IAssignmentIf it : MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentListItems()) {
+				setEstimate(it);
+			}
 		}
 	}
 	
@@ -726,20 +773,26 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		return true;
 	}
 	
-	private void update(long tic) {
+	private boolean update(long tic) {
 
-		// get first update event
-		Update e = m_queue.poll();
+		// initialize
+		int count = 0;
 		
-		// get maximum work time
-		long maxTime = MAX_WORK_TIME/2;
+		// get available work time
+		long maxTime = m_availableTime/2;
 		
 		// loop over all updates
-		while(e!=null) {
-		
+		while(m_queue.peek()!=null) {
+								
 			// ensure that half MAX_WORK_TIME is only exceeded once
 			if(System.currentTimeMillis()-tic>maxTime)
 				break;
+			
+			// get next update event
+			Update e = m_queue.poll();
+			
+			// increment update counter
+			count++;
 			
 			// get flags
 	        boolean deletedObject  = e.isDeleteObjectEvent();
@@ -759,34 +812,50 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				msoObjectDeleted(msoObj);
 			}			
 					
-			// get next in queue
-			e = m_queue.poll();
-			
 		}
+		
+		// finished
+		return count>0;
 		
 	}	
 	
 	private void estimate(long tic) {
 		
-		// create local heavy list
-		List<RouteCost> local = new ArrayList<RouteCost>(m_costs.size());
+		// initialize heavy count
+		int heavyCount = 0;
 		
-		// get work cycle list
-		List<RouteCost> costs = getWorkCycleList();
+		// initialize local lists
+		List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(10);
+		List<RouteCost> heavySet = new ArrayList<RouteCost>(m_costs.size());
+		List<RouteCost> estimated = new ArrayList<RouteCost>(m_costs.size());
+		
+		// get current work set
+		List<RouteCost> workSet = getWorkSet();
+		
+		// suspend updates when updating estimates
+		MsoModelImpl.getInstance().suspendClientUpdate();
 		
 		// loop over all cost
-		for(RouteCost cost : costs) {
+		for(RouteCost cost : workSet) {
+			
 			// ensure that the MAX_WORK_TIME is only exceeded once
-			if(System.currentTimeMillis()-tic>MAX_WORK_TIME)
+			if(System.currentTimeMillis()-tic>m_availableTime)
 				break;
+			
 			// execute work cycle
 			try {
-				// is heavy?
-				if(cost.isReplaced() && local.size()>0)
-					local.add(cost);
+				// add to heavy list?
+				if(heavyCount > 0 && cost.isReplaced()) {
+					heavySet.add(cost);				
+				}
 				else {
+
+					// increment heavy count?
+					if(cost.isReplaced()) heavyCount++;
+					
 					// forward
 					cost.estimate();
+
 					// update assignment?
 					IAssignmentIf assignment = m_assignments.get(cost);
 					if(assignment!=null) {
@@ -794,52 +863,149 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 						Calendar eta = cost.eta();
 						Calendar current = assignment.getTimeEstimatedFinished();
 						// update estimate?
-						if(eta!=null &&(current!=eta || current.getTimeInMillis()!=eta.getTimeInMillis()))
+						if(eta!=null &&(current!=eta || 
+								current.getTimeInMillis()!=eta.getTimeInMillis())) {
+							
+							/* ========================================================
+							 * IMPORTANT:  An assignment should only be added to 
+							 * updates for commit if and only if the assignment is 
+							 * created (committed to SARA). Furthermore, only the 
+							 * changed attribute should be committed. Concurrent work 
+							 * sets (potentially at least one per work process) should 
+							 * be affected in the same manner as a update event from
+							 * the server would do.
+							 * 
+							 * REASON: This ensures that concurrent work sets is not 
+							 * changed in a way that is unpredicted by the user that
+							 * is working on these work sets. 
+							 * 
+							 * For instance, lets look at an example where an assignment 
+							 * is created locally and thus, not committed to SARA yet. 
+							 * If this thread performs a full commit on all changed objects,
+							 * the concurrent work sets are also committed. This may not
+							 * be what the user expects to happen, the user may instead
+							 * want to rollback the changes. This will not be possible 
+							 * any longer because this thread already has committed all 
+							 * the changes. Hence, these precautions should be is in the 
+							 * concurrent work sets best interest, an the least invasive 
+							 * ones. 
+							 * ======================================================== */
+							
+							// update assignment
 							assignment.setTimeEstimatedFinished(eta);
+							
+							SimpleDateFormat format = new SimpleDateFormat("hh:MM:ss");
+							//Calendar c = Calendar.getInstance();
+							//c.setTimeInMillis(System.currentTimeMillis());
+							System.out.println("RouteCostEstimator:: " + MsoUtils.getAssignmentName(assignment, 1) + " " + format.format(eta.getTime()));			
+							
+							// add to updates?
+							if(assignment.isCreated()) {
+								// get update holder set
+								IUpdateHolderIf holder = m_comitter.getUpdates(assignment);
+								// has updates?
+								if(holder!=null) {
+									// is modified?
+									if(holder.isModified()) {
+										// set partial update
+										holder.setPartial(assignment.getTimeEstimatedFinishedAttribute().getName());
+										// add to updates?										
+										updates.add(holder);
+									}
+								}
+							}
+						}
+						// add to estimated
+						estimated.add(cost);
 					}
-				}
+				}				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
+		try {
+			// commit changes?
+			if(updates.size()>0) {
+				m_comitter.commit(updates);
+			}
+		} catch (CommitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// resume updates
+		MsoModelImpl.getInstance().resumeClientUpdate();				
+		
+		// remove estimated from work set
+		workSet.removeAll(estimated);
+		
+		// set remaining as next work set
+		setWorkSet(workSet);
+		
 		// update heavy list
-		setHeavyList(local);
+		setHeavySet(heavySet);
+		
 		
 	}			
 	
-	private List<RouteCost> getWorkCycleList() {
-		// create work list
+	private List<RouteCost> getWorkSet() {
+		
+		// create new work set 
 		List<RouteCost> list = new ArrayList<RouteCost>(m_costs.size());
+		
 		// add the rest
-		for(RouteCost it: m_heavy) {
+		for(RouteCost it: m_heavySet) {
 			// add to work list?
 			if(!(it.isSuspended() || it.isArchived()))			
 				list.add(it);
 		}
+		
 		// start with heavy work
-		list.addAll(m_heavy);
-		// add the rest
-		for(IAssignmentIf it : m_costs.keySet()) {
+		//list.addAll(m_heavySet);
+		
+		// add the rest from last time to prevent
+		// starvation of costs in the back of m_costs.values() 
+		for(RouteCost it: m_workSet) {
+			list.add(it);
+		}		
+		
+		// add the missing, and remove all archived costs 
+		for(IAssignmentIf it : m_costs.keySet()) {						
+			
 			// get cost
 			RouteCost cost = m_costs.get(it);
+			
 			// add to work list?
 			if(!(cost.isSuspended() || cost.isArchived() || list.contains(cost)))
 				list.add(cost);
+			
 			// remove archived costs
 			if(cost.isArchived()) {
 				m_archived.put(it, cost);
 				if(list.contains(cost)) 
 					list.remove(cost);
 			}
+			
 		}
+		
+		// replace current work set
+		setWorkSet(list);
+		
 		// finished
 		return list;
+		
 	}
 	
-	private void setHeavyList(List<RouteCost> list) {
-		m_heavy.clear();
-		m_heavy.addAll(list);
+	private void setWorkSet(List<RouteCost> list) {
+		m_workSet.clear();
+		m_workSet.addAll(list);
+	}
+	
+	private void setHeavySet(List<RouteCost> list) {
+		m_heavySet.clear();
+		m_heavySet.addAll(list);
 	}
 	
 }

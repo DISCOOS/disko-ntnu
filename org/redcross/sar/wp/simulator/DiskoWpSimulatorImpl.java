@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -157,17 +159,30 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     
 	@Override
 	public void afterOperationChange() {
+    	super.afterOperationChange();
 		update(true);
 	}
 
 	private void update(boolean init) {
-		if(!isActive()) return;
-		if(init) {
-			getStartedTimeAttr().setValue(getMsoModel().getMsoManager().getOperation().getCreationTime());
+		if(!(isActive() && getMsoModel().getMsoManager().operationExists())) return;
+		SimpleDateFormat f = new SimpleDateFormat();
+		if(init || true) {
+			/*Calendar start = getMsoModel().getMsoManager().getOperation().getCreatedTime();
+			String dtg = DTG.CalToDTG(start);
+			dtg = f.format(start.getTime());
+			Calendar c = getStartedTimeAttr().getValue();
+			int seconds = (int)(c.getTimeInMillis() - c.getTimeInMillis())/1000;*/			
+			getStartedTimeAttr().setValue(getMsoModel().getMsoManager().getOperation().getCreatedTime());
 		}
 		Calendar c = getStartedTimeAttr().getValue();
 		if(c!=null) {
-			int seconds = (int)(System.currentTimeMillis() - getStartedTimeAttr().getValue().getTimeInMillis())/1000;
+			/*Calendar now = Calendar.getInstance();
+			now.setTimeInMillis(System.currentTimeMillis());
+			//System.out.println("START:"+f.format(c.getTime()));
+			//System.out.println("NOW:"+f.format(now.getTime()));
+			int seconds = (int)(now.getTimeInMillis() - c.getTimeInMillis())/1000;*/
+			int seconds = (int)(System.currentTimeMillis() - c.getTimeInMillis())/1000;
+			
 			getEffortTimeAttr().setValue(Utils.getTime(seconds));
 		}		
 		// get simulator statistics?
@@ -526,7 +541,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 		
 
 		@Override
-		public void done() {
+		public void beforeDone() {
 			
 			try {
 				// dispatch task
@@ -538,8 +553,6 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// do the rest
-			super.done();
 		}
 		
 		private void commit() {

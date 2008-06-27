@@ -64,29 +64,41 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 
 	public void handleMsoUpdateEvent(Update e) {
 		
-		// get flags
+		// get mask
 		int mask = e.getEventTypeMask();
-        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 		
         // get mso object
         IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
         
-        // add object?
-		if (createdObject) {
-			msoObjectCreated(msoObj,mask);
-		}
-		// is object modified?
-		if ( (addedReference || removedReference || modifiedObject)) {
-			msoObjectChanged(msoObj,mask);
-		}
-		// delete object?
-		if (deletedObject) {
-			msoObjectDeleted(msoObj,mask);		
-		}
+        // get flag
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+		
+        // clear all?
+        if(clearAll) {
+        	m_units.clear();
+			fireTableDataChanged();		
+        }
+        else {		
+        	// get flags
+	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			
+	        // add object?
+			if (createdObject) {
+				msoObjectCreated(msoObj,mask);
+			}
+			// is object modified?
+			if ( (addedReference || removedReference || modifiedObject)) {
+				msoObjectChanged(msoObj,mask);
+			}
+			// delete object?
+			if (deletedObject) {
+				msoObjectDeleted(msoObj,mask);		
+			}
+        }
 	}
 
 	private void msoObjectCreated(IMsoObjectIf msoObj, int mask) {

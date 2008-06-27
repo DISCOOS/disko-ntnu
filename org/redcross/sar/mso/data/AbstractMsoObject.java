@@ -166,9 +166,22 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_MsoObjectId.getId();
     }
 
-    public Calendar getCreationTime()
+    public Calendar getCreatedTime()
     {
         return m_MsoObjectId.getCreatedTime();
+    }
+    
+    /**
+     * Sets created state
+     *
+     */
+    public void setCreated(Date time) {
+    	m_MsoObjectId.setCreated(time);
+    }
+    
+    public boolean isCreated()
+    {
+        return m_MsoObjectId.isCreated();
     }
     
     public String shortDescriptor()
@@ -732,8 +745,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 
         m_clientUpdateMask |= clientEventTypeMask;
-        if ((m_clientUpdateMask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0 || // Always update when object is deleted
-                !(m_suspendClientUpdate || MsoModelImpl.getInstance().updateSuspended()))
+        
+        //if ((m_clientUpdateMask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0 || // Always update when object is deleted
+        //        !(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
+        
+        if (!(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
         {
             notifyClientUpdate();
         }
@@ -900,7 +916,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      */
     public void resumeClientUpdate()
     {
-        if (MsoModelImpl.getInstance().updateSuspended())
+        if (MsoModelImpl.getInstance().isUpdateSuspended())
         {
             return;
         }
@@ -934,6 +950,36 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
+    public Object validate() {
+        
+    	for (IAttributeIf<?> it : m_attributeList)
+        {
+            if(!it.validate()) return it;
+        }
+        
+        for (MsoListImpl list : m_referenceLists.values())
+        {
+        	Object retVal = list.validate(); 
+            if(!isTrue(retVal)) return retVal;
+        }
+        
+        for (MsoReferenceImpl reference : m_referenceObjects.values())
+        {
+        	Object retVal = reference.validate(); 
+            if(!isTrue(retVal)) return retVal;
+        }
+        
+        
+        // is valid
+        return true;
+    }
+    
+    private boolean isTrue(Object value) {
+    	if(value instanceof Boolean)
+    		return (Boolean)value;
+    	return false;
+    }    
+    
     public Collection<ICommittableIf.ICommitReferenceIf> getCommittableAttributeRelations()
     {
         Vector<ICommittableIf.ICommitReferenceIf> retVal = new Vector<ICommittableIf.ICommitReferenceIf>();
@@ -983,15 +1029,13 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 			return m_created;
 		}
 		
-		/*
-		public void setCreatedTime(Calendar created) {
-			m_created = created;
+		public void setCreated(Date time) {
+			m_created = convert(time);
 		}
 		
-		public void setCreatedTime(Date created) {
-			m_created = convert(created);
+		public boolean isCreated() {
+			return m_created!=null;
 		}
-		*/
 		
 		private Calendar convert(Date date) {
             if(date!=null) {

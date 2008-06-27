@@ -385,24 +385,19 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		public AbstractToolWork(boolean notify) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,notify,true,false,0);
+					"Vent litt",100,notify,false,false,0);
 		}
 
 		@Override
-		public abstract T doWork();
-
-		@Override
-		public void run() {
+		public void beforePrepare() {
 			// set flag to prevent reentry
 			setIsWorking();
 			// suspend for faster execution¨
 			suspendUpdate();			
-			// forward
-			super.run();
-			// is on event dispatch thread?
-			if(SwingUtilities.isEventDispatchThread())
-				done();
-		}
+		}		
+		
+		@Override
+		public abstract T doWork();
 
 		/**
 		 * done 
@@ -411,7 +406,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		 * 
 		 */
 		@Override
-		public void done() {
+		public void afterDone() {
 			try {
 				// resume update
 		        resumeUpdate();
@@ -421,8 +416,6 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-	        // forward
-	        super.done();
 		}
 	}
 	

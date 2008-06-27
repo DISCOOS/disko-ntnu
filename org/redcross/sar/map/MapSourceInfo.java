@@ -64,7 +64,9 @@ public class MapSourceInfo {
 	}
 	
 	public String getMapBase(int index) {
-		return bases.get(index-1);
+		if(!(index>0 && index<=bases.size()))
+			return bases.get(index-1);
+		return null;
 	}
 	
 	public boolean addMapBase(String name) {

@@ -115,5 +115,21 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * @return The cloned list.
      */
     public IMsoListIf<M> getClone();
+    
+    /**
+     * Get list cardinality
+     * 
+     *@return cardinality, if >0, then list can not be empty. 
+     */
+    public int getCardinality();
+
+    /**
+     * Validates list and object states (cardinality of attributes and relations)
+     * <p/>
+     * @return  <code>true</code> if the list cardinality and all object states are valid, 
+     * <code>false</code> is list cardinality is violated and <code>IMsoObjectIf</code> otherwise.
+     */
+    public Object validate();
+    
 
 }

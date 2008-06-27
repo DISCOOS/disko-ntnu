@@ -38,7 +38,7 @@ public class DiskoProgressMonitor {
 	private boolean m_inhibit = true;
 	private long m_millisToPopup = POPUP_MILLIS;
 	private long m_millisToCancel = 0;			// no automatic cancel as default
-	private String m_note = null;
+	private List<String> m_notes = null;
 	private boolean m_intermediate = false;
 	private DecisionWorker m_worker = null;
 	private boolean m_hasProgress = false;
@@ -52,6 +52,8 @@ public class DiskoProgressMonitor {
 
 	private DiskoProgressMonitor() {
 		// prepare
+		m_notes = new ArrayList<String>(1);
+		m_notes.add("Vent litt");
 		m_listeners = new ArrayList<IDiskoProgressListener>();
 	}
 	
@@ -105,12 +107,13 @@ public class DiskoProgressMonitor {
 		// initialize
 		m_min = 0;
 		m_max = 0;
-		m_progress = progress; 
-		m_note = note;
+		m_progress = progress;
 		m_intermediate = (min == max);
 		m_hasProgress = false;
 		// start progress?
 		if(m_inAction == 0) {
+			// set default value
+			m_notes.set(0,note);
 			// update timeout values
 			m_millisToPopup = millisToPopup;
 			m_millisToCancel = millisToCancel;
@@ -118,15 +121,22 @@ public class DiskoProgressMonitor {
 			m_progress = 0;
 			// start decision thread
 			create();
+			// add note?
+			if(m_inAction>0) {
+				m_notes.add(note);				
+			}
 		}
 		else {
 			// increment
 			m_inAction++;
+			// set note
+			m_notes.add(note);
 			// update progress bar
 			scheduleUpdate();
 			// forward
 			fireUpdateProgressEvent(DiskoProgressEventType.EVENT_UPDATE);			
 		}
+		
 		// return count
 		return m_inAction;
 	}
@@ -134,7 +144,7 @@ public class DiskoProgressMonitor {
 	public synchronized int progress(String note, int step, boolean auto) {
 		if(m_inAction>0) {		
 			// update
-			m_note = note;
+			m_notes.set(m_inAction,note);
 			m_progress = step;
 			m_hasProgress = true;
 			// update progress bar
@@ -154,8 +164,11 @@ public class DiskoProgressMonitor {
 	
 	public synchronized int finish(boolean force) {		
 		// decrement
-		if(m_inAction>0)
-			m_inAction--;		
+		if(m_inAction>0) {
+			m_notes.remove(m_inAction);			
+			m_inAction--;
+			update();
+		}
 		// finished?
 		if(m_inAction==0 || force) {		
 			// forward
@@ -173,8 +186,11 @@ public class DiskoProgressMonitor {
 	
 	public synchronized int cancel(boolean force) {		
 		// decrement
-		if(m_inAction>0)
+		if(m_inAction>0) {
+			m_notes.remove(m_inAction);			
 			m_inAction--;
+			update();
+		}
 		// finished?
 		if(m_inAction==0 || force) {		
 			// forward
@@ -240,7 +256,7 @@ public class DiskoProgressMonitor {
 	 * 
 	 */
 	public synchronized String getNote() {
-		return m_note;
+		return m_notes.get(m_inAction);
 	}
 
 	/**
@@ -251,7 +267,7 @@ public class DiskoProgressMonitor {
 	 */
 	public synchronized void setNote(String note){
 		// update
-		m_note = note;
+		m_notes.set(m_inAction,note);
 		// notify?
 		if(m_inAction>0) {
 			// update progress panel
@@ -385,15 +401,17 @@ public class DiskoProgressMonitor {
 	private void update() {
 		// valid?
 		if(m_inAction>0) {
-			// prepate progress bar
+			// prepare progress bar
 			if(getIntermediate()) {
 				getProgressPanel().setLimits(m_min, m_max, true);
 			}
 			else {
 				getProgressPanel().setLimits(0, 0, false);
 			}
+			// get note
+			String note = m_notes.get(m_inAction);
 			// update progress 
-			getProgressPanel().setProgress(m_progress,m_note,m_note);			
+			getProgressPanel().setProgress(m_progress,note,note);			
 		}
 	}
 	

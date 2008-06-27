@@ -18,7 +18,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
     private final AttributeImpl.MsoString m_telephone2 = new AttributeImpl.MsoString(this, "Telephone2");
     private final AttributeImpl.MsoString m_telephone3 = new AttributeImpl.MsoString(this, "Telephone3");
 
-    private final AttributeImpl.MsoEnum<PersonGender> m_gender = new AttributeImpl.MsoEnum<PersonGender>(this, "Gender", PersonGender.UNKNOWN);
+    private final AttributeImpl.MsoEnum<PersonGender> m_gender = new AttributeImpl.MsoEnum<PersonGender>(this, "Gender", 1, PersonGender.UNKNOWN);
 
     public AbstractPerson(IMsoObjectIf.IObjectIdIf anObjectId)
     {

@@ -7,7 +7,7 @@ public class RouteListImpl extends MsoListImpl<IRouteIf> implements IRouteListIf
 
     public RouteListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public IRouteIf createRoute(Route aRoute)

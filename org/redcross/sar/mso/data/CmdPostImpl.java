@@ -27,7 +27,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final AttributeImpl.MsoString m_telephone1 = new AttributeImpl.MsoString(this, "Telephone1");
     private final AttributeImpl.MsoString m_telephone2 = new AttributeImpl.MsoString(this, "Telephone2");
     private final AttributeImpl.MsoString m_telephone3 = new AttributeImpl.MsoString(this, "Telephone3");
-    private final AttributeImpl.MsoEnum<CmdPostStatus> m_status = new AttributeImpl.MsoEnum<CmdPostStatus>(this, "Status", CmdPostStatus.IDLE);
+    private final AttributeImpl.MsoEnum<CmdPostStatus> m_status = new AttributeImpl.MsoEnum<CmdPostStatus>(this, "Status", 1, CmdPostStatus.IDLE);
 
     private final AbstractDerivedList<ICommunicatorIf> m_communicatorList;
     private final TimeLineImpl m_timeLine = new TimeLineImpl();

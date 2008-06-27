@@ -5,6 +5,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.document.NumericDocument;
+import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.AbstractDerivedList;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -203,56 +204,59 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 			return true;
 		}
 
-		AbstractDerivedList<ICommunicatorIf> communicatorList = m_wp.getMsoManager().getCmdPost().getCommunicatorList();
-		try
-		{
-			// Select the communicator matching number and letter, if no items are selected, unit does not exist
-			List<ICommunicatorIf> communicators = communicatorList.selectItems(
-					new Selector<ICommunicatorIf>()
-					{
-						public boolean select(ICommunicatorIf communicator)
+		if(m_wp.getMsoManager().operationExists()) {
+			AbstractDerivedList<ICommunicatorIf> communicatorList = m_wp.getMsoManager().getCmdPost().getCommunicatorList();
+			try
+			{
+				// Select the communicator matching number and letter, if no items are selected, unit does not exist
+				List<ICommunicatorIf> communicators = communicatorList.selectItems(
+						new Selector<ICommunicatorIf>()
 						{
-							String prefix1 = typeText.isEmpty() ? "" : typeText.substring(0, 1);
-							String prefix2 = String.valueOf(communicator.getCommunicatorNumberPrefix());
-							if((communicator.getCommunicatorNumber() == Integer.valueOf(numberText))
-									&& (prefix1.equalsIgnoreCase(prefix2)))
+							public boolean select(ICommunicatorIf communicator)
 							{
-								if(communicator instanceof IUnitIf) {
-									IUnitIf unit = (IUnitIf)communicator;
-									UnitStatus status = unit.getStatus();
-									// is selectable?
-									return !(UnitStatus.EMPTY.equals(status) 
-											|| UnitStatus.RELEASED.equals(status));
+								String prefix1 = typeText.isEmpty() ? "" : typeText.substring(0, 1);
+								String prefix2 = String.valueOf(communicator.getCommunicatorNumberPrefix());
+								if((communicator.getCommunicatorNumber() == Integer.valueOf(numberText))
+										&& (prefix1.equalsIgnoreCase(prefix2)))
+								{
+									if(communicator instanceof IUnitIf) {
+										IUnitIf unit = (IUnitIf)communicator;
+										UnitStatus status = unit.getStatus();
+										// is selectable?
+										return !(UnitStatus.EMPTY.equals(status) 
+												|| UnitStatus.RELEASED.equals(status));
+									}
+									// the rest is selectable by default
+									return true;
 								}
-								// the rest is selectable by default
-								return true;
+								return false;
 							}
-							return false;
-						}
-					},
-					new Comparator<ICommunicatorIf>()
-					{
-						public int compare(ICommunicatorIf arg0,
-								ICommunicatorIf arg1)
+						},
+						new Comparator<ICommunicatorIf>()
 						{
-							return 0;
-						}
-					});
-
-			// If communicators is empty no units exist that match the current selection
-			if(communicators.isEmpty())
-			{
-				return false;
+							public int compare(ICommunicatorIf arg0,
+									ICommunicatorIf arg1)
+							{
+								return 0;
+							}
+						});
+	
+				// If communicators is empty no units exist that match the current selection
+				if(communicators.isEmpty())
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
 			}
-			else
+			catch(Exception e)
 			{
-				return true;
+				// consume
 			}
 		}
-		catch(Exception e)
-		{
-			return false;
-		}
+		return false;
 	}
 
 // todo remove or improve
@@ -402,7 +406,9 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 				communicator = message.getSingleReceiver();
 				if(communicator == null)
 				{
-					communicator = (ICommunicatorIf)m_wp.getMsoManager().getCmdPost();
+					if(m_wp.getMsoManager().operationExists()) {
+						communicator = (ICommunicatorIf)m_wp.getMsoManager().getCmdPost();
+					}
 				}
 				m_unitNumberField.setText(String.valueOf(communicator.getCommunicatorNumber()));
 				m_unitTypeField.setText(String.valueOf(communicator.getCommunicatorNumberPrefix()));
@@ -580,13 +586,15 @@ public class UnitFieldSelectionDialog extends DefaultDialog implements IEditMess
 			char prefix = m_unitTypeField.getText().charAt(0);
 			int number = Integer.valueOf(m_unitNumberField.getText());
 
-			for(ICommunicatorIf communicator : m_wp.getMsoManager().getCmdPost().getActiveCommunicators())
-			{
-				if(communicator.getCommunicatorNumber() == number &&
-						communicator.getCommunicatorNumberPrefix() == prefix)
+			if(m_wp.getMsoManager().operationExists()) {
+				for(ICommunicatorIf communicator : m_wp.getMsoManager().getCmdPost().getActiveCommunicators())
 				{
-					sender = communicator;
-					break;
+					if(communicator.getCommunicatorNumber() == number &&
+							communicator.getCommunicatorNumberPrefix() == prefix)
+					{
+						sender = communicator;
+						break;
+					}
 				}
 			}
 		}

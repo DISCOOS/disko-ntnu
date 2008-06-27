@@ -89,7 +89,8 @@ public class UnitsPanel extends BasePanel {
 	private void update(int firstRow, int lastRow) {
 		for(int i = firstRow;i<=lastRow;i++) {
 			IUnitIf unit = m_model.getUnit(i);
-			m_units.get(unit).update();
+			UnitStatusPanel panel = m_units.get(unit); 
+			if(panel!=null) panel.update();
 		}		
 	}
 	

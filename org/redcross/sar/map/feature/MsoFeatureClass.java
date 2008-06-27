@@ -61,6 +61,16 @@ public class MsoFeatureClass implements IFeatureClass, IGeoDataset {
 		feature.setMsoObject(null);
 		data.remove(feature);
 	}
+	
+	public void removeAll() throws AutomationException, IOException {
+		int count = data.size();
+    	// loop over all features and remove them
+    	for(int i = 0; i < count; i++) {
+    		data.get(i).setShapeByRef(null);
+    		data.get(i).setMsoObject(null);
+    	}
+    	data.clear();
+	}
 
 	public IFeatureCursor IFeatureClass_insert(boolean arg0)
 			throws IOException, AutomationException {

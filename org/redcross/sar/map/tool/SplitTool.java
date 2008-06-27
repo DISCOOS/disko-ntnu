@@ -167,7 +167,7 @@ public class SplitTool extends AbstractDiskoTool {
 		return false;
 	}
 	
-	class SplitWork extends AbstractToolWork {
+	class SplitWork extends AbstractToolWork<Boolean> {
 
 		private Point p = null;
 		private DiskoMap map = null;
@@ -202,11 +202,13 @@ public class SplitTool extends AbstractDiskoTool {
 								IMsoObjectIf msoObj = editFeature.getMsoObject();
 								IAreaIf area = MsoUtils.getOwningArea(msoObj);
 								if(area!=null) {
-			                        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();      // todo sjekk etter endring av GeoCollection
-			                        IRouteIf route = cmdPost.getRouteList().createRoute(MapUtil.getMsoRoute(result[0]));
-			                        area.setAreaGeodataItem(index,route);
-			                        route = cmdPost.getRouteList().createRoute(MapUtil.getMsoRoute(result[1]));
-			                        area.addAreaGeodata(route);
+									if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+				                        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
+				                        IRouteIf route = cmdPost.getRouteList().createRoute(MapUtil.getMsoRoute(result[0]));
+				                        area.setAreaGeodataItem(index,route);
+				                        route = cmdPost.getRouteList().createRoute(MapUtil.getMsoRoute(result[1]));
+				                        area.addAreaGeodata(route);
+									}
 								}
 		                    }
 						}
@@ -237,7 +239,7 @@ public class SplitTool extends AbstractDiskoTool {
 		 * 
 		 */
 		@Override
-		public void done() {		
+		public void beforeDone() {		
 			try {
 				
 				// get result
@@ -251,8 +253,6 @@ public class SplitTool extends AbstractDiskoTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// forward to super
-			super.done();							
 		}
 	}		
 }

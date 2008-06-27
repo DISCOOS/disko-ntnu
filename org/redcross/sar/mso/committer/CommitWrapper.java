@@ -37,39 +37,61 @@ public class CommitWrapper implements ICommitWrapperIf
     * @param anObject The modified object.
     * @param aMask A combination of {@link org.redcross.sar.mso.event.MsoEvent.EventType} values.
     */
-    public void add(IMsoObjectIf anObject, int aMask)
+    /*
+    public void add(IMsoObjectIf anObject, int aMask, List<String> attributes)
     {
-        boolean createdObject = (aMask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject = (aMask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (aMask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean modifiedReference = (aMask & (MsoEvent.EventType.MODIFIED_REFERENCE_EVENT.maskValue() |
-                MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue() |
-                MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue())) != 0;
-
-        if (createdObject && deletedObject)
-        {
-            return;
-        }
-        if (createdObject)
-        {
-            m_commitObjects.add(new CommittableImpl.CommitObject(anObject, CommitManager.CommitType.COMMIT_CREATED));
-            m_commitAttributeReferences.addAll(anObject.getCommittableAttributeRelations());
-            m_commitListReferences.addAll(anObject.getCommittableListRelations());
-            return;
-        }
-        if (deletedObject)
-        {
-            m_commitObjects.add(new CommittableImpl.CommitObject(anObject, CommitManager.CommitType.COMMIT_DELETED));
-            return;
-        }
-        if (modifiedObject)
-        {
-            m_commitObjects.add(new CommittableImpl.CommitObject(anObject, CommitManager.CommitType.COMMIT_MODIFIED));
-        }
-        if (modifiedReference)
-        {
-            m_commitAttributeReferences.addAll(anObject.getCommittableAttributeRelations());
-            m_commitListReferences.addAll(anObject.getCommittableListRelations());
-        }
+    */
+    	
+    /**
+     * Add an object to the wrapper.
+     *
+     * @param IUpdateHolderIf holder - The holder of the update information
+     */
+    public void add(IUpdateHolderIf anHolder)
+    {
+    	
+    	// get information
+    	IMsoObjectIf anObject = anHolder.getMsoObject();
+    	
+    	// is partial commit?
+    	if(anHolder.isPartial()) {
+    		// only schedule modified data
+    		m_commitObjects.add(new CommittableImpl.CommitObject(anObject, 
+    				CommitManager.CommitType.COMMIT_MODIFIED,anHolder.getPartial()));
+    	}
+    	else {    	
+    		
+	    	// full commit, get flags
+	        boolean createdObject = anHolder.isCreated();
+	        boolean deletedObject = anHolder.isDeleted();
+	        boolean modifiedObject = anHolder.isModified();
+	        boolean modifiedReference = anHolder.isReferenceChanged();
+	
+	        if (createdObject && deletedObject)
+	        {
+	            return;
+	        }
+	        if (createdObject)
+	        {
+	            m_commitObjects.add(new CommittableImpl.CommitObject(anObject, CommitManager.CommitType.COMMIT_CREATED,null));
+	            m_commitAttributeReferences.addAll(anObject.getCommittableAttributeRelations());
+	            m_commitListReferences.addAll(anObject.getCommittableListRelations());
+	            return;
+	        }
+	        if (deletedObject)
+	        {
+	            m_commitObjects.add(new CommittableImpl.CommitObject(anObject, CommitManager.CommitType.COMMIT_DELETED,null));
+	            return;
+	        }
+	        if (modifiedObject)
+	        {
+	            m_commitObjects.add(new CommittableImpl.CommitObject(anObject, CommitManager.CommitType.COMMIT_MODIFIED,null));
+	        }
+	        if (modifiedReference)
+	        {
+	            m_commitAttributeReferences.addAll(anObject.getCommittableAttributeRelations());
+	            m_commitListReferences.addAll(anObject.getCommittableListRelations());
+	        }
+    	}	       
     }
 }

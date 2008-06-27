@@ -42,8 +42,10 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
  				LayerCode.SEARCH_AREA_LAYER, msoModel, srs, 
  				esriGeometryType.esriGeometryPolygon, eventStack);
  		createSymbols();
- 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getSearchAreaListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getSearchAreaListItems().toArray());
+		}
 	}
  	
  	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 

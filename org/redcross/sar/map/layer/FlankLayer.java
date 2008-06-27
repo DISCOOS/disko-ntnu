@@ -9,6 +9,7 @@ import org.redcross.sar.map.feature.FlankFeature;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
@@ -33,8 +34,10 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 				LayerCode.FLANK_LAYER, msoModel, srs, 
 				esriGeometryType.esriGeometryPolygon,eventStack);
 		createSymbols();
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getAreaListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getAreaListItems().toArray());
+		}
 	}
 	
 	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 

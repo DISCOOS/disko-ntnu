@@ -1,12 +1,15 @@
 package org.redcross.sar.mso;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.except.MsoNullPointerException;
+import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 
@@ -77,7 +80,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     public IOperationIf createOperation(String aNumberPrefix, String aNumber, IMsoObjectIf.IObjectIdIf operationId)
     {
-        if (m_operation != null)
+        if (m_operation != null && !m_operation.hasBeenDeleted())
         {
             throw new DuplicateIdException("An operation already exists");
         }
@@ -87,28 +90,57 @@ public class MsoManagerImpl implements IMsoManagerIf
         return m_operation;
     }
 
-
+    /**
+     * Test if an operation exists
+     *
+     * @return <code>true</code> if an operation exists, <code>false</code> otherwise 
+     */
+    public boolean operationExists() {
+    	return m_operation!=null && !isOperationDeleted();
+    }
+    
+    /**
+     * Test if an operation is deleted
+     *
+     * @return <code>true</code> if operation is deleted, <code>false</code> otherwise 
+     */
+    public boolean isOperationDeleted() {
+    	return m_operation!=null && m_operation.hasBeenDeleted();
+    }
+        
     public IOperationIf getOperation()
-    {
-        return m_operation;
+    {    	
+        return getExistingOperation();
     }
 
+    private IOperationIf getExistingOperation()
+    {
+    	if(m_operation==null)
+        	throw new MsoRuntimeException("No Operation exists.");
+    	if(m_operation.hasBeenDeleted())
+        	throw new MsoRuntimeException("Operation is deleted.");
+    	return m_operation;
+    }
+    
     public ICmdPostIf getCmdPost()
     {
-        return m_operation != null ? m_operation.getCmdPostList().getItem() : null;
+    	//List<ICmdPostIf> list = new ArrayList<ICmdPostIf>(getOperation().getCmdPostList().getItems());
+        //return list.size()>0 ? list.get(0) : null;
+        return getExistingCmdPost();
     }
 
     private ICmdPostIf getExistingCmdPost()
     {
-        ICmdPostIf retVal = getCmdPost();
-        if (retVal == null)
+        ICmdPostIf cmdPost = getExistingOperation().getCmdPostList().getItem();
+        if (cmdPost == null)
         {
             
-        	System.out.println("CMDPOST:=null");
+        	//System.out.println("CMDPOST:=null");
             
-        	//throw new MsoException("No CmdPost exists.");
+        	throw new MsoRuntimeException("No CmdPost exists.");
+        	
         }
-        return retVal;
+        return cmdPost;
     }
 
     public CmdPostImpl getCmdPostImpl()
@@ -118,27 +150,43 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     public IHierarchicalUnitIf getCmdPostUnit()
     {
-        return (IHierarchicalUnitIf) m_operation.getCmdPostList().getItem();
+        return (IHierarchicalUnitIf) getCmdPost();
     }
 
 
     public ICommunicatorIf getCmdPostCommunicator()
     {
-        return (ICommunicatorIf) m_operation.getCmdPostList().getItem();
+        return (ICommunicatorIf) getExistingCmdPost();
     }
 
-    public boolean remove(IMsoObjectIf aMsoObject) throws MsoNullPointerException
+    public boolean remove(IMsoObjectIf aMsoObject) throws MsoException
     {
         if (aMsoObject == null)
         {
-            throw new MsoNullPointerException("Try to delete a null object");
+            throw new MsoNullPointerException("Tried to delete a null object");
         }
-
-        if (aMsoObject instanceof OperationImpl)
+        
+        if (aMsoObject instanceof IOperationIf)
         {
-            if (aMsoObject == m_operation)
-            {
-                // This methods fails if non-deleteable references exist in the model... 
+            throw new MsoException("Mso object of type IOperationIf can not be removed");
+        }
+                
+        return aMsoObject.deleteObject();
+        
+    }
+    
+    protected boolean clearOperation() {
+    	
+    	if(operationExists()) {
+    		// forward
+    		MsoModelImpl.getInstance().suspendClientUpdate();    		
+    		// remove operation
+    		try {
+	                
+	        	/* ==============================================================
+                 * FIX: This methods fails if non-deleteable references exists in the 
+                 * model. This should not happend!
+                 * ============================================================== */
                 boolean ret = m_operation.deleteObject();
             	
             	// remove reference
@@ -146,32 +194,37 @@ public class MsoManagerImpl implements IMsoManagerIf
                 
     	    	// do garbage collection
     	    	Runtime.getRuntime().gc();
-                
-                return ret;
-            }
-            return false;
-        } else
-        {
-            return aMsoObject.deleteObject();
-        }
+	                
+			} catch (Exception e) {
+				e.printStackTrace();
+	        	Utils.showError(e.getMessage());
+	            rollback();
+	            return false;
+			}
+    		// forward
+    		MsoModelImpl.getInstance().resumeClientUpdate();
+    		// finished
+    		return true;
+    	}
+    	// nothing changed
+    	return false;    		
     }
 
     public void resumeClientUpdate()
     {
-        if (m_operation != null)
-            m_operation.resumeClientUpdates();
+    	if(operationExists())
+    		getExistingOperation().resumeClientUpdates();
     }
 
     public void postProcessCommit()
     {
-        if (m_operation != null)
-            m_operation.postProcessCommit();
+    	((OperationImpl)getExistingOperation()).postProcessCommit();
     }
 
     public void rollback()
     {
-        if (m_operation != null)
-            m_operation.rollback();
+    	if(operationExists())
+    		((OperationImpl)getExistingOperation()).rollback();
     }
 
     public IAreaIf createArea()
@@ -247,12 +300,17 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     public ICmdPostIf createCmdPost()
     {
-        return m_operation.getCmdPostList().createCmdPost();
+        if (getExistingCmdPost() != null)
+        {
+            throw new DuplicateIdException("An operation already exists");
+        }
+        
+        return getExistingOperation().getCmdPostList().createCmdPost();
     }
 
     public ICmdPostIf createCmdPost(IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        return m_operation.getCmdPostList().createCmdPost(anObjectId);
+        return getExistingOperation().getCmdPostList().createCmdPost(anObjectId);
     }
 
     public IDataSourceIf createDataSource()

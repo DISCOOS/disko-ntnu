@@ -1001,7 +1001,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 
 		@Override
-		public void done() {
+		public void beforeDone() {
 			
 			try {
 				// dispatch task
@@ -1015,8 +1015,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// do the rest
-			super.done();
 		}
 		
 		private void commit() {

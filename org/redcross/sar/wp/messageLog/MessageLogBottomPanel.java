@@ -652,7 +652,9 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 				ICommunicatorIf receiver = m_currentMessage.getSingleReceiver();
 				if(receiver == null)
 				{
-					receiver = (ICommunicatorIf)m_wpMessageLog.getMsoManager().getCmdPost();
+					if(m_wpMessageLog.getMsoManager().operationExists()) {
+						receiver = (ICommunicatorIf)m_wpMessageLog.getMsoManager().getCmdPost();
+					}
 				}
 				m_toLabel.setText(receiver.getCommunicatorNumberPrefix() + " " + receiver.getCommunicatorNumber());
 			}

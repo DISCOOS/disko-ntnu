@@ -64,6 +64,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.thread.DiskoMapProgressor;
 import org.redcross.sar.thread.DiskoProgressMonitor;
@@ -153,7 +154,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		this.msoLayerEventStack = new MsoLayerEventStack();
 		this.mapListeners = new ArrayList<IDiskoMapListener>();
 		
-		// adpaters
+		// adapters
 		this.ctrlAdapter = new ControlEventsAdapter();
 		this.compAdapter = new MapCompEventsAdapter();
 		this.workRepeater = new DiskoWorkRepeater();		
@@ -193,87 +194,94 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 	}
 	
-	private void initLayers() throws java.io.IOException, AutomationException {
+	private void initLayers(boolean initMso) throws java.io.IOException, AutomationException {
 		
 		// forward
 		if(!isMxdDocLoaded()) return;
 		
-        // remove listen to mso client event update events
-		msoModel.getEventManager().removeClientUpdateListener(this);
-                
-		// add custom layers
+		// get hooks
 		IMap focusMap = getActiveView().getFocusMap();
 		ISpatialReference srs = getSpatialReference();
-		msoLayers = new ArrayList<IMsoFeatureLayer>();
 		
-		// get interests as
-		ArrayList<LayerCode> list = new ArrayList<LayerCode>(layerCodes);
-		
-		// initialize
-		classCodes = EnumSet.noneOf(MsoClassCode.class);
-		coClassCodes = new HashMap<MsoClassCode, EnumSet<MsoClassCode>>();
-		
-		// loop over my layers
-		for(int i=0;i<list.size();i++){
-			LayerCode layerCode = list.get(i);
-			if(layerCode == LayerCode.POI_LAYER) {
-				msoLayers.add(new POILayer(msoModel,srs,msoLayerEventStack));				
-				if(addClass(MsoClassCode.CLASSCODE_POI)) { 
-					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
+		// initialize layers?
+		if(initMso) {
+			
+	        // remove listen to MSO client event update listener
+			msoModel.getEventManager().removeClientUpdateListener(this);
+	                
+			// add mso layers
+			msoLayers = new ArrayList<IMsoFeatureLayer>();
+			
+			// get interests as
+			ArrayList<LayerCode> list = new ArrayList<LayerCode>(layerCodes);
+			
+			// initialize
+			classCodes = EnumSet.noneOf(MsoClassCode.class);
+			coClassCodes = new HashMap<MsoClassCode, EnumSet<MsoClassCode>>();
+			
+			// loop over my layers
+			for(int i=0;i<list.size();i++){
+				LayerCode layerCode = list.get(i);
+				if(layerCode == LayerCode.POI_LAYER) {
+					msoLayers.add(new POILayer(msoModel,srs,msoLayerEventStack));				
+					if(addClass(MsoClassCode.CLASSCODE_POI)) { 
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
+					}
+				}
+				else if(layerCode == LayerCode.AREA_LAYER) {
+					msoLayers.add(new AreaLayer(msoModel,srs,msoLayerEventStack));
+					if(addClass(MsoClassCode.CLASSCODE_AREA)) {
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
+					}
+				}
+				else if(layerCode == LayerCode.ROUTE_LAYER) {
+					msoLayers.add(new RouteLayer(msoModel,srs,msoLayerEventStack));
+					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+						addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
+					}
+				}
+				else if(layerCode == LayerCode.FLANK_LAYER) {
+					msoLayers.add(new FlankLayer(msoModel,srs,msoLayerEventStack));
+					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
+					}
+				}
+				else if(layerCode == LayerCode.SEARCH_AREA_LAYER) {
+					msoLayers.add(new SearchAreaLayer(msoModel,srs,msoLayerEventStack));
+					addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
+				}
+				else if(layerCode == LayerCode.OPERATION_AREA_LAYER) {
+					msoLayers.add(new OperationAreaLayer(msoModel,srs,msoLayerEventStack));
+					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
+				}
+				else if(layerCode == LayerCode.OPERATION_AREA_MASK_LAYER) {
+					msoLayers.add(new OperationAreaMaskLayer(msoModel,srs,msoLayerEventStack));
+					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
+				}
+				else if(layerCode == LayerCode.UNIT_LAYER) {
+					msoLayers.add(new UnitLayer(msoModel,srs,msoLayerEventStack));
+					addClass(MsoClassCode.CLASSCODE_UNIT);
 				}
 			}
-			else if(layerCode == LayerCode.AREA_LAYER) {
-				msoLayers.add(new AreaLayer(msoModel,srs,msoLayerEventStack));
-				if(addClass(MsoClassCode.CLASSCODE_AREA)) {
-					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
-				}
+			
+			// add co-classes that affects registered classes 
+			for(MsoClassCode code : coClassCodes.keySet()) {
+				addClass(code);	
 			}
-			else if(layerCode == LayerCode.ROUTE_LAYER) {
-				msoLayers.add(new RouteLayer(msoModel,srs,msoLayerEventStack));
-				if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
-					addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
-					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
-				}
-			}
-			else if(layerCode == LayerCode.FLANK_LAYER) {
-				msoLayers.add(new FlankLayer(msoModel,srs,msoLayerEventStack));
-				if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
-					addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
-				}
-			}
-			else if(layerCode == LayerCode.SEARCH_AREA_LAYER) {
-				msoLayers.add(new SearchAreaLayer(msoModel,srs,msoLayerEventStack));
-				addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
-			}
-			else if(layerCode == LayerCode.OPERATION_AREA_LAYER) {
-				msoLayers.add(new OperationAreaLayer(msoModel,srs,msoLayerEventStack));
-				addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
-			}
-			else if(layerCode == LayerCode.OPERATION_AREA_MASK_LAYER) {
-				msoLayers.add(new OperationAreaMaskLayer(msoModel,srs,msoLayerEventStack));
-				addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
-			}
-			else if(layerCode == LayerCode.UNIT_LAYER) {
-				msoLayers.add(new UnitLayer(msoModel,srs,msoLayerEventStack));
-				addClass(MsoClassCode.CLASSCODE_UNIT);
-			}
+			
+			/* =====================================================
+			 * 
+			 * It is important that the map receives handleMsoChange()
+			 * AFTER all layers has received it. this ensures that
+			 * all layers is updated before the map handles the event
+			 * 
+			 * ===================================================== */
+			
+	        // add listen to mso client event update events. 
+			msoModel.getEventManager().addClientUpdateListener(this);
+			
 		}
-		
-		// add co-classes that affects registered classes 
-		for(MsoClassCode code : coClassCodes.keySet()) {
-			addClass(code);	
-		}
-		
-		/* =====================================================
-		 * 
-		 * It is important that the map receives handleMsoChange()
-		 * AFTER all layers has received it. this ensures that
-		 * all layers is updated before the map handles the event
-		 * 
-		 * ===================================================== */
-		
-        // add listen to mso client event update events. 
-		msoModel.getEventManager().addClientUpdateListener(this);
 
 		// create a the mso group layer
 		GroupLayer msoGroup = new GroupLayer();
@@ -283,22 +291,22 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// add to focus map
 		focusMap.addLayer(msoGroup);
 
-		// add mso layers to group
+		// add MSO layers to group
 		for (int i = 0; i < msoLayers.size(); i++) {
 			msoGroup.add((ILayer)msoLayers.get(i));
 		}
 
 		// init all layers
 		for (int i = 0; i < focusMap.getLayerCount(); i++) {
-			initLayer(focusMap.getLayer(i));
+			prepareLayer(focusMap.getLayer(i));
 		}
 		
-		// initialize mso selection model
+		// initialize MSO selection model
 		setMsoLayerSelectionModel();
 		
 	}	
 	
-	private void initLayer(ILayer l) throws AutomationException, IOException {
+	private void prepareLayer(ILayer l) throws AutomationException, IOException {
 		if (l instanceof IFeatureLayer) {
 			IFeatureLayer f = (IFeatureLayer)l;
 			if (!(f instanceof IMsoFeatureLayer)) {
@@ -310,7 +318,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			GroupLayer g = (GroupLayer)l;
 			// loop over all layers
 			for (int i = 0; i < g.getCount(); i++) {
-				initLayer(g.getLayer(i));
+				prepareLayer(g.getLayer(i));
 			}
 			
 		}
@@ -349,26 +357,39 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 		try {
 			
-			// get mso object
-			IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-			
 			// refresh layers?
 			if (!super.isShowing() || isDrawingSupressed()) { return;	}
 			
-			// get layers
-			List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
-
+			// get mask
+			int mask = e.getEventTypeMask();
+			
+	        // get mso object
+	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
+	        
+	        // get flag
+	        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+			
 			// initialize
 			int count = 0;
 			IMsoFeatureLayer msoLayer = null;
 			
-			// loop over layers
-			for (IMsoFeatureLayer it : layers) {
-				if (it.isVisible() && it.isDirty()) {
-					count++;
-					msoLayer = it;
+	        // clear all?
+	        if(clearAll) {
+	        	count = msoLayers.size();
+	        }
+	        else {
+	        	
+	        	// get layers
+	        	List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
+
+				// loop over layers
+				for (IMsoFeatureLayer it : layers) {
+					if (it.isVisible() && it.isDirty()) {
+						count++;
+						msoLayer = it;
+					}
 				}
-			}
+	        }
 			
 			// refresh layer(s)
 			if(count==1)
@@ -377,6 +398,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				refreshGraphics(null, getExtent());
 			else 
 				refreshDrawFrame();
+			
 						
 		} catch (AutomationException e1) {
 			e1.printStackTrace();
@@ -993,6 +1015,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					affected.add(flayer);
 			}
 		}
+		if(affected.size()>0) fireOnSelectionChanged();
 		return affected;
 	}
 
@@ -1044,8 +1067,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				cleared.add(msoLayer);
 			}
 		}
+		if(cleared.size()>0) fireOnSelectionChanged();
 		resumeNotify();
-		
 		return cleared;
 	}
 	
@@ -1878,8 +1901,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						currentBase = 0;
 						// set default base layer
 						setMapBase(1);
-						// initalize mso layers for the newly loaded map document
-						initLayers();						
+						// initialize MSO layers for the newly loaded map document
+						initLayers(classCodes!=null ? classCodes.size()==0 : true);						
 						// success
 						bFlag = true;
 					}
@@ -1902,16 +1925,23 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 	}
 	
+	private boolean progressShown = false;
+	private boolean progressShownAutoCancel = false;
+	
 	public void showProgressor(boolean autocancel) {
 		try {
-			// prepare to show progess dialog only? (does not lock the application)
-			if(!DiskoProgressMonitor.getInstance().isInAction()) {
+			// show progress dialog?
+			if(!(DiskoProgressMonitor.getInstance().isInAction() || progressShown)) {
 				DiskoProgressMonitor.getInstance().setProgressLocationAt(this);
-				if(autocancel)
+				if(autocancel) {
+					progressShownAutoCancel = true;
 					DiskoProgressMonitor.getInstance().start("Laster kart",0,0,0,0,2000);
-				else
+				}
+				else {
+					progressShown = true;
 					DiskoProgressMonitor.getInstance().start("Laster kart");
-			}
+				}
+			}			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1920,8 +1950,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	public void hideProgressor() {
 		try {
-			// prepare to hide progress dialg
-			DiskoProgressMonitor.getInstance().finish();
+			// prepare to hide progress dialog?
+			if(progressShown || progressShownAutoCancel) {
+				progressShown = false;
+				progressShownAutoCancel = false;
+				DiskoProgressMonitor.getInstance().finish();
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2150,4 +2184,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		for(IDiskoMapListener it : mapListeners)
 			it.onExtentChanged();		
 	}
+	
+	private void fireOnSelectionChanged() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onSelectionChanged();		
+	}
+	
 }

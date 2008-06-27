@@ -30,11 +30,11 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     private final AttributeImpl.MsoString m_lineText = new AttributeImpl.MsoString(this, "LineText");
     private final AttributeImpl.MsoCalendar m_operationTime = new AttributeImpl.MsoCalendar(this, "OperationTime");
     private final AttributeImpl.MsoPosition m_linePosition = new AttributeImpl.MsoPosition(this, "LinePosition");
-    private final AttributeImpl.MsoEnum<MessageLineType> m_lineType = new AttributeImpl.MsoEnum<MessageLineType>(this, "LineType", MessageLineType.TEXT);
+    private final AttributeImpl.MsoEnum<MessageLineType> m_lineType = new AttributeImpl.MsoEnum<MessageLineType>(this, "LineType", 1, MessageLineType.TEXT);
 
-    private final MsoReferenceImpl<IPOIIf> m_linePOI = new MsoReferenceImpl<IPOIIf>(this, "LinePOI", true);
-    private final MsoReferenceImpl<IUnitIf> m_lineUnit = new MsoReferenceImpl<IUnitIf>(this, "LineUnit", true);
-    private final MsoReferenceImpl<IAssignmentIf> m_lineAssignment = new MsoReferenceImpl<IAssignmentIf>(this, "LineAssignment", true);
+    private final MsoReferenceImpl<IPOIIf> m_linePOI = new MsoReferenceImpl<IPOIIf>(this, "LinePOI", 0, true);
+    private final MsoReferenceImpl<IUnitIf> m_lineUnit = new MsoReferenceImpl<IUnitIf>(this, "LineUnit", 0, true);
+    private final MsoReferenceImpl<IAssignmentIf> m_lineAssignment = new MsoReferenceImpl<IAssignmentIf>(this, "LineAssignment", 0, true);
 
     public static String getText(String aKey)
     {

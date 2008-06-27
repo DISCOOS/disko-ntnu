@@ -19,11 +19,11 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     private final AttributeImpl.MsoString m_department = new AttributeImpl.MsoString(this, "Department");
     private final AttributeImpl.MsoString m_organization = new AttributeImpl.MsoString(this, "Organization");
 
-    private final AttributeImpl.MsoEnum<PersonnelStatus> m_status = new AttributeImpl.MsoEnum<PersonnelStatus>(this, "Status", PersonnelStatus.IDLE);
-    private final AttributeImpl.MsoEnum<PersonnelType> m_type = new AttributeImpl.MsoEnum<PersonnelType>(this, "Type", PersonnelType.VOLUNTEER);
-    private final AttributeImpl.MsoEnum<PersonnelImportStatus> m_importStatus = new AttributeImpl.MsoEnum<PersonnelImportStatus>(this, "ImportStatus", PersonnelImportStatus.UPDATED);
+    private final AttributeImpl.MsoEnum<PersonnelStatus> m_status = new AttributeImpl.MsoEnum<PersonnelStatus>(this, "Status", 1, PersonnelStatus.IDLE);
+    private final AttributeImpl.MsoEnum<PersonnelType> m_type = new AttributeImpl.MsoEnum<PersonnelType>(this, "Type", 1, PersonnelType.VOLUNTEER);
+    private final AttributeImpl.MsoEnum<PersonnelImportStatus> m_importStatus = new AttributeImpl.MsoEnum<PersonnelImportStatus>(this, "ImportStatus", 1, PersonnelImportStatus.UPDATED);
 
-    private final MsoReferenceImpl<IPersonnelIf> m_nextOccurence = new MsoReferenceImpl<IPersonnelIf>(this,"NextOccurence",true);
+    private final MsoReferenceImpl<IPersonnelIf> m_nextOccurence = new MsoReferenceImpl<IPersonnelIf>(this,"NextOccurence", 0, true);
 
     public PersonnelImpl(IMsoObjectIf.IObjectIdIf anObjectId)
     {

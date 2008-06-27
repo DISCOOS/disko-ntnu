@@ -41,7 +41,7 @@ public class POITableModel extends AbstractTableModel implements
 	public void setArea(IAreaIf area) {
 		this.area = area;
 		if (area != null) {
-			Iterator iter = area.getAreaPOIs().getItems().iterator();
+			Iterator<?> iter = area.getAreaPOIs().getItems().iterator();
 			while (iter.hasNext()) {
 				IPOIIf poi = (IPOIIf)iter.next();
 				add(poi);
@@ -59,9 +59,6 @@ public class POITableModel extends AbstractTableModel implements
 	
 	public void handleMsoUpdateEvent(Update e) {
 		
-        // get object
-        IPOIIf poi = (IPOIIf)e.getSource();
-		
         // get all flags
 		int mask = e.getEventTypeMask();
 
@@ -70,28 +67,39 @@ public class POITableModel extends AbstractTableModel implements
         boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
         boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
         boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 		
-		if (createdObject && area != null && area.getAreaPOIs().contains(poi)) {
-			add(poi);
+        if(clearAll) {
+        	rows.clear();
 			super.fireTableDataChanged();
-		}
-		
-		// is object modified?
-		if ((modifiedObject || addedReference || removedReference) 
-				&& area != null && area.getAreaPOIs().contains(poi)) {
-			int index = getRow(poi);
-			if (index > -1) {
-				update(poi,rows.get(index));
+        }
+        else { 		
+        	
+            // get object
+            IPOIIf poi = (IPOIIf)e.getSource();
+    		
+            // handle event
+			if (createdObject && area != null && area.getAreaPOIs().contains(poi)) {
+				add(poi);
 				super.fireTableDataChanged();
 			}
-		}
-		
-		// is object deleted?
-		if (deletedObject) {
-			remove(poi);
-			super.fireTableDataChanged();
-		}
-		
+			
+			// is object modified?
+			if ((modifiedObject || addedReference || removedReference) 
+					&& area != null && area.getAreaPOIs().contains(poi)) {
+				int index = getRow(poi);
+				if (index > -1) {
+					update(poi,rows.get(index));
+					super.fireTableDataChanged();
+				}
+			}
+			
+			// is object deleted?
+			if (deletedObject) {
+				remove(poi);
+				super.fireTableDataChanged();
+			}
+        }		
 	}
 
 	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {

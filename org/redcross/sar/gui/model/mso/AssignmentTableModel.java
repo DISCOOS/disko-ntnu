@@ -6,6 +6,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -31,8 +32,10 @@ public class AssignmentTableModel extends AbstractTableModel implements
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
 		// update table
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		update((cmdPost!=null ? cmdPost.getAssignmentListItems().toArray() : null));
+		if(msoModel.getMsoManager().operationExists()) {
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			update(cmdPost.getAssignmentListItems().toArray());
+		}
 	}
 
 	public void handleMsoUpdateEvent(Update e) {
@@ -41,8 +44,12 @@ public class AssignmentTableModel extends AbstractTableModel implements
         boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
         boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
         boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 		
-		if (createdObject || modifiedObject || deletedObject ) {
+        if(clearAll) {
+        	update(null);
+        }
+        else if (createdObject || modifiedObject || deletedObject ) {
 			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 			update((cmdPost!=null ? cmdPost.getAssignmentListItems().toArray() : null));
 		}

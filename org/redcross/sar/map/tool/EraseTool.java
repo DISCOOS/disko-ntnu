@@ -408,7 +408,7 @@ public class EraseTool extends AbstractDiskoTool {
 		 * 
 		 */
 		@Override
-		public void done() {		
+		public void beforeDone() {
 			try {
 				
 				// get result
@@ -421,9 +421,8 @@ public class EraseTool extends AbstractDiskoTool {
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}			
-			// forward to super
-			super.done();							
+			}
+			
 		}
 	}
 }

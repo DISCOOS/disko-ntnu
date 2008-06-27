@@ -39,7 +39,7 @@ public interface IDiskoMapManager {
 	public boolean checkMxdDoc(String mxddoc, boolean keep);
 	public MapControl getTmpMap(String mxddoc, boolean keep);
 	
-	public boolean selectMap(boolean autoselect);
+	public void selectMap(boolean autoselect, boolean useWorkPool);
 	
 	public boolean isMap(Component c);
 	

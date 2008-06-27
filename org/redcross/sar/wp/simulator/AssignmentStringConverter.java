@@ -16,19 +16,16 @@ public class AssignmentStringConverter extends TableStringConverter {
 	@Override
 	public String toString(TableModel model, int row, int column) {
 		Object value = model.getValueAt(row, column);
-		if (value instanceof IAssignmentIf) {
-			switch(column) {
-			case 0: 
-				IAssignmentIf assignment = (IAssignmentIf)value;
-				return MsoUtils.getAssignmentName(assignment,1);
-			case 1:
-				return DiskoEnumFactory.getText((AssignmentStatus)value);
-			case 2:
-				return DTG.CalToDTG((Calendar)value);
-			}
-			return null;
+		switch(column) {
+		case 0: 
+			IAssignmentIf assignment = (IAssignmentIf)value;
+			return MsoUtils.getAssignmentName(assignment,1);
+		case 1:
+			return DiskoEnumFactory.getText((AssignmentStatus)value);
+		case 2:
+			return DTG.CalToDTG((Calendar)value);
 		} 
-		else if(value!=null)
+		if(value!=null)
 			return value.toString();
 		else
 			return null;

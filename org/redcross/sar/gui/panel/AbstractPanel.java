@@ -70,29 +70,41 @@ public abstract class AbstractPanel extends JPanel implements IPanel {
 		// consume?
 		if(!isChangeable()) return;
 		
-		// get flags
+		// get mask
 		int mask = e.getEventTypeMask();
-        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 		
         // get mso object
         IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
         
-        // add object?
-		if (createdObject) {
-			msoObjectCreated(msoObj,mask);
-		}
-		// is object modified?
-		if ( (addedReference || removedReference || modifiedObject)) {
-			msoObjectChanged(msoObj,mask);
-		}
-		// delete object?
-		if (deletedObject) {
-			msoObjectDeleted(msoObj,mask);		
-		}
+        // get flag
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+		
+        // clear all?
+        if(clearAll) {
+        	msoObjectClearAll(this.msoObject,mask);
+        }
+        else {
+        	// get flags
+	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			
+	        // add object?
+			if (createdObject) {
+				msoObjectCreated(msoObj,mask);
+			}
+			// is object modified?
+			if ( (addedReference || removedReference || modifiedObject)) {
+				msoObjectChanged(msoObj,mask);
+			}
+			// delete object?
+			if (deletedObject) {
+				msoObjectDeleted(msoObj,mask);		
+			}
+			
+        }
 	}
 
 	/* ===========================================
@@ -383,9 +395,28 @@ public abstract class AbstractPanel extends JPanel implements IPanel {
 	
 	protected void msoObjectCreated(IMsoObjectIf msoObj, int mask) { /*NOP*/ }
 	
-	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) { /*NOP*/ }
+	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+		// is same as selected?
+		if(msoObj == this.msoObject) {
+			setMsoObject(msoObject);
+		}
+	}
 
-	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) { /*NOP*/ }
-			
+	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+		// is same as selected?
+		if(msoObj == this.msoObject) {
+			// forward
+			setMsoObject(null);
+		}
+	}
+
+	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
+		// is same as selected?
+		if(msoObj == this.msoObject) {
+			// forward
+			setMsoObject(null);
+		}
+	}
+		
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -119,6 +119,10 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 		return -1;
 	}
 
+	public IMsoObjectIf getMsoObject(int row) {
+		return objects.get(row);
+	}
+	
 	public abstract boolean select(T msoObj);
 	
 	public abstract void sort();
@@ -208,10 +212,12 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 	}
 
 	public Object getValueAt(int iRow, int iCol) {
-    	if(!(iRow>0 || iRow<objects.size())) return null;
+    	if(!(iRow>=0 && iRow<objects.size())) return null;
     	IMsoObjectIf msoObj = objects.get(iRow);
+		if(msoObj==null) return null;
 		Object[] row = rows.get(msoObj);
-		if(!(iCol>0 || iCol<row.length)) return null;
+		if(row==null) return null;
+		if(!(iCol>=0 && iCol<row.length)) return null;
 		return row[iCol];
 	}
 	
@@ -232,73 +238,89 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 		
 		// get flags		
 		int mask = e.getEventTypeMask();
-        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
-        
-        // get mso object
-        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 
-        // get flag
-        boolean isCoClass = !code.equals(msoObj.getMsoClassCode());
-
-        // initialize dirty indexes
-        int iAdded = -1;
-        int iChanged = -1;
-        int iDeleted = -1;
-        
-        // is selected?
-        if(select((T)msoObj)) {
-        
-	        // add object?
-			if (!isCoClass && createdObject) {
-				if(msoObjectCreated(msoObj,mask)) {
-					add(msoObj,false);
-					iAdded = getRow(msoObj);
-				}
-			}
-			
-			// is object modified?
-			if (!deletedObject && (isCoClass || addedReference || removedReference || modifiedObject)) {
-				if(msoObjectChanged(msoObj,mask)) {
-					iChanged = getRow(msoObj);
-					if(iChanged ==-1) {
+		// get flag
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+		
+        if(clearAll) {
+        	int count = rows.size();
+        	// clear?
+        	if(count>0) {
+        		rows.clear();
+        		objects.clear();
+				super.fireTableRowsDeleted(0,count-1);
+        	}
+        }
+        else {		
+        	
+	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+	        
+	        // get MSO object
+	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
+	
+	        // get flag
+	        boolean isCoClass = !code.equals(msoObj.getMsoClassCode());
+	
+	        // initialize dirty indexes
+	        int iAdded = -1;
+	        int iChanged = -1;
+	        int iDeleted = -1;
+	        
+	        // is selected?
+	        if(select((T)msoObj)) {
+	        
+		        // add object?
+				if (!isCoClass && createdObject) {
+					if(msoObjectCreated(msoObj,mask)) {
 						add(msoObj,false);
 						iAdded = getRow(msoObj);
 					}
-					else {
-						update(msoObj,false);
+				}
+				
+				// is object modified?
+				if (!deletedObject && (isCoClass || addedReference || removedReference || modifiedObject)) {
+					if(msoObjectChanged(msoObj,mask)) {
+						iChanged = getRow(msoObj);
+						if(iChanged ==-1) {
+							add(msoObj,false);
+							iAdded = getRow(msoObj);
+						}
+						else {
+							update(msoObj,false);
+						}
 					}
 				}
-			}
-			
-			// delete object?
-			if (!isCoClass && deletedObject) {
-				if(msoObjectDeleted(msoObj,mask)) {
-					iDeleted = getRow(msoObj);
-				}
-			}
-	
-			// sort?
-			if(iAdded!=-1 || iChanged!=-1 || iDeleted!=-1) sort();
-			
-			// notify?
-			if(iDeleted==-1 && iAdded!=-1) {
-				iAdded = getRow(msoObj);
-				this.fireTableRowsInserted(iAdded, iAdded);
-			}
-			if(iDeleted==-1 && iChanged!=-1) {
-				iChanged = getRow(msoObj);
-				this.fireTableRowsUpdated(iChanged, iChanged);
-			}
-			if(iDeleted!=-1) {
-				iDeleted = getRow(msoObj);
-				this.fireTableRowsDeleted(iDeleted, iDeleted);
-				remove(msoObj,false);
 				
-			}						
+				// delete object?
+				if (!isCoClass && deletedObject) {
+					if(msoObjectDeleted(msoObj,mask)) {
+						iDeleted = getRow(msoObj);
+					}
+				}
+		
+				// sort?
+				if(iAdded!=-1 || iChanged!=-1 || iDeleted!=-1) sort();
+				
+				// notify?
+				if(iDeleted==-1 && iAdded!=-1) {
+					iAdded = getRow(msoObj);
+					this.fireTableRowsInserted(iAdded, iAdded);
+				}
+				if(iDeleted==-1 && iChanged!=-1) {
+					iChanged = getRow(msoObj);
+					this.fireTableRowsUpdated(iChanged, iChanged);
+				}
+				if(iDeleted!=-1) {
+					iDeleted = getRow(msoObj);
+					this.fireTableRowsDeleted(iDeleted, iDeleted);
+					remove(msoObj,false);
+					
+				}						
+	        }
         }
 	}
 	

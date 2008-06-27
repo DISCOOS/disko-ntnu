@@ -58,7 +58,6 @@ public class RouteCost {
 	private ArrayList<Double> m_cumCost = null;
 	private ArrayList<Double> m_cumDistance = null;
 	private ArrayList<Integer> m_themes = null;
-	private ArrayList<Calendar> m_timeSteps = null;
 	private ArrayList<GeoPos> m_positions = null;
 	private boolean m_isShifted = false;
 	private boolean m_isReplaced = false;
@@ -84,8 +83,8 @@ public class RouteCost {
 	
 	// start position
 	private double m_h1 = 0;
-	private int m_offset = 0;
-	private Calendar m_t0 = null;
+	private int m_startIndex = 0;
+	private Calendar m_startTime = null;
 	
 	// properties
 	private RouteCostProp m_p;		// propulsion type
@@ -299,32 +298,43 @@ public class RouteCost {
 	}	
 	
 	/**
+	 * Shift start time and start position
+	 * @param t0
+	 * @param offset
+	 */
+	public void shift(Calendar t0, int offset) {
+		m_startTime = t0;
+		m_startIndex = offset;
+		m_isShifted = true;		
+	}
+	
+	/**
 	 * Get start time
 	 */
 	public Calendar getStartTime() {
-		return m_t0;
+		return m_startTime;
 	}
 	
 	/**
 	 * Set start time
 	 */
 	public void setStartTime(Calendar t0) {
-		m_t0 = t0;
+		m_startTime = t0;
 		m_isShifted = true;
 	}
 	
 	/**
-	 * Get position offset
+	 * Get start position
 	 */
-	public int getOffsetPosition() {
-		return m_offset;
+	public int getStartPosition() {
+		return m_startIndex;
 	}
 	
 	/**
-	 * Set position offset
+	 * Set position shift (start position) 
 	 */
-	public void setOffsetPosition(int offset) {
-		m_offset = offset;
+	public void setStartPosition(int offset) {
+		m_startIndex = offset;
 		m_isShifted = true;
 	}
 	
@@ -334,7 +344,7 @@ public class RouteCost {
 	 *  @return Estimated time enroute for a specified route
 	 */		
 	public int estimate() throws Exception{		
-		return estimateRouteCost(m_offset,m_t0);			
+		return estimateRouteCost(m_startIndex,m_startTime);			
 	}
 	
 	/**
@@ -367,7 +377,7 @@ public class RouteCost {
 	public int ete() {
 		// return great circle distance?
 		if (!m_isReplaced)
-			return m_cumCost.get(m_cumCost.size() - 2).intValue();
+			return m_cumCost.get(m_cumCost.size() - 1).intValue();
 		else
 			return 0;
 	}	
@@ -395,8 +405,11 @@ public class RouteCost {
 	 *  @return Estimated time of arrival at last position
 	 */		
 	public Calendar eta() {
-		if (!m_isReplaced)
-			return m_timeSteps.get(m_timeSteps.size()-1);
+		if (!m_isReplaced) {
+			Calendar c = Calendar.getInstance();
+			c.setTimeInMillis(m_startTime.getTimeInMillis()+ete());
+			return c;
+		}
 		else
 			return null;
 	}
@@ -408,8 +421,11 @@ public class RouteCost {
 	 *  @return Estimated time of arrival at position
 	 */		
 	public Calendar eta(int index) {
-		if (!m_isReplaced)
-			return m_timeSteps.get(index);
+		if (!m_isReplaced) {
+			Calendar c = Calendar.getInstance();
+			c.setTimeInMillis(m_startTime.getTimeInMillis()+ete(index));
+			return c;
+		}
 		else
 			return null;
 	}
@@ -434,20 +450,24 @@ public class RouteCost {
 		// find closest
 		p = m_polyline.returnNearestPoint(p, esriSegmentExtension.esriNoExtension);
 		
-		// update match
-		gp = new GeoPos(p.getX(),p.getY());
-
-		// get iterator
-		ArrayList<GeoPos> it = new ArrayList<GeoPos>(m_route.getPositions());
-		
-		// get count
-		int count = it.size();
-		
-		// search for object 
-		for(int i = 0; i < count; i++){
-			// found?
-			if (it.get(i).equals(gp))
-				return i;
+		// found?
+		if(p!=null && !p.isEmpty()) {
+			
+			// get geo position
+			gp = new GeoPos(p.getX(),p.getY());
+	
+			// get iterator
+			ArrayList<GeoPos> it = new ArrayList<GeoPos>(m_route.getPositions());
+			
+			// get count
+			int count = it.size();
+			
+			// search for object 
+			for(int i = 0; i < count; i++){
+				// found?
+				if (it.get(i).equals(gp))
+					return i;
+			}
 		}
 		// return not found
 		return -1;
@@ -517,7 +537,7 @@ public class RouteCost {
 	 */		
 	private int getCount() {
 		// get count
-		return m_positions.size();
+		return m_positions!=null ? m_positions.size() : 0;
 	}	
 	
 	/**
@@ -960,12 +980,12 @@ public class RouteCost {
 		// initialize
 		double d = 0;				// distance between previous and current position
 		double s = 0;				// slope between previous and current position
-		Calendar t = null;			// set current time
 		double cost = 0;			// cumulative time cost in seconds
 		double utc = 0;				// unit terrain cost in seconds
 		double uwc = 0;				// unit weather cost in seconds
 		double ulc = 0;				// unit light cost in seconds
 		double cd = 0;				// segment time cost in seconds
+		Calendar t = null;			// set current time
 	
 		// get route data
 		getRouteData();
@@ -975,8 +995,8 @@ public class RouteCost {
 		
 		// update start time, point offset, and start height
 		m_h1 = 0;
-		m_t0 = t0;
-		m_offset = offset;
+		m_startTime = t0;
+		m_startIndex = offset;
 		
 		// create objects
 		m_slopes = new ArrayList<Double>(count - 2);
@@ -984,7 +1004,6 @@ public class RouteCost {
 		m_terrainUnitCosts = new ArrayList<Double>(count - 2);
 		m_weatherUnitCosts = new ArrayList<Double>(count - 2);
 		m_lightUnitCosts = new ArrayList<Double>(count - 2);
-		m_timeSteps = new ArrayList<Calendar>(count - 1);
 		m_themes = new ArrayList<Integer>(count);
 						
 		// update local time
@@ -992,9 +1011,6 @@ public class RouteCost {
 		
 		// loop over all positions
 		for(int i = offset; i < count; i++){
-			
-			// set to list
-			m_timeSteps.add(t);
 			
 			// valid parameter?
 			if(i > 0) {
@@ -1062,8 +1078,8 @@ public class RouteCost {
 		int count = getCount();
 		
 		// update offset and start time
-		m_t0 = t0;
-		m_offset = offset;
+		m_startTime = t0;
+		m_startIndex = offset;
 		
 		// initialize
 		t = t0;
@@ -1074,10 +1090,7 @@ public class RouteCost {
 			// get position
 			i = m_positions.get(j);
 			
-			// set to list
-			m_timeSteps.set(j,t);
-			
-			// valid paramter?
+			// valid parameter?
 			if(pi != null) {
 
 				// get current time
@@ -1098,7 +1111,7 @@ public class RouteCost {
 				cost += cd;
 				
 				// save cumulative cost
-				m_cumCost.set(j - 1,cost);
+				m_cumCost.set(j - 1,cost);				
 				
 			}
 			// update last position

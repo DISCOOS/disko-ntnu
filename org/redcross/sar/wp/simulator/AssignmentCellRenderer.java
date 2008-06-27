@@ -27,7 +27,7 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 		switch(column) {
 		case 0:
 			IAssignmentIf assignment = (IAssignmentIf)value;
-			Enum type = MsoUtils.getType(assignment,true);
+			Enum<?> type = MsoUtils.getType(assignment,true);
 			setIcon(DiskoIconFactory.getIcon(
 					DiskoEnumFactory.getIcon(type),"32x32"));
 			setText(MsoUtils.getAssignmentName(assignment,1));
@@ -41,7 +41,7 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 			setIcon(null);
 			break;
 		default:
-			setText(null);
+			setText(value!=null ? value.toString() : null);
 			setIcon(null);
 		}
 		// update selection state

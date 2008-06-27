@@ -416,12 +416,15 @@ public class ImportCalloutDialog extends DefaultDialog
 //			
 //		}
 		
-		// Brute-force check
-		for(PersonnelAuxiliary personnel : m_personnelList)
-		{
-			for(IPersonnelIf potentialMatch : m_wpUnit.getMsoManager().getCmdPost().getAttendanceListItems())
+		if(m_wpUnit.getMsoManager().operationExists()) {
+		
+			// Brute-force check
+			for(PersonnelAuxiliary personnel : m_personnelList)
 			{
-				personnel.equals(potentialMatch);
+				for(IPersonnelIf potentialMatch : m_wpUnit.getMsoManager().getCmdPost().getAttendanceListItems())
+				{
+					personnel.equals(potentialMatch);
+				}
 			}
 		}
 	}

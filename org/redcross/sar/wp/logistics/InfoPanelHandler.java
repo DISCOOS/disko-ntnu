@@ -114,7 +114,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         {
             if (e.getSource() == m_displayedAsssignment)
             {
-                if (e.isDeleteObjectEvent())
+                if (e.isClearAllEvent() || e.isDeleteObjectEvent())
                 {
                     m_displayedAsssignment = null;
                 }
@@ -127,7 +127,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         {
             if (e.getSource() == m_displayedUnit)
             {
-                if (e.isDeleteObjectEvent())
+                if (e.isClearAllEvent() || e.isDeleteObjectEvent())
                 {
                     m_displayedUnit = null;
                 }
@@ -161,19 +161,21 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
      */
     public void handleTick(TickEvent e)
     {
-        ICmdPostIf cmdPost = m_wpModule.getMsoManager().getCmdPost();
-        if (cmdPost == null)
-        {
-            return;
-        }
-
-        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
-        {
-            renderAssignment();
-        } else if (UNIT_PANEL_NAME.equals(m_displayedPanelName))
-        {
-            renderUnit();
-        }
+		if(m_wpModule.getMsoManager().operationExists()) {
+	        ICmdPostIf cmdPost = m_wpModule.getMsoManager().getCmdPost();
+	        if (cmdPost == null)
+	        {
+	            return;
+	        }
+	
+	        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
+	        {
+	            renderAssignment();
+	        } else if (UNIT_PANEL_NAME.equals(m_displayedPanelName))
+	        {
+	            renderUnit();
+	        }
+		}
     }
 
     private void initUnitInfoPanel()

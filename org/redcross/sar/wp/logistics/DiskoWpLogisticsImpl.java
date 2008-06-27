@@ -300,7 +300,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 		
 
 		@Override
-		public void done() {
+		public void beforeDone() {
 			
 			try {
 				// dispatch task
@@ -312,8 +312,6 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// do the rest
-			super.done();
 		}
 		
 		private void commit() {

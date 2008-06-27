@@ -52,8 +52,10 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
  		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
- 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getRouteListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getRouteListItems().toArray());
+		}
 	}
 
  	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)
@@ -116,7 +118,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 					IGeometry geom = feature.getShape();
 					if (geom != null) {
 						
-						// initialise
+						// initialize
 						String text = null;
 						SimpleLineSymbol lineSymbol = defaultLineSymbol;
 						
@@ -139,7 +141,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 								// initialize
 								RgbColor color = plannedColor;
 								// get status
-								Enum status = MsoUtils.getStatus(assignment);
+								Enum<?> status = MsoUtils.getStatus(assignment);
 								// replace color?
 								if(AssignmentStatus.EXECUTING.equals(status)) {
 									color = executingColor;

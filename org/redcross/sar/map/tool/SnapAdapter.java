@@ -489,6 +489,14 @@ public class SnapAdapter {
 		}
 
 		@Override
+		public void beforePrepare() {
+			// set flag to prevent reentry
+			setIsWorking();
+			// suspend for faster execution¨
+			suspendUpdate();			
+		}
+		
+		@Override
 		public Void doWork() {
 			// update indexing
 			try {
@@ -501,19 +509,6 @@ public class SnapAdapter {
 			return null;
 		}
 
-		@Override
-		public void run() {
-			// set flag to prevent reentry
-			setIsWorking();
-			// suspend for faster execution¨
-			suspendUpdate();			
-			// forward
-			super.run();
-			// is on event dispatch thread?
-			if(SwingUtilities.isEventDispatchThread())
-				done();
-		}
-
 		/**
 		 * done 
 		 * 
@@ -521,7 +516,7 @@ public class SnapAdapter {
 		 * 
 		 */
 		@Override
-		public void done() {
+		public void afterDone() {
 			try {
 				// resume update
 		        resumeUpdate();
@@ -531,8 +526,6 @@ public class SnapAdapter {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-	        // forward
-	        super.done();
 		}
 	}	
 	

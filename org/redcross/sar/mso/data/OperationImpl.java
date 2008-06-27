@@ -7,7 +7,6 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 
-import java.util.Calendar;
 import java.util.Collection;
 
 public class OperationImpl extends AbstractMsoObject implements IOperationIf
@@ -137,7 +136,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
 
     public String getOperationNumber()
     {
-        return null; /*todo Implementer*/
+        return null; /*TODO: Implementer*/
     }
 
     @Override
@@ -145,6 +144,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     {
         MsoModelImpl.getInstance().suspendClientUpdate();
         m_cmdPostList.deleteAll();
+        doDelete();
         MsoModelImpl.getInstance().resumeClientUpdate();
         return true;
     }

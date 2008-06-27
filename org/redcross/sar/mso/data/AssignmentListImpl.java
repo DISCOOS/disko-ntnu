@@ -12,7 +12,7 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
 
     public AssignmentListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public IAssignmentIf createAssignment()

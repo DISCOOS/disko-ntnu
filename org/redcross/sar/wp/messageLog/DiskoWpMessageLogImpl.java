@@ -221,7 +221,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		
 
 		@Override
-		public void done() {
+		public void beforeDone() {
 			
 			try {
 				// dispatch task
@@ -233,8 +233,6 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// do the rest
-			super.done();
 		}
 		
 		private void commit() {

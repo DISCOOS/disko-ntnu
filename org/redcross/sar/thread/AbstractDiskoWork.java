@@ -3,6 +3,7 @@
  */
 package org.redcross.sar.thread;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,12 +26,12 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 	protected S m_result = null;
 	protected long m_millisToPopup = 0;
 	protected long m_dutyCycle = 1000;		// execute doWork every second
+	protected long m_availableTime = 1000;
 	protected String m_message = null;
 	protected boolean m_isModal = false;
 	protected boolean m_showProgress = false;
 	protected boolean m_isDone = false;
 	protected boolean m_suspend = false;
-	protected boolean m_wasLocked = false;
 	protected boolean m_isNotified = false;
 	protected boolean m_isLoop = false;
 	protected boolean m_isThreadSafe = false;
@@ -52,7 +53,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 			boolean isModal, WorkOnThreadType workOnThread, 
 			String message, long millisToPopup, 
 			boolean showProgress, boolean suspend, 
-			boolean isLoop, int dutyCycle) throws Exception {
+			boolean isLoop, long dutyCycle) throws Exception {
 		
 		// validate parameters
 		if(!isThreadSafe && m_workOnThread == 
@@ -88,6 +89,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 		m_isLoop = isLoop;
 		// save duty cycle
 		m_dutyCycle = dutyCycle;
+		// set available work time equal an half duty cycle
+		m_availableTime = m_dutyCycle / 2;
 
 	}
 	
@@ -149,8 +152,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 	/** 
 	 * If true, the work is done
 	 */
-	public boolean isDone() {
-		return m_isModal;
+	public synchronized boolean isDone() {
+		return m_isDone;
 	}
 	
 	/** 
@@ -237,43 +240,92 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 		m_workTimeLog.add(delay);		
 	}
 
+	public long getAvailableTime() {
+		return m_availableTime;
+	}
 	
-	
+	public void setAvailableTime(long time) {
+		m_availableTime = time;
+	}
+		
 	/** 
-	 * Prepares application to execute work safely.<p>
-	 * It is called automatically from <code>run()</code> if 
-	 * <code>doWork()</code> is executed once (<code>isLoop()</code> 
-	 * is <code>false</code>).<p>
+	 * Prepares application to execute work safely. It is called automatically 
+	 * from <code>run()</code> if <code>doWork()</code> should only be executed 
+	 * once (<code>isLoop()</code> is <code>false</code>). <code>prepare()</code> 
+	 * is always executed on the Event Dispatch Thread (EDT). If <code>prepare()</code>
+	 * is invoked on a thread other then EDT, this method will block until EDT
+	 * has executed the method. See <code>SwingUtilities.invokeAndWait()</code> for 
+	 * more information.<p> 
 	 * <b>IMPORTANT</b><p>
 	 * 1. If work is executed more than once, <code>prepare()</code> 
 	 * must be called <b>before</b> first invocation of <code>run()</code>.<p>
 	 * 2. If work is executed more than once, <code>done()</code> must
 	 * be called when work is finished.<p>
+	 * 3. Progress dialog will only be shown (see constructor 
+	 * <code>AbstractDiskoWork()</code> if <code>prepare()</code> is called 
+	 * from a thread other then the EDT.<p>
 	 * If you schedule the work on the DiskoWorkPool, DiskoWorkPool will do all
 	 * for you.
 	 */
-	public void prepare() {
-		// get flag
-		boolean canShowProgress = canShowProgess();
-		// show progress?
-		if(m_showProgress && canShowProgress) {
-			// set millis to progress popup?
-			if(!m_monitor.isInAction())
-				m_monitor.setMillisToPopup(m_millisToPopup);
-			// notify progress monitor
-			m_monitor.start(m_message);
-			// set notified flag
-			m_isNotified = true;
-		}
-		m_tic = Calendar.getInstance().getTimeInMillis();
-		// prevent user input? (keeps work pool concurrent)
-		if(!WorkOnThreadType.WORK_ON_NEW.equals(m_workOnThread))
-			m_wasLocked = Utils.getApp().setLocked(true);
-		// increment suspend counter?
-		if(m_suspend)
-			MsoModelImpl.getInstance().suspendClientUpdate();		
+	public final void prepare() {
+		// only run on EDT
+		if (SwingUtilities.isEventDispatchThread()) {
+			// forward
+			beforePrepare();
+			// set start time?
+			if(m_tic==0)
+				m_tic = Calendar.getInstance().getTimeInMillis();
+			// prevent user input? (keeps work pool concurrent)
+			if (!WorkOnThreadType.WORK_ON_NEW.equals(m_workOnThread))
+				Utils.getApp().setLocked(true);
+			// increment suspend counter?
+			if (m_suspend)
+				MsoModelImpl.getInstance().suspendClientUpdate();
+			// forward
+			afterPrepare();
+		} else {
+			// set start time
+			m_tic = Calendar.getInstance().getTimeInMillis();
+			// get flag
+			boolean canShowProgress = canShowProgess();
+			// show progress?
+			if (m_showProgress && canShowProgress) {
+				// set millis to progress popup?
+				if (!m_monitor.isInAction())
+					m_monitor.setMillisToPopup(m_millisToPopup);
+				// notify progress monitor
+				m_monitor.start(m_message);
+				// set notified flag
+				m_isNotified = true;
+			}
+			// block on EDT to ensure that prepare() is executed
+			// before doWork() is invoked
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						prepare();
+					}
+				});
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
 	}
-
+	
+	/**
+	 * Override this method to do additional prepare work on EDT
+	 */	
+	protected void beforePrepare() {}
+	
+	/**
+	 * Override this method to do additional prepare work on EDT
+	 */	
+	protected void afterPrepare() {}
+	
 	/**
 	 * This method executes work safely in application by ensuring that 
 	 * unsafe work (Swing and MSO model) is executed concurrently within 
@@ -298,7 +350,7 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 	 */	
 	public void run() {
 
-		// forward?
+		// prepare?
 		if(!m_isLoop) prepare();
 		
 		// catch any errors
@@ -310,10 +362,11 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 			e.printStackTrace();
 		}
 		
-		// is on event dispatch thread?
-		if(SwingUtilities.isEventDispatchThread()) {
-			if(!m_isLoop) done();
+		// done?
+		if(!m_isLoop && SwingUtilities.isEventDispatchThread()) {
+			done();
 		}
+		
 	}
 	
 	/** 
@@ -322,11 +375,14 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 	public abstract S doWork();
 	
 	/** 
-	 * This method is called after work is finished.<p> 
-	 * It is called automatically by the DiskoWorkPool instance if scheduled, or by 
-	 * <code>run()</code> if <code>doWork()</code> is executed once 
-	 * (<code>isLoop()</code> is <code>true</code>) and <code>run()</code> 
-	 * was invoking on Event Dispatch Thread (EDT).<p>
+	 * This method should be called after <code>doWork()</code> is finished. 
+	 * <code>done()</code> is always executed on the Event Dispatch Thread (EDT).
+	 * If <code>done()</code> is invoked on a thread other then EDT, it will 
+	 * be scheduled to run on EDT and return without blocking.<p>
+	 * <code>doWork()</code> is called automatically by the DiskoWorkPool 
+	 * instance if scheduled, or by <code>run()</code> if <code>doWork()</code> 
+	 * should only be executed once (<code>isLoop()</code> is <code>true</code>) 
+	 * and <code>run()</code> was invoking on Event Dispatch Thread (EDT).<p>
 	 * <b>IMPORTANT</b><p> 
 	 * 1. If work is executed more than once, <code>prepare()</code> 
 	 * must be called <b>before</b> first invocation of <code>run()</code>.<p>
@@ -335,23 +391,52 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 	 * If you schedule the work on the DiskoWorkPool, DiskoWorkPool will do all
 	 * for you.<p>
 	 */
-	public void done() {
-		// decrement resume suspend counter?
-		if(m_suspend)
-			MsoModelImpl.getInstance().resumeClientUpdate();
-		// resume previous state?
-		// prevent user input? (keeps work pool concurrent)
-		if(!WorkOnThreadType.WORK_ON_NEW.equals(m_workOnThread))
-			Utils.getApp().setLocked(m_wasLocked);
-		// notify progress monitor ?
-		if(m_isNotified) {
-			// notify progress monitor
-			m_monitor.finish();
+	public final void done() {
+		// only run on EDT
+		if (SwingUtilities.isEventDispatchThread()) {
+			// forward
+			beforeDone();
+			// decrement resume suspend counter?
+			if (m_suspend)
+				MsoModelImpl.getInstance().resumeClientUpdate();
+			// resume previous state?
+			// prevent user input? (keeps work pool concurrent)
+			if (!WorkOnThreadType.WORK_ON_NEW.equals(m_workOnThread))
+				Utils.getApp().setLocked(false);
+			// notify progress monitor ?
+			if (m_isNotified) {
+				// notify progress monitor
+				m_monitor.finish();
+			}
+			// set flag
+			m_isDone = true;
+			// DEBUG: print to console
+			System.out.println("WORKER:Finished ("
+					+ (Calendar.getInstance().getTimeInMillis() - m_tic)
+					+ " ms)");
+			// reset start time
+			m_tic=0;
+			// forward
+			afterDone();
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					done();
+				}
+			});
 		}
-		// set flag
-		m_isDone = true;
-		System.out.println("WORKER:Finished (" + (Calendar.getInstance().getTimeInMillis() - m_tic) + " ms)");
 	}
+	
+	/**
+	 * Override this method to do additional work on EDT
+	 */	
+	protected void beforeDone() {}
+	
+	/**
+	 * Override this method to do additional work on EDT
+	 */	
+	protected void afterDone() {}
+	
 	
 	/** 
 	 * Returns the result	 

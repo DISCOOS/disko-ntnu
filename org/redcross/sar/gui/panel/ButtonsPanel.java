@@ -1,6 +1,7 @@
 package org.redcross.sar.gui.panel;
 
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class ButtonsPanel extends JPanel {
 	
 	private List<JComponent> m_items = null;
 	private Map<String, AbstractButton> m_commands = null;
+	private Map<AbstractButton, List<ActionListener>> m_listeners = null;
 		
 	/* =======================================================
 	 * Constructors
@@ -66,6 +68,7 @@ public class ButtonsPanel extends JPanel {
 		this.setOpaque(true);
 		m_items = new ArrayList<JComponent>();
 		m_commands = new HashMap<String, AbstractButton>();
+		m_listeners = new HashMap<AbstractButton, List<ActionListener>>();
 	}	
 	
 	private JComponent insert(JComponent prefix, JComponent item) {
@@ -100,14 +103,20 @@ public class ButtonsPanel extends JPanel {
 
 	public AbstractButton insertButton(String before, AbstractButton button, String command) {
 		AbstractButton prefix = m_commands.get(before);
-		// forward
-		return (AbstractButton)insert(prefix,addButton(button, command));
+		button = (AbstractButton)insert(prefix,addButton(button, command));
+		if(button!=null)
+			button.addActionListener(m_actionHandler);
+		// finished
+		return button;
 	}
 	
 	public AbstractButton insertButton(String before, String command, String caption) {
 		AbstractButton prefix = m_commands.get(before);
-		// forward
-		return (AbstractButton)insert(prefix,addButton(command, caption));
+		AbstractButton button = (AbstractButton)insert(prefix,addButton(command, caption));
+		if(button!=null)
+			button.addActionListener(m_actionHandler);
+		// finished
+		return button;
 	}
 	
 
@@ -118,6 +127,7 @@ public class ButtonsPanel extends JPanel {
 			this.add(button);
 			m_items.add(button);
 			m_commands.put(command, button);
+			button.addActionListener(m_actionHandler);
 			return button;
 		}
 		return null;
@@ -132,6 +142,7 @@ public class ButtonsPanel extends JPanel {
 			this.add(button);
 			m_items.add(button);
 			m_commands.put(command, button);
+			button.addActionListener(m_actionHandler);
 			return button;
 		}
 		return null;
@@ -142,6 +153,7 @@ public class ButtonsPanel extends JPanel {
 		this.remove(button);
 		m_items.remove(button);
 		m_commands.remove(command);
+		button.removeActionListener(m_actionHandler);
 	}
 	
 	
@@ -198,13 +210,13 @@ public class ButtonsPanel extends JPanel {
 
 	public void addActionListener(ActionListener listener) {
 		for(AbstractButton b: m_commands.values()) {
-			b.addActionListener(listener);
+			addActionListener(b,listener);
 		}
 	}
 	
 	public void removeActionListener(ActionListener listener) {
 		for(AbstractButton b: m_commands.values()) {
-			b.removeActionListener(listener);
+			removeActionListener(b,listener);
 		}
 	}
 	
@@ -240,5 +252,51 @@ public class ButtonsPanel extends JPanel {
   			getComponent(i).setEnabled(isEnabled);
   		}
   	}
+  	
+  	private boolean addActionListener(AbstractButton button, ActionListener listener) {
+  		List<ActionListener> list = m_listeners.get(button);
+  		if(list==null) {
+  			list = new ArrayList<ActionListener>(1);
+  			m_listeners.put(button,list);
+  		}
+  		if(!list.contains(listener)) {
+  			return list.add(listener);
+  		}
+  		return false;
+  	}
+  	
+  	private boolean removeActionListener(AbstractButton button, ActionListener listener) {
+  		List<ActionListener> list = m_listeners.get(button);
+  		if(list!=null) {
+  	  		if(list.contains(listener)) {
+  	  			return list.remove(listener);
+  	  		}
+  		}
+  		return false;
+  	}
+  	
+  	/* ========================================================
+  	 * Because AbstractButton do not respect the sequence
+  	 * of which ActionListeners are added, a global handler
+  	 * is added together with local ActionListener list for
+  	 * each abstract button. When a button is pressed, this
+  	 * handler forward the action to the listeners in the
+  	 * sequence that these listeners where added. 
+  	 * ======================================================== */
+  	  	
+  	final ActionListener m_actionHandler = new ActionListener() {
+  		
+  		@Override
+  		public void actionPerformed(ActionEvent e) {
+  			// get list of listeners
+  			List<ActionListener> list = m_listeners.get(e.getSource());
+  			if(list!=null) {
+  				for(ActionListener it : list) {
+  					it.actionPerformed(e);
+  				}
+  			}  			
+  		}
+  	};
+
   	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

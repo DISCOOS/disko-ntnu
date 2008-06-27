@@ -7,7 +7,6 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.wp.simulator.AssignmentStringConverter;
 
 public class AssignmentTable extends JTable {

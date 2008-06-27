@@ -164,24 +164,7 @@ public class RequirementDialog extends DefaultDialog {
 					public void update() {
 						super.update();
 						setup();
-					}
-					
-					@Override
-					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-						// is same as selected?
-						if(msoObj == msoObject) {
-							setMsoObject(msoObject);
-						}
-					}
-
-					@Override
-					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
-						// is same as selected?
-						if(msoObj == msoObject) {
-							// reset selection
-							setMsoObject(null);
-						}
-					}					
+					}						
 					
 				};
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());

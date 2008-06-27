@@ -1,6 +1,7 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.mso.data.*;
+import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.except.MsoNullPointerException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
@@ -77,6 +78,20 @@ public interface IMsoManagerIf
     public IOperationIf getOperation();
 
     /**
+     * Test if an operation exists
+     *
+     * @return <code>true</code> if an operation exists, <code>false</code> otherwise 
+     */
+    public boolean operationExists();
+    
+    /**
+     * Test if an operation is deleted
+     *
+     * @return <code>true</code> if operation is deleted, <code>false</code> otherwise 
+     */
+    public boolean isOperationDeleted();
+    
+    /**
      * Create a new {@link org.redcross.sar.mso.data.ICmdPostIf} object and add it to the collection of CmdPost objects.
      *
      * @return The created object, with an empty MSO structure.
@@ -116,12 +131,15 @@ public interface IMsoManagerIf
      * Remove an object from the data structure.
      *
      * @param aMsoObject The object to remove.
-     * @return <code>true</code> if the object could be deleted, <code>false</code> otherwise
+     * @return <code>true</code> if the object was deleted, <code>false</code> otherwise
      * @throws org.redcross.sar.util.except.MsoNullPointerException
-     *          if parameter is null.
+     *          if aMsoObject is null.
+     * @throws org.redcross.sar.util.except.MsoException
+     *          if aMsoObject is of type IOperationIf.
      */
-    public boolean remove(IMsoObjectIf aMsoObject) throws MsoNullPointerException;
-
+    public boolean remove(IMsoObjectIf aMsoObject) throws MsoException;
+    
+    
 //    /**
 //     * Might not be needed.
 //     */

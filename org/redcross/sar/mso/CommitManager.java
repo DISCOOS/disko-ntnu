@@ -1,13 +1,21 @@
 package org.redcross.sar.mso;
 
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.CommitWrapper;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
+import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.AbstractMsoObject;
+import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.mso.event.MsoEvent.EventType;
 import org.redcross.sar.util.except.CommitException;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -16,7 +24,7 @@ import java.util.Vector;
  * The event provides access to MSO data structures that shall be committed  by passing a {@link org.redcross.sar.mso.committer.ICommitWrapperIf} object
  * to the listeners.
  */
-public class CommitManager
+public class CommitManager implements ICommitManagerIf
 {
     /**
      * Types of commit depending on what has happened to the object/relation.
@@ -36,7 +44,7 @@ public class CommitManager
     /**
      * Vector for accumulating {@link UpdateHolder} objects that tell which objects that shall be commited, and their update types.
      */
-    private final Vector<UpdateHolder> m_updates = new Vector<UpdateHolder>(50);
+    private final Vector<IUpdateHolderIf> m_updates = new Vector<IUpdateHolderIf>(50);
 
     /**
      * @param theModel Reference to the singleton MSO model object holding the MsoModel object.
@@ -64,25 +72,16 @@ public class CommitManager
         return m_ownerModel;
     }
 
-    private ICommitWrapperIf createCommitWrapper()
-    {
-        CommitWrapper wrapper = new CommitWrapper();
-        for (UpdateHolder updateItem : m_updates)
-        {
-            wrapper.add(updateItem.m_object, updateItem.m_mask);
-        }
-        m_updates.clear();
-        return wrapper;
-    }
-
     private void registerUpdate(AbstractMsoObject anObject, int aMask)
     {
-        for (UpdateHolder updateItem : m_updates)
+        for (IUpdateHolderIf it : m_updates)
         {
-            if (updateItem.m_object.getObjectId().equals(anObject.getObjectId()))
+            if (it.getMsoObject().getObjectId().equals(anObject.getObjectId()))
             {
-                updateItem.applyMask(aMask);
-                return;
+            	if(it instanceof UpdateHolder) {
+            		((UpdateHolder)it).applyMask(aMask);
+                    return;
+            	}
             }
         }
         m_updates.add(new UpdateHolder(anObject, aMask));
@@ -96,9 +95,102 @@ public class CommitManager
      */
     public void commit() throws CommitException
     {
-        m_ownerModel.getEventManager().notifyCommit(createCommitWrapper());
+        m_ownerModel.getEventManager().notifyCommit(createCommit(m_updates));
     }
 
+    /**
+     * Perform a partial commit
+     * <p/>
+     * @param List<UpdateHolder> updates - holder for updates
+     * @throws org.redcross.sar.util.except.CommitException when the commit fails
+     */
+    public void commit(List<IUpdateHolderIf> updates) throws CommitException
+    {    	
+        m_ownerModel.getEventManager().notifyCommit(createCommit(updates));
+    }
+    
+    /**
+     * Returns pending updates
+     * <p/>
+     */
+    public List<IUpdateHolderIf> getUpdates()
+    {
+    	return new ArrayList<IUpdateHolderIf>(m_updates);
+    }
+    
+    /**
+     * Returns pending updates of specific class
+     * <p/>
+     */
+    public List<IUpdateHolderIf> getUpdates(MsoClassCode of) {
+    	return getUpdates(EnumSet.of(of));
+    }
+    
+    /**
+     * Returns pending updates of specific classes
+     * <p/>
+     */
+    public List<IUpdateHolderIf> getUpdates(Set<MsoClassCode> of) {
+    	List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(m_updates.size());
+    	for (IUpdateHolderIf it : m_updates)
+        {
+    		// add to updates?
+    		if(of.contains(it.getMsoObject().getMsoClassCode())) {
+    			updates.add(it);
+    		}
+        }
+        // finished
+        return updates;    	
+    }
+    
+    /**
+     * Returns pending updates of specific object
+     * <p/>
+     */
+    public IUpdateHolderIf getUpdates(IMsoObjectIf of) {
+    	List<IMsoObjectIf> list = new ArrayList<IMsoObjectIf>(1);
+    	list.add(of);
+    	List<IUpdateHolderIf> updates = getUpdates(list);
+    	return updates.size()>0 ? updates.get(0) : null;
+    }
+    
+    /**
+     * Returns pending updates of specific objects
+     * <p/>
+     */
+    public List<IUpdateHolderIf> getUpdates(List<IMsoObjectIf> of)
+    {
+    	List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(m_updates.size());
+    	for (IUpdateHolderIf it : m_updates)
+        {
+
+    		// add to updates?
+    		if(of.contains(it.getMsoObject())) {
+    			updates.add(it);
+    		}
+    		
+        }
+        // finished
+        return updates;    	
+    }
+    
+    private ICommitWrapperIf createCommit(List<IUpdateHolderIf> updates)
+    {
+    	List<IUpdateHolderIf> buffer = new ArrayList<IUpdateHolderIf>(updates.size());
+        CommitWrapper wrapper = new CommitWrapper();
+        for (IUpdateHolderIf it : updates)
+        {
+        	// add to wrapper
+    		wrapper.add(it);
+        	// add to remove buffer?
+        	if(!it.isPartial()) buffer.add(it);
+        }
+        // only remove full commit updates
+        m_updates.removeAll(buffer);
+        // ready to commit
+        return wrapper;
+    }
+    
     /**
      * Perform rollback.
      * <p/>
@@ -119,21 +211,91 @@ public class CommitManager
         return m_updates.size() > 0;
     }
 
-    private class UpdateHolder
+    class UpdateHolder implements IUpdateHolderIf
     {
-        final IMsoObjectIf m_object;
+        
+    	final IMsoObjectIf m_object;
         int m_mask;
+        List<IAttributeIf> m_partial;
 
         UpdateHolder(IMsoObjectIf anObject, int aMask)
-        {
+        {        	
+        	// prepare
             m_object = anObject;
             m_mask = aMask;
+        	m_partial = new ArrayList<IAttributeIf>(0);
         }
 
+		public int getMask() {
+			return m_mask;
+		}
+
+		public IMsoObjectIf getMsoObject() {
+			return m_object;
+		}        		
+		
         void applyMask(int aMask)
         {
             m_mask |= aMask;
         }
-    }
+        
+        public boolean isPartial() {
+        	return m_partial.size()>0;
+        }
+        
+        public List<IAttributeIf> getPartial() {
+        	return m_partial;
+        }
+        
+        public boolean setPartial(String attribute)
+        {
+        	List<String> list = new ArrayList<String>(1);
+        	list.add(attribute);
+        	return setPartial(list);
+        }
+        
+        public boolean setPartial(List<String> attributes)
+        {
+        	// prepare
+        	m_partial = new ArrayList<IAttributeIf>(attributes.size());
+            boolean modifiedObject = (m_mask 
+            		& EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        	
+            // is allowed?
+            if(modifiedObject) {
+	        	for(IAttributeIf<?> it : m_object.getAttributes().values()) {
+	        		String name = it.getName();
+	        		if(attributes.contains(name)) {
+	        			m_partial.add(it);
+	        		}
+	        	}
+            }
+            return m_partial.size()>0;
+        }
+		
+	    public boolean isDeleted()
+	    {
+	    	return (m_mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	    }
 
+	    public boolean isCreated()
+	    {
+	    	return (m_mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	    }
+
+	    public boolean isModified()
+	    {
+	    	return (m_mask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	    }
+
+	    public boolean isReferenceChanged()
+	    {
+	    	return (m_mask & 
+	                (EventType.MODIFIED_REFERENCE_EVENT.maskValue()) |
+	                EventType.ADDED_REFERENCE_EVENT.maskValue() |
+	                EventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
+	    }		
+
+    }
+    
 }

@@ -12,7 +12,7 @@ public class CheckpointListImpl extends MsoListImpl<ICheckpointIf> implements IC
 
     public CheckpointListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public ICheckpointIf createCheckpoint()

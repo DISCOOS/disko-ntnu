@@ -16,6 +16,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskListIf;
+import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
 
@@ -64,7 +65,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     private ITaskIf m_currentTask;
 
-    private final static int TASK_ALERT_TIME = 10000;
+    private final static int TASK_ALERT_TIME = 60000; // check every 60 seconds
     private long m_timeCounter = 0;
 
     public DiskoWpTasksImpl() throws IllegalClassFormatException
@@ -118,7 +119,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             public void handleTick(TickEvent e)
             {
             	try {
-            		//DiskoWorkPool.getInstance().schedule(new TaskTickWork());
+            		if(m_taskTable.getRowCount()>0)
+            			DiskoWorkPool.getInstance().schedule(new TaskTickWork());
             	}
             	catch(Exception ex) {
             		ex.printStackTrace();
@@ -387,7 +389,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		 * @param task
 		 */
 		TaskTickWork() throws Exception {
-			super("Vent litt",true,false);
+			super("Sjekker oppgaver",false,false);
 		}
 		
 		@Override
@@ -431,24 +433,24 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		}
 
 		@Override
-		public void done() {
+		public void beforeDone() {
 			
 			try {
 				// get current role
                 IDiskoRole role = getDiskoRole();
-                List<IDiskoWpModule> modules = role.getDiskoWpModules();
-                int index = modules.indexOf(getDiskoWpTasks());
-                MainMenuPanel mainMenu = getApplication().getUIFactory().getMainMenuPanel();
-                AbstractButton button = mainMenu.getButton(role.getName(), index);
-                // set button icon color mask according to 
-                // the alert flag from DiskWork result
-            	((DiskoIcon)button.getIcon()).setColored(get());
+                if(role!=null) {
+	                List<IDiskoWpModule> modules = role.getDiskoWpModules();
+	                int index = modules.indexOf(getDiskoWpTasks());
+	                MainMenuPanel mainMenu = getApplication().getUIFactory().getMainMenuPanel();
+	                AbstractButton button = mainMenu.getButton(role.getName(), index);
+	                // set button icon color mask according to 
+	                // the alert flag from DiskWork result
+	            	((DiskoIcon)button.getIcon()).setColored(get());
+                }
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// do the rest
-			super.done();
 		}
 	}	
 }

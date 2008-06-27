@@ -74,26 +74,12 @@ public class EstimateDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private DefaultPanel getContentPanel() {
+	private AttributesPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
 				contentPanel = new AttributesPanel() {
 					
 					private static final long serialVersionUID = 1L;
-
-					@Override
-					protected boolean beforeCancel() {
-						// forward
-						attrEta.load();
-						// success
-						return true; 
-					}
-
-					@Override
-					protected boolean beforeFinish() {
-						// forward
-						return attrEta.save();
-					}
 
 					@Override
 					public void setMsoObject(IMsoObjectIf msoObj) {
@@ -107,7 +93,7 @@ public class EstimateDialog extends DefaultDialog {
 						if(area!=null) {
 							assignment = area.getOwningAssignment();
 							if (assignment instanceof ISearchIf)
-								eta = ((ISearchIf)assignment).getPlannedProgressAttribute();
+								eta = ((ISearchIf)assignment).getTimeEstimatedFinishedAttribute();
 							else
 								assignment = null;
 						}
@@ -115,6 +101,7 @@ public class EstimateDialog extends DefaultDialog {
 						// update
 						super.setMsoObject(assignment);
 						getEtaAttribute().setMsoAttribute(eta);
+						getEtaAttribute().load();
 
 						// resume changes
 						setChangeable(true);
@@ -129,28 +116,9 @@ public class EstimateDialog extends DefaultDialog {
 					
 					@Override
 					public void update() {
-						super.update();
 						setup();
 					}
-					
-					@Override
-					public void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
-						// is same as selected?
-						if(msoObject == this.msoObject) {
-							setMsoObject(msoObject);
-						}
-					}
-
-					@Override
-					public void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
-						// is same as selected?
-						if(msoObject == this.msoObject) {
-							// forward
-							setMsoObject(null);
-						}
-					}
-					
-					
+										
 				};				
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				

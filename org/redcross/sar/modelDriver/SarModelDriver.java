@@ -11,7 +11,6 @@ import org.redcross.sar.mso.CommitManager;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.mso.data.*;
@@ -21,6 +20,7 @@ import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.except.MsoNullPointerException;
 import org.rescuenorway.saraccess.api.*;
 import org.rescuenorway.saraccess.except.SaraException;
@@ -29,6 +29,7 @@ import org.rescuenorway.saraccess.model.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -65,6 +66,9 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     
     Timer timer = new Timer();
     DelaySchedule schedule = null;
+    
+    DiskoWorkPool m_workPool;
+    IMsoModelIf m_msoModel;
 
     public SarModelDriver()
     {
@@ -87,26 +91,8 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         IMsoModelIf imm = MsoModelImpl.getInstance();
         imm.getEventManager().addCommitListener(this);
         initiated = true;
-//      //Hent ut hendelse fra Sara dersom slik eksisterer og map denne mot ny modell instans
-//      SarOperations sarOpers=sarSvc.getSession().getOperations();
-//      SarOperation oper=null;
-//      if(sarOpers.getOperations().size()==0)
-//      {
-//         //Opprett ny hendelse
-//         //sarSvc.getSession().createNewOperation()
-//          //TODO avklar
-//           //oper=new Operation("TestBus","12121212",Operation.STATE_ACTIVE, System.currentTimeMillis());
-//          //createMsoOperation(oper);
-//         sarSvc.getSession().createNewOperation("MSO",true);
-//      }
-//      else
-//      {
-//         //TODO avklar ang. hendelser
-//         oper=sarOpers.getOperations().get(0);
-//         createMsoOperation(oper);
-//      }
-//      sarOperation=oper;
-        if (sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
+        if (sarSvc.getSession().isFinishedLoading() 
+        		&& sarSvc.getSession().getOperations().getOperations().size() == 0)
         {
             loadingOperation = true;
             sarSvc.getSession().createNewOperation("MSO", true);
@@ -138,40 +124,48 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     public boolean setActiveOperation(String opID)
     {
 
+    	// initialize
+    	boolean bFlag = false;
+    	
+        // notify
+        getWorkPool().suspend();
+        getMsoModel().setRemoteUpdateMode();
+        getMsoModel().suspendClientUpdate();    		    	
+		
     	try {
 
     		// reset current operation
     		sarOperation = null;
     		
-    		//boolean isFinished = sarSvc.getSession().isFinishedLoading();
-    		
-    		// get operation
+    		// get operation from SARA session
     		SarOperation soper = sarSvc.getSession().getOperation(opID);
     		
-	        // try to clear mso model
-	        if (!clearMSO()){
-	        	// failed to clear mso model
-	            return false;
+	        // try to clear current MSO model
+	        if (clearMSO(false)){
+	        	
+		        // try to set as active operation
+		        if (setActiveOperation(soper)) {
+	        
+			        // save operation
+			        sarOperation = soper;
+			        
+			        // success
+			        bFlag = true;
+		        }
 	        }
 	        
-	        // try to set as active operation
-	        if (!setActiveOperation(soper)){
-	        	// failed to set as active operation
-	            return false;
-	        }
-	        
-	        // save operation
-	        sarOperation = soper;
-	        
-	        // return active operation
-	        return true;            		        
     	}
     	catch(Exception e) {
     		e.printStackTrace();
     	}
     	
-        // failed
-    	return false;
+    	// resume old modes
+    	getMsoModel().resumeClientUpdate();
+        getMsoModel().restoreUpdateMode();        
+    	getWorkPool().resume();	                
+    	
+        // finished
+    	return bFlag;
     	
     }
 
@@ -191,59 +185,69 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     	return name;
     }
     
-    private boolean clearMSO()
+    private boolean clearMSO(boolean suspend)
     {
         
         // initialize
         boolean success = false;
         
-        // notify model
-    	MsoModelImpl.getInstance().setRemoteUpdateMode();
-        MsoModelImpl.getInstance().suspendClientUpdate();
+        // suspend?
+        if(suspend) {
+	        getWorkPool().suspend();
+	        getMsoModel().setRemoteUpdateMode();
+	        getMsoModel().suspendClientUpdate();
+        }
         
         try {
     		
 	    	// get manager
 	        IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
 	        
-        	// delete all deleteable references
-        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
-        		if(msoObj instanceof IMsoReferenceIf) {
-        			if(((IMsoReferenceIf)msoObj).canDelete()) {
-        				msoObj.deleteObject();
-        			}
-        		}
-        	}
-        	
-        	// delete all deleteable objects
-        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
-        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
-    				msoObj.deleteObject();
-        		}
-        	}
-
-        	// delete all undeleteable objects
-        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
-        		if(msoObj!=null && !msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
-        			msoObj.deleteObject();
-        	}
-        	        	
-	        // get operation
-	    	IOperationIf opr = msoManager.getOperation();
+	        // get operation?
+	    	IOperationIf opr = msoManager.operationExists() ? msoManager.getOperation() : null;
 	    	
-	    	// remove operation?
+	    	// has operation?
 	    	if(opr!=null) {
-	    		// forward
-	    		msoManager.remove(opr);
-	    	}	    	
-	    	
-	    	// clear maps
-	    	saraMsoMap.clear();	    	
-	    	msoSaraMap.clear();
-	    	
-	    	// do garbage collection
-	    	Runtime.getRuntime().gc();
-	    	
+	    		
+	        	// delete all deleteable references
+	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+	        		if(msoObj instanceof IMsoReferenceIf) {
+	        			if(((IMsoReferenceIf)msoObj).canDelete()) {
+	        				msoObj.deleteObject();
+	        			}
+	        		}
+	        	}
+	        	
+	        	// delete all deleteable objects
+	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+	        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
+	    				msoObj.deleteObject();
+	        		}
+	        	}
+	
+	        	// delete all undeleteable objects
+	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+	        		if(msoObj!=null && !msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
+	        			msoObj.deleteObject();
+	        	}
+	        	        	
+		    	// delete operation?
+		    	if(opr!=null)  opr.deleteObject();
+	
+		    	// clear maps
+		    	saraMsoMap.clear();	    	
+		    	msoSaraMap.clear();
+		    	
+		    	// do garbage collection
+		    	Runtime.getRuntime().gc();
+		    	
+	        	// notify all listeners?
+		    	if(opr!=null) {
+		    		MsoModelImpl.getInstance().getEventManager().notifyClearAll(opr);
+		    	}
+		    	
+	    	}
+        	
 	    	// set flag
 	    	success = true;
 	    	
@@ -251,22 +255,22 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     	catch(Exception e) {
     		e.printStackTrace();
     	}
-
-    	// resume old modes
-        MsoModelImpl.getInstance().resumeClientUpdate();
-        MsoModelImpl.getInstance().restoreUpdateMode();
+    	
+    	// resume?
+    	if(suspend) {
+        	// resume old modes
+        	getMsoModel().resumeClientUpdate();
+            getMsoModel().restoreUpdateMode();        
+        	getWorkPool().resume();	                                	
+    	}
 
     	// return state
         return success;
         
     }
 
-    boolean setActiveOperation(SarOperation soper)
+    private boolean setActiveOperation(SarOperation soper)
     {
-        
-    	// notify model
-    	MsoModelImpl.getInstance().setRemoteUpdateMode();
-        MsoModelImpl.getInstance().suspendClientUpdate();
         
         //CREATE MSO operation
         createMsoOperation(soper);
@@ -333,12 +337,27 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
         }
         
-        // resume old modes
-        MsoModelImpl.getInstance().resumeClientUpdate();
-        MsoModelImpl.getInstance().restoreUpdateMode();
-
         return true;
         
+    }
+    
+    private IMsoModelIf getMsoModel() {
+    	if(m_msoModel==null) {
+			m_msoModel = MsoModelImpl.getInstance();
+    	}
+    	return m_msoModel;
+    }
+    
+    private DiskoWorkPool getWorkPool() {
+    	if(m_workPool==null) {
+    		try {
+				m_workPool = DiskoWorkPool.getInstance();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	return m_workPool;
     }
 
     public void finishActiveOperation()
@@ -349,7 +368,10 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         {
             createNew = true;
         }
+        
+        // forward
         sarSvc.getSession().finishOperation(sarOperation.getID());
+        
         if (createNew)
         {
             createNewOperation();
@@ -384,8 +406,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     {
         //Opprett alle Mso objekter fra hendelsens objekter
         IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
-        IOperationIf testOperation = msoManager.getOperation();
-        if (testOperation == null)
+        if (!msoManager.operationExists())
         {
             try
             {
@@ -404,7 +425,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 	c.setTimeInMillis(Long.valueOf(periods.get(0).toString()));
                 	
                 IMsoObjectIf.IObjectIdIf operid = new AbstractMsoObject.ObjectId(oper.getID(),c.getTime());
-                testOperation = msoManager.createOperation(prefix, number, operid);
+                msoManager.createOperation(prefix, number, operid);
                 sarOperation = oper;
 //                MsoModelImpl.getInstance().restoreUpdateMode();
                 //TODO Opprett of map inn data
@@ -455,19 +476,20 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     }
     */
 
-    private HashMap<String, SarObject> tmpObjects = new HashMap<String, SarObject>();
+    private HashMap<String, SarObject> commitObjects = new HashMap<String, SarObject>();
 
     public void handleMsoCommitEvent(MsoEvent.Commit e) throws CommitException
     {
     	
-        tmpObjects.clear();
-        //loopbackIds.clear();
+    	// prepare
+        commitObjects.clear();
         
         //Check that operation is added
         if (sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
         {
             sarSvc.getSession().createNewOperation("MSO", true);
         }
+        
         //sarSvc.getSession().beginCommit(sarOperation.getID());
         //Iterer gjennom objektene, sjekk type og oppdater sara etter typen
         ICommitWrapperIf wrapper = (ICommitWrapperIf) e.getSource();
@@ -478,11 +500,11 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             if (ico.getType().equals(CommitManager.CommitType.COMMIT_CREATED))
             {
                 SarObject so = createSaraObject(ico);
-                tmpObjects.put(so.getID(), so);
+                commitObjects.put(so.getID(), so);
                 so.createNewOut();
             } else if (ico.getType().equals(CommitManager.CommitType.COMMIT_MODIFIED))
             {
-                //if modified, modify Saraobject.
+                //if modified, modify SaraObject.
                 updateSaraObject(ico);
             }
         }
@@ -504,7 +526,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         {
             if (ico.getType().equals(CommitManager.CommitType.COMMIT_DELETED))
             {
-                //if deleted remove Sara object
+                // if deleted remove Sara object
                 deleteSaraObject(ico);
             }
         }
@@ -523,11 +545,11 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         String refName = ico.getReferenceName();
         if (sourceObj == null)
         {
-            sourceObj = tmpObjects.get(owner.getObjectId());
+            sourceObj = commitObjects.get(owner.getObjectId());
         }
         if (relObj == null)
         {
-            relObj = tmpObjects.get(ref.getObjectId());
+            relObj = commitObjects.get(ref.getObjectId());
         }
         if (sourceObj == null || relObj == null)
         {
@@ -735,8 +757,6 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         		// get change event
         		int type = change.getChangeType();
         		
-        		UpdateMode mode = MsoModelImpl.getInstance().getUpdateMode();
-        		
             	// do the update
                 if (   type == SaraChangeEvent.TYPE_ADD 
                 	|| type == SaraChangeEvent.TYPE_CHANGE
@@ -746,58 +766,8 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 	// forward
                 	scheduleSaraChangeWork(change);
             		                	
-                	// schedule work
-                	//SwingUtilities.invokeLater(work);
-                	                	                	
-            		//DiskoWorkPool.getInstance().schedule(work);
                 }        		
             	
-        		//SwingUtilities.invokeAndWait(work);
-            	
-            	// TODO: Loopback handeling does not work yet. It is not a 1-to-1 mapping between
-            	// changes sent with commit and changes received in the events received in the loopback from Sara API...
-            	
-        		/*
-        		// invoke later on EDT
-            	SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                			// get SarObject id
-                			String id = getSarObjectID(change);
-                    		// is mso event?
-                    		if(id!=null) {
-	                			// create work
-	                        	SaraChangeWork work = new SaraChangeWork(change);
-	                    		// is loopback?
-	                    		if(isLoopback(id)) {
-	                    			// only loopback change events shold be handled inside the loopback to ensure
-	                    			// correct update of server values in MSO attributes and relations during 
-	                    			// a commit from the mso model assosiated with this model driver 
-	                    			work.run();
-	                    			//System.out.println("Looback:"+id);
-	                    			// forward
-	                    			setLoopback(id, false);
-	                    		}
-	                    		else {
-	                    			// all other sara change work (commits invoked by other mso models) 
-	                    			// should be done by the work pool to ensure concurrency of all running threads 
-	                    			// (GUI events on EDT, sara change events from SARA API and mso model 
-	                    			// invocations done on either EDT or disko work pool thread)
-	                    			//id = getSarObjectID(change.getSource());
-	                    			DiskoWorkPool.getInstance().schedule(work);
-	                    			System.out.println("Schedule:"+id);
-	                    		}
-                    		}
-                            else{
-                                Log.warning("SaraChange not handled for objectType " + change.getSource().getClass().getName());
-                            }
-                        }
-                        catch (Exception e){
-                            Log.printStackTrace("Unable to update msomodel " + e.getMessage(), e);
-                        }
-                    }
-                });
-            	*/
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -831,27 +801,33 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         Object co = change.getSource();
         IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
 
-        IOperationIf testOperation = msoManager.getOperation();
-        try
-        {
-
-            if (co instanceof SarOperation)
-            {
-            	boolean current = (co == sarOperation);
-            	if(current) msoManager.remove(testOperation);
-                fireOnOperationFinished(sarOperation.getID(),current);
-            } else
-            {
-                IMsoObjectIf source = saraMsoMap.get(co);
-                if (source != null)
-                {
-                    msoManager.remove(source);
-                }
-            }
-        }
-        catch (MsoNullPointerException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        if(msoManager.operationExists()) {
+        
+	        try
+	        {
+	
+	            if (co instanceof SarOperation)
+	            {
+	            	String oprId = sarOperation.getID();
+	            	boolean current = (co == sarOperation);
+	            	if(current) {
+	            		sarOperation = null;
+	            		clearMSO(true);
+	            	}
+	                fireOnOperationFinished(oprId,current);
+	            } else
+	            {
+	                IMsoObjectIf source = saraMsoMap.get(co);
+	                if (source != null)
+	                {
+	                    msoManager.remove(source);
+	                }
+	            }
+	        }
+	        catch (MsoException e)
+	        {
+	            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+	        }
         }
 
 //      if (co.getFactType() == Fact.FACTTYPE_RELATION)
@@ -915,11 +891,13 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         {
         	
         	String[] toObject = (String[])co.getToObject();
-        	
+
+        	/*
         	if(toObject.length<2)
         		System.out.println("FACTTYPE_RELATION::"+toObject[0]+".NULL");
         	else
         		System.out.println("FACTTYPE_RELATION::"+toObject[0]+"."+toObject[1]);
+        	*/
         	
         	
             String relId = toObject[1];
@@ -927,6 +905,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             SarObjectImpl rel = (SarObjectImpl) sarOperation.getSarObject(relId);
 
             updateMsoReference(so, rel, relName, co.getFieldName());
+            
         } else
         {
             //Change of factvalue
@@ -1053,13 +1032,16 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         
         //if(methodName.equals("createPersonnel"))
         //	System.out.println();
+        
+        // get creation time
+        Date creationTime = ((SarObjectImpl)sarObject).getCreationDate();
 
         Method m = null;
         try
         {
             m = msoMgr.getClass().getMethod(methodName, IMsoObjectIf.IObjectIdIf.class);
             m.setAccessible(true);
-            IMsoObjectIf.IObjectIdIf id = new AbstractMsoObject.ObjectId(sarObject.getID(),((SarObjectImpl)sarObject).getCreationDate());
+            IMsoObjectIf.IObjectIdIf id = new AbstractMsoObject.ObjectId(sarObject.getID(),creationTime);
             msoObj = (IMsoObjectIf) m.invoke(msoMgr, new Object[]{id});
 
             // Handle any exceptions thrown by method to be invoked.
@@ -1069,7 +1051,10 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             Log.error(x.toString());
         }
         
-        // TODO: update creation date if mso object already exists
+        // update creation date if mso object already exists?
+        if(msoObj!=null && !msoObj.isCreated()) {
+        	msoObj.setCreated(creationTime);
+        }
         
         //System.out.println("getCreationDate:="+((SarObjectImpl)sarObject).getCreationDate());
         
@@ -1172,19 +1157,23 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 			this.changes = changes;
  		}
 		
+		protected void beforePrepare() {
+        	// set remote update mode
+			MsoModelImpl.getInstance().setRemoteUpdateMode();
+		}
+		
 		/** 
 		 * Worker
 		 * 
 		 * Notifies the model of change in worker thread (system modal)
 		 */
 		public Void doWork() {
-        	// set remote update mode
-        	MsoModelImpl.getInstance().setRemoteUpdateMode();
         	// catch errors and log them
             try
             {
             	// loop over all changes
             	for(SaraChangeEvent change : changes) {
+            		
 	            	// do the update
 	                if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
 	                {
@@ -1206,29 +1195,22 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	                else if (change.getChangeType() == SaraChangeEvent.TYPE_REMOVE){
 	                    removeInMsoFromSara(change);
 	                }
+	                
             	}
             }
             catch (Exception e)
             {
                 Log.printStackTrace("Unable to update msomodel " + e.getMessage(), e);
             }
-            // resume old update mode
-            MsoModelImpl.getInstance().restoreUpdateMode();
             // finished
 			return null;
 		}
 		
-		/**
-		 * done 
-		 * 
-		 * Executed on the Event Dispatch Thread.
-		 * 
-		 */
-		@Override
-		public void done() {
-	        // forward
-	        super.done();
+		protected void afterDone() {
+            // resume to old mode
+			MsoModelImpl.getInstance().restoreUpdateMode();
 		}
+		
 	}
 	
 	private void fireOnOperationCreated(final String oprId, final boolean current) {

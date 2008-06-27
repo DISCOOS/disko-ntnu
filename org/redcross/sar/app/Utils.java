@@ -7,10 +7,9 @@ import java.awt.Window;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
-import java.text.SimpleDateFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,10 +17,14 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
+import no.cmr.common.util.SimpleDecimalFormat;
+
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
+
+import com.esri.arcgis.system.NumericFormat;
 
 /**
  * Utility class containing access to methods for handling properties.
@@ -378,11 +381,14 @@ public class Utils {
 		int hours = seconds / 3600;
 		seconds = seconds % 3600;
 		int minutes = seconds / 60;
-		seconds = seconds % 60;
+		seconds = seconds % 60;		
+		DecimalFormat formatter = new DecimalFormat("00");		
 		//GregorianCalendar date = new GregorianCalendar(1900,1,1,hours,minutes,seconds);
 		//SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 		//return formatter.format(date.getTime());
-		return hours + ":" + minutes + ":" + seconds; // + "s"; 
+		return formatter.format(hours) 
+				+ ":" + formatter.format(minutes) 
+				+ ":" + formatter.format(seconds); 
 	}    
     
 }

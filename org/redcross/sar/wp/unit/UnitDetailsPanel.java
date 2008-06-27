@@ -392,29 +392,41 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
 	public void handleMsoUpdateEvent(Update e) {
 		
-		// get flags
+		// get mask
 		int mask = e.getEventTypeMask();
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 		
-        // get unit
-        IUnitIf unit = (IUnitIf)e.getSource();
-        
-		// is object modified?
-		if (modifiedObject) {
-			updateFieldContents();
-		}		
-		if (addedReference || removedReference) {
-			updateUnitPersonnel();
-		}
+        // get flag
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 		
-		// delete object?
-		if (deletedObject && unit == m_currentUnit) {
+        // clear all?
+        if(clearAll) {
     		m_currentUnit = null;
             updateContents();
-		}
+        }
+        else {
+        	// get flags
+	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			
+	        // get unit
+	        IUnitIf unit = (IUnitIf)e.getSource();
+	        
+			// is object modified?
+			if (modifiedObject) {
+				updateFieldContents();
+			}		
+			if (addedReference || removedReference) {
+				updateUnitPersonnel();
+			}
+			
+			// delete object?
+			if (deletedObject && unit == m_currentUnit) {
+	    		m_currentUnit = null;
+	            updateContents();
+			}
+	}
 		
 	}
 	
@@ -704,14 +716,16 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
      */
     public void handleTick(TickEvent e)
     {
-        ICmdPostIf cmdPost = m_wpUnit.getCmdPost();
-        if (cmdPost == null)
-        {
-            return;
-        }
-
-        updateFieldTime();
-        updateStopTime();
+    	if(m_wpUnit.getMsoManager().operationExists()) {
+	        ICmdPostIf cmdPost = m_wpUnit.getCmdPost();
+	        if (cmdPost == null)
+	        {
+	            return;
+	        }
+	
+	        updateFieldTime();
+	        updateStopTime();
+    	}
     }
 
     public void setTimeCounter(long counter)

@@ -71,11 +71,12 @@ public class DiskoDecisionSupport {
   	 */
   	 
 	public List<IDsIf<?>> getEstimators(String oprID) {
+		List<IDsIf<?>> list = new ArrayList<IDsIf<?>>();
 		Map<Class<?>,IDsIf<?>> map = m_lists.get(oprID);
 		if(map!=null) {
-			return new ArrayList<IDsIf<?>>(map.values());
+			list.addAll(map.values());
 		}
-		return null;
+		return list;
 	}  	
 
 	public boolean isInstalled(Class<? extends IDsIf<?>> c, String oprID) {

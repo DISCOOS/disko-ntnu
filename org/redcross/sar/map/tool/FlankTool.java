@@ -247,7 +247,7 @@ public class FlankTool extends AbstractDiskoTool {
 		 * 
 		 */
 		@Override
-		public void done() {		
+		public void beforeDone() {		
 			try {
 				
 				// get result
@@ -261,8 +261,6 @@ public class FlankTool extends AbstractDiskoTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}			
-			// forward to super
-			super.done();							
 		}
 	}
 	

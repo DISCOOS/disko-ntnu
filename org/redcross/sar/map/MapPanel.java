@@ -10,11 +10,17 @@ import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.gui.panel.MapFilterPanel;
 import org.redcross.sar.gui.panel.MapStatusPanel;
+import org.redcross.sar.map.feature.IMsoFeature;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+
+import com.esri.arcgis.interop.AutomationException;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.List;
 /**
  * This panel wraps IDiskoMap
  * 
@@ -65,6 +71,19 @@ public class MapPanel extends AbstractPanel {
 			@Override
 			public void onMouseMove() {
 				getMapStatusBar().onMouseMove(map.getMovePoint());				
+			}
+			
+			@Override
+			public void onSelectionChanged() {
+				try {
+					getMapStatusBar().onSelectionChanged(map.getMsoSelection());
+				} catch (AutomationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
 			}
 			
 		});

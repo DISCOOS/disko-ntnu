@@ -45,8 +45,10 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
  				esriGeometryType.esriGeometryPoint, eventStack);
  		symbols = new Hashtable<UnitType, PictureMarkerSymbol>();
  		createSymbols();
- 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getUnitListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getUnitListItems().toArray());
+		}
 	}
 
  	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)

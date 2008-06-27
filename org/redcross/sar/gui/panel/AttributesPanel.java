@@ -140,16 +140,16 @@ public class AttributesPanel extends DefaultPanel {
 		// remove old panels
 		clearAttributes();
 		// get all attributes
-		Map<String,IAttributeIf> map = msoObject.getAttributes();
+		Map<String,IAttributeIf<?>> map = msoObject.getAttributes();
 		// select decision method
 		if(include) {
-			// insert only passed attribues 
+			// insert only passed attributes 
 			for(int i=0;i<attributes.size();i++) {
 				String it = attributes.get(i);
 				// add to panel?
 				if(map.containsKey(it)) {
 					// get attribute
-					IAttributeIf attr = map.get(it);
+					IAttributeIf<?> attr = map.get(it);
 					// is supported?
 					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
@@ -159,12 +159,12 @@ public class AttributesPanel extends DefaultPanel {
 			}		
 		}
 		else {
-			// insert all attribues except passed attribues
+			// insert all attributes except passed attribues
 			for(String it: map.keySet()) {
 				// add to panel?
 				if(!attributes.contains(it)) {
 					// get attribute
-					IAttributeIf attr = map.get(it);
+					IAttributeIf<?> attr = map.get(it);
 					// is supported?
 					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
@@ -173,7 +173,7 @@ public class AttributesPanel extends DefaultPanel {
 				}
 			}					
 		}
-		// retrun counter
+		// finished
 		return added;
 	}
 	
@@ -209,7 +209,7 @@ public class AttributesPanel extends DefaultPanel {
 		return false;
 	}
 	
-	public IDiskoAttribute addAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable)  {
+	public IDiskoAttribute addAttribute(IAttributeIf<?> attribute, String caption, int width, boolean isEditable)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
@@ -314,7 +314,7 @@ public class AttributesPanel extends DefaultPanel {
 		m_panels.get(name).setCaptionWidth(width);		
 	}	
 	
-  	public static IDiskoAttribute createAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
+  	public static IDiskoAttribute createAttribute(IAttributeIf<?> attribute, String caption, int width, boolean isEditable) {
   		// initialize component
   		IDiskoAttribute component = null;
 		try {
@@ -369,7 +369,7 @@ public class AttributesPanel extends DefaultPanel {
 			else if (attribute instanceof AttributeImpl.MsoEnum) {
 				// get enum attribute
 			    component = new EnumAttribute(
-			    		(AttributeImpl.MsoEnum)attribute,caption,width,isEditable);
+			    		(AttributeImpl.MsoEnum<?>)attribute,caption,width,isEditable);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -378,8 +378,6 @@ public class AttributesPanel extends DefaultPanel {
   	}
   	
   	public void update() {
-  		
-  		int max = 0;
   		
   		// calculate dirty bit
   		for(IDiskoAttribute it : m_panels.values()) {
@@ -450,6 +448,23 @@ public class AttributesPanel extends DefaultPanel {
   		}
 	}
   	
+
+	@Override
+	protected boolean beforeCancel() {
+		// forward
+		load();
+		// success
+		return true; 
+	}
+
+	@Override
+	protected boolean beforeFinish() {
+		// forward
+		save();
+		// success
+		return true;
+	}
+
 	public void setAttributeAlignmentY(float position) {
 		// prepare
 		m_attribAlignY = position;
@@ -460,5 +475,57 @@ public class AttributesPanel extends DefaultPanel {
   			}
   		}
 	}
+	
+	@Override
+	protected void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
+		super.msoObjectCreated(msoObject, mask);
+		if(this.msoObject == msoObj) {
+			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+			// loop over attributes
+			for(IDiskoAttribute it: m_panels.values()) {
+				if(it.isMsoAttribute()) {
+					if(map.containsValue(it.getMsoAttribute())) {
+						it.load();
+					}
+				}
+			}
+		}
+	}
+	
+
+	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+		super.msoObjectChanged(msoObject, mask);
+		if(this.msoObject == msoObj) {
+			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+			// loop over attributes
+			for(IDiskoAttribute it: m_panels.values()) {
+				if(it.isMsoAttribute()) {
+					if(map.containsValue(it.getMsoAttribute())) {
+						it.load();
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+		super.msoObjectDeleted(msoObject, mask);
+		if(this.msoObject == msoObj) {
+			// TODO: Implement deleted attribute indication in GUI 
+			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+			// loop over attributes
+			for(IDiskoAttribute it: m_panels.values()) {
+				if(it.isMsoAttribute()) {
+					if(map.containsValue(it.getMsoAttribute())) {
+						it.setMsoAttribute(null);
+						it.load();
+					}
+				}
+			}
+		}
+	}
+	
+	
 	
 }

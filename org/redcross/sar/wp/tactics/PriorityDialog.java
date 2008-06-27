@@ -128,25 +128,6 @@ public class PriorityDialog extends DefaultDialog {
 						setup();
 					}
 					
-					@Override
-					public void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-						// consume?
-						if(!isChangeable()) return;
-						// is same as selected?
-						if(msoObj == msoObject) {
-							setMsoObject(msoObj);
-						}
-					}
-
-					@Override
-					public void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
-						if(!isChangeable()) return;
-						// is same as selected?
-						if(msoObj == msoObject) {
-							// reset selection
-							setMsoObject(null);
-						}
-					}	
 					
 				};
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());

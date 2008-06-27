@@ -12,7 +12,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
 
     public UnitListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     private int makeUnitSerialNumber(Class aClass)

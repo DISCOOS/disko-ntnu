@@ -49,7 +49,7 @@ public interface IMsoFeatureLayer extends IFeatureLayer {
 	
 	public boolean isDirty();
 	
-	public boolean isDirty(boolean deep);
+	public boolean isDirty(boolean checkAll);
 	
 	public boolean isEnabled();
 	

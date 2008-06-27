@@ -353,60 +353,61 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
             m_organizationTextField.setText(m_currentPersonnel.getOrganization());
             m_departmentTextField.setText(m_currentPersonnel.getDepartment());
 
-            // Set unit
-            IUnitIf personnelUnit = null;
-            for (IUnitIf unit : m_wpUnit.getMsoManager().getCmdPost().getUnitListItems())
-            {
-                if (unit.getStatus() != UnitStatus.RELEASED)
-                {
-                    if (unit.getUnitPersonnel().contains(m_currentPersonnel))
-                    {
-                        personnelUnit = unit;
-                        break;
-                    }
-                }
+            if(m_wpUnit.getMsoManager().operationExists()) {
+	            IUnitIf personnelUnit = null;
+	            for (IUnitIf unit : m_wpUnit.getMsoManager().getCmdPost().getUnitListItems())
+	            {
+	                if (unit.getStatus() != UnitStatus.RELEASED)
+	                {
+	                    if (unit.getUnitPersonnel().contains(m_currentPersonnel))
+	                    {
+	                        personnelUnit = unit;
+	                        break;
+	                    }
+	                }
+	            }
+	            m_unitTextField.setText(personnelUnit == null ? "" : personnelUnit.getTypeAndNumber());
+	
+	            if (personnelUnit != null)
+	            {
+	                if (personnelUnit.getUnitLeader() == m_currentPersonnel)
+	                {
+	                    m_roleTextField.setText(m_resources.getString("Leader.text"));
+	                } else
+	                {
+	                    m_roleTextField.setText(m_resources.getString("Personnel.text"));
+	                }
+	            } else
+	            {
+	                m_roleTextField.setText("");
+	            }
+	
+	            m_calloutTextField.setText(DTG.CalToDTG(m_currentPersonnel.getCallOut()));
+	
+	            updateEstimatedArrival();
+	
+	            if (m_currentPersonnel.getStatus() == PersonnelStatus.RELEASED)
+	            {
+	                m_releasedTextField.setText(m_resources.getString("Yes.text"));
+	            } else
+	            {
+	                m_releasedTextField.setText(m_resources.getString("No.text"));
+	            }
+	
+	            m_remarksTextArea.setText(m_currentPersonnel.getRemarks());
+	
+	            // Get next status for
+	            PersonnelStatus status = m_currentPersonnel.getStatus();
+	            PersonnelStatus[] values = PersonnelStatus.values();
+	            status = values[(status.ordinal() + 1) % values.length];
+	            if (status == PersonnelStatus.IDLE)
+	            {
+	                // Not possible to send personnel status back to idle, set to next
+	                status = values[(status.ordinal() + 1) % values.length];
+	            }
+	            //m_changeStatusButton.setText(Internationalization.translate(status));
+	            m_changeStatusButton.setActionCommand(status.name());
             }
-            m_unitTextField.setText(personnelUnit == null ? "" : personnelUnit.getTypeAndNumber());
-
-            if (personnelUnit != null)
-            {
-                if (personnelUnit.getUnitLeader() == m_currentPersonnel)
-                {
-                    m_roleTextField.setText(m_resources.getString("Leader.text"));
-                } else
-                {
-                    m_roleTextField.setText(m_resources.getString("Personnel.text"));
-                }
-            } else
-            {
-                m_roleTextField.setText("");
-            }
-
-            m_calloutTextField.setText(DTG.CalToDTG(m_currentPersonnel.getCallOut()));
-
-            updateEstimatedArrival();
-
-            if (m_currentPersonnel.getStatus() == PersonnelStatus.RELEASED)
-            {
-                m_releasedTextField.setText(m_resources.getString("Yes.text"));
-            } else
-            {
-                m_releasedTextField.setText(m_resources.getString("No.text"));
-            }
-
-            m_remarksTextArea.setText(m_currentPersonnel.getRemarks());
-
-            // Get next status for
-            PersonnelStatus status = m_currentPersonnel.getStatus();
-            PersonnelStatus[] values = PersonnelStatus.values();
-            status = values[(status.ordinal() + 1) % values.length];
-            if (status == PersonnelStatus.IDLE)
-            {
-                // Not possible to send personnel status back to idle, set to next
-                status = values[(status.ordinal() + 1) % values.length];
-            }
-            //m_changeStatusButton.setText(Internationalization.translate(status));
-            m_changeStatusButton.setActionCommand(status.name());
         }
         m_nameTextField.requestFocus();
     }
@@ -519,7 +520,8 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
      */
     public void handleMsoUpdateEvent(Update e)
     {
-        IPersonnelIf personnel = (IPersonnelIf) e.getSource();
+        IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ? 
+        		(IPersonnelIf) e.getSource() : null;
         if (m_currentPersonnel == personnel)
         {
             updateFieldContents();
@@ -546,17 +548,19 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
      */
     public void handleTick(TickEvent e)
     {
-        ICmdPostIf cmdPost = m_wpUnit.getCmdPost();
-        if (cmdPost == null)
-        {
-            return;
-        }
-
-        // Don't update if adding new personnel
-        if (m_currentPersonnel != null && !m_wpUnit.getNewPersonnel())
-        {
-            updateEstimatedArrival();
-        }
+    	if(m_wpUnit.getMsoManager().operationExists()) {
+	        ICmdPostIf cmdPost = m_wpUnit.getCmdPost();
+	        if (cmdPost == null)
+	        {
+	            return;
+	        }
+	
+	        // Don't update if adding new personnel
+	        if (m_currentPersonnel != null && !m_wpUnit.getNewPersonnel())
+	        {
+	            updateEstimatedArrival();
+	        }
+    	}
     }
 
     public void setTimeCounter(long counter)

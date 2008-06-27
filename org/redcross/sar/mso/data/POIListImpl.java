@@ -13,9 +13,14 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
 
     public POIListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
+    public POIListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int theCardinality, int aSize)
+    {
+        super(anOwner, theName, isMain, theCardinality, aSize);
+    }
+    
     public IPOIIf createPOI()
     {
         checkCreateOp();

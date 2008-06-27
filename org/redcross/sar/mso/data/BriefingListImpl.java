@@ -12,7 +12,7 @@ public class BriefingListImpl extends MsoListImpl<IBriefingIf> implements IBrief
 
     public BriefingListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public IBriefingIf createBriefing()

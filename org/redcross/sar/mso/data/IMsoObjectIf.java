@@ -22,11 +22,24 @@ public interface IMsoObjectIf
     public String getObjectId();
 
     /**
-     * Get Object creation tiome
+     * Get Object creation time
      *
      * @return The Object ID
      */
-    public Calendar getCreationTime();
+    public Calendar getCreatedTime();
+    
+    /**
+     * Sets created state
+     *
+     */
+    public void setCreated(Date time);
+    
+    /**
+     * Get Object creation status
+     *
+     * @return True after successful commit on a created object
+     */
+    public boolean isCreated();    
     
     /**
      * Get short descriptor of object.
@@ -90,19 +103,19 @@ public interface IMsoObjectIf
      * Get a map of the attributes for the object
      * @return The attributes
      */
-    public Map getAttributes();
+    public Map<String, IAttributeIf<?>> getAttributes();
 
     /**
      * Get a map of the reference objects for the object
      * @return The reference objects
      */
-    public Map getReferenceObjects();
+    public Map<String, IMsoObjectIf> getReferenceObjects();
 
     /**
      * Get a map of the reference lists for the object
      * @return The reference lists
      */
-    public Map getReferenceLists();
+    public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists();
 
     /**
      * Add a reference to an IMsoObjectIf object.
@@ -139,6 +152,14 @@ public interface IMsoObjectIf
      */
     public void resumeClientUpdates();
 
+    /**
+     * Validates object states (cardinality of attributes and relations)
+     * <p/>
+     * @return  <code>true<code> if the object state is valid, invalid 
+     * IMsoObjectIf, IAttributeIf or IRelationIf otherwise.
+     */
+    public Object validate();
+    
     /**
      * Tell if the object is to be deleted from the model.
      *
@@ -434,8 +455,8 @@ public interface IMsoObjectIf
     {
         public String getId();
         public Calendar getCreatedTime();
-		//public void setCreatedTime(Calendar created);	
-		//public void setCreatedTime(Date created);
+        public void setCreated(Date time);
+        public boolean isCreated();
     }
 
 }

@@ -469,7 +469,10 @@ public abstract class AbstractDiskoWpModule
     
     public ICmdPostIf getCmdPost()
     {
-    	return getMsoManager().getCmdPost();
+    	if(getMsoManager().operationExists())
+    		return getMsoManager().getCmdPost();
+    	else
+    		return null;
     }
 
     public String getBundleText(String aKey)
@@ -629,25 +632,31 @@ public abstract class AbstractDiskoWpModule
      */
     protected static void fireTick(long aMilli)
     {
-        if (tickListeners.size() == 0 || aMilli == 0)
-        {
-            return;
-        }
+    	
+        // ensure access to listeners are serialized
+        synchronized(tickListeners) {
+        	
+	        if (tickListeners.size() == 0 || aMilli == 0)
+	        {
+	            return;
+	        }
 
-        for (ITickEventListenerIf listener : tickListeners)
-        {
-        	TickEvent e = new TickEvent(listener);
-
-            long timer = listener.getTimeCounter() - aMilli;
-            if (timer > 0)
-            {
-                listener.setTimeCounter(timer);
-            } else
-            {
-                listener.handleTick(e);
-                listener.setTimeCounter(listener.getInterval());
-            }
+	        for (ITickEventListenerIf listener : tickListeners)
+	        {
+	        	TickEvent e = new TickEvent(listener);
+	
+	            long timer = listener.getTimeCounter() - aMilli;
+	            if (timer > 0)
+	            {
+	                listener.setTimeCounter(timer);
+	            } else
+	            {
+	                listener.handleTick(e);
+	                listener.setTimeCounter(listener.getInterval());
+	            }
+	        }
         }
+        
     }
 
 
@@ -678,6 +687,7 @@ public abstract class AbstractDiskoWpModule
     
     public abstract class ModuleWork<T> extends AbstractDiskoWork<T> {
 		
+    	// Override
 		private boolean m_suspend = true;
 		
 		public ModuleWork() throws Exception {
@@ -694,20 +704,17 @@ public abstract class AbstractDiskoWpModule
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
 					msg,100,show,false,false,0);
-			// save flag
+			// prepare
 			m_suspend = suspend;
 		}
 		
 	
 		@Override
-		public void run() {
+		public void beforePrepare() {
 			// set flag to prevent reentry
 			setIsWorking();
 			// suspend for faster execution?
-			if(m_suspend)
-				suspendUpdate();			
-			// forward
-			super.run();
+			if(m_suspend) suspendUpdate();			
 		}
 
 		/** 
@@ -723,19 +730,16 @@ public abstract class AbstractDiskoWpModule
 		 * 
 		 */
 		@Override
-		public void done() {
+		public void afterDone() {
 			try {
 				// resume update?
-				if(m_suspend)
-					resumeUpdate();
+				if(m_suspend) resumeUpdate();
 				// reset flag
 		        setIsNotWorking();
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-	        // forward
-	        super.done();
 		}
 	}
 }

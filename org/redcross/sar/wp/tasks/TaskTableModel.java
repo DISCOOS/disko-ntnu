@@ -4,6 +4,7 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupListener;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
@@ -134,7 +135,11 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 
 	public int getRowCount()
 	{
-		return m_wpTasks.getCmdPost().getTaskList().size();
+		if(m_wpTasks.getMsoManager().operationExists()) {
+			ICmdPostIf cmdPost = m_wpTasks.getCmdPost();
+			return cmdPost!=null ? m_wpTasks.getCmdPost().getTaskList().size() : null;
+		}
+		return 0;
 	}
 
     @Override

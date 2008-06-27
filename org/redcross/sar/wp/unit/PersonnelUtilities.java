@@ -182,14 +182,16 @@ public class PersonnelUtilities
 			return false;
 		}
 
-		// Personnel can only be assigned to ONE unit                          // todo replace with more general method
-		for(IUnitIf unit : m_msoManager.getCmdPost().getUnitList().getItems())
-		{
-			for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())
+		if(m_msoManager.operationExists()) {
+			// Personnel can only be assigned to ONE unit                          // todo replace with more general method
+			for(IUnitIf unit : m_msoManager.getCmdPost().getUnitList().getItems())
 			{
-				if(!UnitStatus.RELEASED.equals(unit.getStatus()) &&  unitPersonnel == personnel)
+				for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())
 				{
-					return false;
+					if(!UnitStatus.RELEASED.equals(unit.getStatus()) &&  unitPersonnel == personnel)
+					{
+						return false;
+					}
 				}
 			}
 		}

@@ -404,16 +404,19 @@ public class PositionPanel extends DefaultToolPanel {
 	public void loadUnits() {
 		// initialize
 		Object[] data = null;
-		// get command post
-		ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();		
-		// has command post?
-		if(cp!=null) {
-			// get unit list
-			List<IUnitIf> c = cp.getUnitList().selectItems(
-					IUnitIf.ACTIVE_UNIT_SELECTOR, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
-			// sort objects
-			MsoUtils.sortByName(new ArrayList<IMsoObjectIf>(c),1);
-			data = c.toArray();
+		// get data?
+		if(msoModel.getMsoManager().operationExists()) {
+			// get command post
+			ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();		
+			// has command post?
+			if(cp!=null) {
+				// get unit list
+				List<IUnitIf> c = cp.getUnitList().selectItems(
+						IUnitIf.ACTIVE_UNIT_SELECTOR, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+				// sort objects
+				MsoUtils.sortByName(new ArrayList<IMsoObjectIf>(c),1);
+				data = c.toArray();
+			}
 		}
 		// create new model
 		DefaultComboBoxModel model = data != null ? new DefaultComboBoxModel(data) : new DefaultComboBoxModel();
@@ -607,5 +610,11 @@ public class PositionPanel extends DefaultToolPanel {
 		// reset?
 		if(isCurrent) setUnit(null);
 	}
+	
+	@Override
+	protected void msoObjectClearAll(IMsoObjectIf msoObject, int mask) {
+		loadUnits();
+	}
+	
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -23,7 +23,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     private final AttributeImpl.MsoBoolean m_broadcast = new AttributeImpl.MsoBoolean(this, "Broadcast");
     private final AttributeImpl.MsoCalendar m_created = new AttributeImpl.MsoCalendar(this, "Created");
     private final AttributeImpl.MsoInteger m_number = new AttributeImpl.MsoInteger(this, "Number",true);
-    private final AttributeImpl.MsoEnum<MessageStatus> m_status = new AttributeImpl.MsoEnum<MessageStatus>(this, "Status", MessageStatus.UNCONFIRMED);
+    private final AttributeImpl.MsoEnum<MessageStatus> m_status = new AttributeImpl.MsoEnum<MessageStatus>(this, "Status", 1, MessageStatus.UNCONFIRMED);
 
     private final MsoListImpl<ICommunicatorIf> m_confirmedReceivers = new MsoListImpl<ICommunicatorIf>(this, CONFIRMED_RECEIVERS_NAME, false);
     private final TaskListImpl m_messageTasks = new TaskListImpl(this, "MessageTasks", false);
@@ -31,7 +31,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     private final MessageLineListImpl m_messageLines = new MessageLineListImpl(this, "MessageLines", false);
 
-    private final MsoReferenceImpl<ICommunicatorIf> m_sender = new MsoReferenceImpl<ICommunicatorIf>(this, "Sender", true);
+    private final MsoReferenceImpl<ICommunicatorIf> m_sender = new MsoReferenceImpl<ICommunicatorIf>(this, "Sender", 1, true);
 
     public static String getText(String aKey)
     {

@@ -12,7 +12,7 @@ public class SubjectListImpl extends MsoListImpl<ISubjectIf> implements ISubject
 
     public SubjectListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, aSize);
+        super(anOwner, theName, isMain, 0, aSize);
     }
 
     public ISubjectIf createSubject()

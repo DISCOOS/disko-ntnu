@@ -45,8 +45,10 @@ public class POILayer extends AbstractMsoFeatureLayer {
  				esriGeometryType.esriGeometryPoint, eventStack);
  		symbols = new Hashtable<POIType, IDisplayName>();
  		createSymbols();
- 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getPOIListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getPOIListItems().toArray());
+		}
 	}
 
  	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)
@@ -100,7 +102,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 							// initialize
 							RgbColor color = plannedColor;
 							// get status
-							Enum status = MsoUtils.getStatus(MsoUtils.getOwningArea(poi));
+							Enum<?> status = MsoUtils.getStatus(MsoUtils.getOwningArea(poi));
 							// replace color?
 							if(AssignmentStatus.EXECUTING.equals(status)) {
 								color = executingColor;

@@ -130,7 +130,7 @@ public interface IDiskoApplication extends IModelDriverListenerIf {
      * 
      * @param operation id
      */
-    boolean activeOperation(String opId);
+    boolean activateOperation(String opId);
     
     /**
      * finished the active operation
@@ -167,7 +167,7 @@ public interface IDiskoApplication extends IModelDriverListenerIf {
     
 	boolean isLocked();
 	
-	public boolean setLocked(boolean isLocked);
+	public void setLocked(boolean isLocked);
 	
 	boolean isLoading();
 	

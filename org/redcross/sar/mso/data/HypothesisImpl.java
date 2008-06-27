@@ -10,7 +10,7 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
     private final AttributeImpl.MsoInteger m_number = new AttributeImpl.MsoInteger(this, "Number",true);
     private final AttributeImpl.MsoInteger m_priorityIndex = new AttributeImpl.MsoInteger(this, "PriorityIndex");
 
-    private final AttributeImpl.MsoEnum<HypothesisStatus> m_status = new AttributeImpl.MsoEnum<HypothesisStatus>(this, "Status", HypothesisStatus.ACTIVE);
+    private final AttributeImpl.MsoEnum<HypothesisStatus> m_status = new AttributeImpl.MsoEnum<HypothesisStatus>(this, "Status", 1, HypothesisStatus.ACTIVE);
 
     public HypothesisImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {

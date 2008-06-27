@@ -8,6 +8,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -67,36 +68,38 @@ public class UnitTableModel extends AbstractTableModel implements
 	private void update() {
 		// reset data
 		rows = null;
-		// get command post
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		// has command post?
-		if(cmdPost!=null) {
-			
-			// get sorted unit list
-			List<IUnitIf> units = cmdPost.getUnitList().selectItems(
-					unitSelector, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
-
-			// has units?
-			if(units.size()>0) {
+		if(msoModel.getMsoManager().operationExists()) {
+			// get command post
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			// has command post?
+			if(cmdPost!=null) {
 				
-				// get data
-				List<Object[]> list = new ArrayList<Object[]>(units.size());
-				
-				// loop over all units
-				for(IUnitIf unit : units) {
-					// allocate memory
-					Object[] row = new Object[5];
-					// update row
-					row[0] = unit;
-					row[1] = unit.getUnitPersonnelItems().size();
-					row[2] = getAllocated(unit);
-					row[3] = unit.getRemarks();
-					row[4] = unit.getStatus();
-					// save row
-					list.add(row);
+				// get sorted unit list
+				List<IUnitIf> units = cmdPost.getUnitList().selectItems(
+						unitSelector, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+	
+				// has units?
+				if(units.size()>0) {
+					
+					// get data
+					List<Object[]> list = new ArrayList<Object[]>(units.size());
+					
+					// loop over all units
+					for(IUnitIf unit : units) {
+						// allocate memory
+						Object[] row = new Object[5];
+						// update row
+						row[0] = unit;
+						row[1] = unit.getUnitPersonnelItems().size();
+						row[2] = getAllocated(unit);
+						row[3] = unit.getRemarks();
+						row[4] = unit.getStatus();
+						// save row
+						list.add(row);
+					}
+					// get array
+					rows = list.toArray();
 				}
-				// get array
-				rows = list.toArray();
 			}
 		}
 		super.fireTableDataChanged();

@@ -31,9 +31,10 @@ public class DiskoWorkPool {
 	private static DiskoWorkPool m_this;
 	
 	private long m_nextID = 1;
+	private boolean m_isSuspended = false;
 	private List<IDiskoWork<?>> m_isUnsafe = null;
 	private Map<IDiskoWork<?>,DiskoWorker> m_workers = null;
-	private ConcurrentLinkedQueue<IDiskoWork<?>> m_queue = null;
+	private ConcurrentLinkedQueue<IDiskoWork<?>> m_queue = null; 
   	
   	/**
 	 *  private constructor
@@ -90,14 +91,20 @@ public class DiskoWorkPool {
   		// allocate id
   		work.setID(id);
   		// execute on new thread?
-  		if(work.getWorkOnThread()==
-				WorkOnThreadType.WORK_ON_NEW) {
+  		if(WorkOnThreadType.WORK_ON_NEW.equals(work.getWorkOnThread())) {
   			// run work on a new swing worker new thread that is not 
   			// concurrent. Thus, should not contain unsafe work.
   	  		// is not thread safe?
   	  		if(!work.isThreadSafe()) throw new IllegalArgumentException("Work on new thread must be thread safe");
-  	  		// forward to work pool
-  			execute(work,false);
+  	  		// put on work pool?
+  	  		if(isSuspended()) {
+  	  			// add to list 
+  				m_queue.add(work);  
+  	  		}
+  	  		else {
+  	  			// execute now
+  	  			execute(work,false);
+  	  		}
   		}
   		else {
   			// add to list 
@@ -113,7 +120,26 @@ public class DiskoWorkPool {
 		return m_isUnsafe.size()>0;
   	}
   	
+  	public synchronized boolean isSuspended() {
+		return m_isSuspended;
+  	}
+  	  	
+  	public synchronized boolean suspend() {
+		if(!m_isSuspended) {
+			m_isSuspended = true;
+			return true;
+		}
+		return false;
+  	}
   	
+  	public synchronized boolean resume() {
+		if(m_isSuspended) {
+			m_isSuspended = false;
+			doWork();
+			return true;
+		}
+		return false;
+  	}
   	
 	public synchronized int getWorkCount() {
   		return m_queue.size();
@@ -214,7 +240,7 @@ public class DiskoWorkPool {
   	
   	private synchronized void doWork() {
 		// is worker available?
-		if(!isUnsafe()) {
+		if(!(isSuspended() || isUnsafe())) {
 	  		// get first work in queue
 	  		IDiskoWork<?> work = getWork();
 	  		// execute consecutive EDT work on stack
@@ -354,6 +380,7 @@ public class DiskoWorkPool {
 			            	
 			            	// try to resume
 			                synchronized(this) {
+			                	
 			                	// stop if suspended, or canceled
 			                    while (m_isWorking && !isCancelled()) {
 			                    	// get current time tic
@@ -369,20 +396,18 @@ public class DiskoWorkPool {
 			    					// sleep for reminder of time
 			    					Thread.sleep(remainder);
 			                    }
+			                    
 			                }
 			                
 			            } catch (InterruptedException e) { /* NOP */ }
 			            
 					}
 					
-					// finished
-					m_work.done();
-					
 				}
 				else {
                 	// get current time tic
                 	tic = System.currentTimeMillis();
-					// execute once (prepare() and done() is automatically handled
+					// execute once (prepare() and done() is automatically handled)
 					m_work.run();
 					// log work time
 					m_work.logWorkTime(System.currentTimeMillis() - tic);
@@ -407,7 +432,6 @@ public class DiskoWorkPool {
 			// forward to work pool
 			DiskoWorkPool.this.done(m_work);
 		}		
-	}	
-	
+	}
 }
 

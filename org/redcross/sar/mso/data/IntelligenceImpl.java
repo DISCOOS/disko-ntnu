@@ -13,12 +13,12 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
     private final AttributeImpl.MsoInteger m_priority = new AttributeImpl.MsoInteger(this, "Priority");
     private final AttributeImpl.MsoString m_source = new AttributeImpl.MsoString(this, "Source");
     private final AttributeImpl.MsoCalendar m_time = new AttributeImpl.MsoCalendar(this, "Time");
-    private final AttributeImpl.MsoEnum<IntelligenceStatus> m_status = new AttributeImpl.MsoEnum<IntelligenceStatus>(this, "Status", IntelligenceStatus.UNCONFIRMED);
+    private final AttributeImpl.MsoEnum<IntelligenceStatus> m_status = new AttributeImpl.MsoEnum<IntelligenceStatus>(this, "Status", 1, IntelligenceStatus.UNCONFIRMED);
 
-    private final MsoReferenceImpl<IPOIIf> m_intelligencePOI = new MsoReferenceImpl<IPOIIf>(this, "IntelligencePOI", true);
-    private final MsoReferenceImpl<IRouteIf> m_intelligenceRoute = new MsoReferenceImpl<IRouteIf>(this, "IntelligenceRoute", true);
-    private final MsoReferenceImpl<ISubjectIf> m_intelligenceSubject = new MsoReferenceImpl<ISubjectIf>(this, "IntelligenceSubject", true);
-    private final MsoReferenceImpl<ITrackIf> m_intelligenceTrack = new MsoReferenceImpl<ITrackIf>(this, "IntelligenceTrack", true);
+    private final MsoReferenceImpl<IPOIIf> m_intelligencePOI = new MsoReferenceImpl<IPOIIf>(this, "IntelligencePOI", 0, true);
+    private final MsoReferenceImpl<IRouteIf> m_intelligenceRoute = new MsoReferenceImpl<IRouteIf>(this, "IntelligenceRoute", 0, true);
+    private final MsoReferenceImpl<ISubjectIf> m_intelligenceSubject = new MsoReferenceImpl<ISubjectIf>(this, "IntelligenceSubject", 0, true);
+    private final MsoReferenceImpl<ITrackIf> m_intelligenceTrack = new MsoReferenceImpl<ITrackIf>(this, "IntelligenceTrack", 0, true);
 
     public IntelligenceImpl(IMsoObjectIf.IObjectIdIf anObjectId)
     {

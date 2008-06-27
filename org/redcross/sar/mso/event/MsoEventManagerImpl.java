@@ -35,7 +35,11 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     {
         m_clientUpdateListeners.remove(aListener);
     }
-
+    
+    public void notifyClearAll(IMsoObjectIf root) {
+        fireUpdate(m_clientUpdateListeners, root, MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue());    	
+    }
+    
     public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask)
     {
         fireUpdate(m_clientUpdateListeners, aSource, anEventTypeMask);
@@ -84,10 +88,13 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
             return;
         }
         
+        // get flag
+        boolean clearAll = (anEventTypeMask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+        
         MsoEvent.Update event = new MsoEvent.Update(aSource, anEventTypeMask);
         for (IMsoUpdateListenerIf listener : theListeners)
         {
-            if (listener.hasInterestIn(aSource))
+            if (clearAll || listener.hasInterestIn(aSource))
             {
                 try
                 {

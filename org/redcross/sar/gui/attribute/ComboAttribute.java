@@ -27,7 +27,7 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public ComboAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
+	public ComboAttribute(IAttributeIf<?> attribute, String caption, int width, boolean isEditable) {
 		// forward
 		super(attribute.getName(),caption,width,null,isEditable);
 		// set attribute
@@ -57,8 +57,6 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 					
 				}
 			});
-			// forward
-			field.setRenderer(new BundleListCellRenderer());
 			
 			// save the component
 			m_component = field;			

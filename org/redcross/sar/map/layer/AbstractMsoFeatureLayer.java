@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.event.MsoLayerEvent.MsoLayerEventType;
@@ -17,9 +16,9 @@ import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.EventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Selector;
@@ -118,56 +117,73 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 			// get event flags
 			int mask = e.getEventTypeMask();
-			boolean createdObject  = (mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-			boolean deletedObject  = (mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-			boolean modifiedObject = (mask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-			boolean addedReference = (mask & EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-			boolean removedReference = (mask & EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
 			
-			// try to get mso feature
+	        // get flag
+	        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+			
+	        // get mso object and feature class
+	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 			MsoFeatureClass msoFC = (MsoFeatureClass)featureClass;
-			List<IMsoObjectIf> msoObjs = getGeodataMsoObjects((IMsoObjectIf)e.getSource());
 			
-			// loop over all object
-			for(IMsoObjectIf msoObj : msoObjs) {
+	        // clear all?
+	        if(clearAll) {
+	        	// forward
+	        	msoFC.removeAll();
+	        	// set dirty
+	        	isDirty = true;
+	        }
+	        else {
+	        	// get flags
+				boolean createdObject  = (mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+				boolean deletedObject  = (mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+				boolean modifiedObject = (mask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+				boolean addedReference = (mask & EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+				boolean removedReference = (mask & EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
 				
-				// get feature	
-				IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
-	
-				// get other flags
-				boolean isFeature = msoObj.getMsoClassCode().equals(classCode);
+				// get list of
+				List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);
 				
-				// add object?
-				if (createdObject && msoFeature == null && isFeature) {
-					// create and att to feature class				
-					msoFeature = createMsoFeature(msoObj);
-					msoFC.addFeature(msoFeature);
-					// update dirty flag
-					isDirty = isDirty || isFeatureDirty(msoFeature);			
+				// loop over all object
+				for(IMsoObjectIf it: msoObjs) {
+					
+					// get feature	
+					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
+		
+					// get other flags
+					boolean isFeature = it.getMsoClassCode().equals(classCode);
+					
+					// add object?
+					if (createdObject && msoFeature == null && isFeature) {
+						// create and att to feature class				
+						msoFeature = createMsoFeature(it);
+						msoFC.addFeature(msoFeature);
+						// update dirty flag
+						isDirty = isDirty || isFeatureDirty(msoFeature);			
+					}
+					// is object modified?
+					if ( (addedReference || removedReference || modifiedObject) 
+							&& msoFeature != null && msoFeature.geometryIsChanged(it)) {
+						// change geometry
+						msoFeature.msoGeometryChanged();
+						// update dirty flag
+						isDirty = isDirty || isFeatureDirty(msoFeature);			
+					}			
+					// delete object?
+					if ((deletedObject) && msoFeature != null && isFeature) {
+						// remove from feature class
+						msoFC.removeFeature(msoFeature);
+						// update dirty flag
+						isDirty = isDirty || isFeatureDirty(msoFeature);			
+					}
 				}
-				// is object modified?
-				if ( (addedReference || removedReference || modifiedObject) 
-						&& msoFeature != null && msoFeature.geometryIsChanged(msoObj)) {
-					// change geometry
-					msoFeature.msoGeometryChanged();
-					// update dirty flag
-					isDirty = isDirty || isFeatureDirty(msoFeature);			
-				}			
-				// delete object?
-				if ((deletedObject) && msoFeature != null && isFeature) {
-					// remove from feature class
-					msoFC.removeFeature(msoFeature);
-					// update dirty flag
-					isDirty = isDirty || isFeatureDirty(msoFeature);			
-				}
-			}
+	        }
 			
-		} catch (AutomationException e1) {
+		} catch (AutomationException ex) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			ex.printStackTrace();
 		}
 	}
 
@@ -297,10 +313,11 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	}
 
 	public boolean isDirty() {
-		return isDirty(true);
+		// only check visible
+		return isDirty(false);
 	}
 	
-	public boolean isDirty(boolean deep) {
+	public boolean isDirty(boolean checkAll) {
 		// is dirty?
 		if(isDirty) return true;
 		// look at children
@@ -312,13 +329,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 				// get mso feature
 				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
 				// is not filtered and is visible?
-				if(isFeatureDirty(msoFeature)) {
+				if(checkAll || isFeatureDirty(msoFeature)) {
 					// is dirty?
 					if(msoFeature.isDirty()) {
 						isDirty = true; 
 						return true; 
 					}
-				}			
+				}
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block

@@ -324,11 +324,13 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 				if(m_selectionMode)
 				{
-					for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
-					{
-						if(!message.getUnconfirmedReceivers().contains(communicator))
+					if(m_wpMessageLog.getMsoManager().operationExists()) {
+						for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
 						{
-							message.addUnconfirmedReceiver(communicator);
+							if(!message.getUnconfirmedReceivers().contains(communicator))
+							{
+								message.addUnconfirmedReceiver(communicator);
+							}
 						}
 					}
 
@@ -500,21 +502,23 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 	private void addSelectedUnits(UnitType type)
 	{
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true,true);
-		for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
-		{
-			if(communicator instanceof ICmdPostIf && type == UnitType.CP)
+		if(m_wpMessageLog.getMsoManager().operationExists()) {
+			for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
 			{
-				if(!message.getUnconfirmedReceivers().contains(communicator))
+				if(communicator instanceof ICmdPostIf && type == UnitType.CP)
 				{
-					message.getUnconfirmedReceivers().add(communicator);
+					if(!message.getUnconfirmedReceivers().contains(communicator))
+					{
+						message.getUnconfirmedReceivers().add(communicator);
+					}
 				}
-			}
-			else if(communicator instanceof IUnitIf)
-			{
-				IUnitIf unit = (IUnitIf)communicator;
-				if((unit.getType() == type) && (!message.getUnconfirmedReceivers().contains(communicator)))
+				else if(communicator instanceof IUnitIf)
 				{
-					message.getUnconfirmedReceivers().add(communicator);
+					IUnitIf unit = (IUnitIf)communicator;
+					if((unit.getType() == type) && (!message.getUnconfirmedReceivers().contains(communicator)))
+					{
+						message.getUnconfirmedReceivers().add(communicator);
+					}
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 package org.redcross.sar.gui.dialog;
 
+import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 import java.awt.Dimension;
@@ -63,7 +64,7 @@ public class OperationDialog extends DefaultDialog {
 					// get values
 					String opId = getContentPanel().getSelectedOperation();
 					// forward
-					auth = Utils.getApp().activeOperation(opId);
+					auth = Utils.getApp().activateOperation(opId);
 					// is not authorized?
 					if(!auth) 
 						Utils.showWarning(DiskoStringFactory.getText("WARNING_SELECT_OPERATION_FAILED"));
@@ -71,6 +72,17 @@ public class OperationDialog extends DefaultDialog {
 					return auth;
 					
 				}
+				
+				@Override
+				protected boolean beforeCancel() {
+					if(exitAppOnCancel) {
+						int ans = Utils.showConfirm("Bekreftelse", 
+								"Dette vil avslutte DISKO. Vil du fortsette?",JOptionPane.YES_NO_OPTION);
+						return (ans == JOptionPane.YES_OPTION); 
+					}
+					return true;
+				}
+				
 			};
 			contentPanel.addActionListener(new ActionListener() {
 

@@ -62,7 +62,6 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 		super(wp.getApplication().getFrame());
 		m_wpMessageLog = wp;
 		m_wpMessageLog.getMsoEventManager().addClientUpdateListener(this);
-		m_communicatorList = wp.getMsoManager().getCmdPost().getCommunicatorList();
 
 		m_senderList = senderList;
 
@@ -247,7 +246,7 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 	public void handleMsoUpdateEvent(Update e)
 	{
 		IMsoManagerIf mng = m_wpMessageLog.getMsoManager();
-		if(mng!=null) {
+		if(mng.operationExists()) {
 			ICmdPostIf cmd = mng.getCmdPost();
 			if(cmd!=null) {
 				AbstractDerivedList<ICommunicatorIf> lst = cmd.getCommunicatorList();
@@ -289,33 +288,35 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 	{
 		if(m_dirtyList)
 		{
-			
-			JPanel list = (JPanel)m_contentsPanel.getBodyComponent();
-			// Clear previous list, brute force maintenance
-			list.removeAll();
-			m_buttonGroup = new ButtonGroup();
-
-			m_buttonCommunicatorMap.clear();
-			m_communicatorButtonMap.clear();
-
-			JPanel panel = null;
-			int i = 0;
-			for(ICommunicatorIf commnicator: m_communicatorList.selectItems(m_communicatorSelector , m_communicatorComparator))
-			{
-				if(i%NUMBER_OF_ROWS == 0)
+			m_communicatorList = null;
+			if(m_wpMessageLog.getMsoManager().operationExists()) {
+				m_communicatorList = m_wpMessageLog.getMsoManager().getCmdPost().getCommunicatorList();						
+				JPanel list = (JPanel)m_contentsPanel.getBodyComponent();
+				// Clear previous list, brute force maintenance
+				list.removeAll();
+				m_buttonGroup = new ButtonGroup();
+	
+				m_buttonCommunicatorMap.clear();
+				m_communicatorButtonMap.clear();
+	
+				JPanel panel = null;
+				int i = 0;
+				for(ICommunicatorIf commnicator: m_communicatorList.selectItems(m_communicatorSelector , m_communicatorComparator))
 				{
-				panel = new JPanel();
-				panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-				panel.setAlignmentY(Component.TOP_ALIGNMENT);
-				panel.setPreferredSize(new Dimension(DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width,
-						DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*NUMBER_OF_ROWS));
-				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-				list.add(panel);
+					if(i%NUMBER_OF_ROWS == 0)
+					{
+					panel = new JPanel();
+					panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+					panel.setAlignmentY(Component.TOP_ALIGNMENT);
+					panel.setPreferredSize(new Dimension(DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width,
+							DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height*NUMBER_OF_ROWS));
+					panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+					list.add(panel);
+					}
+					addUnitButton(commnicator, panel);
+					i++;
 				}
-				addUnitButton(commnicator, panel);
-				i++;
-			}
-			
+			}			
 			m_dirtyList = false;
 		}
 	}

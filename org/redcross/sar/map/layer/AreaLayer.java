@@ -13,6 +13,7 @@ import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -47,8 +48,10 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
  		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
- 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getAreaListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getAreaListItems().toArray());
+		}
 	}
 
  	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)
@@ -92,7 +95,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 						// initialize
 						RgbColor color = plannedColor;
 						// get status
-						Enum status = MsoUtils.getStatus(feature.getMsoObject());
+						Enum<?> status = MsoUtils.getStatus(feature.getMsoObject());
 						// replace color?
 						if(AssignmentStatus.EXECUTING.equals(status)) {
 							color = executingColor;

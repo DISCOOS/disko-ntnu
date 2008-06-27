@@ -16,16 +16,19 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 {
     private final AbstractMsoObject m_owner;
     private final String m_name;
+    private final int m_cardinality; 
     private boolean m_canDelete = true;
     protected T m_localValue = null;
     protected T m_serverValue = null;
+    //private boolean m_changed = false;
     protected IMsoModelIf.ModificationState m_state = IMsoModelIf.ModificationState.STATE_UNDEFINED;
 
-    public MsoReferenceImpl(AbstractMsoObject theOwner, String theName, boolean canDelete)
+    public MsoReferenceImpl(AbstractMsoObject theOwner, String theName, int theCardinality, boolean canDelete)
     {
         m_owner = theOwner;
         m_name = theName;
         m_canDelete = canDelete;
+        m_cardinality = theCardinality;
     }
 
     public String getName()
@@ -147,6 +150,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
             registerReferenceChange(aReference, oldReference);
         }
+        //m_changed = valueChanged;
     }
 
     public Vector<T> getConflictingValues()
@@ -161,6 +165,18 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         return null;
     }
 
+    public int getCardinality()
+    {
+        return m_cardinality;
+    }
+    
+    public boolean validate() {
+    	if(m_cardinality>0) {
+    		return (getReference()!=null);
+    	}
+    	return true;
+    }
+    
     /**
      * Perform rollback
      */
@@ -239,6 +255,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             }
             registerAddedReference(accepted);
             registerDeletedReference(rejected);
+            //m_changed = true;
             m_owner.registerModifiedReference();
             return true;
         }

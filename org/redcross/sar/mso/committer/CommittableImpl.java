@@ -1,9 +1,12 @@
 package org.redcross.sar.mso.committer;
 
 import org.redcross.sar.mso.CommitManager;
+import org.redcross.sar.mso.CommitManager.CommitType;
+import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Base class for managing committable objects
@@ -32,17 +35,27 @@ public abstract class CommittableImpl implements ICommittableIf
     public static class CommitObject extends CommittableImpl implements ICommitObjectIf
     {
         public final IMsoObjectIf m_object;
+        public final List<IAttributeIf> m_partial;
 
-        public CommitObject(IMsoObjectIf anObject, CommitManager.CommitType aCommitType)
+        public CommitObject(IMsoObjectIf anObject, CommitManager.CommitType aCommitType, List<IAttributeIf> partial)
         {
             super(aCommitType);
             m_object = anObject;
+            m_partial = partial;
         }
 
         public IMsoObjectIf getObject()
         {
             return m_object;
         }
+
+		public List<IAttributeIf> getPartial() {
+			return CommitType.COMMIT_MODIFIED.equals(getType()) ? m_partial : null;
+		}
+
+		public boolean isPartial() {
+			return CommitType.COMMIT_MODIFIED.equals(getType()) && m_partial!=null && m_partial.size()>0;
+		}
     }
 
     /**

@@ -21,13 +21,13 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     private final AttributeImpl.MsoCalendar m_created = new AttributeImpl.MsoCalendar(this, "Created");
     private final AttributeImpl.MsoString m_creatingWorkProcess = new AttributeImpl.MsoString(this,"CreatingWorkProcess");
 
-    private final AttributeImpl.MsoEnum<TaskStatus> m_status = new AttributeImpl.MsoEnum<TaskStatus>(this, "Status", TaskStatus.UNPROCESSED);
-    private final AttributeImpl.MsoEnum<TaskPriority> m_priority = new AttributeImpl.MsoEnum<TaskPriority>(this, "Priority", TaskPriority.LOW);
-    private final AttributeImpl.MsoEnum<TaskType> m_type = new AttributeImpl.MsoEnum<TaskType>(this, "Type", TaskType.TRANSPORT);
-    private final AttributeImpl.MsoEnum<IMsoManagerIf.MsoClassCode> m_sourceClass = new AttributeImpl.MsoEnum<IMsoManagerIf.MsoClassCode>(this, "SourceClass", IMsoManagerIf.MsoClassCode.CLASSCODE_AREA);
+    private final AttributeImpl.MsoEnum<TaskStatus> m_status = new AttributeImpl.MsoEnum<TaskStatus>(this, "Status", 1, TaskStatus.UNPROCESSED);
+    private final AttributeImpl.MsoEnum<TaskPriority> m_priority = new AttributeImpl.MsoEnum<TaskPriority>(this, "Priority", 1, TaskPriority.LOW);
+    private final AttributeImpl.MsoEnum<TaskType> m_type = new AttributeImpl.MsoEnum<TaskType>(this, "Type", 1, TaskType.TRANSPORT);
+    private final AttributeImpl.MsoEnum<IMsoManagerIf.MsoClassCode> m_sourceClass = new AttributeImpl.MsoEnum<IMsoManagerIf.MsoClassCode>(this, "SourceClass", 1, IMsoManagerIf.MsoClassCode.CLASSCODE_AREA);
 
-    private final MsoReferenceImpl<IEventIf> m_createdEvent = new MsoReferenceImpl<IEventIf>(this, "CreatedEvent", true);
-    private final MsoReferenceImpl<IMsoObjectIf> m_dependentObject = new MsoReferenceImpl<IMsoObjectIf>(this, "DependentObject", true);
+    private final MsoReferenceImpl<IEventIf> m_createdEvent = new MsoReferenceImpl<IEventIf>(this, "CreatedEvent", 0, true);
+    private final MsoReferenceImpl<IMsoObjectIf> m_dependentObject = new MsoReferenceImpl<IMsoObjectIf>(this, "DependentObject", 0, true);
 
     public static String getText(String aKey)
     {

@@ -3,7 +3,6 @@ package org.redcross.sar.app;
 import no.cmr.tools.Log;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.DiskoDecisionSupport;
-import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -20,6 +19,8 @@ import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.GlobalProps;
 import org.redcross.sar.util.Internationalization;
+
+import com.sun.corba.se.impl.oa.poa.ActiveObjectMap;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
@@ -84,6 +85,9 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	private MsoModelImpl m_msoModel = null;
 	private DiskoReportManager diskoReport = null;
 	private DiskoKeyEventDispatcher keyEventDispatcher = null;
+
+	// counters 
+	private int lockCount = 0;
 	
 	// flags
 	private boolean isLoading = false;
@@ -319,12 +323,29 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	}
 	
 	public boolean isLocked() {
-		return ((DiskoGlassPane)getFrame().getGlassPane()).isLocked();
+		return (lockCount>0);
 	}
 	
-	public boolean setLocked(boolean isLocked) {
-		getKeyEventDispatcher().setEnabled(!(isLocked || isLoading()));
-		return ((DiskoGlassPane)getFrame().getGlassPane()).setLocked(isLocked);
+	public void setLocked(boolean isLocked) {
+		
+		// adjust lock count
+		if(isLocked)
+			lockCount++;
+		else if(lockCount>0)
+			lockCount--;
+		
+		// set lock state
+		switch(lockCount) {
+		case 1:
+			getKeyEventDispatcher().setEnabled(false);
+			((DiskoGlassPane)getFrame().getGlassPane()).setLocked(true);
+			break;
+		case 0:
+			getKeyEventDispatcher().setEnabled(!isLoading());
+			((DiskoGlassPane)getFrame().getGlassPane()).setLocked(false);
+			break;
+		}
+		
 	}
 	
 	public boolean isLoading() {
@@ -461,7 +482,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				// The model driver is not initiated. Schedule the initiation work. 
 				// If initiation is successful the active operation is choosen. If initiation fails, 
 				// the system will be shut down.
-				doInitiateModelDriver(maxTime, true, false);
+				scheduleInitiateModelDriver(maxTime, true, false);
 			}
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -494,7 +515,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				loggedin[1] = user;
 				loggedin[2] = password;
 				// forward
-				doSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
+				scheduleSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
 			}
 		});
 		
@@ -522,19 +543,21 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		// switch operation?
 		if(ans == JOptionPane.YES_OPTION) {
 
+			String oprId = Utils.getApp().getMsoModel().getModelDriver().getActiveOperationID();
+			
 			// forward
-			return getUIFactory().getOperationDialog().selectOperation(isLoading());
+			return getUIFactory().getOperationDialog().selectOperation(isLoading() || oprId==null);
 			
 		}
 		// failed
 		return false;
 	}
 	
-	public boolean activeOperation(String opId) {
+	public boolean activateOperation(String opId) {
 		// set selected operation as active?
 		if(opId!=null) {
 			// schedule work
-			doSetActiveOperation(opId);
+			scheduleSetActiveOperation(opId);
 			// finished
 			return true;
 		}		
@@ -573,6 +596,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 						null,
 						null);
 				if(ans==JOptionPane.YES_OPTION) {
+					// forward
 					getMsoModel().getModelDriver().finishActiveOperation();
 				}
 			}
@@ -595,7 +619,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 					Utils.showMessage(String.format(bundle
 							.getString(OPERATION_CREATED_TEXT), oprId));
 				// schedule work
-				doSetActiveOperation(oprId);
+				scheduleSetActiveOperation(oprId);
 			}
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -645,7 +669,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 							"" + 60 * 1000));
 					// add work to work pool. If initiation succeeds, the active operation 
 					// is choosen. If initiation fails, the system will be shut down.
-					doInitiateModelDriver(maxTime, true, false);
+					scheduleInitiateModelDriver(maxTime, true, false);
 				}
 			} else
 				// forward
@@ -740,13 +764,10 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	}
 
 	private void fireAfterOperationChange() {
-		// show selection dialog later...
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// auto select map from operation
-				getMapManager().selectMap(isLocked());
-			}
-		});
+		
+		// auto select map from operation
+		getMapManager().selectMap(isLocked(),true);
+		
 		// notify current work processes?
 		if(currentRole!=null) {
 			currentRole.fireAfterOperationChange();
@@ -754,7 +775,11 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		
 	}
 	
-	private void doInitiateModelDriver(long millisToWait, boolean choose, boolean prompt) {
+	/* ===============================================================================
+	 * Internal classes
+	 * =============================================================================== */
+	
+	private void scheduleInitiateModelDriver(long millisToWait, boolean choose, boolean prompt) {
 		try {
 			DiskoWorkPool.getInstance().schedule(new InitiateModelDriver(millisToWait,true,false));
 			return;
@@ -785,7 +810,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Henter aksjonsliste",100,true,true,false,0);
+					"Henter aksjonsliste",0,true,true,false,0);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -834,12 +859,9 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		 * Executed on the Event Dispatch Thread.
 		 */
 		@Override
-		public void done() {
+		public void afterDone() {
 
 			try {
-				
-				// forward
-				super.done();
 				
 				// get result
 				boolean hasActive = get();
@@ -868,7 +890,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		
 	}
 
-	private void doSetActiveOperation(String opID) {
+	private void scheduleSetActiveOperation(String opID) {
 		try {
 			DiskoWorkPool.getInstance().schedule(new SetActiveOperation(opID));
 			return;
@@ -901,13 +923,19 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		SetActiveOperation(String opId) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Kobler til aksjon " + opId,100,true,true,false,0);
+					"Kobler til aksjon " + opId,0,true,true,false,0);
 			// save
 			m_opID = opId;
 			// set loading bit
 			setLoading(true);
 		}
 
+		@Override
+		public void afterPrepare() {
+			// notify 
+			fireBeforeOperationChange();
+		}
+		
 		/**
 		 * Worker
 		 * 
@@ -921,14 +949,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				if(m_opID!=null)
 				{
 															
-					// notify 
-					fireBeforeOperationChange();
-										
 					// return status
 					boolean flag = MsoModelImpl.getInstance().getModelDriver().setActiveOperation(m_opID);
-					
-					// notify
-					fireAfterOperationChange();
 					
 					// return flag
 					return flag;
@@ -948,19 +970,23 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		 * Executed on the Event Dispatch Thread.
 		 */
 		@Override
-		public void done() {
+		public void afterDone() {
 			
 			try {
-				// forward
-				super.done();	
+				
 				// get result
 				if(get()) {
 					// choose active operation?
 					if(currentRole==null)
-						doSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
+						scheduleSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
 				}
+				
+				// notify
+				fireAfterOperationChange();
+				
 				// set loading false
 				setLoading(false);				
+				
 				// finished
 				return;
 			}
@@ -980,7 +1006,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		}		
 	}
 
-	private void doSetActiveRoleWorker(Hashtable<String, 
+	private void scheduleSetActiveRoleWorker(Hashtable<String, 
 			IDiskoRole> roles, IDiskoRole current, String loginRole) {
 		try {
 			DiskoWorkPool.getInstance().schedule(new SetActiveRoleWorker(roles,current,loginRole));
@@ -1017,7 +1043,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Aktiverer rolle",100,true,true,false,0);
+					"Aktiverer rolle",0,true,true,false,0);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;
@@ -1072,10 +1098,9 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		 * 
 		 */
 		@Override
-		public void done() {
+		public void afterDone() {
 			try {
-				// forward
-				super.done();	
+				
 				// success?
 				if(get()) {
 					// update roles table

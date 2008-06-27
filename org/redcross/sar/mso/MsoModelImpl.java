@@ -15,20 +15,23 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.modelDriver.ModelDriver;
 import org.redcross.sar.modelDriver.SarModelDriver;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.committer.IUpdateHolderIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.util.GlobalProps;
 import org.redcross.sar.util.except.CommitException;
 
+import java.util.List;
+import java.util.Set;
 import java.util.Stack;
-
-import javax.swing.JOptionPane;
 
 
 /**
  * Singleton class for accessing the MSO model
  */
-public class MsoModelImpl implements IMsoModelIf
+public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
 {
     private static MsoModelImpl ourInstance = new MsoModelImpl();
     private final MsoManagerImpl m_msoManager;
@@ -84,7 +87,7 @@ public class MsoModelImpl implements IMsoModelIf
     /**
      * Set update mode to {@link IMsoModelIf.UpdateMode#LOCAL_UPDATE_MODE LOCAL_UPDATE_MODE}.
      */
-    public void setLocalUpdateMode()
+    public synchronized void setLocalUpdateMode()
     {
         setUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
     }
@@ -92,7 +95,7 @@ public class MsoModelImpl implements IMsoModelIf
     /**
      * Set update mode to {@link IMsoModelIf.UpdateMode#REMOTE_UPDATE_MODE REMOTE_UPDATE_MODE}.
      */
-    public void setRemoteUpdateMode()
+    public synchronized void setRemoteUpdateMode()
     {
         setUpdateMode(UpdateMode.REMOTE_UPDATE_MODE);
     }
@@ -100,7 +103,7 @@ public class MsoModelImpl implements IMsoModelIf
     /**
      * Set update mode to {@link IMsoModelIf.UpdateMode#LOOPBACK_UPDATE_MODE LOOPBACK_UPDATE_MODE}.
      */
-    public void setLoopbackUpdateMode()
+    public synchronized void setLoopbackUpdateMode()
     {
         setUpdateMode(UpdateMode.LOOPBACK_UPDATE_MODE);
     }
@@ -117,7 +120,7 @@ public class MsoModelImpl implements IMsoModelIf
     /**
      * Restore previous update mode.
      */
-    public void restoreUpdateMode()
+    public synchronized void restoreUpdateMode()
     {
         if (m_updateModeStack.size() > 1)
         {
@@ -125,6 +128,32 @@ public class MsoModelImpl implements IMsoModelIf
         }
     }
 
+    public synchronized void suspendClientUpdate()
+    {
+    	// increment
+        m_suspendClientUpdate++;
+        // notify of irregular operation
+        if (m_suspendClientUpdate > 10)
+        {
+            Log.error("suspend client update stack grows too large, size:" + m_suspendClientUpdate);
+        }
+        //System.out.println("suspendClientUpdate:="+m_suspendClientUpdate);
+    }
+
+    public synchronized void resumeClientUpdate()
+    {
+        if(m_suspendClientUpdate>0) 
+        	m_suspendClientUpdate--;
+        if(m_suspendClientUpdate==0)
+        	m_msoManager.resumeClientUpdate();
+        //System.out.println("resumeClientUpdate:="+m_suspendClientUpdate);
+    }
+
+    public synchronized boolean isUpdateSuspended()
+    {
+        return (m_suspendClientUpdate>0);
+    }
+    
     /**
      * Get current update mode.
      */
@@ -137,34 +166,56 @@ public class MsoModelImpl implements IMsoModelIf
     {
         return m_commitManager.hasUncommitedChanges();
     }
+    
+	public List<IUpdateHolderIf> getUpdates() {
+		return m_commitManager.getUpdates();
+	}
 
-    public void suspendClientUpdate()
-    {
-    	// increment
-        m_suspendClientUpdate++;
-        // notify of irregular operation
-        if (m_suspendClientUpdate > 10)
+	public List<IUpdateHolderIf> getUpdates(MsoClassCode of) {
+		return m_commitManager.getUpdates(of);
+	}
+
+	public List<IUpdateHolderIf> getUpdates(Set<MsoClassCode> of) {
+		return m_commitManager.getUpdates(of);
+	}
+
+	public IUpdateHolderIf getUpdates(IMsoObjectIf of) {
+		return m_commitManager.getUpdates(of);	
+	}
+	
+	public List<IUpdateHolderIf> getUpdates(List<IMsoObjectIf> of) {
+		return m_commitManager.getUpdates(of);
+	}
+    
+    /**
+     * Perform a partial commit. <p/>Only possible to perform on
+     * objects that are created and modified. Object and list references 
+     * are not affected, only the marked attributes. See 
+     * {@link org.redcross.sar.mso.committer.IUpdateHolderIf} for more information.
+     * 
+     * @param List<UpdateHolder> updates - holder for updates.
+     * 
+     */
+    public synchronized void commit(List<IUpdateHolderIf> updates)
+    { 
+        try
         {
-            Log.error("suspend client update stack grows too large, size:" + m_suspendClientUpdate);
+            m_commitManager.commit(updates);
         }
-        //System.out.println("suspendClientUpdate:="+m_suspendClientUpdate);
+        catch (CommitException e)
+        {
+        	Utils.showError(e.getMessage());
+            rollback();
+            return;
+        }
+        suspendClientUpdate();
+        setLoopbackUpdateMode();
+        m_msoManager.postProcessCommit();
+        restoreUpdateMode();
+        resumeClientUpdate();    	
     }
 
-    public void resumeClientUpdate()
-    {
-        if(m_suspendClientUpdate>0) 
-        	m_suspendClientUpdate--;
-        if(m_suspendClientUpdate==0)
-        	m_msoManager.resumeClientUpdate();
-        //System.out.println("resumeClientUpdate:="+m_suspendClientUpdate);
-    }
-
-    public boolean updateSuspended()
-    {
-        return (m_suspendClientUpdate>0);
-    }
-
-    public void commit()
+    public synchronized void commit()
     {
         try
         {
@@ -182,9 +233,8 @@ public class MsoModelImpl implements IMsoModelIf
         restoreUpdateMode();
         resumeClientUpdate();
     }
-
-
-    public void rollback()
+        
+    public synchronized void rollback()
     {
         suspendClientUpdate();
         setRemoteUpdateMode();
@@ -193,4 +243,5 @@ public class MsoModelImpl implements IMsoModelIf
         restoreUpdateMode();
         resumeClientUpdate();
     }
+
 }

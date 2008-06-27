@@ -198,11 +198,12 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
 	                Component focusOwner = KeyboardFocusManager.
 	                        getCurrentKeyboardFocusManager().getPermanentFocusOwner();
 	                if (focusOwner != null && SwingUtilities.isDescendingFrom(focusOwner, rootPane)) {
+	                	// save current focus owner
 	                    m_recentFocusOwner = focusOwner;
 	                }
 	                requestFocusInWindow();
 	            } else {
-	                // do cleanup?
+	                // resume focus to last owner?
 	                if (m_recentFocusOwner != null) {
 	                    m_recentFocusOwner.requestFocusInWindow();
 	                }

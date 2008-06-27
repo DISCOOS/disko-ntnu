@@ -113,7 +113,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 			// update
 			getTextField().setText(String.valueOf(value));
 			// success
-			return true;			
+			return true;
 		}
 		// failure
 		return false;

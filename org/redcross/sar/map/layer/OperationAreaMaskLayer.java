@@ -31,8 +31,10 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 				LayerCode.OPERATION_AREA_MASK_LAYER, msoModel, srs,
 				esriGeometryType.esriGeometryPolygon, eventStack);
 		createSymbols();
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		loadObjects(cmdPost.getOperationAreaListItems().toArray());
+		if(msoModel.getMsoManager().operationExists()) {
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			loadObjects(cmdPost.getOperationAreaListItems().toArray());
+		}
 		try {
 			setVisible(false);
 		} catch (Exception e) {

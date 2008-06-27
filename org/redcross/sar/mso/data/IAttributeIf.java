@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Vector;
 
 /**
- * Base nterface for MSO Attributes
+ * Base interface for MSO Attributes
  */
 public interface IAttributeIf<T>
 {
@@ -58,6 +58,20 @@ public interface IAttributeIf<T>
     public boolean rollback();
 
     /**
+     * Get value cardinality
+     * 
+     *@return cardinality, if >0, then getAttrValue can not be null. 
+     */
+    public int getCardinality();
+    
+    /**
+     * Validates getAttrValue against the value cardinality
+     * <p/>
+     * @return  <code>true<code> if getAttrValue is not null, <code>false<code> otherwise.
+     */
+    public boolean validate();
+    
+    /**
      * Accept local (client) value in case of conflict.
      *
      * @return True if something has been done.
@@ -79,18 +93,25 @@ public interface IAttributeIf<T>
     public boolean isUncommitted();
 
     /**
-     * Tell if this attribute concerns GIS objects
+     * Tells if this attribute concerns GIS objects
      *
-     * @return <code>true</code>  if a GIS attribute, <code>false</code> oterhwise.
+     * @return <code>true</code>  if a GIS attribute, <code>false</code> otherwise.
      */
     public boolean isGisAttribute();
 
     /**
-     * Tell if this attribute is reqired objects
+     * Tells if this attribute is a required object
      *
      * @return <code>true</code>  if required (cannot be null) in order to commit the object, <code>false</code> oterhwise.
      */
     public boolean isRequired();
+    
+    /**
+     * Tells if this attributes is changed since last commit.
+     *
+     * @return @return <code>true</code>  if changed after last commit, <code>false</code> otherwise.
+     */
+    //public boolean isChanged();
 
     /**
      * Interface for {@link Boolean} attributes.

@@ -977,29 +977,41 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	
 	public void handleMsoUpdateEvent(Update e) {
 		
-		// get flags
+		// get mask
 		int mask = e.getEventTypeMask();
-        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 		
         // get mso object
         IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
         
-        // add object?
-		if (createdObject) {
-			msoObjectCreated(msoObj,mask);
-		}
-		// is object modified?
-		if ( (addedReference || removedReference || modifiedObject)) {
-			msoObjectChanged(msoObj,mask);
-		}
-		// delete object?
-		if (deletedObject) {
-			msoObjectDeleted(msoObj,mask);		
-		}
+        // get flag
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+        
+        // clear all?
+        if(clearAll) {
+        	// forward
+        	msoObjectDeleted(this.msoObject,mask);
+        }
+        else {
+			// get flags
+	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			
+	        // add object?
+			if (createdObject) {
+				msoObjectCreated(msoObj,mask);
+			}
+			// is object modified?
+			if ( (addedReference || removedReference || modifiedObject)) {
+				msoObjectChanged(msoObj,mask);
+			}
+			// delete object?
+			if (deletedObject) {
+				msoObjectDeleted(msoObj,mask);		
+			}
+        }
 	}
 
 	private void msoObjectCreated(IMsoObjectIf msoObject, int mask) {
@@ -1023,6 +1035,8 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	private void msoObjectDeleted(IMsoObjectIf msoObject, int mask) {
 		// forward?
 		if(elementDialog!=null) {
+			
+			// forward
 			elementDialog.getElementPanel().msoObjectDeleted(msoObject, mask);
 			
 			if(this.msoObject==msoObject) {
@@ -1158,8 +1172,12 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		// has no element list?
 		if(elementList == null) return false;
 		
+		// no model available?
+		if(!msoModel.getMsoManager().operationExists()) return false;		
+		
 		// get command post
 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();		
+		
 		// get current value
 		Enum e = (Enum)elementList.getSelectedValue();
 		// initialize?

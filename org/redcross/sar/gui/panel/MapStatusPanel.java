@@ -9,11 +9,13 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -150,9 +152,10 @@ public class MapStatusPanel extends JPanel {
 		}
 	}
 	
-	public void setSelected(IMsoObjectIf msoObj) {
+	public void onSelectionChanged(List<IMsoFeature> list) {
 		// update status panel?
 		if(getStatusPanel().isVisible()) {
+			IMsoObjectIf msoObj = list.size()>0 ? list.get(0).getMsoObject() :null;
 			if(msoObj!=null) {
 				IAreaIf area = MsoUtils.getOwningArea(msoObj);
 				if(area!=null && area.getOwningAssignment()!=null) {

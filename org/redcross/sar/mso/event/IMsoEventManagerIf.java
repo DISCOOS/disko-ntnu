@@ -35,6 +35,12 @@ public interface IMsoEventManagerIf
     public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask);
 
     /**
+     * Notify a client clear all update.
+     *
+     */
+    public void notifyClearAll(IMsoObjectIf root);
+    
+    /**
      * Add a listener in the Server Update Listeners} queue.
      *
      * @param aListener The listener

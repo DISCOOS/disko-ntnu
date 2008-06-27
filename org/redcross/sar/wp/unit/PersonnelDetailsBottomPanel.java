@@ -239,7 +239,8 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
      */
     public void handleMsoUpdateEvent(Update e)
     {
-        IPersonnelIf personnel = (IPersonnelIf) e.getSource();
+        IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ? 
+        		(IPersonnelIf) e.getSource() : null;
         if (personnel == m_currentPersonnel)
         {
             updateFieldContents();
@@ -267,13 +268,15 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
      */
     public void handleTick(TickEvent e)
     {
-        ICmdPostIf cmdPost = m_wpModule.getCmdPost();
-        if (cmdPost == null)
-        {
-            return;
-        }
-
-        updateEstimatedArrival();
+    	if(m_wpModule.getMsoManager().operationExists()) {
+	        ICmdPostIf cmdPost = m_wpModule.getCmdPost();
+	        if (cmdPost == null)
+	        {
+	            return;
+	        }
+	
+	        updateEstimatedArrival();
+    	}
     }
 
     public void setTimeCounter(long counter)

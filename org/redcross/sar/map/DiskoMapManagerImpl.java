@@ -1,7 +1,6 @@
 package org.redcross.sar.map;
 
 import java.awt.Component;
-import java.awt.Window;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +30,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.thread.AbstractDiskoWork;
+import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.MapInfoComparator;
 import org.redcross.sar.util.mso.Position;
 import org.w3c.dom.Document;
@@ -742,97 +743,159 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	}
 	
 	/**
-	 * This method is called after active operation is changed 
+	 * This method matches the active operation with a suitable map. <p>   
+	 * It is automatically called after the active operation is changed, by 
+	 * IDiskoApplication.<p>
+	 * @param autoselect - if <code>true</code> the map that covers the active
+	 * operation the most is selected, else an MapOptionDialog is shown allowing
+	 * the user to select a map manually.
+	 * @param useWorkPool - if <code>true</code> the work is done on the Disko Work
+	 * Pool and the method will not block, otherwise the method will block until
+	 * the selection processes is done.
+	 * 
 	 */
-	
-	public boolean selectMap(boolean autoselect) {
-		
+	public void selectMap(boolean autoselect, boolean useWorkPool) {
+
 		try {
-			// has maps?
-			if(mxdDocs.size()>0) {
-				// initialize
-				Map<String,MapSourceInfo> maps = new HashMap<String,MapSourceInfo>();
-				// get map with mso data
-				IDiskoMap map = getPrintMap();
-				// get extent of operation 
-				Envelope extent = (Envelope)MapUtil.getOperationExtent(map);
-				// has no extent?
-				if(extent==null) {
-					// loop over all map and reset coverage index to unknown
-					for(MapSourceInfo it: mxdDocs.values()) {
-						it.setCoverage(0);
-						maps.put(it.getMxdDoc(),it);
-					}
-				}
-				else {
-					// get a geographic coordinate system spatial reference
-					ISpatialReference srs = map.getSpatialReference();
-					// loop over all map and select intersecting maps
-					for(MapSourceInfo it: mxdDocs.values()) {
-						// get full extent of map
-						IEnvelope e = (Envelope)it.getExtent(srs);
-						// get name
-						String name = it.getMxdDoc();
-						// set current selection
-						it.setCurrent(name.equalsIgnoreCase(mxdDoc));
-						// is disjoint?
-						if(extent.disjoint(e)) it.setCoverage(1);
-						else {
-							// set coverage index
-							it.setCoverage(extent.within(e) ? 3 : 2);
-							// add to available maps
-							maps.put(it.getMxdDoc(),it);
-						}
-					}
-				}
-				// is current map within this list?
-				if(!maps.containsKey(mxdDoc)) {
-					// automatic selection?
-					if(autoselect && maps.size()>0) {
-						// try first full coverage
-						for(MapSourceInfo it: maps.values()) {
-							if(it.getCoverage()==2) {
-								String name = it.getMxdDoc();
-								if(setMxdDoc(name));
-									return true;
-							}
-						}
-						// full coverage map not found, use first partial coverage map
-						String name = maps.values().iterator().next().getMxdDoc();
-						// finished
-						return setMxdDoc(name);
-						
-					}
-					else {
-						// allow user to select map from list
-						return app.getUIFactory().getMapOptionDialog()
-							.selectMap("Velg kart for operasjonsområdet", 
-									new ArrayList<MapSourceInfo>(mxdDocs.values()));
-					}
-				}
-				// use current (does coverage operation area)
-				return isMxdDocInstalled(mxdDoc);
+			// create work
+			SelectMapWork work = new SelectMapWork(autoselect);
+			// forward to work pool?
+			if(useWorkPool)
+				DiskoWorkPool.getInstance().schedule(work);
+			else {
+				work.doWork();
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		}
+		catch(Exception e) {
 			e.printStackTrace();
 		}
-		// failed
-		return false;
+		
 	}
 
 	public boolean isMap(Component c) {
 		return maps.contains(c);
-		/*
-		for(IDiskoMap it : maps) {
-			// application
-			if(SwingUtilities.isDescendingFrom(c, (Component)windows[i]))
-				return true;
-		}
-		return false;*/
 	}
+	
+	/* ===============================================================================
+	 * Internal classes
+	 * =============================================================================== */
+	
+	class SelectMapWork extends AbstractDiskoWork<Boolean> {
+
+		private boolean m_autoSelect = false;
+
+		/**
+		 * Constructor
+		 * 
+		 * @param autoselect
+		 */
+		SelectMapWork(boolean autoselect) throws Exception {
+			// forward
+			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
+					"Analyserer installerte kart",0,true,false,false,0);
+			// prepare
+			m_autoSelect = autoselect;
+		}
+
+		/**
+		 * Worker
+		 * 
+		 */	   
+		@Override
+		public Boolean doWork() {
+			
+			try {
+				// has maps?
+				if(mxdDocs.size()>0) {
+					// initialize
+					Map<String,MapSourceInfo> maps = new HashMap<String,MapSourceInfo>();
+					// get map with mso data
+					IDiskoMap map = getPrintMap();
+					// get extent of operation 
+					Envelope extent = (Envelope)MapUtil.getOperationExtent(map);
+					// has no extent?
+					if(extent==null) {
+						// loop over all map and reset coverage index to unknown
+						for(MapSourceInfo it: mxdDocs.values()) {
+							it.setCoverage(0);
+							maps.put(it.getMxdDoc(),it);
+						}
+					}
+					else {
+						// get a geographic coordinate system spatial reference
+						ISpatialReference srs = map.getSpatialReference();
+						// loop over all map and select intersecting maps
+						for(MapSourceInfo it: mxdDocs.values()) {
+							// get full extent of map
+							IEnvelope e = (Envelope)it.getExtent(srs);
+							// get name
+							String name = it.getMxdDoc();
+							// set current selection
+							it.setCurrent(name.equalsIgnoreCase(mxdDoc));
+							// is disjoint?
+							if(extent.disjoint(e)) it.setCoverage(1);
+							else {
+								// set coverage index
+								it.setCoverage(extent.within(e) ? 3 : 2);
+								// add to available maps
+								maps.put(it.getMxdDoc(),it);
+							}
+						}
+					}
+					// is current map within this list?
+					if(!maps.containsKey(mxdDoc)) {
+						// automatic selection?
+						if(m_autoSelect && maps.size()>0) {
+							// try first full coverage
+							for(MapSourceInfo it: maps.values()) {
+								if(it.getCoverage()==2) {
+									String name = it.getMxdDoc();
+									if(setMxdDoc(name));
+										return true;
+								}
+							}
+							// full coverage map not found, use first partial coverage map
+							String name = maps.values().iterator().next().getMxdDoc();
+							// finished
+							return setMxdDoc(name);
+							
+						}
+						else {
+							// allow user to select a map
+							return true;
+						}
+					}
+					// use current (does coverage operation area)
+					return isMxdDocInstalled(mxdDoc);
+				}
+			} catch (AutomationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return false;
+		}
+
+		/**
+		 * done 
+		 * 
+		 * Executed on the Event Dispatch Thread.
+		 */
+		@Override
+		public void afterDone() {
+
+			// get result
+			if(get() && m_autoSelect) {
+				// allow user to select map from list
+				app.getUIFactory().getMapOptionDialog()
+					.selectMap("Velg kart for operasjonsområdet", 
+							new ArrayList<MapSourceInfo>(mxdDocs.values()));
+			}
+	
+		}		
+		
+	}	
 	
 }

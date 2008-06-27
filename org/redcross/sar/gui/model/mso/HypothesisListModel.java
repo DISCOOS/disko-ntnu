@@ -6,6 +6,7 @@ import javax.swing.AbstractListModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
@@ -29,9 +30,11 @@ public class HypothesisListModel extends AbstractListModel implements
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
 		// get data
-		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-		data = (cmdPost!=null ? cmdPost.getHypothesisListItems().toArray() : null);
-		super.fireContentsChanged(this, 0, data.length-1);
+		if(msoModel.getMsoManager().operationExists()) {
+			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+			data = (cmdPost.getHypothesisListItems().toArray());
+			super.fireContentsChanged(this, 0, data.length-1);
+		}
 	}
 
 	public void handleMsoUpdateEvent(Update e) {
@@ -40,12 +43,18 @@ public class HypothesisListModel extends AbstractListModel implements
         boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
         boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
         boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 		
-		if (createdObject || modifiedObject || deletedObject ) {
+        if(clearAll) {
+        	int max = data!=null ? data.length-1: 0;
+        	data = null;
+			super.fireContentsChanged(this, 0, max);
+        }
+        else if (createdObject || modifiedObject || deletedObject ) {
 			// get data
 			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 			data = (cmdPost!=null ? cmdPost.getHypothesisListItems().toArray() : null);
-			super.fireContentsChanged(this, 0, data.length-1);
+			super.fireContentsChanged(this, 0, data!=null ? data.length-1: 0);
 		}
 	}
 

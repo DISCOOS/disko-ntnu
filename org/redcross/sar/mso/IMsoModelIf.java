@@ -9,8 +9,12 @@
  */
 package org.redcross.sar.mso;
 
+import java.util.List;
+
 import org.redcross.sar.modelDriver.IModelDriverIf;
+import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.util.except.CommitException;
 
 
 /**
@@ -94,6 +98,17 @@ public interface IMsoModelIf
      * Local modifications since previous commit or rollback are sent to server.
      */
     public void commit();
+
+    /**
+     * Perform a partial commit. <p/>Only possible to perform on
+     * objects that are created and modified. Object and list references 
+     * are not affected, only the marked attributes. See 
+     * {@link org.redcross.sar.mso.committer.IUpdateHolderIf} for more information.
+     * 
+     * @param List<UpdateHolder> updates - holder for updates.
+     * 
+     */
+    public void commit(List<IUpdateHolderIf> updates);    
 
     /**
      * Perform rollback.

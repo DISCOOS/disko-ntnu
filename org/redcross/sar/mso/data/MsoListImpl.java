@@ -31,6 +31,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     protected final HashMap<String, M> m_items;
     protected final HashMap<String, M> m_added;
     protected final HashMap<String, M> m_deleted;
+    protected final int m_cardinality;
     protected final boolean m_isMain;
 
     public MsoListImpl(IMsoObjectIf anOwner)
@@ -45,14 +46,15 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     public MsoListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        this(anOwner, theName, isMain, 50);
+        this(anOwner, theName, isMain, 0, 50);
     }
 
-    public MsoListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
+    public MsoListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int cardinality, int aSize)
     {
         m_owner = anOwner;
         m_name = theName;
         m_isMain = isMain;
+        m_cardinality = cardinality;
         m_items = new LinkedHashMap<String, M>(aSize);
         m_added = new LinkedHashMap<String, M>();
         m_deleted = new LinkedHashMap<String, M>();
@@ -391,6 +393,28 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         }
     }
 
+    public int getCardinality()
+    {
+        return m_cardinality;
+    }
+    
+    public Object validate() {
+    	if(m_cardinality>0) {
+    		return (size()<m_cardinality);
+    	}
+    	for(IMsoObjectIf it : getItems()) {
+    		Object retVal = it.validate();
+    		if(!isTrue(retVal)) return retVal;
+    	}
+    	return true;
+    }    
+    
+    private boolean isTrue(Object value) {
+    	if(value instanceof Boolean)
+    		return (Boolean)value;
+    	return false;
+    }
+    
     public Set<M> selectItems(Selector<M> aSelector)
     {
         return selectItemsInCollection(aSelector, getItems());
@@ -621,7 +645,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     public IMsoListIf<M> getClone()
     {
-        MsoListImpl<M> retVal = new MsoListImpl<M>(getOwner(), getName(), isMain(), size());
+        MsoListImpl<M> retVal = new MsoListImpl<M>(getOwner(), getName(), isMain(), getCardinality(), size());
         for (M item : m_items.values())
         {
             retVal.m_items.put(item.getObjectId(), item);
