@@ -629,10 +629,10 @@ public class ElementPanel extends DefaultPanel {
 	        {
 				// get type
 				POIType poiType = anPOI.getType();
-				// is area poi?
-				return !(poiType.equals(POIType.START) ||
-						poiType.equals(POIType.VIA) || 
-						poiType.equals(POIType.STOP));
+				
+				// is not an area poi?
+				return !IPOIIf.AREA_SET.contains(poiType);
+				
 	        }
 	    };
 	}
@@ -690,9 +690,7 @@ public class ElementPanel extends DefaultPanel {
 				// get type
 				POIType poiType = ((IPOIIf)msoObject).getType();
 				// is area poi?
-				boolean isAreaPOI = (poiType.equals(POIType.START) ||
-						poiType.equals(POIType.VIA) || 
-						poiType.equals(POIType.STOP));
+				boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);;
 				// is standalone poi?
 				if(isAreaPOI) {
 					// get owning area
@@ -760,9 +758,7 @@ public class ElementPanel extends DefaultPanel {
 			// get type
 			POIType poiType = ((IPOIIf)msoObject).getType();
 			// is area poi?
-			boolean isAreaPOI = (poiType.equals(POIType.START) ||
-					poiType.equals(POIType.VIA) || 
-					poiType.equals(POIType.STOP));
+			boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
 			// is standalone poi?
 			if(isAreaPOI) {
 				// get list

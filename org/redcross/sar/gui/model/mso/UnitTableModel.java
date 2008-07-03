@@ -9,6 +9,7 @@ import javax.swing.table.AbstractTableModel;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -61,7 +62,10 @@ public class UnitTableModel extends AbstractTableModel implements
 		
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(aMsoObject.getMsoClassCode());
 	}
 	
@@ -124,7 +128,7 @@ public class UnitTableModel extends AbstractTableModel implements
 	}
 
 	public int getRowCount() {
-		return rows.length;
+		return rows!=null ? rows.length : 0;
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {

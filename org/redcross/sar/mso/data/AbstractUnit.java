@@ -754,13 +754,16 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     public boolean logPosition(Calendar aTime) {
     	// ensure a time stamp is given
     	if(aTime==null) aTime = Calendar.getInstance();
+    	// get MSO track
+    	ITrackIf msoTrack = m_track.getReference();
     	// is possible to log position?
-    	if(m_track!=null) {
+    	if(msoTrack!=null) {
+    		// get current position
 	    	Point2D.Double p = m_position.getPosition().getPosition();
 	    	// create time position
 	    	TimePos tp = new TimePos(p,aTime);
 	    	// add to track
-	    	m_track.getReference().addTrackPoint(tp);
+	    	msoTrack.addTrackPoint(tp);
 	    	// finished
 	    	return true;
     	}
@@ -775,6 +778,19 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     	return logPosition(aTime);
     }
     
+    public TimePos getLastKnownPosition() {
+    	// initialize
+    	TimePos p = null;
+    	// get MSO track
+    	ITrackIf msoTrack = m_track.getReference();
+    	// is possible to log position?
+    	if(msoTrack!=null) {
+    		msoTrack.getTrackStopPoint();
+    	}
+    	// finished
+    	return p;
+    }
+
 
     private final static SelfSelector<IUnitIf, IMessageIf> simpleReferringMesssageSelector = new SelfSelector<IUnitIf, IMessageIf>()
     {

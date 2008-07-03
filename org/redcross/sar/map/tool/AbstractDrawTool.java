@@ -532,15 +532,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		
 		moveCount = 0;
 		
-		// get tic
-		//long tic = Calendar.getInstance().getTimeInMillis();
-		
-		// consume?
-		//if(tic-previous<250) return;
-		
-		// update tic
-		//previous = tic;
-		
 		// is moving
 		isMoving = true;
 		
@@ -551,7 +542,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			
 			// get flag
 			isMouseOverIcon = isShowDrawFrame;			
-			if(!isMouseOverIcon && drawFrame!=null && p!=null && !p.isEmpty()) { 
+			if(isMouseOverIcon && drawFrame!=null && p!=null && !p.isEmpty()) { 
 				isMouseOverIcon = drawFrame.hitIcon(p.getX(), p.getY(), 1)!=null;
 			}
 			
@@ -560,7 +551,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			
 			// only forward to extenders of this class if 
 			// drawing or mouse not over draw frame icon
-			if(!isMouseOverIcon || isDrawing)
+			if(!isMouseOverIcon || isDrawing || true)
 				onAction(onMouseMoveAction,button,shift,x,y);		
 			else {
 				// reset snap geometry
@@ -613,7 +604,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}
 			
 	/* ==================================================
-	 * Implemention of IDrawTool (override with care)
+	 * Implementation of IDrawTool (override with care)
 	 * ==================================================
 	 */
 	
@@ -674,7 +665,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				this.isShowDrawFrame = bFlag;
 				// update both draw frame and geometries? 
 				if(isShowDrawFrame && drawAdapter!=null) {
-					// reapply mso frame;
+					// re-apply mso frame;
 					drawAdapter.setMsoFrame();
 					// forward
 					drawAdapter.setFrameUnion(getGeoEnvelope());
@@ -2016,8 +2007,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 							POIType poiType = poi.getType();
 							
 							// get flag
-							boolean isAreaPOI = (poiType == IPOIIf.POIType.START) || 
-								(poiType == IPOIIf.POIType.VIA) || (poiType == IPOIIf.POIType.STOP);
+							boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
 							
 							//is an area poi type?
 							if(isAreaPOI) {									
@@ -2107,10 +2097,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 								bUpdatePosition = MapUtil.isFloatEqual(
 										found.getPosition(),msoUnit.getPosition().getPosition()); 
 								// update logged position
-								found.setPosition(p.getPosition());
-								//
-								TimePos test = track.getGeodata().get(i);
-								System.out.println(test.equals(found));
+								track.getGeodata().set(i,p.getPosition());
+								//TimePos test = track.getGeodata().get(i);
+								//System.out.println(test.equals(found));
 							}
 							else {
 								System.out.println("Error! Did not find required track point in log");
@@ -2181,6 +2170,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					polygonWorkDone();
 				}
 			}
+			
+			// forward
+			super.afterDone();
 			
 			// notify?
 			if(isDone) fireOnWorkFinish(AbstractDrawTool.this,msoObject);

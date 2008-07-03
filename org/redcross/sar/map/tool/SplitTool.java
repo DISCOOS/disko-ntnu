@@ -238,8 +238,11 @@ public class SplitTool extends AbstractDiskoTool {
 		 * Executed on the Event Dispatch Thread
 		 * 
 		 */
-		@Override
-		public void beforeDone() {		
+		public void afterDone() {
+			
+			// forward
+			super.afterDone();
+			
 			try {
 				
 				// get result

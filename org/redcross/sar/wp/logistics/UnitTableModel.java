@@ -12,6 +12,7 @@ import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
 import org.redcross.sar.gui.renderer.IconRenderer.IconActionHandler;
 import org.redcross.sar.gui.renderer.IconRenderer.UnitIcon;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -162,8 +163,11 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
         fireTableDataChanged();
     }
 
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
-    {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) 
+	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
         return myInterests.contains(aMsoObject.getMsoClassCode());
     }
 

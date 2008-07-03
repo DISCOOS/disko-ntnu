@@ -8,6 +8,7 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.IMsoLayerEventListener;
 import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -60,7 +61,7 @@ public interface IPanel extends IChangeable,
 	 * IMsoUpdateListenerIf interface
 	 * ================================================ */
 	
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject);	
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode);
     public void handleMsoUpdateEvent(MsoEvent.Update e);
 
 	/* ================================================

@@ -70,12 +70,12 @@ public class SarMsoMapper {
         }
         if (msoAttr instanceof AttributeImpl.MsoRoute) {
             AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) msoAttr;
-            List<TimePos> posList = mapGeoPosListToSaraTimePos(lAttr.getRoute().getPositions());
+            List<TimePos> posList = mapGeoPosListToSaraTimePos(lAttr.getRoute().getItems());
             ((SarFactTrack) sarFact).setTrack(posList, lAttr.getRoute().getName(), lAttr.getRoute().getLayout(), distribute);
         }
         if (msoAttr instanceof AttributeImpl.MsoTrack) {
             AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) msoAttr;
-            List<TimePos> posList = mapTimePosListToSaraTimePos(lAttr.getTrack().getTrackTimePos());
+            List<TimePos> posList = mapTimePosListToSaraTimePos(lAttr.getTrack().getItems());
             ((SarFactTrack) sarFact).setTrack(posList, lAttr.getTrack().getName(), lAttr.getTrack().getLayout(), distribute);
         }
 // todo remove        if (msoAttr instanceof AttributeImpl.MsoGeoList) {

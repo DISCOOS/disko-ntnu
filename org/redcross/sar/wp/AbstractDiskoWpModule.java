@@ -19,6 +19,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
@@ -30,6 +31,7 @@ import org.redcross.sar.util.Internationalization;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
@@ -154,7 +156,7 @@ public abstract class AbstractDiskoWpModule
                 // initialize map
                 map = manager.createMap(mapLayers);
                 // hide map
-                ((DiskoMap)map).setVisible(false);
+                ((Component)map).setVisible(false);
                 // success
                 return true;
             }
@@ -495,7 +497,10 @@ public abstract class AbstractDiskoWpModule
 		// TODO: Override this method
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		if(wpInterests!=null) {
 			if(isActive) {
 				return wpInterests.contains(aMsoObject.getMsoClassCode());

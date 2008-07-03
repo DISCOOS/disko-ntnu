@@ -158,6 +158,7 @@ public class DescriptionDialog extends DefaultDialog {
 				poiTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				poiTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 				poiTable.setColumnSelectionAllowed(false);
+				poiTable.setShowVerticalLines(false);
 				setColumnWidths();
 				
 			} catch (java.lang.Throwable e) {

@@ -6,6 +6,7 @@ import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -103,8 +104,10 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
             IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT,
             IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL);
 
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
-    {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
         return myInterests.contains(aMsoObject.getMsoClassCode());
     }
 

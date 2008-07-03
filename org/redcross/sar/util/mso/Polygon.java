@@ -6,12 +6,8 @@ import java.util.Vector;
 /**
  * Class for holding polygon information
  */
-public class Polygon implements IGeodataIf, Cloneable
+public class Polygon extends AbstractGeodata
 {
-    private final String m_id;
-    private String m_layout;
-
-    private final String m_name;
     private final Vector<GeoPos> m_polygon;
 
     /**
@@ -32,8 +28,7 @@ public class Polygon implements IGeodataIf, Cloneable
      */
     public Polygon(String anId, String aName)
     {
-        m_id = anId;
-        m_name = aName;
+        super(anId,aName);
         m_polygon = new Vector<GeoPos>();
     }
 
@@ -46,8 +41,7 @@ public class Polygon implements IGeodataIf, Cloneable
      */
     public Polygon(String anId, String aName, int aSize)
     {
-        m_id = anId;
-        m_name = aName;
+        super(anId,aName);
         m_polygon = new Vector<GeoPos>(aSize);
     }
 
@@ -75,48 +69,20 @@ public class Polygon implements IGeodataIf, Cloneable
     /**
      * Get the collection of vertices of the polygon
      *
-     * @return The vertice collection.
+     * @return The vertices collection.
      */
     public Collection<GeoPos> getVertices()
     {
         return m_polygon;
     }
 
-    /**
-     * Get name of polygon
-     *
-     * @return The name
-     */
-    public String getName()
-    {
-        return m_name;
-    }
-
-    public String getId()
-    {
-        return m_id;
-    }
-
-    public void setLayout(String aLayout)
-    {
-        m_layout = aLayout;
-    }
-
-    public String getLayout()
-    {
-        return m_layout;
-    }
 
    public boolean equals(Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (!super.equals(o)) return false;
 
       Polygon polygon = (Polygon) o;
 
-      if (m_id != null ? !m_id.equals(polygon.m_id) : polygon.m_id != null) return false;
-      if (m_layout != null ? !m_layout.equals(polygon.m_layout) : polygon.m_layout != null) return false;
-      if (m_name != null ? !m_name.equals(polygon.m_name) : polygon.m_name != null) return false;
       if (m_polygon != null ? !m_polygon.equals(polygon.m_polygon) : polygon.m_polygon != null) return false;
        if (m_polygon != null )
        {
@@ -134,18 +100,14 @@ public class Polygon implements IGeodataIf, Cloneable
 
    public int hashCode()
    {
-      int result;
-      result = (m_id != null ? m_id.hashCode() : 0);
-      result = 31 * result + (m_layout != null ? m_layout.hashCode() : 0);
-      result = 31 * result + (m_name != null ? m_name.hashCode() : 0);
+      int result = super.hashCode();
       result = 31 * result + (m_polygon != null ? m_polygon.hashCode() : 0);
       return result;
    }
 
     @Override
-    public Object clone() throws CloneNotSupportedException
+    public Polygon clone() throws CloneNotSupportedException
     {
-        super.clone();
         Polygon retVal = new Polygon(m_id,m_name);
         retVal.setLayout(m_layout);
         retVal.m_polygon.addAll(m_polygon);

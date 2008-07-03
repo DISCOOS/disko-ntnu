@@ -68,7 +68,7 @@ public class SysBarPanel extends JPanel {
             newOpButton = DiskoButtonFactory.createButton("SYSTEM.CREATE",ButtonSize.NORMAL);
             newOpButton.addActionListener(new java.awt.event.ActionListener() {
                public void actionPerformed(java.awt.event.ActionEvent e) {
-                  app.createOperation();
+                  app.createOperation(true);
                }
             });
          } catch (java.lang.Throwable e) {

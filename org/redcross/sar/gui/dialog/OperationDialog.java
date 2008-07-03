@@ -90,7 +90,7 @@ public class OperationDialog extends DefaultDialog {
 					String cmd = e.getActionCommand();
 					if("create".equalsIgnoreCase(cmd)) {
 						// forward
-						if(Utils.getApp().createOperation())
+						if(Utils.getApp().createOperation(true))
 							setVisible(false);						
 					}					
 					else if("cancel".equalsIgnoreCase(cmd)) {

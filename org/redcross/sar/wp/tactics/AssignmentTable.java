@@ -52,6 +52,7 @@ public class AssignmentTable extends JTable {
 		setRowHeight(34);
 		setColumnSelectionAllowed(false);
 		setColumnWidths();
+		setShowVerticalLines(false);
 		
 	}
 	

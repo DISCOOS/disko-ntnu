@@ -17,6 +17,8 @@ import org.redcross.sar.util.mso.Selector;
 public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMsoDerivedListIf<M>, IMsoDerivedUpdateListenerIf
 {
     protected final HashMap<String, M> m_items;
+    
+    protected int m_changeCount;
 
     public AbstractDerivedList()
     {
@@ -65,17 +67,29 @@ public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMs
         {
             if (e.isCreateObjectEvent())
             {
+            	incrementChangeCount();
                 handleItemCreate(e.getSource());
             } else if (e.isDeleteObjectEvent())
             {
+            	incrementChangeCount();
                 handleItemDelete(e.getSource());
             } else if (e.isModifyObjectEvent())
             {
+            	incrementChangeCount();
                 handleItemModify(e.getSource());
             }
         }
     }
 
+    public int getChangeCount()
+    {
+        return m_changeCount;
+    }
+    
+    protected void incrementChangeCount() {
+    	m_changeCount++;
+    }    
+    
     public abstract boolean hasInterestIn(Object anObject);
 
     public abstract void handleItemCreate(Object anObject);
@@ -84,4 +98,4 @@ public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMs
 
     public abstract void handleItemModify(Object anObject);
 
-    }
+}

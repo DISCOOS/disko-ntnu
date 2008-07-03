@@ -673,7 +673,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 				}
 			} else
 				// forward
-				createOperation();
+				createOperation(false);
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -691,20 +691,29 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		Utils.showWarning("Beklager, fletting er foreløpig ikke støttet");
 	}
 
-	public boolean createOperation()
+	public boolean createOperation(boolean prompt)
 	{
-		int ans = JOptionPane.showOptionDialog(
-				uiFactory.getContentPanel(),
-				bundle.getString(NEWACTION_DESC),
-				bundle.getString(NEWACTION_TEXT),
-				JOptionPane.YES_NO_OPTION,
-				JOptionPane.QUESTION_MESSAGE, null,null,null);
+		// initialize
+		int ans = JOptionPane.YES_OPTION;
+		
+		// prompt user?
+		if(prompt) {
+			ans = JOptionPane.showOptionDialog(
+					uiFactory.getContentPanel(),
+					bundle.getString(NEWACTION_DESC),
+					bundle.getString(NEWACTION_TEXT),
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.QUESTION_MESSAGE, null,null,null);
+		}
 
+		// create?
 		if(ans==JOptionPane.YES_OPTION) {
 			waitingForNewOp=true;
 			getMsoModel().getModelDriver().createNewOperation();
 			return true;
 		}
+		
+		// failed
 		return false;		
 	}
 

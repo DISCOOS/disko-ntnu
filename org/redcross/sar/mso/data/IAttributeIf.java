@@ -20,6 +20,17 @@ public interface IAttributeIf<T>
     public String getName();
 
     /**
+     * Gets change count since construction. Use this counter when tracking
+     * changes executed on a object. Each time the attributes is changed, the
+     * counter is incremented<p>
+     * This property enables MSO Update listeners to track changes 
+     * without the need for local buffering of attribute states.
+     *
+     * @return The number of changes performed on the object since the construction.
+     */
+    public int getChangeCount();
+    
+    /**
      * Set index number for the attribute
      * Will force renumbering of attributes.
      *

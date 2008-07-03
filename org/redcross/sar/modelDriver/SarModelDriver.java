@@ -21,7 +21,6 @@ import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoException;
-import org.redcross.sar.util.except.MsoNullPointerException;
 import org.rescuenorway.saraccess.api.*;
 import org.rescuenorway.saraccess.except.SaraException;
 import org.rescuenorway.saraccess.model.*;
@@ -194,9 +193,11 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         // suspend?
         if(suspend) {
 	        getWorkPool().suspend();
-	        getMsoModel().setRemoteUpdateMode();
 	        getMsoModel().suspendClientUpdate();
         }
+        
+        // set remote update mode
+        getMsoModel().setRemoteUpdateMode();
         
         try {
     		
@@ -212,8 +213,8 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	        	// delete all deleteable references
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoReferenceIf) {
-	        			if(((IMsoReferenceIf)msoObj).canDelete()) {
-	        				msoObj.deleteObject();
+	        			if(msoObj.canDelete()) {
+	        				((AbstractMsoObject) msoObj).doDelete();
 	        			}
 	        		}
 	        	}
@@ -221,19 +222,21 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	        	// delete all deleteable objects
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
-	    				msoObj.deleteObject();
+	        			if(msoObj.canDelete())
+	        			((AbstractMsoObject) msoObj).doDelete();
 	        		}
 	        	}
 	
 	        	// delete all undeleteable objects
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj!=null && !msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
-	        			msoObj.deleteObject();
+	        			((AbstractMsoObject) msoObj).doDelete();
 	        	}
 	        	        	
 		    	// delete operation?
-		    	if(opr!=null)  opr.deleteObject();
-	
+		    	if(opr!=null)  opr.delete();
+		    	
+		    		
 		    	// clear maps
 		    	saraMsoMap.clear();	    	
 		    	msoSaraMap.clear();
@@ -256,11 +259,13 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     		e.printStackTrace();
     	}
     	
+    	// resume to previous update mode
+        getMsoModel().restoreUpdateMode();        
+        
     	// resume?
     	if(suspend) {
         	// resume old modes
         	getMsoModel().resumeClientUpdate();
-            getMsoModel().restoreUpdateMode();        
         	getWorkPool().resume();	                                	
     	}
 

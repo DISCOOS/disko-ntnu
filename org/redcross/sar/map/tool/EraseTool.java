@@ -408,7 +408,11 @@ public class EraseTool extends AbstractDiskoTool {
 		 * 
 		 */
 		@Override
-		public void beforeDone() {
+		public void afterDone() {
+			
+			// forward
+			super.afterDone();
+			
 			try {
 				
 				// get result

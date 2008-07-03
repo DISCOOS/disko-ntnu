@@ -135,6 +135,10 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_areaSequenceNumber;
     }
 
+    /*-------------------------------------------------------------------------------------------
+     * Public methods
+     *-------------------------------------------------------------------------------------------*/
+    
     public void addTrackPoint(TimePos aTimePos)
     {
         Track t = getGeodata();
@@ -164,4 +168,41 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
             Log.error("CloneNotSupportedException in removeTrackPoint, no point removed.");
         }
     }
+
+	@Override
+	public TimePos getTrackPoint(int index) {
+		Track t = getGeodata();
+		if(t!=null) {
+			return t.get(index);
+		}
+		return null;
+	}
+
+	@Override
+	public int getTrackPointCount() {
+		Track t = getGeodata();
+		if(t!=null) {
+			return t.getCount();
+		}
+		return 0;
+	}
+
+	@Override
+	public TimePos getTrackStartPoint() {
+		Track t = getGeodata();
+		if(t!=null) {
+			return t.getStartPoint();
+		}
+		return null;
+	}
+
+	@Override
+	public TimePos getTrackStopPoint() {
+		Track t = getGeodata();
+		if(t!=null) {
+			return t.getStopPoint();
+		}
+		return null;
+	}
+        
 }

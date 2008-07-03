@@ -2,6 +2,7 @@ package org.redcross.sar.wp.logistics;
 
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentListIf;
@@ -127,8 +128,10 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      * @param aMsoObject The actual object
      * @return <code><code/> if interesting, <code>false<code/> otherwise
      */
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
-    {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
         return myInterests.contains(aMsoObject.getMsoClassCode());
     }
 

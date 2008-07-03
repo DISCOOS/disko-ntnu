@@ -2,6 +2,8 @@ package org.redcross.sar.wp.ds;
 
 import java.util.Comparator;
 
+import no.cmr.common.util.SimpleDecimalFormat;
+
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.ete.RouteCost;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
@@ -88,10 +90,10 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 		else if(AVG_SPEED.equals(name)) {
 			IAssignmentIf assignment = (IAssignmentIf)msoObj;
 			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
-			String speed = "0 m/s";
+			String speed = "0 km/h";
 			if(cost!=null) {
-				speed = String.valueOf(Math.round(
-						(double)cost.getDistance() / (double)cost.ete())) + " m/s"; 
+				SimpleDecimalFormat f = new SimpleDecimalFormat(1,1);				
+				speed = f.format((double)cost.getDistance() / (double)cost.ete() * 3.6) + " km/h"; 
 			}
 			return speed;
 		}

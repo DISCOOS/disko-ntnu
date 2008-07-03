@@ -3,6 +3,7 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -311,8 +312,12 @@ public class CalloutDetailsPanel extends JPanel
 				IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL,
 				IMsoManagerIf.MsoClassCode.CLASSCODE_CALLOUT
 		);
-		public boolean hasInterestIn(IMsoObjectIf msoObject)
+		
+		public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 		{
+			// consume loopback updates
+			if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+			// check against interests
 			return interestedIn.contains(msoObject.getMsoClassCode());
 		}
 

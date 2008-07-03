@@ -404,6 +404,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 			IPOIIf poi = centerAtPOI(true);
 			// show tool
 			setToolVisible(true);
+			
 			// prepare tool
 			m_tool.setShowDialog(false);				// do not show tool dialog 
 			m_tool.setWorkPoolMode(false);				// ensures that mso model is 

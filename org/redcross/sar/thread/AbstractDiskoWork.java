@@ -473,5 +473,8 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 		return m_workPool.isWorking(this);
 	}
 	
+	public boolean isSuspended() {
+		return m_workPool.isSuspended(this);
+	}
 	
 }

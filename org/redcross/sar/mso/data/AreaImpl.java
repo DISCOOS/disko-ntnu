@@ -83,10 +83,9 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
             	// remove area POIs?
             	if(m_hostile) {
 	        		POIType type = ((IPOIIf)anObject).getType();
-	        		if(type == POIType.START || type == POIType.VIA || 
-	        				type == POIType.STOP) {
+	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
-	        			return anObject.deleteObject();
+	        			return anObject.delete();
 	        		}
             	}
                 return m_areaPOIs.removeReference((IPOIIf) anObject);
@@ -95,7 +94,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
             {
             	// remove area POIs?
             	if(m_hostile) {
-            		return anObject.deleteObject();
+            		return anObject.delete();
             	}
             	else {
             		return m_areaGeodata.removeReference(anObject);
@@ -147,7 +146,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
      * Overridden Methods
      *-------------------------------------------------------------------------------------------*/
 
-    public boolean deleteObject()
+    public boolean delete()
     {
         if (canDelete())
         {
@@ -156,20 +155,19 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        	// delete area POIs
 	        	for(IPOIIf it:m_areaPOIs.getItems()) {
 	        		POIType type = it.getType();
-	        		if(type == POIType.START || type == POIType.VIA || 
-	        				type == POIType.STOP) {
+	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
-	        			it.deleteObject();
+	        			it.delete();
 	        		}
 	        	}
 	        	// delete geodata
 	        	for(IMsoObjectIf it:m_areaGeodata.getItems()) {
 	    			// delete object
-	        		it.deleteObject();
+	        		it.delete();
 	        	}
         	}
         	// forward
-            return super.deleteObject();
+            return super.delete();
         }
         return false;
     }

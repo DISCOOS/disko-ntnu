@@ -36,6 +36,7 @@ import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.map.tool.IDrawTool.FeatureType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -777,6 +778,13 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		return !isLockedMode() && map.isDrawAllowed();
 	}
 	
+	public boolean isWorkPending() {
+		// get selected tool
+		IDrawTool tool = getSelectedTool();
+		// check
+		return tool!=null && tool.isActive() && tool.isDirty();
+	}
+	
 	public void refreshFrame() {
 		// should refresh?
 		if(map.isVisible() && !(map.isRefreshPending() || map.isDrawingSupressed() || map.isNotifySuspended())) 
@@ -846,6 +854,10 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	}
 	
 	public boolean finish() {
+		return finish(true);
+	}
+	
+	public boolean finish(boolean onWorkPool) {
 		
 		// consume?
 		if(!isChangeable()) return false;
@@ -860,10 +872,17 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			// get selected tool
 			IDrawTool tool = getSelectedTool();
 			// only cancel current step?
-			if(tool!=null && tool.isActive() && tool.isDirty()) {				
-				// This may result in a reentry from the IDrawTool, hence
-				// the IsWorking flag is set to consume this
-				bFlag = tool.finish();
+			if(tool!=null && tool.isActive() && tool.isDirty()) {
+				// synchronized execution
+				synchronized(tool) {
+					// set flag
+					boolean workPoolFlag = tool.setWorkPoolMode(onWorkPool);
+					// This may result in a reentry from the IDrawTool, hence
+					// the IsWorking flag is set to consume this
+					bFlag = tool.finish();
+					// resume flag
+					tool.setWorkPoolMode(workPoolFlag);
+				}
 			}
 			else {
 				refreshFrame();
@@ -971,7 +990,10 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	 * ===========================================
 	 */
     
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(aMsoObject.getMsoClassCode());
 	}	
 	
@@ -1117,9 +1139,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 					IPOIIf.POIType poiType = poi.getType();
 
 					// get flag
-					boolean isAreaPOI = (poiType == IPOIIf.POIType.START)
-							|| (poiType == IPOIIf.POIType.VIA)
-							|| (poiType == IPOIIf.POIType.STOP);
+					boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
 
 					// is area poi?
 					if (isAreaPOI) {

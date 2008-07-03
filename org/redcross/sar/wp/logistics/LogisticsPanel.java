@@ -12,6 +12,7 @@ import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -473,8 +474,11 @@ public class LogisticsPanel implements
     private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT,
             IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
 
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
-    {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) 
+	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
         return myInterests.contains(aMsoObject.getMsoClassCode());
     }
 

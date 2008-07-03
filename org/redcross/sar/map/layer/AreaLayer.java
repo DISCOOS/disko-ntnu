@@ -13,7 +13,6 @@ import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -22,7 +21,9 @@ import org.redcross.sar.mso.util.MsoUtils;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 public class AreaLayer extends AbstractMsoFeatureLayer {
 
@@ -42,9 +43,9 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	private TextSymbol textSymbol = null;
 
  	public AreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
- 		super(MsoClassCode.CLASSCODE_AREA,
- 				LayerCode.AREA_LAYER, msoModel, srs, 
+ 		super(MsoClassCode.CLASSCODE_AREA,LayerCode.AREA_LAYER, msoModel, srs, 
  				esriGeometryType.esriGeometryBag,eventStack);
+ 		addInterestIn(MsoClassCode.CLASSCODE_ROUTE);
  		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		createSymbols();
@@ -63,6 +64,30 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
  		return msoFeature;
  	}
 
+ 	@Override
+	protected List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);		
+		if (msoObject instanceof IAssignmentIf) {
+			IAssignmentIf assignment = (IAssignmentIf)msoObject;
+			IAreaIf area = assignment.getPlannedArea();
+			if(area!=null)
+				objects.add(area);
+			area = assignment.getReportedArea();
+			if(area!=null)
+				objects.add(area);
+		}
+		if (msoObject instanceof IRouteIf) {
+			// get owning area
+			IAreaIf area = MsoUtils.getOwningArea((IRouteIf)msoObject);
+			if(area!=null)			
+				objects.add(area);
+		}
+		else {
+			objects.add(msoObject);
+		}
+		return objects;
+	}
+ 	
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
@@ -211,47 +236,5 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Override to ensure that area poi's also are marked as editing
-	 */
-	/*
-	public List startEdit(IMsoObjectIf msoObj) throws IOException, AutomationException {
-		List poiList = null;
-		// do default operation
-		super.startEdit(msoObj);
-		// is area?
-		if(msoObj instanceof IAreaIf) {
-			// cast to area
-			IAreaIf area = (IAreaIf)msoObj;
-			// get collection
-			java.util.Collection<IPOIIf> c = area.getAreaPOIsItems();
-			// get poi's
-			poiList = new ArrayList<IPOIIf>(c);				
-		}
-		
-		// return poi list
-		return poiList;
-	}
-	*/
-	
-	/**
-	 * Override to ensure that area poi's also are marked as editing
-	 */
-	/*
-	public List stopEdit(IMsoObjectIf msoObj) throws IOException, AutomationException {
-		List poiList = null;
-		// do default operation
-		super.stopEdit(msoObj);
-		// is area?
-		if(msoObj instanceof IAreaIf) {
-			// cast to area
-			IAreaIf area = (IAreaIf)msoObj;
-			// get poi's
-			poiList = new ArrayList<IPOIIf>(area.getAreaPOIsItems());
-		}
-		// return poi list
-		return poiList;
-	}
-	*/			
+
 }

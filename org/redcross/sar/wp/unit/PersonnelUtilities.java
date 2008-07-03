@@ -210,7 +210,7 @@ public class PersonnelUtilities
 			throw new IllegalOperationException("Personnel status not IDLE, cannot delete");
 		}
 
-		if(!personnel.deleteObject())
+		if(!personnel.delete())
 		{
 			throw new IllegalOperationException("Failed to delete personnel object");
 		}

@@ -455,7 +455,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			// is new personnel?
 			if(m_newPersonnel) {
 				// delete object!
-				m_personnelDetailsLeftPanel.getPersonnel().deleteObject();
+				m_personnelDetailsLeftPanel.getPersonnel().delete();
 			}
 			// failed?
 			if(m_leftViewId == PERSONNEL_DETAILS_VIEW_ID) {

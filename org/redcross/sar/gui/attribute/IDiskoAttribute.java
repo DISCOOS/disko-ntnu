@@ -1,5 +1,7 @@
 package org.redcross.sar.gui.attribute;
 
+import javax.swing.AbstractButton;
+
 import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.mso.data.IAttributeIf;
 
@@ -30,12 +32,14 @@ public interface IDiskoAttribute {
 	public Object getValue();		
 	public boolean setValue(Object value);
 	
+	public AbstractButton getButton();
+	
 	public boolean load();
 	public boolean save();
 	
 	public boolean isMsoAttribute();
-	public IAttributeIf getMsoAttribute();
-	public boolean setMsoAttribute(IAttributeIf attribute);
+	public IAttributeIf<?> getMsoAttribute();
+	public boolean setMsoAttribute(IAttributeIf<?> attribute);
 	
 	public boolean addDiskoWorkListener(IDiskoWorkListener listener);
 	public boolean removeDiskoWorkListener(IDiskoWorkListener listener);

@@ -1,17 +1,14 @@
 package org.redcross.sar.util.mso;
 
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Vector;
 
 /**
  * Class for holding route information
  */
-public class Route implements IGeodataIf, Cloneable
+public class Route extends AbstractGeodata
 {
-    private final String m_id;
-    private String m_layout;
-
-    private final String m_name;
     private final Vector<GeoPos> m_route;
 
     /**
@@ -32,8 +29,7 @@ public class Route implements IGeodataIf, Cloneable
      */
     public Route(String anId, String aName)
     {
-        m_id = anId;
-        m_name = aName;
+        super(anId,aName);
         m_route = new Vector<GeoPos>();
     }
 
@@ -46,8 +42,7 @@ public class Route implements IGeodataIf, Cloneable
      */
     public Route(String anId, String aName, int aSize)
     {
-        m_id = anId;
-        m_name = aName;
+        super(anId,aName);
         m_route = new Vector<GeoPos>(aSize);
     }
 
@@ -59,6 +54,7 @@ public class Route implements IGeodataIf, Cloneable
     public void add(GeoPos aPosition)
     {
         m_route.add(aPosition);
+        incrementChangeCount();
     }
 
     /**
@@ -72,52 +68,90 @@ public class Route implements IGeodataIf, Cloneable
         add(new GeoPos(aLongPosition, aLatPosition));
     }
 
+    /**
+     * Remove a point from track 
+     * 
+     * @param aTimePos
+     * @return
+     */
+    public boolean remove(GeoPos aGeoPos) {
+    	boolean bFlag = m_route.remove(aGeoPos);
+    	if(bFlag) {
+    		incrementChangeCount();
+    	}
+    	return bFlag;
+    }
+    
+    /**
+     * Finds the index of equal position in collection
+     * 
+     * @param aGeoPos
+     * @return index of found position, else -1
+     */
+    public int find(GeoPos aGeoPos) {
+    	//System.out.println("find::start");
+    	for(int i=0;i<m_route.size();i++) {
+    		if(m_route.get(i).equals(aGeoPos)) {
+    	    	//System.out.println("find::stop("+i+")");
+    			return i;
+    		}
+    	}
+    	//System.out.println("find::stop(-1)");
+    	// found
+    	return -1;
+    }
+    
+    /**
+     * Get position from index
+     * 
+     * @param index
+     * @return
+     */
+    public GeoPos get(int index) {
+    	return m_route.get(index);
+    }
 
+    /**
+     * Set position at index
+     * 
+     * @param index
+     * @param Point2D.Double aPosition - the new position
+     * @return
+     */    
+    public boolean set(int index,Point2D.Double aPosition) {
+    	if(index>0 && index<m_route.size()) {
+	    	GeoPos p = m_route.get(index);
+	    	p.setPosition(aPosition);
+	    	incrementChangeCount();
+	    	return true;
+    	}
+    	return false;
+    }
+    
+    /**
+     * 
+     * @return number of GeoPos
+     */
+    public int getCount() {
+    	return m_route.size();
+    }
+    
     /**
      * Get the collection of points in the route
      *
      * @return The GeoPos collection.
      */
-    public Collection<GeoPos> getPositions()
+    public Collection<GeoPos> getItems()
     {
         return m_route;
     }
 
-    /**
-     * Get name of route
-     *
-     * @return The name
-     */
-    public String getName()
-    {
-        return m_name;
-    }
-
-    public String getId()
-    {
-        return m_id;
-    }
-
-    public void setLayout(String aLayout)
-    {
-        m_layout = aLayout;
-    }
-
-    public String getLayout()
-    {
-        return m_layout;
-    }
-
    public boolean equals(Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+	      if (!super.equals(o)) return false;
 
       Route route = (Route) o;
 
-      if (m_id != null ? !m_id.equals(route.m_id) : route.m_id != null) return false;
-      if (m_layout != null ? !m_layout.equals(route.m_layout) : route.m_layout != null) return false;
-      if (m_name != null ? !m_name.equals(route.m_name) : route.m_name != null) return false;
       if (m_route != null )
       {
          if(route.m_route==null || m_route.size()!=route.m_route.size() ) return false;
@@ -135,18 +169,14 @@ public class Route implements IGeodataIf, Cloneable
 
    public int hashCode()
    {
-      int result;
-      result = (m_id != null ? m_id.hashCode() : 0);
-      result = 31 * result + (m_layout != null ? m_layout.hashCode() : 0);
-      result = 31 * result + (m_name != null ? m_name.hashCode() : 0);
+	  int result = super.hashCode();
       result = 31 * result + (m_route != null ? m_route.hashCode() : 0);
       return result;
    }
 
     @Override
-    public Object clone() throws CloneNotSupportedException
-    {  // TODO: test!!!!!
-       super.clone();
+    public Route clone() throws CloneNotSupportedException
+    {  
        Route retVal = new Route(m_id,m_name);
        retVal.setLayout(m_layout);
        retVal.m_route.addAll(m_route);
@@ -155,10 +185,20 @@ public class Route implements IGeodataIf, Cloneable
     
     public void addAll(Route r) {
     	m_route.addAll(r.m_route);
+        incrementChangeCount();
     }
     
     public void removeAll(Route r) {
     	m_route.removeAll(r.m_route);
+    	incrementChangeCount();
     }
+    
+	public GeoPos getStartPoint() {
+		return m_route.get(0);
+	}
+
+	public GeoPos getStopPoint() {
+		return m_route.get(m_route.size()-1);
+	}    
 
 }

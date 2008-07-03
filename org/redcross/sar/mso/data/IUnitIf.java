@@ -5,6 +5,7 @@ import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Selector;
+import org.redcross.sar.util.mso.TimePos;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -234,7 +235,9 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     
     public boolean logPosition(Calendar aTime);
     
-    public boolean logPosition(Position aPosition, Calendar aTime);    
+    public boolean logPosition(Position aPosition, Calendar aTime);  
+    
+    public TimePos getLastKnownPosition();
 
     public Set<IMessageIf> getReferringMessages();
 

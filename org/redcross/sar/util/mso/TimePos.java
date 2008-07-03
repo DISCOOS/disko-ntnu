@@ -3,8 +3,6 @@ package org.redcross.sar.util.mso;
 import java.awt.geom.Point2D;
 import java.util.Calendar;
 
-import org.redcross.sar.map.MapUtil;
-
 /**
  * Class for handling a position object with time
  */

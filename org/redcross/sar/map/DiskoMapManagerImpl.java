@@ -792,7 +792,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		SelectMapWork(boolean autoselect) throws Exception {
 			// forward
 			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Analyserer installerte kart",0,true,false,false,0);
+					"Velger kart",0,true,false,false,0);
 			// prepare
 			m_autoSelect = autoselect;
 		}

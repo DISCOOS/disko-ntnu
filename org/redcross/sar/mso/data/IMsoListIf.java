@@ -131,5 +131,7 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      */
     public Object validate();
     
+    
+    public int getChangeCount();    
 
 }

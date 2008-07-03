@@ -119,7 +119,7 @@ public class MsoUtils {
 			}
 			else {
 				// forward 
-				return msoObject.deleteObject();
+				return msoObject.delete();
 			}
 		}
 		// failure
@@ -137,15 +137,15 @@ public class MsoUtils {
 					// get POIType
 					Enum type = getType(it, false);
 					// can only delete area poi
-					if(POIType.START.equals(type) || POIType.VIA.equals(type) || POIType.STOP.equals(type)) 
-						if(!it.deleteObject()) return false;
+					if(IPOIIf.AREA_SET.contains(type)) 
+						if(!it.delete()) return false;
 				}
 				// delete geodata
 				for(IMsoObjectIf it: area.getAreaGeodataItems()) {
-					if(!it.deleteObject()) return false;
+					if(!it.delete()) return false;
 				}
 				// delete area
-				return area.deleteObject();	
+				return area.delete();	
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -169,7 +169,7 @@ public class MsoUtils {
 				// delete planned area
 				if(deleteArea(area)) {
 					// delete assignment
-					return assignment.deleteObject();
+					return assignment.delete();
 				}
 			}
 			catch(Exception e) {
@@ -748,8 +748,7 @@ public class MsoUtils {
 			IPOIIf.POIType poiType = poi.getType();
 			
 			// get flag
-			return (poiType == IPOIIf.POIType.START) || 
-				(poiType == IPOIIf.POIType.VIA) || (poiType == IPOIIf.POIType.STOP);
+			return (IPOIIf.AREA_SET.contains(poiType));
 			
 		}
 		
@@ -851,7 +850,7 @@ public class MsoUtils {
 	public static POIType[] getAvailablePOITypes(MsoClassCode code, IMsoObjectIf msoObj) {
 		if(MsoClassCode.CLASSCODE_ROUTE.equals(code)) {
 			// initialize
-			EnumSet<POIType> list = EnumSet.of(POIType.START, POIType.VIA, POIType.STOP);
+			EnumSet<POIType> list = EnumSet.copyOf(IPOIIf.AREA_SET);
 			// get area if exists
 			IAreaIf area = getOwningArea(msoObj);
 			if(area!=null) {
@@ -904,7 +903,7 @@ public class MsoUtils {
 					IMsoObjectIf data = area.getGeodataAt(0);
 					if(data instanceof IRouteIf) {
 						IRouteIf route = (IRouteIf)data;
-						List<GeoPos> geoPos = new ArrayList<GeoPos>(route.getGeodata().getPositions());
+						List<GeoPos> geoPos = new ArrayList<GeoPos>(route.getGeodata().getItems());
 						if(geoPos.size()>0)
 							p = new Position("",geoPos.get(0).getPosition());
 					}

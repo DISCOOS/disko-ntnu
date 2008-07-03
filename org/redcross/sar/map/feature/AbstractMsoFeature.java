@@ -43,7 +43,7 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 			this.msoObject = msoObject;
 			// forward
 			if (msoObject != null)
-				msoGeometryChanged();
+				msoChanged();
 			else
 				isDirty = true;
 		}
@@ -53,11 +53,11 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	 * Override this!
 	 */
 	
-	public boolean geometryIsChanged(IMsoObjectIf msoObj) {
+	public boolean isMsoChanged(IMsoObjectIf msoObj) {
 		return false;
 	}
 
-	public void msoGeometryChanged() throws IOException, AutomationException {
+	public void msoChanged() throws IOException, AutomationException {
 		isDirty = (getShape()!=null);
 	}
 	
@@ -160,7 +160,7 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 		if(this.srs!=srs) {
 			this.srs = srs;
 			if (msoObject != null)
-				msoGeometryChanged();
+				msoChanged();
 			else
 				isDirty = true;
 		}

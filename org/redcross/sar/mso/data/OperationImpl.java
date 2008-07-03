@@ -140,7 +140,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     }
 
     @Override
-    public boolean deleteObject()
+    public boolean delete()
     {
         MsoModelImpl.getInstance().suspendClientUpdate();
         m_cmdPostList.deleteAll();

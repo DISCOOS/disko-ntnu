@@ -899,13 +899,13 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         {
         	if(delete) {
 	        	for(IMessageLineIf it: m_addedLines) {
-	        		it.deleteObject();
+	        		it.delete();
 	        	}
         	}
             m_addedLines.clear();
         } else
         {
-        	if(delete) line.deleteObject();
+        	if(delete) line.delete();
             m_addedLines.remove(line);
         }
     }
@@ -916,7 +916,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         {
         	if(delete) {
 	        	for(IMessageLineIf it: m_addedLines) {
-	        		it.deleteObject();
+	        		it.delete();
 	        	}
         	}
             m_addedLines.clear();
@@ -928,7 +928,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         			removed.add(it);
         	}
         	for(IMessageLineIf it: removed) {
-        		if(delete) it.deleteObject();
+        		if(delete) it.delete();
         		m_addedLines.remove(it);
         	}        	        		
         }

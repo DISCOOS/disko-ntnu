@@ -7,6 +7,7 @@ import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
@@ -191,7 +192,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 				{
 					if(getSubType(task) == type)
 					{
-						if(!task.deleteObject())
+						if(!task.delete())
 						{
 							Log.error("Error removing task " + task);
 						}
@@ -532,8 +533,11 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 	private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(
     		IMsoManagerIf.MsoClassCode.CLASSCODE_TASK);
 
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(msoObject.getMsoClassCode());
 	}
 }

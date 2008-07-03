@@ -8,6 +8,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -528,8 +529,11 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         }
     }    
     
-    public boolean hasInterestIn(IMsoObjectIf msoObject)
-    {
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
+	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
         return msoObject.getMsoClassCode() == IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
     }
 

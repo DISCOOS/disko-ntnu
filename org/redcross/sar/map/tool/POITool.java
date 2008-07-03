@@ -134,8 +134,7 @@ public class POITool extends AbstractDrawTool {
 				POIType poiType = getPOIPanel().getPOIType();
 				
 				// get flag
-				boolean isAreaPOI = (poiType == IPOIIf.POIType.START) || 
-					(poiType == IPOIIf.POIType.VIA) || (poiType == IPOIIf.POIType.STOP);
+				boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
 				
 				// dispatch type
 				if (msoCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {

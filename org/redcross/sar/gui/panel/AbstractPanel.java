@@ -18,6 +18,7 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -61,7 +62,10 @@ public abstract class AbstractPanel extends JPanel implements IPanel {
 	 * ===========================================
 	 */
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return msoInterests.contains(aMsoObject.getMsoClassCode());
 	}	
 

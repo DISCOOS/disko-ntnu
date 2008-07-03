@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.Route;
 
 public interface IRouteIf extends IMsoObjectIf
@@ -31,4 +32,20 @@ public interface IRouteIf extends IMsoObjectIf
     public IMsoModelIf.ModificationState getAreaSequenceNumberState();
 
     public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
+    
+    /*-------------------------------------------------------------------------------------------
+     * Public methods
+     *-------------------------------------------------------------------------------------------*/
+    
+    public void addRoutePoint(GeoPos aGeoPos);
+    
+    public int getRoutePointCount();
+    
+    public GeoPos getRoutePoint(int index);
+    
+    public GeoPos getRouteStartPoint();
+
+    public GeoPos getRouteStopPoint();
+    
+    public void removeRoutePoint(GeoPos aGeoPos);    
 }

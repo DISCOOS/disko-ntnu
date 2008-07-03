@@ -143,6 +143,6 @@ public class UnitUtilities
 			}
 		}
 
-		unit.deleteObject();
+		unit.delete();
 	}
 }

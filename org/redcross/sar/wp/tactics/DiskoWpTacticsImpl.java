@@ -6,6 +6,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -44,7 +45,6 @@ import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
-import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.event.MsoEvent.Commit;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -267,6 +267,11 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	
 	public boolean commit() {
 		
+		// drawing in progress?
+		if(getMap().getDrawAdapter().isWorkPending()) {
+			getMap().getDrawAdapter().finish(false);
+		}
+		
 		// validate data
 		if(validate()) {
 			//schedule the commit task to work pool
@@ -323,9 +328,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						}
 						else if (msoObj instanceof IPOIIf) {
 							IPOIIf poi = (IPOIIf)msoObj;
-							hasArea = (poi.getType() == POIType.START ||
-									poi.getType() == POIType.VIA || 
-									poi.getType() == POIType.STOP);
+							hasArea = IPOIIf.AREA_SET.contains(poi.getType());
 							if(hasArea)
 								area = MsoUtils.getOwningArea((IPOIIf) msoObj);
 						}
@@ -436,6 +439,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				dialog.setVisible(false);
 			}
 		}
+		((Component)getMap()).repaint();
+		/*
 		try {
 			// repaint map
 			getMap().refreshGraphics(null, getMap().getExtent());
@@ -446,6 +451,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	private MissionTextDialog getMissionTextDialog() {

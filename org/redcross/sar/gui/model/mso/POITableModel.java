@@ -10,6 +10,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
@@ -102,7 +103,10 @@ public class POITableModel extends AbstractTableModel implements
         }		
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(aMsoObject.getMsoClassCode());
 	}
 	

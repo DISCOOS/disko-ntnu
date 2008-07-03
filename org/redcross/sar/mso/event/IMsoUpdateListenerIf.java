@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.event;
 
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -15,5 +16,5 @@ public interface IMsoUpdateListenerIf extends java.util.EventListener
      */
     public void handleMsoUpdateEvent(MsoEvent.Update e);
 
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject);
+    public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode);
 }

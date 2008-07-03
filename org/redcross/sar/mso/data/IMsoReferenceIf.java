@@ -31,6 +31,9 @@ public interface IMsoReferenceIf<T extends IMsoObjectIf>
 
     public void setReference(T aReference);
     
+    public int getChangeCount();
+    
+    
     /**
      * Get value cardinality
      * 

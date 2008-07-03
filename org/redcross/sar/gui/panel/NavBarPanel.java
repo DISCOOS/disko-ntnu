@@ -850,7 +850,6 @@ public class NavBarPanel extends JPanel {
 						command.onCreate(map);
 						// activate button?
 						if (b.isSelected()) {
-							//b.doClick();
 							isAnySelected=true;
 						}
 					}
@@ -869,7 +868,16 @@ public class NavBarPanel extends JPanel {
 			// select default?
 			if(!isAnySelected) {
 				standardButton.doClick();
+				standardButton.requestFocusInWindow();
 			}
+			for(AbstractButton b : buttons.values()) {
+				// set focus?
+				if(b.isSelected()) {
+					b.requestFocusInWindow();
+					break;
+				}
+			}
+
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

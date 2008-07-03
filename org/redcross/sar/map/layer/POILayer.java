@@ -97,8 +97,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 						IColor savePointColor = markerSymbol.getColor();
 						IColor saveTextColor = textSymbol.getColor();	
 	 					// get assignment?
-	 					if(POIType.START.equals(type) || POIType.VIA.equals(type) 
-	 							|| POIType.STOP.equals(type)) {
+	 					if(IPOIIf.AREA_SET.contains(type)) {
 							// initialize
 							RgbColor color = plannedColor;
 							// get status
@@ -126,8 +125,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	 					}
 	 					
 	 					// show text background?
-	 					if(!(POIType.START.equals(type) || POIType.VIA.equals(type) 
-	 							|| POIType.STOP.equals(type))) 
+	 					if(!IPOIIf.AREA_SET.contains(type)) 
 	 						textSymbol.setBackgroundByRef(textBackground);
 	 					else	 						
 	 						textSymbol.setBackgroundByRef(null);

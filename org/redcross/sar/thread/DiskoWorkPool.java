@@ -30,6 +30,8 @@ public class DiskoWorkPool {
 
 	private static DiskoWorkPool m_this;
 	
+	private final Object m_nextLock = new Object();	
+	
 	private long m_nextID = 1;
 	private boolean m_isSuspended = false;
 	private List<IDiskoWork<?>> m_isUnsafe = null;
@@ -79,11 +81,11 @@ public class DiskoWorkPool {
   	}
 	
   	/*========================================================
-  	 * Synchronized pool methods (thread safe)
+  	 * Public methods
   	 *========================================================
   	 */
   	
-  	public synchronized long schedule(IDiskoWork<?> work) {
+  	public long schedule(IDiskoWork<?> work) {
   		// is null?
   		if(work==null) throw new NullPointerException("Work can not be null");
   		// create id
@@ -116,15 +118,17 @@ public class DiskoWorkPool {
   		return id;
   	}
   	
-  	public synchronized boolean isUnsafe() {
-		return m_isUnsafe.size()>0;
+  	public boolean isUnsafe() {
+  		synchronized(m_isUnsafe) {  		
+  			return m_isUnsafe.size()>0;
+  		}
   	}
   	
-  	public synchronized boolean isSuspended() {
+  	public boolean isSuspended() {
 		return m_isSuspended;
   	}
   	  	
-  	public synchronized boolean suspend() {
+  	public boolean suspend() {
 		if(!m_isSuspended) {
 			m_isSuspended = true;
 			return true;
@@ -132,7 +136,7 @@ public class DiskoWorkPool {
 		return false;
   	}
   	
-  	public synchronized boolean resume() {
+  	public boolean resume() {
 		if(m_isSuspended) {
 			m_isSuspended = false;
 			doWork();
@@ -141,72 +145,95 @@ public class DiskoWorkPool {
 		return false;
   	}
   	
-	public synchronized int getWorkCount() {
+	public int getWorkCount() {
   		return m_queue.size();
   	}
 	
-	public synchronized IDiskoWork<?> getWork(long id) {
-		for(DiskoWorker it : m_workers.values()) { 
-			IDiskoWork<?> work = it.getWork();
-			if(id == work.getID())
-				return work;
+	public IDiskoWork<?> getWork(long id) {
+		synchronized(m_workers) {
+			for(DiskoWorker it : m_workers.values()) { 
+				IDiskoWork<?> work = it.getWork();
+				if(id == work.getID())
+					return work;
+			}
 		}
 		return null;
 	}
 	
-	public synchronized boolean containsWork(long id) {
+	public boolean containsWork(long id) {
 		return (getWork(id)!=null);
 	}
 	
-	public synchronized boolean containsWork(IDiskoWork<?> work) {
-		return m_workers.containsKey(work);
+	public boolean containsWork(IDiskoWork<?> work) {
+		synchronized(m_workers) {
+			return m_workers.containsKey(work);
+		}
 	}
 	
-	public synchronized boolean isWorking(IDiskoWork<?> work) {
+	public boolean isWorking(IDiskoWork<?> work) {
 		if(work!=null) {
 			if(containsWork(work)) {
-				return m_workers.get(work).isWorking();				
+				synchronized(m_workers) {				
+					return m_workers.get(work).isWorking();
+				}
 			}
 		}
 		return false;
 	}
 	
-	public synchronized boolean isWorking(long id) {
+	public boolean isSuspended(IDiskoWork<?> work) {
+		if(work!=null) {
+			if(containsWork(work)) {
+				synchronized(m_workers) {				
+					return m_workers.get(work).isSuspended();
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isWorking(long id) {
 		return isWorking(getWork(id));
 	}
 	
-	public synchronized boolean suspend(long id) {
+	public boolean suspend(long id) {
 		return suspend(getWork(id));
 	}
 	
-	public synchronized boolean suspend(IDiskoWork<?> work) {
+	public boolean suspend(IDiskoWork<?> work) {
 		if(containsWork(work) && work.isLoop()) {
-			return m_workers.get(work).suspend();
+			synchronized(m_workers) {
+				return m_workers.get(work).suspend();
+			}
 		}
 		return false;
 	}
 	
-	public synchronized boolean resume(long id) {
+	public boolean resume(long id) {
 		return resume(getWork(id));
 	}
 	
-	public synchronized boolean resume(IDiskoWork<?> work) {
+	public boolean resume(IDiskoWork<?> work) {
 		if(containsWork(work) && work.isLoop()) {
-			return m_workers.get(work).resume();
+			synchronized(m_workers) {
+				return m_workers.get(work).resume();
+			}
 		}
 		return false;
 	}
 	
-	public synchronized boolean stop(long id) {
+	public boolean stop(long id) {
 		return stop(getWork(id));
 	}
 	
-	public synchronized boolean stop(IDiskoWork<?> work) {
+	public boolean stop(IDiskoWork<?> work) {
 		if(work!=null && work.isLoop()) {
-			DiskoWorker worker = m_workers.get(work);
-			if(!worker.isCancelled()) {
-				worker.resume();
-				return worker.cancel(false);
+			synchronized(m_workers) {			
+				DiskoWorker worker = m_workers.get(work);
+				if(!worker.isCancelled()) {
+					worker.resume();
+					return worker.cancel(false);
+				}
 			}
 		}
 		return false;
@@ -218,19 +245,25 @@ public class DiskoWorkPool {
   	 */
 	
 	private void pushUnsafe(IDiskoWork<?> work) {
-		if(!m_isUnsafe.contains(work))
-			m_isUnsafe.add(work);
+		synchronized(m_isUnsafe) {		
+			if(!m_isUnsafe.contains(work))
+				m_isUnsafe.add(work);
+		}
 	}
 	
 	private void popUnsafe(IDiskoWork<?> work) {
-		if(m_isUnsafe.contains(work))
-			m_isUnsafe.remove(work);
+		synchronized(m_isUnsafe) {
+			if(m_isUnsafe.contains(work))
+				m_isUnsafe.remove(work);
+		}
 	}
 	
 	private long createID() {
-		long id = m_nextID; 
-		m_nextID++;
-		return id;
+		synchronized(m_nextLock) {
+			long id = m_nextID; 
+			m_nextID++;
+			return id;
+		}
 	}
   	
   	private IDiskoWork<?> getWork() {
@@ -238,7 +271,7 @@ public class DiskoWorkPool {
 		return m_queue.poll();
   	}
   	
-  	private synchronized void doWork() {
+  	private void doWork() {
 		// is worker available?
 		if(!(isSuspended() || isUnsafe())) {
 	  		// get first work in queue
@@ -291,17 +324,21 @@ public class DiskoWorkPool {
   			// create worker
   	  		DiskoWorker worker = new DiskoWorker(work);
   	  		// add to workers
-  			m_workers.put(work,worker);
+  	  		synchronized(m_workers) {
+	  			m_workers.put(work,worker);
+  	  		}
   			// execute work
   			worker.execute();
   		}
   	}
   	
-  	private synchronized void done(IDiskoWork<?> work) {
+  	private void done(IDiskoWork<?> work) {
 		// get result
 		work.done();
 		// remove from worker map
-		m_workers.remove(work);
+		synchronized(m_workers) {
+			m_workers.remove(work);
+		}
 		// decrement unsafe state
   		popUnsafe(work);
 		// continue
@@ -320,6 +357,8 @@ public class DiskoWorkPool {
 		
 		private IDiskoWork<?> m_work = null;
 		private boolean m_isWorking = false;
+		private boolean m_isSuspended = false;
+		private Object m_suspendLock = new Object();
 		
 		DiskoWorker(IDiskoWork<?> work) {
 			m_work = work;
@@ -333,18 +372,26 @@ public class DiskoWorkPool {
 			return m_isWorking;
 		}
 		
+		public boolean isSuspended() {
+			return m_isSuspended;
+		}
+		
 		public boolean suspend() {
 			if(m_work.isLoop() && m_isWorking) {
-				m_isWorking = false;
-				return true;
+				synchronized(m_suspendLock) {
+					m_isSuspended = true;
+					return true;
+				}
 			}
 			return false;
 		}
 		
 		public boolean resume() {
 			if(m_work.isLoop() && !(m_isWorking || isCancelled())) {
-				m_isWorking = true;		
-				return true;
+				synchronized(m_suspendLock) {
+					m_isSuspended = false;		
+					return true;
+				}
 			}
 			return false;
 		}
@@ -363,7 +410,8 @@ public class DiskoWorkPool {
 				// is work cycle?
 				if(m_work.isLoop()) {
 
-					// prepare to work
+					// prepare to work. this method will block until prepare
+					// is executed on the Event Dispatch Thread					
 					m_work.prepare();
 					
 					// execute until cancel
@@ -382,19 +430,26 @@ public class DiskoWorkPool {
 			                synchronized(this) {
 			                	
 			                	// stop if suspended, or canceled
-			                    while (m_isWorking && !isCancelled()) {
-			                    	// get current time tic
-			                    	tic = System.currentTimeMillis();
-			    					// execute work
-			    					m_work.run();
-			    					// get current work time
-			    					long worked = System.currentTimeMillis() - tic;
-			    					// log work time
-			    					m_work.logWorkTime(worked);
-			    					// calculate time left before new work cycle starts, limit to minimum duty cycle.
-			    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked);
-			    					// sleep for reminder of time
-			    					Thread.sleep(remainder);
+			                    while (!isCancelled()) {
+			                    	// is suspended?
+			                    	if(isSuspended()) {
+				    					// sleep duty time
+				    					Thread.sleep(duty);
+			                    	} 
+			                    	else {
+				                    	// get current time tic
+				                    	tic = System.currentTimeMillis();
+				    					// execute work
+				    					m_work.run();
+				    					// get current work time
+				    					long worked = System.currentTimeMillis() - tic;
+				    					// log work time
+				    					m_work.logWorkTime(worked);
+				    					// calculate time left before new work cycle starts, limit to minimum duty cycle.
+				    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked);
+				    					// sleep for reminder of time
+				    					Thread.sleep(remainder);
+			                    	}
 			                    }
 			                    
 			                }

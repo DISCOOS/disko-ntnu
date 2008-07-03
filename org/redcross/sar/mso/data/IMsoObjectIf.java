@@ -7,6 +7,7 @@ import org.redcross.sar.util.except.UnknownAttributeException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +43,20 @@ public interface IMsoObjectIf
     public boolean isCreated();    
     
     /**
+     * Gets change count since construction. Use this counter when tracking
+     * changes executed on a object. The following changes are tracked, and 
+     * thus will increment the change counter<p>
+     * 1. Attribute changes<br>
+     * 2. Relation changes<p>
+     * This property enables MSO Update listeners to track changes 
+     * without the need for local buffering of object states (attributes, 
+     * relations and so on).
+     *
+     * @return The number of changes performed on the object since the construction.
+     */
+    public int getChangeCount();
+    
+    /**
      * Get short descriptor of object.
      * @return Short description, default = toString(), can be overridden.
      */
@@ -59,8 +74,6 @@ public interface IMsoObjectIf
      * @param aName  The name
      * @param aValue Value to set
      * @throws UnknownAttributeException If attribute of the given type does not exist
-     *                                   <p/>
-     *                                   .
      */
     public void setAttribute(String aName, Object aValue) throws UnknownAttributeException;
 
@@ -97,8 +110,28 @@ public interface IMsoObjectIf
      *
      * @return <code>true</code> if object has been deleted, <code>false</code> otherwise.
      */
-    public boolean deleteObject();
-
+    public boolean delete();
+    
+    /**
+     * Use this method to check if an object is deleteable. If the MSO model is in 
+     * REMOTE_UPDATE_MODE or in LOOPBACK_UPDATE_MODE, this method returns 
+     * <code>true</code> by default. Otherwise, it will check if the Object is in an required
+     * relation with another object or list. If so, the method will return <code>false</code>
+     * which indicates that <code>delete()</code> will not succeed, preventing the object from
+     * being deleted.<p>
+     *  
+     * @return <code>true</code> if object can be deleted, <code>false</code> otherwise.
+     */    
+    public boolean canDelete();
+    
+    /**
+     * Use this method to get list over <code>IMsoObjectHolderIf</code> 
+     * that prevents a deletion.<p>
+     *  
+     * @return List of <code>IMsoObjectHolderIf</code> that prevents deletion
+     */    
+    public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy();
+    
     /**
      * Get a map of the attributes for the object
      * @return The attributes

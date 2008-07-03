@@ -16,6 +16,7 @@ import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -112,7 +113,15 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return objects;
 	}
 	
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		//if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
+		return myInterests.contains(aMsoObject.getMsoClassCode());
+	}
+
 	public void handleMsoUpdateEvent(Update e) {
+				
 		try {
 
 			// get event flags
@@ -133,6 +142,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	        	isDirty = true;
 	        }
 	        else {
+	        	
 	        	// get flags
 				boolean createdObject  = (mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 				boolean deletedObject  = (mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
@@ -162,12 +172,15 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					}
 					// is object modified?
 					if ( (addedReference || removedReference || modifiedObject) 
-							&& msoFeature != null && msoFeature.geometryIsChanged(it)) {
+							&& msoFeature != null && msoFeature.isMsoChanged(it)) {
 						// change geometry
-						msoFeature.msoGeometryChanged();
+						msoFeature.msoChanged();
 						// update dirty flag
 						isDirty = isDirty || isFeatureDirty(msoFeature);			
-					}			
+					}
+					if(deletedObject) {
+						System.out.println();
+					}
 					// delete object?
 					if ((deletedObject) && msoFeature != null && isFeature) {
 						// remove from feature class
@@ -187,12 +200,8 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		}
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
-		return myInterests.contains(aMsoObject.getMsoClassCode());
-	}
-
 	protected IMsoFeature createMsoFeature(IMsoObjectIf msoFeature) 
-	throws AutomationException, IOException {
+		throws AutomationException, IOException {
 		return null;
 	}
 
@@ -200,10 +209,15 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		try {
 			MsoFeatureClass msoFC = (MsoFeatureClass)featureClass;
 			for (int i = 0; i < objects.length; i++) {
-				IMsoObjectIf msoObj = (IMsoObjectIf)objects[i];
-				IMsoFeature msoFeature = createMsoFeature(msoObj);
-				msoFC.addFeature(msoFeature);
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
+				IMsoObjectIf msoObj = (IMsoObjectIf)objects[i];				
+				// get list of
+				List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);				
+				// loop over all object
+				for(IMsoObjectIf it: msoObjs) {				
+					IMsoFeature msoFeature = createMsoFeature(it);
+					msoFC.addFeature(msoFeature);
+					isDirty = isDirty || isFeatureDirty(msoFeature);
+				}
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block

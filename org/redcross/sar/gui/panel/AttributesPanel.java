@@ -526,6 +526,18 @@ public class AttributesPanel extends DefaultPanel {
 		}
 	}
 	
-	
+	@Override
+	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
+		super.msoObjectClearAll(msoObject, mask);
+		// TODO: Implement deleted attribute indication in GUI 
+		Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+		// loop over attributes
+		for(IDiskoAttribute it: m_panels.values()) {
+			if(it.isMsoAttribute()) {
+				it.setMsoAttribute(null);
+				it.load();
+			}
+		}
+	}	
 	
 }

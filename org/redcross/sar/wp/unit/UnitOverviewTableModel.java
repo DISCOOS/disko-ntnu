@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
@@ -127,8 +128,11 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 	
 	EnumSet<IMsoManagerIf.MsoClassCode> interestedIn = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
 	
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return interestedIn.contains(msoObject.getMsoClassCode());
 	}
 

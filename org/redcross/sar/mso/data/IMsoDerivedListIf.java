@@ -43,4 +43,7 @@ public interface IMsoDerivedListIf<M extends IMsoObjectIf>
      * @return The found item, or null if not found;
      */
     public M selectSingleItem(Selector<M> aSelector);
+    
+    public int getChangeCount();
+    
 }

@@ -266,7 +266,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_TRACK) {
 			ITrackIf msoTrack = (ITrackIf)msoObj;
 			Track track = msoTrack.getGeodata();
-			List<TimePos> list = new ArrayList<TimePos>(track.getTrackTimePos());
+			List<TimePos> list = new ArrayList<TimePos>(track.getItems());
 			List<Calendar> timesteps = new ArrayList<Calendar>(list.size());
 			for(int i=0;i<list.size();i++) {
 				timesteps.add(list.get(i).getTime());

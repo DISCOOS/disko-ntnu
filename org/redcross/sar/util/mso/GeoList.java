@@ -12,6 +12,9 @@ public class GeoList
 
     private final String m_name;
     private final Vector<IGeodataIf> m_geodata;
+    
+    private int m_changeCount;
+    
 
     /**
      * Constructor, default collection size
@@ -58,15 +61,26 @@ public class GeoList
     public void add(IGeodataIf aGeodata)
     {
         m_geodata.add(aGeodata);
+        incrementChangeCount();
     }
-
+    
+    /**
+     * Remove a object from the list.
+     *
+     * @param aGeodata The object to remove.
+     */
+    public boolean remove(IGeodataIf aGeodata)
+    {
+        incrementChangeCount();
+        return m_geodata.remove(aGeodata);
+    }
 
     /**
      * Get the collection
      *
      * @return The IGeodataIf list.
      */
-    public List<IGeodataIf> getPositions()
+    public List<IGeodataIf> getItems()
     {
         return m_geodata;
     }
@@ -108,4 +122,14 @@ public class GeoList
       result = 31 * result + (m_geodata != null ? m_geodata.hashCode() : 0);
       return result;
    }
+   
+   public int getChangeCount()
+   {
+       return m_changeCount;
+   }
+   
+   private void incrementChangeCount() {
+   		m_changeCount++;
+   }    
+   
 }

@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.event;
 
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -28,8 +29,8 @@ public class MsoClientUpdateAdapter implements IMsoUpdateListenerIf
         // etc..
     }
 
-    public boolean hasInterestIn(IMsoObjectIf aSource)
-    {
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
+	{
         return true;
     }
 

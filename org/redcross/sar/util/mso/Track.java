@@ -1,5 +1,6 @@
 package org.redcross.sar.util.mso;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -8,12 +9,9 @@ import java.util.Collections;
 /**
  * Class for holding track information
  */
-public class Track implements IGeodataIf, Cloneable
+public class Track extends AbstractGeodata
 {
-    private final String m_id;
-    private String m_layout;
 
-    private final String m_name;
     private final ArrayList<TimePos> m_track;
 
     /**
@@ -34,8 +32,7 @@ public class Track implements IGeodataIf, Cloneable
      */
     public Track(String anId, String aName)
     {
-        m_id = anId;
-        m_name = aName;
+        super(anId, aName);
         m_track = new ArrayList<TimePos>();
     }
 
@@ -48,8 +45,7 @@ public class Track implements IGeodataIf, Cloneable
      */
     public Track(String anId, String aName, int aSize)
     {
-        m_id = anId;
-        m_name = aName;
+        super(anId, aName);
         m_track = new ArrayList<TimePos>(aSize);
     }
 
@@ -63,6 +59,7 @@ public class Track implements IGeodataIf, Cloneable
     {
         m_track.add(aTimePos);
         Collections.sort(m_track);
+        incrementChangeCount();
     }
 
     /**
@@ -86,8 +83,9 @@ public class Track implements IGeodataIf, Cloneable
      */
     public boolean remove(TimePos aTimePos) {
     	boolean bFlag = m_track.remove(aTimePos);
-    	if(bFlag)
-    		Collections.sort(m_track);
+    	if(bFlag) {
+    		incrementChangeCount();
+    	}
     	return bFlag;
     }
     
@@ -98,14 +96,14 @@ public class Track implements IGeodataIf, Cloneable
      * @return index of found position, else -1
      */
     public int find(TimePos aTimePos) {
-    	System.out.println("find::start");
+    	//System.out.println("find::start");
     	for(int i=0;i<m_track.size();i++) {
     		if(m_track.get(i).equals(aTimePos)) {
-    	    	System.out.println("find::stop("+i+")");
+    	    	//System.out.println("find::stop("+i+")");
     			return i;
     		}
     	}
-    	System.out.println("find::stop(-1)");
+    	//System.out.println("find::stop(-1)");
     	// found
     	return -1;
     }
@@ -118,6 +116,23 @@ public class Track implements IGeodataIf, Cloneable
      */
     public TimePos get(int index) {
     	return m_track.get(index);
+    }
+
+    /**
+     * Set position at index
+     * 
+     * @param index
+     * @param Point2D.Double aPosition - the new position
+     * @return
+     */    
+    public boolean set(int index,Point2D.Double aPosition) {
+    	if(index>0 && index<m_track.size()) {
+	    	TimePos p = m_track.get(index);
+	    	p.setPosition(aPosition);
+	    	incrementChangeCount();
+	    	return true;
+    	}
+    	return false;
     }
     
     /**
@@ -133,46 +148,17 @@ public class Track implements IGeodataIf, Cloneable
      *
      * @return The TimePos collection.
      */
-    public Collection<TimePos> getTrackTimePos()
+    public Collection<TimePos> getItems()
     {
         return m_track;
     }
 
-    /**
-     * Get name of track
-     *
-     * @return The name
-     */
-    public String getName()
-    {
-        return m_name;
-    }
-
-    public String getId()
-    {
-        return m_id;
-    }
-
-    public void setLayout(String aLayout)
-    {
-        m_layout = aLayout;
-    }
-
-    public String getLayout()
-    {
-        return m_layout;
-    }
-
    public boolean equals(Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+	  if (!super.equals(o)) return false;
 
       Track track = (Track) o;
 
-      if (m_id != null ? !m_id.equals(track.m_id) : track.m_id != null) return false;
-      if (m_layout != null ? !m_layout.equals(track.m_layout) : track.m_layout != null) return false;
-      if (m_name != null ? !m_name.equals(track.m_name) : track.m_name != null) return false;
       if (m_track != null )
       {
          if(track.m_track==null || m_track.size()!=track.m_track.size() ) return false;
@@ -189,21 +175,36 @@ public class Track implements IGeodataIf, Cloneable
 
    public int hashCode()
    {
-      int result;
-      result = (m_id != null ? m_id.hashCode() : 0);
-      result = 31 * result + (m_layout != null ? m_layout.hashCode() : 0);
-      result = 31 * result + (m_name != null ? m_name.hashCode() : 0);
+	  int result = super.hashCode();
       result = 31 * result + (m_track != null ? m_track.hashCode() : 0);
       return result;
    }
 
     @Override
-    public Object clone() throws CloneNotSupportedException
-    { // todo test!!!!!
-        super.clone();
+    public Track clone() throws CloneNotSupportedException
+    { 
         Track retVal = new Track(m_id,m_name);
         retVal.setLayout(m_layout);
         retVal.m_track.addAll(m_track);
         return retVal;
     }
+    
+    public void addAll(Track t) {
+    	m_track.addAll(t.m_track);
+    	incrementChangeCount();
+    }
+    
+    public void removeAll(Track t) {
+    	m_track.removeAll(t.m_track);
+    	incrementChangeCount();
+    }
+    
+	public TimePos getStartPoint() {
+		return m_track.get(0);
+	}
+
+	public TimePos getStopPoint() {
+		return m_track.get(m_track.size()-1);
+	}
+        
 }

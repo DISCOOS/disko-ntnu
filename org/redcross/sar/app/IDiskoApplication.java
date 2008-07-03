@@ -150,7 +150,7 @@ public interface IDiskoApplication extends IModelDriverListenerIf {
     /**
      * Method for initiating a new rescue operation
      */
-    boolean createOperation();
+    boolean createOperation(boolean prompt);
 
     /**
      * Handle created and active operation 

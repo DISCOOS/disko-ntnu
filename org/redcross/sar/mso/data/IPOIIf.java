@@ -4,11 +4,14 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.mso.Position;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Set;
 
 public interface IPOIIf extends IMsoObjectIf
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.POI";
+
+    public static final EnumSet<POIType> AREA_SET = EnumSet.of(POIType.START,POIType.VIA,POIType.STOP);
 
     public enum POIType
     {
@@ -21,7 +24,7 @@ public interface IPOIIf extends IMsoObjectIf
         STOP,
         VIA
     }
-
+    
     /*-------------------------------------------------------------------------------------------
     * Methods for ENUM attributes
     *-------------------------------------------------------------------------------------------*/

@@ -2,6 +2,7 @@ package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -362,8 +363,11 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     /**
      * Interested in when messages, message lines, assignments, unit and POI updates.
      */
-    public boolean hasInterestIn(IMsoObjectIf aMsoObject)
-    {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) 
+	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
         return myInterests.contains(aMsoObject.getMsoClassCode());
     }
 

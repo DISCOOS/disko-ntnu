@@ -382,7 +382,7 @@ public class MapUtil {
 	public static Polyline getEsriPolyline(Route route, ISpatialReference srs) 
 			throws IOException, AutomationException {
 		Polyline esriPolyline = new Polyline();
-		Collection vertices = route.getPositions();
+		Collection vertices = route.getItems();
 		Iterator iter = vertices.iterator();
 		while(iter.hasNext()) {
 			GeoPos pos = (GeoPos)iter.next();
@@ -406,7 +406,7 @@ public class MapUtil {
 	public static Polyline getEsriPolyline(Track track, ISpatialReference srs) 
 		throws IOException, AutomationException {
 		Polyline esriPolyline = new Polyline();
-		Collection<TimePos> vertices = track.getTrackTimePos();
+		Collection<TimePos> vertices = track.getItems();
 		Iterator<TimePos> iter = vertices.iterator();
 		while(iter.hasNext()) {
 			TimePos pos = iter.next();

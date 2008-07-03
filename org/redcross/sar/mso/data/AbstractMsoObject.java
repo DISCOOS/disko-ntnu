@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -71,6 +72,12 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     private int m_derivedUpdateMask = 0;
 
+    /**
+     * Change tracking counter
+     */
+    
+    private int m_changeCount = 0;
+    
     /**
      * Inticator that tells if {@link #m_attributeList} is sorted
      */
@@ -184,6 +191,15 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_MsoObjectId.isCreated();
     }
     
+    public int getChangeCount()
+    {
+        return m_changeCount;
+    }
+    
+    protected void incrementChangeCount() {
+    	m_changeCount++;
+    }
+
     public String shortDescriptor()
     {
         return toString();
@@ -211,7 +227,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_objectHolders.size();
     }
 
-    public boolean deleteObject()
+    public boolean delete()
     {
         if (canDelete())
         {
@@ -234,34 +250,58 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return false;
     }
 
-    protected boolean canDelete()
-    {
-        if (MsoModelImpl.getInstance().getUpdateMode() != IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE)
+    public boolean canDelete()
+    {      
+
+    	// allowed by default?
+    	if (MsoModelImpl.getInstance().getUpdateMode() != IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE)
         {
             return true;
         }
 
-        try
+    	// all object holders must allow their relation to this object to be deleted.
+        for (IMsoObjectHolderIf holder : this.m_objectHolders)
         {
-            for (IMsoObjectHolderIf holder : this.m_objectHolders)
-            {
-                holder.canDeleteReference(this);
-            }
+            if(!holder.canDeleteReference(this)) return false;
         }
-        catch (IllegalDeleteException e)
-        {
-            System.out.println(e.getMessage());
-            return false;
-        }
+        // all object holders allow a deletion
         return true;
     }
+    
+    public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy()
+    {        
+    	// create list
+    	List<IMsoObjectHolderIf<IMsoObjectIf>> list = 
+    		new ArrayList<IMsoObjectHolderIf<IMsoObjectIf>>(m_objectHolders.size());
+    	// all object holders must allow their relation to this object to be deleted.
+        for (IMsoObjectHolderIf holder : this.m_objectHolders)
+        {
+            if(!holder.canDeleteReference(this)) list.add(holder);
+        }
+    	
+        // finished
+        return list;
+    }    
 
     public boolean hasBeenDeleted()
     {
         return m_hasBeenDeleted;
     }
 
-    public void doDelete()
+    /**
+     * This method is intended for internal use only!<p>
+     *  
+     * The method only performs a delete on the object and
+     * notifies any object holders (lists) of this delete. It does not
+     * delete owned objects (in lists), or references from this object to 
+     * other objects explicitly (recursive delete is not executed). 
+     * The result is a memory leak because objects in lists and
+     * and any object references may still point to this object. Hence, 
+     * the object will not be garbage collected.<p>
+     * Use <code>delete()</code> to delete a object.
+     */    
+    @SuppressWarnings("unchecked")
+	public void doDelete()
     {
         System.out.println("Deleting " + this);
         while (m_objectHolders.size() > 0)
@@ -731,12 +771,64 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         attr.set(aValue);
     }
 
+    public void registerAddedReference()
+    {
+        System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.ADDED_REFERENCE_EVENT, true);
+    }
+
+    public void registerRemovedReference()
+    {
+        System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.REMOVED_REFERENCE_EVENT, true);
+    }
+
+    public void registerRemovedReference(boolean updateServer)
+    {
+    	System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.REMOVED_REFERENCE_EVENT, updateServer);
+    }
+
+    public void registerModifiedReference()
+    {
+    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.MODIFIED_REFERENCE_EVENT, true);
+    }
+
+    public void registerModifiedReference(boolean updateServer)
+    {
+    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.MODIFIED_REFERENCE_EVENT, updateServer);
+    }
+
+    public void registerCreatedObject()
+    {
+    	System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.CREATED_OBJECT_EVENT, true);
+    }
+
+    public void registerDeletedObject()
+    {
+        System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.DELETED_OBJECT_EVENT, true);
+    }
+
+    public void registerModifiedData()
+    {
+        System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
+        registerUpdate(MsoEvent.EventType.MODIFIED_DATA_EVENT, true);
+    }
+
     private void registerUpdate(MsoEvent.EventType anEventType, boolean updateServer)
     {
-        IMsoModelIf.UpdateMode anUpdateMode = MsoModelImpl.getInstance().getUpdateMode();
+        
+    	// track change
+    	incrementChangeCount();
+        
+    	// get update mode
+    	IMsoModelIf.UpdateMode anUpdateMode = MsoModelImpl.getInstance().getUpdateMode();
         int clientEventTypeMask = anEventType.maskValue();
         int serverEventTypeMask = (updateServer && anUpdateMode == IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
-
 
         m_derivedUpdateMask |= clientEventTypeMask;
         if (!m_suspendDerivedUpdate)
@@ -756,55 +848,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
         notifyServerUpdate(serverEventTypeMask);
     }
-
-    public void registerAddedReference()
-    {
-        System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.ADDED_REFERENCE_EVENT, true);
-    }
-
-    public void registerRemovedReference()
-    {
-        System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.REMOVED_REFERENCE_EVENT, true);
-    }
-
-    public void registerRemovedReference(boolean updateServer)
-    {
-        System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.REMOVED_REFERENCE_EVENT, updateServer);
-    }
-
-    public void registerModifiedReference()
-    {
-        System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.MODIFIED_REFERENCE_EVENT, true);
-    }
-
-    public void registerModifiedReference(boolean updateServer)
-    {
-        System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.MODIFIED_REFERENCE_EVENT, updateServer);
-    }
-
-    public void registerCreatedObject()
-    {
-        System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.CREATED_OBJECT_EVENT, true);
-    }
-
-    public void registerDeletedObject()
-    {
-        System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.DELETED_OBJECT_EVENT, true);
-    }
-
-    public void registerModifiedData()
-    {
-        System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.MODIFIED_DATA_EVENT, true);
-    }
-
+    
     /**
      * Rollback local changes.
      * Generates client update event.
@@ -834,7 +878,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
     /**
-     * Postprocess commit of local changes.
+     * Post process commit of local changes.
      * Generates client update event.
      */
     public void postProcessCommit()

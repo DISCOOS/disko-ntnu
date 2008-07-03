@@ -432,6 +432,21 @@ public class DiskoProgressMonitor {
 		return getProgressDialog().isVisible();
 	}
 	
+	public void refreshProgress() {
+		if(SwingUtilities.isEventDispatchThread()) {
+			if(isProgressVisible()) {
+				getProgressPanel().paintImmediately(getProgressPanel().getBounds());
+			}
+		}
+		else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					refreshProgress();
+				}
+			});
+		}		
+	}
+	
 	private synchronized void scheduleEventStart() {
 		// forward event to listeners
 		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_START);							

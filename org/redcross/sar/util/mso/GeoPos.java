@@ -10,6 +10,7 @@ import org.redcross.sar.map.MapUtil;
 public class GeoPos
 {
     private Point2D.Double m_position = null;
+        
 
     /**
      * Create a position with no point
@@ -69,7 +70,7 @@ public class GeoPos
      */
     public Point2D.Double getPosition()
     {
-        return m_position;
+        return m_position;        
     }
 
     /**
@@ -160,4 +161,5 @@ public class GeoPos
         }
         return result;
     }
+    
 }

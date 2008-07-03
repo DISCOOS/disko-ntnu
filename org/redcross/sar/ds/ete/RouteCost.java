@@ -4,6 +4,9 @@ import java.lang.Math;
 
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 import java.awt.geom.Point2D;
 
@@ -213,7 +216,7 @@ public class RouteCost {
 				// get polyline
 				m_polyline = MapUtil.getEsriPolyline(m_route,m_map.getSpatialReference());	
 				// get positions as array list
-				m_positions = new ArrayList<GeoPos>(m_route.getPositions());
+				m_positions = new ArrayList<GeoPos>(m_route.getItems());
 				/* ========================================================================
 				 * Segment length (length between two points on route) must be set to a 
 				 * minimum value that ensures each point is inside a different height
@@ -299,8 +302,8 @@ public class RouteCost {
 	
 	/**
 	 * Shift start time and start position
-	 * @param t0
-	 * @param offset
+	 * @param Calendar t0 - Start time
+	 * @param int offset - Start index (position)
 	 */
 	public void shift(Calendar t0, int offset) {
 		m_startTime = t0;
@@ -319,9 +322,18 @@ public class RouteCost {
 	 * Set start time
 	 */
 	public void setStartTime(Calendar t0) {
-		m_startTime = t0;
-		m_isShifted = true;
+		if(!equal(m_startTime,t0)) {
+			m_startTime = t0;
+			m_isShifted = true;
+			Date time = t0.getTime();
+		}
 	}
+	
+    private boolean equal(Object o1, Object o2)
+    {
+        return o1 == o2 || (o1 != null && o1.equals(o2));
+    }
+	
 	
 	/**
 	 * Get start position
@@ -333,9 +345,11 @@ public class RouteCost {
 	/**
 	 * Set position shift (start position) 
 	 */
-	public void setStartPosition(int offset) {
-		m_startIndex = offset;
-		m_isShifted = true;
+	public void setStartPosition(int index) {
+		if(m_startIndex != index) {
+			m_startIndex = index;
+			m_isShifted = true;
+		}
 	}
 	
 	/**
@@ -358,14 +372,15 @@ public class RouteCost {
 	}
 	
 	/**
-	 *  Calculates estimated time enroute for a spesified route from a given position.
+	 *  Calculates estimated time enroute from a given position.
 	 *  
-	 *  @param pos Calculation is started from a given position
-	 *  @param t0 Start time
-	 *  @return Estimated time enroute for a specified route from a given position and point in time
+	 *  @param GeoPos pos - Calculation is started from a given position
+	 *  @param double max - Maximum starting distance from route
+	 *  @param Calendar t0 - Start time
+	 *  @return Estimated time enroute (ETE) from a given position and point in time
 	 */		
-	public int estimate(GeoPos pos, Calendar t0) throws Exception {
-		return estimateRouteCost(findNearest(pos),t0);
+	public int estimate(GeoPos pos, double max, Calendar t0) throws Exception {
+		return estimateRouteCost(findNearest(pos,max),t0);
 	}
 
 	/**
@@ -407,7 +422,7 @@ public class RouteCost {
 	public Calendar eta() {
 		if (!m_isReplaced) {
 			Calendar c = Calendar.getInstance();
-			c.setTimeInMillis(m_startTime.getTimeInMillis()+ete());
+			c.setTimeInMillis(m_startTime.getTimeInMillis()+ete()*1000);
 			return c;
 		}
 		else
@@ -417,13 +432,13 @@ public class RouteCost {
 	/**
 	 *  Calculates estimated time of arrival at position.
 	 *  
-	 *  @param index Positon index
+	 *  @param index Position index
 	 *  @return Estimated time of arrival at position
 	 */		
 	public Calendar eta(int index) {
 		if (!m_isReplaced) {
 			Calendar c = Calendar.getInstance();
-			c.setTimeInMillis(m_startTime.getTimeInMillis()+ete(index));
+			c.setTimeInMillis(m_startTime.getTimeInMillis()+ete(index)*1000);
 			return c;
 		}
 		else
@@ -433,9 +448,36 @@ public class RouteCost {
 	/**
 	 *  Get the nearest position in route
 	 *  
-	 *  @param match Time position
-	 *  @return Returns the closest position found
+	 *  @param GeoPos match - position to match
+	 *  @param double max - maximum distance in meters
+	 *  
+	 *  @return Returns the index of the closest position in route. If the shortest distance
+	 *  found is longer then max, <code>-1</code> is returned.
 	 */		
+	public int findNearest(GeoPos match, double max) throws Exception {
+		
+		// initialize variables
+		int found = -1; 
+		double min = max+1;
+		double x = match.getPosition().x;
+		double y = match.getPosition().y;
+		List<GeoPos> c = new ArrayList<GeoPos>(m_route.getItems());
+				
+		// search for shortest distance
+		for(int i=0;i<m_route.getItems().size();i++) {
+			GeoPos it = c.get(i);
+			double d = MapUtil.greatCircleDistance(x, y, it.getPosition().x, it.getPosition().y);
+			if(d<min) {
+				min = d;
+				found = i;
+			}						
+		}
+		
+		// finished
+		return found;
+	}
+	
+	/*
 	public int findNearest(GeoPos match) throws Exception {
 		
 		// initialize variables
@@ -457,7 +499,7 @@ public class RouteCost {
 			gp = new GeoPos(p.getX(),p.getY());
 	
 			// get iterator
-			ArrayList<GeoPos> it = new ArrayList<GeoPos>(m_route.getPositions());
+			ArrayList<GeoPos> it = new ArrayList<GeoPos>(m_route.getItems());
 			
 			// get count
 			int count = it.size();
@@ -472,6 +514,7 @@ public class RouteCost {
 		// return not found
 		return -1;
 	}
+	*/
 	
 	/**
 	 * If true, estimate is not up to date
@@ -1006,8 +1049,9 @@ public class RouteCost {
 		m_lightUnitCosts = new ArrayList<Double>(count - 2);
 		m_themes = new ArrayList<Integer>(count);
 						
-		// update local time
-		t = t0;
+		// initialize time step
+		t = Calendar.getInstance();
+		t.setTime(t0.getTime());
 		
 		// loop over all positions
 		for(int i = offset; i < count; i++){
@@ -1081,8 +1125,9 @@ public class RouteCost {
 		m_startTime = t0;
 		m_startIndex = offset;
 		
-		// initialize
-		t = t0;
+		// initialize time step
+		t = Calendar.getInstance();
+		t.setTime(t0.getTime());
 		
 		// loop over positions from offset
 		for(int j = offset; j < count; j++){

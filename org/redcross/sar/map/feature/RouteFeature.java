@@ -7,7 +7,6 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Route;
 
 import java.io.IOException;
@@ -15,19 +14,20 @@ import java.io.IOException;
 public class RouteFeature extends AbstractMsoFeature {
 
 	private static final long serialVersionUID = 1L;
-	private IGeodataIf geodata = null;
+	private Route geodata = null;
     private IMsoModelIf msoModel = null;
     private IAreaIf msoArea = null;
     private AssignmentStatus asgStatus = AssignmentStatus.EMPTY;
+    private int changeCount;
 
 	public RouteFeature(IMsoModelIf msoModel) {
 		this.msoModel = msoModel;
 	}
 
-	public boolean geometryIsChanged(IMsoObjectIf msoObj) {
+	public boolean isMsoChanged(IMsoObjectIf msoObj) {
 		IRouteIf route = (IRouteIf)msoObject;
-		boolean gChanged = (route.getGeodata() != null && !route.getGeodata().equals(getGeodata())) ||
-        			getAssignmentStatus(getOwningArea(route)) != asgStatus;
+		boolean gChanged = isGeodataChanged(route.getGeodata()) 
+						|| getAssignmentStatus(getOwningArea(route)) != asgStatus;
 		boolean cChanged = false;	
 		IAreaIf area = getOwningArea(route);
 		if(area!=null) {
@@ -40,6 +40,13 @@ public class RouteFeature extends AbstractMsoFeature {
 		return gChanged || cChanged;
 	}
 
+	private boolean isGeodataChanged(Route r) {
+		return (   geodata==null 
+				|| r==null 
+				|| !geodata.equals(r)
+				|| changeCount!=r.getChangeCount());
+	}
+	
 	private AssignmentStatus getAssignmentStatus(IAreaIf anArea)
     {
         // no area found?
@@ -67,15 +74,20 @@ public class RouteFeature extends AbstractMsoFeature {
     }
     
     @Override
-    public void msoGeometryChanged() throws IOException, AutomationException {       // todo sjekk etter endring av GeoCollection
-		if (srs == null || msoObject == null) return;
+    public void msoChanged() throws IOException, AutomationException {       // todo sjekk etter endring av GeoCollection
+		
+    	if (srs == null || msoObject == null) return;
 		IRouteIf route = (IRouteIf)msoObject;
 		geodata = route.getGeodata();
-		if (geodata instanceof Route)
-			geometry = MapUtil.getEsriPolyline((Route)geodata, srs);
-		else 
+		if (geodata != null) {
+			geometry = MapUtil.getEsriPolyline(geodata, srs);
+			changeCount = geodata.getChangeCount();
+		}
+		else {
 			geometry = null;
-        asgStatus = getAssignmentStatus(getOwningArea(route));
+			changeCount = 0;
+		}
+		asgStatus = getAssignmentStatus(getOwningArea(route));
 		IAreaIf area = getOwningArea(route);
 		
 		/* TODO: Correct serious error in MSO model
@@ -109,7 +121,8 @@ public class RouteFeature extends AbstractMsoFeature {
 			System.out.println("IRouteIf:="+route.getObjectId()+ " is dangling");
 		else
 			System.out.println("Empty IRouteIf found and discarded by RouteFeature");
-		super.msoGeometryChanged();
+		// forward
+		super.msoChanged();
 	}
 	
 	public Object getGeodata() {

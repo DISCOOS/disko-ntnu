@@ -12,6 +12,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -230,7 +231,10 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 	 * IMsoUpdateListenerIf implementation
 	 * ============================================================================= */
 	
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return interests.contains(aMsoObject.getMsoClassCode());
 	}
 	

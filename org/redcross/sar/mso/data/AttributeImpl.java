@@ -22,6 +22,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     private boolean m_required = false;
     //private boolean m_changed = false;
     private final int m_cardinality;
+    private int m_changeCount = 0;
 
     protected T m_localValue = null;
     protected T m_serverValue = null;
@@ -71,6 +72,15 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         return m_class;
     }
 
+    public int getChangeCount()
+    {
+        return m_changeCount;
+    }
+    
+    protected void incrementChangeCount() {
+    	m_changeCount++;
+    }    
+    
     public void set(T aValue)
     {
         if (!m_class.isAssignableFrom(aValue.getClass()))
@@ -92,6 +102,33 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     protected void setAttrValue(T aValue, boolean isCreating)
     {
+    	/* ========================================================
+    	 * Setting a new attribute value is dependent on the
+    	 * update mode of the MSO model. If the model is in 
+    	 * LOOPBACK_UPDATE_MODE, the attribute should reflect
+    	 * the server value without conflict detection made. If the
+    	 * model is in REMOTE_UPDATE_MODE, a change from the server
+    	 * is registered and the attribute value should be analyzed
+    	 * to detect any conflicts between local value (changes) and 
+    	 * the server value (shared). If the model is in 
+    	 * LOCAL_UPDATE_MODE, the attribute value state should be 
+    	 * updated according to the passed attribute value.
+    	 * 
+    	 * Server value and local value should only be present 
+    	 * concurrently during a local update sequence (between two 
+    	 * commit() or rollback() invocations), or if a conflict has 
+    	 * occurred (remote update during a local update sequence).
+    	 * Hence, if the attribute is in a LOCAL_STATE or 
+    	 * CONFLICTING_STATE, both values will be present. Else (REMOVE_STATE),
+    	 * only server value will be present.
+    	 *  
+    	 * A commit() or rollback() will reset the local value
+    	 * to null to ensure state consistency. 
+    	 * 
+    	 * AttributeImpl.setAttrValue(T aValue, boolean isCreating);
+    	 * 
+    	 * ======================================================== */    	    	
+    	
         IMsoModelIf.UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
         IMsoModelIf.ModificationState newState;
         boolean valueChanged = false;
@@ -99,30 +136,122 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         {
             case LOOPBACK_UPDATE_MODE:
             {
+            	/* ===========================================================
+            	 * Update to server value state without any conflict detection.
+            	 * 
+            	 * After a commit, all changes are looped back to the model
+            	 * from the message queue. This ensures that only changes
+            	 * that are successfully committed to the global message 
+            	 * queue becomes valid. If any errors occurred, the message queue 
+            	 * is given precedence over local values. 
+            	 * 
+            	 * Because of limitations in SaraAPI, it is not possible to 
+            	 * distinguish between messages committed by this model instance 
+            	 * and other model instances. Hence, any change received from 
+            	 * the message queue may be a novel change. Because 
+            	 * LOOPBACK_UPDATE_MODE is only a proper update mode if the
+            	 * received update is a loop back from this model instance, the
+            	 * mode can not be used with the current SaraAPI. If used, 
+            	 * local changes will be overwritten by because conflict detection 
+            	 * is disabled in this mode.
+            	 * 
+            	 * The fix to this problem is to assume that if a commit is
+            	 * executed without any exception from the message queue, then all 
+            	 * changes was posted and forwarded to all listeners. Hence, the
+            	 * attribute value can be put in server mode directly after a commit 
+            	 * is executed. The postProcessCommit() implements this fix. 
+            	 * 
+            	 * If the source of each change could be uniquely identified 
+            	 * (at the model instance level), change messages received as a 
+            	 * result of a commit by this model, could be group together and 
+            	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would 
+            	 * be the correct and intended usage of this mode.
+            	 * 
+            	 * =========================================================== */
                 newState = IMsoModelIf.ModificationState.STATE_SERVER;
                 if (!equal(m_serverValue, aValue))
                 {
                     m_serverValue = aValue;
                     valueChanged = true;
                 }
+                m_localValue = null;
+                
                 break;
+                
             }
             case REMOTE_UPDATE_MODE:
             {
-                newState = m_state == IMsoModelIf.ModificationState.STATE_LOCAL ? IMsoModelIf.ModificationState.STATE_CONFLICTING : IMsoModelIf.ModificationState.STATE_SERVER;
+            	/* ===========================================================
+            	 * Update to server value state with conflict detection.
+            	 * 
+            	 * If the model is in REMOTE_UPDATE_MODE, this indicates that
+            	 * an external change i detected (message queue update), an the 
+            	 * model should be update accordingly.
+            	 * 
+            	 * If the attribute is in a local value state, the local value may 
+            	 * be different from the server value. The local changes is made 
+            	 * by the user (GUI) or a local service (the application). When an 
+            	 * remote update occurs (a change received from the message queue), 
+            	 * the new attribute value state depends on the new server state 
+            	 * and current local state. If these are different, a conflict has 
+            	 * occurred. This is indicated by setting the attribute value state 
+            	 * to conflicting, and methods for resolving this conflict is found
+            	 * in the attribute class. If the new server value and local value 
+            	 * is equal, the attribute value state is changed to the server 
+            	 * value state. 
+            	 * 
+            	 * =========================================================== */
+            	
+            	// check if a conflict has occurred?
+            	boolean isConflict = (m_state == IMsoModelIf.ModificationState.STATE_LOCAL 
+            			|| m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING) ? 
+            			!equal(m_localValue, aValue) : false;
+            	
+            	// get next state
+                newState = isConflict ? 
+                		  IMsoModelIf.ModificationState.STATE_CONFLICTING 
+                		: IMsoModelIf.ModificationState.STATE_SERVER;
+                
+                // any change?
                 if (!equal(m_serverValue, aValue))
                 {
                     m_serverValue = aValue;
                     valueChanged = true;
                 }
+                
+                // no conflict?
+                if(!isConflict) 
+                {
+                	m_localValue = null;
+                }
+                
+                // notify change
+                valueChanged |= isConflict;
+                
+                
                 break;
             }
             default: // LOCAL_UPDATE_MODE
             {
-                if (equal(m_serverValue, aValue))
+
+            	/* ===========================================================
+            	 * Update attribute to the appropriate value state
+            	 * 
+            	 * The default update mode is LOCAL_UPDATE_MODE. This mode
+            	 * indicates that the change originates from a GUI (user) or 
+            	 * Service (application) invocation, not from an external 
+            	 * change made on a different model instance. If the new 
+            	 * value equals the server value, the attribute value state 
+            	 * should be set to server state. If the new value is different 
+            	 * from the server value, the attribute value state should be 
+            	 * set to local state. 
+            	 * =========================================================== */
+            	
+            	if (equal(m_serverValue, aValue))
                 {
                     newState = IMsoModelIf.ModificationState.STATE_SERVER;
-//                    valueChanged = true;  // VW TODO: kan denne utelates??? ?????
+                    m_localValue = null;
+                    valueChanged = true;
                 } else
                 {
                     newState = IMsoModelIf.ModificationState.STATE_LOCAL;
@@ -141,9 +270,9 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         }
         if (valueChanged && !isCreating)
         {
+        	incrementChangeCount();
             m_owner.registerModifiedData();
         }
-    	//m_changed = valueChanged;
     }
 
     /**
@@ -180,10 +309,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public boolean rollback()
     {
-        m_localValue = null;
         boolean isChanged = m_state == IMsoModelIf.ModificationState.STATE_LOCAL || m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING;
-        m_state = IMsoModelIf.ModificationState.STATE_SERVER;
-        //m_changed = isChanged;
+        if(isChanged)     
+        {
+	        m_localValue = null;
+	        m_state = IMsoModelIf.ModificationState.STATE_SERVER;
+        }
         return isChanged;
     }
 
@@ -205,7 +336,28 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         if (m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING)
         {
+            if (aState == IMsoModelIf.ModificationState.STATE_LOCAL)
+            {
+            	/* ==========================================================
+            	 * resolve conflict as a local value state (keep local value)
+            	 * 
+            	 * Both server and local values must be kept to enable
+            	 * future conflict detection  
+            	 * 
+            	 * ========================================================== */
+            } else
+            {
+            	/* ==========================================================
+            	 * resolve conflict as a server value state (overwrite local value)
+            	 * 
+            	 * Since server value is chosen, the local value must be
+            	 * erased
+            	 * 
+            	 * ========================================================== */
+                m_localValue = null;
+            }
             m_state = aState;
+        	incrementChangeCount();
             m_owner.registerModifiedData();
             return true;
         }
@@ -214,17 +366,17 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public boolean acceptLocal()
     {
-        MsoModelImpl.getInstance().setLocalUpdateMode();
+        //MsoModelImpl.getInstance().setLocalUpdateMode();
         boolean retVal = acceptConflicting(IMsoModelIf.ModificationState.STATE_LOCAL);
-        MsoModelImpl.getInstance().restoreUpdateMode();
+        //MsoModelImpl.getInstance().restoreUpdateMode();
         return retVal;
     }
 
     public boolean acceptServer()
     {
-        MsoModelImpl.getInstance().setRemoteUpdateMode();
+        //MsoModelImpl.getInstance().setRemoteUpdateMode();
         boolean retVal = acceptConflicting(IMsoModelIf.ModificationState.STATE_SERVER);
-        MsoModelImpl.getInstance().restoreUpdateMode();
+        //MsoModelImpl.getInstance().restoreUpdateMode();
         return retVal;
     }
 

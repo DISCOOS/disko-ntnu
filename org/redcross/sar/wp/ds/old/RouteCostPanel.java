@@ -295,7 +295,7 @@ public class RouteCostPanel extends JPanel
 	    	double mm = Math.round((cost / 60) - (tt * 60));
 	    	
 	    	// show result
-	    	getRoutePointCountText().setText((new Integer(r.getPositions().size())).toString());	    	
+	    	getRoutePointCountText().setText((new Integer(r.getItems().size())).toString());	    	
 	    	getRouteLengthText().setText((new Double(km).intValue()) + " km " + (new Double(m).intValue()) + " m");
 	    	getRouteAverageSpeedText().setText(nf.format(kph) + " km/h ");
 	    	getRouteEteText().setText((new Double(tt).intValue()) + " h " + (new Double(mm).intValue()) + " min");

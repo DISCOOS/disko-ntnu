@@ -81,10 +81,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private static EnumSet<MsoClassCode> getWpInterests() {
 		EnumSet<MsoClassCode> myInterests = EnumSet.of(MsoClassCode.CLASSCODE_OPERATION);
     	myInterests.add(MsoClassCode.CLASSCODE_AREA);    	
-    	myInterests.add(MsoClassCode.CLASSCODE_ROUTE);
-    	myInterests.add(MsoClassCode.CLASSCODE_POI);
-    	myInterests.add(MsoClassCode.CLASSCODE_SEARCHAREA);
-    	myInterests.add(MsoClassCode.CLASSCODE_OPERATIONAREA);
+    	myInterests.add(MsoClassCode.CLASSCODE_UNIT);
     	myInterests.add(MsoClassCode.CLASSCODE_ASSIGNMENT);
 		return myInterests;
 	}
@@ -95,8 +92,8 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
+		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
 	    return myLayers;
 	}
 	

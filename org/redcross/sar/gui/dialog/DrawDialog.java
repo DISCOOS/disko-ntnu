@@ -202,8 +202,9 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		// toggle tool button on draw dialog if not selected
 		JToggleButton toggle = m_buttons.get(tool.getType());
 		// select active tool?
-		if(!toggle.isSelected())
+		if(!toggle.isSelected()) {
 			toggle.setSelected(true);
+		}
 		// get tool panel
 		Component panel = (Component)m_panels.get(tool.getType());
 		// update property panel view state
@@ -222,6 +223,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 			button.setIcon(tool.getButton().getIcon());
 			button.setToolTipText(tool.getButton().getToolTipText());
 			button.setSelected(activate);
+			button.requestFocusInWindow();
 			activate = activate && button.isVisible();
 		}
 		

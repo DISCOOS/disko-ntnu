@@ -19,6 +19,7 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -40,7 +41,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	protected Dimension m_fixedSize = null;
 
-	protected IAttributeIf m_attribute = null;
+	protected IAttributeIf<?> m_attribute = null;
 	
 	protected boolean m_isDirty = false;
 	protected boolean m_autoSave = false;
@@ -92,12 +93,20 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	protected void fireOnWorkChange() {
 		if(m_autoSave) {
-			save();
-			fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEvent.EVENT_FINISH));
+			MsoModelImpl.getInstance().suspendClientUpdate();
+			if(save()) {
+				fireOnWorkChange(new DiskoWorkEvent(this,getValue(),DiskoWorkEvent.EVENT_FINISH));
+			}
+			else {
+				// notify change instead
+				m_isDirty = true;
+				fireOnWorkChange(new DiskoWorkEvent(this,getValue(),DiskoWorkEvent.EVENT_CHANGE));				
+			}
+			MsoModelImpl.getInstance().resumeClientUpdate();
 		}
 		else {			
 			m_isDirty = true;
-			fireOnWorkChange(new DiskoWorkEvent(m_component,getValue(),DiskoWorkEvent.EVENT_CHANGE));
+			fireOnWorkChange(new DiskoWorkEvent(this,getValue(),DiskoWorkEvent.EVENT_CHANGE));
 		}
 	}
 			

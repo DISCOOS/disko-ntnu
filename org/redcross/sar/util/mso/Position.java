@@ -5,10 +5,9 @@ import java.awt.geom.Point2D;
 /**
  *
  */
-public class Position implements IGeodataIf
+public class Position extends AbstractGeodata
 {
-    private final String m_id;
-    private String m_layout;
+	
     private GeoPos m_position;
 
     /**
@@ -19,7 +18,7 @@ public class Position implements IGeodataIf
 
     public Position(String anId)
     {
-        m_id = anId;
+    	super(anId);
         m_position = new GeoPos();
     }
 
@@ -31,7 +30,7 @@ public class Position implements IGeodataIf
      */
     public Position(String anId, Point2D.Double aPosition)
     {
-        m_id = anId;
+    	super(anId);
         m_position = new GeoPos(aPosition);
 
     }
@@ -45,23 +44,8 @@ public class Position implements IGeodataIf
      */
     public Position(String anId, double aLong, double aLat)
     {
-        m_id = anId;
+    	super(anId);
         m_position = new GeoPos(aLong, aLat);
-    }
-
-    public String getId()
-    {
-        return m_id;
-    }
-
-    public void setLayout(String aLayout)
-    {
-        m_layout = aLayout;
-    }
-
-    public String getLayout()
-    {
-        return m_layout;
     }
 
     /**
@@ -72,6 +56,7 @@ public class Position implements IGeodataIf
     public void setPosition(Point2D.Double aPosition)
     {
         m_position.setPosition(aPosition);
+        incrementChangeCount();
     }
 
     /**
@@ -83,6 +68,7 @@ public class Position implements IGeodataIf
     public void setPosition(double aLong, double aLat)
     {
         m_position.setPosition(aLong, aLat);
+        incrementChangeCount();
     }
 
     /**
@@ -149,13 +135,10 @@ public class Position implements IGeodataIf
 
    public boolean equals(Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+	  if (!super.equals(o)) return false;
 
       Position position = (Position) o;
 
-      if (m_id != null ? !m_id.equals(position.m_id) : position.m_id != null) return false;
-      if (m_layout != null ? !m_layout.equals(position.m_layout) : position.m_layout != null) return false;
       if (m_position != null ? !m_position.equals(position.m_position) : position.m_position != null) return false;
 
       return true;
@@ -163,10 +146,15 @@ public class Position implements IGeodataIf
 
    public int hashCode()
    {
-      int result;
-      result = (m_id != null ? m_id.hashCode() : 0);
-      result = 31 * result + (m_layout != null ? m_layout.hashCode() : 0);
+	  int result = super.hashCode();
       result = 31 * result + (m_position != null ? m_position.hashCode() : 0);
       return result;
    }
+   
+   	@Override
+	public Position clone() throws CloneNotSupportedException {
+		return new Position(m_id,m_position.getPosition());
+	}
+
+   
 }

@@ -60,6 +60,8 @@ public interface IDiskoWork<T> extends Runnable {
 	
 	public boolean isWorking();
 	
+	public boolean isSuspended();
+	
 	public long getAvailableTime();		
 	public void setAvailableTime(long time);		
 	

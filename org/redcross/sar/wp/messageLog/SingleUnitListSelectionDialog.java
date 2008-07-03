@@ -6,6 +6,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.ICmdPostIf.CmdPostStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
@@ -233,8 +234,11 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 	/**
 	 * Interested in message and message line updates
 	 */
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(msoObject.getMsoClassCode());
 	}
 	

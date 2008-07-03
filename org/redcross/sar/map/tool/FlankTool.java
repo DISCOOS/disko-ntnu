@@ -204,7 +204,7 @@ public class FlankTool extends AbstractDiskoTool {
 			                    Route route = ((IRouteIf)msoObject).getGeodata();
 			                    if (route != null) {
 				    				route.setLayout(getLayout());
-					    			flankFeature.msoGeometryChanged();		
+					    			flankFeature.msoChanged();		
 							    }
 			                }
 						}
@@ -246,8 +246,11 @@ public class FlankTool extends AbstractDiskoTool {
 		 * Executed on the Event Dispatch Thread
 		 * 
 		 */
-		@Override
-		public void beforeDone() {		
+		public void afterDone() {
+			
+			// forward
+			super.afterDone();
+			
 			try {
 				
 				// get result

@@ -1,8 +1,11 @@
 package org.redcross.sar.mso.event;
 
 import no.cmr.tools.Log;
+
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.util.except.CommitException;
 
 import java.util.Collection;
@@ -83,6 +86,8 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 
     private void fireUpdate(Collection<IMsoUpdateListenerIf> theListeners, IMsoObjectIf aSource, int anEventTypeMask)
     {
+    	final long WORK_TIME = 100;
+    	
         if (theListeners.size() == 0 || anEventTypeMask == 0)
         {
             return;
@@ -92,18 +97,39 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         boolean clearAll = (anEventTypeMask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
         
         MsoEvent.Update event = new MsoEvent.Update(aSource, anEventTypeMask);
+        
+        UpdateMode mode = event.getUpdateMode();
+        
+        long tic = System.currentTimeMillis();
+        
+        DiskoProgressMonitor monitor = null;
+		try {
+			monitor = DiskoProgressMonitor.getInstance();
+		} catch (Exception ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+        
         for (IMsoUpdateListenerIf listener : theListeners)
         {
-            if (clearAll || listener.hasInterestIn(aSource))
+            if (clearAll || listener.hasInterestIn(aSource,mode))
             {
                 try
                 {
                     listener.handleMsoUpdateEvent(event);
+                                        
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Log.printStackTrace("Exception in fireUpdate, listener: " + listener.toString(),e);
+                    Log.printStackTrace("Exception in fireUpdate, listener: " + listener.toString(),ex);
                 }
+                
+                // update progress monitor?
+                if(WORK_TIME<System.currentTimeMillis()-tic) {
+                	if(monitor!=null) monitor.refreshProgress();
+                	tic = System.currentTimeMillis();
+                }                
+                	
             }
         }
     }

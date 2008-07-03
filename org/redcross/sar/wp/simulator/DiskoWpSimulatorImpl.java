@@ -33,7 +33,6 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.thread.DiskoWorkPool;
-import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -78,10 +77,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 	private static EnumSet<MsoClassCode> getWpInterests() {
 		EnumSet<MsoClassCode> myInterests = EnumSet.of(MsoClassCode.CLASSCODE_OPERATION);
     	myInterests.add(MsoClassCode.CLASSCODE_AREA);    	
-    	myInterests.add(MsoClassCode.CLASSCODE_ROUTE);
-    	myInterests.add(MsoClassCode.CLASSCODE_POI);
-    	myInterests.add(MsoClassCode.CLASSCODE_SEARCHAREA);
-    	myInterests.add(MsoClassCode.CLASSCODE_OPERATIONAREA);
+    	myInterests.add(MsoClassCode.CLASSCODE_UNIT);
     	myInterests.add(MsoClassCode.CLASSCODE_ASSIGNMENT);
 		return myInterests;
 	}

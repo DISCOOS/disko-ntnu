@@ -1,5 +1,7 @@
 package org.redcross.sar.mso.event;
 
+import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
@@ -101,6 +103,10 @@ public class MsoEvent extends java.util.EventObject
     public boolean isClearAllEvent()
     {
     	return (m_eventTypeMask & EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+    }
+    
+    public UpdateMode getUpdateMode() {
+    	return MsoModelImpl.getInstance().getUpdateMode();
     }
 
     /**

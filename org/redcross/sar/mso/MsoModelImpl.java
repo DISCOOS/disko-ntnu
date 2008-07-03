@@ -40,6 +40,9 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
 
     private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
     private final IModelDriverIf m_modelDriver;
+    
+    private final Object updateLock = new Object();
+    
 
     private int m_suspendClientUpdate = 0;
 
@@ -64,6 +67,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         m_msoEventManager = new MsoEventManagerImpl();
         m_msoManager = new MsoManagerImpl(m_msoEventManager);
         m_commitManager = new CommitManager(this);
+        // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
         m_modelDriver = GlobalProps.getText("integrate.sara").equalsIgnoreCase("true") ?
                 new SarModelDriver() : new ModelDriver();
@@ -122,16 +126,23 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
      */
     public synchronized void restoreUpdateMode()
     {
+    	// ensure that stack is never empty 
+    	// (preserves the initial condition)
         if (m_updateModeStack.size() > 1)
         {
             m_updateModeStack.pop();
         }
     }
 
-    public synchronized void suspendClientUpdate()
+    /**
+     * This method is thread safe 
+     */    
+    public void suspendClientUpdate()
     {
     	// increment
-        m_suspendClientUpdate++;
+    	synchronized(updateLock) {
+	        m_suspendClientUpdate++;
+    	}
         // notify of irregular operation
         if (m_suspendClientUpdate > 10)
         {
@@ -140,10 +151,16 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         //System.out.println("suspendClientUpdate:="+m_suspendClientUpdate);
     }
 
-    public synchronized void resumeClientUpdate()
+    
+    /**
+     * This method is thread safe 
+     */    
+    public void resumeClientUpdate()
     {
-        if(m_suspendClientUpdate>0) 
-        	m_suspendClientUpdate--;
+    	synchronized(updateLock) {
+    		if(m_suspendClientUpdate>0) 
+	        	m_suspendClientUpdate--;
+    	}
         if(m_suspendClientUpdate==0)
         	m_msoManager.resumeClientUpdate();
         //System.out.println("resumeClientUpdate:="+m_suspendClientUpdate);
@@ -212,7 +229,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         setLoopbackUpdateMode();
         m_msoManager.postProcessCommit();
         restoreUpdateMode();
-        resumeClientUpdate();    	
+        resumeClientUpdate();
     }
 
     public synchronized void commit()
@@ -237,7 +254,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
     public synchronized void rollback()
     {
         suspendClientUpdate();
-        setRemoteUpdateMode();
+        setLocalUpdateMode();
         m_commitManager.rollback();
         m_msoManager.rollback();
         restoreUpdateMode();

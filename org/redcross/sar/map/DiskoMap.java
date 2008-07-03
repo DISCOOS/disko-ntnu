@@ -60,6 +60,7 @@ import org.redcross.sar.map.tool.IDrawTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
@@ -139,6 +140,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private Point movePoint = null;
 	private Point clickPoint = null;
 
+	// refresh info 
+	private int refreshCount = 0;
+	private IMsoFeatureLayer refreshLayer = null;
 
 	/**
 	 * Default constructor
@@ -222,32 +226,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			// loop over my layers
 			for(int i=0;i<list.size();i++){
 				LayerCode layerCode = list.get(i);
-				if(layerCode == LayerCode.POI_LAYER) {
-					msoLayers.add(new POILayer(msoModel,srs,msoLayerEventStack));				
-					if(addClass(MsoClassCode.CLASSCODE_POI)) { 
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
-					}
-				}
-				else if(layerCode == LayerCode.AREA_LAYER) {
-					msoLayers.add(new AreaLayer(msoModel,srs,msoLayerEventStack));
-					if(addClass(MsoClassCode.CLASSCODE_AREA)) {
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
-					}
-				}
-				else if(layerCode == LayerCode.ROUTE_LAYER) {
-					msoLayers.add(new RouteLayer(msoModel,srs,msoLayerEventStack));
-					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
-						addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
-					}
-				}
-				else if(layerCode == LayerCode.FLANK_LAYER) {
-					msoLayers.add(new FlankLayer(msoModel,srs,msoLayerEventStack));
-					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
-					}
-				}
-				else if(layerCode == LayerCode.SEARCH_AREA_LAYER) {
+				if(layerCode == LayerCode.SEARCH_AREA_LAYER) {
 					msoLayers.add(new SearchAreaLayer(msoModel,srs,msoLayerEventStack));
 					addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
 				}
@@ -258,6 +237,33 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				else if(layerCode == LayerCode.OPERATION_AREA_MASK_LAYER) {
 					msoLayers.add(new OperationAreaMaskLayer(msoModel,srs,msoLayerEventStack));
 					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
+				}
+				else if(layerCode == LayerCode.AREA_LAYER) {
+					msoLayers.add(new AreaLayer(msoModel,srs,msoLayerEventStack));
+					if(addClass(MsoClassCode.CLASSCODE_AREA)) {
+						addCoClass(MsoClassCode.CLASSCODE_POI,MsoClassCode.CLASSCODE_AREA);
+						addCoClass(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_AREA);
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
+					}
+				}
+				else if(layerCode == LayerCode.ROUTE_LAYER) {
+					msoLayers.add(new RouteLayer(msoModel,srs,msoLayerEventStack));
+					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+						addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
+					}
+				}
+				else if(layerCode == LayerCode.POI_LAYER) {
+					msoLayers.add(new POILayer(msoModel,srs,msoLayerEventStack));				
+					if(addClass(MsoClassCode.CLASSCODE_POI)) { 
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
+					}
+				}
+				else if(layerCode == LayerCode.FLANK_LAYER) {
+					msoLayers.add(new FlankLayer(msoModel,srs,msoLayerEventStack));
+					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
+					}
 				}
 				else if(layerCode == LayerCode.UNIT_LAYER) {
 					msoLayers.add(new UnitLayer(msoModel,srs,msoLayerEventStack));
@@ -357,9 +363,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		
 		try {
 			
-			// refresh layers?
-			if (!super.isShowing() || isDrawingSupressed()) { return;	}
-			
 			// get mask
 			int mask = e.getEventTypeMask();
 			
@@ -390,14 +393,18 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					}
 				}
 	        }
+
+	        // save refresh information
+			refreshCount = count;
+			refreshLayer = msoLayer;
+	        
+			// refresh layers later?
+			if (!super.isShowing() || isDrawingSupressed()) {
+				return; 
+			}
 			
-			// refresh layer(s)
-			if(count==1)
-				refreshGraphics(msoLayer, getExtent());
-			else if(count > 1)
-				refreshGraphics(null, getExtent());
-			else 
-				refreshDrawFrame();
+			// forward
+			decideRefresh();
 			
 						
 		} catch (AutomationException e1) {
@@ -405,6 +412,23 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		
+	}
+	
+	private void decideRefresh() throws AutomationException, IOException {
+		
+		// refresh layer(s)
+		if(refreshCount==1)
+			refreshGraphics(refreshLayer, getExtent());
+		else if(refreshCount > 1)
+			refreshGraphics(null, getExtent());
+		else 
+			refreshDrawFrame();
+		
+		// reset info
+		refreshCount = 0;
+		refreshLayer = null;
+		
 		
 	}
 
@@ -467,7 +491,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			supressDrawing--;
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject) {
+	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return classCodes.contains(aMsoObject.getMsoClassCode());
 	}
 	
@@ -2087,6 +2114,17 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						loadMxdDoc();
 					}
 				});					
+			}
+			else if(refreshCount>0) {
+				try {
+					decideRefresh();
+				} catch (AutomationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 

@@ -34,7 +34,19 @@ public interface ITrackIf extends IMsoObjectIf
 
     public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
 
+    /*-------------------------------------------------------------------------------------------
+     * Public methods
+     *-------------------------------------------------------------------------------------------*/
+    
     public void addTrackPoint(TimePos aTimePos);
+    
+    public int getTrackPointCount();
+    
+    public TimePos getTrackPoint(int index);
+    
+    public TimePos getTrackStartPoint();
+
+    public TimePos getTrackStopPoint();
     
     public void removeTrackPoint(TimePos aTimePos);
  

@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.ICalloutListIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -37,8 +38,12 @@ public class CalloutOverviewTableModel extends AbstractTableModel implements IMs
 
 	EnumSet<IMsoManagerIf.MsoClassCode> interestedIn =
 		EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_CALLOUT);
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return interestedIn.contains(msoObject.getMsoClassCode());
 	}
 

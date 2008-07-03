@@ -1,6 +1,7 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.CommitWrapper;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
@@ -59,8 +60,8 @@ public class CommitManager implements ICommitManagerIf
                 registerUpdate((AbstractMsoObject) e.getSource(), e.getEventTypeMask());
             }
 
-            public boolean hasInterestIn(IMsoObjectIf aSource)
-            {
+        	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
+        	{
                 return true;
             }
 

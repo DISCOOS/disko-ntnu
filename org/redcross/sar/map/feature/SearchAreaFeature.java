@@ -6,6 +6,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.mso.Polygon;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -13,27 +14,39 @@ public class SearchAreaFeature extends AbstractMsoFeature {
 
 	private static final long serialVersionUID = 1L;
 	
-	private org.redcross.sar.util.mso.Polygon polygon = null;
+	private Polygon polygon;
+	private int changeCount;
 	
-	public boolean geometryIsChanged(IMsoObjectIf msoObj) {
+	public boolean isMsoChanged(IMsoObjectIf msoObj) {
 		ISearchAreaIf searchArea = (ISearchAreaIf)msoObj;
-		boolean gChanged = searchArea.getGeodata() != null && !searchArea.getGeodata().equals(getGeodata());
+		boolean gChanged = isGeodataChanged(searchArea.getGeodata());
 		boolean cChanged = !caption.equals(MsoUtils.getSearchAreaName(searchArea));
 		isDirty = gChanged || cChanged;
 		return gChanged || cChanged;
 	}
 
+	private boolean isGeodataChanged(Polygon p) {
+		return (   polygon==null 
+				|| p==null 
+				|| !polygon.equals(p)
+				|| changeCount!=p.getChangeCount());
+	}
+	
 	@Override
-	public void msoGeometryChanged() throws IOException, AutomationException {
+	public void msoChanged() throws IOException, AutomationException {
 		if (srs == null) return;
 		ISearchAreaIf searchArea = (ISearchAreaIf)msoObject;
 		polygon = searchArea.getGeodata();
-		if (polygon != null)
+		if (polygon != null) {
 			geometry = MapUtil.getEsriPolygon(polygon, srs);
-		else
+			changeCount = polygon.getChangeCount();
+		}
+		else {
 			geometry = null;
+			changeCount = 0;
+		}		
 		caption = MsoUtils.getSearchAreaName(searchArea);
-		super.msoGeometryChanged();
+		super.msoChanged();
 	}
 	
 	public int getGeodataCount() {

@@ -12,9 +12,9 @@ public interface IMsoObjectHolderIf<M extends IMsoObjectIf>
      * Check if a MsoObject can be deleted.
      *
      * @param anObject The object to deleteObject
-     * @throws IllegalDeleteException if the object cannot be deleted.
+     * @return <code>true</code> if reference can be deleted, <code>false</code> otherwise
      */
-    public void canDeleteReference(M anObject) throws IllegalDeleteException;
+    public boolean canDeleteReference(M anObject);
 
     /**
      * Delete a MsoObject.

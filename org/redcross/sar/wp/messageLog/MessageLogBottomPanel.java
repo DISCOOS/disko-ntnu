@@ -9,6 +9,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -708,8 +709,11 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	/**
 	 * {@link IMsoUpdateListenerIf#hasInterestIn(IMsoObjectIf)}
 	 */
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		 return myInterests.contains(msoObject.getMsoClassCode());
 	}
 
@@ -1112,7 +1116,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						}
 						if(line != null)
 						{
-							line.deleteObject();
+							line.delete();
 						}
 						else
 							Utils.showWarning("Ingenting å slette");
@@ -1309,11 +1313,11 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						{
 							AssignmentTransferUtilities.unitAssignAssignment(unit,assignment);
 						}
-						else line.deleteObject();
+						else line.delete();
 					}
 					catch(IllegalOperationException e)
 					{
-						line.deleteObject();
+						line.delete();
 						e.printStackTrace();
 					}
 					break;
@@ -1324,7 +1328,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						{
 							AssignmentTransferUtilities.unitStartAssignment(unit, assignment);
 						}
-						else line.deleteObject();
+						else line.delete();
 
 					}
 					catch(IllegalOperationException e)
@@ -1339,11 +1343,11 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						{
 							AssignmentTransferUtilities.unitCompleteAssignment(unit, assignment);
 						}
-						else line.deleteObject();
+						else line.delete();
 					}
 					catch(IllegalOperationException e)
 					{
-						line.deleteObject();
+						line.delete();
 						e.printStackTrace();
 					}
 					break;
@@ -1549,7 +1553,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	{
 		if(m_newMessage && m_currentMessage != null)
 		{
-			m_currentMessage.deleteObject();
+			m_currentMessage.delete();
 		}
 		
 		m_currentMessage = null;

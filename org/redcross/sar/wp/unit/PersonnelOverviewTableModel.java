@@ -2,6 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
@@ -185,8 +186,11 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 	/**
 	 * Interested in personnel changes
 	 */
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(msoObject.getMsoClassCode());
 	}
 

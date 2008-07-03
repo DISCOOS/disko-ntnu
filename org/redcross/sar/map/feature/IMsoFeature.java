@@ -16,9 +16,9 @@ public interface IMsoFeature extends IFeature {
 	
 	public void setMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
 
-	public void msoGeometryChanged() throws IOException, AutomationException;
+	public void msoChanged() throws IOException, AutomationException;
 	
-	public boolean geometryIsChanged(IMsoObjectIf msoObj);
+	public boolean isMsoChanged(IMsoObjectIf msoObj);
 	
 	public Object getGeodata();
 	

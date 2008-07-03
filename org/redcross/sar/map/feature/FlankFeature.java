@@ -17,6 +17,8 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IRouteIf;
+import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Route;
@@ -35,7 +37,7 @@ public class FlankFeature extends AbstractMsoFeature {
 	private static final int RIGHT_SIDE_FLANK = 2;
 	private List<Polygon> leftFlanks  = null;
 	private List<Polygon> rightFlanks = null;
-//CMR	private GeoList geoList = null;
+    private List<Integer>  changeList = null;
 	private IMsoListIf<IMsoObjectIf> geoList = null;
 
 	public FlankFeature() {
@@ -43,25 +45,49 @@ public class FlankFeature extends AbstractMsoFeature {
 		rightFlanks = new ArrayList<Polygon>();
 	}
 
-	public List getLeftFlanks() {
+	public List<Polygon> getLeftFlanks() {
 		return leftFlanks;
 	}
 
-	public List getRightFlanks() {
+	public List<Polygon> getRightFlanks() {
 		return rightFlanks;
 	}
 
-	public boolean geometryIsChanged(IMsoObjectIf msoObj) {
+	public boolean isMsoChanged(IMsoObjectIf msoObj) {
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
-		return area.getAreaGeodata() != null && !area.getAreaGeodata().equals(getGeodata());
+		return isGeodataChanged(area.getAreaGeodata());
 	}
+	
+	private boolean isGeodataChanged(IMsoListIf<IMsoObjectIf> list) {
+		// check instance first
+		if(geoList==null || list==null || !geoList.equals(list)) return true;
+		// check change counters
+		int i=0;
+		for(IMsoObjectIf it : list.getItems()) {
+			// parse
+			if(it instanceof IRouteIf) {
+				// get geodata
+				IGeodataIf geodata = ((IRouteIf)it).getGeodata();
+				// changed?
+				if(!changeList.get(i).equals(geodata.getChangeCount())) return true;
+			}
+			else if(it instanceof ITrackIf) {
+				// get geodata
+				IGeodataIf geodata = ((ITrackIf)it).getGeodata();
+				// changed?
+				if(!changeList.get(i).equals(geodata.getChangeCount())) return true;	
+			}			
+		}   
+		return false;
+	}	
 
 	@Override
-	public void msoGeometryChanged() throws IOException, AutomationException {
+	public void msoChanged() throws IOException, AutomationException {
 		if (srs == null) return;
 		IAreaIf area = MsoUtils.getOwningArea(msoObject);
 		if(area!=null) {
 			geoList = area.getAreaGeodata();
+			setChangeList();
 	        if (geoList != null && geoList.size() > 0) {
 				leftFlanks.clear();
 				rightFlanks.clear();
@@ -70,7 +96,7 @@ public class FlankFeature extends AbstractMsoFeature {
 				while (iter.hasNext()) {
 	                IGeodataIf geodata = iter.next();
 					if (geodata instanceof Route) {
-	                    Polyline polyline = MapUtil.getEsriPolyline((Route)geodata, srs); // todo Denne er feil, MSO-modellen oppdateres ikke korrekt.
+	                    IGeometry polyline = MapUtil.getEsriPolyline((Route)geodata, srs); // todo Denne er feil, MSO-modellen oppdateres ikke korrekt.
 						geomBag.addGeometry(polyline, null, null);
 						createFlankForRoute((Route)geodata);
 					}
@@ -78,9 +104,28 @@ public class FlankFeature extends AbstractMsoFeature {
 				geometry = geomBag;
 			}
 		}
-		super.msoGeometryChanged();		
+		super.msoChanged();		
 	}
 
+    private void setChangeList() {
+    	changeList = new ArrayList<Integer>(geoList.size());
+		for(IMsoObjectIf it : geoList.getItems()) {
+			// parse
+			if(it instanceof IRouteIf) {
+				// get geodata
+				IGeodataIf geodata = ((IRouteIf)it).getGeodata();
+				// add change count
+				changeList.add(geodata.getChangeCount());
+			}
+			else if(it instanceof ITrackIf) {
+				// get geodata
+				IGeodataIf geodata = ((ITrackIf)it).getGeodata();
+				// add change count
+				changeList.add(geodata.getChangeCount());
+			}
+		}    
+	}
+    
 	public Object getGeodata() {
 		return geoList;
 	}

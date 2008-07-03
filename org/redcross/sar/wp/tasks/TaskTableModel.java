@@ -4,6 +4,7 @@ import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupListener;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
@@ -188,8 +189,12 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 	(
     		IMsoManagerIf.MsoClassCode.CLASSCODE_TASK
     );
-	public boolean hasInterestIn(IMsoObjectIf msoObject)
+	
+	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
 	{
+		// consume loopback updates
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// check against interests
 		return myInterests.contains(msoObject.getMsoClassCode());
 	}
 

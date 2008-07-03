@@ -1,6 +1,7 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
@@ -47,8 +48,8 @@ public class MsoManagerImpl implements IMsoManagerIf
                 eventLogg("ServerUpdateListener", e);
             }
 
-            public boolean hasInterestIn(IMsoObjectIf aSource)
-            {
+        	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
+        	{
                 return true;
             }
         });
@@ -61,8 +62,8 @@ public class MsoManagerImpl implements IMsoManagerIf
                 eventLogg("ClientUpdateListener", e);
             }
 
-            public boolean hasInterestIn(IMsoObjectIf aSource)
-            {
+        	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
+        	{
                 return true;
             }
         });
@@ -171,7 +172,7 @@ public class MsoManagerImpl implements IMsoManagerIf
             throw new MsoException("Mso object of type IOperationIf can not be removed");
         }
                 
-        return aMsoObject.deleteObject();
+        return aMsoObject.delete();
         
     }
     
@@ -187,7 +188,7 @@ public class MsoManagerImpl implements IMsoManagerIf
                  * FIX: This methods fails if non-deleteable references exists in the 
                  * model. This should not happend!
                  * ============================================================== */
-                boolean ret = m_operation.deleteObject();
+                boolean ret = m_operation.delete();
             	
             	// remove reference
                 m_operation = null;

@@ -1,9 +1,14 @@
 package org.redcross.sar.mso.data;
 
+import no.cmr.tools.Log;
+
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
+import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.Route;
+import org.redcross.sar.util.mso.TimePos;
+import org.redcross.sar.util.mso.Track;
 
 public class RouteImpl extends AbstractMsoObject implements IRouteIf
 {
@@ -164,4 +169,74 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
     {
         return m_areaSequenceNumber;
     }
+    
+    /*-------------------------------------------------------------------------------------------
+     * Public methods
+     *-------------------------------------------------------------------------------------------*/
+    
+    public void addRoutePoint(GeoPos aGeoPos)
+    {
+        Route r = getGeodata();
+        try
+        {
+            Route tc = (Route)r.clone();
+            tc.add(aGeoPos);
+            setGeodata(tc);
+        }
+        catch (CloneNotSupportedException e)
+        {
+            Log.error("CloneNotSupportedException in addRoutePoint, no point added.");
+        }
+    }
+    
+    public void removeRoutePoint(GeoPos aGeoPos)
+    {
+    	Route r = getGeodata();
+        try
+        {
+            Route rc = (Route)r.clone();
+            rc.remove(aGeoPos);
+            setGeodata(rc);
+        }
+        catch (CloneNotSupportedException e)
+        {
+            Log.error("CloneNotSupportedException in removeRoutePoint, no point removed.");
+        }
+    }
+
+	@Override
+	public GeoPos getRoutePoint(int index) {
+		Route r = getGeodata();
+		if(r!=null) {
+			return r.get(index);
+		}
+		return null;
+	}
+
+	@Override
+	public int getRoutePointCount() {
+		Route r = getGeodata();
+		if(r!=null) {
+			return r.getCount();
+		}
+		return 0;
+	}
+
+	@Override
+	public GeoPos getRouteStartPoint() {
+		Route r = getGeodata();
+		if(r!=null) {
+			return r.getStartPoint();
+		}
+		return null;
+	}
+
+	@Override
+	public GeoPos getRouteStopPoint() {
+		Route r = getGeodata();
+		if(r!=null) {
+			return r.getStopPoint();
+		}
+		return null;
+	}   
 }

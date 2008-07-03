@@ -13,9 +13,13 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.event.DiskoWorkEvent;
+import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.CompassPanel;
 import org.redcross.sar.gui.DiskoBorder;
+import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
 import org.redcross.sar.gui.attribute.NumericAttribute;
+import org.redcross.sar.gui.attribute.PositionAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -291,6 +295,8 @@ public class UnitStatusPanel extends BasePanel {
 		getAttribsPanel().create(unit, ATTRIBUTES, CAPTIONS, 100, true, true);
 		getAttribsPanel().setAutoSave(true);
 		getAttribsPanel().addAttribute(getActiveAttr());
+		getAttribsPanel().getAttribute(
+				ATTRIBUTES[2]).addDiskoWorkListener(m_positionListener);
 		
 		// forward
 		update();		
@@ -347,5 +353,18 @@ public class UnitStatusPanel extends BasePanel {
 		// no map available
 		return null;
 	}	
+	
+	private final IDiskoWorkListener m_positionListener = new IDiskoWorkListener() {
+
+		@Override
+		public void onWorkPerformed(DiskoWorkEvent e) {
+			// is position changed?
+			if(e.isFinish()) {
+				// log position
+				m_unit.logPosition();
+			}
+		}
+		
+	};
 
 }
