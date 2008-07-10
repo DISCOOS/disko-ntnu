@@ -2094,8 +2094,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 								// get found position
 								TimePos found = track.getGeodata().get(i);
 								// only update unit position if logged point equals current position
-								bUpdatePosition = MapUtil.isFloatEqual(
-										found.getPosition(),msoUnit.getPosition().getPosition()); 
+								bUpdatePosition = found.getGeoPos().equals(msoUnit.getPosition().getGeoPos());
+								/*bUpdatePosition = MapUtil.isFloatEqual(
+										found.getPosition(),msoUnit.getPosition().getPosition());*/ 
 								// update logged position
 								track.getGeodata().set(i,p.getPosition());
 								//TimePos test = track.getGeodata().get(i);

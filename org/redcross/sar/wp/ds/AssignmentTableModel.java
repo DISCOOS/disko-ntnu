@@ -19,13 +19,14 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 
 	private static final long serialVersionUID = 1L;
 	private static final String NAME = "Name";
-	private static final String DISTANCE = "Distance";
+	private static final String ETA = "timeestimatedfinished";
+	private static final String EDE = "EDE";
 	private static final String ETE = "ETE";	
-	private static final String AVG_SPEED = "Avg_Speed";	
+	private static final String EAS = "EAS";	
 	private static final String[] ATTRIBUTES = new String[]{NAME, "status", 
-		"timeestimatedfinished",ETE,DISTANCE,AVG_SPEED};
+		ETA,ETE,EDE,EAS};
 	private static final String[] CAPTIONS = new String[]{"Oppdrag",
-		"Status","ETA","ETE","Avstand","Gj.hast"};
+		"Status","ETA","ETE","EDE","Gj.hast"};
 	
 	private RouteCostEstimator estimator = null;
 	
@@ -82,18 +83,18 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
 			return cost!=null ? Utils.getTime(cost.ete()) : "00:00:00";
 		}
-		else if(DISTANCE.equals(name)) {
+		else if(EDE.equals(name)) {
 			IAssignmentIf assignment = (IAssignmentIf)msoObj;
 			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
-			return cost!=null ? Math.round(cost.getDistance()) + " m" : "0 m";
+			return cost!=null ? Math.round(cost.ede()) + " m" : "0 m";
 		}
-		else if(AVG_SPEED.equals(name)) {
+		else if(EAS.equals(name)) {
 			IAssignmentIf assignment = (IAssignmentIf)msoObj;
 			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
 			String speed = "0 km/h";
 			if(cost!=null) {
 				SimpleDecimalFormat f = new SimpleDecimalFormat(1,1);				
-				speed = f.format((double)cost.getDistance() / (double)cost.ete() * 3.6) + " km/h"; 
+				speed = f.format(cost.eas()* 3.6) + " km/h"; 
 			}
 			return speed;
 		}

@@ -7,7 +7,7 @@ import org.redcross.sar.map.MapUtil;
 /**
  *
  */
-public class GeoPos
+public class GeoPos implements Cloneable
 {
     private Point2D.Double m_position = null;
         
@@ -77,7 +77,7 @@ public class GeoPos
      * Calculate distance to another position.
      *
      * @param aPos The other position.
-     * @return The distance (in kilometers)
+     * @return The distance (in meters)
      */
     public double distance(GeoPos aPos)
     {
@@ -93,7 +93,9 @@ public class GeoPos
      */
     public static double distance(GeoPos aPos1, GeoPos aPos2)
     {
-        return aPos1.getPosition().distance(aPos2.getPosition()); // todo fix
+        return MapUtil.greatCircleDistance(
+        		aPos1.m_position.y, aPos1.m_position.x, 
+        		aPos2.m_position.y, aPos2.m_position.x);
     }
 
     /**
@@ -102,7 +104,7 @@ public class GeoPos
      * @param aPos The other position.
      * @return The bearing (in degrees)
      */
-    public int bearing(GeoPos aPos)
+    public double bearing(GeoPos aPos)
     {
         return bearing(this, aPos);
     }
@@ -114,9 +116,11 @@ public class GeoPos
      * @param aPos2 The other position.
      * @return The bearing (in degrees)
      */
-    public static int bearing(GeoPos aPos1, GeoPos aPos2)
+    public static double bearing(GeoPos aPos1, GeoPos aPos2)
     {
-        return 0;  // todo fix
+        return MapUtil.sphericalAzimuth(
+        		aPos1.m_position.y, aPos1.m_position.x, 
+        		aPos2.m_position.y, aPos2.m_position.x);
     }
 
     private final static double MAX_EQUALITY_DISTANCE = 10.0e-6;
@@ -138,19 +142,20 @@ public class GeoPos
 
         GeoPos in = (GeoPos) obj;
 
-        return floatEquals(in.getPosition());
+        return distance(in)<MAX_EQUALITY_DISTANCE;
     }
 
+    /*
     protected boolean floatEquals(Point2D.Double aPoint)
     {
         return MapUtil.isFloatEqual(m_position, aPoint); 
         
-        /*(m_position != null ?
+        (m_position != null ?
                 (aPoint != null && (float)m_position.x == (float)aPoint.x && (float)m_position.y == (float)aPoint.y) :
                 aPoint != null);
-        */
     }
-
+	*/
+	
     public int hashCode()
     {
         int result = 0;
@@ -161,5 +166,10 @@ public class GeoPos
         }
         return result;
     }
+
+    public GeoPos clone() {
+    	return new GeoPos(getPosition());    
+    }
+    
     
 }

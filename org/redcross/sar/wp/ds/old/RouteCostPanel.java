@@ -286,10 +286,10 @@ public class RouteCostPanel extends JPanel
 			
 	    	NumberFormat nf = new DecimalFormat("0.00");
 	    	
-	    	double kph = m_rce.getDistance() / m_rce.ete() * 3.6;
+	    	double kph = m_rce.eda() / m_rce.ete() * 3.6;
 	    	
-	    	double km = Math.floor(m_rce.getDistance() / (1000));
-	    	double m = Math.round(m_rce.getDistance() - (km * 1000));
+	    	double km = Math.floor(m_rce.eda() / (1000));
+	    	double m = Math.round(m_rce.eda() - (km * 1000));
 
 	    	double tt = Math.floor(cost / (60 * 60));
 	    	double mm = Math.round((cost / 60) - (tt * 60));

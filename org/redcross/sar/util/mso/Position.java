@@ -108,7 +108,7 @@ public class Position extends AbstractGeodata
      * @param aPos The other position.
      * @return The bearing (in degrees)
      */
-    public int bearing(Position aPos)
+    public double bearing(Position aPos)
     {
         return bearing(this, aPos);
     }
@@ -128,7 +128,7 @@ public class Position extends AbstractGeodata
      * @param aPos2 The other position.
      * @return The bearing (in degrees)
      */
-    public static int bearing(Position aPos1, Position aPos2)
+    public static double bearing(Position aPos1, Position aPos2)
     {
         return GeoPos.bearing(aPos1.m_position, aPos2.m_position);
     }

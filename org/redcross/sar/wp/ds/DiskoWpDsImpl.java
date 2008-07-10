@@ -88,12 +88,12 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 
 	private static EnumSet<IMsoFeatureLayer.LayerCode> getMapLayers() {	
 		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
-		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
+		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
+		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
 	    return myLayers;
 	}
 	

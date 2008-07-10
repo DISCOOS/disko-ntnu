@@ -86,4 +86,8 @@ public interface IMsoFeatureLayer extends IFeatureLayer {
 	
 	public IEnvelope getDirtyExtent() throws AutomationException, IOException;
 	
+	public List<IMsoObjectIf> getGeodataMsoObjects(String id);
+	
+	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject);
+	
 }

@@ -30,8 +30,6 @@ import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.thread.IDiskoWork;
 import org.redcross.sar.util.except.CommitException;
-import org.redcross.sar.util.mso.GeoPos;
-import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
@@ -41,8 +39,6 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 								           IMsoUpdateListenerIf {
 
 	private static final long DUTY_CYCLE_TIME = 2000;		// Invoke every DUTY_CYCLE_TIME
-	private static final double OFFSET_TOLERANCE = 100.0;	/* Offset distance from route 
-															 * is maximum 100.0 */ 
 	
 	/**
 	 * Listen for Updates of assignments, routes and units
@@ -197,141 +193,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	public String getOprID() {
 		return m_oprID;
 	}	
-	
-	/**
-	 * Return estimated time enroute using current offset
-	 */	
-	public synchronized int ete(IAssignmentIf assignment) {
-		// get cost
-		RouteCost cost = m_costs.get(assignment);
-		// has cost?
-		if(cost!=null) {
-			// found
-			return cost.ete();
-		}
-		// no cost found
-		return -1;
-	}
-	
-	/**
-	 * Return estimated time of arrival from current offset position
-	 * @param IAssignmentIf assignment - Assignment to get estimate for
-	 */	
-	public synchronized Calendar eta(IAssignmentIf assignment) {
-		// get cost
-		RouteCost cost = m_costs.get(assignment);
-		// has cost?
-		if(cost!=null) {
-			// found
-			return cost.eta();
-		}
-		// no cost found
-		return null;
-	}
-	
-	/**
-	 * Estimated time of arrival at point from current offset position (unit position or start)
-	 * @param Position to - Closest arrival point on route
-	 * @param IAssignmentIf assignment - Assignment to get estimate for
-	 * @return Estimated time of arrival at point from registered start time (t0), and
-	 * current offset position. The offset position is updated from unit position changes. 
-	 * If no unit position is found, start is used. The start time is set to execution start time  
-	 * of assignment. If assignment is not started, then estimation start time is used.
-	 */ 	
-	public synchronized Calendar eta(Position to, IAssignmentIf assignment) {
-		// get cost
-		RouteCost cost = m_costs.get(assignment);
-		// has cost?
-		if(cost!=null) {
-			int i = -1;
-			try {
-				cost.findNearest(to.getGeoPos(),OFFSET_TOLERANCE);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// found?
-			if(i>=0) {
-				// get estimate
-				return cost.eta(i);
-			}
-		}
-		// no cost found
-		return null;
-	}
-	
-	/**
-	 * Estimated time of arrival from current offset position (unit position or start)
-	 * @param Calendar t0 - Start time of travel
-	 * @param IAssignmentIf assignment - Assignment to get estimate for
-	 * @return Return estimated time of arrival from current offset position. The offset 
-	 * position is updated from unit position changes. If no unit position is found, 
-	 * start is used.  
-	 * <b>IMPORTANT</b>: This estimate is only a time-shift of current estimate. 
-	 * Because the estimated cost is dependent on time, the returned estimate be comes 
-	 * less accurate with increasing time shift.
-	 */	
-	public synchronized Calendar eta(Calendar t0, IAssignmentIf assignment) {
-		// get cost
-		RouteCost cost = m_costs.get(assignment);
-		// has cost?
-		if(cost!=null) {
-			// get estimated time enroute
-			int ete = cost.ete();
-			// add seconds to calendar
-			t0.add(Calendar.SECOND, ete);
-			// finished
-			return t0;
-		}
-		// no cost found
-		return null;
-	}
-
-	
-	/**
-	 * Estimated time of arrival at closest position on route from current offset 
-	 * position (unit position or start)
-	 * @param Calendar t0 - Start time of travel
-	 * @param Position at - Closest arrival point on route
-	 * @param IAssignmentIf assignment - Assignment to get estimate for
-	 * @return Return estimated time of arrival at closest position on route from current 
-	 * offset position. The offset position is updated from unit position changes. If no unit 
-	 * position is found, start is used. 
-	 * <b>IMPORTANT</b>: This estimate is only a time-shift of 
-	 * current estimate. Because the estimated cost is dependent on time, the returned estimate 
-	 * be comes less accurate with increasing time shift.
-	 */	
-	public synchronized Calendar eta(Calendar t0, Position at, IAssignmentIf assignment) {
-		// get cost
-		RouteCost cost = m_costs.get(assignment);
-		// has cost?
-		if(cost!=null) {
-			int i = -1;
-			try {
-				cost.findNearest(at.getGeoPos(),OFFSET_TOLERANCE);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// found?
-			if(i>=0) {
-				// get estimated time enroute
-				int ete = cost.ete(i);
-				// add seconds to calendar
-				t0.add(Calendar.SECOND, ete);
-				// finished
-				return t0;				
-			}
-		}
-		// no cost found
-		return null;
-	}
-	
-	/* ===========================================
-	 * Public methods
-	 * ===========================================
-	 */
-	
+		
 	public RouteCost getCost(IAssignmentIf assignment) {
 		return m_costs.get(assignment);
 	}
@@ -345,6 +207,12 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			for(IAssignmentIf it : MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentListItems()) {
 				if(setEstimate(it)) {
 					addToResidue(getCost(it));
+				}
+				IUnitIf msoUnit = it.getOwningUnit();
+				if(msoUnit!=null) {
+					if(logPosition(msoUnit)) {
+						addToResidue(getCost(it));
+					}
 				}
 			}
 		}
@@ -451,7 +319,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			// cast to IUnitIf 
 			IUnitIf msoUnit = (IUnitIf)msoObj;
 			// forward
-			if(setOffset(msoUnit)) {
+			if(logPosition(msoUnit)) {
 				cost = getCost(msoUnit.getActiveAssignment());
 			}
 		}
@@ -516,7 +384,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				 IAssignmentIf.FINISHED_AND_REPORTED_SET.contains(current))) {
 				// set flag
 				m_statusList.put(assignment,next);
-				// forward?
+				// forward
 				bFlag = setOffset(assignment);
 			}			
 			break;
@@ -623,7 +491,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		if(assignment!=null) {
 			RouteCost cost = m_costs.get(assignment);
 			if(cost!=null && !cost.isArchived()) {
-				cost.archive(null);
+				cost.archive();
 			}
 		}
 	}	
@@ -708,24 +576,15 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				RouteCost cost = m_costs.get(assignment);
 				// has cost?
 				if(cost!=null) {
-					// get owning unit
-					IUnitIf unit = assignment.getOwningUnit();
-					// forward
-					bFlag = setOffset(unit);
-					// use start time of assignment?
-					if(!bFlag) {
-						// set start time and position
-						cost.shift(assignment.getTimeStarted(),0);
-						// set flag
-						bFlag = true;
-					}
+					// set start time
+					bFlag = cost.setStartTime(assignment.getTimeStarted());
 				}
 			}
 		}
 		return bFlag;
 	}
 	
-	private boolean setOffset(IUnitIf msoUnit) {
+	private boolean logPosition(IUnitIf msoUnit) {
 		// initialize
 		boolean bFlag = false;
 		
@@ -744,8 +603,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 					// update offset position?
 					if(cost!=null) {
 						try {
-							int offset = cost.findNearest(new GeoPos(p.getPosition()),OFFSET_TOLERANCE);
-							cost.shift(p.getTime(),offset!=-1?offset:cost.getStartPosition());
+							cost.setLastKnownPosition(p);
 							bFlag = true;
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -786,7 +644,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		 * but not longer than a started update or estimate step. 
 		 * update() is only allowed to exceed MAX_WORK_TIME/2. The 
 		 * remaining time is given to estimate(). This ensures that 
-		 * update() will not starve estimate() during large update 
+		 * update() will not starve estimate() during long update 
 		 * sequences.
 		 * 
 		 * ============================================================= */
@@ -883,13 +741,13 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			// execute work cycle
 			try {
 				// add to heavy list?
-				if(heavyCount > 0 && cost.isReplaced()) {
+				if(heavyCount > 0 && cost.isSpatialChanged()) {
 					heavySet.add(cost);				
 				}
 				else {
 
 					// increment heavy count?
-					if(cost.isReplaced()) heavyCount++;
+					if(cost.isSpatialChanged()) heavyCount++;
 					
 					// forward
 					cost.estimate();

@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -8,6 +9,7 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
+import org.redcross.sar.util.mso.Track;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -756,6 +758,17 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     	if(aTime==null) aTime = Calendar.getInstance();
     	// get MSO track
     	ITrackIf msoTrack = m_track.getReference();
+		// create track?
+		if(msoTrack==null) {			
+			// get command post
+			ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();			
+			// create new track
+			msoTrack = cmdPost.getTrackList().createTrack();
+			// set geodata
+			msoTrack.setGeodata(new Track(null, null, 1));
+			// set track reference in unit
+			m_track.setReference(msoTrack);
+		}    	
     	// is possible to log position?
     	if(msoTrack!=null) {
     		// get current position
@@ -785,7 +798,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     	ITrackIf msoTrack = m_track.getReference();
     	// is possible to log position?
     	if(msoTrack!=null) {
-    		msoTrack.getTrackStopPoint();
+    		p = msoTrack.getTrackStopPoint();
     	}
     	// finished
     	return p;

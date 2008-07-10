@@ -12,16 +12,21 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.POIFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.data.IAreaIf;
+import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
+import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.util.MsoUtils;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 public class POILayer extends AbstractMsoFeatureLayer {
 
@@ -60,6 +65,28 @@ public class POILayer extends AbstractMsoFeatureLayer {
  		return msoFeature;
  	}
 
+ 	@Override
+	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+		IAreaIf area = null;
+		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1); 		
+		if (msoObject instanceof IAssignmentIf) {
+			IAssignmentIf assignment = (IAssignmentIf)msoObject;
+			area = assignment.getPlannedArea();
+		}
+		else if(msoObject instanceof IAreaIf) {
+			area = (IAreaIf)msoObject;
+		}
+		if(area!=null) {
+			// add all POIs
+			objects.addAll(area.getAreaPOIsItems());
+		}
+		else {
+			objects.add(msoObject);
+		}
+		return objects;
+	}
+ 	
+ 	
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {

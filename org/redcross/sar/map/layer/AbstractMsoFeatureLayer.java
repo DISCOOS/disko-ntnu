@@ -107,7 +107,26 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return msoModel;
 	}
 
-	protected List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+	public List<IMsoObjectIf> getGeodataMsoObjects(String id) {
+		try {
+			MsoFeatureClass msoFC = (MsoFeatureClass)getFeatureClass();
+			IMsoFeature msoFeature = msoFC.getFeature(id);
+			IMsoObjectIf msoObj = msoFeature!=null ? msoFeature.getMsoObject() : null;		
+			if(msoObj!=null) {
+				return getGeodataMsoObjects(msoObj);
+			}
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return new ArrayList<IMsoObjectIf>(0);
+	}
+	
+	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
 		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
 		objects.add(msoObject);
 		return objects;

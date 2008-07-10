@@ -66,6 +66,18 @@ public class Track extends AbstractGeodata
      * Add a new point to the track.
      * Calls {@link #add(TimePos)} .
      *
+     * @param aPosition
+     * @param aCalendar
+     */
+    public void add(Point2D.Double aPosition, Calendar aCalendar)
+    {
+        add(new TimePos(aPosition.x, aPosition.y, aCalendar));
+    }
+    
+    /**
+     * Add a new point to the track.
+     * Calls {@link #add(TimePos)} .
+     *
      * @param aLongPosition
      * @param aLatPosition
      * @param aCalendar
@@ -200,11 +212,17 @@ public class Track extends AbstractGeodata
     }
     
 	public TimePos getStartPoint() {
-		return m_track.get(0);
+		if(m_track.size()>0)
+			return m_track.get(0);
+		else
+			return null;
 	}
 
 	public TimePos getStopPoint() {
-		return m_track.get(m_track.size()-1);
+		if(m_track.size()>0)
+			return m_track.get(m_track.size()-1);
+		else
+			return null;
 	}
         
 }

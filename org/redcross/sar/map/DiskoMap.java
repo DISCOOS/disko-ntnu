@@ -395,7 +395,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	        }
 
 	        // save refresh information
-			refreshCount = count;
+			refreshCount += count;
 			refreshLayer = msoLayer;
 	        
 			// refresh layers later?
@@ -829,7 +829,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				for (int i = 0; i < layers.size(); i++) {
 					IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 					MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-					flashFeature(msoFC.getFeature(msoObj.getObjectId()));
+					for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObj))
+						flashFeature(msoFC.getFeature(it.getObjectId()));
 				}
 			}
 		} catch (AutomationException e) {
@@ -930,41 +931,43 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			IEnvelope env = null;
 			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 			for (int i = 0; i < layers.size(); i++) {
-				IFeatureLayer flayer = (IFeatureLayer)layers.get(i);
+				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-				IMsoFeature msoFeature = msoFC.getFeature(msoObject.getObjectId());
-				IEnvelope extent = msoFeature.getExtent();
-				
-				// calculate extent from scale
-				double xMax = extent.getXMax();
-				double yMax = extent.getYMax();
-				double xMin = extent.getXMin();
-				double yMin = extent.getYMin();
-				
-				//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
-				
-				// calulate delta values
-				double deltaX = (pixWidth*PIXEL_SIZE)*scale;
-				double deltaY = (pixWidth*PIXEL_SIZE)*scale;
-				double centerX = xMin + (xMax-xMin)/2;
-				double centerY = yMin + (yMax-yMin)/2;
-				
-				//System.out.println("deltaX: "+deltaX + ", deltaY: "+deltaY);
-				
-				// set extent
-				extent.setXMax(centerX+deltaX/2);
-				extent.setXMin(centerX-deltaX/2);
-				extent.setYMax(centerY+deltaY/2);
-				extent.setYMin(centerY-deltaY/2);
-				
-				//System.out.println("extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
-
-				// append
-				if (extent != null) {
-					if (env == null)
-						env = extent.getEnvelope();
-					else 
-						env.union(extent);
+				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
+					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
+					IEnvelope extent = msoFeature.getExtent();
+					
+					// calculate extent from scale
+					double xMax = extent.getXMax();
+					double yMax = extent.getYMax();
+					double xMin = extent.getXMin();
+					double yMin = extent.getYMin();
+					
+					//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
+					
+					// calulate delta values
+					double deltaX = (pixWidth*PIXEL_SIZE)*scale;
+					double deltaY = (pixWidth*PIXEL_SIZE)*scale;
+					double centerX = xMin + (xMax-xMin)/2;
+					double centerY = yMin + (yMax-yMin)/2;
+					
+					//System.out.println("deltaX: "+deltaX + ", deltaY: "+deltaY);
+					
+					// set extent
+					extent.setXMax(centerX+deltaX/2);
+					extent.setXMin(centerX-deltaX/2);
+					extent.setYMax(centerY+deltaY/2);
+					extent.setYMin(centerY-deltaY/2);
+					
+					//System.out.println("extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
+	
+					// append
+					if (extent != null) {
+						if (env == null)
+							env = extent.getEnvelope();
+						else 
+							env.union(extent);
+					}
 				}
 			}
 			// found extent?
@@ -982,38 +985,40 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 
 			for (int i = 0; i < layers.size(); i++) {
 				
-				IFeatureLayer flayer = (IFeatureLayer)layers.get(i);
+				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-				IMsoFeature msoFeature = msoFC.getFeature(msoObject.getObjectId());
-				IEnvelope extent = msoFeature.getExtent();
-				
-				if (extent != null) {
+				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
+					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
+					IEnvelope extent = msoFeature.getExtent();
 					
-					//må kalkulere et extent som gir gitt skala				
-					//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());				
-					double centerX = extent.getXMin() + (extent.getXMax()-extent.getXMin())/2;
-					double centerY = extent.getYMin() + (extent.getYMax()-extent.getYMin())/2;
-					
-					
-					double deltaX = mapPrintWidthSize * scale;
-					double deltaY = mapPrintHeigthSize * scale;
-					
-					// System.out.println("deltaX: "+deltaX + ", deltaY: "+deltaY);
-					
-					// set extent
-					extent.setXMax(centerX+deltaX/2);
-					extent.setXMin(centerX-deltaX/2);
-					extent.setYMax(centerY+deltaY/2);
-					extent.setYMin(centerY-deltaY/2);
-					
-					//System.out.println("extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
-					
-					// append
-					if (env == null)
-						env = extent.getEnvelope();
-					else 
-						env.union(extent);
-					
+					if (extent != null) {
+						
+						//må kalkulere et extent som gir gitt skala				
+						//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());				
+						double centerX = extent.getXMin() + (extent.getXMax()-extent.getXMin())/2;
+						double centerY = extent.getYMin() + (extent.getYMax()-extent.getYMin())/2;
+						
+						
+						double deltaX = mapPrintWidthSize * scale;
+						double deltaY = mapPrintHeigthSize * scale;
+						
+						// System.out.println("deltaX: "+deltaX + ", deltaY: "+deltaY);
+						
+						// set extent
+						extent.setXMax(centerX+deltaX/2);
+						extent.setXMin(centerX-deltaX/2);
+						extent.setYMax(centerY+deltaY/2);
+						extent.setYMin(centerY-deltaY/2);
+						
+						//System.out.println("extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
+						
+						// append
+						if (env == null)
+							env = extent.getEnvelope();
+						else 
+							env.union(extent);
+						
+					}
 				}
 			}
 			// found extent?
@@ -1032,14 +1037,16 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-				boolean bDirty = false; //(flayer.clearSelected()>0);
-				IMsoFeature msoFeature = msoFC.getFeature(msoObject.getObjectId());
-				if(msoFeature!=null) {
-					flayer.setSelected(msoFeature, selected);
-					bDirty = flayer.isDirty();
+				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
+					boolean bDirty = false;
+					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
+					if(msoFeature!=null) {
+						flayer.setSelected(msoFeature, selected);
+						bDirty = flayer.isDirty();
+					}
+					if(bDirty)
+						affected.add(flayer);
 				}
-				if(bDirty)
-					affected.add(flayer);
 			}
 		}
 		if(affected.size()>0) fireOnSelectionChanged();
@@ -1360,10 +1367,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				if (flayer!=null) {
 		 			// try to get feature
 					MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
-					IMsoFeature msoFeature = msoFC.getFeature(msoObj.getObjectId());
-					// found?
-					if(msoFeature!=null){
-						features.add(msoFeature);
+					for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObj)) {
+						IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
+						// found?
+						if(msoFeature!=null){
+							features.add(msoFeature);
+						}
 					}
 				}
 			}

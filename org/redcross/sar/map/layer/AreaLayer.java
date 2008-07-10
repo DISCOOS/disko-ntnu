@@ -65,7 +65,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
  	}
 
  	@Override
-	protected List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
 		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);		
 		if (msoObject instanceof IAssignmentIf) {
 			IAssignmentIf assignment = (IAssignmentIf)msoObject;
