@@ -4,12 +4,17 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Vector;
 
+import org.redcross.sar.map.MapUtil;
+
 /**
  * Class for holding route information
  */
 public class Route extends AbstractGeodata
 {
     private final Vector<GeoPos> m_route;
+    private final Vector<Double> m_distance;
+    
+    private int m_created = 0;
 
     /**
      * Constructor, default collection size
@@ -31,6 +36,7 @@ public class Route extends AbstractGeodata
     {
         super(anId,aName);
         m_route = new Vector<GeoPos>();
+        m_distance = new Vector<Double>();
     }
 
     /**
@@ -44,6 +50,7 @@ public class Route extends AbstractGeodata
     {
         super(anId,aName);
         m_route = new Vector<GeoPos>(aSize);
+        m_distance = new Vector<Double>();
     }
 
     /**
@@ -199,6 +206,68 @@ public class Route extends AbstractGeodata
 
 	public GeoPos getStopPoint() {
 		return m_route.get(m_route.size()-1);
-	}    
+	}
+	
+	public double getDistance() {
+		return getDistance(0,m_route.size()-1,false);
+	}
+	
+	public double getDistance(int index) {
+		return getDistance(0,index,false);
+	}
+	
+	public double getDistance(int from, int to, boolean direct) {
+		if(m_created!=m_changeCount) create();
+		int uBound = m_route.size()-1;
+		if(m_route.size()==0 || from>uBound || to>uBound)
+			return 0.0;
+		else if(direct){
+			return m_route.get(to).distance(m_route.get(from));			
+		}
+		else {
+			return m_distance.get(to) - m_distance.get(from);
+		}
+	}
+	
+	public double getBearing() {
+		return getBearing(0,m_route.size()-1);
+	}
+	
+	public double getBearing(int index) {
+		return getBearing(0,index);
+	}
+	
+	/**
+	 * Bearing between two points 
+	 * @param from
+	 * @param to
+	 * @return - bearing (in degrees)
+	 */
+	public double getBearing(int from, int to) {
+		int uBound = m_route.size()-1;
+		if(m_route.size()==0 || from>uBound || to>uBound)
+			return 0.0;
+		else 
+			return m_route.get(to).bearing(m_route.get(from));
+		
+	}	
+	
+	private void create() {
+		m_distance.clear();
+		m_distance.add(0.0);
+		if(m_route.size()>1) {
+			double d = 0.0;
+			Point2D.Double p1 = m_route.get(0).getPosition();
+			Point2D.Double p2 = null;
+			int count = m_route.size();
+			for(int i=1;i<count;i++) {
+				p2 = m_route.get(i).getPosition();
+				d += MapUtil.greatCircleDistance(p1.y, p1.x, p2.y, p2.x);
+				m_distance.add(d);
+				p1 = p2;
+			}
+		}
+		m_created = m_changeCount;
+	}
 
 }

@@ -1322,14 +1322,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						//Map map = (Map)getActiveView().getFocusMap();
 						//map.animationRefresh(phase, data, extent);
 						getActiveView().partialRefresh(phase, data, extent);
-						// is draw frame enabled?
-						//if(isEditSupportInstalled()) {
-						//	// draw directly onto map?
-						//	if(data==null || !drawFrame.isDirty()) 
-						//		drawFrame.draw();
-						//	else
-						//		drawFrame.refresh();
-						//}
 						// remove from stack
 						refreshStack.remove(key);
 						// forward

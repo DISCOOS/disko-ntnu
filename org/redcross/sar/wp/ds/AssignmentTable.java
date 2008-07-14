@@ -53,11 +53,12 @@ public class AssignmentTable extends JTable {
 			TableColumn column = getColumnModel().getColumn(i);
 			column.setResizable(false);
 			switch(i) {
-				case 0: column.setPreferredWidth(125); break;
+				case 0: column.setPreferredWidth(120); break;
 				case 1: column.setPreferredWidth(40); break;
 				case 2: column.setPreferredWidth(30); break;
-				case 3: column.setPreferredWidth(30); break;
+				case 3: column.setPreferredWidth(40); break;
 				case 4: column.setPreferredWidth(30); break;
+				case 5: column.setPreferredWidth(30); break;
 			}
 		}
 	}

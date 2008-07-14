@@ -29,7 +29,6 @@ import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
-
 /**
  *  Calculates route time cost along a specified route
  *  
@@ -38,11 +37,8 @@ import com.esri.arcgis.interop.AutomationException;
  */
 public class RouteCost {
 
-	private static final long SPATIAL_TIME_SHIFT_TOLERANCE = 1*60*60; /* is time shift is large then 1 hour, a
-																       * new estimate must be created */
-	
-	 		
-	 
+	private static final long ESTIMATE_TIME_TOLERANCE = 1*60*60; /* if progress is larger then 1 hour, a
+																  * new estimate must be created */
 	
     public enum SurfaceType
     {
@@ -83,9 +79,6 @@ public class RouteCost {
 	private ArrayList<Double> m_terrainLegCosts = null;			// terrain component cost of leg between two consecutive points on route
 	private ArrayList<Double> m_weatherLegCosts = null;			// weather component cost of leg between two consecutive points on route
 	private ArrayList<Double> m_lightLegCosts = null;			// light component cost of leg between two consecutive points on route
-	private ArrayList<Double> m_ete = null;						// estimated time cost for each at position index
-	private ArrayList<Double> m_eda = null;						// estimated moved distance on arrival at position index
-	private ArrayList<Double> m_mda = null;						// measured moved distance on arrival at position index
 	private LegData m_current = null;							// current leg
 	
 	// route data
@@ -96,23 +89,23 @@ public class RouteCost {
 	// flags
 	private boolean m_isSpatialChanged = false;					// if true, create() is invoked calculating a new spatial and temporal estimate
 	private boolean m_isTemporalChanged = false;				// if true, update() is invoked only updating the temporal part of the estimate
-	private boolean m_isArchived = false;						// if true, estimate() returns current ete() value 
-	private boolean m_isSuspended = true;						// if true, estimate() returns current ete() value
+	private boolean m_isArchived = false;						// if true, estimate() returns previous calculated ete() value
+	private boolean m_isSuspended = true;						// if true, estimate() returns previous calculated ete() value
     
 	// properties
 	private final RouteCostProp m_p;		// propulsion type
-	private final RouteCostProp m_sst;	// snow state type
-	private final RouteCostProp m_nsd;	// new snow depth type
-	private final RouteCostProp m_ss;		// snow state
-	private final RouteCostProp m_su;		// surface type
-	private final RouteCostProp m_us;		// upward slope 
-	private final RouteCostProp m_eds;	// easy downward slope
-	private final RouteCostProp m_sds;	// steep downward slope
-	private final RouteCostProp m_pre;	// preciptiation type
-	private final RouteCostProp m_win;	// wind type
-	private final RouteCostProp m_tem;	// temperature type
-	private final RouteCostProp m_w;		// weather
-	private final RouteCostProp m_li;		// light 
+	private final RouteCostProp m_sst;		// snow state type
+	private final RouteCostProp m_nsd;		// new snow depth type
+	private final RouteCostProp m_ss;		// snow state type
+	private final RouteCostProp m_su;		// surface type type
+	private final RouteCostProp m_us;		// upward slope type
+	private final RouteCostProp m_eds;		// easy downward slope type
+	private final RouteCostProp m_sds;		// steep downward slope type
+	private final RouteCostProp m_pre;		// precipitation type
+	private final RouteCostProp m_win;		// wind type
+	private final RouteCostProp m_tem;		// temperature type
+	private final RouteCostProp m_w;		// weather condition type
+	private final RouteCostProp m_li;		// light condition type
 	
 	// feature maps
 	private RouteCostFeatureMap m_slopeMap;				// slope feature layers (GIS data)
@@ -320,7 +313,7 @@ public class RouteCost {
 	 */
 	public boolean setStartTime(Calendar t0) {
 		if(!equal(m_startTime,t0)) {
-			if(getMillis(m_startTime,t0)>SPATIAL_TIME_SHIFT_TOLERANCE)
+			if(getMillis(m_startTime,t0)>ESTIMATE_TIME_TOLERANCE)
 				m_isSpatialChanged = true;
 			m_startTime = t0;
 			m_isTemporalChanged = true;
@@ -333,8 +326,9 @@ public class RouteCost {
 	 *  Calculated estimated time enroute to route destination.
 	 *  
 	 *  @return Estimated time enroute (ete)
+	 *  @throws Exception
 	 */		
-	public int estimate() throws Exception{		
+	public int estimate() throws Exception {		
 		
 		// return current value?
 		if(m_isSuspended || m_isArchived) return ete();
@@ -352,11 +346,67 @@ public class RouteCost {
 			cost = update(); // is fast
 		
 		// forward
-		travel();
+		progress();
 
 		// return estimated cost
 		return (int)cost;
 	}			
+	
+	/**
+	 *  Update estimated current position. 
+	 *
+	 *	@return <code>true</code> if estimated current position (ecp) is updated, 
+	 * 	<code>false</code> otherwise. This method will only succeed if estimated track
+	 * 	(et) exists.</p> 
+	 * <code>estimate()</code> will create et. 
+	 *  @throws Exception
+	 */
+	
+	
+	/**
+	 * Update current time and estimated current position (<code>ecp</code>).
+	 * 
+	 * @return <code>true</code> if estimated current position is updated, 
+	 * <code>false</code> otherwise. This method will only succeed if estimated track 
+	 * (<code>et</code>) exists.</p> 
+	 * <code>estimate()</code> will create <code>et</code>.
+	 * 
+	 *  @throws Exception
+	 */
+	public boolean progress() throws Exception  {
+		// can't travel?
+		if(m_et==null) return false;
+		// initialize current leg?
+		if(m_current==null) {
+			m_current = init(false);
+		}
+		// get current time
+		Calendar t = Calendar.getInstance();
+		// get ete in seconds
+		long ete = (m_eta.getTimeInMillis() - t.getTimeInMillis())/1000;
+		// get index of current leg (from point index)
+		int index = getLegIndex(ete);		
+		// get leg cost
+		double lc = getLegCost(index);
+		// get leg distance
+		double ld = getLegDistance(index);	
+		// calculate leg speed
+		double lv = lc>0 ? ld/lc : 0;
+		// calculate residue distance on leg
+		double lr = lv*getResidueCost(index, ete);
+		// calculate leg bearing 
+		double lb = getLegBearing(index);
+		// get leg from point
+		GeoPos from = getLegFromPoint(index);
+		// get new position on the straight line representing this leg
+		Point2D.Double p = MapUtil.getCoordinate(
+				from.getPosition().y, from.getPosition().x, lr, lb);
+		// update current position
+		m_current.next(m_current.offset + index,t,ld,p,null);
+		// finished
+		return true;
+	}
+	
 	
 	/**
 	 *  Get the nearest position in route
@@ -466,8 +516,12 @@ public class RouteCost {
 	 *  @return Estimated time enroute in seconds
 	 */		
 	public int ete() {
-		if (!(m_eta==null || m_isSpatialChanged))
-			return (int)(m_eta.getTimeInMillis() - System.currentTimeMillis())/1000;
+		if (!(m_eta==null || m_isSpatialChanged)) {
+			if(m_current!=null)
+				return (int)(m_eta.getTimeInMillis() - m_current.t.getTimeInMillis())/1000;
+			else
+				return (int)(m_eta.getTimeInMillis() - m_startTime.getTimeInMillis())/1000;
+		}
 		else
 			return 0;
 	}	
@@ -490,16 +544,22 @@ public class RouteCost {
 	public double ede() {
 		// get estimated current position
 		GeoPos ecp = ecp();
-		// get to point on leg
-		GeoPos tp = m_positions.get(m_current.index);
-		// get rest distance of leg
-		double ede = MapUtil.greatCircleDistance(
-				ecp.getPosition().y, ecp.getPosition().x, 
-				tp.getPosition().y, tp.getPosition().x);
-		// get rest of estimated distance
-		ede += m_eda.get(m_eda.size()-1) - m_eda.get(m_current.index);
-		// finished
-		return ede;
+		// has estimated point?
+		if(ecp!=null) {
+			// get index
+			int index = m_current.index - m_current.offset;
+			// get to point on leg
+			GeoPos to = getLegFromPoint(index);
+			// get rest distance of leg
+			double ede = MapUtil.greatCircleDistance(
+					ecp.getPosition().y, ecp.getPosition().x, 
+					to.getPosition().y, to.getPosition().x);
+			// get rest of estimated distance
+			ede += m_et.getDistance(index,m_et.getCount()-1,false);
+			// finished
+			return ede;
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -508,9 +568,9 @@ public class RouteCost {
 	 */		
 	public double eda() {
 		if (!m_isSpatialChanged)
-			return m_eda.get(m_eda.size() - 1);
+			return m_mt.getDistance() + m_et.getDistance();
 		else
-			return 0;
+			return 0.0;
 	}	
 	
 	/**
@@ -518,7 +578,10 @@ public class RouteCost {
 	 * 
 	 */	
 	public GeoPos ecp() {
-		return new GeoPos(m_current.pd[0]);
+		if(m_current!=null)
+			return new GeoPos(m_current.pd[0]);
+		else
+			return null;
 	}
 		
 	/**
@@ -561,9 +624,7 @@ public class RouteCost {
 	 * @return Time moved in seconds
 	 */	
 	public int mta() {
-		TimePos fkp = fkp();
-		TimePos lkp = lkp();
-		return fkp!=null ? (int)(lkp.getTime().getTimeInMillis() - fkp.getTime().getTimeInMillis())/1000 : 0;
+		return m_mt!=null ? (int)m_mt.getDuration(): 0;
 	}
 	
 	/**
@@ -571,7 +632,7 @@ public class RouteCost {
 	 * 
 	 */	
 	public double mda() {
-		return m_mda.get(m_mda.size()-1);
+		return m_mt!=null ?  m_mt.getDistance() : 0.0;
 	}
 	
 	/**
@@ -581,7 +642,7 @@ public class RouteCost {
 	 */	
 	public double mas() {
 		double mta = mta();
-		return mta>0 ? mda()/mta() : 0;
+		return mta>0 ? mda()/mta : 0.0;
 	}	
 		
 	/* =====================================================================
@@ -716,14 +777,11 @@ public class RouteCost {
 			// get size of results
 			size = Math.max(10,m_positions.size() - args.offset - 1);
 			
-			// initialize results
-			m_ete = new ArrayList<Double>(size);
-			
 			// initialize estimated track
 			m_et = new Track("et","et",size);			
 			
-			// add as start leg point
-			m_et.add(new TimePos(pd,t));				
+			// add start leg from point
+			m_et.add(new TimePos(pd,t));
 			
 			// calculate?
 			if(bCalculate) {
@@ -861,42 +919,6 @@ public class RouteCost {
 	}	
 	
 	/**
-	 *  Update estimate information
-	 */		
-	private boolean travel() throws Exception  {
-		// can travel?
-		if(m_current!=null) {
-			// get current time
-			Calendar t = Calendar.getInstance();
-			// get ete in seconds
-			long ete = (m_eta.getTimeInMillis() - t.getTimeInMillis())/1000;
-			// get index of current leg 
-			int index = getLegIndex(ete);		
-			// get leg cost
-			double lc = getLegCost(index);
-			// get leg distance
-			double ld = getLegDistance(index);	
-			// calculate leg speed
-			double lv = lc>0 ? ld/lc : 0;
-			// calculate residue distance on leg
-			double lr = lv*getResidueCost(index, ete);
-			// calculate leg bearing 
-			double lb = getLegBearing(index);
-			// get leg from point
-			GeoPos from = getLegFromPoint(index);
-			// get new position on the straight line representing this leg
-			Point2D.Double p = MapUtil.getCoordinate(
-					from.getPosition().y, from.getPosition().x, lr, lb);
-			// update current position
-			m_current.next(m_current.offset + index,t,ld,p,null);
-			// finished
-			return true;
-		}
-		// failed
-		return false;
-	}
-
-	/**
 	 * Calculate leg time cost.
 	 * 
 	 * @param args - arguments object
@@ -948,53 +970,27 @@ public class RouteCost {
 		// add to total cost
 		args.ete += args.lc;
 		
-		// add estimate?
+		// add estimated point arrival time at point on route?
 		if(add) {
 			m_et.add(args.pd[1], args.t);
-			m_ete.add(args.ete);			
 		}
 		
 	}
 	
 	private int getLegIndex(long ete) {
-		int i = -1;
-		// still on first leg?
-		if(m_current!=null) {
-			if(ete<=m_current.ete) return -1;
-		}
-		// search for it
-		for(i=0;i<m_ete.size();i++) {
-			if(m_ete.get(i)>ete)				
-				return i;
-		}
-		// finished
-		return i-1;
+		return m_et.find(ete,false);
 	}
 	
 	private double getLegCost(int index) {
-		// first leg?
-		if(index==-1)
-			return m_current!=null ? m_current.ete : 0.0;
-		else if(index==0) 			
-			return m_ete.get(index);
-		else
-			return m_ete.get(index) - m_ete.get(index-1);
+		return m_et.getDuration(index,index+1);
 	}				
 	
 	private double getResidueCost(int index, double ete) {
-		// first leg?
-		if(index==-1)
-			return m_current!=null ? m_current.ete - ete : ete;
-		else
-			return m_ete.get(index) - ete;
+		return ete - m_et.getReminder(index);
 	}				
 	
 	private double getLegDistance(int index) {
-		// first leg?
-		if(index==-1)
-			return m_current.d;
-		else
-			return m_legs.get(m_current.offset+index);
+		return m_et.getDistance(index,index+1,false);
 	}				
 	
 	private TimePos getLegFromPoint(int index) {
@@ -1006,7 +1002,7 @@ public class RouteCost {
 	}
 	
 	private double getLegBearing(int index) {
-		return getLegFromPoint(index).bearing(getLegToPoint(index));
+		return m_et.getBearing(index, index+1);
 	}	
 	
 	/**
@@ -1100,7 +1096,6 @@ public class RouteCost {
 				newPositions.add(p.clone());		
 				// create arrays
 				m_legs = new ArrayList<Double>(count - 2);
-				m_eda = new ArrayList<Double>(count - 2);
 				// loop over all
 				for(int i=1;i<count;i++) {
 					// get next point
@@ -1113,8 +1108,6 @@ public class RouteCost {
 						m_legs.add(d);						
 						// add to cumulative distance
 						sum += d;						
-						// save cumulative distance
-						m_eda.add(sum);						
 						// add to densified polyline
 						newPolyline.addPoint(m_polyline.getPoint(i), null, null);						
 						// add to densified positions array

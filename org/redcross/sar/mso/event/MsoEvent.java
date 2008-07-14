@@ -53,7 +53,7 @@ public class MsoEvent extends java.util.EventObject
         }
     }
 
-    private final int m_eventTypeMask;
+    private int m_eventTypeMask;
 
     /**
      * Create event for a specific {@link org.redcross.sar.mso.event.MsoEvent.EventType}
@@ -94,10 +94,32 @@ public class MsoEvent extends java.util.EventObject
 
     public boolean isChangeReferenceEvent()
     {
+    	/*
     	return (m_eventTypeMask & 
                 (EventType.MODIFIED_REFERENCE_EVENT.maskValue()) |
                 EventType.ADDED_REFERENCE_EVENT.maskValue() |
                 EventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
+        */
+    	/**/
+    	return (m_eventTypeMask & EventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0 
+		|| (m_eventTypeMask & EventType.REMOVED_REFERENCE_EVENT.maskValue())!=0
+		||  (m_eventTypeMask & EventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
+    	/**/
+    }
+
+    public boolean isModifiedReferenceEvent()
+    {
+    	return (m_eventTypeMask & EventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0;
+    }
+    
+    public boolean isRemovedReferenceEvent()
+    {
+    	return (m_eventTypeMask & EventType.REMOVED_REFERENCE_EVENT.maskValue())!=0;
+    }
+    
+    public boolean isAddedReferenceEvent()
+    {
+    	return (m_eventTypeMask & EventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
     }
 
     public boolean isClearAllEvent()
@@ -109,6 +131,31 @@ public class MsoEvent extends java.util.EventObject
     	return MsoModelImpl.getInstance().getUpdateMode();
     }
 
+    public boolean union(MsoEvent e) {
+    	// is union possible?
+    	if(e==null || !e.getSource().equals(getSource())) return false;
+    	// get union mask
+		int mask = 0;
+		if(e.isDeleteObjectEvent() || isDeleteObjectEvent())
+			mask += EventType.DELETED_OBJECT_EVENT.maskValue();
+		if(e.isModifyObjectEvent() || isModifyObjectEvent())
+			mask += EventType.MODIFIED_DATA_EVENT.maskValue();
+		if(e.isAddedReferenceEvent() || isAddedReferenceEvent())
+			mask += EventType.ADDED_REFERENCE_EVENT.maskValue();
+		if(e.isModifiedReferenceEvent() || isModifiedReferenceEvent())
+			mask += EventType.MODIFIED_REFERENCE_EVENT.maskValue();
+		if(e.isRemovedReferenceEvent() || isRemovedReferenceEvent())
+			mask += EventType.REMOVED_REFERENCE_EVENT.maskValue();
+		// changed?
+		if(m_eventTypeMask!=mask) {
+			m_eventTypeMask = mask;
+			return true;
+		}
+		// no change
+		return false;
+    	
+    }
+    
     /**
      * Event that triggers an update of the user interface and/or the server handler.
      */
@@ -141,5 +188,5 @@ public class MsoEvent extends java.util.EventObject
             super(aSource, anEventTypeMask);
         }
     }
-
+    
 }

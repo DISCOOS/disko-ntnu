@@ -1674,9 +1674,6 @@ public class MapUtil {
 	    // ser name
 	    pLayer.setName(name);
 	    
-	    // make cache
-	    //pLayer.setCached(true);
-	    
 	    // hide
 	    pLayer.setVisible(false);
 	    

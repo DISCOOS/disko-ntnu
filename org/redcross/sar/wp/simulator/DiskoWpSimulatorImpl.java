@@ -211,9 +211,8 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         	m_mapPanel = new MapPanel(getMap());
         	m_mapPanel.setNorthBarVisible(true);
         	m_mapPanel.setSouthBarVisible(true);
-			Dimension dim = new Dimension(600,350);
-			m_mapPanel.setMinimumSize(dim);
-			m_mapPanel.setPreferredSize(dim);
+			m_mapPanel.setMinimumSize(new Dimension(350,350));
+			m_mapPanel.setPreferredSize(new Dimension(500,350));
         	
         }        
         return m_mapPanel;

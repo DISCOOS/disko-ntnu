@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.IDsIf;
+import org.redcross.sar.ds.event.DsEvent;
+import org.redcross.sar.ds.event.IDsUpdateListener;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -89,8 +91,8 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	/**
 	 * Local list of assignments. 
 	 */
-	private final Map<IAssignmentIf,AssignmentStatus> m_statusList = 
-		new HashMap<IAssignmentIf,AssignmentStatus>();
+	//private final Map<IAssignmentIf,AssignmentStatus> m_changeList = 
+	//	new HashMap<IAssignmentIf,AssignmentStatus>();
 	
 	/**
 	 * Local list of MSO route objects. 
@@ -165,6 +167,12 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	 */
 	private DiskoWorkPool m_workPool = null;
 	
+	/**
+	 * List of update listeners.
+	 */
+	private final List<IDsUpdateListener> m_listeners = 
+		new ArrayList<IDsUpdateListener>();	
+	
 	/* ============================================================
 	 * Constructors
 	 * ============================================================ */
@@ -224,30 +232,40 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		m_costs.clear();
 		m_routes.clear();
 		m_assignments.clear();		
-		m_statusList.clear(); 
 		m_archived.clear();
 		m_heavySet.clear();
 		m_residueSet.clear();
 		m_queue.clear();
 	}
-		
+	
+	public boolean addUpdateListener(IDsUpdateListener listener) {
+		if(!m_listeners.contains(listener))
+			return m_listeners.add(listener);
+		return false;
+	}
+
+	public boolean removeUpdateListener(IDsUpdateListener listener) {
+		if(m_listeners.contains(listener))
+			return m_listeners.remove(listener);
+		return false;
+	}
+	
 	/* ===========================================
 	 * IMsoUpdateListenerIf implementation
 	 * ===========================================
 	 */
 
 	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
+		// consume?
+		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)
+				|| !m_oprID.equals(m_driver.getActiveOperationID())
+				|| m_costs.isEmpty()) return false;		
 		// check against interests
 		return msoInterests.contains(aMsoObject.getMsoClassCode());
 	}	
 
 	public void handleMsoUpdateEvent(Update e) {
 			
-		// consume?
-		if(!m_oprID.equals(m_driver.getActiveOperationID())) return;
-		
 		// not a clear all event?
 		if(!e.isClearAllEvent()) {
 		
@@ -259,7 +277,15 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	        
 			// is object modified?
 			if (deletedObject || modifiedObject || modifiedReference) {
-				resume = m_queue.add(e);
+				// forward
+				Update existing = getExisting(e);
+				// add to queue?
+				if(existing==null)
+					resume = m_queue.add(e);
+				else {
+					// make union
+					resume = existing.union(e);
+				}
 			}
 			
 			// resume work? 
@@ -277,6 +303,23 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	 * ===========================================
 	 */
 	
+	private void fireUpdate(List<RouteCost> costs) {
+		DsEvent.Update e = new DsEvent.Update(this,costs.toArray());
+		for(IDsUpdateListener it : m_listeners) {
+			it.handleDsUpdateEvent(e);
+		}
+	}
+	
+	private Update getExisting(Update e) {
+		Object s = e.getSource();
+		for(Update it : m_queue) {
+			if(it.getSource().equals(s)) {
+				return it;
+			}
+		}
+		return null;
+	}
+	
 	private RouteCost msoObjectChanged(IMsoObjectIf msoObj, Update e) {
 		
 		// initialize
@@ -292,12 +335,11 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				if(setEstimate(assignment)) {
 					cost = getCost(assignment);
 				}
-			}
-			
+			}			
 			// get start time or is finished?
 			if(e.isModifyObjectEvent()) {
 				// forward
-				if(setAssignmentStatus(assignment)) {
+				if(updateArguments(assignment)) {
 					cost = getCost(assignment);
 				}
 			}			
@@ -354,39 +396,25 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		return cost;
 	}	
 		
-	private boolean setAssignmentStatus(IAssignmentIf assignment) {
+	private boolean updateArguments(IAssignmentIf assignment) {
 		
 		// initialize
 		boolean bFlag = false;
 		
 		// get status
-		AssignmentStatus next = assignment.getStatus();
-		AssignmentStatus current = m_statusList.get(assignment);
+		AssignmentStatus status = assignment.getStatus();
 				
 		// translate status change to action
-		switch(next) {
+		switch(status) {
 		case DRAFT:
 		case READY:
 		case QUEUED:
 		case ASSIGNED:
 		case EXECUTING:
 			
-			/* =================================================================
-			 * Only update if status has changed to a legal state. If an
-			 * assignment is finished or reported, it can not be reactivated.
-			 * 
-			 * Offset (current position of executing unit and time at this point) 
-			 * is only set when assignment status is changed to EXECUTING
-			 * ================================================================= */
+			// forward
+			bFlag = setOffset(assignment);
 			
-			// any change?
-			if(!(next.equals(current) || 
-				 IAssignmentIf.FINISHED_AND_REPORTED_SET.contains(current))) {
-				// set flag
-				m_statusList.put(assignment,next);
-				// forward
-				bFlag = setOffset(assignment);
-			}			
 			break;
 		case FINISHED:
 		case REPORTED:
@@ -401,13 +429,9 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			 * 
 			 * ================================================================= */
 			
-			// any change?
-			if(!IAssignmentIf.FINISHED_AND_REPORTED_SET.contains(current)) {
-				// update
-				m_statusList.put(assignment,next);
-				// forward
-				archiveEstimate(assignment, null);
-			}			
+			// forward
+			archiveEstimate(assignment, null);
+
 			break;
 		}
 		
@@ -459,9 +483,8 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		if(assignment!=null) {
 
 			// resume?
-			if(!IAssignmentIf
-					.FINISHED_AND_REPORTED_SET.contains(
-							assignment.getStatus())) {
+			if(!IAssignmentIf.FINISHED_AND_REPORTED_SET
+					.contains(assignment.getStatus())) {
 				
 				// get sorted route list
 				List<IRouteIf> list = getRouteSequence(assignment);
@@ -473,7 +496,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				bFlag = setRoute(assignment,list);
 				
 				// forward
-				bFlag |= setAssignmentStatus(assignment);
+				bFlag |= updateArguments(assignment);
 												
 			}
 			else {
@@ -566,18 +589,47 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	}
 	
 	private boolean setOffset(IAssignmentIf assignment) {
+		
 		// initialize
 		boolean bFlag = false;
+		
 		// assignment exists?
 		if(assignment!=null) {
-			// can set offset?
-			if(AssignmentStatus.EXECUTING.equals(assignment.getStatus())){
-				// get cost
-				RouteCost cost = m_costs.get(assignment);
-				// has cost?
-				if(cost!=null) {
+			
+			// get cost
+			RouteCost cost = m_costs.get(assignment);
+			
+			// valid operation?
+			if(!(cost==null || cost.isArchived())) {
+				
+				// get status
+				AssignmentStatus status = assignment.getStatus();
+						
+				// translate status change to action
+				switch(status) {
+				case DRAFT:
+				case READY:
+				case QUEUED:
+					// only set start time once
+					if(cost.getStartTime()==null) {
+						bFlag = cost.setStartTime(Calendar.getInstance());
+					}
+					break;
+				/*
+				case ASSIGNED:
+					// set start time
+					bFlag = cost.setStartTime(assignment.getTimeAssigned());
+					break;
+				*/
+				case EXECUTING:					
 					// set start time
 					bFlag = cost.setStartTime(assignment.getTimeStarted());
+					break;
+				}
+				// set last known position
+				IUnitIf msoUnit = assignment.getOwningUnit();
+				if(msoUnit!=null) {
+					bFlag |= logPosition(msoUnit);
 				}
 			}
 		}
@@ -630,14 +682,15 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		 * IAssignmentIf and IRouteIf MSO objects. Only one Update is
 		 * handled in each work cycle if spatial changes in routes are 
 		 * made. This ensures that the system remains responsive since 
-		 * spatial route estimation is time consuming (accessing ArcGIS
-		 * geodata). A concurrent FIFO queue is used to  store new 
+		 * spatial route estimation is time consuming (ArcGIS geodata
+		 * lookup). A concurrent FIFO queue is used to  store new 
 		 * MSO Update events between work cycles.
 
 		 * ALGORITHM: The following algorithm is implemented
 		 * 1. Get next Update if exists. Update if new route is 
 		 *    created or existing is changed spatially. 
 		 * 2. Update all route cost estimates (fast if no spatial changes)
+		 * 3. Update all estimated current positions of costs which is not changed
 		 * 
 		 * DUTY CYCLE MANAGEMENT: MAX_WORK_TIME is the cutoff work duty 
 		 * cycle time. The actual duty cycle time may become longer, 
@@ -816,14 +869,15 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		// add the rest
 		for(RouteCost it: m_heavySet) {
 			// add to work list?
-			if(!(it.isSuspended() || it.isArchived()))			
+			if(!(it.isSuspended() || it.isArchived() || list.contains(it)))			
 				list.add(it);
 		}
 		
 		// add the rest from last time to prevent
 		// starvation of costs in the back of m_costs.values() 
 		for(RouteCost it: m_residueSet) {
-			list.add(it);
+			if(!list.contains(it))
+				list.add(it);
 		}		
 		
 		// add the missing, and remove all archived costs 
@@ -907,24 +961,20 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			 * ======================================================== */
 			
 			// initialize local lists
+			List<RouteCost> costs = new ArrayList<RouteCost>(m_changes.size());
 			List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(m_changes.size());				
 			
 			// loop over all assignments
 			for(IAssignmentIf it : m_changes.keySet()) {
 			
+				// add cost to list
+				costs.add(getCost(it));
+				
 				// get estimate
 				Calendar eta = m_changes.get(it); 
 				
 				// update assignment
-				it.setTimeEstimatedFinished(eta);
-				
-				//SimpleDateFormat format = new SimpleDateFormat("hh:MM:ss");
-				//Calendar c = Calendar.getInstance();
-				//c.setTimeInMillis(System.currentTimeMillis());
-				//System.out.println("RouteCostEstimator:: " + MsoUtils.getAssignmentName(assignment, 1) + " " + format.format(eta.getTime()));
-				//if("Patruljesøk 4".equals(MsoUtils.getAssignmentName(assignment, 1))) {
-				//	System.out.println();
-				//}						
+				it.setTimeEstimatedFinished(eta);				
 				
 				// add to updates?
 				if(it.isCreated()) {
@@ -943,6 +993,9 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				}			
 			}
 			
+			// notify listeners
+			fireUpdate(costs);
+			
 			try {
 				// commit changes?
 				if(updates.size()>0) {
@@ -953,10 +1006,32 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				e.printStackTrace();
 			}			
 			
+			// forward
+			
 			// finished
 			return null;
 		}
 		
 	}	
-	
+    
+    /*
+    private class ChangeSet {
+    	
+    	public IAssignmentIf assignment;
+    	public AssignmentStatus status;
+    	public int etaChangeCount;
+    	public int routeChangeCount;
+    	
+    	public ChangeSet(IAssignmentIf assignment) {
+    		this.assignment = assignment;
+    		this.status = assignment.getStatus();
+    		this.etaChangeCount = assignment.getTimeEstimatedFinishedAttribute().getChangeCount();
+    		this.routeChangeCount = assignment.getPlannedArea().getChangeCount();
+    	}
+    	
+    	public boolean isChanged() {
+    		return false;
+    	}
+    }
+	*/
 }
