@@ -1,4 +1,4 @@
-package org.redcross.sar.map.element;
+package org.redcross.sar.map;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.element.IconElement;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 
 import com.esri.arcgis.carto.FrameElement;
@@ -137,9 +137,10 @@ public class DrawFrame {
 		}
 		// was activated?
 		if(activeView.isMapActivated()) {
+			// get focus map
 			IMap map = activeView.getFocusMap();
 			// create draw frame layer and get hook to IGraphicsContainer
-			container = (IGraphicsContainer)MapUtil.createCompositeGraphicsLayer(map, "DrawFrame");
+			container = (IGraphicsContainer)MapUtil.createCompositeGraphicsLayer(map, "DrawLayer");
 			// add elements to graphics container
 			container.addElement(getGroupElement(),0);			
 			container.addElement(getFrameElement(),0);
@@ -527,10 +528,10 @@ public class DrawFrame {
 				// reselect icon?
 				if(selectedIcon!=null) setIconBorder(selectedIcon, false);
 				// reset flag
-				isActive = false;			
+				isActive = false;
 				// hide layer
-				((IGraphicsLayer)container).deactivate();				
-				((ILayer)container).setVisible(false);				
+				((IGraphicsLayer)container).deactivate();
+				((ILayer)container).setVisible(false);
 				// success
 				return true;
 			}

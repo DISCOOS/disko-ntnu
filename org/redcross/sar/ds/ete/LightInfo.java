@@ -1,6 +1,7 @@
 package org.redcross.sar.ds.ete;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 
 /**
@@ -48,52 +49,17 @@ public class LightInfo {
 	 *  Get light at point
 	 *  
 	 *  @param t Time at position
-	 *  @return Closest forcast to given time 
+	 *  @return Closest forcast to given time
 	 */		
-	public LightInfoPoint getForecast(Calendar t, double lon, double lat) {
-		LightInfoPoint lp = null;
-		Calendar now = Calendar.getInstance();
-		
-		// valid range?
-		if (now.before(t)) {
-		
-			// TODO: Get light forecast at point						
-			
-			// create light point
-			lp = new LightInfoPoint(t,lon,lat,0,false);
-			
-		}
+	public LightInfoPoint get(Calendar t, double lon, double lat) {
 
-		// return succes
-		return lp;
+		// finished
+		return new LightInfoPoint(t,lon,lat,getTimeZone(t));				
 		
 	}
 	
-	/**
-	 *  Get light history
-	 *  
-	 *  @param t0 Start history at time
-	 *  @param hours Get history number of hours forward (+) or backwards (-)
-	 *  
-	 *  @return Get closest history to given time span
-	 */		
-	public LightInfoPoint getHistory(Calendar t, double lon, double lat, int hours) {
-		LightInfoPoint lp = null;
-		Calendar now = Calendar.getInstance();
-		
-		// valid range?
-		if (now.after(t)) {
-		
-			// TODO: Get light history at point						
-			
-			// create light point
-			lp = new LightInfoPoint(t,lon,lat,0,true);
-			
-		}
-
-		// return succes
-		return lp;
-		
+	private static int getTimeZone(Calendar t) {
+		return TimeZone.getDefault().getOffset(t.getTimeInMillis());		
 	}
 	
 }

@@ -1,25 +1,28 @@
 package org.redcross.sar.wp.ds;
 
-import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
+import org.redcross.sar.ds.IDsIf;
+import org.redcross.sar.ds.ete.RouteCost;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
-import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.gui.table.DiskoTable;
 
-public class AssignmentTable extends JTable {
+public class AssignmentTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
 	
 	private TableRowSorter<AssignmentTableModel> tableRowSorter = null;
 	
 	@SuppressWarnings("unchecked")
-	public AssignmentTable(IMsoModelIf msoModel) {
+	public AssignmentTable(IDsIf<RouteCost> ds) {
+		
+		// forward
+		super();
 		
 		// create the model
-		AssignmentTableModel model = new AssignmentTableModel(msoModel);
+		AssignmentTableModel model = new AssignmentTableModel(ds);
 		
 		// assign the model
 		setModel(model);
@@ -32,9 +35,8 @@ public class AssignmentTable extends JTable {
 		
 		// set header
         JTableHeader tableHeader = getTableHeader();
-        tableHeader.setResizingAllowed(false);
+        //tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderCellRenderer(tableHeader.getDefaultRenderer()));
         
         // set default renderer
         setDefaultRenderer(Object.class, new AssignmentCellRenderer());
@@ -63,9 +65,8 @@ public class AssignmentTable extends JTable {
 		}
 	}
 	
-	public void setEstimator(RouteCostEstimator estimator) {
-		((AssignmentTableModel)getModel()).setEstimator(estimator);
+	public void install(RouteCostEstimator ds) {
+		((AssignmentTableModel)getModel()).install(ds);
 	}
 	
-
 }

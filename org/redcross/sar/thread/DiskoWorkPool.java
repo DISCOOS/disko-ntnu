@@ -196,6 +196,10 @@ public class DiskoWorkPool {
 		return isWorking(getWork(id));
 	}
 	
+	public boolean isSuspended(long id) {
+		return isSuspended(getWork(id));
+	}
+	
 	public boolean suspend(long id) {
 		return suspend(getWork(id));
 	}
@@ -359,6 +363,7 @@ public class DiskoWorkPool {
 		private boolean m_isWorking = false;
 		private boolean m_isSuspended = false;
 		private Object m_suspendLock = new Object();
+		private Thread m_thread = null;
 		
 		DiskoWorker(IDiskoWork<?> work) {
 			m_work = work;
@@ -369,15 +374,15 @@ public class DiskoWorkPool {
 		}
 		
 		public boolean isWorking() {
-			return m_isWorking;
+			return m_isWorking && !(m_isSuspended || isDone() || isCancelled());
 		}
 		
 		public boolean isSuspended() {
-			return m_isSuspended;
+			return m_isSuspended && m_isWorking && !(isDone() || isCancelled());
 		}
 		
 		public boolean suspend() {
-			if(m_work.isLoop() && m_isWorking) {
+			if(m_work.isLoop() && isWorking()) {
 				synchronized(m_suspendLock) {
 					m_isSuspended = true;
 					return true;
@@ -387,9 +392,10 @@ public class DiskoWorkPool {
 		}
 		
 		public boolean resume() {
-			if(m_work.isLoop() && !(m_isWorking || isCancelled())) {
+			if(m_work.isLoop() && m_isWorking && m_isSuspended && !(isDone() || isCancelled())) {
 				synchronized(m_suspendLock) {
-					m_isSuspended = false;		
+					m_isSuspended = false;
+					m_thread.interrupt();
 					return true;
 				}
 			}
@@ -398,11 +404,15 @@ public class DiskoWorkPool {
 		
 		@Override
 		protected Object doInBackground() throws Exception {
+			
 			// catch cancel events
 			try {	
 				
 				// initialize time tic
 				long tic = 0;
+
+				// get current thread
+				m_thread = Thread.currentThread();
 				
 				// set flag
 				m_isWorking = true;
@@ -414,50 +424,40 @@ public class DiskoWorkPool {
 					// is executed on the Event Dispatch Thread					
 					m_work.prepare();
 					
-					// execute until cancel
-					while(!isCancelled()) {
-						
-						// ensure that access to m_isWorking is done concurrently
-			            try {
-			            	
-			            	// get duty cycle
-			            	long duty = m_work.getDutyCycle();
-			            	
-			            	// sleep for specified time before checking again
-			            	Thread.sleep(RESUME_DELAY);
-			            	
-			            	// try to resume
-			                synchronized(this) {
-			                	
-			                	// stop if suspended, or canceled
-			                    while (!isCancelled()) {
-			                    	// is suspended?
-			                    	if(isSuspended()) {
-				    					// sleep duty time
-				    					Thread.sleep(duty);
-			                    	} 
-			                    	else {
-				                    	// get current time tic
-				                    	tic = System.currentTimeMillis();
-				    					// execute work
-				    					m_work.run();
-				    					// get current work time
-				    					long worked = System.currentTimeMillis() - tic;
-				    					// log work time
-				    					m_work.logWorkTime(worked);
-				    					// calculate time left before new work cycle starts, limit to minimum duty cycle.
-				    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked);
-				    					// sleep for reminder of time
-				    					Thread.sleep(remainder);
-			                    	}
-			                    }
-			                    
-			                }
-			                
-			            } catch (InterruptedException e) { /* NOP */ }
-			            
-					}
-					
+	            	// get duty cycle
+	            	long duty = m_work.getDutyCycle();
+		            	
+	            	// loop until canceled
+                    while (!isCancelled()) {
+                    	
+                    	// clear current interrupt state
+                    	Thread.interrupted();
+                    	
+                    	// resume on interrupt
+    		            try {
+    		            	
+	                    	// is suspended?
+	                    	if(isSuspended()) {
+		    					// sleep and try again
+		    					Thread.sleep(RESUME_DELAY);
+	                    	} 
+	                    	else {
+		                    	// get current time tic
+		                    	tic = System.currentTimeMillis();
+		    					// execute work
+		    					m_work.run();
+		    					// get current work time
+		    					long worked = System.currentTimeMillis() - tic;
+		    					// log work time
+		    					m_work.logWorkTime(worked);
+		    					// calculate time left before new work cycle starts, limit to minimum duty cycle.
+		    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked);
+		    					// sleep for reminder of time
+		    					Thread.sleep(remainder);
+	                    	}
+    		            } catch (InterruptedException e) { /* NOP */ }
+                    }
+		                    					
 				}
 				else {
                 	// get current time tic
@@ -474,9 +474,8 @@ public class DiskoWorkPool {
 	            return m_work.get();
             } 
 			catch(Exception e) {
-				// not a interrupt?
-				if(!(e instanceof InterruptedException)) 
-					e.printStackTrace();
+				// TODO: handle error globally
+				e.printStackTrace();
 			}
 			// failed
 			return null;

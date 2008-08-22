@@ -36,7 +36,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.model.mso.HypothesisListModel;
+import org.redcross.sar.gui.mso.model.HypothesisListModel;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -127,7 +127,7 @@ public class HypothesisDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel() {
+				contentPanel = new DefaultPanel("",true,true) {
 					
 					private static final long serialVersionUID = 1L;
 

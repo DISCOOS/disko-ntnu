@@ -15,7 +15,7 @@ import javax.swing.border.Border;
 import org.redcross.sar.gui.ToggableTabPane;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;

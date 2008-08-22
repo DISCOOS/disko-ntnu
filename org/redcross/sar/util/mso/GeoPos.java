@@ -9,7 +9,8 @@ import org.redcross.sar.map.MapUtil;
  */
 public class GeoPos implements Cloneable
 {
-    private Point2D.Double m_position = null;
+    private double m_altitude = 0.0;
+	private Point2D.Double m_position = null;
         
 
     /**
@@ -31,6 +32,18 @@ public class GeoPos implements Cloneable
     }
 
     /**
+     * Create a position at a point with given altitude
+     *
+     * @param aPosition The point's coordinates
+     * @param anAltitude The point's altitude
+     */
+    public GeoPos(Point2D.Double aPosition, double anAltitude)
+    {
+        setPosition(aPosition);
+        setAltitude(anAltitude);
+    }
+    
+    /**
      * Create a position at a given long/lat
      *
      * @param aLong The point's longitude
@@ -39,6 +52,14 @@ public class GeoPos implements Cloneable
     public GeoPos(double aLong, double aLat)
     {
         setPosition(aLong, aLat);
+    }
+
+    /**
+     * Get position as a point
+     */
+    public Point2D.Double getPosition()
+    {
+        return m_position;        
     }
 
     /**
@@ -66,13 +87,22 @@ public class GeoPos implements Cloneable
     }
 
     /**
-     * Get position as a point
+     * Get altitude at point (in meters)
      */
-    public Point2D.Double getPosition()
+    public double getAltitude()
     {
-        return m_position;        
+        return m_altitude;        
     }
 
+    /**
+     * Set altitude at point (in meters)
+     */
+    public void setAltitude(double anAltitude)
+    {
+        m_altitude = anAltitude;        
+    }
+    
+    
     /**
      * Calculate distance to another position.
      *

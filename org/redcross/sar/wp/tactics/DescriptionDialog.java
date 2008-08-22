@@ -10,7 +10,8 @@ import javax.swing.table.TableColumn;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.model.mso.POITableModel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.model.POITableModel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -37,10 +38,10 @@ public class DescriptionDialog extends DefaultDialog {
 		// prepare objects
 		this.wp = wp;
 		
-		// initialize ui
+		// initialize GUI
 		initialize();
 
-		// initialise
+		// forward
 		setup();
 		
 	}

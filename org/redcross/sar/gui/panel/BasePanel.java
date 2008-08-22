@@ -123,6 +123,13 @@ public class BasePanel extends AbstractPanel {
 	 * ===========================================
 	 */
 	
+	/**
+	 * Button size that should be used when adding and inserting buttons
+	 */
+	public ButtonSize getButtonSize() {
+		return buttonSize;
+	}
+	
 	public void onResize() {
 		getHeaderPanel().onResize();
 	}
@@ -331,6 +338,7 @@ public class BasePanel extends AbstractPanel {
 		if(scrollPane==null) {
 			scrollPane = new JScrollPane(getBodyComponent());
 			scrollPane.setBorder(null);
+			scrollPane.setViewportBorder(null);
 			scrollPane.setOpaque(true);
 		}
 		return scrollPane;
@@ -399,7 +407,7 @@ public class BasePanel extends AbstractPanel {
 	public void setBodyComponent(Component body) {
 		// update viewport
 		getScrollPane().setViewportView(body);
-		// update hool
+		// save hook
 		bodyComponent = body;
 		// update borders
 		setBorderColor(borderColor);

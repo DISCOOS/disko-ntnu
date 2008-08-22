@@ -2,49 +2,34 @@ package org.redcross.sar.wp.ds;
 
 import java.util.Comparator;
 
-import no.cmr.common.util.SimpleDecimalFormat;
-
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.ds.IDsIf;
+import org.redcross.sar.ds.IDsObjectIf;
 import org.redcross.sar.ds.ete.RouteCost;
-import org.redcross.sar.ds.ete.RouteCostEstimator;
-import org.redcross.sar.gui.model.MsoObjectTableModel;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.gui.model.DsObjectTableModel;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.util.mso.Selector;
 
-public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
+public class AssignmentTableModel extends DsObjectTableModel<RouteCost> {
 
 	private static final long serialVersionUID = 1L;
-	private static final String NAME = "Name";
-	private static final String ETA = "timeestimatedfinished";
-	private static final String EDE = "EDE";
-	private static final String ETE = "ETE";	
-	private static final String EAS = "EAS";	
-	private static final String[] ATTRIBUTES = new String[]{NAME, "status", 
+	private static final String NAME = "name";
+	private static final String STATUS = "status";
+	private static final String ETA = "eta";
+	private static final String ETE = "ete";	
+	private static final String EDE = "ede";
+	private static final String EAS = "eas";	
+	
+	private static final String[] ATTRIBUTES = new String[]{NAME, STATUS, 
 		ETA,ETE,EDE,EAS};
+	
 	private static final String[] CAPTIONS = new String[]{"Oppdrag",
 		"Status","ETA","ETE","EDE","Gj.hast"};
 	
-	private RouteCostEstimator estimator = null;
-	
-	
-	private static final Selector<IAssignmentIf> m_assignmentSelector = new Selector<IAssignmentIf>()
+	private static final Comparator<IDsObjectIf> m_assignmentComparator = new Comparator<IDsObjectIf>()
 	{
-		public boolean select(IAssignmentIf msoObj)
+		public int compare(IDsObjectIf o1, IDsObjectIf o2)
 		{
-			return true;
-		}
-	};
-
-	private static final Comparator<IMsoObjectIf> m_assignmentComparator = new Comparator<IMsoObjectIf>()
-	{
-		public int compare(IMsoObjectIf o1, IMsoObjectIf o2)
-		{
-			IAssignmentIf a1 = (IAssignmentIf)o1;
-			IAssignmentIf a2 = (IAssignmentIf)o2;
+			IAssignmentIf a1 = (IAssignmentIf)o1.getId();
+			IAssignmentIf a2 = (IAssignmentIf)o2.getId();
 			if(a1.getType() == a2.getType())
 			{
 				return a1.getNumber() - a2.getNumber();
@@ -56,55 +41,27 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 		}
 	};
 	
-	public AssignmentTableModel(IMsoModelIf model) {
+	public AssignmentTableModel(IDsIf<RouteCost> ds) {
+
 		// forward
-		super(model, MsoClassCode.CLASSCODE_ASSIGNMENT, ATTRIBUTES, CAPTIONS);
+		super(ds, ATTRIBUTES, CAPTIONS);
 		
-		if(model.getMsoManager().operationExists()) {
-			// get command post
-			ICmdPostIf cmdPost = model.getMsoManager().getCmdPost();
-			// load data?
-			if(cmdPost!=null) {
-				load(cmdPost.getAssignmentList());
-			}
-		}
 	}
 	
-	public void setEstimator(RouteCostEstimator estimator) {
-		this.estimator = estimator;
-	}
-
-	protected Object getMsoValue(IMsoObjectIf msoObj, String name) {
+	protected Object getDsAttrValue(IDsObjectIf dsObj, String name) {
 		if(NAME.equals(name)) {
-			return (IAssignmentIf)msoObj;
+			return (IAssignmentIf)dsObj.getId();
 		}
-		else if(ETE.equals(name)) {
-			IAssignmentIf assignment = (IAssignmentIf)msoObj;
-			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
-			return cost!=null ? Utils.getTime(cost.ete()) : "00:00:00";
-		}
-		else if(EDE.equals(name)) {
-			IAssignmentIf assignment = (IAssignmentIf)msoObj;
-			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
-			return cost!=null ? Math.round(cost.ede()) + " m" : "0 m";
-		}
-		else if(EAS.equals(name)) {
-			IAssignmentIf assignment = (IAssignmentIf)msoObj;
-			RouteCost cost = estimator!=null ? estimator.getCost(assignment) : null;
-			String speed = "0 km/h";
-			if(cost!=null) {
-				SimpleDecimalFormat f = new SimpleDecimalFormat(1,1);				
-				speed = f.format(cost.eas()* 3.6) + " km/h"; 
-			}
-			return speed;
+		else if(STATUS.equals(name)) {
+			return ((IAssignmentIf)dsObj.getId()).getStatus();
 		}
 		// failed
 		return null;
 	}
 	
 	@Override
-	public boolean select(IAssignmentIf msoObj) {
-		return m_assignmentSelector.select(msoObj);	
+	public boolean select(RouteCost dsObj) {
+		return true;	
 	}
 
 	@Override

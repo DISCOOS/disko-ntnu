@@ -1,16 +1,22 @@
 package org.redcross.sar.wp.tactics;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.ds.DiskoDecisionSupport;
+import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.TrackDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -27,6 +33,7 @@ public class EstimateDialog extends DefaultDialog {
 
 	private AttributesPanel contentPanel = null;
 	private NumericAttribute attrEta = null;
+	private TrackDialog trackDialog = null;
 	
 	private IDiskoWpModule wp = null;
 
@@ -35,9 +42,9 @@ public class EstimateDialog extends DefaultDialog {
 		super(wp.getApplication().getFrame());
 		// prepare
 		this.wp = wp;
-		// initialize gui
+		// initialize GUI
 		initialize();
-		// initialise
+		// initialize
 		setup();
 	}
 
@@ -48,7 +55,7 @@ public class EstimateDialog extends DefaultDialog {
 	private void initialize() {
 		try {
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(400,100));
+            this.setPreferredSize(new Dimension(400,150));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -77,7 +84,8 @@ public class EstimateDialog extends DefaultDialog {
 	private AttributesPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new AttributesPanel() {
+				contentPanel = new AttributesPanel("Egenskaper",
+						"Ingen egenskaper funnet",false,true) {
 					
 					private static final long serialVersionUID = 1L;
 
@@ -86,7 +94,7 @@ public class EstimateDialog extends DefaultDialog {
 						// consume changes
 						setChangeable(false);
 						// initialize
-						IAttributeIf eta = null;
+						IAttributeIf<?> eta = null;
 						IAssignmentIf assignment = null;
 						// get owning area
 						IAreaIf area = MsoUtils.getOwningArea(msoObj);
@@ -101,11 +109,10 @@ public class EstimateDialog extends DefaultDialog {
 						// update
 						super.setMsoObject(assignment);
 						getEtaAttribute().setMsoAttribute(eta);
-						getEtaAttribute().load();
 
 						// resume changes
 						setChangeable(true);
-						
+
 						// update
 						setDirty(false,false);						
 						update();
@@ -116,6 +123,7 @@ public class EstimateDialog extends DefaultDialog {
 					
 					@Override
 					public void update() {
+						super.update();
 						setup();
 					}
 										
@@ -125,9 +133,9 @@ public class EstimateDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-				contentPanel.setPreferredBodySize(new Dimension(400,50));
+				contentPanel.setPreferredBodySize(new Dimension(400,100));
 				contentPanel.addAttribute(getEtaAttribute());
-				Utils.setFixedSize(getEtaAttribute(), 400,25);				
+				Utils.setFixedSize(getEtaAttribute(), 400,32);
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -146,12 +154,35 @@ public class EstimateDialog extends DefaultDialog {
 			try {
 				
 				// create attribute
-				attrEta = new NumericAttribute("ETA","Estimert tidsbruk",120,"000000",true);
+				attrEta = new NumericAttribute("ETA","Estimert tidsbruk",120,"000000",false);
 				
 				// set numeric properties
 				attrEta.setMaxDigits(6);
 				attrEta.setDecimalPrecision(0);
-				attrEta.setAllowNegative(false);				
+				attrEta.setAllowNegative(false);
+				attrEta.setButton(DiskoButtonFactory.createButton("GENERAL.VIEW", ButtonSize.SMALL), true);
+				attrEta.getButton().setVisible(true);
+				attrEta.getButton().setEnabled(true);
+				attrEta.getButton().addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if(getMsoObject()!=null) {
+							try {
+								IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
+								String oprID = Utils.getApp().getMsoModel().getModelDriver().getActiveOperationID();
+								RouteCostEstimator estimator = (RouteCostEstimator)DiskoDecisionSupport.getInstance().getEstimator(RouteCostEstimator.class, oprID);
+								getTrackDialog().load(wp.getMap(),assignment,estimator.getCost(assignment).getEstimatedTrack());
+								getTrackDialog().setVisible(true);
+							} catch (Exception ex) {
+								// TODO Auto-generated catch block
+								ex.printStackTrace();
+							}
+						}
+						
+					}
+					
+				});
 				
 				
 			} catch (java.lang.Throwable e) {
@@ -161,6 +192,21 @@ public class EstimateDialog extends DefaultDialog {
 		return attrEta;
 	}
 
+	/**
+	 * This method initializes trackDialog
+	 * 	
+	 * @return TrackDialog
+	 */
+	public TrackDialog getTrackDialog() {
+		if (trackDialog == null) {
+			// create panels
+			trackDialog = new TrackDialog(Utils.getApp().getFrame());
+			trackDialog.setLocationRelativeTo(Utils.getApp().getFrame());
+
+		}
+		return trackDialog;
+	}
+	
 	private void setup() {
 
 		// consume?
@@ -178,7 +224,7 @@ public class EstimateDialog extends DefaultDialog {
 		
 		// update icon
 		if(assignment!=null) {
-			Enum e = MsoUtils.getType(assignment,true);
+			Enum<?> e = MsoUtils.getType(assignment,true);
 			getContentPanel().setCaptionIcon(
 					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
 			getContentPanel().setCaptionText("<html>Estimer tidsforbruk for <b>" + 
@@ -186,7 +232,7 @@ public class EstimateDialog extends DefaultDialog {
 			getEtaAttribute().setEnabled(true);
 		}
 		else {
-			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getEtaAttribute().setEnabled(false);
 		}		
@@ -195,6 +241,9 @@ public class EstimateDialog extends DefaultDialog {
 		// resume changes
 		setChangeable(true);
 		
+		// load from mso
+		getEtaAttribute().load();
+				
 	}
 	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

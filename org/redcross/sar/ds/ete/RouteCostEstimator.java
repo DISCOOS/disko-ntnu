@@ -11,8 +11,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.IDsIf;
+import org.redcross.sar.ds.IDsObjectIf;
 import org.redcross.sar.ds.event.DsEvent;
-import org.redcross.sar.ds.event.IDsUpdateListener;
+import org.redcross.sar.ds.event.IDsUpdateListenerIf;
+import org.redcross.sar.ds.event.DsEvent.EventType;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -25,6 +27,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoCompareRoute;
@@ -37,7 +40,7 @@ import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
 public class RouteCostEstimator extends AbstractDiskoWork<Boolean> 
-								implements IDsIf<Boolean>, 
+								implements IDsIf<RouteCost>, 
 								           IMsoUpdateListenerIf {
 
 	private static final long DUTY_CYCLE_TIME = 2000;		// Invoke every DUTY_CYCLE_TIME
@@ -170,8 +173,8 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	/**
 	 * List of update listeners.
 	 */
-	private final List<IDsUpdateListener> m_listeners = 
-		new ArrayList<IDsUpdateListener>();	
+	private final List<IDsUpdateListenerIf> m_listeners = 
+		new ArrayList<IDsUpdateListenerIf>();	
 	
 	/* ============================================================
 	 * Constructors
@@ -200,10 +203,18 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	
 	public String getOprID() {
 		return m_oprID;
-	}	
-		
+	}
+	
 	public RouteCost getCost(IAssignmentIf assignment) {
 		return m_costs.get(assignment);
+	}
+	
+	public List<RouteCost> getItems() {
+		return new ArrayList<RouteCost>(m_costs.values());
+	}
+	
+	public Map<IAssignmentIf,RouteCost> getCosts() {
+		return m_costs;
 	}
 	
 	public synchronized boolean load() {
@@ -212,7 +223,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		// load lists from available assignments
 		if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
 			// forward
-			for(IAssignmentIf it : MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentListItems()) {
+			for(IAssignmentIf it : MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentListItems()) {				
 				if(setEstimate(it)) {
 					addToResidue(getCost(it));
 				}
@@ -229,6 +240,9 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	}
 	
 	public synchronized void clear() {
+		for(RouteCost it : m_costs.values()) {
+			fireRemoved(it);
+		}
 		m_costs.clear();
 		m_routes.clear();
 		m_assignments.clear();		
@@ -238,13 +252,13 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		m_queue.clear();
 	}
 	
-	public boolean addUpdateListener(IDsUpdateListener listener) {
+	public boolean addUpdateListener(IDsUpdateListenerIf listener) {
 		if(!m_listeners.contains(listener))
 			return m_listeners.add(listener);
 		return false;
 	}
 
-	public boolean removeUpdateListener(IDsUpdateListener listener) {
+	public boolean removeUpdateListener(IDsUpdateListenerIf listener) {
 		if(m_listeners.contains(listener))
 			return m_listeners.remove(listener);
 		return false;
@@ -303,13 +317,25 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	 * ===========================================
 	 */
 	
-	private void fireUpdate(List<RouteCost> costs) {
-		DsEvent.Update e = new DsEvent.Update(this,costs.toArray());
-		for(IDsUpdateListener it : m_listeners) {
+	private void fireAdded(RouteCost cost) {
+		fireUpdateEvent(new DsEvent.Update(this,EventType.ADDED_EVENT,0,new IDsObjectIf[]{cost}));
+	}
+	
+	private void fireModified(List<RouteCost> costs, int flags) {
+		IDsObjectIf[] data = new IDsObjectIf[costs.size()]; 
+		costs.toArray(data);
+		fireUpdateEvent(new DsEvent.Update(this,EventType.MODIFIED_EVENT,flags,data));
+	}
+	
+	private void fireRemoved(RouteCost cost) {
+		fireUpdateEvent(new DsEvent.Update(this,EventType.REMOVED_EVENT,0,new IDsObjectIf[]{cost}));
+	}
+	
+	private void fireUpdateEvent(DsEvent.Update e) {
+		for(IDsUpdateListenerIf it : m_listeners) {
 			it.handleDsUpdateEvent(e);
 		}
 	}
-	
 	private Update getExisting(Update e) {
 		Object s = e.getSource();
 		for(Update it : m_queue) {
@@ -386,7 +412,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			// get assignment
 			IAssignmentIf assignment = getAssignment(msoRoute);
 			// has assignment registered?
-			if(assignment!=null) {
+			if(assignment!=null && !assignment.hasBeenDeleted()) {
 				// forward
 				if(setEstimate(assignment)) {
 					cost = getCost(assignment);
@@ -529,6 +555,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				m_assignments.remove(cost);
 				m_heavySet.remove(cost);
 				m_residueSet.remove(cost);
+				fireRemoved(cost);
 			}
 		}
 	}	
@@ -567,10 +594,13 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	
 	private RouteCost createCost(IAssignmentIf assignment, Route route) {
 		// create new route cost object
-		RouteCost cost = new RouteCost(route,0,Utils.getApp().getMapManager().getPrintMap());
+		RouteCost cost = new RouteCost(assignment,route,
+				0,Utils.getApp().getMapManager().getPrintMap());
 		// add to costs and assignments
 		m_costs.put(assignment, cost);	
 		m_assignments.put(cost,assignment);	
+		// notify
+		fireAdded(cost);
 		// finished
 		return cost;
 	}
@@ -610,6 +640,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				case DRAFT:
 				case READY:
 				case QUEUED:
+				case ASSIGNED:					
 					// only set start time once
 					if(cost.getStartTime()==null) {
 						bFlag = cost.setStartTime(Calendar.getInstance());
@@ -712,8 +743,12 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		// calculate estimated based on changes
 		estimate(changed,tic);
 		
+		// calculate progress
+		progress(changed,tic);
+		
 		// finished
 		return true;
+		
 	}
 	
 	private List<RouteCost> update(long tic) {
@@ -782,9 +817,9 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		Map<IAssignmentIf,Calendar> estimates = new HashMap<IAssignmentIf, Calendar>(m_costs.size()); 
 		
 		// get current work set
-		List<RouteCost> workSet = getWorkSet(changed);
+		List<RouteCost> workSet = getWorkSet(changed,false);
 		
-		// loop over all cost
+		// loop over costs in work set
 		for(RouteCost cost : workSet) {
 			
 			// ensure that the MAX_WORK_TIME is only exceeded once
@@ -815,7 +850,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 						if(!equal(eta,current)) {
 														
 							// add to updates
-							estimates.put(assignment, eta);							
+							estimates.put(assignment, eta);
 
 						}
 						// add to estimated
@@ -842,6 +877,33 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		
 	}			
 	
+	private void progress(List<RouteCost> changed, long tic) {
+		
+		// get current work set
+		List<RouteCost> workSet = getWorkSet(changed,true);
+		
+		// loop over costs in work set
+		for(RouteCost cost : workSet) {
+			
+			// ensure that the MAX_WORK_TIME is only exceeded once
+			if(System.currentTimeMillis()-tic>m_availableTime)
+				break;
+			
+			// forward
+			try {
+				cost.progress();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+		// notify
+		fireModified(workSet,1);		
+		
+	}		
+	
 	private void submit(Map<IAssignmentIf,Calendar> changes) {
 		// any data to submit?
 		if(changes.size()>0) {
@@ -861,37 +923,57 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 		return t1 == t2 || (t1 != null && t1.equals(t2));
 	}
 	
-	private List<RouteCost> getWorkSet(List<RouteCost> changed) {
+	private List<RouteCost> getWorkSet(List<RouteCost> changed, boolean progress) {
 		
 		// create new work set 
 		List<RouteCost> list = new ArrayList<RouteCost>(m_costs.size());
 		
-		// add the rest
-		for(RouteCost it: m_heavySet) {
-			// add to work list?
-			if(!(it.isSuspended() || it.isArchived() || list.contains(it)))			
-				list.add(it);
+		if(progress) {
+			
+			// get costs ready to progress
+			for(RouteCost it: m_costs.values()) {
+				if(!changed.contains(it)) {
+					IAssignmentIf assignment = getAssignment(it);
+					if(!(assignment == null || it.isDirty() || it.isArchived())) {
+						IUnitIf unit = assignment.getOwningUnit();
+						if(unit!=null && UnitStatus.WORKING.equals(unit.getStatus())) {
+							list.add(it);
+						}
+					}
+				}
+			}
+			
 		}
+		else {
 		
-		// add the rest from last time to prevent
-		// starvation of costs in the back of m_costs.values() 
-		for(RouteCost it: m_residueSet) {
-			if(!list.contains(it))
-				list.add(it);
-		}		
-		
-		// add the missing, and remove all archived costs 
-		for(RouteCost it : changed) {						
+			// add the rest
+			for(RouteCost it: m_heavySet) {
+				// add to work list?
+				if(!(it.isSuspended() || it.isArchived() || list.contains(it)))			
+					list.add(it);
+			}
 			
-			// add to work list?
-			if(!(it.isSuspended() || it.isArchived() || list.contains(it)))
-				list.add(it);
+			// add the rest from last time to prevent
+			// starvation of costs in the back of m_costs.values() 
+			for(RouteCost it: m_residueSet) {
+				if(!list.contains(it))
+					list.add(it);
+			}		
 			
-			// remove archived costs
-			if(it.isArchived()) {
-				m_archived.put(getAssignment(it), it);
-				if(list.contains(it)) 
-					list.remove(it);
+			// add the missing, and remove all archived costs 
+			for(RouteCost it : changed) {
+				
+				// add to work list?
+				if(!(it.isSuspended() || it.isArchived() || list.contains(it)))
+					list.add(it);
+				
+				// remove archived costs
+				if(it.isArchived()) {
+					m_archived.put(getAssignment(it), it);
+					if(list.contains(it)) 
+						list.remove(it);
+				}
+				
 			}
 			
 		}
@@ -994,7 +1076,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 			}
 			
 			// notify listeners
-			fireUpdate(costs);
+			fireModified(costs,0);
 			
 			try {
 				// commit changes?
@@ -1006,32 +1088,9 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 				e.printStackTrace();
 			}			
 			
-			// forward
-			
 			// finished
 			return null;
 		}
 		
-	}	
-    
-    /*
-    private class ChangeSet {
-    	
-    	public IAssignmentIf assignment;
-    	public AssignmentStatus status;
-    	public int etaChangeCount;
-    	public int routeChangeCount;
-    	
-    	public ChangeSet(IAssignmentIf assignment) {
-    		this.assignment = assignment;
-    		this.status = assignment.getStatus();
-    		this.etaChangeCount = assignment.getTimeEstimatedFinishedAttribute().getChangeCount();
-    		this.routeChangeCount = assignment.getPlannedArea().getChangeCount();
-    	}
-    	
-    	public boolean isChanged() {
-    		return false;
-    	}
-    }
-	*/
+	}
 }

@@ -81,7 +81,7 @@ public class DefaultPanel extends BasePanel {
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",getButtonSize());
 				cancelIcon = new DiskoIcon(cancelButton.getIcon(),Color.RED,0.4f);
 				cancelButton.setIcon(cancelIcon);
 			} catch (java.lang.Throwable e) {
@@ -94,7 +94,7 @@ public class DefaultPanel extends BasePanel {
 	private JButton getFinishButton() {
 		if (finishButton == null) {
 			try {
-				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
+				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",getButtonSize());
 				finishIcon = new DiskoIcon(finishButton.getIcon(),Color.GREEN,0.4f);
 				finishButton.setIcon(finishIcon);
 				finishButton.setDefaultCapable(true);

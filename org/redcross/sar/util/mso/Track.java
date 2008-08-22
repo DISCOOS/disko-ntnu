@@ -79,20 +79,33 @@ public class Track extends AbstractGeodata
      */
     public void add(Point2D.Double aPosition, Calendar aCalendar)
     {
-        add(new TimePos(aPosition.x, aPosition.y, aCalendar));
+        add(new TimePos(aPosition, aCalendar));
     }
     
     /**
      * Add a new point to the track.
      * Calls {@link #add(TimePos)} .
      *
-     * @param aLongPosition
-     * @param aLatPosition
+     * @param aPosition
+     * @param anAltitude
      * @param aCalendar
      */
-    public void add(double aLongPosition, double aLatPosition, Calendar aCalendar)
+    public void add(Point2D.Double aPosition, double anAltitude, Calendar aCalendar)
     {
-        add(new TimePos(aLongPosition, aLatPosition, aCalendar));
+        add(new TimePos(aPosition, anAltitude, aCalendar));
+    }
+    
+    /**
+     * Add a new point to the track.
+     * Calls {@link #add(TimePos)} .
+     *
+     * @param aLon
+     * @param aLat
+     * @param aCalendar
+     */
+    public void add(double aLon, double aLat, Calendar aCalendar)
+    {
+        add(new TimePos(aLon, aLat, aCalendar));
     }
 
     /**
@@ -242,7 +255,6 @@ public class Track extends AbstractGeodata
 	}
 	
 	public double getDistance(int from, int to, boolean direct) {
-		if(m_created!=m_changeCount) create();
 		int uBound = m_track.size()-1;
 		if(m_track.size()==0 || from>uBound || to>uBound)
 			return 0.0;
@@ -250,6 +262,7 @@ public class Track extends AbstractGeodata
 			return m_track.get(to).distance(m_track.get(from));			
 		}
 		else {
+			if(m_created!=m_changeCount || m_distance.size()!=uBound) create();			
 			return m_distance.get(to) - m_distance.get(from);
 		}
 	}
@@ -353,10 +366,10 @@ public class Track extends AbstractGeodata
 		TimePos pN = m_track.get(uBound);
 		for(i=uBound;i>=0;i--) {
 			if(pN.timeSince(m_track.get(i))>time)				
-				return i+1;
+				return i;
 		}
 		// finished
-		return i+1;			
+		return i;			
 	}
 	
 	

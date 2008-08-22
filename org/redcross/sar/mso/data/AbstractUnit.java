@@ -1,6 +1,5 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -344,7 +343,28 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
     public void setPosition(Position aPosition)
     {
+    	// update position
         m_position.setValue(aPosition);
+        /*/ update bearing?
+        if(aPosition!=null && m_track!=null) {
+        	Track track = m_track.getReference().getGeodata();
+        	TimePos p = track.getStopPoint();
+        	if(p!=null) {
+        		// same as last in track?
+        		if(p.equals(aPosition.getGeoPos())) {
+        			// has track more then one position?
+        			if(track.getCount()>1) {
+        				// bearing of last leg in track
+        				setBearing((int)track.get(track.getCount()-2).bearing(p));
+        			}
+        		}
+        		else {
+        			// bearing from last position in track to new position
+        			setBearing((int)p.bearing(aPosition.getGeoPos()));
+        		}
+        	}
+        }
+        */
     }
 
     public Position getPosition()

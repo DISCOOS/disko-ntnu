@@ -181,22 +181,26 @@ public class RouteCostProp {
 		// index = (count - 1)/(max - min) * (variable - min)
 		return (int)(m_alfa_inv * (variable - m_min));
 	}
-	
+
 	/**
 	 *  Gets property value at index with specified arguments
 	 *  
-	 */		
-	public double getValue(int index, int[] args, boolean weigth) {
+	 *  @param index variable index
+	 *  @param args cost property arguments
+	 *  @param param parameter index
+	 *  @param method calculation method</p>
+	 *  method:=0 -> cost=params[param];</br>
+	 *  method:=1 -> cost=params[param]*variable;</br>
+	 *  @return Returns value for given variable index, property arguments, and calculation method
+	 */
+	public double getValue(int index, int[] args, int param, int method) {
 		// get parameters
 		double params[] = getParams(args);
-		// Calculate value
-		if(weigth){
-			// value = Weigth * (A * Variable + B)
-			return m_weight * (params[0]*getVariable(index)+params[1]);						
-		}
-		else {
-			// value = (A * Variable + B)
-			return (params[0]*getVariable(index)+params[1]);			
+		// get method
+		switch(method) {
+		case 0: return params[param];
+		case 1: return params[param]*getVariable(index);
+		default: return 0.0;
 		}
 	}
 	
@@ -207,7 +211,7 @@ public class RouteCostProp {
 	public double getWeightedVariable(double variable) {
 		// apply min-max on variable
 		variable = Math.max(Math.min(variable,m_max),m_min);
-		// value = weigth * Variable
+		// value = weight * Variable
 		return m_weight*variable;
 	}
 	
@@ -354,7 +358,7 @@ public class RouteCostProp {
 	}
 	
 	/**
-	 *  get property from resourse bundle
+	 *  get property from resource bundle
 	 *  
 	 */		
 	private String getProp(String name) {

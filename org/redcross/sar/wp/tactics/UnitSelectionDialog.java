@@ -27,7 +27,6 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -69,10 +68,10 @@ public class UnitSelectionDialog extends DefaultDialog {
 		this.wp = wp;
 		this.msoModel = wp.getMsoModel();
 		
-		// initialize UI
+		// initialize GUI
 		initialize();
 
-		// initialise
+		// forward
 		setup();
 
 	}
@@ -114,7 +113,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel("",false,true) {
+				contentPanel = new DefaultPanel() {
 					
 					private static final long serialVersionUID = 1L;
 
@@ -188,7 +187,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private JButton getAssignButton() {
 		if (assignButton == null) {
 			try {
-				assignButton = DiskoButtonFactory.createButton("STATUS.QUEUED",ButtonSize.NORMAL);
+				assignButton = DiskoButtonFactory.createButton("STATUS.QUEUED",ButtonSize.SMALL);
 				assignButton.setToolTipText("Legg oppdrag i kø til valgt enhet");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -205,7 +204,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private JButton getReclaimButton() {
 		if (reclaimButton == null) {
 			try {
-				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
+				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.SMALL);
 				reclaimButton.setToolTipText("Fjern siste oppdrag fra køen");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -236,7 +235,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 			for (int row = 0; row < table.getRowCount(); row++) {
 				IUnitIf unit = (IUnitIf)table.getValueAt(row, 0);
 				if (unit != null) {
-					Collection assignments = unit.getAssignedAssignments();
+					Collection<IAssignmentIf> assignments = unit.getAssignedAssignments();
 					if (assignments != null && assignments.contains(assignment)) {
 						table.setRowSelectionInterval(row, row);
 						return;

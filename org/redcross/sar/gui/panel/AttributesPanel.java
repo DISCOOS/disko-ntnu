@@ -24,6 +24,7 @@ import org.redcross.sar.gui.attribute.IDiskoAttribute;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.attribute.PositionAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -52,15 +53,19 @@ public class AttributesPanel extends DefaultPanel {
 	}
 	
 	public AttributesPanel(String caption, String message, boolean finish, boolean cancel) {
+		this(caption,message,finish,cancel,ButtonSize.NORMAL);
+	}
+
+	public AttributesPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
 		// forward
-		super(caption,finish,cancel);
+		super(caption,finish,cancel,buttonSize);
 		// prepare
 		m_attributes = new ArrayList<String>();
 		m_panels = new HashMap<String, IDiskoAttribute>();		
 		// initialize GUI
 		initialize(message);
 	}
-
+	
 	private void initialize(String message) {
 		// set body layout
 		setBodyLayout(new CardLayout());

@@ -45,7 +45,7 @@ public class MapPanel extends AbstractPanel {
 
 		// prepare
 		this.map = map;
-		this.setMsoLayers(map, map.getSupportedMsoLayers());
+		this.setMsoLayers(map, map.getSupportedLayers());
 		
 		// initialize GUI
 		initialize();

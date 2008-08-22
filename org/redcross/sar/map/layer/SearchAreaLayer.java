@@ -10,8 +10,6 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.ISearchAreaIf;
-import org.redcross.sar.mso.util.MsoUtils;
 
 import com.esri.arcgis.display.IColor;
 import com.esri.arcgis.display.IDisplay;
@@ -84,7 +82,6 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
  				if(select(feature) && feature.isVisible()){
-					ISearchAreaIf searchArea = (ISearchAreaIf)feature.getMsoObject();
 					Polygon polygon = (Polygon)feature.getShape();
 					if (polygon != null) {
 						IColor saveTextColor = textSymbol.getColor();

@@ -28,16 +28,16 @@ import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
+import org.redcross.sar.map.layer.EstimatedPositionLayer;
+import org.redcross.sar.map.layer.IDiskoLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.ds.AssignmentsPanel;
 
-/**
- *
- */
 public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 {
 	
@@ -63,7 +63,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private AssignmentsPanel m_assignmentsPanel = null;
 	
 	private DiskoDecisionSupport m_ds = null;
-	private RouteCostEstimator m_ete = null; 
+	private RouteCostEstimator m_estimator = null; 
 	
     public DiskoWpDsImpl() throws Exception
     {
@@ -94,7 +94,24 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+		myLayers.add(IDiskoLayer.LayerCode.ESTIMATED_POSITION_LAYER);
 	    return myLayers;
+	}
+	
+	private List<Enum<?>> getDefaultNavBarButtons() {
+		List<Enum<?>> myButtons = Utils.getListNoneOf(DiskoToolType.class);
+		myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
+		myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
+		myButtons.add(DiskoToolType.PAN_TOOL);
+		myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+		myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
+		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
+		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
+		myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
+		myButtons.add(DiskoCommandType.SCALE_COMMAND);
+		myButtons.add(DiskoCommandType.TOC_COMMAND);
+		myButtons.add(DiskoCommandType.GOTO_COMMAND);
+		return myButtons;
 	}
 	
     private void initialize()
@@ -104,7 +121,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		
 		// forward
 		installMap();
-	
+		
 		// set layout component
 		layoutComponent(getSplitPane());
 		
@@ -362,10 +379,10 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 			getEffortTimeAttr().setValue(Utils.getTime(seconds));
 		}		
 		// get decision support statistics
-		if(m_ete!=null && m_ete.isWorking()) {
-			getAvgEstTimeAttr().setValue(m_ete.getAverageWorkTime() + " ms");
-			getMaxEstTimeAttr().setValue(m_ete.getMaxWorkTime() + " ms");
-			getUtilEstTimeAttr().setValue(Math.round(m_ete.getUtilization()*100) + " %");
+		if(m_estimator!=null && m_estimator.isWorking()) {
+			getAvgEstTimeAttr().setValue(m_estimator.getAverageWorkTime() + " ms");
+			getMaxEstTimeAttr().setValue(m_estimator.getMaxWorkTime() + " ms");
+			getUtilEstTimeAttr().setValue(Math.round(m_estimator.getUtilization()*100) + " %");
 		}
 	}
 	
@@ -391,9 +408,12 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     
     private void install() {
     	String oprID = getActiveOperationId();    	
-    	m_ete = (RouteCostEstimator)getDs().install(RouteCostEstimator.class, oprID);
-    	m_ete.load();
-    	getAssignmentsPanel().setEstimator(m_ete);
+    	m_estimator = (RouteCostEstimator)getDs().install(RouteCostEstimator.class, oprID);
+    	m_estimator.load();
+    	((EstimatedPositionLayer)getMap()
+    			.getDiskoLayer(LayerCode.ESTIMATED_POSITION_LAYER))
+    				.setEstimator(m_estimator);
+    	getAssignmentsPanel().install(m_estimator);
     }
     
     private void resume() {
@@ -432,20 +452,4 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 						
 	}
     
-	private List<Enum<?>> getDefaultNavBarButtons() {
-		List<Enum<?>> myButtons = Utils.getListNoneOf(DiskoToolType.class);
-		myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
-		myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
-		myButtons.add(DiskoToolType.PAN_TOOL);
-		myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
-		myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
-		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
-		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
-		myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
-		myButtons.add(DiskoCommandType.SCALE_COMMAND);
-		myButtons.add(DiskoCommandType.TOC_COMMAND);
-		myButtons.add(DiskoCommandType.GOTO_COMMAND);
-		return myButtons;
-	}
-	
 }

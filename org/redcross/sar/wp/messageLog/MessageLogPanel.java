@@ -2,7 +2,7 @@ package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

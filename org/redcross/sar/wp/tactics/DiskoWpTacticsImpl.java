@@ -592,7 +592,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getElementToggleButton() {
 		if (elementToggleButton == null) {
 			try {
-				Enum e = TacticsActionType.MANAGE_ELEMENTS;
+				Enum<?> e = TacticsActionType.MANAGE_ELEMENTS;
 				elementToggleButton = DiskoButtonFactory.createToggleButton(e, ButtonSize.NORMAL,wpBundle);
 				elementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -646,7 +646,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getDescriptionToggleButton() {
 		if (descriptionToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SHOW_DESCRIPTION;
+				Enum<?> key = TacticsActionType.SHOW_DESCRIPTION;
 				descriptionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				descriptionToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -672,7 +672,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getHypotheseToggleButton() {
 		if (hypotheseToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SET_HYPOTHESIS;
+				Enum<?> key = TacticsActionType.SET_HYPOTHESIS;
 				hypotheseToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				hypotheseToggleButton.setVisible(false);
 				hypotheseToggleButton.addActionListener(new ActionListener() {
@@ -701,7 +701,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getListToggleButton() {
 		if (listToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SHOW_ASSIGNMENT_LIST;
+				Enum<?> key = TacticsActionType.SHOW_ASSIGNMENT_LIST;
 				listToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				listToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -728,7 +728,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getMissionToggleButton() {
 		if (missionToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SHOW_MISSION;
+				Enum<?> key = TacticsActionType.SHOW_MISSION;
 				missionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				missionToggleButton.setVisible(false);
 				missionToggleButton.addActionListener(new ActionListener() {
@@ -756,7 +756,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getPriorityToggleButton() {
 		if (priorityToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SET_PRIORITY;
+				Enum<?> key = TacticsActionType.SET_PRIORITY;
 				priorityToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				priorityToggleButton.setVisible(false);
 				priorityToggleButton.addActionListener(new ActionListener() {
@@ -785,7 +785,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getRequirementToggleButton() {
 		if (requirementToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SET_REQUIREMENT;
+				Enum<?> key = TacticsActionType.SET_REQUIREMENT;
 				requirementToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				requirementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -812,7 +812,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private JToggleButton getEstimateToggleButton() {
 		if (estimateToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.SHOW_ESTIMATES;
+				Enum<?> key = TacticsActionType.SHOW_ESTIMATES;
 				estimateToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				estimateToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -840,7 +840,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	JToggleButton getUnitToggleButton() {
 		if (unitToggleButton == null) {
 			try {
-				Enum key = TacticsActionType.ENQUEUE_TO_UNIT;
+				Enum<?> key = TacticsActionType.ENQUEUE_TO_UNIT;
 				unitToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				unitToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -885,7 +885,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 	}	
 	
-	public void onElementChange(Enum element, IMsoObjectIf msoObject) {
+	public void onElementChange(Enum<?> element, IMsoObjectIf msoObject) {
 
 		// dispatch element
 		if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(element)) {

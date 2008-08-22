@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1214573198687">
+<operation creator="kyb-d201" datetime_data="1214573198687" id="05620080048399073" state="2">
+<fact comp="n" edit="n" id="00000000000000000" label="Nr" pos1="0" pos2="0" relTo="" version="0">
+        <str_fact value="2008-ERKHK-48399073"/>
+    </fact>
+<fact comp="n" edit="y" id="00000000000000001" label="Hendelsestype" pos1="1" pos2="0" relTo="" version="0">
+<combo_fact selectedItem="MSO">
+<combo_el>Udefinert - LAND</combo_el>
+<combo_el>MSO</combo_el>
+<combo_el>Udefinert - SJØ</combo_el>
+</combo_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000000000002" label="Fase" pos1="2" pos2="0" relTo="" version="0">
+<combo_fact selectedItem="Usikkerhet">
+<combo_el>Usikkerhet</combo_el>
+<combo_el>Beredskap</combo_el>
+<combo_el>Nød</combo_el>
+<combo_el>Avsluttet</combo_el>
+<combo_el>Monitorering</combo_el>
+</combo_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000000000003" label="First alert RCC" pos1="3" pos2="0" relTo="" version="0">
+        <date_fact value="1214573198687"/>
+</fact>
+<fact comp="n" edit="y" id="00000000005" label="CallSign" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000045" label="Released" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000046" label="Telephone1" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000047" label="Telephone2" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000048" label="Telephone3" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000049" label="Established" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000050" label="Shift" pos1="999" pos2="999" relTo="00000000132" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000063" label="Status" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<object id="00000000132" name="CmdPost" objectType="test" pos="33">
+<fact comp="n" edit="y" id="00000000005" label="CallSign" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000045" label="Released" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000046" label="Telephone1" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000047" label="Telephone2" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000048" label="Telephone3" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000049" label="Established" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000050" label="Shift" pos1="999" pos2="999" relTo="00000000132" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000063" label="Status" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+</object>
+<rot>
+ </rot>
+</operation>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1214573220796">
+<add_to_op id="05620080048399073">
+<message from="¤ INTERN" given_time="1214573220796" id="05500000000010213" multmUrl="" origId="05500000000010213" registered_time="1214573221000" relMesId="" start_time="1214573220796" to="¤ AVSLUTTET" type="1">
+<message_body>Hendelse avsluttet 27.06.2008 15:27 (UTC+2)</message_body>
+</message>
+</add_to_op>
+</add>
+
+@END MESSAGE@

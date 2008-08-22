@@ -452,6 +452,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setSpatialReferenceByRef(ISpatialReference srs)
 		throws IOException, AutomationException {
 		this.srs = srs;
+		/*
+		int count = featureClass.featureCount(null);
+		for(int i=0;i<count;i++) {
+			IMsoFeature f = (IMsoFeature)featureClass.getFeature(i);
+			f.setSpatialReference(srs);
+		}
+		*/
 	}
 
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException {
@@ -499,7 +506,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setLayerDescription(String arg0) throws IOException, AutomationException {
 	}
 
-	public String getTipText(double arg0, double arg1, double arg2)
+	public String getTipText(double x, double y, double tolerance)
 		throws IOException, AutomationException {
 		return null;
 	}
@@ -863,5 +870,15 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return (msoFeature!=null && select(msoFeature) 
 				&& msoFeature.isVisible() && msoFeature.isDirty());
 	}
+	
+	public int getRefreshRate() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void setRefreshRate(int inMillis) {
+		// TODO Auto-generated method stub
+	}
+	
 	
 }

@@ -413,7 +413,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 														// is used to apply change to mso model
 			m_tool.setShowDrawFrame(false);				// do not show draw frame
 			// get draw adapter
-			m_tool.getDrawAdapter().setup(MsoClassCode.CLASSCODE_POI, null, poi, true);
+			m_tool.getDrawAdapter().setup(MsoClassCode.CLASSCODE_POI, poi, true);
 			// activate tool
 			m_wp.getMap().setActiveTool(m_tool, 0);
 			// show panel

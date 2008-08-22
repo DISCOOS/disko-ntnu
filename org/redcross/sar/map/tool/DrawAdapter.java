@@ -27,10 +27,10 @@ import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.ElementPanel.ElementEvent;
 import org.redcross.sar.gui.panel.ElementPanel.IElementEventListener;
 import org.redcross.sar.map.DiskoMap;
+import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.map.tool.IDrawTool.FeatureType;
@@ -85,7 +85,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	private IMsoObjectIf msoObject = null;
 	private MsoClassCode msoCode = null;	
 	
-	private Enum element = null;	
+	private Enum<?> element = null;	
 	private DrawMode drawMode = null;
 	
 	private IEnvelope geoFrame = null;
@@ -266,7 +266,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		return drawFrame;
 	}
 	
-	public Enum getElement() {
+	public Enum<?> getElement() {
 		return element;
 	}
 	
@@ -672,7 +672,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			// forward?
 			if(refresh) refreshFrame();
 			// update property panel?
-			if(getSelectedTool()!=null) // && getSelectedTool().isShowDrawFrame()) 
+			if(getSelectedTool()!=null) 
 				getSelectedTool().getToolPanel().update();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -977,7 +977,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		}
 	}
     
-    private void fireOnElementChange(Enum element, IMsoObjectIf msoObject)
+    private void fireOnElementChange(Enum<?> element, IMsoObjectIf msoObject)
     {
 		// notify drawListeners
 		for (int i = 0; i < drawListeners.size(); i++) {
@@ -1049,7 +1049,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			
 			if(this.msoObject==msoObject) {
 				// forward
-				setup(msoOwner,msoObject,true);
+				setup(msoObject,true);
 			}
 		}
 	}
@@ -1063,7 +1063,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			
 			if(this.msoObject==msoObject) {
 				// forward
-				setup(msoOwner,null,true);
+				setup(null,true);
 			}
 		}
 	}	
@@ -1083,11 +1083,6 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		// update this
 		try {
 
-			// initialize to current
-			Enum type = element;
-			IMsoObjectIf msoObject = null;
-			IMsoObjectIf msoOwner = null;
-
 			// get selection list
 			List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
 
@@ -1101,75 +1096,13 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				return;
 
 			// has selected items?
-			if (selection != null && selection.size() > 0) {
-
-				// get first selected object
-				msoObject = selection.get(0);
-
-				// get owner
-				msoOwner = (msoObject == null) ? null
-						: MsoUtils.getOwningArea(msoObject);
-
-				// dispatch type of object
-				if (msoObject instanceof IOperationAreaIf) {
-					// get type
-					type = MsoClassCode.CLASSCODE_OPERATIONAREA;
-				} else if (msoObject instanceof ISearchAreaIf) {
-					// get type
-					type = MsoClassCode.CLASSCODE_SEARCHAREA;
-				} else if (msoObject instanceof IRouteIf) {
-					// initialize
-					type = MsoClassCode.CLASSCODE_ROUTE;
-					// get owning area
-					IAreaIf area = (IAreaIf) msoOwner;
-					// found area?
-					if (area != null) {
-						// get sub type
-						type = MsoUtils.getType(msoObject, true);
-					}
-				} else if (msoObject instanceof IPOIIf) {
-
-					// initialize
-					type = MsoClassCode.CLASSCODE_POI;
-
-					// get poi
-					IPOIIf poi = (IPOIIf) msoObject;
-
-					// get poi type
-					IPOIIf.POIType poiType = poi.getType();
-
-					// get flag
-					boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
-
-					// is area poi?
-					if (isAreaPOI) {
-
-						// initialize
-						type = SearchSubType.PATROL;
-
-						// get owning area
-						IAreaIf area = (IAreaIf) msoOwner;
-
-						// get flag
-						isAreaPOI = (area != null);
-
-						// found area?
-						if (isAreaPOI) {
-							IAssignmentIf assignment = area
-									.getOwningAssignment();
-							if (assignment instanceof ISearchIf) {
-								ISearchIf search = (ISearchIf) assignment;
-								type = search.getSubType();
-							}
-						}
-					}
-				} else if (msoObject instanceof IUnitIf) {
-					// get type
-					type = MsoClassCode.CLASSCODE_UNIT;
-				}
-			}
-			// forward
-			setup(type, msoOwner, msoObject, msoObject!=null || msoOwner != null);
+			if (selection != null && selection.size() > 0)
+				// use first selected object only
+				setup(selection.get(0),true);
+			else 
+				// forward
+				setup(null,false);
+			
 		} catch (Exception ex) {
 			// TODO Auto-generated catch block
 			ex.printStackTrace();
@@ -1199,7 +1132,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();		
 		
 		// get current value
-		Enum e = (Enum)elementList.getSelectedValue();
+		Enum<?> e = (Enum<?>)elementList.getSelectedValue();
 		// initialize?
 		if(e==null) {
 			e = MsoClassCode.CLASSCODE_OPERATIONAREA;
@@ -1222,7 +1155,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		return true;
 	}
 	
-	public boolean selectElement(Enum element) {
+	public boolean selectElement(Enum<?> element) {
 		
 		// consume?
 		if(!isChangeable()) return false;
@@ -1234,19 +1167,21 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		if(elementList != null && elementList.getSelectedValue()!=element)
 			elementList.setSelectedValue(element, true);
 		else
-			setup(element,msoOwner,msoObject,true);
+			setup(element,msoObject,true);
 		
 		// success
 		return true;
 		
 	}
 	
-	public void setup(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, boolean setTool) {
-		setup(element,msoOwn,msoObj,setTool);
+	public void setup(IMsoObjectIf msoObj, boolean setTool) {
+		setup(element,msoObj,setTool);
 	}
 	
-	public void setup(final Enum element, 
-			final IMsoObjectIf msoOwn, final IMsoObjectIf msoObj, final boolean setTool) {
+	public void setup(
+			final Enum<?> element, 
+			final IMsoObjectIf msoObj, 
+			final boolean setTool) {
 
 		// consume?
 		if(!isChangeable()) return;
@@ -1259,7 +1194,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			suspendUpdate();
 
 			// initialize
-			Enum e = element;
+			Enum<?> e = element;
 			MsoClassCode code = null;
 			IDiskoTool defaultTool = null;
 			IMsoObjectIf msoOwner = null;
@@ -1273,31 +1208,30 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(element)) {
 				// set class code
 				code = MsoClassCode.CLASSCODE_OPERATIONAREA;
-				// contrain
-				msoOwner = null;
+				// constrain
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_OPERATIONAREA,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject,code);
+				mode = translateToDrawMode(null, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getFreeHandTool());
 			} else if (MsoClassCode.CLASSCODE_SEARCHAREA.equals(element)) {
 				// set class code
 				code = MsoClassCode.CLASSCODE_SEARCHAREA;
-				// contrain
-				msoOwner = null;
+				// constrain
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_SEARCHAREA,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject, code);
+				mode = translateToDrawMode(null, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getFreeHandTool());
 			} else if (MsoClassCode.CLASSCODE_ROUTE.equals(element)) {
 				// set class code
 				code = MsoClassCode.CLASSCODE_ROUTE;
-				// contrain
-				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,msoOwn);
+				// constrain
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_ROUTE,msoObj);
+				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,
+						msoObj instanceof IAreaIf ? msoObj : MsoUtils.getOwningArea(msoObject));
 				// translate state into draw mode
 				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
@@ -1307,9 +1241,10 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				// set class code
 				code = (msoObj instanceof IRouteIf || msoObj instanceof IPOIIf) 
 					 ? msoObj.getMsoClassCode() : MsoClassCode.CLASSCODE_ROUTE;
-				// contrain
-				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,msoOwn);
+				// constrain
 				msoObject = constrainToCode(code,msoObj);
+				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,
+						msoObj instanceof IAreaIf ? msoObj : MsoUtils.getOwningArea(msoObject));
 				// translate state into draw mode
 				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
@@ -1318,9 +1253,10 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			} else if (MsoClassCode.CLASSCODE_POI.equals(element)) {
 				// set class code
 				code = MsoClassCode.CLASSCODE_POI;
-				// forward
-				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,msoOwn);
+				// constrain
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_POI,msoObj);
+				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,
+						msoObj instanceof IAreaIf ? msoObj : MsoUtils.getOwningArea(msoObject));				
 				// translate state into draw mode
 				mode = translateToDrawMode(msoOwner, msoObject, code);
 				// select default tool
@@ -1330,10 +1266,9 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				// set class code
 				code = MsoClassCode.CLASSCODE_UNIT;
 				// constrain
-				msoOwner = null;
 				msoObject = constrainToCode(MsoClassCode.CLASSCODE_UNIT,msoObj);
 				// translate state into draw mode
-				mode = translateToDrawMode(msoOwner, msoObject, code);
+				mode = translateToDrawMode(null, msoObject, code);
 				// select default tool
 				defaultTool = (DrawMode.MODE_LOCKED.equals(mode) 
 						? map.getActiveTool() : navBar.getPositionTool());
@@ -1347,9 +1282,12 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			DrawAdapter.this.element = e;
 			// notify?
 			if (e != null) {
-				// set mso draw data
+				// set MSO data
 				setMsoData(msoOwner, msoObject, code);
-				// set drawmode
+				// select object?
+				if(msoObject!=null)
+					ensureIsSelected(msoObject,true);							
+				// set draw mode
 				setDrawMode(mode);
 				// select default tool?
 				if (!app.isLoading() && setTool) setDefaultTool(defaultTool);
@@ -1366,7 +1304,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					setup(element, msoOwn, msoObj, setTool);
+					setup(element, msoObj, setTool);
 				}
 			});
 		}		
@@ -1732,9 +1670,9 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				// force setup?
 				if(e.isClassElement()) {
 					// get element
-					Enum element = (Enum)e.getElement();
+					Enum<?> element = (Enum<?>)e.getElement();
 					// force setup
-					setup(element,msoOwner,msoObject,true);
+					setup(element,msoObject,true);
 				}
 				
 			}	
@@ -1826,94 +1764,40 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		if(!e.isClassElement()) {
 		
 			// prepare
-			setChangeable(false);
 			suspendUpdate();
-										
+			
+			// initialize
+			IEnvelope extent = null;
+			
+			// forward
+			setup((IMsoObjectIf)e.getElement(),true);			
+			
+			// hide dialog
+			elementDialog.setVisible(false);				
+				
+			// finished
+			resumeUpdate(false);
 			
 			// forward
 			try {
-				
-				// initialize
-				Enum element = null;					
-				IEnvelope extent = null;
-				IMsoObjectIf msoSelect = null;
-				IMsoObjectIf msoOwner = this.msoOwner;
-				
-				// get selected mso object
-				IMsoObjectIf msoObject = (IMsoObjectIf)e.getElement();
-				
-				// is area?
-				if(msoObject instanceof IAreaIf) {
-					
-					// replace current owner with this
-					msoOwner = msoObject;
-					
-					// reset object
-					msoObject = null;
-					
-					// cast to IAreaIf
-					IAreaIf area = (IAreaIf)msoOwner;
-					
-					// get all routes
-					Collection<IMsoObjectIf> c = area.getAreaGeodataItems();
-					
-					// loop over all objects
-					for(IMsoObjectIf it:c) {
-						// get extent
-						IEnvelope env = map.getMsoObjectExtent(it);
-						// do a union?
-						if (env != null) {
-							if (extent == null)
-								extent = env.getEnvelope();
-							else extent.union(env);
-						}
-					}
-
-					
-					// has assignment?
-					if(area.getOwningAssignment() instanceof ISearchIf) {
-						
-						// cast to ISearchIf
-						ISearchIf search = (ISearchIf)area.getOwningAssignment();
-						
-						// get sub type
-						element = search.getSubType();
-
-					}
-					
-				}
-				else {
-					// set selection
-					msoSelect = msoObject;
-					extent = map.getMsoObjectExtent(msoObject);
-					// get element
-					element = (msoObject==null) ? null : msoObject.getMsoClassCode();
-				}
-				
-				// forward
-				setup(element,msoOwner,msoObject,true);
-				
-				// expand extent
-				extent = MapUtil.expand(1.25, extent);
-				
-				// set extent of object
-				map.setExtent(extent);
 								
-				// select object?
-				if(msoSelect!=null)
-					ensureIsSelected(msoSelect,true);
+				// get extent
+				if(this.msoOwner!=null)
+					extent = map.getMsoObjectExtent(this.msoOwner);
+				else if(this.msoObject!=null)
+					extent = map.getMsoObjectExtent(this.msoObject);
 				
-				// hide dialog
-				elementDialog.setVisible(false);
-				
+				// set extent of object?
+				if(extent!=null)
+					map.zoomTo(extent,1.25);	
+				else
+					map.refreshMsoLayers();
+								
 			}
 			catch(Exception ex) {
 				ex.printStackTrace();
 			}
 			
-			// finished
-			resumeUpdate();			
-			setChangeable(true);
 		}
 		
 	}		
@@ -2011,7 +1895,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				fireOnWorkFinish(msoObject);
 				fireOnDrawFinished(drawMode, msoObject);
 				// prepare for next
-				setup(tool.getMsoOwner(),msoObject,false);
+				setup(msoObject,false);
 			}
 			else if(e.isCancel()) {
 				// resume 
@@ -2035,21 +1919,30 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	 *========================================================== 
 	 */	
     	
-	private List<IMsoFeatureLayer> ensureIsSelected(IMsoObjectIf msoObj, boolean unique) throws AutomationException, IOException {
-		// initialize
-		List<IMsoFeatureLayer> list = new ArrayList<IMsoFeatureLayer>();
-		// get flags
-		boolean isSelected = (map.isSelected(msoObject)>0);
-		// clear current selection?
-		if(unique && map.getSelectionCount(false)>0 && !isSelected) {
-			list.addAll(map.clearSelected());
-		}		
-		// select object?
-		if(msoObj!=null && !isSelected) {
-			list.addAll(map.setSelected(msoObj, true));
+	private List<IMsoFeatureLayer> ensureIsSelected(IMsoObjectIf msoObj, boolean unique) {
+		try {
+			// initialize
+			List<IMsoFeatureLayer> list = new ArrayList<IMsoFeatureLayer>();
+			// get flags
+			boolean isSelected = (map.isSelected(msoObject)>0);
+			// clear current selection?
+			if(unique && map.getSelectionCount(false)>0 && !isSelected) {
+				list.addAll(map.clearSelected());
+			}		
+			// select object?
+			if(msoObj!=null && !isSelected) {
+				list.addAll(map.setSelected(msoObj, true));
+			}
+			// finished
+			return list.size()==0 ? null : list;
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		// finished
-		return list.size()==0 ? null : list;
+		return null;
 	}
 	
 	private void suspendUpdate() {
@@ -2066,6 +1959,10 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	}
 	
 	private void resumeUpdate() {
+		resumeUpdate(true);
+	}
+	
+	private void resumeUpdate(boolean refresh) {
 		// resume map update
 		if(map!=null) {
 			try {
@@ -2100,7 +1997,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	public interface IDrawAdapterListener {
 		public void onDrawModeChanged(DrawMode mode, DrawMode oldMode, IMsoObjectIf msoObject);
 		public void onDrawWorkFinished(DrawMode mode, IMsoObjectIf msoObject);
-		public void onElementChange(Enum element, IMsoObjectIf msoObject);
+		public void onElementChange(Enum<?> element, IMsoObjectIf msoObject);
 	}
 	
 	/*==========================================================
@@ -2137,7 +2034,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 		private IMsoObjectIf msoObject = null;
 		private MsoClassCode msoCode = null;	
 		
-		private Enum element = null;	
+		private Enum<?> element = null;	
 		private DrawMode drawMode = null;
 		
 		AdapterState() {

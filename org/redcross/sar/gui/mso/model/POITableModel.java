@@ -1,4 +1,4 @@
-package org.redcross.sar.gui.model.mso;
+package org.redcross.sar.gui.mso.model;
 
 import java.util.ArrayList;
 import java.util.EnumSet;

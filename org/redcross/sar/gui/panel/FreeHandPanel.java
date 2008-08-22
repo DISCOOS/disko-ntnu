@@ -220,8 +220,6 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 					public void actionPerformed(ActionEvent e) {
 						// forward
 						doSnapTo();
-						// forward
-						fireActionEvent(e);						
 					}
 				});
 			} catch (java.lang.Throwable e) {

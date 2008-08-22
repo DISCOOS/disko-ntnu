@@ -89,7 +89,7 @@ public class ElementPanel extends DefaultPanel {
 	public ElementPanel() {
 
 		// set caption
-		super("Elementer",false,false);
+		super("Elementer",false,true,ButtonSize.SMALL);
 		
 		// prepare
 		this.msoModel = Utils.getApp().getMsoModel();
@@ -107,7 +107,8 @@ public class ElementPanel extends DefaultPanel {
 
 	private void initialize() {
 		// set lists panel
-		setBodyComponent(getListsPanel());		
+		setBodyComponent(getListsPanel());	
+		setPreferredBodySize(new Dimension(620,400));
 	}
 	
 	/**
@@ -163,7 +164,7 @@ public class ElementPanel extends DefaultPanel {
 				typePanel = new JPanel();
 				typePanel.setLayout(bl);
 				typePanel.setBorder(null);
-				typePanel.setPreferredSize(new Dimension(200, 500));
+				typePanel.setPreferredSize(new Dimension(200, 400));
 				typePanel.add(new JLabel("Velg type"),BorderLayout.NORTH);
 				typePanel.add(getTypeScrollPane(),BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
@@ -197,7 +198,7 @@ public class ElementPanel extends DefaultPanel {
 								typeList.getSelectedValue(),ElementEventType.SELECTED,ElementType.CLASS));
 						
 						// load objects of spesified type
-						loadObjects((Enum)typeList.getSelectedValue());
+						loadObjects((Enum<?>)typeList.getSelectedValue());
 							
 					}
 					
@@ -238,7 +239,7 @@ public class ElementPanel extends DefaultPanel {
 				objectPanel = new JPanel();
 				objectPanel.setLayout(bl);
 				objectPanel.setBorder(null);
-				objectPanel.setPreferredSize(new Dimension(200, 500));
+				objectPanel.setPreferredSize(new Dimension(200, 400));
 				objectPanel.add(new JLabel("Velg objekt"),BorderLayout.NORTH);
 				objectPanel.add(getObjectScrollPane(),BorderLayout.CENTER);
 				objectPanel.add(getObjectButtonsPanel(),BorderLayout.SOUTH);
@@ -332,7 +333,7 @@ public class ElementPanel extends DefaultPanel {
 				partPanel = new JPanel();
 				partPanel.setLayout(bl);
 				partPanel.setBorder(null);
-				partPanel.setPreferredSize(new Dimension(200, 500));
+				partPanel.setPreferredSize(new Dimension(200, 400));
 				partPanel.add(new JLabel("Velg planlagt del"),BorderLayout.NORTH);
 				partPanel.add(getPartScrollPane(),BorderLayout.CENTER);
 				partPanel.add(getPartButtonsPanel(),BorderLayout.SOUTH);
@@ -614,7 +615,7 @@ public class ElementPanel extends DefaultPanel {
 	        public boolean select(IAreaIf anArea)
 	        {
 	            // get sub type
-				Enum subType = MsoUtils.getType(anArea,true);
+				Enum<?> subType = MsoUtils.getType(anArea,true);
 				// return true if same
 				return e!=null && e.equals(subType);
 	        }
@@ -645,7 +646,7 @@ public class ElementPanel extends DefaultPanel {
 			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
 					MsoClassCode.CLASSCODE_SEARCHAREA.equals(code)) {
 				// get selected element class
-				Enum e = (Enum)typeList.getSelectedValue();
+				Enum<?> e = (Enum<?>)typeList.getSelectedValue();
 				// belongs object to selected class?
 				if(e!=null && e.equals(code)) {
 					// return list
@@ -657,10 +658,10 @@ public class ElementPanel extends DefaultPanel {
 			}
 			else if(MsoClassCode.CLASSCODE_AREA.equals(code)) {
 				// get search sub type
-				Enum subType = MsoUtils.getType(msoObject,true);
+				Enum<?> subType = MsoUtils.getType(msoObject,true);
 				subType = MsoUtils.getType(msoObject,true);
 				// get selected element class
-				Enum e = (Enum)typeList.getSelectedValue();
+				Enum<?> e = (Enum<?>)typeList.getSelectedValue();
 				// belongs object to selected class?
 				if(e!=null && e.equals(subType)) {
 					// return list
@@ -709,7 +710,7 @@ public class ElementPanel extends DefaultPanel {
 				}
 				else {
 					// get selected element class
-					Enum e = (Enum)typeList.getSelectedValue();
+					Enum<?> e = (Enum<?>)typeList.getSelectedValue();
 					// is pui class selected?
 					if(MsoClassCode.CLASSCODE_POI.equals(e)) {
 						// validate
@@ -894,7 +895,7 @@ public class ElementPanel extends DefaultPanel {
 			if (editButton == null) {
 				try {
 					editButton = DiskoButtonFactory.createButton(
-							(ElementType.PART.equals(type) ? "GENERAL.EQUAL" : "GENERAL.PLUS"), ButtonSize.NORMAL);
+							(ElementType.PART.equals(type) ? "GENERAL.EQUAL" : "GENERAL.PLUS"), ButtonSize.SMALL);
 					editButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {
@@ -924,7 +925,7 @@ public class ElementPanel extends DefaultPanel {
 		public JButton getDeleteButton() {
 			if (deleteButton == null) {
 				try {
-					deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.NORMAL);
+					deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE",ButtonSize.SMALL);
 					deleteButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {
@@ -954,7 +955,7 @@ public class ElementPanel extends DefaultPanel {
 		public JButton getCenterAtButton() {
 			if (centerAtButton == null) {
 				try {
-					centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
+					centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);
 					centerAtButton.addActionListener(new ActionListener() {
 
 						public void actionPerformed(ActionEvent e) {

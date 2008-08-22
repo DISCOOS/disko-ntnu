@@ -53,7 +53,7 @@ public class DraftListDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(600, 600));
+            this.setPreferredSize(new Dimension(400, 600));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}

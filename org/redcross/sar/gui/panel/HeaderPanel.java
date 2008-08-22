@@ -157,6 +157,13 @@ public class HeaderPanel extends JPanel {
 	/* =======================================================
 	 * Public methods
 	 * ======================================================= */
+
+	/**
+	 * This method returns the button size that should be used when adding and inserting buttons 
+	 */
+	public ButtonSize getButtonSize() {
+		return m_buttonSize;
+	}
 	
 	/**
 	 * This method gets the caption icon

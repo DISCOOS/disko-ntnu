@@ -28,8 +28,8 @@ import java.util.Hashtable;
 public class UnitLayer extends AbstractMsoFeatureLayer {
 
 	private static final long serialVersionUID = 1L;
-	private static final double fontSize = 12;
-	private static final double fontOffset = 32;
+	private static final double fontSize = 8;
+	private static final double fontOffset = 24;
 	private static final double pointSize = 32;
 	private static final double referenceScale = 50000;
 	

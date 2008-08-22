@@ -251,7 +251,7 @@ public class RouteCostPanel extends JPanel
 
 	    	// create estimator?
 	    	if (m_rce == null) {
-	    		m_rce = new RouteCost(r,2,m_map);
+	    		m_rce = new RouteCost(null,r,2,m_map);
 	    	}
 	    	else {
 	    		m_rce.setRoute(r);

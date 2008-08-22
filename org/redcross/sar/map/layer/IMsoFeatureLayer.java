@@ -14,22 +14,11 @@ import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
-public interface IMsoFeatureLayer extends IFeatureLayer {
-	
-	public enum LayerCode {
-		AREA_LAYER,
-		ROUTE_LAYER,
-		OPERATION_AREA_LAYER,
-		SEARCH_AREA_LAYER,
-		POI_LAYER,
-		FLANK_LAYER,
-		OPERATION_AREA_MASK_LAYER,
-		UNIT_LAYER
-    }
-	
+public interface IMsoFeatureLayer extends IFeatureLayer, IDiskoLayer {
+		
 	public IMsoManagerIf.MsoClassCode getClassCode();
 	
-	public IMsoFeatureLayer.LayerCode getLayerCode();
+	public LayerCode getLayerCode();
 	
 	public void setSelected(IMsoFeature msoFeature, boolean selected);
 	

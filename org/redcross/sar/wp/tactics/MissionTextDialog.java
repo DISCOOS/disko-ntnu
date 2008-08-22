@@ -9,6 +9,7 @@ import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -75,7 +76,7 @@ public class MissionTextDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel() {
+				contentPanel = new DefaultPanel("",true,true) {
 
 					private static final long serialVersionUID = 1L;
 

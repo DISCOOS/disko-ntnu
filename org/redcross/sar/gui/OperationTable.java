@@ -8,7 +8,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.model.OperationTableModel;
-import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 
 public class OperationTable extends JTable {
 
@@ -46,7 +46,7 @@ public class OperationTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(true);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderCellRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
         
         // add model lister to ensure data fit
         getModel().addTableModelListener(new TableModelListener() {

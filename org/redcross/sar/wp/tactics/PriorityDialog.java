@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.RadioListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -33,9 +34,9 @@ public class PriorityDialog extends DefaultDialog {
 		super(wp.getApplication().getFrame());
 		// prepare
 		this.wp = wp;
-		// initialize gui
+		// initialize GUI
 		initialize();
-		// initialise
+		// forward
 		setup();
 	}
 
@@ -84,7 +85,7 @@ public class PriorityDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel() {
+				contentPanel = new DefaultPanel("",true,true) {
 
 					private static final long serialVersionUID = 1L;
 					

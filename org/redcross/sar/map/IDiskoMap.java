@@ -8,12 +8,10 @@ import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
-import org.redcross.sar.gui.panel.MapFilterPanel;
-import org.redcross.sar.gui.panel.MapStatusPanel;
-import org.redcross.sar.map.element.DrawFrame;
 import org.redcross.sar.map.feature.IMsoFeature;
+import org.redcross.sar.map.layer.IDiskoLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.DrawAdapter;
 import org.redcross.sar.map.tool.IDiskoTool;
 import org.redcross.sar.map.tool.SnapAdapter;
@@ -21,12 +19,12 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.Position;
 
-import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geometry.IEnvelope;
+import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.IPolyline;
@@ -47,13 +45,15 @@ public interface IDiskoMap {
 	public IDiskoTool getActiveTool();
 	public boolean setActiveTool(IDiskoTool tool, int options) throws IOException, AutomationException;
 	
-	public List<IMsoFeatureLayer> getMsoLayers();
+	public EnumSet<LayerCode> getSupportedLayers();
 	
+	public List<IDiskoLayer> getDiskoLayers();
+	public IDiskoLayer getDiskoLayer(LayerCode layerCode);
+	
+	public List<IMsoFeatureLayer> getMsoLayers();
 	public List<IMsoFeatureLayer> getMsoLayers(MsoClassCode classCode);
 	
 	public IMsoFeatureLayer getMsoLayer(LayerCode layerCode);
-	
-	public EnumSet<LayerCode> getSupportedMsoLayers();
 	
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;	
 	
@@ -95,6 +95,8 @@ public interface IDiskoMap {
 	public void centerAtFeature(IFeature feature) throws IOException, AutomationException;
 	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
 	
+	public void zoomTo(IGeometry geom,double ratio) throws IOException, AutomationException;
+	public void zoomToPosition(Position p,double ratio) throws IOException, AutomationException;
 	public void zoomToSelected () throws IOException, AutomationException;
 	public void zoomToSelected (double ratio) throws IOException, AutomationException;
 	public void zoomToFeature(IFeature feature) throws IOException, AutomationException;

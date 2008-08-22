@@ -167,7 +167,7 @@ public class DiskoDecisionSupport {
 				m_workPool.schedule(e);
 				bFlag = true;
 			}
-			else if(!e.isWorking()) {
+			else if(e.isSuspended()) {
 				bFlag = e.resume();
 			}			
 		}

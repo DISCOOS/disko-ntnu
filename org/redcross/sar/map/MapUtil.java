@@ -15,7 +15,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -37,6 +37,7 @@ import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
+import com.esri.arcgis.analyst3d.SimpleMarker3DSymbol;
 import com.esri.arcgis.carto.CompositeGraphicsLayer;
 import com.esri.arcgis.carto.ICompositeGraphicsLayer;
 import com.esri.arcgis.carto.IElement;
@@ -51,10 +52,12 @@ import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
 import com.esri.arcgis.display.IDisplay;
 import com.esri.arcgis.display.IFillSymbol;
 import com.esri.arcgis.display.ILineSymbol;
+import com.esri.arcgis.display.IMarkerSymbol;
 import com.esri.arcgis.display.ISymbol;
 import com.esri.arcgis.display.RgbColor;
 import com.esri.arcgis.display.SimpleFillSymbol;
 import com.esri.arcgis.display.SimpleLineSymbol;
+import com.esri.arcgis.display.SimpleMarkerSymbol;
 import com.esri.arcgis.display.esriScreenCache;
 import com.esri.arcgis.display.esriSimpleFillStyle;
 import com.esri.arcgis.display.esriSimpleLineStyle;
@@ -123,14 +126,18 @@ public class MapUtil {
     	return geographicCS;
     }
 	
-	public static Point getEsriPoint(Position pos, ISpatialReference srs) 
-			throws IOException, AutomationException {
+	public static Point getEsriPoint(Point2D.Double pos, ISpatialReference srs) 
+		throws IOException, AutomationException {
 		Point p = new Point();
-		p.setX(pos.getPosition().getX());
-		p.setY(pos.getPosition().getY());
+		p.setX(pos.getX());
+		p.setY(pos.getY());
 		p.setSpatialReferenceByRef(getGeographicCS());
 		p.project(srs);
 		return p;
+	}
+	public static Point getEsriPoint(Position pos, ISpatialReference srs) 
+			throws IOException, AutomationException {
+		return getEsriPoint(pos.getPosition(),srs);
 	}
 	
 	public static IEnvelope expand(double ratio, IEnvelope env) 
@@ -377,10 +384,10 @@ public class MapUtil {
 	public static Polyline getEsriPolyline(Route route, ISpatialReference srs) 
 			throws IOException, AutomationException {
 		Polyline esriPolyline = new Polyline();
-		Collection vertices = route.getItems();
-		Iterator iter = vertices.iterator();
+		Collection<GeoPos> vertices = route.getItems();
+		Iterator<GeoPos> iter = vertices.iterator();
 		while(iter.hasNext()) {
-			GeoPos pos = (GeoPos)iter.next();
+			GeoPos pos = iter.next();
 			Point2D.Double pnt2D = pos.getPosition();
 			Point p = new Point();
 			p.setX(pnt2D.getX());
@@ -416,6 +423,35 @@ public class MapUtil {
 		return esriPolyline;
 	}
 	
+	public static Polyline getEsriPolyline(GeoPos p1, GeoPos p2, ISpatialReference srs) 
+		throws IOException, AutomationException {
+		Polyline esriPolyline = new Polyline();
+		Point p = new Point();
+		p.setX(p1.getPosition().x);
+		p.setY(p1.getPosition().y);
+		esriPolyline.addPoint(p, null, null);
+		p = new Point();
+		p.setX(p2.getPosition().x);
+		p.setY(p2.getPosition().y);
+		esriPolyline.addPoint(p, null, null);
+		esriPolyline.setSpatialReferenceByRef(getGeographicCS());
+		esriPolyline.project(srs);
+		return esriPolyline;
+	}
+	
+	public static Polyline getEsriPolyline(Collection<GeoPos> points, ISpatialReference srs) 
+		throws IOException, AutomationException {
+		Polyline esriPolyline = new Polyline();
+		for(GeoPos it : points) {
+			Point p = new Point();
+			p.setX(it.getPosition().x);
+			p.setY(it.getPosition().y);
+			esriPolyline.addPoint(p, null, null);
+		}
+		esriPolyline.setSpatialReferenceByRef(getGeographicCS());
+		esriPolyline.project(srs);
+		return esriPolyline;
+	}
 	public static Route getMsoRoute(Polyline pl) 
 			throws IOException, AutomationException {
 		Polyline prjPolyline = (Polyline)pl.esri_clone();
@@ -1435,6 +1471,9 @@ public class MapUtil {
 		return null;
 	}
 	
+	public static IPoint createPoint(GeoPos p) {
+		return createPoint(p.getPosition().x, p.getPosition().y);
+	}
 	
 	public static IPoint createPoint(double x, double y) {
 		try {
@@ -1449,7 +1488,7 @@ public class MapUtil {
 		}		
 		return null;
 	}
-	
+		
 	public static IEnvelope createEnvelope() {
 		try {
 			// create envelope
@@ -1559,6 +1598,29 @@ public class MapUtil {
 		return color;
 	}
 	
+	public static IMarkerSymbol getMarkerSymbol(int r, int g, int b,  int style, boolean is3D) throws UnknownHostException, IOException {
+		return getMarkerSymbol(getRgbColor(r, g, b), style, is3D);
+	}
+	
+	public static IMarkerSymbol getMarkerSymbol(RgbColor color, int style, boolean is3D) throws UnknownHostException, IOException {
+		
+		if(is3D) {
+			SimpleMarker3DSymbol marker = new SimpleMarker3DSymbol(); 
+			marker.setStyle(style);
+			marker.setColor(color);
+			marker.setSize(12);
+			marker.setBillboardDisplay(true);
+			return marker;
+		}
+		else {
+			SimpleMarkerSymbol marker = new SimpleMarkerSymbol();
+			marker.setStyle(style);
+			marker.setColor(color);
+			marker.setSize(12);
+			return marker;
+		}		
+	}
+	
 	public static ILineSymbol getLineSymbol(int line) throws UnknownHostException, IOException {
 		
 		// finished
@@ -1607,7 +1669,7 @@ public class MapUtil {
 		symbol.setStyle(fill);
 
 		// set outline symbol in fill symbol
-		symbol.setOutline(getLineSymbol(outline));		
+		symbol.setOutline(getLineSymbol(outline));
 		
 		// finished
 		return symbol;

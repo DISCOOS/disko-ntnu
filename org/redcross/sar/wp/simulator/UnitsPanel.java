@@ -13,10 +13,17 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.ds.ete.RouteCost;
+import org.redcross.sar.ds.event.IDsUpdateListenerIf;
+import org.redcross.sar.ds.event.DsEvent.Update;
 import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.util.mso.Track;
 
-public class UnitsPanel extends BasePanel {
+import com.esri.arcgis.geometry.IEnvelope;
+
+public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -137,5 +144,32 @@ public class UnitsPanel extends BasePanel {
 		m_units.clear();
 		insert(0,m_model.getRowCount()-1);
 	}
+
+	/*
+	@Override
+	public void handleDsUpdateEvent(Update e) {
+		switch(e.getType()) {
+		case MODIFIED_EVENT:
+			// progress calculated?
+			if(e.getFlags()==1) {
+				Object[] data = e.getData();
+				for(int i=0;i<data.length;i++) {
+					RouteCost cost = (RouteCost)data[i];
+					IAssignmentIf assignment = cost.getId();
+					IUnitIf unit = assignment.getOwningUnit();
+					UnitStatusPanel panel = m_units.get(unit); 					
+					if(panel!=null) {
+						Track tr = cost.getEstimatedTrack();
+						int stop = tr.getCount()-1;
+						if(stop!=-1) 
+							unit.setBearing((int)tr.getBearing(stop-1,stop));
+					}
+				}
+			}
+			break;
+		}
+		
+	}
+	*/
 	
 }

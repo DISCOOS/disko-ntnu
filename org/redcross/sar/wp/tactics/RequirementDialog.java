@@ -51,11 +51,11 @@ public class RequirementDialog extends DefaultDialog {
 	public RequirementDialog(IDiskoWpModule wp) {
 		// forward
 		super(wp.getApplication().getFrame());
-		// prepare objeckts
+		// prepare objects
 		this.wp = wp;
-		// initialize gui
+		// initialize GUI
 		initialize();
-		// initialise
+		// forward
 		setup();
 	}
 

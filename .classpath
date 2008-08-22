@@ -22,5 +22,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/SaraApi.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/spring-2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/wmscommon.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.12.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

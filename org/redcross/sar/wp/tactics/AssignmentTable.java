@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.tactics;
 
-import java.awt.Dimension;
 import java.util.Hashtable;
 
 import javax.swing.JCheckBox;
@@ -11,8 +10,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.model.mso.AssignmentTableModel;
-import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
+import org.redcross.sar.gui.mso.model.AssignmentTableModel;
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -46,7 +45,7 @@ public class AssignmentTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderCellRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
         
         // misc.
 		setRowHeight(34);

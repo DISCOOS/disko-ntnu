@@ -27,7 +27,7 @@ public class ElementDialog extends DefaultDialog {
 	private void initialize() {
 		try {
             this.setContentPane(getElementPanel());
-            this.setPreferredSize(new Dimension(600,530));
+            this.setPreferredSize(new Dimension(606,440));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {

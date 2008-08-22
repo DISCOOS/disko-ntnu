@@ -487,7 +487,7 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 														// is used to apply change to mso model
 			m_tool.setShowDrawFrame(false);				// do not show draw frame			
 			// update draw adapter
-			m_tool.getDrawAdapter().setup(MsoClassCode.CLASSCODE_UNIT, null, unit, true);
+			m_tool.getDrawAdapter().setup(MsoClassCode.CLASSCODE_UNIT, unit, true);
 			
 			/* ==================================================================
 			 * IMPORTANT: 

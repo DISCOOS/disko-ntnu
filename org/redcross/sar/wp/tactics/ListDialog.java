@@ -3,11 +3,9 @@ package org.redcross.sar.wp.tactics;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +71,7 @@ public class ListDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(400, 400));
+            this.setPreferredSize(new Dimension(400, 600));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}
@@ -177,8 +175,6 @@ public class ListDialog extends DefaultDialog {
 	private JPanel getCenterPanel() {
 		if(centerPanel==null) {
 			BorderLayout bl = new BorderLayout();
-			//bl.setVgap(5);
-			//bl.setHgap(5);
 			centerPanel = new JPanel(bl);
 			centerPanel.add(getOptionsPanel(),BorderLayout.NORTH);
 			centerPanel.add(getAssignmentTable(),BorderLayout.CENTER);

@@ -6,7 +6,7 @@ import java.awt.event.MouseEvent;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
-import org.redcross.sar.gui.model.MsoObjectTableModel;
+import org.redcross.sar.gui.model.DsObjectTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -16,7 +16,7 @@ public class AssignmentsPanel extends BasePanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private AssignmentTable m_table = null;
+	private AssignmentTable m_table;
 	
 	public AssignmentsPanel() {
 		
@@ -41,7 +41,7 @@ public class AssignmentsPanel extends BasePanel {
 
 	private AssignmentTable getTable() {
 		if(m_table==null) {
-			m_table = new AssignmentTable(Utils.getApp().getMsoModel());
+			m_table = new AssignmentTable(null);
 			m_table.addMouseListener(new DiskoMouseAdapter() {
 
 				@Override
@@ -65,8 +65,8 @@ public class AssignmentsPanel extends BasePanel {
 		IAssignmentIf assignment = null;
 		int row = getTable().getSelectedRow();
 		if(row>-1) {
-			assignment = (IAssignmentIf)((MsoObjectTableModel<?>)
-					getTable().getModel()).getMsoObject(row);
+			assignment = (IAssignmentIf)((DsObjectTableModel<?>)
+					getTable().getModel()).getDsObject(row).getId();
 		}
 		return assignment;	
 	}
@@ -106,8 +106,8 @@ public class AssignmentsPanel extends BasePanel {
 		return null;
 	}	
 	
-	public void setEstimator(RouteCostEstimator estimator) {
-		getTable().setEstimator(estimator);
+	public void install(RouteCostEstimator ds) {
+		getTable().install(ds);
 	}
 	
 	

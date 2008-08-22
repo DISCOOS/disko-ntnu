@@ -21,7 +21,6 @@ import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.tool.FreeHandTool;
 import org.redcross.sar.map.tool.LineTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.map.tool.SnapAdapter.SnapListener;
@@ -222,8 +221,6 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 					public void actionPerformed(ActionEvent e) {
 						// forward
 						doSnapTo();
-						// forward
-						fireActionEvent(e);						
 					}
 				});
 			} catch (java.lang.Throwable e) {

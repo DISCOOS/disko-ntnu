@@ -93,6 +93,8 @@ public class ButtonsPanel extends JPanel {
 			}
 			// replace
 			m_items = list;
+			// finished
+			return item;
 		}
 		return null;
 	}
@@ -101,22 +103,21 @@ public class ButtonsPanel extends JPanel {
 	 * Public methods
 	 * ======================================================= */
 
+	/**
+	 * Button size that should be used when adding and inserting buttons
+	 */
+	public ButtonSize getButtonSize() {
+		return m_buttonSize;
+	}
+	
 	public AbstractButton insertButton(String before, AbstractButton button, String command) {
 		AbstractButton prefix = m_commands.get(before);
-		button = (AbstractButton)insert(prefix,addButton(button, command));
-		if(button!=null)
-			button.addActionListener(m_actionHandler);
-		// finished
-		return button;
+		return (AbstractButton)insert(prefix,addButton(button, command));
 	}
 	
 	public AbstractButton insertButton(String before, String command, String caption) {
 		AbstractButton prefix = m_commands.get(before);
-		AbstractButton button = (AbstractButton)insert(prefix,addButton(command, caption));
-		if(button!=null)
-			button.addActionListener(m_actionHandler);
-		// finished
-		return button;
+		return (AbstractButton)insert(prefix,addButton(command, caption));
 	}
 	
 
@@ -284,7 +285,9 @@ public class ButtonsPanel extends JPanel {
   	 * sequence that these listeners where added. 
   	 * ======================================================== */
   	  	
-  	final ActionListener m_actionHandler = new ActionListener() {
+  	final ActionHandler m_actionHandler = new ActionHandler();
+  		  		
+  	class ActionHandler implements ActionListener {
   		
   		@Override
   		public void actionPerformed(ActionEvent e) {
@@ -296,6 +299,12 @@ public class ButtonsPanel extends JPanel {
   				}
   			}  			
   		}
+  		
+  		public boolean listensTo(Object source) {
+  			List<ActionListener> list = m_listeners.get(source);
+  			return list!=null ? list.size()>0 : false;
+  		}
+  		
   	};
 
   	

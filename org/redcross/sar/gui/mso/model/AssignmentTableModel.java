@@ -1,4 +1,4 @@
-package org.redcross.sar.gui.model.mso;
+package org.redcross.sar.gui.mso.model;
 
 import java.util.EnumSet;
 
@@ -6,7 +6,6 @@ import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;

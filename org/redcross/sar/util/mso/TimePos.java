@@ -37,6 +37,12 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
         m_time = createTime(aCalendar);
     }
 
+    public TimePos(Point2D.Double aPosition, double anAltitude, Calendar aCalendar)
+    {
+        super(aPosition,anAltitude);
+        m_time = createTime(aCalendar);        
+    }
+    
     public TimePos(double aLongPosition, double aLatPosition, Calendar aCalendar)
     {
         super(aLongPosition, aLatPosition);

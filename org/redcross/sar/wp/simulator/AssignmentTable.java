@@ -5,7 +5,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
-import org.redcross.sar.gui.renderer.DiskoHeaderCellRenderer;
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.wp.simulator.AssignmentStringConverter;
 
@@ -34,7 +34,7 @@ public class AssignmentTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderCellRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
         
         // set default renderer
         setDefaultRenderer(Object.class, new AssignmentCellRenderer());
