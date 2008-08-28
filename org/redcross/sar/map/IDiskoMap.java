@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
@@ -17,6 +16,7 @@ import org.redcross.sar.map.tool.IDiskoTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.carto.IFeatureLayer;

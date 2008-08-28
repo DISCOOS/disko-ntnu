@@ -3,9 +3,9 @@ package org.redcross.sar.gui.dialog;
 import java.awt.Frame;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.panel.ListSelectorPanel;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 /**
  * @author kennetgu
@@ -46,7 +46,7 @@ public class ListSelectorDialog extends DefaultDialog  {
 
 	private void initialize() {
 		try {
-	        Utils.setFixedSize(this, 500, 455);
+	        Utils.setFixedSize(this, 250, 200);
 	        this.setContentPane(getListSelectorPanel());
 	        this.setModal(true);
 	        this.pack();

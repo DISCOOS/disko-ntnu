@@ -222,8 +222,6 @@ public class MessageLogPanel
         MessageTableModel ltm = (MessageTableModel) m_logTable.getModel();
         ltm.buildTable(null);
         ltm.fireTableDataChanged();
-        /*int index = ltm.getRowCount()-1;
-        m_logTable.getSelectionModel().setSelectionInterval(index, index);*/
     }
 
     /**
@@ -231,7 +229,7 @@ public class MessageLogPanel
      */
     public void hidePanels()
     {
-        m_messagePanel.hideEditPanels();
+    	MessageLogBottomPanel.hideEditPanels();
     }
 
     /**

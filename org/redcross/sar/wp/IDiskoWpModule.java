@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 /**
  * This interface provides access to properties and methods for

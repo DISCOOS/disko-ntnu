@@ -42,7 +42,7 @@ import org.redcross.sar.map.tool.IToolCollection;
 import org.redcross.sar.map.tool.LineTool;
 import org.redcross.sar.map.tool.POITool;
 import org.redcross.sar.map.tool.PositionTool;
-import org.redcross.sar.map.tool.SelectFeatureTool;
+import org.redcross.sar.map.tool.SelectTool;
 import org.redcross.sar.map.tool.SplitTool;
 import org.redcross.sar.map.tool.DiskoToolWrapper.WrapAction;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
@@ -111,7 +111,7 @@ public class NavBarPanel extends JPanel {
 	private GotoCommand gotoCommand = null;	
 	private EraseTool eraseCommand = null;
 	private ScaleCommand scaleCommand = null;
-	private SelectFeatureTool selectFeatureTool = null;
+	private SelectTool selectFeatureTool = null;
 	private DiskoToolWrapper zoomInTool = null;
 	private DiskoToolWrapper zoomOutTool = null;
 	private DiskoToolWrapper panTool = null;
@@ -163,7 +163,7 @@ public class NavBarPanel extends JPanel {
 		addCommand(getSplitToggleButton(), getSplitTool(), 
 				DiskoToolType.SPLIT_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getSelectFeatureToggleButton(), getSelectFeatureTool(), 
-				DiskoToolType.SELECT_FEATURE_TOOL, ButtonPlacement.LEFT,0);
+				DiskoToolType.SELECT_TOOL, ButtonPlacement.LEFT,0);
 		addCommand(getEraseButton(), getEraseCommand(), 
 				DiskoToolType.ERASE_TOOL, ButtonPlacement.LEFT,0);
 		addCommand(getElementToggleButton(), getElementCommand(), 
@@ -352,10 +352,10 @@ public class NavBarPanel extends JPanel {
 		return positionTool;
 	}
 	
-	public SelectFeatureTool getSelectFeatureTool() {
+	public SelectTool getSelectFeatureTool() {
 		if (selectFeatureTool == null) {
 			try {
-				selectFeatureTool = new SelectFeatureTool();
+				selectFeatureTool = new SelectTool();
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

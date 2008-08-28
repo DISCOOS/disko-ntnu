@@ -29,8 +29,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JSplitPane;
 
 import org.redcross.sar.ds.ete.RouteCost;
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
@@ -39,6 +37,8 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.IMsoLayerEventListener;
+import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.AreaLayer;

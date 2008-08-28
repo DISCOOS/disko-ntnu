@@ -3,15 +3,15 @@ package org.redcross.sar.gui.panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.map.event.IMsoLayerEventListener;
+import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public interface IPanel extends IChangeable,
 								IMsoUpdateListenerIf,

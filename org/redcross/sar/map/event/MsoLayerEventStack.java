@@ -1,10 +1,10 @@
-package org.redcross.sar.event;
+package org.redcross.sar.map.event;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.redcross.sar.event.MsoLayerEvent.MsoLayerEventType;
+import org.redcross.sar.map.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 
 import com.esri.arcgis.interop.AutomationException;

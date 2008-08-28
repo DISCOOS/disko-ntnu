@@ -20,19 +20,21 @@ public class MsoIconRenderer extends JLabel {
 	private static final long serialVersionUID = 1L;
 
 	private int options = 0;
+	private boolean complete = false;
 	private String catalog = "48x48";
 	
-	private HashMap<Enum, Icon> icons = null;
+	private HashMap<Enum<?>, Icon> icons = null;
 
-	public MsoIconRenderer(int options, String catalog)
+	public MsoIconRenderer(int options, boolean complete, String catalog)
 	{
 		super.setOpaque(true);
 		this.options = options;
+		this.complete = complete;
 		this.catalog = catalog;
-		this.icons = new HashMap<Enum, Icon>();
+		this.icons = new HashMap<Enum<?>, Icon>();
 	}
 
-	private Icon selectIcon(Enum e) {
+	private Icon selectIcon(Enum<?> e) {
 		// initialize
 		Icon icon = null;
 		// has icon?
@@ -55,14 +57,19 @@ public class MsoIconRenderer extends JLabel {
 		// initialize
 		Icon icon = null;
 		String text = "<Tom>";
-		Enum e = null;
+		Enum<?> e = null;
 
 		// dispatch object
 		if(value instanceof IMsoObjectIf) {
 			// cast to IMsoObjectIf
 			IMsoObjectIf msoObject = (IMsoObjectIf)value;
+
 			// get name
-			text = MsoUtils.getMsoObjectName(msoObject, options);
+			if(complete)
+				text = MsoUtils.getCompleteMsoObjectName(msoObject, options);
+			else
+				text = MsoUtils.getMsoObjectName(msoObject, options);
+
 			// get icon
 			if(msoObject instanceof IAreaIf) {
 				IAreaIf area = (IAreaIf)msoObject;
@@ -79,8 +86,8 @@ public class MsoIconRenderer extends JLabel {
 			}
 		}
 		else if(value instanceof Enum) { 
-			text = DiskoEnumFactory.getText((Enum)value);
-			e = (Enum)value;
+			text = DiskoEnumFactory.getText((Enum<?>)value);
+			e = (Enum<?>)value;
 		}
 
 		// update text

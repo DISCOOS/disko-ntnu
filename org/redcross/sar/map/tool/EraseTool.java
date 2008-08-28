@@ -1,6 +1,5 @@
 package org.redcross.sar.map.tool;
 
-import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -11,13 +10,13 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.dialog.SelectMsoObjectDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -49,6 +48,9 @@ public class EraseTool extends AbstractDiskoTool {
 
 	// counters
 	protected long previous = 0;
+	
+	// dialogs
+	private SelectMsoObjectDialog m_selectorDialog;
 	
 	public EraseTool() {
 		
@@ -270,40 +272,67 @@ public class EraseTool extends AbstractDiskoTool {
 	private IMsoFeature selectFeature() throws Exception  {
 		
 		// initialize
-		Object[] selected;
-		IMsoFeature f = null;
+		List<Object[]> selected;
 		
 		// get maximum deviation from point
-		double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
+		double max = map.isEditSupportInstalled() ? map.getSnapAdapter().getSnapTolerance() : map.getExtent().getWidth()/SNAP_TOL_FACTOR;
 		
 		// forward
-		if(isSelectByPoint) 
-			selected = MapUtil.selectMsoFeatureFromPoint(p, map, -1, max);
+		if(isSelectByPoint)
+			// only select features within maximum length of point
+			selected = MapUtil.selectMsoFeaturesFromPoint(p, map, -1, max);
 		else 
-			selected = MapUtil.selectMsoFeatureFromEnvelope(extent, map, -1, max, 
-					esriSpatialRelEnum.esriSpatialRelContains);
+			// select all mso features within extent
+			selected = MapUtil.selectMsoFeaturesFromEnvelope(
+					extent, null, map, -1, max, 
+					esriSpatialRelEnum.esriSpatialRelWithin);
 			
 		// found?
 		if(selected!=null) {
-			// get feature and layer
-			f = (IMsoFeature)selected[0];
-			IMsoFeatureLayer l = (IMsoFeatureLayer)selected[1];
-			// not allowed?
-			if(!l.isEnabled()) {
-				// notify with beep
-				Toolkit.getDefaultToolkit().beep();
-				// show disable warning
-				Utils.showWarning(
-						MsoUtils.getMsoObjectName(f.getMsoObject(), 1)
-						+ " kan ikke slettes");
-				// failed
-				f = null;
+			// only one selected?
+			if(selected.size()==0) {
+				// get feature
+				return (IMsoFeature)selected.get(0)[0];
+			}
+			else {
+				// user decision is required
+				IMsoObjectIf objs[] = new IMsoObjectIf[selected.size()];
+				// get mso objects
+				for(int i=0; i<selected.size(); i++) {
+					// get feature
+					IMsoFeature f = (IMsoFeature)selected.get(i)[0];
+					// get mso object
+					objs[i]=f.getMsoObject();
+				}
+				// load into selection dialog
+				getSelectorDialog().load(objs);
+				// prompt user
+				IMsoObjectIf ans = getSelectorDialog().select();
+				// get feature layer
+				for(int i=0; i<selected.size(); i++) {
+					// get feature
+					IMsoFeature f = (IMsoFeature)selected.get(i)[0];
+					// is mso object?
+					if(ans==f.getMsoObject()) {
+						return f;
+					}				
+				}
 			}
 		}
-		// failed
-		return f;
+		
+		// nothing to select
+		return null;
+		
 	}	
 
+	private SelectMsoObjectDialog getSelectorDialog() {
+		if(m_selectorDialog==null) {
+			m_selectorDialog = new SelectMsoObjectDialog(Utils.getApp().getFrame());
+			m_selectorDialog.getListSelectorPanel().setCaptionText("Velg objekt");
+		}
+		return m_selectorDialog;
+	}
+	
 	@Override
 	public IDiskoToolState save() {
 		// get new state

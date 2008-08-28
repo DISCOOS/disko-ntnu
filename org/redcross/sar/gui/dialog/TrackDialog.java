@@ -30,7 +30,6 @@ import org.redcross.sar.gui.panel.XYPlotPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.TimePos;
@@ -88,15 +87,15 @@ public class TrackDialog extends DefaultDialog  {
 	public DefaultPanel getContentPanel() {
 		if (m_contentPanel == null) {
 			// create panels
-			m_contentPanel = new DefaultPanel("",false,true);
+			m_contentPanel = new DefaultPanel("",false,true,ButtonSize.SMALL);
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");
 			m_contentPanel.setNotScrollBars();
 			AbstractButton b = m_contentPanel.insertButton("finish", 
-					DiskoButtonFactory.createToggleButton("GENERAL.CHART", ButtonSize.NORMAL), "profile");
+					DiskoButtonFactory.createToggleButton("GENERAL.CHART", ButtonSize.SMALL), "profile");
 			b.setToolTipText("Profile");
 			m_contentPanel.insertButton("finish", 
-					DiskoButtonFactory.createButton("MAP.CENTERAT", ButtonSize.NORMAL), "centerat");
+					DiskoButtonFactory.createButton("MAP.CENTERAT", ButtonSize.SMALL), "centerat");
 			JComponent c = (JComponent)m_contentPanel.getBodyComponent();
 			c.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			c.setLayout(new BoxLayout(c,BoxLayout.Y_AXIS));

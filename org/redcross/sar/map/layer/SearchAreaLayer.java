@@ -3,7 +3,7 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.redcross.sar.event.MsoLayerEventStack;
+import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.SearchAreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -13,6 +13,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IColor;
 import com.esri.arcgis.display.IDisplay;
+import com.esri.arcgis.display.ILineSymbol;
 import com.esri.arcgis.display.RgbColor;
 import com.esri.arcgis.display.SimpleFillSymbol;
 import com.esri.arcgis.display.SimpleLineSymbol;
@@ -75,9 +76,6 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 			
 			// update
 			textSymbol.setSize(zoomFontSize);
-			defaultSymbol.getOutline().setWidth(zoomLineWidth);
-			disabledSymbol.getOutline().setWidth(zoomLineWidth);
-			selectionSymbol.getOutline().setWidth(zoomLineWidth);
 			
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
@@ -89,16 +87,28 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 						if(isEnabled) {
 							// is selected
 	 	 					if (feature.isSelected()){
+		 	 					// update
+								ILineSymbol line = selectionSymbol.getOutline();
+								line.setWidth(zoomLineWidth);
+								selectionSymbol.setOutline(line);															
 	 	 						// select feature
 	 	 						display.setSymbol(selectionSymbol);
-								textSymbol.setColor(selectionSymbol.getOutline().getColor());	 	 						
+								textSymbol.setColor(selectionSymbol.getOutline().getColor());
 	 	 					}
 	 	 					else {
+		 	 					// update
+								ILineSymbol line = defaultSymbol.getOutline();
+								line.setWidth(zoomLineWidth);
+								defaultSymbol.setOutline(line);															
 	 	 						display.setSymbol(defaultSymbol);
-								textSymbol.setColor(saveTextColor);	 	 						
+								textSymbol.setColor(saveTextColor);	 	 					
 	 	 					}
 						}
 						else {
+	 	 					// update
+							ILineSymbol line = disabledSymbol.getOutline();
+							line.setWidth(zoomLineWidth);
+							disabledSymbol.setOutline(line);															
 							// disable all features
 							display.setSymbol(disabledSymbol);							
 							textSymbol.setColor(disabledSymbol.getOutline().getColor());

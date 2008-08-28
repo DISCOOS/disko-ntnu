@@ -3,13 +3,15 @@ package org.redcross.sar.map.layer;
 import com.esri.arcgis.display.*;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IGeometry;
+import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
-import org.redcross.sar.event.MsoLayerEventStack;
+import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -162,12 +164,21 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 							IGeometry geom = geomBag.getGeometry(j);
 							if (geom instanceof IPolyline) {
 								display.setSymbol(lineSymbol);
-								display.drawPolyline((IPolyline)geom);
+								display.drawPolyline(geom);
 								if (text != null && isTextShown) {
 									display.setSymbol(textSymbol);
 									display.drawText(geom, text);
 								}
 							}
+							else if (geom instanceof IPolygon) {
+								display.setSymbol(lineSymbol);
+								display.drawPolygon(geom);
+								if (text != null && isTextShown) {
+									display.setSymbol(textSymbol);
+									display.drawText(MapUtil.getCenter(geom.getEnvelope()), text);
+								}
+							}
+							
 						}
 						
 						lineSymbol.setColor(saveLineColor);

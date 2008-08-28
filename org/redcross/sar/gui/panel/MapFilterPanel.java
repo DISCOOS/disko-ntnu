@@ -3,14 +3,9 @@
  */
 package org.redcross.sar.gui.panel;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.EnumSet;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.border.Border;
 
 import org.redcross.sar.gui.ToggableTabPane;
 import org.redcross.sar.map.IDiskoMap;
@@ -56,7 +51,6 @@ public class MapFilterPanel extends ToggableTabPane {
 		addTab("Planlagt", "P",0);
 		addTab("Utføres","U",1);
 		addTab("Ferdig","F",2);
-		addTab("Rapportert","R",3);
 				
 	}
 
@@ -95,13 +89,11 @@ public class MapFilterPanel extends ToggableTabPane {
 			EnumSet.noneOf(AssignmentStatus.class);				
 		// get arguments
 		if(isTabSelected(0))
-			status.addAll(EnumSet.range(AssignmentStatus.EMPTY,AssignmentStatus.READY));
+			status.addAll(EnumSet.range(AssignmentStatus.EMPTY,AssignmentStatus.ASSIGNED));
 		if(isTabSelected(1))
-			status.addAll(EnumSet.range(AssignmentStatus.QUEUED,AssignmentStatus.ASSIGNED));
+			status.add(AssignmentStatus.EXECUTING);
 		if(isTabSelected(2))
 			status.add(AssignmentStatus.FINISHED);
-		if(isTabSelected(3))
-			status.add(AssignmentStatus.REPORTED);
 			
 		// reset current filters
 		setFilter(map.getMsoLayer(LayerCode.AREA_LAYER),null,0);
@@ -159,7 +151,7 @@ public class MapFilterPanel extends ToggableTabPane {
 		}
 		
 		public boolean select(IMsoObjectIf anObject) {
-			// assume not filteres
+			// assume selected
 			boolean bSelect = true;
 			// is filtered?
 			if(code.equals(anObject.getMsoClassCode())) {
@@ -203,10 +195,11 @@ public class MapFilterPanel extends ToggableTabPane {
 						// get filter operation
 						bSelect = set.contains(status);
 					}
+					/*
 					else {
-						// filter all
 						bSelect = false;
 					}
+					*/
 				}
 			}
 			// finished

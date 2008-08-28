@@ -1,8 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -25,6 +23,8 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.IDiskoWp;
@@ -80,7 +80,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	private static final String EMPTY_PANEL_ID = "EMPTY_PANEL";
 	private static final String TEXT_PANEL_ID = "TEXT_PANEL";
 	private static final String POSITION_PANEL_ID = "POSITION_PANEL";
-	private static final String FINDING_PANEL_ID = "FINDING_PANEL";
+	private static final String POI_PANEL_ID = "POI_PANEL";
 	private static final String ASSIGNED_PANEL_ID = "ASSIGNED_PANEL";
 	private static final String STARTED_PANEL_ID = "STARTED_PANEL";
 	private static final String COMPLETED_PANEL_ID = "COMPLETED_PANEL";
@@ -125,7 +125,8 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			m_wpMessageLog.getMsoModel().resumeClientUpdate();
 			m_newMessage = true;
 			m_messageDirty = false;
-			updateMessageGUI();			
+			updateMessageGUI();
+			showTextPanel();
 		}
 		return m_currentMessage;
 	}
@@ -145,6 +146,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	static List<IEditMessageComponentIf> m_shownEditComponents;
 
 	private static ButtonGroup m_buttonGroup;
+	private static JToggleButton m_dummyButton;
 
 	private static HeaderPanel m_tipPanel;
 	
@@ -183,9 +185,9 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	private static TextPanel m_textPanel;
 	private static MessagePositionPanel m_messagePositionPanel;
 	private static MessagePOIPanel m_messagePOIPanel;
-	private static AbstractAssignmentPanel m_messageAssignedPanel;
-	private static AbstractAssignmentPanel m_messageStartedPanel;
-	private static AbstractAssignmentPanel m_messageCompletedPanel;
+	private static AssignedAssignmentPanel m_messageAssignedPanel;
+	private static StartedAssignmentPanel m_messageStartedPanel;
+	private static CompletedAssignmentPanel m_messageCompletedPanel;
 	private static MessageLinePanel m_messageListPanel;
 
     private JPanel m_taskPanel;
@@ -208,7 +210,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	super(TIP_DO_WORK);
     	
     	// prepare
-    	m_newMessage = true;
+    	m_newMessage = false;
     	m_editComponents = new LinkedList<IEditMessageComponentIf>();
     	m_shownEditComponents = new LinkedList<IEditMessageComponentIf>();
     	
@@ -323,12 +325,12 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     		POIType[] poiTypes = {POIType.GENERAL,POIType.INTELLIGENCE,POIType.OBSERVATION,POIType.FINDING, POIType.SILENT_WITNESS};
     		m_messagePOIPanel = new MessagePOIPanel(m_wpMessageLog, poiTypes);
     		m_editComponents.add(m_messagePOIPanel);
-    		m_cardsPanel.add(m_messagePOIPanel, FINDING_PANEL_ID);
+    		m_cardsPanel.add(m_messagePOIPanel, POI_PANEL_ID);
     	}
     	return m_messagePOIPanel;
     }
 
-    private void getAssignedPanel()
+    private AssignedAssignmentPanel getAssignedPanel()
     {
     	if(m_messageAssignedPanel == null)
     	{
@@ -336,9 +338,10 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     		m_editComponents.add(m_messageAssignedPanel);
     		m_cardsPanel.add(m_messageAssignedPanel, ASSIGNED_PANEL_ID);
     	}
+    	return m_messageAssignedPanel;
     }
 
-    private void getStartedPanel()
+    private StartedAssignmentPanel getStartedPanel()
     {
     	if(m_messageStartedPanel == null)
     	{
@@ -346,8 +349,10 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     		m_editComponents.add(m_messageStartedPanel);
     		m_cardsPanel.add(m_messageStartedPanel, STARTED_PANEL_ID);
     	}
+    	return m_messageStartedPanel;
     }
-    private void getCompletedPanel()
+    
+    private CompletedAssignmentPanel getCompletedPanel()
 	{
 		if(m_messageCompletedPanel == null)
 		{
@@ -355,6 +360,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			m_editComponents.add(m_messageCompletedPanel);
 			m_cardsPanel.add(m_messageCompletedPanel, COMPLETED_PANEL_ID);
 		}
+		return m_messageCompletedPanel;
 
 	}
 
@@ -566,22 +572,26 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     {
     	m_buttonRow = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 0));
     	m_buttonGroup = new ButtonGroup();
+    	
+    	// add dummy button
+    	m_dummyButton = new JToggleButton();
+    	m_buttonGroup.add(m_dummyButton);
 
-    	getChangeDTGButton();
-        getChangeFromButton();
-        getChangeToButton();
-        getTextButton();
-        getPositionButton();
-        getPOIButton();
-        getAssignedButton();
-        getStartedButton();
-        getCompletedButton();
-        getListButton();
-        getDeleteButton();
-        getChangeTasksButton();
-        getCancelButton();
-        getWaitEndButton();
-        getFinishedButton();
+    	initChangeDTGButton();
+        initChangeFromButton();
+        initChangeToButton();
+        initTextButton();
+        initPositionButton();
+        initPOIButton();
+        initAssignedButton();
+        initStartedButton();
+        initCompletedButton();
+        initListButton();
+        initDeleteButton();
+        initChangeTasksButton();
+        initCancelButton();
+        initWaitEndButton();
+        initFinishedButton();
     }
 
     /**
@@ -749,186 +759,41 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		((DiskoIcon)m_finishedStatusButton.getIcon()).setColored(isDirty);
 		m_finishedStatusButton.repaint();
 	}
+	    
+	private void initChangeDTGButton()
+    {
+    	if(m_changeDTGButton == null)
+    	{
+	    	m_changeDTGButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_DTG,ButtonSize.NORMAL);
+	    	m_changeDTGButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+	    	m_changeDTGButton.addActionListener(new ActionListener()
+	    	{
+	    		// Display the change DTG dialog when button is pressed
+	    		public void actionPerformed(ActionEvent e)
+	    		{
+	    			if(getChangeDTGDialog().isVisible())
+	    			{
+	    				hideEditPanels();
+	    				m_buttonGroup.clearSelection();
+	    			}
+	    			else
+	    			{
+	    				hideEditPanels();
+	        			getChangeDTGDialog();
+	        			Point location = m_changeDTGButton.getLocationOnScreen();
+	        			location.y -= m_changeDTGDialog.getHeight();
+	        			m_changeDTGDialog.setLocation(location);
 	
-	public static boolean validateMessage() {
-		// has any data to commit?
-		if(m_currentMessage == null) {
-			Utils.showWarning(m_wpMessageLog.getBundleText("NoMessageData.header"),
-					m_wpMessageLog.getBundleText("NoMessageData.text"));
-			return false;
-		}
-		// has lines?
-		if(m_currentMessage != null && m_currentMessage.getLines().length==0) {
-			Utils.showWarning(m_wpMessageLog.getBundleText("NoMessageLines.header"),
-					m_wpMessageLog.getBundleText("NoMessageLines.text"));
-			return false;
-		}
-		// is valid
-		return true;			
-	}
-	
-	private JButton getWaitEndButton()
-    {
-    	if(m_waitEndStatusButton == null)
-    	{
-    		m_waitEndStatusButton = DiskoButtonFactory.createButton("GENERAL.WAIT",ButtonSize.NORMAL);
-    				    				
-    		m_waitEndStatusButton.addActionListener(new ActionListener()
-    		{
-				public void actionPerformed(ActionEvent arg0)
-				{
-					// forward
-					apply(false);;
-				}
-    		});
-    	}
-    	return m_waitEndStatusButton;
-    }
-	
-    private JButton getFinishedButton()
-    {
-    	if(m_finishedStatusButton == null)
-    	{
-    		m_finishedStatusButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
-    		m_finishedStatusButton.setIcon(new DiskoIcon(m_finishedStatusButton.getIcon(),Color.GREEN,0.4f));
-			((DiskoIcon)m_finishedStatusButton.getIcon()).setColored(false);
-    		m_finishedStatusButton.addActionListener(new ActionListener()
-    		{
-				// Commit current message
-				public void actionPerformed(ActionEvent arg0)
-				{
-					// forward
-					apply(true);
-					
-				}
-    		});
-    	}
-    	return m_finishedStatusButton;
+	        			// show component
+	        			showEditComponents(new IEditMessageComponentIf[]{m_changeDTGDialog});        			
+	    			}
+	    		}
+	    	});
+	    	m_buttonGroup.add(m_changeDTGButton);
+	    }
     }
 
-    public static boolean apply(boolean isConfirmed) {
-
-    	// validate
-		if(validateMessage())
-		{
-			// initialize
-			MessageStatus status = (isConfirmed ? MessageStatus.CONFIRMED : MessageStatus.POSTPONED);
-			
-			// Set message status
-			if(m_currentMessage.isBroadcast()){
-
-
-				// apply limits
-				if(isConfirmed && m_currentMessage.getUnconfirmedReceivers().size() > 0){
-					// If broadcast all units have to confirm to get confirmed status
-					Utils.showWarning(m_wpMessageLog.getBundleText("UnconfirmedUnitsExists.header"),
-							m_wpMessageLog.getBundleText("UnconfirmedUnitsExists.text"));
-					// keep current status
-					status = m_currentMessage.getStatus();
-				}
-			}
-
-			// apply status
-			m_currentMessage.setStatus(status);				
-
-			// reload data?
-			if(m_newMessage)
-				MessageLogPanel.setTableData();
-			
-			// Handle assignments
-			updateAssignments();
-			
-			// Commit changes
-			commit();
-
-			m_currentMessage = null;
-			m_messageDirty = false;
-
-			// GUI clean-up
-			clearPanelContents();
-			m_buttonGroup.clearSelection();
-			
-			// reset color
-			setButtonColors();
-			
-			// success
-			return true;
-			
-		}
-		// failed
-		return true;    	
-    }
-    
-    private JToggleButton getChangeDTGButton()
-    {
-    	m_changeDTGButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_DTG,ButtonSize.NORMAL);
-    	m_changeDTGButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    	m_changeDTGButton.addActionListener(new ActionListener()
-    	{
-    		// Display the change DTG dialog when button is pressed
-    		public void actionPerformed(ActionEvent e)
-    		{
-    			if(getChangeDTGDialog().isVisible())
-    			{
-    				hideEditPanels();
-    				m_buttonGroup.clearSelection();
-    			}
-    			else
-    			{
-    				hideEditPanels();
-        			getChangeDTGDialog();
-        			Point location = m_changeDTGButton.getLocationOnScreen();
-        			location.y -= m_changeDTGDialog.getHeight();
-        			m_changeDTGDialog.setLocation(location);
-
-        			// show component
-        			showEditComponents(new IEditMessageComponentIf[]{m_changeDTGDialog});        			
-    			}
-    		}
-    	});
-    	m_buttonGroup.add(m_changeDTGButton);
-    	return m_changeDTGButton;
-    }
-
-    private JToggleButton  getChangeTasksButton()
-    {
-    	if(m_changeTasksButton == null)
-    	{
-    		m_changeTasksButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_TASKS,ButtonSize.NORMAL);
-    		m_changeTasksButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-    		m_changeTasksButton.addActionListener(new ActionListener()
-    		{
-				public void actionPerformed(ActionEvent e)
-				{
-					if(getChangeTasksDialog().isVisible())
-					{
-						hideEditPanels();
-						m_buttonGroup.clearSelection();
-					}
-					else
-					{
-						// Create new message if null
-						getCurrentMessage(true);
-						m_messageDirty = true;
-
-						getChangeTasksDialog();
-						hideEditPanels();
-						Point location = m_changeTasksButton.getLocationOnScreen();
-		    			location.y -= m_changeTasksDialog.getHeight();
-		    			location.x -= m_changeTasksDialog.getWidth();
-		    			m_changeTasksDialog.setLocation(location);
-
-						// show component
-						showEditComponents(new IEditMessageComponentIf[]{m_changeTasksDialog});        									
-					}
-				}
-    		});
-    		m_buttonGroup.add(m_changeTasksButton);
-    	}
-    	return m_changeTasksButton;
-    }
-
-    private JToggleButton  getChangeFromButton()
+    private void initChangeFromButton()
     {
     	if(m_changeFromButton == null)
     	{
@@ -990,10 +855,9 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     		});
     		m_buttonGroup.add(m_changeFromButton);
     	}
-    	return m_changeFromButton;
     }
 
-    private JToggleButton  getChangeToButton()
+    private void initChangeToButton()
     {
     	if(m_changeToButton == null)
     	{
@@ -1035,10 +899,373 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     		});
     		m_buttonGroup.add(m_changeToButton);
     	}
-    	return m_changeToButton;
     }
 
-    private JButton getCancelButton()
+	private void initTextButton()
+	{
+    	if(m_textButton == null)
+    	{
+			m_textButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_TEXT,ButtonSize.NORMAL);
+			m_textButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					getMessageTextPanel();
+					hideEditPanels();
+					m_currentMessageLineType = MessageLineType.TEXT;
+	
+					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+					layout.show(m_cardsPanel, TEXT_PANEL_ID);
+					
+				}
+			});
+			m_buttonGroup.add(m_textButton);
+			m_buttonRow.add(m_textButton);
+    	}
+	}
+
+	private void initPOIButton()
+	{
+    	if(m_poiButton == null)
+    	{
+			m_poiButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_POI,ButtonSize.NORMAL);
+			m_poiButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					// cleanup
+					hideEditPanels();
+					
+					// set current type
+					m_currentMessageLineType = MessageLineType.POI;
+					
+					// set tool
+					m_messagePOIPanel.setMapTool();
+	
+					// show message poi panel
+					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+					layout.show(m_cardsPanel, POI_PANEL_ID);
+
+					// prepare
+					getMessagePOIPanel().showComponent();
+					
+	
+				}
+			});
+			m_buttonGroup.add(m_poiButton);
+			m_buttonRow.add(m_poiButton);
+    	}
+	}
+
+	private void initPositionButton()
+	{
+    	if(m_poiButton == null)
+    	{
+			m_positionButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_POSITION,ButtonSize.NORMAL);
+			m_positionButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					// cleanup
+					hideEditPanels();
+					
+					// set current tupe
+					m_currentMessageLineType = MessageLineType.POSITION;
+					
+					// set tool
+					m_messagePositionPanel.setMapTool();
+	
+					// show message position panel
+					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+					layout.show(m_cardsPanel, POSITION_PANEL_ID);
+					
+					// prepare
+					getMessagePositionPanel().showComponent();
+					
+	
+				}
+			});
+			m_buttonGroup.add(m_positionButton);
+			m_buttonRow.add(m_positionButton);
+    	}
+	}
+	
+	private void initAssignedButton()
+	{
+    	if(m_assignButton == null)
+    	{
+			m_assignButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_ASSIGNMENT,ButtonSize.NORMAL);
+			m_assignButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					
+					hideEditPanels();
+	
+					IMessageIf message = getCurrentMessage(false);
+					
+					if(message!=null && message.isBroadcast())
+					{
+						// de-select button
+						m_assignButton.setSelected(false);
+						
+						// Only legal if message isn't broadcast
+						Utils.showWarning(m_wpMessageLog.getBundleText("AssignmentError.header"),
+								m_wpMessageLog.getBundleText("AssignmentError.details"));
+					}
+					else
+					{
+						// Task can be changed
+						m_currentMessageLineType = MessageLineType.ASSIGNED;
+
+						// show assignment panel
+						CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+						layout.show(m_cardsPanel, ASSIGNED_PANEL_ID);
+						
+						// prepare
+						getAssignedPanel().showComponent();
+						
+	
+					}
+				}
+			});
+			m_buttonGroup.add(m_assignButton);
+			m_buttonRow.add(m_assignButton);
+    	}
+	}
+	
+	private void initStartedButton()
+	{
+    	if(m_startButton == null)
+    	{
+			m_startButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_STARTED,ButtonSize.NORMAL);
+			m_startButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					hideEditPanels();
+	
+					// get message 
+					IMessageIf message = getCurrentMessage(false);
+					
+					if(message!=null && message.isBroadcast())
+					{
+						// de-select button
+						m_startButton.setSelected(false);
+						
+						Utils.showWarning(m_wpMessageLog.getBundleText("StartedError.header"),
+								m_wpMessageLog.getBundleText("StartedError.details"));
+					}
+					else
+					{
+						// Task can be changed
+						m_currentMessageLineType = MessageLineType.STARTED;
+	
+						// show started panel
+						CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+						layout.show(m_cardsPanel, STARTED_PANEL_ID);
+						
+						// prepare
+						getStartedPanel().showComponent();						
+	
+					}
+				}
+			});
+			m_buttonGroup.add(m_startButton);
+			m_buttonRow.add(m_startButton);
+    	}
+	}
+	
+	private void initCompletedButton()
+	{
+    	if(m_completedButton == null)
+    	{
+			m_completedButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_COMPLETED,ButtonSize.NORMAL);
+			m_completedButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					hideEditPanels();
+	
+					IMessageIf message = getCurrentMessage(false);
+					
+					if(message!=null && message.isBroadcast())
+					{
+	
+						// de-select button
+						m_completedButton.setSelected(false);
+						
+						// not possible to assign when message is a broadcast
+						Utils.showWarning(m_wpMessageLog.getBundleText("CompletedError.header"),
+								m_wpMessageLog.getBundleText("CompletedError.details"));
+						
+					}
+					else
+					{
+						
+						// Task can be changed
+						m_currentMessageLineType = MessageLineType.COMPLETED;
+	
+						// show started panel
+						CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+						layout.show(m_cardsPanel, COMPLETED_PANEL_ID);
+						
+						// prepare
+						getCompletedPanel().showComponent();
+						
+					}
+				}
+			});
+			m_buttonGroup.add(m_completedButton);
+			m_buttonRow.add(m_completedButton);
+    	}
+	}
+	
+	private void initListButton()
+	{
+    	if(m_listButton == null)
+    	{
+			m_listButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SHOW_LIST,ButtonSize.NORMAL);
+			m_listButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					getMessageListPanel();
+					hideEditPanels();
+	
+					// show?
+					if(m_currentMessage!=null) {
+						// get panel
+						CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
+						layout.show(m_cardsPanel, SHOW_ASSIGNMENT_LIST_PANEL_ID);
+						// update selection
+						m_currentMessageLineType = m_messageListPanel.getSelectedMessageLineType();						
+					}
+					else {
+						// notify
+						Utils.showMessage("Du må først legge til en meldingslinje");
+						// reset selection
+						m_dummyButton.doClick();
+					}
+				}
+	
+			});
+			m_buttonGroup.add(m_listButton);
+			m_buttonRow.add(m_listButton);
+    	}
+	}
+	
+    private void initDeleteButton()
+	{
+    	if(m_deleteButton == null)
+    	{
+	    	m_deleteButton = DiskoButtonFactory.createButton(MessageLogActionType.DELETE,ButtonSize.NORMAL);
+			m_deleteButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+									
+					// update selected type??
+					m_currentMessageLineType = (m_currentMessageLineType == null) ? 
+							m_messageListPanel.getSelectedMessageLineType() : m_currentMessageLineType;
+					
+					// select a line?
+					if(m_currentMessageLineType==null) {
+						Utils.showWarning("Begrensning","Du må velge en meldinglinje først");
+						return;
+					}								
+					
+					// Delete if message is not committed, don't create new message when pressing delete
+					if(m_currentMessage != null && m_currentMessageLineType != null && m_newMessage)
+					{
+						// If line that has other assignment lines depending on it is deleted, delete them as well
+						switch(m_currentMessageLineType)
+						{
+						case ASSIGNED:
+						case STARTED:
+						case COMPLETED:
+							// prompt later
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									int ans = Utils.showConfirm("Bekreftelse", "Dette vil slette samtlige endringer i " + 
+											"oppdrag i denne meldingen. Vil du fortsette?", JOptionPane.YES_NO_OPTION);
+									if(ans == JOptionPane.YES_OPTION) {
+										// remove all of given type
+										AbstractAssignmentPanel.removeAddedLine(null,true);
+										m_messageAssignedPanel.updateAssignmentLineList();
+										m_messageStartedPanel.updateAssignmentLineList();
+										m_messageCompletedPanel.updateAssignmentLineList();
+										m_messageListPanel.newMessageSelected(m_currentMessage);
+									}
+								}
+							});
+							break;
+						default:
+							IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+							IMessageLineIf line = null;
+							if(message != null)
+							{
+								line = message.findMessageLine(m_currentMessageLineType, false);
+							}
+							if(line != null)
+							{
+								line.delete();
+							}
+							else
+								Utils.showWarning("Ingenting å slette");
+							break;
+						}
+					}
+					else
+					{
+						Utils.showWarning(m_wpMessageLog.getBundleText("CanNotDeleteMessageLine.header"),
+								m_wpMessageLog.getBundleText("CanNotDeleteMessageLine.details"));
+					}
+				}
+			});
+			m_buttonGroup.add(m_deleteButton);
+			m_buttonRow.add(m_deleteButton);
+    	}
+	}
+    
+    private void initChangeTasksButton()
+    {
+    	if(m_changeTasksButton == null)
+    	{
+    		m_changeTasksButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.CHANGE_TASKS,ButtonSize.NORMAL);
+    		m_changeTasksButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+    		m_changeTasksButton.addActionListener(new ActionListener()
+    		{
+				public void actionPerformed(ActionEvent e)
+				{
+					if(getChangeTasksDialog().isVisible())
+					{
+						hideEditPanels();
+						m_buttonGroup.clearSelection();
+					}
+					else
+					{
+						// Create new message if null
+						getCurrentMessage(true);
+						m_messageDirty = true;
+
+						getChangeTasksDialog();
+						hideEditPanels();
+						Point location = m_changeTasksButton.getLocationOnScreen();
+		    			location.y -= m_changeTasksDialog.getHeight();
+		    			location.x -= m_changeTasksDialog.getWidth();
+		    			m_changeTasksDialog.setLocation(location);
+
+						// show component
+						showEditComponents(new IEditMessageComponentIf[]{m_changeTasksDialog});        									
+					}
+				}
+    		});
+    		m_buttonGroup.add(m_changeTasksButton);
+    	}
+    }
+    
+    private void initCancelButton()
     {
     	if(m_cancelStatusButton == null)
     	{
@@ -1061,224 +1288,118 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     			e.printStackTrace();
     		}
     	}
-    	return m_cancelStatusButton;
+    }
+    
+	
+	private JButton initWaitEndButton()
+    {
+    	if(m_waitEndStatusButton == null)
+    	{
+    		m_waitEndStatusButton = DiskoButtonFactory.createButton("GENERAL.WAIT",ButtonSize.NORMAL);
+    				    				
+    		m_waitEndStatusButton.addActionListener(new ActionListener()
+    		{
+				public void actionPerformed(ActionEvent arg0)
+				{
+					// forward
+					apply(false);;
+				}
+    		});
+    	}
+    	return m_waitEndStatusButton;
+    }
+	
+    private JButton initFinishedButton()
+    {
+    	if(m_finishedStatusButton == null)
+    	{
+    		m_finishedStatusButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
+    		m_finishedStatusButton.setIcon(new DiskoIcon(m_finishedStatusButton.getIcon(),Color.GREEN,0.4f));
+			((DiskoIcon)m_finishedStatusButton.getIcon()).setColored(false);
+    		m_finishedStatusButton.addActionListener(new ActionListener()
+    		{
+				// Commit current message
+				public void actionPerformed(ActionEvent arg0)
+				{
+					// forward
+					apply(true);
+					
+				}
+    		});
+    	}
+    	return m_finishedStatusButton;
     }
 
-    private void getDeleteButton()
-	{
-    	m_deleteButton = DiskoButtonFactory.createButton(MessageLogActionType.DELETE,ButtonSize.NORMAL);
-		m_deleteButton.addActionListener(new ActionListener()
+    public static boolean apply(boolean isConfirmed) {
+
+    	// validate
+		if(validateMessage())
 		{
-			public void actionPerformed(ActionEvent e)
-			{
-								
-				// update selected type??
-				m_currentMessageLineType = (m_currentMessageLineType == null) ? 
-						m_messageListPanel.getSelectedMessageLineType() : m_currentMessageLineType;
-				
-				// select a line?
-				if(m_currentMessageLineType==null) {
-					Utils.showWarning("Begrensning","Du må velge en meldinglinje først");
-					return;
-				}								
-				
-				// Delete if message is not committed, don't create new message when pressing delete
-				if(m_currentMessage != null && m_currentMessageLineType != null && m_newMessage)
-				{
-					// If line that has other assignment lines depending on it is deleted, delete them as well
-					switch(m_currentMessageLineType)
-					{
-					case ASSIGNED:
-					case STARTED:
-					case COMPLETED:
-						// prompt later
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								int ans = Utils.showConfirm("Bekreftelse", "Dette vil slette samtlige endringer i " + 
-										"oppdrag i denne meldingen. Vil du fortsette?", JOptionPane.YES_NO_OPTION);
-								if(ans == JOptionPane.YES_OPTION) {
-									// remove all of given type
-									AbstractAssignmentPanel.removeAddedLine(null,true);
-									m_messageAssignedPanel.updateAssignmentLineList();
-									m_messageStartedPanel.updateAssignmentLineList();
-									m_messageCompletedPanel.updateAssignmentLineList();
-									m_messageListPanel.newMessageSelected(m_currentMessage);
-								}
-							}
-						});
-						break;
-					default:
-						IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-						IMessageLineIf line = null;
-						if(message != null)
-						{
-							line = message.findMessageLine(m_currentMessageLineType, false);
-						}
-						if(line != null)
-						{
-							line.delete();
-						}
-						else
-							Utils.showWarning("Ingenting å slette");
-						break;
-					}
-				}
-				else
-				{
-					Utils.showWarning(m_wpMessageLog.getBundleText("CanNotDeleteMessageLine.header"),
-							m_wpMessageLog.getBundleText("CanNotDeleteMessageLine.details"));
+			// initialize
+			MessageStatus status = (isConfirmed ? MessageStatus.CONFIRMED : MessageStatus.POSTPONED);
+			
+			// Set message status
+			if(m_currentMessage.isBroadcast()){
+
+
+				// apply limits
+				if(isConfirmed && m_currentMessage.getUnconfirmedReceivers().size() > 0){
+					// If broadcast all units have to confirm to get confirmed status
+					Utils.showWarning(m_wpMessageLog.getBundleText("UnconfirmedUnitsExists.header"),
+							m_wpMessageLog.getBundleText("UnconfirmedUnitsExists.text"));
+					// keep current status
+					status = m_currentMessage.getStatus();
 				}
 			}
-		});
 
-		m_buttonGroup.add(m_deleteButton);
-		m_buttonRow.add(m_deleteButton);
-	}
+			// apply status
+			m_currentMessage.setStatus(status);				
 
-	private void getListButton()
-	{
-		m_listButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SHOW_LIST,ButtonSize.NORMAL);
-		m_listButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				getMessageListPanel();
-				hideEditPanels();
+			// reload data?
+			//if(m_newMessage)
+			//	MessageLogPanel.setTableData();
+			
+			// Handle assignments
+			updateAssignments();
+			
+			// Commit changes
+			commit();
 
-				// show?
-				if(m_currentMessage!=null) {
-					// get panel
-					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-					layout.show(m_cardsPanel, SHOW_ASSIGNMENT_LIST_PANEL_ID);
-					
-					// show component
-					showEditComponents(new IEditMessageComponentIf[]{m_messageListPanel});
-				}
-				// update selection
-				m_currentMessageLineType = m_messageListPanel.getSelectedMessageLineType();
-			}
+			m_currentMessage = null;
+			m_messageDirty = false;
 
-		});
-		m_buttonGroup.add(m_listButton);
-		m_buttonRow.add(m_listButton);
-	}
-
-	private void getStartedButton()
-	{
-		m_startButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_STARTED,ButtonSize.NORMAL);
-		m_startButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				hideEditPanels();
-
-				// get message 
-				IMessageIf message = getCurrentMessage(false);
-				
-				if(message!=null && message.isBroadcast())
-				{
-					// de-select button
-					m_startButton.setSelected(false);
-					
-					Utils.showWarning(m_wpMessageLog.getBundleText("StartedError.header"),
-							m_wpMessageLog.getBundleText("StartedError.details"));
-				}
-				else
-				{
-					getStartedPanel();
-					m_currentMessageLineType = MessageLineType.STARTED;
-
-					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-					layout.show(m_cardsPanel, STARTED_PANEL_ID);
-
-					// show component
-					showEditComponents(new IEditMessageComponentIf[]{m_messageStartedPanel});
-				}
-			}
-		});
-		m_buttonGroup.add(m_startButton);
-		m_buttonRow.add(m_startButton);
-	}
-
-	private void getAssignedButton()
-	{
-		m_assignButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_ASSIGNMENT,ButtonSize.NORMAL);
-		m_assignButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				
-				hideEditPanels();
-
-				IMessageIf message = getCurrentMessage(false);
-				
-				if(message!=null && message.isBroadcast())
-				{
-					// de-select button
-					m_assignButton.setSelected(false);
-					
-					// Only legal if message isn't broadcast
-					Utils.showWarning(m_wpMessageLog.getBundleText("AssignmentError.header"),
-							m_wpMessageLog.getBundleText("AssignmentError.details"));
-				}
-				else
-				{
-					// Task can be changed
-					getAssignedPanel();
-					m_currentMessageLineType = MessageLineType.ASSIGNED;
-
-					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-					layout.show(m_cardsPanel, ASSIGNED_PANEL_ID);
-
-					// show component
-					showEditComponents(new IEditMessageComponentIf[]{m_messageAssignedPanel});
-				}
-			}
-		});
-		m_buttonGroup.add(m_assignButton);
-		m_buttonRow.add(m_assignButton);
+			// GUI clean-up
+			clearPanelContents();
+			m_buttonGroup.clearSelection();
+			
+			// reset color
+			setButtonColors();
+			
+			// success
+			return true;
+			
+		}
+		// failed
+		return true;    	
+    }
+    
+	public static boolean validateMessage() {
+		// has any data to commit?
+		if(m_currentMessage == null) {
+			Utils.showWarning(m_wpMessageLog.getBundleText("NoMessageData.header"),
+					m_wpMessageLog.getBundleText("NoMessageData.text"));
+			return false;
+		}
+		// has lines?
+		if(m_currentMessage != null && m_currentMessage.getLines().length==0) {
+			Utils.showWarning(m_wpMessageLog.getBundleText("NoMessageLines.header"),
+					m_wpMessageLog.getBundleText("NoMessageLines.text"));
+			return false;
+		}
+		// is valid
+		return true;			
 	}
 	
-	private void getCompletedButton()
-	{
-		m_completedButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_COMPLETED,ButtonSize.NORMAL);
-		m_completedButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				hideEditPanels();
-
-				IMessageIf message = getCurrentMessage(false);
-				
-				if(message!=null && message.isBroadcast())
-				{
-
-					// de-select button
-					m_completedButton.setSelected(false);
-					
-					// not possible to assign when message is a broadcast
-					Utils.showWarning(m_wpMessageLog.getBundleText("CompletedError.header"),
-							m_wpMessageLog.getBundleText("CompletedError.details"));
-					
-				}
-				else
-				{
-					getCompletedPanel();
-					m_currentMessageLineType = MessageLineType.COMPLETED;
-
-					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-					layout.show(m_cardsPanel, COMPLETED_PANEL_ID);
-					
-					// show component
-					showEditComponents(new IEditMessageComponentIf[]{m_messageCompletedPanel});
-				}
-			}
-		});
-		m_buttonGroup.add(m_completedButton);
-		m_buttonRow.add(m_completedButton);
-	}
-	
-
 	/**
 	 * Ensures that units and assignments affected by the added message lines in the current message are
 	 * updated (status, etc.). Message lines are also updated according to what operations are legal
@@ -1362,75 +1483,6 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		}
 	}
 
-	private void getPOIButton()
-	{
-		m_poiButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_POI,ButtonSize.NORMAL);
-		m_poiButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				getMessagePOIPanel();
-				hideEditPanels();
-				m_currentMessageLineType = MessageLineType.POI;
-				m_messagePOIPanel.setMapTool();
-
-				CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-				layout.show(m_cardsPanel, FINDING_PANEL_ID);
-
-				// show component
-				showEditComponents(new IEditMessageComponentIf[]{m_messagePOIPanel});				
-			}
-		});
-		m_buttonGroup.add(m_poiButton);
-		m_buttonRow.add(m_poiButton);
-	}
-
-	private void getPositionButton()
-	{
-		m_positionButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_POSITION,ButtonSize.NORMAL);
-		m_positionButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				getMessagePositionPanel();
-				hideEditPanels();
-				m_currentMessageLineType = MessageLineType.POSITION;
-				m_messagePositionPanel.setMapTool();
-
-				CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-				layout.show(m_cardsPanel, POSITION_PANEL_ID);
-
-				// show component
-				showEditComponents(new IEditMessageComponentIf[]{m_messagePositionPanel});
-			}
-		});
-		m_buttonGroup.add(m_positionButton);
-		m_buttonRow.add(m_positionButton);
-	}
-
-	private void getTextButton()
-	{
-		m_textButton = DiskoButtonFactory.createToggleButton(MessageLogActionType.SET_TEXT,ButtonSize.NORMAL);
-		m_textButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				getMessageTextPanel();
-				hideEditPanels();
-				m_currentMessageLineType = MessageLineType.TEXT;
-
-				CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
-				layout.show(m_cardsPanel, TEXT_PANEL_ID);
-
-				// show component
-				showEditComponents(new IEditMessageComponentIf[]{m_textPanel});
-				
-			}
-		});
-		m_buttonGroup.add(m_textButton);
-		m_buttonRow.add(m_textButton);
-	}
-
 	/**
 	 * Hides all panels
 	 */
@@ -1486,19 +1538,15 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		m_assignButton.doClick();
 	}
 
-	public static void setIsDirty()
-	{
-		// set flag
-		m_messageDirty = (m_currentMessage!=null);
-		
-		// forward
-		setButtonColors();
-		
-	}
-		
 	public static void showListPanel()
 	{
-		m_listButton.doClick();
+		if(m_currentMessage!=null)
+			m_listButton.doClick();
+		else {
+			hideEditPanels();
+			m_dummyButton.doClick();
+		}
+
 	}
 
 	public static void showCompletePanel()
@@ -1526,6 +1574,16 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		m_poiButton.doClick();
 	}
 
+	public static void setIsDirty()
+	{
+		// set flag
+		m_messageDirty = (m_currentMessage!=null);
+		
+		// forward
+		setButtonColors();
+		
+	}
+		
 	public static void cancelAssign()
 	{
 		m_messageAssignedPanel.cancelUpdate();

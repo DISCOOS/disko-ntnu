@@ -1,4 +1,4 @@
-package org.redcross.sar.event;
+package org.redcross.sar.map.event;
 
 import java.io.IOException;
 import java.util.EventListener;

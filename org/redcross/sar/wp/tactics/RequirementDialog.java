@@ -13,8 +13,6 @@ import java.awt.Dimension;
 import java.util.EnumSet;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -31,6 +29,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class RequirementDialog extends DefaultDialog {
@@ -145,7 +145,7 @@ public class RequirementDialog extends DefaultDialog {
 						}
 
 						// update
-						super.setMsoObject(search);
+						msoObject = search;
 						setPriority((pri==null) ? AssignmentPriority.NORMAL : pri ,true,false);
 						setAccuracy(accuracy!=0 ? accuracy : 75,true,false);
 						setPersonnel(personnel!=0 ? personnel : 3,true,false);

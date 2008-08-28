@@ -8,17 +8,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JDialog;
 import javax.swing.Timer;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.panel.AbstractPanel;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.BaseToolPanel;
 import org.redcross.sar.gui.panel.IPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public class DefaultDialog extends JDialog implements IDialog {
 
@@ -43,6 +47,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	private Component snapToBuddy = null;
 	
 	private boolean isMoveable = true;
+	private boolean isEscapeable = true;
 	
 	private final DialogWorker m_worker = new DialogWorker(MILLIS_TO_SHOW);
 	
@@ -88,6 +93,22 @@ public class DefaultDialog extends JDialog implements IDialog {
 				snapTo(false);
 			}
 		});        
+        
+		// add global key-event listener
+		Utils.getApp().getKeyEventDispatcher().addKeyListener(
+				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// can process event?
+				if(isEscapeable() && getFocusOwner()!=null) {
+					e.consume();
+					cancel();
+				}
+				
+			}
+		});
+		        
 		// initialize ui
 		initialize();
 	}
@@ -224,10 +245,26 @@ public class DefaultDialog extends JDialog implements IDialog {
 		return isMoveable;
 	}
 
+	public void setEscapeable(boolean isEscapeable) {
+		this.isEscapeable = isEscapeable;		
+	}
+
+	public boolean isEscapeable() {
+		if(isEscapeable && isWorkSupported()) {
+			if(getContentPane() instanceof BasePanel) {
+				return ((BasePanel)getContentPane()).isButtonVisible("cancel");
+			}
+			if(getContentPane() instanceof BaseToolPanel) {
+				return ((BaseToolPanel)getContentPane()).isButtonVisible("cancel");
+			}
+		}
+		return false;
+	}
+
 	public void setMoveable(boolean isMoveable) {
 		this.isMoveable = isMoveable;		
 	}
-
+	
 	public void cancelSetVisible() {
 		m_worker.cancel();
 	}

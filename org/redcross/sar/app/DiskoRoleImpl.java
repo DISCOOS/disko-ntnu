@@ -8,7 +8,6 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JToggleButton;
 
-import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -17,6 +16,7 @@ import org.redcross.sar.gui.panel.MainMenuPanel;
 import org.redcross.sar.gui.panel.MainPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.SubMenuPanel;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import com.esri.arcgis.interop.AutomationException;

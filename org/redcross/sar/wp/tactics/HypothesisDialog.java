@@ -27,8 +27,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -50,6 +48,8 @@ import org.redcross.sar.mso.data.IHypothesisIf.HypothesisStatus;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class HypothesisDialog extends DefaultDialog {
@@ -178,7 +178,7 @@ public class HypothesisDialog extends DefaultDialog {
 						}
 												
 						// update
-						super.setMsoObject(area);
+						msoObject = area;
 						setHypothesis(h, true, false);
 
 						// resume changes

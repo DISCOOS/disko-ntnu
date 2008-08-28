@@ -1,7 +1,6 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -11,6 +10,7 @@ import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelImportStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
@@ -304,11 +304,11 @@ public class ImportCalloutDialog extends DefaultDialog
 
 	private void initializeButtons()
 	{
-		m_backButton = DiskoButtonFactory.createButton("GENERAL.NEXT",ButtonSize.NORMAL);
+		m_backButton = DiskoButtonFactory.createButton("GENERAL.BACK",ButtonSize.NORMAL);
 		m_backButton.setEnabled(false);
 		m_contentsPanel.insertButton("finish", m_backButton, "back");
 		
-		m_nextButton = DiskoButtonFactory.createButton("GENERAL.BACK",ButtonSize.NORMAL);
+		m_nextButton = DiskoButtonFactory.createButton("GENERAL.NEXT",ButtonSize.NORMAL);
 		m_contentsPanel.insertButton("finish", m_nextButton, "next");
 		
 		m_okButton = (JButton)m_contentsPanel.getButton("finish");

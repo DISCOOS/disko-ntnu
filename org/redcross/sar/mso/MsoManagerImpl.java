@@ -97,7 +97,7 @@ public class MsoManagerImpl implements IMsoManagerIf
      * @return <code>true</code> if an operation exists, <code>false</code> otherwise 
      */
     public boolean operationExists() {
-    	return m_operation!=null && !isOperationDeleted();
+    	return m_operation!=null && !(isOperationDeleted());
     }
     
     /**
@@ -125,8 +125,6 @@ public class MsoManagerImpl implements IMsoManagerIf
     
     public ICmdPostIf getCmdPost()
     {
-    	//List<ICmdPostIf> list = new ArrayList<ICmdPostIf>(getOperation().getCmdPostList().getItems());
-        //return list.size()>0 ? list.get(0) : null;
         return getExistingCmdPost();
     }
 

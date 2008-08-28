@@ -42,14 +42,12 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkRepeater;
-import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
 import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
@@ -69,6 +67,8 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.thread.DiskoMapProgressor;
 import org.redcross.sar.thread.DiskoProgressMonitor;
+import org.redcross.sar.thread.event.DiskoWorkRepeater;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
 
 /**

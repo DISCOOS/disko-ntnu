@@ -3,7 +3,7 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.redcross.sar.event.MsoLayerEventStack;
+import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaMaskFeature;
 import org.redcross.sar.mso.IMsoManagerIf;

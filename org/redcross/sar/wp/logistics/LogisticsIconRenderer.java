@@ -60,7 +60,7 @@ public class LogisticsIconRenderer extends JLabel implements TableCellRenderer
             setIcon(iconValue);
         } else
         {
-            setText(value.toString());
+            setText(value!=null ? value.toString() : "");
             setIcon(null);
         }
         if (column == 0)

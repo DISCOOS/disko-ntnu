@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -19,9 +19,7 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
@@ -92,7 +90,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     	if(cmdPost!=null) {
 	    	// get message log
 	        IMessageLogIf messageLog = m_wpModule.getCmdPost().getMessageLog();
-	        // exlude message when selection
+	        // exclude message when selection
 	        m_messageSelector.exclude(MessageLogBottomPanel.isNewMessage() ? null : exclude);
 	        // select messages
 	        m_messageList = messageLog.selectItems(m_messageSelector, IMessageIf.MESSAGE_NUMBER_COMPARATOR);        
@@ -141,7 +139,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     public Object getValueAt(int rowIndex, int columnIndex)
     {
     	// invalid index?
-    	if(!(rowIndex<m_messageList.size())) return null;
+    	if(rowIndex>=m_messageList.size() || Utils.getApp().isLocked()) return null;
     	
     	// get message
         IMessageIf message = m_messageList.get(rowIndex);
@@ -158,7 +156,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                 {
                     sender = (ICommunicatorIf) m_wpModule.getCmdPost();
                 }
-                return sender.getCommunicatorNumberPrefix() + " " + sender.getCommunicatorNumber();
+                return sender!=null ? sender.getCommunicatorNumberPrefix() + " " + sender.getCommunicatorNumber(): null;
             case 3:
                 if (message.isBroadcast())
                 {
@@ -172,7 +170,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                     {
                         receiver = (ICommunicatorIf) m_wpModule.getCmdPost();
                     }
-                    return receiver.getCommunicatorNumberPrefix() + " " + receiver.getCommunicatorNumber();
+                    return receiver!=null ? receiver.getCommunicatorNumberPrefix() + " " + receiver.getCommunicatorNumber() : null;
                 }
             case 4:
             	
@@ -265,34 +263,44 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
      */
     public void handleMsoUpdateEvent(Update e)
     {
-        Object source = e.getSource();
-        if (source instanceof IMessageIf)
-        {
-            handleMessageEvent((IMessageIf) source, e);
-        } else if (source instanceof IMessageLineIf)
-        {
-            handleMessageLineEvent((IMessageLineIf) source);
-        } else if (source instanceof IUnitIf)
-        {
-            handleUnitEvent((IUnitIf) source);
-        } else if (source instanceof IPOIIf)
-        {
-            handlePOIEvent((IPOIIf) source);
-        } else if (source instanceof IAssignmentIf)
-        {
-            handleAssignmentEvent((IAssignmentIf) source);
+        if(e.isClearAllEvent()) {
+        	m_messageList.clear();
+        	fireTableDataChanged();        	
         }
-        updateRowHeights();
+        else {
+        	boolean bFlag = false;
+            Object source = e.getSource();
+	        if (source instanceof IMessageIf)
+	        {
+	        	bFlag = handleMessageEvent((IMessageIf) source, e);
+	        } else if (source instanceof IMessageLineIf)
+	        {
+	        	bFlag = handleMessageLineEvent((IMessageLineIf) source);
+	        } else if (source instanceof IUnitIf)
+	        {
+	        	bFlag = handleUnitEvent((IUnitIf) source);
+	        } else if (source instanceof IPOIIf)
+	        {
+	        	bFlag = handlePOIEvent((IPOIIf) source);
+	        } else if (source instanceof IAssignmentIf)
+	        {
+	            bFlag = handleAssignmentEvent((IAssignmentIf) source);
+	        }
+	        if(bFlag) 
+	        	updateRowHeights();
+
+        }
     }
 
-    private void handleMessageEvent(IMessageIf aMessage, Update e)
+    private boolean handleMessageEvent(IMessageIf aMessage, Update e)
     {
         if (e.isCreateObjectEvent() || e.isDeleteObjectEvent())
         {
             rebuildTable(aMessage);
+            return true;
         } else
         {
-            messageChanged(aMessage);
+            return messageChanged(aMessage);           
         }
     }
 
@@ -300,56 +308,63 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     {
         buildTable(aMessage);
         fireTableDataChanged();
-        m_table.revalidate();
     }
 
-    private void messageChanged(IMessageIf aMessage)
+    private boolean messageChanged(IMessageIf aMessage)
     {
         int messageIndex = m_messageList.indexOf(aMessage);
         if (messageIndex >= 0)
         {
             fireTableRowsUpdated(messageIndex, messageIndex);
+            return true;
         }
+        return false;
     }
 
-    private void messagesChanged(Collection<IMessageIf> theMessages)
+    private boolean messagesChanged(Collection<IMessageIf> theMessages)
     {
+    	int count = 0;
         for (IMessageIf m : theMessages)
         {
-            messageChanged(m);
+            if(messageChanged(m)) count++;
         }
+        return count>0;
     }
 
-    private void handleMessageLineEvent(IMessageLineIf aLine)
+    private boolean handleMessageLineEvent(IMessageLineIf aLine)
     {
-        messageChanged(aLine.getOwningMessage());
+        return messageChanged(aLine.getOwningMessage());
     }
 
-    private void handleUnitEvent(IUnitIf aUnit)
+    private boolean handleUnitEvent(IUnitIf aUnit)
     {
-        messagesChanged(aUnit.getReferringMessages(m_messageList));
+        return messagesChanged(aUnit.getReferringMessages(m_messageList));
     }
 
-    private void handlePOIEvent(IPOIIf aPoi)
+    private boolean handlePOIEvent(IPOIIf aPoi)
     {
+    	int count = 0;
         for (IMessageIf m : m_messageList)
         {
             if (aPoi.getReferringMessageLines(m.getMessageLineItems()).size() > 0)
             {
-                messageChanged(m);
+                if(messageChanged(m)) count++;
             }
         }
+        return count>0;
     }
 
-    private void handleAssignmentEvent(IAssignmentIf anAssignment)
+    private boolean handleAssignmentEvent(IAssignmentIf anAssignment)
     {
+    	int count = 0;
         for (IMessageIf m : m_messageList)
         {
             if (anAssignment.getReferringMessageLines(m.getMessageLineItems()).size() > 0)
             {
-                messageChanged(m);
+                if(messageChanged(m)) count++;
             }
         }
+        return count>0;
     }
 
 

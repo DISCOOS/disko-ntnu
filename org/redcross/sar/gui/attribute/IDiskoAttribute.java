@@ -2,8 +2,8 @@ package org.redcross.sar.gui.attribute;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public interface IDiskoAttribute { 
 

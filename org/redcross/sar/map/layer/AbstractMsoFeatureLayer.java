@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEventStack;
-import org.redcross.sar.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.map.event.IMsoLayerEventListener;
+import org.redcross.sar.map.event.MsoLayerEventStack;
+import org.redcross.sar.map.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -246,7 +246,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			e.printStackTrace();
 		}
 	}
-
+	
 	public void addMsoLayerEventListener(IMsoLayerEventListener listener) {
 		if (eventStack!=null) {
 			eventStack.addMsoLayerEventListener(listener);

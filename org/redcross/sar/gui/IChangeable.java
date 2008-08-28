@@ -1,7 +1,7 @@
 package org.redcross.sar.gui;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public interface IChangeable {
 	

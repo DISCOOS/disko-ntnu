@@ -22,10 +22,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public class HeaderPanel extends JPanel {
 

@@ -3,7 +3,8 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.redcross.sar.event.MsoLayerEventStack;
+import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -12,9 +13,11 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IDisplay;
+import com.esri.arcgis.display.ILineSymbol;
 import com.esri.arcgis.display.RgbColor;
 import com.esri.arcgis.display.SimpleFillSymbol;
-import com.esri.arcgis.display.SimpleLineSymbol;
+import com.esri.arcgis.display.esriSimpleFillStyle;
+import com.esri.arcgis.display.esriSimpleLineStyle;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Polygon;
 import com.esri.arcgis.geometry.esriGeometryType;
@@ -66,11 +69,6 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 			// get line zoom width
 			double zoomLineWidth = java.lang.Math.min(lineWidth, lineWidth*zoomRatio);
 			
-			// update
-			defaultSymbol.getOutline().setWidth(zoomLineWidth);
-			disabledSymbol.getOutline().setWidth(zoomLineWidth);
-			selectionSymbol.getOutline().setWidth(zoomLineWidth);
-			
  			for (int i = 0; i < featureClass.featureCount(null); i++) {
  				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
  				if(select(feature) && feature.isVisible()){
@@ -79,14 +77,28 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 						// is enabled?
 						if(isEnabled) {
 							// is selected?
-	 	 					if (feature.isSelected())
+	 	 					if (feature.isSelected()) {
+		 	 					// update
+								ILineSymbol line = selectionSymbol.getOutline();
+								line.setWidth(zoomLineWidth);
+								selectionSymbol.setOutline(line);							
 								// select feature 
 								display.setSymbol(selectionSymbol);							
-	 	 					else
+							}
+	 	 					else {
+		 	 					// update
+								ILineSymbol line = defaultSymbol.getOutline();
+								line.setWidth(zoomLineWidth);
+								defaultSymbol.setOutline(line);
 								// do no select feature
 								display.setSymbol(defaultSymbol);									
+	 	 					}
 						}
 						else {
+							// update
+							ILineSymbol line = disabledSymbol.getOutline();
+							line.setWidth(zoomLineWidth);
+							disabledSymbol.setOutline(line);							
 							// disable all other features
 							display.setSymbol(disabledSymbol);							
 						}
@@ -105,42 +117,26 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
  		try {
  			
  			// create default symbol
-			defaultSymbol = new SimpleFillSymbol();
-			defaultSymbol.setStyle(com.esri.arcgis.display.esriSimpleFillStyle.esriSFSNull);
-
 			RgbColor c = new RgbColor();
 			c.setRed(255);
 			c.setBlue(255);
-
-			SimpleLineSymbol outlineSymbol = new SimpleLineSymbol();	
-			outlineSymbol.setWidth(lineWidth);
-			outlineSymbol.setColor(c);
-			defaultSymbol.setOutline(outlineSymbol);
+			defaultSymbol = (SimpleFillSymbol)MapUtil.getFillSymbol(c, esriSimpleFillStyle.esriSFSNull, esriSimpleLineStyle.esriSLSSolid);
+			defaultSymbol.getOutline().setWidth(lineWidth);
 
 			// create disabled symbol
-			disabledSymbol = new SimpleFillSymbol();
-			disabledSymbol.setStyle(com.esri.arcgis.display.esriSimpleFillStyle.esriSFSNull);
 			c = new RgbColor();
 			c.setBlue(110);
 			c.setGreen(110);
 			c.setRed(110);
+			disabledSymbol = (SimpleFillSymbol)MapUtil.getFillSymbol(c, esriSimpleFillStyle.esriSFSNull, esriSimpleLineStyle.esriSLSSolid);
+			disabledSymbol.getOutline().setWidth(lineWidth);
 
-			SimpleLineSymbol disabledOutlineSymbol = new SimpleLineSymbol();	
-			disabledOutlineSymbol.setWidth(lineWidth);
-			disabledOutlineSymbol.setColor(c);
-			disabledSymbol.setOutline(disabledOutlineSymbol);
-			
 			// create selection symbol
-			selectionSymbol = new SimpleFillSymbol();
-			selectionSymbol.setStyle(com.esri.arcgis.display.esriSimpleFillStyle.esriSFSNull);
 			c = new RgbColor();
 			c.setBlue(255);
 			c.setGreen(255);
-
-			SimpleLineSymbol selectedOutlineSymbol = new SimpleLineSymbol();	
-			selectedOutlineSymbol.setWidth(lineWidth);
-			selectedOutlineSymbol.setColor(c);
-			selectionSymbol.setOutline(selectedOutlineSymbol);
+			selectionSymbol = (SimpleFillSymbol)MapUtil.getFillSymbol(c, esriSimpleFillStyle.esriSFSNull, esriSimpleLineStyle.esriSLSSolid);
+			selectionSymbol.getOutline().setWidth(lineWidth);
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

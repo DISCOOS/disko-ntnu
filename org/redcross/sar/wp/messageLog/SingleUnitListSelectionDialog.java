@@ -3,13 +3,11 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.ICmdPostIf.CmdPostStatus;
-import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
@@ -28,7 +26,6 @@ import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 
 /**
@@ -145,9 +142,6 @@ public class SingleUnitListSelectionDialog extends DefaultDialog implements IEdi
 
 		setContentPane(m_contentsPanel);
 		
-		buildList();
-		
-		this.pack();
 	}
 
 	/**

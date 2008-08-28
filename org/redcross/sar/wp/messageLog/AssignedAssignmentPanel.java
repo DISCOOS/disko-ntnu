@@ -1,9 +1,7 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
@@ -30,6 +28,7 @@ public class AssignedAssignmentPanel extends AbstractAssignmentPanel
 
 		 m_editAssignmentPanel.getAttribute("Time").setCaption(
 				 m_wpMessageLog.getBundleText("AssignedTimeLabel.text") + ": ");
+		 
 	}
 
 	/**

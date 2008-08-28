@@ -18,6 +18,7 @@ import com.esri.arcgis.geodatabase.IQueryFilter;
 import com.esri.arcgis.geodatabase.ISelectionSet;
 import com.esri.arcgis.geodatabase.ISpatialFilter;
 import com.esri.arcgis.geodatabase.IWorkspace;
+import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.IRelationalOperator;
@@ -149,13 +150,38 @@ public class MsoFeatureClass implements IFeatureClass, IGeoDataset {
 		MsoFeatureCursor cursor = new MsoFeatureCursor();
 		if (filter instanceof ISpatialFilter) {
 			ISpatialFilter spatialFilter = (ISpatialFilter)filter;
-			IGeometry filterGeom = spatialFilter.getGeometry();
-			
+			IRelationalOperator filterGeom = (IRelationalOperator)spatialFilter.getGeometry();
+			int relation = spatialFilter.getSpatialRel();
 			for (int i = 0; i < data.size(); i++) {
 				IFeature feature = (IFeature)data.get(i);
-				IRelationalOperator geom = (IRelationalOperator)feature.getShape();
-				if (geom != null && !geom.disjoint(filterGeom)) {
-					cursor.add(feature);
+				IGeometry geom = feature.getShape();
+				if(geom != null) { 
+					switch(relation) {
+					case esriSpatialRelEnum.esriSpatialRelContains:
+						if (filterGeom.contains(geom))
+							cursor.add(feature);
+						break;
+					case esriSpatialRelEnum.esriSpatialRelCrosses:
+						if (filterGeom.crosses(geom))
+							cursor.add(feature);
+						break;
+					case esriSpatialRelEnum.esriSpatialRelOverlaps:
+						if (filterGeom.overlaps(geom))
+							cursor.add(feature);
+						break;
+					case esriSpatialRelEnum.esriSpatialRelTouches:
+						if (filterGeom.touches(geom))
+							cursor.add(feature);
+						break;
+					case esriSpatialRelEnum.esriSpatialRelWithin:
+						if (filterGeom.within(geom))
+							cursor.add(feature);
+						break;
+					default:
+						if (!filterGeom.disjoint(geom))
+							cursor.add(feature);
+						break;						
+					}
 				}
 			}
 		}

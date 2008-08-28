@@ -126,6 +126,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
                 
                 // update progress monitor?
                 if(WORK_TIME<System.currentTimeMillis()-tic) {
+                	Thread.yield();
                 	if(monitor!=null) monitor.refreshProgress();
                 	tic = System.currentTimeMillis();
                 }                

@@ -20,7 +20,7 @@ public class POITypesPanel extends BasePanel {
 	private JList typeList = null;
 
 	public POITypesPanel() {
-		this("",ButtonSize.NORMAL);
+		this("",ButtonSize.SMALL);
 	}
 
 	public POITypesPanel(String caption, ButtonSize buttonSize) {

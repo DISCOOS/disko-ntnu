@@ -50,7 +50,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 	public SnapPanel() {
 		
 		// forward
-		super("Snapping");
+		super("Snapping",true,true,ButtonSize.SMALL);
 		
 		// prepare
 		checkBoxes = new HashMap<String,JCheckBox>();

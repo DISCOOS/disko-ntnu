@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -8,6 +7,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.Internationalization;
 
 import javax.swing.ImageIcon;

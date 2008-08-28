@@ -28,8 +28,6 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -43,6 +41,8 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.UnitUtilities;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 

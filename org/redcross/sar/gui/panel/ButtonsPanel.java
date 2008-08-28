@@ -194,19 +194,21 @@ public class ButtonsPanel extends JPanel {
 	}
 	
 	public boolean isButtonVisible(String command) {
-		return m_commands.get(command).isVisible();
+		return m_commands.containsKey(command) ? m_commands.get(command).isVisible() : false;
 	}
 	
 	public void setButtonVisible(String command, boolean isVisible) {
-		m_commands.get(command).setVisible(isVisible);
+		if(m_commands.containsKey(command))
+			m_commands.get(command).setVisible(isVisible);
 	}
 	
 	public boolean isButtonEnabled(String command) {
-		return m_commands.get(command).isEnabled();
+		return m_commands.containsKey(command) ? m_commands.get(command).isEnabled() : false;
 	}
 	
 	public void setButtonEnabled(String command, boolean isEnabled) {
-		m_commands.get(command).setEnabled(isEnabled);
+		if(m_commands.containsKey(command))
+			m_commands.get(command).setEnabled(isEnabled);
 	}
 
 	public void addActionListener(ActionListener listener) {

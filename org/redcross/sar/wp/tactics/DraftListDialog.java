@@ -9,14 +9,14 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
@@ -53,7 +53,7 @@ public class DraftListDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(400, 600));
+            this.setPreferredSize(new Dimension(400, 400));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}

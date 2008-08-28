@@ -409,7 +409,7 @@ public class DiskoProgressMonitor {
 				getProgressPanel().setLimits(0, 0, false);
 			}
 			// get note
-			String note = m_notes.get(m_inAction);
+			String note = m_notes.get(Math.min(m_notes.size()-1,m_inAction));
 			// update progress 
 			getProgressPanel().setProgress(m_progress,note,note);			
 		}

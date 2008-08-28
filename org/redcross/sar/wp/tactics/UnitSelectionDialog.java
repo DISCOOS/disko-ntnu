@@ -113,7 +113,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel() {
+				contentPanel = new DefaultPanel(ButtonSize.NORMAL) {
 					
 					private static final long serialVersionUID = 1L;
 
@@ -138,13 +138,14 @@ public class UnitSelectionDialog extends DefaultDialog {
 						}
 						
 						// update
-						super.setMsoObject(assignment);
+						msoObject = assignment;
 
 						// resume changes
 						setChangeable(true);
 						
 						// update
-						setDirty(false);
+						setDirty(false,false);						
+						update();
 												
 					}	
 					
@@ -187,7 +188,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private JButton getAssignButton() {
 		if (assignButton == null) {
 			try {
-				assignButton = DiskoButtonFactory.createButton("STATUS.QUEUED",ButtonSize.SMALL);
+				assignButton = DiskoButtonFactory.createButton("STATUS.QUEUED",ButtonSize.NORMAL);
 				assignButton.setToolTipText("Legg oppdrag i kø til valgt enhet");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -204,7 +205,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private JButton getReclaimButton() {
 		if (reclaimButton == null) {
 			try {
-				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.SMALL);
+				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
 				reclaimButton.setToolTipText("Fjern siste oppdrag fra køen");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

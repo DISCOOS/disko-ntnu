@@ -102,7 +102,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 	 */
 	private DefaultPanel getContentPanel() {
 		if (m_contentPanel == null) {
-			m_contentPanel = new DefaultPanel("Tegneverktøy",false,false);
+			m_contentPanel = new DefaultPanel("Tegneverktøy",false,false,ButtonSize.NORMAL);
 			m_contentPanel.setBodyComponent(getSplitPane());
 		}
 		return m_contentPanel;

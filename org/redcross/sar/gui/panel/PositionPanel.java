@@ -18,12 +18,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
-import org.redcross.sar.gui.renderer.MsoIconRenderer;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -33,6 +30,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
@@ -79,6 +78,19 @@ public class PositionPanel extends DefaultToolPanel {
 		
 		// initialize gui
 		initialize();
+						
+		// listen for changes in position
+		tool.addDiskoWorkListener(new IDiskoWorkListener() {
+
+			@Override
+			public void onWorkPerformed(DiskoWorkEvent e) {
+				if(e.isChange()) {
+					// update position
+					getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());					
+				}				
+			}
+			
+		});
 		
 		// load units
 		loadUnits();
@@ -188,7 +200,7 @@ public class PositionPanel extends DefaultToolPanel {
 		if (unitList == null) {
             unitList = new JList();
             unitList.setVisibleRowCount(0);
-            unitList.setCellRenderer(new MsoIconListCellRenderer(0,"32x32"));
+            unitList.setCellRenderer(new MsoIconListCellRenderer(0,false,"32x32"));
             unitList.setModel(new DefaultComboBoxModel());
             
             // add listener
@@ -282,7 +294,7 @@ public class PositionPanel extends DefaultToolPanel {
 	 */
 	private JButton getCenterAtButton() {
 		if (centerAtButton == null) {
-			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);			
+			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);			
 			centerAtButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -538,9 +550,6 @@ public class PositionPanel extends DefaultToolPanel {
 		
 		try {
 			
-			// update attributes
-			getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());
-			
 			// only update if unit is selected
 			getGotoPanel().getCoordinatePanel().setEnabled(getUnit()!=null);
 			
@@ -591,7 +600,7 @@ public class PositionPanel extends DefaultToolPanel {
 	@Override
 	protected void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
 		// forward
-		update();
+		setUnit((IUnitIf)msoObject);
 	}
 
 	@Override

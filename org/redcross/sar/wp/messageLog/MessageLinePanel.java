@@ -2,10 +2,12 @@ package org.redcross.sar.wp.messageLog;
 
 import java.awt.BorderLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
@@ -39,16 +41,27 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 	 */
 	public MessageLinePanel(IDiskoWpMessageLog wp)
 	{
+		// forward
+		super();
+		
+		// prepare
 		m_wpMessageLog = wp;
 
+		// add empty border
+		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));		
+		
+		// set border layout
 		setLayout(new BorderLayout());
-
+		
+		// create table
 		m_messageTableModel = new MessageLineTableModel(m_wpMessageLog);
 		m_messageListTable = new JTable(m_messageTableModel);
+		m_messageListTable.setBorder(null);
 		m_messageListTable.setDefaultRenderer(IMessageLineIf.class, new MessageLineTableRenderer());
 		m_messageListTable.setTableHeader(null);
 		m_messageListTable.setRowHeight(32);
 		m_textScrollPane = new JScrollPane(m_messageListTable);
+		m_textScrollPane.setBorder(new DiskoBorder());
 		m_messageListTable.setFillsViewportHeight(true);
 		m_messageListTable.setColumnSelectionAllowed(false);
 		m_messageListTable.setRowSelectionAllowed(true);
@@ -57,7 +70,7 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 
 		m_messageListTable.addMouseListener(new MessageLineMouseAdapter(m_messageTableModel));
 
-		this.add(m_textScrollPane, BorderLayout.CENTER);
+		add(m_textScrollPane, BorderLayout.CENTER);
 	}
 
 	/**

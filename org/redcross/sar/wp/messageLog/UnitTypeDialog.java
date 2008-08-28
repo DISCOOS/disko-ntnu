@@ -12,7 +12,6 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.Internationalization;
 
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

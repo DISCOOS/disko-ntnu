@@ -7,8 +7,10 @@ import javax.swing.ListCellRenderer;
 
 public class MsoIconListCellRenderer extends MsoIconRenderer implements ListCellRenderer {
 	
-	public MsoIconListCellRenderer(int options, String catalog) {
-		super(options,catalog);
+	private static final long serialVersionUID = 1L;
+
+	public MsoIconListCellRenderer(int options, boolean complete, String catalog) {
+		super(options,complete,catalog);
 	}
 	
 	public Component getListCellRendererComponent(JList list, Object value,

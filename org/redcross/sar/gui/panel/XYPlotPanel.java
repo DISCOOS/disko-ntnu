@@ -1,6 +1,5 @@
 package org.redcross.sar.gui.panel;
 
-import java.awt.Dimension;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 

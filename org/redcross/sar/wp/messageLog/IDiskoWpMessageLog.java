@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public interface IDiskoWpMessageLog extends IDiskoWpModule, IDiskoWorkListener

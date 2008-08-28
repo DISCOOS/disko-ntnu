@@ -15,15 +15,15 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.DiskoWorkRepeater;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.DiskoWorkRepeater;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 /**
  * Provides a dialog for selecting broadcast or non-broadcast receiver. This dialog also handles sub-dialogs

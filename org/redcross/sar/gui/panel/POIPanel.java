@@ -17,8 +17,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.MapUtil;
@@ -27,6 +25,8 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.Point;
@@ -55,10 +55,25 @@ public class POIPanel extends DefaultToolPanel {
 		super(caption,tool);
 		
 		// listen for IPOIIf changes
-		setInterests(Utils.getApp().getMsoModel(),EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI));
+		setInterests(Utils.getApp().getMsoModel(),
+				EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI));
 		
 		// initialize gui
 		initialize();
+		
+		// listen for changes in position
+		tool.addDiskoWorkListener(new IDiskoWorkListener() {
+
+			@Override
+			public void onWorkPerformed(DiskoWorkEvent e) {
+				if(e.isChange()) {
+					// update position
+					getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());					
+				}				
+			}
+			
+		});
+		
 	}
 
 	/**
@@ -159,7 +174,7 @@ public class POIPanel extends DefaultToolPanel {
 					// consume?
 					if(!isChangeable() || e.getValueIsAdjusting()) return;
 					// notify
-					setDirty(true);
+					setDirty(true,false);
 				}
             	
             });
@@ -221,7 +236,7 @@ public class POIPanel extends DefaultToolPanel {
 	 */
 	private JButton getCenterAtButton() {
 		if (centerAtButton == null) {
-			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);			
+			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);
 			centerAtButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -242,6 +257,9 @@ public class POIPanel extends DefaultToolPanel {
 	private void centerAt() {
 		// has map?
 		if(getTool().getMap()!=null) {						
+			// disable update
+			setChangeable(false);
+			
 			try {
 				// get position 
 				Position p = getGotoPanel().getCoordinatePanel().getPosition();
@@ -256,6 +274,10 @@ public class POIPanel extends DefaultToolPanel {
 				// TODO Auto-generated catch block
 				ex.printStackTrace();
 			}
+			
+			// enable update
+			setChangeable(true);
+			
 		}
 	}
 	
@@ -289,10 +311,12 @@ public class POIPanel extends DefaultToolPanel {
 		// update comments and type
 		if(msoPOI!=null) {
 			// update panel
+			setPosition(msoPOI.getPosition());
 			setPOIType(msoPOI.getType());
 			setRemarks(msoPOI.getRemarks());
 		}
 		else {
+			setPosition(null);
 			setPOIType(null);
 			setRemarks(null);			
 		}
@@ -329,12 +353,12 @@ public class POIPanel extends DefaultToolPanel {
 	}
 	
 	public String getRemarks() {
-		return remarksArea.getText();
+		return getRemarksArea().getText();
 	}
 
 	public void setRemarks(String remarks) {
-		if (!remarksArea.getText().equalsIgnoreCase(remarks)){
-			remarksArea.setText(remarks);
+		if (!getRemarksArea().getText().equalsIgnoreCase(remarks)){
+			getRemarksArea().setText(remarks);
 		}
 	}
 
@@ -432,8 +456,6 @@ public class POIPanel extends DefaultToolPanel {
 			else 
 				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
 						getTool().getMsoCode(), getTool().getDrawMode())); 
-			// update panel
-			getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

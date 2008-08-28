@@ -1,8 +1,5 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.DiskoWorkRepeater;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -13,6 +10,9 @@ import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.DiskoWorkRepeater;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

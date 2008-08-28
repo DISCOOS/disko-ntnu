@@ -16,8 +16,6 @@ import javax.swing.JTabbedPane;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.attribute.DTGAttribute;
@@ -33,6 +31,8 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -455,7 +455,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 		myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
 		myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
 		myButtons.add(DiskoToolType.PAN_TOOL);
-		myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+		myButtons.add(DiskoToolType.SELECT_TOOL);
 		myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
 		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
 		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);

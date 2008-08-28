@@ -183,7 +183,7 @@ public class ElementPanel extends DefaultPanel {
 		if (typeList == null) {
 			try {
 				typeList = new JList();
-				typeList.setCellRenderer(new MsoIconListCellRenderer(0,"32x32"));
+				typeList.setCellRenderer(new MsoIconListCellRenderer(0,false,"32x32"));
 				typeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				//typeList.setPreferredSize(new Dimension(180, 480));
 				typeList.addListSelectionListener(new ListSelectionListener() {
@@ -259,7 +259,7 @@ public class ElementPanel extends DefaultPanel {
 		if (objectList == null) {
 			// create list
             objectList = new JList();
-            objectList.setCellRenderer(new MsoIconListCellRenderer(1,"32x32"));
+            objectList.setCellRenderer(new MsoIconListCellRenderer(1,false,"32x32"));
             objectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // add selection listener
             objectList.addListSelectionListener(new ListSelectionListener() {
@@ -354,7 +354,7 @@ public class ElementPanel extends DefaultPanel {
 		if (partList == null) {
 			// create list
             partList = new JList();
-            partList.setCellRenderer(new MsoIconListCellRenderer(1,"32x32"));
+            partList.setCellRenderer(new MsoIconListCellRenderer(1,false,"32x32"));
             partList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
             // add listener
             partList.addListSelectionListener(new ListSelectionListener() {

@@ -18,13 +18,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -84,13 +84,14 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     protected JButton m_centerAtButton = null;
     protected JButton m_addButton = null;
     protected JButton m_okButton = null;
+    
+    protected ButtonSize buttonSize = ButtonSize.SMALL;
 
     protected AttributesPanel m_editAssignmentPanel = null;
     protected IMessageLineIf m_editingLine = null;
     
     protected BasePanel m_nextAssignmentsPanel = null;
     protected JPanel m_nextAssignmentsButtonPanel = null;
-    protected JScrollPane m_nextAssignmentScrollPane = null;
     protected ButtonGroup m_nextAssignmentButtonGroup = null;
 
     protected BasePanel m_assignmentPoolPanel = null;
@@ -111,14 +112,17 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
 
     protected void initialize()
     {
-    	BorderLayout bl = new BorderLayout();
-    	bl.setVgap(5);
-    	bl.setHgap(5);
         
-    	this.setLayout(bl);
+		// set border layout
+    	setLayout(new BorderLayout(5,5));
+    	
+		// add empty border
+		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
+		// create cards panel
         m_cardsPanel = new JPanel(new CardLayout());
 
+        // initialize cards
         initSelectedPanel();
         initMessageLinesPanel();
         initEditAssignmentPanel();
@@ -126,9 +130,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         initAssignmentPoolPanel();
         initButtonPanel();             
         
-        this.add(m_selectedPanel, BorderLayout.WEST);
-        this.add(m_cardsPanel, BorderLayout.CENTER);
-        this.add(m_buttonPanel, BorderLayout.EAST);
+        // add top panels
+        add(m_selectedPanel, BorderLayout.WEST);
+        add(m_cardsPanel, BorderLayout.CENTER);
+        add(m_buttonPanel, BorderLayout.EAST);
     }
 
     /**
@@ -143,7 +148,6 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
                 Calendar time = DTG.DTGToCal(m_editAssignmentPanel
                 		.getAttribute("Time").getValue().toString());
                 m_editingLine.setOperationTime(time);
-                //m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", "48x48"));
             }
             catch (IllegalMsoArgumentException e1)
             {
@@ -224,13 +228,13 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     
     protected void initSelectedPanel() {
     	// create
-    	m_selectedPanel = new AttributesPanel("","Ingen oppdrag tilgjengelig",false,false);
-    	m_selectedPanel.setHeaderVisible(false);
+    	m_selectedPanel = new AttributesPanel("Oppdragsinformasjon","Ingen oppdrag tilgjengelig",false,false);
+    	//m_selectedPanel.setHeaderVisible(false);
     }
     
     protected void initMessageLinesPanel()
     {
-        m_messageLinesPanel = new BasePanel();
+        m_messageLinesPanel = new BasePanel("Oppdrag");
         m_messageLineList = new JList(new MessageLineListModel(m_wpMessageLog));
         m_messageLineList.setCellRenderer(new MessageLineListRenderer());
         m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -244,7 +248,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         
     	m_editAssignmentPanel = new AttributesPanel("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
-    	m_selectedPanel.setHeaderVisible(false);
+    	//m_editAssignmentPanel.setHeaderVisible(false);
     	
     	// add attributes
     	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Assignment",
@@ -254,7 +258,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	m_editAssignmentPanel.setCaptionWidth(100);
 		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Assignment"),560,25);
 		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Time"),560,25);
-		m_selectedPanel.update();
+		m_editAssignmentPanel.update();
 
         m_cardsPanel.add(m_editAssignmentPanel, EDIT_ASSIGNMENT_ID);
     }
@@ -263,15 +267,16 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     {
         m_nextAssignmentsPanel = new BasePanel("Velg i fra kø");
         
-        m_nextAssignmentsButtonPanel = new JPanel();
+        m_nextAssignmentsButtonPanel = new JPanel(new GridBagLayout());
         m_nextAssignmentsButtonPanel.setBackground(Color.WHITE);
-        m_nextAssignmentsButtonPanel.setLayout(new BoxLayout(m_nextAssignmentsButtonPanel, BoxLayout.PAGE_AXIS));
+        //m_nextAssignmentsButtonPanel.setLayout(new BoxLayout(m_nextAssignmentsButtonPanel, BoxLayout.PAGE_AXIS));
         
-        m_nextAssignmentsPanel.setBodyComponent(m_assignmentPoolButtonPanel);
+        m_nextAssignmentsPanel.setBodyComponent(m_nextAssignmentsButtonPanel);
                 
         m_nextAssignmentButtonGroup = new ButtonGroup();
 
         m_cardsPanel.add(m_nextAssignmentsPanel, NEXT_ASSIGNMENT_ID);
+        
     }
 
     protected void initAssignmentPoolPanel()
@@ -294,7 +299,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	m_buttonPanel = new JPanel();
     	m_buttonPanel.setLayout(new BoxLayout(m_buttonPanel,BoxLayout.Y_AXIS));
     	
-        m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+        m_cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",buttonSize);
         
         m_cancelButton.addActionListener(new ActionListener()
         {
@@ -319,7 +324,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         m_buttonPanel.add(m_cancelButton);
         
     	// create CENTERAT button
-    	m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);
+    	m_centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",buttonSize);
         
     	m_centerAtButton.addActionListener(new ActionListener()
         {
@@ -332,7 +337,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         m_buttonPanel.add(m_centerAtButton);
         
     	// create add button
-    	m_addButton = DiskoButtonFactory.createButton("GENERAL.PLUS",ButtonSize.NORMAL);
+    	m_addButton = DiskoButtonFactory.createButton("GENERAL.PLUS",buttonSize);
         
     	m_addButton.addActionListener(new ActionListener()
         {
@@ -346,7 +351,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
         m_buttonPanel.add(m_addButton);
     	
     	// create OK button
-    	m_okButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
+    	m_okButton = DiskoButtonFactory.createButton("GENERAL.FINISH",buttonSize);
         
     	m_okButton.addActionListener(new ActionListener()
         {
@@ -592,9 +597,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
      */
     protected void showNextAssignment()
     {
-        m_nextAssignmentsButtonPanel.removeAll();
+        // initialize
+    	m_nextAssignmentsButtonPanel.removeAll();
         m_nextAssignmentButtonGroup = new ButtonGroup();
-        //m_okButton.setIcon(DiskoIconFactory.getIcon("GENERAL.PLUS", "48x48"));
 
         // Get assignments in receiving unit's queue
         IUnitIf unit = (IUnitIf) MessageLogBottomPanel.getCurrentMessage(true).getSingleReceiver();
@@ -641,7 +646,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     		m_selectedPanel.clearAttributes();
 	    	// create?
     		if(m_selectedPanel.getAttributeCount()==0) {
-	    		// add attributes (this should only occure once)
+	    		// add attributes (this should only occur once)
     			m_selectedPanel.addAttribute(new TextFieldAttribute("Assignment",
     					m_wpMessageLog.getBundleText("AssignmentLabel.text"),150,
     					MsoUtils.getAssignmentName(selected, 1),false));
@@ -661,7 +666,6 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     			// update static properties
     			m_selectedPanel.getAttribute("Assignment").setValue(MsoUtils.getAssignmentName(selected, 1));
     			m_selectedPanel.getAttribute("Priority").setValue(selected.getPriorityText());
-    			//m_selectedPanel.getAttribute("Remarks").setMsoObject(m_selectedPanel);
     			// update dynamic properties
     			m_selectedPanel.load();
     		}

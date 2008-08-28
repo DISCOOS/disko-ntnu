@@ -112,14 +112,15 @@ public class PriorityDialog extends DefaultDialog {
 						}
 						
 						// update
-						super.setMsoObject(area);
+						msoObject = area;
 						setPriority(pri,true,false);						
 
 						// resume changes
 						setChangeable(true);
 						
 						// update
-						setDirty(false);
+						setDirty(false,false);
+						update();
 												
 					}	
 					

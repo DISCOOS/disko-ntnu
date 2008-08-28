@@ -15,10 +15,6 @@ import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -29,6 +25,8 @@ import org.redcross.sar.gui.panel.ElementPanel.IElementEventListener;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.IMsoLayerEventListener;
+import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
@@ -54,6 +52,8 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
@@ -1175,7 +1175,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 	}
 	
 	public void setup(IMsoObjectIf msoObj, boolean setTool) {
-		setup(element,msoObj,setTool);
+		setup(msoObj==null ? element : msoObj.getMsoClassCode(),msoObj,setTool);
 	}
 	
 	public void setup(
@@ -1902,7 +1902,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				if(map!=null) {
 					try {
 						// get flag
-						resume = (map.getCurrentTool() instanceof SelectFeatureTool);
+						resume = (map.getCurrentTool() instanceof SelectTool);
 					}
 					catch(Exception ex) {
 						ex.printStackTrace();

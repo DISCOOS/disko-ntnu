@@ -2,10 +2,10 @@ package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
@@ -72,7 +72,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 	        myButtons.add(DiskoCommandType.SCALE_COMMAND);
 	        myButtons.add(DiskoCommandType.TOC_COMMAND);
 	        myButtons.add(DiskoCommandType.GOTO_COMMAND);
-	        myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+	        myButtons.add(DiskoToolType.SELECT_TOOL);
 			// forward
 			setupNavBar(myButtons,false);
 		}	

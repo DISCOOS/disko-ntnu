@@ -159,7 +159,12 @@ public class UnitTableModel extends AbstractTableModel implements IMsoUpdateList
 
     public void handleMsoUpdateEvent(MsoEvent.Update e)
     {
-        buildTable();
+    	if(e.isClearAllEvent()) {
+    		m_iconRows.clear();
+    	}
+    	else {
+	        buildTable();
+    	}
         fireTableDataChanged();
     }
 

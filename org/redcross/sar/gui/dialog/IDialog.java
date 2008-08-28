@@ -2,10 +2,10 @@ package org.redcross.sar.gui.dialog;
 
 import java.awt.Component;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public interface IDialog extends IChangeable, IPanelManager {
 
@@ -24,6 +24,9 @@ public interface IDialog extends IChangeable, IPanelManager {
 	public void setLocationRelativeTo(Component buddy, int policy, boolean sizeToFit, boolean snapToInside);
 		
 	public boolean isWorkSupported();
+	
+	public void setEscapeable(boolean isEscapeable);
+	public boolean isEscapeable();
 	
 	/* ================================================
 	 * IWork interface

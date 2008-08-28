@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.redcross.sar.event;
+package org.redcross.sar.thread.event;
 
 import java.awt.Component;
 import java.util.EventObject;

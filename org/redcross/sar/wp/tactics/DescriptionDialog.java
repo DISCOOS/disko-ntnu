@@ -105,7 +105,7 @@ public class DescriptionDialog extends DefaultDialog {
 						}
 						
 						// update
-						super.setMsoObject(assignment);
+						msoObject = assignment;
 						getPOITableModel().setArea(area);
 
 						// resume changes

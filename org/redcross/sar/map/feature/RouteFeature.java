@@ -10,6 +10,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Route;
 
 import java.io.IOException;
+import java.util.Hashtable;
 
 public class RouteFeature extends AbstractMsoFeature {
 
@@ -74,13 +75,17 @@ public class RouteFeature extends AbstractMsoFeature {
     }
     
     @Override
-    public void msoChanged() throws IOException, AutomationException {       // todo sjekk etter endring av GeoCollection
-		
+    public void msoChanged() throws IOException, AutomationException {       // todo sjekk etter endring av GeoCollection		
     	if (srs == null || msoObject == null) return;
 		IRouteIf route = (IRouteIf)msoObject;
 		geodata = route.getGeodata();
 		if (geodata != null) {
-			geometry = MapUtil.getEsriPolyline(geodata, srs);
+			Hashtable<String,String> params = MapUtil.getLayoutParams(
+					route.getGeodata().getLayout());
+			if(Boolean.valueOf((String)params.get("isPolygon")))
+				geometry = MapUtil.getEsriPolygon(geodata, srs);
+			else
+				geometry = MapUtil.getEsriPolyline(geodata, srs);
 			changeCount = geodata.getChangeCount();
 		}
 		else {

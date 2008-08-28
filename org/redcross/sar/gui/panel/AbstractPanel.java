@@ -9,10 +9,8 @@ import java.util.List;
 import javax.swing.JPanel;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
-import org.redcross.sar.event.MsoLayerEvent;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
@@ -22,6 +20,8 @@ import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import com.esri.arcgis.interop.AutomationException;
 

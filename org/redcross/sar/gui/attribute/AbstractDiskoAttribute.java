@@ -14,8 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
@@ -23,6 +21,8 @@ import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**

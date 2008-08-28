@@ -2,12 +2,12 @@ package org.redcross.sar.map.tool;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import com.esri.arcgis.systemUI.ITool;
 
@@ -21,7 +21,7 @@ public interface IDiskoTool extends ITool {
 		POSITION_TOOL,
 		FLANK_TOOL,
 		SPLIT_TOOL,
-		SELECT_FEATURE_TOOL,
+		SELECT_TOOL,
 		ZOOM_IN_TOOL,
 		ZOOM_OUT_TOOL,
 		PAN_TOOL,

@@ -23,6 +23,7 @@ import org.redcross.sar.gui.attribute.EnumAttribute;
 import org.redcross.sar.gui.attribute.IDiskoAttribute;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.attribute.PositionAttribute;
+import org.redcross.sar.gui.attribute.TextAreaAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -341,7 +342,7 @@ public class AttributesPanel extends DefaultPanel {
 			}
 			else if (attribute instanceof AttributeImpl.MsoString) {
 				// get text attribute
-			    component = new TextFieldAttribute(
+			    component = new TextAreaAttribute(
 			    		(AttributeImpl.MsoString)attribute,caption,width,isEditable);
 			}
 			else if (attribute instanceof AttributeImpl.MsoCalendar) {
@@ -361,15 +362,15 @@ public class AttributesPanel extends DefaultPanel {
 			}
 			else if (attribute instanceof AttributeImpl.MsoPolygon) {
 			    //AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
-			    throw new IllegalArgumentException("MsoPolygon is not supported");
+			    //throw new IllegalArgumentException("MsoPolygon is not supported");
 			}
 			else if (attribute instanceof AttributeImpl.MsoRoute) {
 			    //AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) attribute;
-			    throw new IllegalArgumentException("MsoRoute is not supported");
+			    //throw new IllegalArgumentException("MsoRoute is not supported");
 			}
 			else if (attribute instanceof AttributeImpl.MsoTrack) {
 			    //AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
-			    throw new IllegalArgumentException("MsoTrack is not supported");
+			    //throw new IllegalArgumentException("MsoTrack is not supported");
 			}
 			else if (attribute instanceof AttributeImpl.MsoEnum) {
 				// get enum attribute

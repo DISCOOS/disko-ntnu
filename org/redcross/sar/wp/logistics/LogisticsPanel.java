@@ -2,20 +2,16 @@ package org.redcross.sar.wp.logistics;
 
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.event.IMsoLayerEventListener;
-import org.redcross.sar.event.MsoLayerEvent;
-import org.redcross.sar.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
+import org.redcross.sar.map.event.IMsoLayerEventListener;
+import org.redcross.sar.map.event.MsoLayerEvent;
+import org.redcross.sar.map.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 
 import javax.swing.JComponent;
@@ -54,8 +50,7 @@ import java.util.List;
 /**
  *
  */
-public class LogisticsPanel implements 
-		IMsoUpdateListenerIf, IMsoLayerEventListener
+public class LogisticsPanel implements IMsoLayerEventListener
 {
 
     private JPanel WorkspacePanel;
@@ -437,7 +432,7 @@ public class LogisticsPanel implements
 
     private void addToListeners()
     {
-        m_wpModule.getMsoEventManager().addClientUpdateListener(this);
+        //m_wpModule.getMsoEventManager().addClientUpdateListener(this);
         IMsoFeatureLayer msoLayer = m_map.getMsoLayer(LayerCode.AREA_LAYER);
         msoLayer.addMsoLayerEventListener(this);
     }
@@ -471,6 +466,7 @@ public class LogisticsPanel implements
         m_splitter3.setResizeWeight(1.0);
     }
 
+    /*
     private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT,
             IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
 
@@ -485,7 +481,8 @@ public class LogisticsPanel implements
     public void handleMsoUpdateEvent(MsoEvent.Update e)
     {
     }
-
+	*/
+    
     public JPanel getPanel()
     {
         setTableData();

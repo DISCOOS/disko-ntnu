@@ -6,11 +6,11 @@ package org.redcross.sar.gui.dialog;
 import java.awt.Frame;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
 
 /**

@@ -27,11 +27,10 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Enum<?> m_value = null;
-	private Enum<?>[] m_values = null;
-	private ListSelectorPanel m_selectorPanel = null;
-	private ListSelectorDialog m_selectorDialog = null;
-
+	private Enum<?> m_value;
+	private Enum<?>[] m_values;
+	private ListSelectorPanel m_selectorPanel;
+	private ListSelectorDialog m_selectorDialog;
 	
 	public EnumAttribute(AttributeImpl.MsoEnum<?> attribute, String caption, int width, boolean isEditable) {
 		// forward

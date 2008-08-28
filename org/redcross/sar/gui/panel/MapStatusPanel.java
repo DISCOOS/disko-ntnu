@@ -157,14 +157,7 @@ public class MapStatusPanel extends JPanel {
 		if(getStatusPanel().isVisible()) {
 			IMsoObjectIf msoObj = list.size()>0 ? list.get(0).getMsoObject() :null;
 			if(msoObj!=null) {
-				IAreaIf area = MsoUtils.getOwningArea(msoObj);
-				if(area!=null && area.getOwningAssignment()!=null) {
-					String name = MsoUtils.getAssignmentName(area.getOwningAssignment(), 1);
-					name += " - " + MsoUtils.getMsoObjectName(msoObj,1);
-					selectedLabel.setValue(name); 									
-				}
-				else
-					selectedLabel.setValue(MsoUtils.getMsoObjectName(msoObj,1)); 				
+				selectedLabel.setValue(MsoUtils.getCompleteMsoObjectName(msoObj,1)); 									
 			}
 			else {
 				selectedLabel.setEmpty(); 

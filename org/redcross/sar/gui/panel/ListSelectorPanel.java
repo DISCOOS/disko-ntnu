@@ -19,7 +19,7 @@ public class ListSelectorPanel extends DefaultPanel {
 	private JList m_list = null;
 	
 	public ListSelectorPanel() {
-		this("",false,false,ButtonSize.NORMAL);
+		this("",true,true,ButtonSize.SMALL);
 	}
 	
 	public ListSelectorPanel(String caption, boolean finish, boolean cancel, ButtonSize buttonSize) {

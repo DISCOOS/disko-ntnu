@@ -22,8 +22,6 @@ import java.util.List;
 import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -49,6 +47,8 @@ import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.event.MsoEvent.Commit;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
   
@@ -179,7 +179,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
 			myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
 			myButtons.add(DiskoToolType.PAN_TOOL);
-			myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+			myButtons.add(DiskoToolType.SELECT_TOOL);
 			myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
 			myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
 			myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
@@ -898,9 +898,12 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 		else if (MsoClassCode.CLASSCODE_POI.equals(element)) {
 			// setup buttons
-			showOperationAreaButtons();
+			if(MsoUtils.getOwningArea(msoObject)!=null)
+				showSearchButtons();
+			else
+				showOperationAreaButtons();
 		}
-		else if(element instanceof SearchSubType){ 
+		else if(MsoClassCode.CLASSCODE_ROUTE.equals(element) || element instanceof SearchSubType){ 
 			
 			// setup buttons
 			showSearchButtons();

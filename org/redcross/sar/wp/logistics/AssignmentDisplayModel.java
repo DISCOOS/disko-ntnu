@@ -17,8 +17,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -112,11 +114,16 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      */
     public void handleMsoUpdateEvent(MsoEvent.Update e)
     {
-        java.util.List<IAssignmentIf> priList = selectAssignments(m_priSelector);
-        m_priAssignments.setAssignmentList(priList);
-
-        setSelectableList();
-
+    	if(e == null || e.isClearAllEvent()) {
+    		m_priAssignments.setAssignmentList(new ArrayList<IAssignmentIf>());
+    	}
+    	else {
+	        
+    		List<IAssignmentIf> priList = selectAssignments(m_priSelector);
+	        m_priAssignments.setAssignmentList(priList);
+	
+    	}
+        setSelectableList();	
         calculateDivider();
         renderData();
     }

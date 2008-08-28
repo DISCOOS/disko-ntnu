@@ -7,8 +7,10 @@ import javax.swing.table.TableCellRenderer;
 
 public class MsoIconTableCellRenderer extends MsoIconRenderer implements TableCellRenderer {
 	
-	public MsoIconTableCellRenderer(int options, String catalog) {
-		super(options,catalog);
+	private static final long serialVersionUID = 1L;
+
+	public MsoIconTableCellRenderer(int options, boolean complete, String catalog) {
+		super(options,complete,catalog);
 	}
 	
 	@Override

@@ -103,7 +103,7 @@ public class MissionTextDialog extends DefaultDialog {
 						}
 
 						// update
-						super.setMsoObject(area);
+						msoObject = area;
 						setText(remarks,true,false);
 
 						// resume changes

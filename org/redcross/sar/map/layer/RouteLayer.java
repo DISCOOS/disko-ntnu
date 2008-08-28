@@ -2,7 +2,6 @@ package org.redcross.sar.map.layer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import com.esri.arcgis.display.*;
 import com.esri.arcgis.geometry.IGeometry;
@@ -12,8 +11,8 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
-import org.redcross.sar.event.MsoLayerEventStack;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.RouteFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -41,8 +40,8 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 	private RgbColor plannedColor = null;
 	private RgbColor executingColor = null;
 	private RgbColor finishedColor = null;
-	private Hashtable<SearchSubType, SimpleLineSymbol> symbols = null;
-	private SimpleLineSymbol defaultLineSymbol = null;
+	private Hashtable<SearchSubType, SimpleFillSymbol> symbols = null;
+	private SimpleFillSymbol defaultSymbol = null;
 	private TextSymbol textSymbol = null;
 
  	public RouteLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
@@ -50,7 +49,7 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
  				LayerCode.ROUTE_LAYER, msoModel, srs, 
  				esriGeometryType.esriGeometryPolyline, eventStack);
  		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
- 		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
+ 		symbols = new Hashtable<SearchSubType, SimpleFillSymbol>();
  		createSymbols();
 		if(msoModel.getMsoManager().operationExists()) {
 	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
@@ -124,13 +123,15 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 						
 						// initialize
 						String text = null;
-						SimpleLineSymbol lineSymbol = defaultLineSymbol;
+						SimpleFillSymbol fillSymbol = defaultSymbol;
 						
-						// update symbols
-						lineSymbol.setWidth(zoomLineWidth);
+						// update symbol
+						ILineSymbol line = fillSymbol.getOutline();
+						line.setWidth(zoomLineWidth);
+						fillSymbol.setOutline(line);													
 						
 						// save current colors
-						IColor saveLineColor = lineSymbol.getColor();
+						IColor saveLineColor = fillSymbol.getColor();
 						IColor saveTextColor = textSymbol.getColor();
 						
 						// get owning area
@@ -156,10 +157,14 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 								// cast to ISearchIf
 								ISearchIf search = (ISearchIf)assignment;
 								// get line symbol
-								lineSymbol = (SimpleLineSymbol)symbols.get(search.getSubType());
+								fillSymbol = symbols.get(search.getSubType());
+								// update symbol
+								line = fillSymbol.getOutline();
+								line.setWidth(zoomLineWidth);
+								line.setColor(color);
+								fillSymbol.setOutline(line);													
+								// get text
 								text = feature.getCaption();
-								// update line color
-								lineSymbol.setColor(color);
 							} 
 						}
 												
@@ -167,40 +172,43 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 						if(isEnabled) {
 							// is selected
 	 	 					if (feature.isSelected()){
-								lineSymbol.setColor(selectionColor);
+								line = fillSymbol.getOutline();
+								line.setColor(selectionColor);
+								fillSymbol.setOutline(line);													
 								textSymbol.setColor(selectionColor);
 	 	 					}
 	 	 					
 						}
 						else {
 							// disable all features
-							lineSymbol.setColor(disabledColor);
+							line = fillSymbol.getOutline();
+							line.setColor(disabledColor);
+							fillSymbol.setOutline(line);													
 							textSymbol.setColor(disabledColor);
 						}
 						
-						// draw on display
+						// draw route						
 						if (geom instanceof Polyline) {
-							String layout = ((IRouteIf)feature.getMsoObject()).getGeodata().getLayout();
-							Hashtable params = getParams(layout);
-							boolean isPolygon = Boolean.valueOf((String)params.get("isPolygon"));
-							Polyline polyline = (Polyline)((Polyline)geom).esri_clone();
-							if(isPolygon) {
-								// closing
-								polyline.addPoint(polyline.getFromPoint(), null, null);
-							}
-							display.setSymbol(lineSymbol);
-							display.drawPolyline(polyline);
-							if (text != null && isTextShown) {
-								display.setSymbol(textSymbol);
-								if(isPolygon)
-									display.drawText(MapUtil.getPolygon(polyline).getCentroid(), text);
-								else
-									display.drawText(geom, text);									
-							}
+							display.setSymbol((SimpleLineSymbol)fillSymbol.getOutline());							
+							display.drawPolyline(geom);
+						}
+						else {
+							display.setSymbol(fillSymbol);							
+							display.drawPolygon(geom);
+						}
+						// draw text?
+						if (text != null && isTextShown) {
+							display.setSymbol(textSymbol);
+							if (geom instanceof Polyline)
+								display.drawText(geom, text);									
+							else
+								display.drawText(MapUtil.getCenter(geom.getEnvelope()), text);
 						}
 						
-						// restore state
-						lineSymbol.setColor(saveLineColor);
+						// restore states
+						line = fillSymbol.getOutline();
+						line.setColor(saveLineColor);
+						fillSymbol.setOutline(line);													
 						textSymbol.setColor(saveTextColor);
 					}
 					feature.setDirty(false);
@@ -212,18 +220,6 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 		}
 	}
 
-	private Hashtable getParams(String paramString) {
-		Hashtable<String, String> params = new Hashtable<String, String>();
-		StringTokenizer st1 = new StringTokenizer(paramString, "&");
-		while(st1.hasMoreTokens()) {
-			StringTokenizer st2 = new StringTokenizer(st1.nextToken(), "=");
-			String name  = st2.nextToken();
-			String value =  st2.nextToken();
-			params.put(name, value);
-		}
-		return params;
-	}		
-	
 	private void createSymbols() {
 		try {
 
@@ -246,27 +242,28 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 			finishedColor = new RgbColor();
 			finishedColor.setGreen(155);
 			
-			SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
-			lineSymbol.setStyle(esriSimpleLineStyle.esriSLSDash);
-			lineSymbol.setWidth(LINE_WIDTH);
-			lineSymbol.setColor(plannedColor);
+			// create default symbol
+			defaultSymbol = (SimpleFillSymbol)MapUtil.getFillSymbol(plannedColor, esriSimpleFillStyle.esriSFSNull, esriSimpleLineStyle.esriSLSSolid);
+			ILineSymbol line = defaultSymbol.getOutline();
+			line.setWidth(LINE_WIDTH);
+			defaultSymbol.setOutline(line);
+			
+			// create subtype symbol
+			SimpleFillSymbol fillSymbol = (SimpleFillSymbol)defaultSymbol.esri_clone();
 
-			symbols.put(ISearchIf.SearchSubType.LINE, lineSymbol);
-			symbols.put(ISearchIf.SearchSubType.PATROL, lineSymbol);
-			symbols.put(ISearchIf.SearchSubType.URBAN, lineSymbol);
-			symbols.put(ISearchIf.SearchSubType.SHORELINE, lineSymbol);
-			symbols.put(ISearchIf.SearchSubType.MARINE, lineSymbol);
-			symbols.put(ISearchIf.SearchSubType.AIR, lineSymbol);
-			symbols.put(ISearchIf.SearchSubType.DOG, lineSymbol);
+			// add to symbols
+			symbols.put(ISearchIf.SearchSubType.LINE, fillSymbol);
+			symbols.put(ISearchIf.SearchSubType.PATROL, fillSymbol);
+			symbols.put(ISearchIf.SearchSubType.URBAN, fillSymbol);
+			symbols.put(ISearchIf.SearchSubType.SHORELINE, fillSymbol);
+			symbols.put(ISearchIf.SearchSubType.MARINE, fillSymbol);
+			symbols.put(ISearchIf.SearchSubType.AIR, fillSymbol);
+			symbols.put(ISearchIf.SearchSubType.DOG, fillSymbol);
 
 			textSymbol = new TextSymbol();
 			textSymbol.setYOffset(5);
 			textSymbol.getFont().setName("Arial");
 
-			defaultLineSymbol = new SimpleLineSymbol();
-			defaultLineSymbol.setWidth(LINE_WIDTH);
-			defaultLineSymbol.setColor(plannedColor);
-			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

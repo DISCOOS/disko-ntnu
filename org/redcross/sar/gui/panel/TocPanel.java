@@ -53,7 +53,7 @@ public class TocPanel extends DefaultPanel {
 	public TocPanel() {
 		
 		// forward
-		super("Vis kartlag");
+		super("Vis kartlag",true,true,ButtonSize.SMALL);
 		
 		// prepare
 		layers = new HashMap<String,ILayer>();

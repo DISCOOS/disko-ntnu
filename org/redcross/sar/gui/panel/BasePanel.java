@@ -18,11 +18,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public class BasePanel extends AbstractPanel {
 

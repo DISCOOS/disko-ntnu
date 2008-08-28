@@ -96,13 +96,14 @@ public class DeleteTaskDialog extends DefaultDialog
 							task = (ITaskIf)msoObj;
 						}						
 						// update
-						super.setMsoObject(task);
+						msoObject = task;
 
 						// resume changes
 						setChangeable(true);
 						
 						// update
-						setDirty(false);
+						setDirty(false,false);
+						update();
 												
 					}	
 					

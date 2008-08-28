@@ -16,7 +16,6 @@ import javax.swing.JScrollPane;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
@@ -31,6 +30,7 @@ import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 
@@ -80,6 +80,9 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 		// hide header and borders
 		setHeaderVisible(false);
 		setBorderVisible(false);
+				
+		// add empty border
+		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
 		// hide me
 		setVisible(false);
@@ -87,16 +90,11 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 		// hide map
         MessageLogPanel.hideMap();		
         
-		// turn off vertical scrollbar
-		setScrollBarPolicies(
-				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		// no scrollbars
+		setNotScrollBars();
 		
 		// set layout
 		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
-		
-		// add empty border
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
 		// add components (BorderLayout is default)
 		addBodyChild(getUnitsPanel());
@@ -652,16 +650,18 @@ public class MessagePositionPanel extends BasePanel implements IEditMessageCompo
 	public void setMapTool()
 	{
 		IDiskoMap map = m_wp.getMap();
-		try {
-			map.setActiveTool(m_tool,0);
-		}
-		catch (AutomationException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
+		if(map.getActiveTool()!=m_tool) {
+			try {
+				map.setActiveTool(m_tool,0);
+			}
+			catch (AutomationException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	

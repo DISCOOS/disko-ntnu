@@ -66,7 +66,7 @@ public class DefaultToolPanel extends BaseToolPanel {
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
-				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.NORMAL);
+				cancelButton = DiskoButtonFactory.createButton("GENERAL.CANCEL",ButtonSize.SMALL);
 				cancelIcon = new DiskoIcon(cancelButton.getIcon(),Color.RED,0.4f);
 				cancelIcon.setMarked(false);
 				cancelButton.setIcon(cancelIcon);
@@ -80,7 +80,7 @@ public class DefaultToolPanel extends BaseToolPanel {
 	private JButton getFinishButton() {
 		if (finishButton == null) {
 			try {
-				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.NORMAL);
+				finishButton = DiskoButtonFactory.createButton("GENERAL.FINISH",ButtonSize.SMALL);
 				finishIcon = new DiskoIcon(finishButton.getIcon(),Color.GREEN,0.4f);
 				finishIcon.setMarked(false);
 				finishButton.setIcon(finishIcon);

@@ -48,7 +48,7 @@ public class ScalePanel extends DefaultPanel {
 	public ScalePanel() {
 
 		// forward
-		super("Sett skala",false,true);
+		super("Sett skala",false,true,ButtonSize.SMALL);
 		
 		// prepare
 		m_group = new ButtonGroup();

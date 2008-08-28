@@ -1,7 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -9,20 +8,15 @@ import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -36,94 +30,111 @@ public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
 {
 	private static final long serialVersionUID = 1L;
 
+	private BasePanel m_textPanel;
+	
 	private JTextArea m_textArea;
-	private JPanel m_actionsPanel = null;
-	private JButton m_cancelButton;
-	private JButton m_okButton;
+	
+	private JPanel m_actionsPanel;
+	private AbstractButton m_cancelButton;
+	private AbstractButton m_okButton;
 
 	/**
 	 * @param wp Message log work process
 	 */
 	public TextPanel(IDiskoWpMessageLog wp)
 	{
+		// forward
+		super(ButtonSize.SMALL);
+		
+		// hide header and border
 		setHeaderVisible(false);
-		setScrollBarPolicies(
-				BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED, 
-				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-		JPanel panel = (JPanel)getBodyComponent();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weighty = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		initTextArea(panel,gbc);
-		initButtons(panel,gbc);
-	}
-
-	private void initTextArea(JPanel panel,GridBagConstraints gbc)
-	{
-		gbc.gridheight = 2;
-		gbc.weightx = 1.0;
-		
-		m_textArea = new JTextArea();
-		m_textArea.setLineWrap(true);
-		m_textArea.setWrapStyleWord(true);
-		m_textArea.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// is enter hit without ctrl down?
-				if(e.getKeyCode()==KeyEvent.VK_ENTER && !e.isControlDown()) {
-					// consume event
-					e.consume();
-					// forward
-					finish();
-				}
-			}
-		});
-		m_textArea.getDocument().addDocumentListener(new DocumentListener() {
-
-			@Override
-			public void changedUpdate(DocumentEvent e) { change(); }
-			@Override
-			public void insertUpdate(DocumentEvent e) { change(); }
-			@Override
-			public void removeUpdate(DocumentEvent e) { change(); }
-			
-			private void change() {
-				if(!isChangeable()) return;
-				setDirty(true);
-			}
-			
-		});
-		
-		m_textArea.setText("");
-		panel.add(m_textArea,gbc);
-	}
-
-	private void initButtons(JPanel panel,GridBagConstraints gbc)
-	{
-		gbc.gridheight = 1;
-		gbc.gridx++;
-		gbc.weightx = 0.0;
-		
-		// create panel
-		m_actionsPanel = new JPanel();
-		
-		// set layout manager on y-axis
-		m_actionsPanel.setLayout(new BoxLayout(m_actionsPanel,BoxLayout.Y_AXIS));
-		
-		// add buttons
-		m_cancelButton = (JButton)getButton("cancel");
-		m_actionsPanel.add(m_cancelButton);
-		
-		m_okButton = (JButton)getButton("finish");
-		m_actionsPanel.add(m_okButton);
-
-		m_actionsPanel.add(Box.createVerticalGlue());
-		
-		panel.add(m_actionsPanel,gbc);
+		setBorderVisible(false);
 				
+		// add empty border
+		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		
+		// disable scrolling
+		setNotScrollBars();
+		
+		// set layout
+		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
+		
+		// add components (BorderLayout is default)
+		addBodyChild(getTextPanel());
+		addBodyChild(Box.createHorizontalStrut(5));
+		addBodyChild(getActionsPanel());		
+		
+	}
+
+	private BasePanel getTextPanel()
+	{
+		if(m_textPanel == null) {
+			m_textPanel = new BasePanel("Meldingstekst",ButtonSize.SMALL);
+			m_textPanel.setBodyComponent(getTextArea());
+		}
+		return m_textPanel;
+	}
+	
+	private JTextArea getTextArea()
+	{
+		if(m_textArea ==null) {
+			m_textArea = new JTextArea();
+			m_textArea.setLineWrap(true);
+			m_textArea.setWrapStyleWord(true);
+			m_textArea.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					// is enter hit without ctrl down?
+					if(e.getKeyCode()==KeyEvent.VK_ENTER && !e.isControlDown()) {
+						// consume event
+						e.consume();
+						// forward
+						finish();
+					}
+				}
+			});
+			m_textArea.getDocument().addDocumentListener(new DocumentListener() {
+	
+				@Override
+				public void changedUpdate(DocumentEvent e) { change(); }
+				@Override
+				public void insertUpdate(DocumentEvent e) { change(); }
+				@Override
+				public void removeUpdate(DocumentEvent e) { change(); }
+				
+				private void change() {
+					if(!isChangeable()) return;
+					setDirty(true);
+				}
+				
+			});
+			
+			m_textArea.setText("");
+		}
+		return m_textArea;
+	}
+
+	private JPanel getActionsPanel()
+	{
+		if(m_actionsPanel == null) {
+			
+			// create panel
+			m_actionsPanel = new JPanel();
+			
+			// set layout manager on y-axis
+			m_actionsPanel.setLayout(new BoxLayout(m_actionsPanel,BoxLayout.Y_AXIS));
+			
+			// get buttons
+			m_cancelButton = getButton("cancel");
+			m_okButton = getButton("finish");
+			
+			// add to actions
+			m_actionsPanel.add(m_cancelButton);			
+			m_actionsPanel.add(m_okButton);	
+			m_actionsPanel.add(Box.createVerticalGlue());
+			
+		}
+		return m_actionsPanel;
 	}
 
 	public boolean cancel() {
@@ -205,8 +216,8 @@ public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
 	public void showComponent()
 	{
 		this.setVisible(true);
-		m_textArea.requestFocus();
 		setDirty(false);
+		m_textArea.requestFocusInWindow();
 	}
 
 	/**

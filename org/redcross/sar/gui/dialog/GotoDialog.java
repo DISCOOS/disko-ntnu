@@ -4,7 +4,6 @@
 package org.redcross.sar.gui.dialog;
 
 import java.awt.Frame;
-import java.io.IOException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.GotoPanel;

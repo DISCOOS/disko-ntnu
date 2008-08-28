@@ -67,7 +67,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 		if(isNavBarSetupNeeded()) {
 			// get tool set 
 	        List<Enum<?>> myButtons = new ArrayList<Enum<?>>();	  
-	        myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+	        myButtons.add(DiskoToolType.SELECT_TOOL);
 	        myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
 	        myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
 	        myButtons.add(DiskoToolType.PAN_TOOL);

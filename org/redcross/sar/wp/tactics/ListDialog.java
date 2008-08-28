@@ -71,7 +71,7 @@ public class ListDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setPreferredSize(new Dimension(400, 600));
+            this.setPreferredSize(new Dimension(400, 400));
             this.setContentPane(getContentPanel());
 			this.pack();
 		}

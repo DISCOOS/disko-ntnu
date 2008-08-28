@@ -3,10 +3,10 @@ package org.redcross.sar.map.command;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import com.esri.arcgis.systemUI.ICommand;
 

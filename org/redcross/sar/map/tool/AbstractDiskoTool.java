@@ -11,8 +11,6 @@ import com.esri.arcgis.geometry.esriTransformDirection;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.DiskoMap;
@@ -21,6 +19,8 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.AbstractDiskoWork;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
-import javax.swing.SwingUtilities;
 
 public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	

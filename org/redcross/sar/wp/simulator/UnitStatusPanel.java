@@ -13,8 +13,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
-import org.redcross.sar.event.IDiskoWorkListener;
 import org.redcross.sar.gui.CompassPanel;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
@@ -32,6 +30,8 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.wp.IDiskoWpModule;
 

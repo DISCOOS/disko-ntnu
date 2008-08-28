@@ -5,7 +5,9 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
@@ -17,6 +19,9 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.DrawEvent;
+import org.redcross.sar.map.event.IDrawListenerIf;
+import org.redcross.sar.map.event.DrawEvent.EventType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -92,7 +97,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	private boolean doSnapTo = false;			// true:=force a snap operation on active draw geometry
 	private boolean isBatchUpdate = true;		// true:=a batch is executing, this inhibit setGeometries 
 	private boolean isMouseOverIcon = false;	// true:=mouse is over icon
-	private boolean isSnapToMode = false;		// true:=iff snapping is available, snapping is enabled every time the tool is activated
+	private boolean isSnapToMode = false;		// true:=if snapping is available, snapping is enabled every time the tool is activated
 
 	
 	// protected flags
@@ -145,6 +150,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 
 	// elements
 	protected DrawFrame drawFrame = null;	
+	
+	// listeners
+	protected List<IDrawListenerIf> listeners = null;	
 	
 	/**
 	 * Constructs the DrawTool
@@ -228,6 +236,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// create map control adapter
 		mapAdapter = new MapControlAdapter();
 		
+		// create lists
+		listeners = new ArrayList<IDrawListenerIf>();
+		
 	}
 
 	/* ==================================================
@@ -261,6 +272,11 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				this.geoPoint = p;				
 				// forward
 				setDirty(isDirty);
+				// forward?
+				if (!prepareDrawFrame() && isGeometriesDrawn())
+					refresh();
+				
+				/*
 				// update frame later?
 				if(isShowDrawFrame()) {
 					SwingUtilities.invokeLater(new Runnable() {
@@ -279,6 +295,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						}
 					});
 				}
+				*/
 				// finished
 				return true;
 			}
@@ -1520,7 +1537,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				e.printStackTrace();
 			}
 			// apply any change
-			afterChange(true);
+			// afterChange(true);
 		}
 		// reset work flag
 		setIsNotWorking();
@@ -1539,15 +1556,17 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}
 
 	private void afterChange(boolean success) {
-		// was begin operation successfull?
+		// was operation successful?
 		if(success) {
 			try {				
 				// draw the geometries on map 
-				refresh();				
+				refresh();
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
+			// notify
+			fireOnWorkChange(this, msoObject);
 		}
 		// reset working flag
 		setIsNotWorking();		
@@ -1564,7 +1583,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}
 	
 	private void afterCancel(boolean success) {
-		// was cancel operation successfull?
+		// was cancel operation successful?
 		if(success) {
 			// reset tool
 			reset();
@@ -1584,10 +1603,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	private boolean beforeFinish() {
 		// valid operation?
 		if(!isActive || !isDrawing || isWorking()) return false;
-		// check for valid change?
-		if(!FeatureType.FEATURE_POINT.equals(featureType)) {
-			// TODO:
-		}
 		// set working flag
 		setIsWorking();
 		// valid
@@ -1646,6 +1661,32 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// failure
 		return null;
 	}	
+	
+	/* ==================================================
+	 * IDrawListenerIf
+	 * ==================================================
+	 */
+	
+	public boolean addDrawListener(IDrawListenerIf listener) {
+		if(!listeners.contains(listener)) {
+			return listeners.add(listener); 
+		}
+		return false;
+	}
+	
+	public boolean removeDrawListener(IDrawListenerIf listener) {
+		if(listeners.contains(listener)) {
+			return listeners.remove(listener); 
+		}
+		return false;
+	}
+	
+	private void fireOnDraw(EventType type, int flags) {
+		DrawEvent e = new DrawEvent(this,type,flags);
+		for(IDrawListenerIf listener : listeners) {
+			listener.onAction(e);
+		}
+	}
 	
 	/* ==================================================
 	 * Inner classes

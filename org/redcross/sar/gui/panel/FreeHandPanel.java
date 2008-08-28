@@ -214,7 +214,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	private JButton getSnapToButton() {
 		if (snapToButton == null) {
 			try {
-				snapToButton = DiskoButtonFactory.createButton("MAP.SNAPTO",ButtonSize.NORMAL);
+				snapToButton = DiskoButtonFactory.createButton("MAP.SNAPTO",ButtonSize.SMALL);
 				snapToButton.setActionCommand("snapto");
 				snapToButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {

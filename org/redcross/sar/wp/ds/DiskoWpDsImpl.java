@@ -103,7 +103,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
 		myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
 		myButtons.add(DiskoToolType.PAN_TOOL);
-		myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+		myButtons.add(DiskoToolType.SELECT_TOOL);
 		myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
 		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
 		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);

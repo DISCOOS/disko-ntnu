@@ -8,8 +8,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -489,19 +491,26 @@ public class MapUtil {
 		return polyline;
 	}
 	
+	public static Polygon getPolygon(IPoint p, double size) 
+		throws IOException, AutomationException {
+		// get extent
+		IEnvelope extent = getEnvelope(p,size);		
+		// create polygon
+		Polygon polygon = new Polygon();
+		polygon.setSpatialReferenceByRef(p.getSpatialReference());
+		polygon.setRectangle(extent);
+		polygon.simplify();
+		return polygon;
+	}
 	public static Polygon getPolygon(Polyline polyline) 
 		throws IOException, AutomationException {
-		// clone
-		polyline = (Polyline)polyline.esri_clone();
-		// closing
-		polyline.addPoint(polyline.getFromPoint(), null, null);
 		// create polygon
 		Polygon polygon = new Polygon();
 		polygon.setSpatialReferenceByRef(polyline.getSpatialReference());
 		for (int i = 0; i < polyline.getPointCount(); i++) {
 			polygon.addPoint(polyline.getPoint(i), null, null);
 		}
-		//polygon.simplify();
+		polygon.simplify();
 		return polygon;
 	}
 	
@@ -1669,7 +1678,7 @@ public class MapUtil {
 		symbol.setStyle(fill);
 
 		// set outline symbol in fill symbol
-		symbol.setOutline(getLineSymbol(outline));
+		symbol.setOutline(getLineSymbol(color,outline));
 		
 		// finished
 		return symbol;
@@ -2100,15 +2109,18 @@ public class MapUtil {
 	}
 	
 	public static IFeatureCursor search(IFeatureClass fc, IPoint p, double size) throws UnknownHostException, IOException {
-		return search(fc,p,size,esriSpatialRelEnum.esriSpatialRelOverlaps);
+		return search(fc,p,size,esriSpatialRelEnum.esriSpatialRelIntersects);
 	}
 
 	public static IFeatureCursor search(IFeatureClass fc, IPoint p, double size, int relation) throws UnknownHostException, IOException {
-		return search(fc,MapUtil.getEnvelope(p, size),relation);
+		ISpatialFilter filter = new SpatialFilter();
+		filter.setGeometryByRef(MapUtil.getPolygon(p, size));
+		filter.setSpatialRel(relation);
+		return fc.search(filter, false);
 	}
 	
 	public static IFeatureCursor search(IFeatureClass fc, IEnvelope extent) throws UnknownHostException, IOException {
-		return search(fc,extent,esriSpatialRelEnum.esriSpatialRelWithin);
+		return search(fc,extent,esriSpatialRelEnum.esriSpatialRelContains);
 	}
 	
 	public static IFeatureCursor search(IFeatureClass fc, IEnvelope extent, int relation) throws UnknownHostException, IOException {
@@ -2118,81 +2130,92 @@ public class MapUtil {
 		return fc.search(filter, false);
 	}
 
-	public static Object[] selectMsoFeatureFromPoint(IPoint p, IDiskoMap map, double min, double max) throws Exception  {
+	public static List<Object[]> selectMsoFeaturesFromPoint(IPoint p, IDiskoMap map, double min, double max) throws Exception  {
 		
-		// initialize
-		IMsoFeature ff = null;
-		IMsoFeatureLayer fl = null;
+		// prepare result
+		List<Object[]> list = new ArrayList<Object[]>();		
 		
 		// get elements
-		List layers = map.getMsoLayers();
+		List<IMsoFeatureLayer> layers = map.getMsoLayers();
 				
 		// search for feature
 		for (int i = 0; i < layers.size(); i++) {
 			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
 			if(l.isSelectable() && l.isVisible()) {
 				// get features in search extent
-				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), p,max);
+				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), p, max);
 				// select features within {min, max} distance of point p
 				Object[] found = selectFeature(c,p,min,max);
-				// get feature
-				IMsoFeature f = (IMsoFeature)found[0];
-				// update minimum length
-				min = (Double)found[1];
 				// found?
-				if(f!=null) {
-					ff = f;
-					fl = l;
+				if(found!=null) {				
+					// get feature
+					IMsoFeature f = (IMsoFeature)found[0];
+					// update minimum length
+					min = (Double)found[1];
+					// found?
+					if(f!=null) {
+						list.add(new Object[]{f,l,min});
+					}
 				}
 			}
 		}
 		
-		// anything found?
-		if(ff!=null && fl!=null)
-			return new Object[]{ff,fl,min};
-		else 
-			return null;
+		// finished
+		return list;
 		
 	}	
 	
-	public static Object[] selectMsoFeatureFromEnvelope(IEnvelope extent, IDiskoMap map, double min, double max, int relation) throws Exception  {
+	public static List<Object[]> selectMsoFeaturesFromEnvelope(IEnvelope extent, IPoint p, IDiskoMap map, double min, double max, int relation) throws Exception  {
 		
-		// initialize
-		IMsoFeature ff = null;
-		IMsoFeatureLayer fl = null;
-		
-		// get center of envelope
-		IPoint p = getCenter(extent);
+		// prepare result
+		List<Object[]> list = new ArrayList<Object[]>();		
 		
 		// get elements
-		List layers = map.getMsoLayers();
+		List<IMsoFeatureLayer> layers = map.getMsoLayers();
 				
 		// search for feature
 		for (int i = 0; i < layers.size(); i++) {
 			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
-			if(l.isSelectable() && l.isVisible()) {
+			if(l.isSelectable() && l.isVisible() && l.isEnabled()) {
 				// get all features within search extent
 				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), extent, relation);
-				// select features within {min, max} distance of point p
-				Object[] found = selectFeature(c,p,min,max);
-				// get feature
-				IMsoFeature f = (IMsoFeature)found[0];
-				// update minimum length
-				min = (Double)found[1];
-				// found?
-				if(f!=null) {
-					ff = f;
-					fl = l;
+				// select features within {min, max} distance of point p?
+				if(!(p==null || p.isEmpty())) {
+					// forward
+					Object[] found = selectFeature(c,p,min,max);
+					// found?
+					if(found!=null) {
+						// get feature
+						IMsoFeature f = (IMsoFeature)found[0];
+						// update minimum length
+						min = (Double)found[1];
+						// found?
+						if(f!=null) {
+							list.add(new Object[]{f,l,min});					
+						}
+					}
+				}
+				else {
+					// add all features found
+					IFeature f = c.nextFeature();
+					// loop over all features in search extent
+					while(f!=null) {
+						// is mso feature?
+						if (f instanceof IMsoFeature) {						
+							// is feature selectable?
+							if(((IMsoFeature)f).isVisible()) {
+								// found
+								list.add(new Object[]{f,l,-1});
+							}
+						}
+						// get next feature
+						f = c.nextFeature();			
+					}
 				}
 			}
 		}		
-		
-		// anything found?
-		if(ff!=null && fl!=null)
-			return new Object[]{ff,fl,min};
-		else 
-			return null;
-		
+		// finished
+		return list;
 	}
 	
 	private static Object[] selectFeature(IFeatureCursor c, IPoint p, double min, double max) throws AutomationException, IOException {
@@ -2203,22 +2226,25 @@ public class MapUtil {
 		// loop over all features in search extent
 		while(f!=null) {
 			// is mso feature?
-			if (f instanceof IMsoFeature) {						
-				// get first minimum distance
-				double d = getMinimumDistance(f,p);
-				// has valid distance?						
-				if(d!=-1) {
-					int shapeType = f.getFeatureType();
-					// save found feature?
-					if((min==-1 || (d<min) || shapeType==esriGeometryType.esriGeometryPoint) && (d<max)) {
-						// initialize
-						min = d;
-						ff = (IMsoFeature)f;							
+			if (f instanceof IMsoFeature) {
+				// is feature selectable?
+				if(((IMsoFeature)f).isVisible()) {
+					// get first minimum distance
+					double d = getMinimumDistance(f,p);
+					// has valid distance?						
+					if(d!=-1) {
+						int shapeType = f.getFeatureType();
+						// save found feature?
+						if((min==-1 || (d<min) || shapeType==esriGeometryType.esriGeometryPoint) && (d<max)) {
+							// initialize
+							min = d;
+							ff = (IMsoFeature)f;							
+						}
 					}
-				}
-				else {
-					// save found feature
-					ff = (IMsoFeature)f;
+					else {
+						// save found feature
+						ff = (IMsoFeature)f;
+					}
 				}
 			}
 			// get next feature
@@ -2260,7 +2286,7 @@ public class MapUtil {
 			else if(geom instanceof IProximityOperator) {
 				// get point
 				IProximityOperator opr = (IProximityOperator)(geom);
-				IProximityOperator p2 =  (IProximityOperator)opr.returnNearestPoint(p, 0);
+				IProximityOperator p2 =  (IProximityOperator)opr.returnNearestPoint(p, esriSegmentExtension.esriExtendEmbedded);
 				min = p2.returnDistance(p);
 			}
 		}
@@ -2291,5 +2317,19 @@ public class MapUtil {
 		return (float)p1.x == (float)p2.x && (float)p1.y == (float)p2.y;
 		
 	}
+	
+	public static Hashtable<String, String> getLayoutParams(String paramString) {
+		Hashtable<String, String> params = new Hashtable<String, String>();
+		StringTokenizer st1 = new StringTokenizer(paramString, "&");
+		while(st1.hasMoreTokens()) {
+			StringTokenizer st2 = new StringTokenizer(st1.nextToken(), "=");
+			String name  = st2.nextToken();
+			String value =  st2.nextToken();
+			params.put(name, value);
+		}
+		return params;
+	}		
+	
+	
 	
 }

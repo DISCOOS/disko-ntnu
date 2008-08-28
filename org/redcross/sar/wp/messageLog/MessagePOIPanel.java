@@ -17,9 +17,9 @@ import javax.swing.JScrollPane;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.event.DiskoWorkEvent;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.POIPanel;
@@ -28,7 +28,6 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.POITool;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
-import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -40,6 +39,7 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
@@ -47,7 +47,7 @@ import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
  * 
  * @author thomasl
  */
-public class MessagePOIPanel extends DefaultPanel implements IEditMessageComponentIf
+public class MessagePOIPanel extends BasePanel implements IEditMessageComponentIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -73,7 +73,7 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	public MessagePOIPanel(IDiskoWpMessageLog wp, POIType[] poiTypes)
 	{
 		// forward
-		super("",false,false);
+		super(ButtonSize.SMALL);
 		
 		// prepare
 		m_wp = wp;
@@ -89,6 +89,9 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		// hide header and borders
 		setHeaderVisible(false);
 		setBorderVisible(false);
+				
+		// add empty border
+		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
 		// hide me
 		setVisible(false);
@@ -96,16 +99,11 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 		// hide map
         MessageLogPanel.hideMap();		
         
-		// turn off vertical scrollbar
-		setScrollBarPolicies(
-				JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		// no scrollbars
+		setNotScrollBars();
 		
 		// set layout
 		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
-		
-		// add empty border
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
 		// add components (BorderLayout is default)
 		addBodyChild(getTypesPanel());
@@ -505,16 +503,18 @@ public class MessagePOIPanel extends DefaultPanel implements IEditMessageCompone
 	public void setMapTool()
 	{
 		IDiskoMap map = m_wp.getMap();
-		try {
-			map.setActiveTool(m_tool,0);
-		}
-		catch (AutomationException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
+		if(map.getActiveTool()!=m_tool) {
+			try {
+				map.setActiveTool(m_tool,0);
+			}
+			catch (AutomationException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 

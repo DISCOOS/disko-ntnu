@@ -668,6 +668,16 @@ public class MsoUtils {
 		return name;
 	}
 	
+	public static String getCompleteMsoObjectName(IMsoObjectIf msoObj, int options) {
+		// try to get area of object
+		IAreaIf area = MsoUtils.getOwningArea(msoObj);
+		if(area!=null && area.getOwningAssignment()!=null) {
+			String name = MsoUtils.getAssignmentName(area.getOwningAssignment(), options);
+			return name += " - " + MsoUtils.getMsoObjectName(msoObj,options);
+		}
+		return MsoUtils.getMsoObjectName(msoObj,options);		
+	}
+	
 	public static String getMsoObjectName(IMsoObjectIf msoObj, int options) {
 		if (msoObj instanceof IOperationAreaIf) 
 			if(options==0)

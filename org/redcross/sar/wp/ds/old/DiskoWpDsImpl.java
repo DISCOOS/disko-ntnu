@@ -56,7 +56,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	        myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
 	        myButtons.add(DiskoCommandType.SCALE_COMMAND);
 	        myButtons.add(DiskoCommandType.TOC_COMMAND);
-	        myButtons.add(DiskoToolType.SELECT_FEATURE_TOOL);
+	        myButtons.add(DiskoToolType.SELECT_TOOL);
 			// forward
 			setupNavBar(myButtons,true);
 		}				
