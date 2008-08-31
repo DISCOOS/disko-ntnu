@@ -17,7 +17,6 @@ import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.Internationalization;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,33 +49,33 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 {
 	private static final long serialVersionUID = 1L;
 
-	protected static IDiskoWpMessageLog m_wpMessageLog = null;
+	protected static IDiskoWpMessageLog m_wpMessageLog;
 
-	protected JPanel m_contentsPanel = null;
+	protected JPanel m_contentsPanel;
 
-	protected JToggleButton m_sendTransportButton = null;
-	protected JButton m_changeSendTransportButton = null;
+	protected JToggleButton m_sendTransportButton;
+	protected JButton m_changeSendTransportButton;
 
-	protected JToggleButton m_getTeamButton = null;
-	protected JButton m_changeGetTeamButton = null;
+	protected JToggleButton m_getTeamButton;
+	protected JButton m_changeGetTeamButton;
 
-	protected JToggleButton m_createAssignmentButton = null;
-	protected JButton m_changeCreateAssignmentButton = null;
+	protected JToggleButton m_createAssignmentButton;
+	protected JButton m_changeCreateAssignmentButton;
 
-	protected JToggleButton m_confirmIntelligenceButton = null;
-	protected JButton m_changeConfirmIntelligenceButton = null;
+	protected JToggleButton m_confirmIntelligenceButton;
+	protected JButton m_changeConfirmIntelligenceButton;
 
-	protected JToggleButton m_findingButton = null;
-	protected JButton m_changeFindingButton = null;
+	protected JToggleButton m_findingButton;
+	protected JButton m_changeFindingButton;
 
-	protected JToggleButton m_generalTaskButton = null;
-	protected JButton m_changeGeneralTaskButton = null;
+	protected JToggleButton m_generalTaskButton;
+	protected JButton m_changeGeneralTaskButton;
 
-	protected List<JToggleButton> m_toggleButtons = null;
+	protected List<JToggleButton> m_toggleButtons;
 
-	protected HashMap<JToggleButton, JButton> m_buttonMap = null;
-	protected HashMap<TaskSubType, JToggleButton> m_typeButtonMap = null;
-	protected HashMap<JToggleButton, TaskSubType> m_buttonTypeMap = null;
+	protected HashMap<JToggleButton, JButton> m_buttonMap;
+	protected HashMap<TaskSubType, JToggleButton> m_typeButtonMap;
+	protected HashMap<JToggleButton, TaskSubType> m_buttonTypeMap;
 
 	protected enum TaskSubType
 	{

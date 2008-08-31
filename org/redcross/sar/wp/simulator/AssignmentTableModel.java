@@ -72,5 +72,4 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 		sort(m_assignmentComparator);
 	}
 
-
 }

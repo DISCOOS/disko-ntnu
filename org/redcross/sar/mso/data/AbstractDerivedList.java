@@ -51,9 +51,9 @@ public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMs
         return MsoListImpl.selectSingleItem(aSelector,getItems());
     }
 
-    static final int mask = MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()
-                | MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()
-                | MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue();
+    static final int mask = MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()
+                | MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()
+                | MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue();
 
 
     public void handleMsoDerivedUpdateEvent(MsoEvent.DerivedUpdate e)

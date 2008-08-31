@@ -11,6 +11,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.MainMenuPanel;
 import org.redcross.sar.gui.panel.SubMenuPanel;
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
@@ -119,7 +120,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             public void handleTick(TickEvent e)
             {
             	try {
-            		if(m_taskTable.getRowCount()>0)
+            		if(m_taskTable!=null && m_taskTable.getRowCount()>0)
             			DiskoWorkPool.getInstance().schedule(new TaskTickWork());
             	}
             	catch(Exception ex) {
@@ -148,7 +149,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     private void initButtons()
     {
 
-		Enum key = TaskActionType.NEW_TASK;
+		Enum<?> key = TaskActionType.NEW_TASK;
 		m_newButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
         m_newButton.addActionListener(new ActionListener()
         {
@@ -235,6 +236,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         JTableHeader tableHeader = m_taskTable.getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
+
 
         JScrollPane tableScrollPane = new JScrollPane(m_taskTable);
         tableScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -330,6 +333,12 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             taskDialog.getTaskPanel().setTask(m_currentTask);
             taskDialog.setVisible(true);
         }
+        else {
+        	if(m_taskTable.getRowCount()==0)
+        		Utils.showWarning("Begrensning", "Du må først opprette en oppgave");
+        	else
+        		Utils.showWarning("Begrensning", "Du må først velge en oppgave i listen");
+        }
     }
 
     /**
@@ -351,6 +360,12 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
                 m_deleteTaskDialog.setVisible(true);
             }
         }
+        else {
+        	if(m_taskTable.getRowCount()==0)
+        		Utils.showWarning("Begrensning", "Ingen oppgaver i listen");
+        	else
+        		Utils.showWarning("Begrensning", "Du må først velge en oppgave i listen");
+        }
     }
 
     /**
@@ -365,6 +380,13 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             m_currentTask.setStatus(TaskStatus.FINISHED);
             this.getMsoModel().commit();
         }
+        else {
+        	if(m_taskTable.getRowCount()==0)
+        		Utils.showWarning("Begrensning", "Du må først opprette en oppgave");
+        	else
+        		Utils.showWarning("Begrensning", "Du må først velge en oppgave i listen");
+        }
+        
         hideDialogs();
     }
 

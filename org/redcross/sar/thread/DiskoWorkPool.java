@@ -231,7 +231,7 @@ public class DiskoWorkPool {
 	}
 	
 	public boolean stop(IDiskoWork<?> work) {
-		if(work!=null && work.isLoop()) {
+		if(containsWork(work) && work.isLoop()) {
 			synchronized(m_workers) {			
 				DiskoWorker worker = m_workers.get(work);
 				if(!worker.isCancelled()) {

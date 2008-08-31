@@ -30,7 +30,7 @@ public class DefaultPanel extends BasePanel {
 	
 	public DefaultPanel(String caption) {
 		// forward
-		this(caption,true,true,ButtonSize.NORMAL);
+		this(caption,true,true,ButtonSize.SMALL);
 	}
 	
 	public DefaultPanel(ButtonSize buttonSize) {
@@ -39,7 +39,7 @@ public class DefaultPanel extends BasePanel {
 	}
 	
 	public DefaultPanel(String caption, boolean finish, boolean cancel) {
-		this(caption,finish,cancel,ButtonSize.NORMAL);
+		this(caption,finish,cancel,ButtonSize.SMALL);
 	}
 	
 	public DefaultPanel(String caption, boolean finish, boolean cancel, ButtonSize buttonSize) {

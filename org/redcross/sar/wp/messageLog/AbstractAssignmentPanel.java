@@ -252,9 +252,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     	
     	// add attributes
     	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Assignment",
-    			m_wpMessageLog.getBundleText("AssignmentLabel.text"),150,"<velg oppdrag>",false));
+    			m_wpMessageLog.getBundleText("AssignmentLabel.text"),false,150,25,"<velg oppdrag>"));
     	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Time",
-    			m_wpMessageLog.getBundleText("AssignedTimeLabel.text"),150,"<velg oppdrag>",true));    	
+    			m_wpMessageLog.getBundleText("AssignedTimeLabel.text"),true,150,25,"<velg oppdrag>"));    	
     	m_editAssignmentPanel.setCaptionWidth(100);
 		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Assignment"),560,25);
 		Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Time"),560,25);
@@ -648,13 +648,13 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditMes
     		if(m_selectedPanel.getAttributeCount()==0) {
 	    		// add attributes (this should only occur once)
     			m_selectedPanel.addAttribute(new TextFieldAttribute("Assignment",
-    					m_wpMessageLog.getBundleText("AssignmentLabel.text"),150,
-    					MsoUtils.getAssignmentName(selected, 1),false));
+    					m_wpMessageLog.getBundleText("AssignmentLabel.text"),false,
+    					150,25, MsoUtils.getAssignmentName(selected, 1)));
     			m_selectedPanel.addAttribute(new TextFieldAttribute("Priority",
-    					m_wpMessageLog.getBundleText("PriorityLabel.text"),150,
-    					selected.getPriorityText(),false));
+    					m_wpMessageLog.getBundleText("PriorityLabel.text"),false,
+    					150,25,selected.getPriorityText()));
     			m_selectedPanel.addAttribute(selected.getRemarksAttribute(),
-    					m_wpMessageLog.getBundleText("RemarksLabel.text"),150,false);
+    					m_wpMessageLog.getBundleText("RemarksLabel.text"),false,150,25);
     			m_selectedPanel.setCaptionWidth(100);
     			Utils.setFixedSize((JComponent)m_selectedPanel.getAttribute("Assignment"),360,25);
     			Utils.setFixedSize((JComponent)m_selectedPanel.getAttribute("Priority"),360,25);

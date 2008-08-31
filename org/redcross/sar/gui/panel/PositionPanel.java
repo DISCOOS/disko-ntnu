@@ -37,6 +37,7 @@ import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
@@ -132,7 +133,7 @@ public class PositionPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.setGotoButtonVisible(false);
+			//gotoPanel.setGotoButtonVisible(false);
 			gotoPanel.addDiskoWorkListener(new IDiskoWorkListener() {
 
 				public void onWorkPerformed(DiskoWorkEvent e) {
@@ -555,6 +556,12 @@ public class PositionPanel extends DefaultToolPanel {
 			
 			// update captions
 			getUnitsPanel().setCaptionText(isSingleUnitOnly ? "Kan ikke endres" : "Velg enhet");
+			
+			// initialize map?
+			if(getGotoPanel().getMap()==null) getGotoPanel().setMap(getTool().getMap());
+			// initialize point?
+			IPoint p = getGotoPanel().getPoint();
+			if(p==null || p.isEmpty()) getGotoPanel().setPoint();
 			
 			
 		} catch (Exception e) {

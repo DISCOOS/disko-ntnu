@@ -15,10 +15,12 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
  */
 public class MsoEvent extends java.util.EventObject
 {
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * Event type with maskValue values.
      */
-    public enum EventType
+    public enum MsoEventType
     {
         EMPTY_EVENT(0),
         ADDED_REFERENCE_EVENT(1),
@@ -37,7 +39,7 @@ public class MsoEvent extends java.util.EventObject
          *
          * @param value Value related to member.
          */
-        EventType(int value)
+        MsoEventType(int value)
         {
             m_maskValue = value;
         }
@@ -56,10 +58,10 @@ public class MsoEvent extends java.util.EventObject
     private int m_eventTypeMask;
 
     /**
-     * Create event for a specific {@link org.redcross.sar.mso.event.MsoEvent.EventType}
+     * Create event for a specific {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType}
      *
      * @param aSource         The source object
-     * @param anEventTypeMask See {@link org.redcross.sar.mso.event.MsoEvent.EventType}
+     * @param anEventTypeMask See {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType}
      */
     public MsoEvent(Object aSource, int anEventTypeMask)
     {
@@ -70,7 +72,7 @@ public class MsoEvent extends java.util.EventObject
     /**
      * Get EventImpl type maskValue
      *
-     * @return The sum of {@link org.redcross.sar.mso.event.MsoEvent.EventType} values for this event.
+     * @return The sum of {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType} values for this event.
      */
     public int getEventTypeMask()
     {
@@ -79,17 +81,17 @@ public class MsoEvent extends java.util.EventObject
 
     public boolean isDeleteObjectEvent()
     {
-    	return (m_eventTypeMask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+    	return (m_eventTypeMask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
     }
 
     public boolean isCreateObjectEvent()
     {
-    	return (m_eventTypeMask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+    	return (m_eventTypeMask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
     }
 
     public boolean isModifyObjectEvent()
     {
-    	return (m_eventTypeMask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+    	return (m_eventTypeMask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
     }
 
     public boolean isChangeReferenceEvent()
@@ -101,30 +103,30 @@ public class MsoEvent extends java.util.EventObject
                 EventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
         */
     	/**/
-    	return (m_eventTypeMask & EventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0 
-		|| (m_eventTypeMask & EventType.REMOVED_REFERENCE_EVENT.maskValue())!=0
-		||  (m_eventTypeMask & EventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
+    	return (m_eventTypeMask & MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0 
+		|| (m_eventTypeMask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())!=0
+		||  (m_eventTypeMask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
     	/**/
     }
 
     public boolean isModifiedReferenceEvent()
     {
-    	return (m_eventTypeMask & EventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0;
+    	return (m_eventTypeMask & MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0;
     }
     
     public boolean isRemovedReferenceEvent()
     {
-    	return (m_eventTypeMask & EventType.REMOVED_REFERENCE_EVENT.maskValue())!=0;
+    	return (m_eventTypeMask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())!=0;
     }
     
     public boolean isAddedReferenceEvent()
     {
-    	return (m_eventTypeMask & EventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
+    	return (m_eventTypeMask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
     }
 
     public boolean isClearAllEvent()
     {
-    	return (m_eventTypeMask & EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+    	return (m_eventTypeMask & MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
     }
     
     public UpdateMode getUpdateMode() {
@@ -137,15 +139,15 @@ public class MsoEvent extends java.util.EventObject
     	// get union mask
 		int mask = 0;
 		if(e.isDeleteObjectEvent() || isDeleteObjectEvent())
-			mask += EventType.DELETED_OBJECT_EVENT.maskValue();
+			mask += MsoEventType.DELETED_OBJECT_EVENT.maskValue();
 		if(e.isModifyObjectEvent() || isModifyObjectEvent())
-			mask += EventType.MODIFIED_DATA_EVENT.maskValue();
+			mask += MsoEventType.MODIFIED_DATA_EVENT.maskValue();
 		if(e.isAddedReferenceEvent() || isAddedReferenceEvent())
-			mask += EventType.ADDED_REFERENCE_EVENT.maskValue();
+			mask += MsoEventType.ADDED_REFERENCE_EVENT.maskValue();
 		if(e.isModifiedReferenceEvent() || isModifiedReferenceEvent())
-			mask += EventType.MODIFIED_REFERENCE_EVENT.maskValue();
+			mask += MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue();
 		if(e.isRemovedReferenceEvent() || isRemovedReferenceEvent())
-			mask += EventType.REMOVED_REFERENCE_EVENT.maskValue();
+			mask += MsoEventType.REMOVED_REFERENCE_EVENT.maskValue();
 		// changed?
 		if(m_eventTypeMask!=mask) {
 			m_eventTypeMask = mask;
@@ -161,7 +163,9 @@ public class MsoEvent extends java.util.EventObject
      */
     public static class Update extends MsoEvent
     {
-        public Update(Object aSource, int anEventTypeMask)
+		private static final long serialVersionUID = 1L;
+
+		public Update(Object aSource, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
         }
@@ -172,6 +176,8 @@ public class MsoEvent extends java.util.EventObject
      */
     public static class Commit extends MsoEvent
     {
+		private static final long serialVersionUID = 1L;
+		
         public Commit(ICommitWrapperIf aSource, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
@@ -183,7 +189,9 @@ public class MsoEvent extends java.util.EventObject
      */
     public static class DerivedUpdate extends MsoEvent
     {
-        public DerivedUpdate(IMsoObjectIf aSource, int anEventTypeMask)
+		private static final long serialVersionUID = 1L;
+
+		public DerivedUpdate(IMsoObjectIf aSource, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
         }

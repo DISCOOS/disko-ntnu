@@ -296,10 +296,10 @@ public class MapUtil {
 	public static Polygon getEsriPolygon(org.redcross.sar.util.mso.Polygon msoPolygon, 
 			ISpatialReference srs) throws IOException, AutomationException {
 		Polygon esriPolygon = new Polygon();
-		Collection vertices = msoPolygon.getVertices();
-		Iterator iter = vertices.iterator();
+		Collection<GeoPos> vertices = msoPolygon.getVertices();
+		Iterator<GeoPos> iter = vertices.iterator();
 		while(iter.hasNext()) {
-			GeoPos pos = (GeoPos)iter.next();
+			GeoPos pos = iter.next();
 			Point2D.Double pnt2D = pos.getPosition();
 			Point p = new Point();
 			p.setX(pnt2D.getX());

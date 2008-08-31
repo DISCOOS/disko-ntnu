@@ -163,7 +163,6 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
     	}
         if(m_suspendClientUpdate==0)
         	m_msoManager.resumeClientUpdate();
-        //System.out.println("resumeClientUpdate:="+m_suspendClientUpdate);
     }
 
     public synchronized boolean isUpdateSuspended()

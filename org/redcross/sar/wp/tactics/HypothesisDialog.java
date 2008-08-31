@@ -33,7 +33,6 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.model.HypothesisListModel;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -234,7 +233,7 @@ public class HypothesisDialog extends DefaultDialog {
 					
 					
 				};
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setInterests(msoModel,getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setBodyComponent(getHypothesisPanel());
@@ -295,7 +294,9 @@ public class HypothesisDialog extends DefaultDialog {
 	private JButton getCreateButton() {
 		if (createButton == null) {
 			try {
-				createButton = DiskoButtonFactory.createButton("GENERAL.STAR", ButtonSize.NORMAL);
+				createButton = DiskoButtonFactory.createButton(
+						"GENERAL.STAR", 
+						getContentPanel().getButtonSize());
 				createButton.addActionListener(new ActionListener(){
 
 					public void actionPerformed(ActionEvent e) {
@@ -318,7 +319,9 @@ public class HypothesisDialog extends DefaultDialog {
 	private JButton getDeleteButton() {
 		if (deleteButton == null) {
 			try {
-				deleteButton = DiskoButtonFactory.createButton("GENERAL.DELETE", ButtonSize.NORMAL);
+				deleteButton = DiskoButtonFactory.createButton(
+						"GENERAL.DELETE", 
+						getContentPanel().getButtonSize());
 				deleteButton.addActionListener(new ActionListener(){
 
 					public void actionPerformed(ActionEvent e) {
@@ -513,7 +516,7 @@ public class HypothesisDialog extends DefaultDialog {
 	 */
 	private ComboAttribute getPriorityCombo() {
 		if (priorityCombo == null) {
-			priorityCombo = new ComboAttribute("priority", "Prioritet", 50, null, false);
+			priorityCombo = new ComboAttribute("priority", "Prioritet", false, 50, 25, null);
 			DefaultComboBoxModel model = new DefaultComboBoxModel();
 			for (int i = 1; i < 6; i++) {
 				model.addElement(new Integer(i));
@@ -532,7 +535,7 @@ public class HypothesisDialog extends DefaultDialog {
 	private ComboAttribute getStatusCombo() {
 		if (statusCombo == null) {
 			try {
-				statusCombo = new ComboAttribute("status", "Status", 50, null, false);
+				statusCombo = new ComboAttribute("status", "Status", false, 50, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				HypothesisStatus[] values = HypothesisStatus.values();
 				for (int i = 0; i < values.length; i++) {
@@ -551,7 +554,6 @@ public class HypothesisDialog extends DefaultDialog {
 	
 	private void loadHypotheses() {
 		if(msoModel.getMsoManager().operationExists()) {		
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 			Collection<IHypothesisIf> c = msoModel.getMsoManager().
 				getCmdPost().getHypothesisListItems();
 			DefaultListModel model = new DefaultListModel();
@@ -584,7 +586,6 @@ public class HypothesisDialog extends DefaultDialog {
 		if(name==null || name.isEmpty()) return null;
 		
 		if(msoModel.getMsoManager().operationExists()) {		
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
 			Collection<IHypothesisIf> c = msoModel.getMsoManager()
 				.getCmdPost().getHypothesisListItems();
 		
@@ -623,8 +624,8 @@ public class HypothesisDialog extends DefaultDialog {
 			// get hypothesis name
 			String name = (h!=null ? DiskoEnumFactory.getText(IMsoManagerIf
 					.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null);
-			getSelectedLabel().setText(h!=null ? "<html><b>" + name + "</b> er valg</html>" : 
-				getHypothesisList().getModel().getSize() == 0 ? "Du må opprette en hypotese" :"Velg en hypotese");
+			getSelectedLabel().setText("<html>" + (h!=null ? "<b>" + name + "</b> er valg" : 
+				getHypothesisList().getModel().getSize() == 0 ? "Du må opprette en hypotese" : "Velg en hypotese")+"</html>");
 			// update all
 			getHypothesisList().setSelectedValue(name, true);
 			setDescription(h!=null ? h.getDescription() : null,true,mso);
@@ -691,10 +692,6 @@ public class HypothesisDialog extends DefaultDialog {
 		}
 	}
 	
-	private HypothesisStatus getStatus()  {
-		return (HypothesisStatus)getStatusCombo().getValue();
-	}
-	
 	private void setStatus(HypothesisStatus status, boolean gui, boolean mso) {
 		IHypothesisIf h = getSelectedHypothesis();
 		// has hypothesis?
@@ -733,16 +730,16 @@ public class HypothesisDialog extends DefaultDialog {
 		// update elements
 		if(area!=null) {
 			// update texts
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON", "48x48"));			
-			getContentPanel().setCaptionText("<html>Velg hypotese for <b>" + 
-					MsoUtils.getSearchAreaName(area).toLowerCase() + "</b></html>");			
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON", "32x32"));			
+			getContentPanel().setCaptionText("Velg hypotese for <b>" + 
+					MsoUtils.getSearchAreaName(area).toLowerCase() + "</b>");			
 			// enable controls
 			getHypothesisList().setEnabled(true);
 			getCreateButton().setEnabled(true);
 			getDeleteButton().setEnabled(true);
 		}
 		else {
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et søkeområde");
 			getSelectedLabel().setText(null);
 			getHypothesisList().setEnabled(false);

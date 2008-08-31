@@ -10,14 +10,9 @@ import java.awt.event.ItemListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 
-import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.renderer.BundleListCellRenderer;
-import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoString;
 
 /**
  * @author kennetgu
@@ -27,25 +22,35 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public ComboAttribute(IAttributeIf<?> attribute, String caption, int width, boolean isEditable) {
-		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
-		// get value from attribute
-		load();		
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */
+	
+	public ComboAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		super(name, caption, isEditable, width, height, value);
+	}
+
+	public ComboAttribute(String name, String caption, boolean isEditable) {
+		super(name, caption, isEditable);
 	}
 	
-	public ComboAttribute(String name, String caption, int width, String value, boolean isEditable) {
-		// forward
-		super(name,caption,width,value,isEditable);
+	public ComboAttribute(MsoString attribute, String caption,
+			boolean isEditable) {
+		super(attribute, caption, isEditable);
 	}
-	
+
+	public ComboAttribute(MsoString attribute, String caption, int width,
+			int height, boolean isEditable) {
+		super(attribute, caption, isEditable, width, height);
+	}
+
 	/*==================================================================
 	 * Public methods
 	 *================================================================== 
 	 */
-	
+
 	public Component getComponent() {
 		if(m_component==null) {
 			JComboBox field = new JComboBox();
@@ -101,11 +106,11 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 		return true;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoString) {
+			if(attribute instanceof MsoString) {
 				// save attribute
 				m_attribute = attribute;
 				// update name

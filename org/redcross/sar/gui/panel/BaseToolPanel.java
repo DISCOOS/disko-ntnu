@@ -7,8 +7,6 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -94,7 +92,7 @@ public class BaseToolPanel extends AbstractToolPanel {
 		add(Box.createVerticalStrut(5));
 		add(getScrollPane());
 		add(Box.createVerticalStrut(5));
-		
+		/*
 		// ensure correct header size
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
@@ -111,7 +109,8 @@ public class BaseToolPanel extends AbstractToolPanel {
 				// forward
 				setFixedSize();	
 			}			
-		});		
+		});
+		*/		
 	}
 
 	/**
@@ -128,17 +127,18 @@ public class BaseToolPanel extends AbstractToolPanel {
 		return m_scrollPane;
 	}
 	
-	
+	/*
 	public void setFixedSize() {
 		// forward
 		getCaptionPanel().onResize();	
 		getActionsPanel().onResize();
 	}
+	*/
 	
 	private HeaderPanel getCaptionPanel() {
 		if (captionPanel == null) {
 			try {
-				captionPanel = new HeaderPanel();	
+				captionPanel = new HeaderPanel("",ButtonSize.SMALL);	
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

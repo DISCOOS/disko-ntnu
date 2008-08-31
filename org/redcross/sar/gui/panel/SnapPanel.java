@@ -182,7 +182,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		if (layersPanel == null) {
 			try {
 				// get body component
-				layersPanel = new DefaultPanel("Snap til lag",false,false);
+				layersPanel = new DefaultPanel("Snap til lag",false,false,ButtonSize.SMALL);
 				layersPanel.insertButton("finish",getNoneButton(), "none");
 				layersPanel.insertButton("finish",getAllButton(), "all");
 				layersPanel.addActionListener(new ActionListener() {
@@ -249,7 +249,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 	private DefaultPanel getTolerancePanel() {
 		if (tolerancePanel == null) {
 			try {
-				tolerancePanel = new DefaultPanel("Sett toleranse (meter)",false,false);
+				tolerancePanel = new DefaultPanel("Sett toleranse (meter)",false,false,ButtonSize.SMALL);
 				tolerancePanel.setBodyComponent(getToleranceSlider());
 				tolerancePanel.setPreferredSize(new Dimension(200, 100));
 			} catch (java.lang.Throwable e) {
@@ -352,8 +352,8 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		return snapTo;
 	}
 	
-	public void setSnapableLayers(List list) {
-		//adding checkboxes
+	public void setSnapableLayers(List<IFeatureLayer> list) {
+		// adding checkboxes
 		try {
 			// initialize
 			hideAll();

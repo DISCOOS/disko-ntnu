@@ -8,38 +8,56 @@ import java.io.StringReader;
 import java.util.Vector;
 import java.util.Iterator;
 import java.awt.Component;
+
 import javax.swing.JTable;
-import javax.swing.JLabel;
 import javax.swing.table.TableCellRenderer;
 
+import org.redcross.sar.gui.panel.HeaderPanel;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
-public class DiskoHeaderRenderer implements TableCellRenderer { 
+public class DiskoHeaderRenderer extends HeaderPanel implements TableCellRenderer { 
 
 	private static final long serialVersionUID = 1L;
-	private JLabel m_wrap;
 
-	/**
-	 * Creates new cell renderer
-	 * 
-	 * @param TableCellRenderer wrap - Wraps a JLabel with the TableCellRenderer interface implemented
-	 * 
-	 */
-	public DiskoHeaderRenderer(TableCellRenderer wrap) { 
-		m_wrap = (JLabel)wrap;
-	} 
+	private boolean vertical;
 	
+	public DiskoHeaderRenderer() {
+		this(ButtonSize.SMALL,false);
+	}
+	
+	public DiskoHeaderRenderer(boolean vertical) {
+		this(ButtonSize.SMALL,vertical);
+	}
+	
+	public DiskoHeaderRenderer(ButtonSize buttonSize, boolean vertical) {
+		super("",buttonSize);
+		this.vertical = vertical;
+		//addButton("toggleSort","");
+	}
+
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		String text = (value == null) ? "" : value.toString(); 
-		Vector<String> vector = parseHeader(text); 
-		Component com = ((TableCellRenderer)m_wrap).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col); 
-		if (vector.size() == 1 && false) { 
-			return ((TableCellRenderer)m_wrap).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);			 
+		Vector<String> vector = parseHeader(text);
+		if (vector.size() == 1 && false) {
+			setCaptionText(text);
 		}
 		else {
-			((JLabel)com).setText(generateHtml(vector).toString());
-			((JLabel)com).setIcon(null);
-			return com;
+			setCaptionText(generateHtml(vector).toString());
 		}
+		if(table!=null) setBorder(col,table.getColumnCount());
+		requestFocusInWindow(hasFocus);		
+		return this;
+	}
+	
+	private void setBorder(int col, int count) {
+		if(col>0 && col==count-1) 
+			setInsets(0, 0, 1, 0);
+		else if(col>0) 
+			setInsets(0, 0, 1, vertical ? 1 : 0);  
+		else if(count==1)
+			setInsets(0, 0, 1, 0);
+		else
+			setInsets(0, 0, 1, vertical ? 1 : 0);
 	}
 	
 	private StringBuffer generateHtml(Vector<String> v) { 
@@ -51,7 +69,7 @@ public class DiskoHeaderRenderer implements TableCellRenderer {
 			buffer.append(s); 
 			buffer.append(""); 
 		} 
-		return buffer.append("</html>"); 
+		return buffer.append("</html>");
 	}
 	
 	private Vector<String> parseHeader(String str) { 
@@ -67,5 +85,6 @@ public class DiskoHeaderRenderer implements TableCellRenderer {
 			e.printStackTrace(); 
 		} 
 		return v; 
-	}	
+	}
+	
 }

@@ -212,13 +212,21 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     public void addDeleteListener(IMsoObjectHolderIf aHolder)
     {
-        m_objectHolders.add(aHolder);
+    	if(m_objectHolders.contains(aHolder))
+    		System.out.println("ERROR: Same handler added twice!");
+    	else
+    		m_objectHolders.add(aHolder);
+    	
         //System.out.println("Add delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
     }
 
     public void removeDeleteListener(IMsoObjectHolderIf aHolder)
     {
-        m_objectHolders.remove(aHolder);
+    	if(m_objectHolders.contains(aHolder))
+    		m_objectHolders.remove(aHolder);
+    	else
+    		System.out.println("ERROR: Tried to remove a non-existing handler!");
+
         //System.out.println("Remove delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
     }
 
@@ -774,52 +782,52 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     public void registerAddedReference()
     {
         System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.ADDED_REFERENCE_EVENT, true);
+        registerUpdate(MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT, true);
     }
 
     public void registerRemovedReference()
     {
         System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.REMOVED_REFERENCE_EVENT, true);
+        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, true);
     }
 
     public void registerRemovedReference(boolean updateServer)
     {
     	System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.REMOVED_REFERENCE_EVENT, updateServer);
+        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, updateServer);
     }
 
     public void registerModifiedReference()
     {
     	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.MODIFIED_REFERENCE_EVENT, true);
+        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, true);
     }
 
     public void registerModifiedReference(boolean updateServer)
     {
     	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.MODIFIED_REFERENCE_EVENT, updateServer);
+        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, updateServer);
     }
 
     public void registerCreatedObject()
     {
     	System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.CREATED_OBJECT_EVENT, true);
+        registerUpdate(MsoEvent.MsoEventType.CREATED_OBJECT_EVENT, true);
     }
 
     public void registerDeletedObject()
     {
         System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.DELETED_OBJECT_EVENT, true);
+        registerUpdate(MsoEvent.MsoEventType.DELETED_OBJECT_EVENT, true);
     }
 
     public void registerModifiedData()
     {
         System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
-        registerUpdate(MsoEvent.EventType.MODIFIED_DATA_EVENT, true);
+        registerUpdate(MsoEvent.MsoEventType.MODIFIED_DATA_EVENT, true);
     }
 
-    private void registerUpdate(MsoEvent.EventType anEventType, boolean updateServer)
+    private void registerUpdate(MsoEvent.MsoEventType anEventType, boolean updateServer)
     {
         
     	// track change

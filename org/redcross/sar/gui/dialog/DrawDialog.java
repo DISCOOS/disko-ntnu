@@ -102,7 +102,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 	 */
 	private DefaultPanel getContentPanel() {
 		if (m_contentPanel == null) {
-			m_contentPanel = new DefaultPanel("Tegneverktøy",false,false,ButtonSize.NORMAL);
+			m_contentPanel = new DefaultPanel("Tegneverktøy",false,false,ButtonSize.SMALL);
 			m_contentPanel.setBodyComponent(getSplitPane());
 		}
 		return m_contentPanel;
@@ -287,8 +287,8 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 	public void getToolCaption() {
 		if(m_selectedTool!=null) {
 			try {
-				getContentPanel().setCaptionText("<html>Tegneverktøy - "
-						+ m_selectedTool.getCaption() +"</hmtl>"); return;
+				getContentPanel().setCaptionText("Tegneverktøy - "
+						+ m_selectedTool.getCaption()); return;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

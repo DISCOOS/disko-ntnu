@@ -59,7 +59,7 @@ public class UnitTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(true);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
         
         // add model lister to ensure data fit
         getModel().addTableModelListener(new TableModelListener() {

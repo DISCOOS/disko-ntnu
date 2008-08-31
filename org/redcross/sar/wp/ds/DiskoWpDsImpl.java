@@ -42,7 +42,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 {
 	
 	private static final int UPDATE_TIME_DELAY = 1000;	// updates every second
-	private static final String CONTROL_CAPTION = "<html>Beslutningsstøtte - <b>Kontrollpanel</b> (%s)</html>";
+	private static final String CONTROL_CAPTION = "Beslutningsstøtte - <b>Kontrollpanel</b> (%s)";
 
 	private long m_timeCounter = 0;
 	
@@ -200,7 +200,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_controlPanel == null)
         {
-        	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Stoppet"));
+        	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Stoppet"),ButtonSize.SMALL);
         	m_controlPanel.setPreferredSize(new Dimension(400,210));
         	m_controlPanel.addButton(getResumeButton(), "resume");
         	m_controlPanel.addButton(getSuspendButton(), "suspend");		
@@ -274,7 +274,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_startedTimeAttr == null)
         {
-        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl",130,0,false);
+        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", false, 130, 25, 0);
         	Utils.setFixedSize(m_startedTimeAttr,250,25);
         	
         }        
@@ -285,7 +285,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_effortTimeAttr == null)
         {
-        	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid",130,"",false);
+        	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid", false, 130, 25, 0);
         	Utils.setFixedSize(m_effortTimeAttr,250,25);
         	
         }        
@@ -296,7 +296,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_avgEstTimeAttr == null)
         {
-        	m_avgEstTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)",130,"",false);
+        	m_avgEstTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
         	Utils.setFixedSize(m_avgEstTimeAttr,250,25);
         	
         }        
@@ -307,7 +307,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_maxEstTimeAttr == null)
         {
-        	m_maxEstTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)",130,"",false);
+        	m_maxEstTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)", false, 130, 25, 0);
         	Utils.setFixedSize(m_maxEstTimeAttr,250,25);
         	
         }        
@@ -318,7 +318,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_utilEstTimeAttr == null)
         {
-        	m_utilEstTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)",130,"",false);
+        	m_utilEstTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
         	Utils.setFixedSize(m_utilEstTimeAttr,250,25);
         	
         }        

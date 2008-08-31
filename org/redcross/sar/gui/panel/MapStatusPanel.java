@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -358,8 +357,10 @@ public class MapStatusPanel extends JPanel {
 		}		
 	}
 	
+	@SuppressWarnings("serial")
 	public class ItemNotExistException extends Exception {};
 	
+	@SuppressWarnings("serial")
 	public class CanNotRemoveItemException extends Exception {};	
 	
 }

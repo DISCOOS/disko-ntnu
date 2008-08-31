@@ -1,6 +1,6 @@
 package org.redcross.sar.gui.panel;
 
-import java.awt.FlowLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -20,14 +24,13 @@ public class ButtonsPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final int LEFT = FlowLayout.LEFT;
-	public static final int CENTER = FlowLayout.CENTER;
-	public static final int RIGHT = FlowLayout.RIGHT;
-	public static final int LEADING = FlowLayout.LEADING;
-	public static final int TRAILING = FlowLayout.TRAILING;
+	public static final int LEFT = SwingUtilities.LEFT;
+	public static final int RIGHT = SwingUtilities.RIGHT;
 	
-	private int m_alignment = FlowLayout.LEFT;
-	private ButtonSize m_buttonSize = ButtonSize.NORMAL;
+	private int m_alignment = LEFT;
+	private Component m_glue = Box.createHorizontalGlue();
+	
+	private ButtonSize m_buttonSize = ButtonSize.SMALL;
 	
 	private List<JComponent> m_items = null;
 	private Map<String, AbstractButton> m_commands = null;
@@ -59,11 +62,7 @@ public class ButtonsPanel extends JPanel {
 	 * 	
 	 */
 	private void initialize() {
-		FlowLayout fl = new FlowLayout();
-		fl.setHgap(0);
-		fl.setVgap(0);
-		fl.setAlignment(m_alignment);
-		this.setLayout(fl);
+		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
 		this.setBorder(null);
 		this.setOpaque(true);
 		m_items = new ArrayList<JComponent>();
@@ -77,6 +76,9 @@ public class ButtonsPanel extends JPanel {
 			List<JComponent> list = new ArrayList<JComponent>(m_items.size());
 			// remove all buttons
 			this.removeAll();
+			// add glue?
+			if(m_alignment == SwingConstants.RIGHT) 
+				this.add(m_glue);
 			// add before all?
 			if(prefix==null)
 				this.add(item);
@@ -91,6 +93,10 @@ public class ButtonsPanel extends JPanel {
 					this.add(it);
 				}
 			}
+			// add glue?
+			if(m_alignment == SwingConstants.LEFT) 
+				this.add(m_glue);
+			
 			// replace
 			m_items = list;
 			// finished
@@ -124,8 +130,20 @@ public class ButtonsPanel extends JPanel {
 	public AbstractButton addButton(AbstractButton button, String command) {
 		// exists?
 		if(!m_commands.containsKey(command)) {
+			// set action command name
 			button.setActionCommand(command);
+			// align center in parent container
+			button.setAlignmentX(AbstractButton.CENTER_ALIGNMENT);
+			button.setAlignmentY(AbstractButton.CENTER_ALIGNMENT);			
+			// remove glue?
+			if(m_alignment == SwingConstants.LEFT) 
+				this.remove(m_glue);
+			// add to component
 			this.add(button);
+			// add glue?
+			if(m_alignment == SwingConstants.LEFT) 
+				this.add(m_glue);
+			// add to lists
 			m_items.add(button);
 			m_commands.put(command, button);
 			button.addActionListener(m_actionHandler);
@@ -139,12 +157,8 @@ public class ButtonsPanel extends JPanel {
 		if(!m_commands.containsKey(command)) {
 			JButton button = DiskoButtonFactory.createButton(
 					caption,caption,null,m_buttonSize);
-			button.setActionCommand(command);
-			this.add(button);
-			m_items.add(button);
-			m_commands.put(command, button);
-			button.addActionListener(m_actionHandler);
-			return button;
+			// forward
+			return addButton(button,command);
 		}
 		return null;
 	}
@@ -160,7 +174,18 @@ public class ButtonsPanel extends JPanel {
 	
 	public boolean addItem(JComponent item) {
 		if(!m_items.contains(item)) {
+			// align center in parent container
+			item.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+			item.setAlignmentY(JComponent.CENTER_ALIGNMENT);
+			// remove glue?
+			if(m_alignment == SwingConstants.LEFT) 
+				this.remove(m_glue);
+			// add to component
 			this.add(item);
+			// add glue?
+			if(m_alignment == SwingConstants.LEFT) 
+				this.add(m_glue);
+			// add to list
 			return m_items.add(item);		
 		}
 		return false;

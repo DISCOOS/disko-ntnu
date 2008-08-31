@@ -1,9 +1,6 @@
 package org.redcross.sar.gui.panel;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -23,6 +23,7 @@ import javax.swing.SwingConstants;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoBorder;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
@@ -34,21 +35,21 @@ public class HeaderPanel extends JPanel {
 	private int m_x = -1;
 	private int m_y = -1;
 	
-	private Insets m_insets = null;
+	private Insets m_insets;
 	private boolean m_isBorderVisible = true;
 	private Color m_borderColor = Color.GRAY;
 	private ButtonSize m_buttonSize = ButtonSize.NORMAL;
 	
-	private JPanel m_captionPanel = null;
-	private JLabel m_iconLabel = null;
-	private JLabel m_captionLabel = null;
-	private ButtonsPanel m_buttons = null;
+	private JPanel m_captionPanel;
+	private JLabel m_iconLabel;
+	private JLabel m_captionLabel;
+	private ButtonsPanel m_buttons;
 
-	private IPanelManager manager = null;
+	private IPanelManager manager;
 	
-	private Map<String,ActionEvent> m_actions = null;
-	private List<ActionListener> m_actionListeners = null;
-	private List<IDiskoWorkListener> m_workListeners = null;
+	private Map<String,ActionEvent> m_actions;
+	private List<ActionListener> m_actionListeners;
+	private List<IDiskoWorkListener> m_workListeners;
 
 	/* =======================================================
 	 * Constructors
@@ -69,10 +70,6 @@ public class HeaderPanel extends JPanel {
 		initialize();
 		// set caption
 		this.setCaptionText(caption);
-		// set height
-		this.onResize();
-		// set caption color
-		this.setCaptionColor(Color.WHITE,Color.LIGHT_GRAY);
 	}
 	
 	/* =======================================================
@@ -85,25 +82,28 @@ public class HeaderPanel extends JPanel {
 	 */
 	private void initialize() {	
 		this.setOpaque(true);
-		this.setLayout(new BorderLayout());
-		this.add(getCaptionPanel(),BorderLayout.CENTER);
-		this.add(getButtonsPanel(),BorderLayout.EAST);		
+		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
+		this.add(getCaptionPanel());
+		this.add(Box.createHorizontalStrut(5));
+		this.add(getButtonsPanel());		
 		this.setBorderColor(m_borderColor);
+		this.setCaptionColor(Color.WHITE,Color.LIGHT_GRAY);
 	}
 	
 	private JPanel getCaptionPanel() {
 		if (m_captionPanel == null) {
 			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setAlignment(FlowLayout.LEFT);
-				fl.setHgap(5);
-				fl.setVgap(0);
 				m_captionPanel = new JPanel();
 				m_captionPanel.setOpaque(false);
 				m_captionPanel.setBorder(null);
-				m_captionPanel.setLayout(fl);
-				m_captionPanel.add(getIconLabel(),null);
-				m_captionPanel.add(getCaptionLabel(),null);
+				m_captionPanel.setLayout(new BoxLayout(m_captionPanel,BoxLayout.X_AXIS));
+				m_captionPanel.add(getIconLabel());
+				m_captionPanel.add(getCaptionLabel());
+				// limit height, allow any width
+				DiskoButtonFactory.setFixedHeight(m_captionPanel, m_buttonSize);
+				// align {left,center} in parent container
+				m_captionPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+				m_captionPanel.setAlignmentY(JPanel.CENTER_ALIGNMENT);				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -122,8 +122,10 @@ public class HeaderPanel extends JPanel {
 		// create?
 		if(m_isBorderVisible) {
 			// create border
-			return new DiskoBorder(m_insets.left, m_insets.top, m_insets.right, 
-					m_insets.bottom,m_borderColor);		
+			return new DiskoBorder(
+					m_insets.top, m_insets.left,  
+					m_insets.bottom, m_insets.right, 
+					m_borderColor);		
 		}
 		else {
 			return null;
@@ -140,16 +142,21 @@ public class HeaderPanel extends JPanel {
 			m_iconLabel = new JLabel();
 			m_iconLabel.setOpaque(true);
 			m_iconLabel.setVisible(false);
-			m_iconLabel.setVerticalAlignment(SwingConstants.CENTER);
+			// align {left,center} in parent container
+			m_iconLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+			m_iconLabel.setAlignmentY(JLabel.CENTER_ALIGNMENT);			
 		}
 		return m_iconLabel;
 	}
 	
 	private JLabel getCaptionLabel() {
 		if(m_captionLabel==null) {
-			m_captionLabel = new JLabel("");
+			m_captionLabel = new JLabel();
 			m_captionLabel.setOpaque(true);
-			m_captionLabel.setVerticalAlignment(SwingConstants.CENTER);
+			m_captionLabel.setBorder(BorderFactory.createEmptyBorder(0,5,0,0));			
+			// align {left,center} in parent container
+			m_captionLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+			m_captionLabel.setAlignmentY(JLabel.CENTER_ALIGNMENT);			
 		}
 		return m_captionLabel;
 	}
@@ -181,7 +188,6 @@ public class HeaderPanel extends JPanel {
 	public void setCaptionIcon(Icon icon) {
 		getIconLabel().setIcon(icon);
 		setCaptionVisible();
-		onResize();
 	}	
 	
 	/**
@@ -198,9 +204,9 @@ public class HeaderPanel extends JPanel {
 	 *
 	 */
 	public void setCaptionText(String caption) {
-		getCaptionLabel().setText(caption);
+		caption = Utils.stripHtml(caption);
+		getCaptionLabel().setText("<html>"+caption+"</html>");
 		setCaptionVisible();
-		onResize();
 	}	
 	
 	/**
@@ -229,7 +235,7 @@ public class HeaderPanel extends JPanel {
 		return m_insets;
 	}
 	
-	public void setInsets(int l, int t, int r, int b) {
+	public void setInsets(int t, int l, int b, int r) {
 		m_insets = new Insets(t,l,b,r);
 		this.setBorder(createBorder());
 	}	
@@ -257,8 +263,11 @@ public class HeaderPanel extends JPanel {
 	public ButtonsPanel getButtonsPanel() {
 		if (m_buttons == null) {
 			try {
-				m_buttons = new ButtonsPanel(FlowLayout.RIGHT,m_buttonSize);
+				m_buttons = new ButtonsPanel(SwingConstants.RIGHT,m_buttonSize);
 				m_buttons.setOpaque(true);
+				// align {left,center} in parent container
+				m_buttons.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+				m_buttons.setAlignmentY(JPanel.CENTER_ALIGNMENT);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -266,28 +275,6 @@ public class HeaderPanel extends JPanel {
 		return m_buttons;
 	}				
 
-	public void onResize() {
-		Container parent = getParent();
-		if(parent != null) {
-			Insets insets = parent.getInsets();
-			int w = parent.getWidth() - insets.left - insets.right;
-			if(w>0) {
-				Icon icon = getCaptionIcon();
-				int iw = icon!=null ? icon.getIconWidth() : 0;
-				int ih = icon!=null ? icon.getIconHeight() : 0;
-				int bw = getButtonsPanel().getTotalButtonWidth();
-				int bh = getButtonsPanel().getMaxButtonHeigth();
-				int	cw = Math.max(w-bw-iw,25);
-				int	h = Math.max(Math.max(bh,ih),25);
-				// set fixed size of caption
-				Utils.setFixedSize(getIconLabel(),iw,h);
-				Utils.setFixedSize(getCaptionLabel(),cw-50,h);
-				Utils.setFixedSize(getButtonsPanel(),bw,h);
-				Utils.setFixedSize(this,w,h+2);
-			}
-		}
-	}
-	
 	public AbstractButton insertButton(String before, AbstractButton button, String command) {
 		return getButtonsPanel().insertButton(before,button,command);
 	}

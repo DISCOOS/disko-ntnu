@@ -12,9 +12,13 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.IToolListenerIf;
+import org.redcross.sar.map.event.ToolEvent;
+import org.redcross.sar.map.event.ToolEvent.ToolEventType;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -24,6 +28,7 @@ import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.awt.geom.Point2D;
 
@@ -38,8 +43,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	protected boolean showDialog = true;
 	
 	// objects
-	protected Properties properties = null;
-	protected IDisplayTransformation transform = null;
+	protected Properties properties;
+	protected IDisplayTransformation transform;
 	
 	// mso objects information
 	protected IMsoObjectIf msoOwner = null;
@@ -47,21 +52,23 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	protected IMsoManagerIf.MsoClassCode msoCode = null;	
 	
 	// GUI components
-	protected DiskoMap map = null;
-	protected DefaultDialog dialog = null;
-	protected IToolPanel toolPanel = null;
-	protected IToolPanel defaultToolPanel = null;
-	protected AbstractButton button = null;
+	protected DiskoMap map;
+	protected DefaultDialog dialog;
+	protected IToolPanel toolPanel;
+	protected IToolPanel defaultToolPanel;
+	protected AbstractButton button;
 
 	// types
 	protected DiskoToolType type = null;
+	protected ButtonSize buttonSize = ButtonSize.NORMAL;
 	
 	// counter
 	private int workCount = 0;
 	
-	// objects
-	protected ArrayList<IToolPanel> panels = null;
-	private ArrayList<IDiskoWorkListener> listeners = null;
+	// lists
+	protected List<IToolPanel> panels;
+	protected List<IToolListenerIf> toolListeners;		
+	protected List<IDiskoWorkListener> workListeners;
 	
 	/**
 	 * Constructor
@@ -69,7 +76,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	 */
 	protected AbstractDiskoTool() {
 		// prepare
-		listeners = new ArrayList<IDiskoWorkListener>();		
+		toolListeners = new ArrayList<IToolListenerIf>();		
+		workListeners = new ArrayList<IDiskoWorkListener>();		
 	}
 	
 	/*===============================================
@@ -218,15 +226,38 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	}
 
 	public void addDiskoWorkListener(IDiskoWorkListener listener) {
-		listeners.add(listener);
+		workListeners.add(listener);
 	}
 
 	public void removeDiskoEventListener(IDiskoWorkListener listener) {
-		listeners.remove(listener);
+		workListeners.remove(listener);
 	}
 	
 	public AbstractButton getButton() {
 		return button;
+	}
+	
+	public boolean requestFocustOnButton() {
+		
+		// notify
+		if(!fireToolEvent(ToolEventType.FOCUS_EVENT, 0)) {
+			
+			AbstractButton b = null;
+			
+			// forward
+			if(isHosted())
+				b = getHostTool().getButton();
+			else
+				b = getButton();
+			
+			// can request focus?
+			if(b!=null && b.isEnabled() && b.isVisible() && !b.hasFocus()) {
+				return b.requestFocusInWindow();
+			}
+			
+		}
+		// failed
+		return false;
 	}
 	
 	public DefaultDialog getDialog() {
@@ -373,8 +404,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
     protected void fireOnWorkPerformed(DiskoWorkEvent e)
     {
 		// notify listeners
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).onWorkPerformed(e);
+		for (int i = 0; i < workListeners.size(); i++) {
+			workListeners.get(i).onWorkPerformed(e);
 		}
 	}
     
@@ -426,6 +457,17 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			}
 		}		
 	}
+	
+	protected boolean fireToolEvent(ToolEventType type, int flags) {
+		ToolEvent e = new ToolEvent(this,type,flags);
+		for(IToolListenerIf listener : toolListeners) {
+			listener.onAction(e);
+			if(e.isConsumed()) return true;
+		}
+		return false;
+	}
+	
+	
 	
 	public Object getAttribute(String attribute) {
 		return null;
@@ -489,6 +531,25 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		// TODO Auto-generated method stu	
 	}
 	
+	/* ==================================================
+	 * IToolListenerIf
+	 * ==================================================
+	 */
+	
+	public boolean addToolListener(IToolListenerIf listener) {
+		if(!toolListeners.contains(listener)) {
+			return toolListeners.add(listener); 
+		}
+		return false;
+	}
+	
+	public boolean removeToolListener(IToolListenerIf listener) {
+		if(toolListeners.contains(listener)) {
+			return toolListeners.remove(listener); 
+		}
+		return false;
+	}	
+	
 	/*=============================================================
 	 * Inner classes
 	 *============================================================= 
@@ -541,9 +602,10 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	public class DiskoToolState implements IDiskoToolState {
 
 		// flags
-		protected boolean isActive = false;
-		protected boolean showDirect = false;
-		protected boolean showDialog = false;
+		protected boolean isActive;
+		protected boolean showDirect;
+		protected boolean showDialog;
+		protected boolean isDialogVisible;
 
 		// mso objects and draw information
 		protected IMsoObjectIf msoOwner = null;
@@ -566,6 +628,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			this.msoObject = tool.msoObject;
 			this.msoOwner = tool.msoOwner;
 			this.propertyPanel = tool.toolPanel;
+			this.isDialogVisible = tool.dialog!=null ? tool.dialog.isVisible() : false;
 		}
 		
 		public void load(AbstractDiskoTool tool) {
@@ -578,6 +641,8 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 			tool.toolPanel = this.propertyPanel;
 			if(tool.toolPanel!=null)
 				tool.toolPanel.update();
+			if(tool.dialog!=null) 
+				tool.dialog.setVisible(this.isDialogVisible);
 		}
 	}
 }

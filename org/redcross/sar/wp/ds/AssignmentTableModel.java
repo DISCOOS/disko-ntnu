@@ -24,23 +24,6 @@ public class AssignmentTableModel extends DsObjectTableModel<RouteCost> {
 	private static final String[] CAPTIONS = new String[]{"Oppdrag",
 		"Status","ETA","ETE","EDE","Gj.hast"};
 	
-	private static final Comparator<IDsObjectIf> m_assignmentComparator = new Comparator<IDsObjectIf>()
-	{
-		public int compare(IDsObjectIf o1, IDsObjectIf o2)
-		{
-			IAssignmentIf a1 = (IAssignmentIf)o1.getId();
-			IAssignmentIf a2 = (IAssignmentIf)o2.getId();
-			if(a1.getType() == a2.getType())
-			{
-				return a1.getNumber() - a2.getNumber();
-			}
-			else
-			{
-				return a1.getType().ordinal() - a2.getType().ordinal();
-			}
-		}
-	};
-	
 	public AssignmentTableModel(IDsIf<RouteCost> ds) {
 
 		// forward
@@ -64,10 +47,11 @@ public class AssignmentTableModel extends DsObjectTableModel<RouteCost> {
 		return true;	
 	}
 
+	/*
 	@Override
 	public void sort() {
-		sort(m_assignmentComparator);
+		sort(COMPERATOR);
 	}
-
+	*/
 
 }

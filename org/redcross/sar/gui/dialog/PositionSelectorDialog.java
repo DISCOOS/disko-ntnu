@@ -9,6 +9,7 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
@@ -75,24 +76,36 @@ public class PositionSelectorDialog extends DefaultDialog {
 	 */
 	public GotoPanel getGotoPanel() {
 		if (m_gotoPanel == null) {
-			m_gotoPanel = new GotoPanel("Velg posisjon",true,true,true,true,ButtonSize.NORMAL);
+			m_gotoPanel = new GotoPanel("Velg posisjon",true,true,true,ButtonSize.SMALL);
 		}
 		return m_gotoPanel;
 	}
 	
+	public void getPoint() {
+		getGotoPanel().setPoint();
+	}
+	
+	public void getCenterPoint() {
+		getGotoPanel().setCenterPoint();
+	}
+	
 	public void getClickPoint() {
-		getGotoPanel().getClickPoint();
+		getGotoPanel().setClickPoint();
 	}
 	
 	public void getMovePoint() {
-		getGotoPanel().getMovePoint();
+		getGotoPanel().setMovePoint();
 	}
 	
 	public Position select() {
 		// reset
 		m_cancel = false;
+		// select point
+		getPoint();
 		// show position in map
 		getGotoPanel().setPositionMarked(true);
+		// activate SelectFeatureTool
+		Utils.getApp().invoke(DiskoToolType.SELECT_TOOL,false);
 		// show
 		setVisible(true);
 		// hide position in map

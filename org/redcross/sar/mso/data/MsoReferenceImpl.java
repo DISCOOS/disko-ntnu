@@ -4,7 +4,6 @@ import org.redcross.sar.mso.CommitManager;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.committer.CommittableImpl;
-import org.redcross.sar.util.except.IllegalDeleteException;
 
 import java.util.Collection;
 import java.util.Vector;
@@ -113,10 +112,27 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     public void setReference(T aReference)
     {
     	/* ========================================================
-    	 * Setting a new reference follows the same principles
-    	 * described in the method 
+    	 * Setting a new reference value is dependent on the
+    	 * update mode of the MSO model. If the model is in 
+    	 * LOOPBACK_UPDATE_MODE, the reference should reflect
+    	 * the server value without any conflict detection. If the
+    	 * model is in REMOTE_UPDATE_MODE, a change from the server
+    	 * is registered and the reference value should be analyzed
+    	 * to detect any conflicts between local value (private) and 
+    	 * the server value (shared). If the model is in 
+    	 * LOCAL_UPDATE_MODE, the reference value state should be 
+    	 * updated according to the passed reference value.
     	 * 
-    	 * AttributeImpl.setAttrValue(T aValue, boolean isCreating);
+    	 * Server value and local value should only be present 
+    	 * concurrently during a local update sequence (between two 
+    	 * commit() or rollback() invocations), or if a conflict has 
+    	 * occurred (remote update during a local update sequence).
+    	 * Hence, if the reference value is in a LOCAL or 
+    	 * CONFLICTING, both values will be present. Else,
+    	 * only server value will be present (SERVER state).
+    	 *  
+    	 * A commit() or rollback() will reset the local value
+    	 * to null to ensure state consistency. 
     	 * 
     	 * ======================================================== */    	    	
     	
@@ -133,31 +149,125 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             case LOOPBACK_UPDATE_MODE:
             {
                 
+            	/* ===========================================================
+            	 * Update to server value state without any conflict detection.
+            	 * 
+            	 * After a commit, all changes are looped back to the model
+            	 * from the message queue. This ensures that only changes
+            	 * that are successfully committed to the global message 
+            	 * queue becomes valid. If any errors occurred, the message queue 
+            	 * is given precedence over local values. 
+            	 * 
+            	 * Because of limitations in SaraAPI, it is not possible to 
+            	 * distinguish between messages committed by this model instance 
+            	 * and other model instances. Hence, any change received from 
+            	 * the message queue may be a novel change. Because 
+            	 * LOOPBACK_UPDATE_MODE is only a proper update mode if the
+            	 * received update is a loop back from this model instance, the
+            	 * mode can not be used with the current SaraAPI. If used, 
+            	 * local changes will be overwritten by because conflict detection 
+            	 * is disabled in this mode.
+            	 * 
+            	 * The fix to this problem is to assume that if a commit is
+            	 * executed without any exception from the message queue, then all 
+            	 * changes was posted and forwarded to all listeners. Hence, the
+            	 * attribute value can be put in server mode directly after a commit 
+            	 * is executed. 
+            	 * 
+            	 * 		!!! The postProcessCommit() implements this fix !!! 
+            	 * 
+            	 * If the source of each change could be uniquely identified 
+            	 * (at the model instance level), change messages received as a 
+            	 * result of a commit by this model, could be group together and 
+            	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would 
+            	 * be the correct and intended usage of this mode.
+            	 * 
+            	 * IMPORTANT: The local reference is only deleted from its 
+            	 * object holder if local and server references are 
+            	 * different because  
+            	 * 
+            	 * A)	The local references is no longer valid.
+            	 * 	
+            	 * B) 	When local and server references are equal, 
+            	 * 		the reference to the object holder is already 
+            	 * 		established.
+            	 * 
+            	 * =========================================================== */
+            	
             	// set state
             	newState = IMsoModelIf.ModificationState.STATE_SERVER;
                 
-                // register change
-                registerDeletedReference(m_localValue,true);
-                // prepare next
-                m_localValue = null;                	
+            	// is equal?
+            	boolean isConflict = !equal(m_localValue, aReference);
+            	
+                // only delete local reference from object holder
+                // if local reference is different from server reference
+                if(isConflict) 
+                {
+                	// remove expired reference from object holder
+                	registerDeletedReference(m_localValue,true);
+                }
+                
+                // only server value is kept
+                m_localValue = null;                	                
                 
             	// any change?
                 if (!equal(m_serverValue, aReference))
                 {
-                	// register
-                    registerDeletedReference(m_serverValue,true);
+                	// remove server reference from object holder
+                	registerDeletedReference(m_serverValue,true);
+                	
                     // prepare next
                     m_serverValue = aReference;
-                    // register
-                    registerAddedReference(m_serverValue,true);
+                    
+                    // register? 
+                    if(isConflict) 
+                    {
+                    	// add reference to object holder
+                    	registerAddedReference(m_serverValue,true);
+                    }
+                    
                     // set flag
                     valueChanged = true;
+                    
                 }
             	
+                
                 break;
             }
             case REMOTE_UPDATE_MODE:
             {
+            	
+            	/* ===========================================================
+            	 * Update to server value state with conflict detection.
+            	 * 
+            	 * If the model is in REMOTE_UPDATE_MODE, this indicates that
+            	 * an external change is detected (message queue update), and the 
+            	 * model should be update accordingly.
+            	 * 
+            	 * If the reference is in local state, the local reference may 
+            	 * be different from the server reference. Local changes are made 
+            	 * by the user (GUI) or a local service (the application). When a 
+            	 * remote update occurs (a change received from the message queue), 
+            	 * the new reference state depends on the new server reference
+            	 * and current (local) reference. If these are different, a conflict has 
+            	 * occurred. This is indicated by setting the reference state 
+            	 * to CONFLICTING. Methods for resolving conflicts are supplied 
+				 * by this class. If the new server reference and current (local) 
+				 * reference are equal, the reference state is changed to SERVER.             	 
+            	 *  
+            	 * IMPORTANT: The local reference is never deleted from the object 
+            	 * holder because
+            	 * 
+            	 * A) 	When local and server references are different, this is
+            	 * 		by definition a conflict an both must be kept.
+            	 * 
+            	 * B)	When local and server references are equal, 
+            	 * 		the reference to the object holder is already 
+            	 * 		established.
+            	 * 
+            	 * =========================================================== */
+            	
 
             	// check if a conflict has occurred?
             	boolean isConflict = (m_state == IMsoModelIf.ModificationState.STATE_LOCAL 
@@ -169,11 +279,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
                 		  IMsoModelIf.ModificationState.STATE_CONFLICTING 
                 		: IMsoModelIf.ModificationState.STATE_SERVER;
                 
-                // no conflict?
+                // only reset local value if no conflict is found, 
                 if(!isConflict) 
                 {
-                	// register change
-                    registerDeletedReference(m_localValue,true);
                     // prepare next
                     m_localValue = null;                	
                 }
@@ -196,8 +304,39 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
                 break;
             }
-            default:
+            default: // LOCAL_UPDATE_MODE
             {
+            	
+            	/* ===========================================================
+            	 * Update reference to the appropriate state
+            	 * 
+            	 * The default update mode is LOCAL_UPDATE_MODE. This mode
+            	 * indicates that the change in reference value originates 
+            	 * from a GUI (user) or Service (application) invocation, and 
+            	 * not from an external change made on a different model 
+            	 * instance (message queue). If the new local (current) 
+            	 * reference equals the server reference, the reference state 
+            	 * should be set to SERVER. If the new reference is different 
+            	 * from the server reference, the reference state should be 
+            	 * set to LOCAL.
+            	 * 
+            	 * IMPORTANT 1: Current local reference is always deleted 
+            	 * from its object holder, unless it is NULL, because
+            	 * 
+            	 * A)	When the new local references is equal to the server 
+            	 * 		reference, current local reference is expired and should
+            	 * 		by definition not be kept
+            	 * 	
+            	 * B)	When the new local references is different from current 
+            	 * 		local reference, current local reference is going to be 
+            	 * 		replaced. Hence current reference must be removed from
+            	 * 		the object holder.
+            	 * 
+            	 * C)
+            	 * 
+            	 * =========================================================== */
+
+            	
             	// local and server values in sync?
             	if (equal(m_serverValue, aReference))
                 {
@@ -205,6 +344,8 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
                     newState = IMsoModelIf.ModificationState.STATE_SERVER;
                 	// register change
                     registerDeletedReference(m_localValue,true);
+                    // set flag
+                    valueChanged = (m_localValue!=null);
                     // prepare next
                     m_localValue = null;
                 } else
@@ -462,13 +603,23 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     {
         if (getReference() == anObject && canDelete())
         {
-            /*
-            Remove reference the "ordinary" way. Will create event for modified reference and state in this object.
-             */
             String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
             System.out.println("Delete reference from " + s + " to " + anObject);
-            //System.out.println(s);
-            setReference(null);
+
+        	// remove server reference?
+        	if (m_serverValue!=null)
+            {
+            	// remove from object holder
+                registerDeletedReference(m_serverValue,true);
+            }
+        	
+        	// remove local reference?
+        	if (m_localValue!=null)
+            {
+            	// register
+                registerDeletedReference(m_localValue,true);
+            }            
+        	        
             return true;
         }
         return false;

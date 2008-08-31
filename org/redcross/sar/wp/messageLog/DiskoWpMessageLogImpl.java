@@ -5,7 +5,6 @@ import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.thread.DiskoWorkPool;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;

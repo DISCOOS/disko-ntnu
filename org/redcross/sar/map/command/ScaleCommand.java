@@ -30,7 +30,8 @@ public class ScaleCommand extends AbstractDiskoCommand {
 
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
-
+		button.setFocusable(false);
+		
 		// shows dialog first time onClick is invoked
 		showDirect = true; 
 		

@@ -19,7 +19,7 @@ public class DiskoBorder implements Border {
 		  this(1,1,1,1,Color.GRAY);   
 	  }   
 	  
-	  public DiskoBorder(int left, int top, int right, int bottom, Color color) {  
+	  public DiskoBorder(int top, int left, int bottom, int right, Color color) {  
 	      this.m_top = top;   
 	      this.m_left = left;   
 	      this.m_bottom = bottom;   
@@ -37,14 +37,14 @@ public class DiskoBorder implements Border {
 	      Color old = g.getColor();
 	      
 	      // apply color
-	      if (m_color != null)  
+	      //if (m_color != null)  
 	          g.setColor(m_color);  
 	      
 	      // draw borders
-	      g.fill3DRect(0, 0, width-insets.right, insets.top, true); 
-	      g.fill3DRect(0, insets.top-2, insets.left, height-insets.top+2, true);   
-	      g.fill3DRect(insets.left-2, height-insets.bottom, width-insets.left+2, insets.bottom, true);   
-	      g.fill3DRect(width-insets.right, 0, insets.right, height-insets.bottom+2, true);
+	      g.fillRect(0, 0, width-insets.right, insets.top); // TOP 
+	      g.fillRect(0, insets.top-2, insets.left, height-insets.top+2); // LEFT   
+	      g.fillRect(insets.left-2, height-insets.bottom, width-insets.left+2, insets.bottom); // BOTTOM   
+	      g.fillRect(width-insets.right, 0, insets.right, height-insets.bottom+2); // RIGHT
 	      
 	      // restore state
 	      g.setColor(old);	      

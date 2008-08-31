@@ -130,7 +130,7 @@ public class EstimateDialog extends DefaultDialog {
 				};				
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.setPreferredBodySize(new Dimension(400,100));
@@ -154,16 +154,16 @@ public class EstimateDialog extends DefaultDialog {
 			try {
 				
 				// create attribute
-				attrEta = new NumericAttribute("ETA","Estimert tidsbruk",120,"000000",false);
+				attrEta = new NumericAttribute("ETA","Estimert tidsbruk",false,120,25,"000000");
 				
 				// set numeric properties
 				attrEta.setMaxDigits(6);
 				attrEta.setDecimalPrecision(0);
 				attrEta.setAllowNegative(false);
 				attrEta.setButton(DiskoButtonFactory.createButton("GENERAL.VIEW", ButtonSize.SMALL), true);
-				attrEta.getButton().setVisible(true);
-				attrEta.getButton().setEnabled(true);
-				attrEta.getButton().addActionListener(new ActionListener() {
+				attrEta.setButtonVisible(true);
+				attrEta.setButtonEnabled(true);
+				attrEta.addButtonActionListener(new ActionListener() {
 
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -226,13 +226,13 @@ public class EstimateDialog extends DefaultDialog {
 		if(assignment!=null) {
 			Enum<?> e = MsoUtils.getType(assignment,true);
 			getContentPanel().setCaptionIcon(
-					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
-			getContentPanel().setCaptionText("<html>Estimer tidsforbruk for <b>" + 
-					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b></html>");
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"32x32"));
+			getContentPanel().setCaptionText("Estimer tidsforbruk for <b>" + 
+					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b>");
 			getEtaAttribute().setEnabled(true);
 		}
 		else {
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getEtaAttribute().setEnabled(false);
 		}		

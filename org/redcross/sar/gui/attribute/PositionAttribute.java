@@ -18,9 +18,9 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.CoordinatePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.Point;
@@ -33,40 +33,68 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private static final int DEFAULT_FORMAT = 0; 
+	
 	private CoordinatePanel m_coordinatePanel;
 	private GotoPanel m_gotoPanel = null;
 	private PositionSelectorDialog m_selectorDialog = null;
 	
-	public PositionAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */	
+		
+	public PositionAttribute(String name, String caption, boolean isEditable) {
 		// forward
-		this(attribute,caption,width,1,isEditable);		
+		super(name, caption, isEditable);
+		// forward
+		initialize(null,DEFAULT_FORMAT);
+	}
+
+	public PositionAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		// forward
+		super(name, caption, isEditable, width, height, value);
+		// forward
+		initialize(value,DEFAULT_FORMAT);
+	}
+
+	public PositionAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value, int format) {
+		// forward
+		super(name, caption, isEditable, width, height, value);
+		// forward
+		initialize(value,format);
 	}
 	
-	public PositionAttribute(IAttributeIf attribute, String caption, int width, int format, boolean isEditable) {
+	public PositionAttribute(MsoPosition attribute, String caption, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
-		// save format
-		getCoordinatePanel().setFormat(format);
-		// get value from attribute
-		load();		
+		super(attribute, caption, isEditable);
 		// forward
-		initalizeEdit();
+		initialize(null,DEFAULT_FORMAT);
+	}
+
+	public PositionAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable, int width, int height) {
+		// forward
+		super(attribute, caption, isEditable, width, height);
+		// forward
+		initialize(getValue(),DEFAULT_FORMAT);
+	}
+
+	public PositionAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable, int width, int height, int format) {
+		// forward
+		super(attribute, caption, isEditable, width, height);
+		// forward
+		initialize(getValue(),format);
 	}
 	
-	public PositionAttribute(String name, String caption, int width, Object value, boolean isEditable) {
-		// forward
-		this(name,caption,width,value,0,isEditable);		
-	}
-	
-	public PositionAttribute(String name, String caption, int width, Object value, int format, boolean isEditable) {
-		// forward
-		super(name,caption,width,null,isEditable);
-		// set value
-		setValue(value);
+	private void initialize(Object value, int format) {
 		// set format
 		setFormat(format);
+		// set value
+		setValue(value);
 		// forward
 		initalizeEdit();
 	}
@@ -129,7 +157,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		return true;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute

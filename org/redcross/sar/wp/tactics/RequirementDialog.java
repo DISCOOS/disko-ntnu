@@ -169,7 +169,7 @@ public class RequirementDialog extends DefaultDialog {
 				};
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
 								BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.setBodyComponent(getRequirementPanel());
@@ -246,7 +246,7 @@ public class RequirementDialog extends DefaultDialog {
 	private ComboAttribute getPriorityCombo() {
 		if (priorityCombo == null) {
 			try {
-				priorityCombo = new ComboAttribute("priority", "Prioritet", 90, null, false);
+				priorityCombo = new ComboAttribute("priority", "Prioritet", false, 90, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				AssignmentPriority[] values = AssignmentPriority.values();
 				for (int i = 0; i < values.length; i++) {
@@ -272,7 +272,7 @@ public class RequirementDialog extends DefaultDialog {
 	private ComboAttribute getAccuracyCombo() {
 		if (accuracyCombo == null) {
 			try {
-				accuracyCombo = new ComboAttribute("accuracy", "Nøyaktighet", 90, null, true);
+				accuracyCombo = new ComboAttribute("accuracy", "Nøyaktighet", false, 90, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				for (int i = 1; i < 4; i++) {
 					model.addElement(new Integer(i*25));
@@ -295,7 +295,7 @@ public class RequirementDialog extends DefaultDialog {
 	private ComboAttribute getPersonnelCombo() {
 		if (personnelCombo == null) {
 			try {
-				personnelCombo = new ComboAttribute("personnel", "Antall mnsk", 90, null, true);
+				personnelCombo = new ComboAttribute("personnel", "Antall mnsk", false, 90, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				for (int i = 1; i < 10; i++) {
 					model.addElement(new Integer(i));
@@ -471,16 +471,16 @@ public class RequirementDialog extends DefaultDialog {
 		
 		// update icon
 		if(search!=null) {
-			Enum e = MsoUtils.getType(search,true);
+			Enum<?> e = MsoUtils.getType(search,true);
 			getContentPanel().setCaptionIcon(
-					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
-			getContentPanel().setCaptionText("<html>Krav til <b>" + 
-					MsoUtils.getAssignmentName(search, 1).toLowerCase() + "</b></html>");
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"32x32"));
+			getContentPanel().setCaptionText("Krav til <b>" + 
+					MsoUtils.getAssignmentName(search, 1).toLowerCase() + "</b>");
 			getRemarksPanel().setEnabled(true);
 			getAttribsPanel().setEnabled(true);
 		}
 		else {
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getRemarksPanel().setEnabled(false);
 			getAttribsPanel().setEnabled(false);

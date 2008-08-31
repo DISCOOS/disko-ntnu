@@ -14,6 +14,7 @@ import javax.swing.event.DocumentListener;
 import org.redcross.sar.gui.format.DTGFormat;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
@@ -26,18 +27,28 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public DTGAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
-		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
-		// get value from attribute
-		load();		
-	}
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */
 	
-	public DTGAttribute(String name, String caption, int width, Object value, boolean isEditable) {
-		// forward
-		super(name,caption,width,value,isEditable);
+	public DTGAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		super(name, caption, isEditable, width, height, value);
+	}
+
+	public DTGAttribute(String name, String caption, boolean isEditable) {
+		super(name, caption, isEditable);
+	}
+		
+	public DTGAttribute(MsoCalendar attribute, String caption,
+			boolean isEditable) {
+		super(attribute, caption, isEditable);
+	}
+
+	public DTGAttribute(MsoCalendar attribute, String caption, boolean isEditable,
+			int width, int height) {
+		super(attribute, caption, isEditable, width, height);
 	}
 	
 	/*==================================================================
@@ -109,7 +120,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 		return true;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute

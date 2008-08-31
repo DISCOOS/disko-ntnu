@@ -196,15 +196,43 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     int getTypenr();
 
+    /**
+     * Often uses status sets
+     */    
     public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ASSIGNED, AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> FINISHED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED);
     public static final EnumSet<AssignmentStatus> FINISHED_AND_REPORTED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED, AssignmentStatus.REPORTED);
+    public static final EnumSet<AssignmentStatus> DELETABLE_SET = EnumSet.range(AssignmentStatus.EMPTY, AssignmentStatus.ASSIGNED);
+    
+    /**
+     * Often uses selectors
+     */       
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> READY_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.READY);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ALLOCATED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.QUEUED);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ASSIGNED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.ASSIGNED);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> EXECUTING_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.EXECUTING);
     public static final AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus> FINISHED_SELECTOR = new AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus>(FINISHED_AND_REPORTED_SET);
 
+    /**
+     * Often used comparators
+     */    
+    
+	public static final Comparator<IAssignmentIf> ASSIGNMENT_COMPERATOR = new Comparator<IAssignmentIf>()
+	{
+		public int compare(IAssignmentIf a1, IAssignmentIf a2)
+		{
+			if(a1.getType() == a2.getType())
+			{
+				return a1.getNumber() - a2.getNumber();
+			}
+			else
+			{
+				return a1.getType().ordinal() - a2.getType().ordinal();
+			}
+		}
+	};
+	
+    
     public static final Comparator<IAssignmentIf> PRIORITY_SEQUENCE_COMPARATOR = new Comparator<IAssignmentIf>()
     {
         public int compare(IAssignmentIf o1, IAssignmentIf o2)

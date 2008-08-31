@@ -30,7 +30,7 @@ public interface IMsoEventManagerIf
      * Notify a client update.
      *
      * @param aSource         The source object
-     * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.EventType})
+     * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType})
      */
     public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask);
 
@@ -58,7 +58,7 @@ public interface IMsoEventManagerIf
      * Notify a server update.
      *
      * @param aSource         The source object
-     * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.EventType})
+     * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType})
      */
     public void notifyServerUpdate(IMsoObjectIf aSource, int anEventTypeMask);
 

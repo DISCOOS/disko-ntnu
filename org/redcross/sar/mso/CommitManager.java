@@ -10,7 +10,7 @@ import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.EventType;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.util.except.CommitException;
 
 import java.util.ArrayList;
@@ -260,7 +260,7 @@ public class CommitManager implements ICommitManagerIf
         	// prepare
         	m_partial = new ArrayList<IAttributeIf>(attributes.size());
             boolean modifiedObject = (m_mask 
-            		& EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+            		& MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
         	
             // is allowed?
             if(modifiedObject) {
@@ -276,25 +276,25 @@ public class CommitManager implements ICommitManagerIf
 		
 	    public boolean isDeleted()
 	    {
-	    	return (m_mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	    	return (m_mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
 	    }
 
 	    public boolean isCreated()
 	    {
-	    	return (m_mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	    	return (m_mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 	    }
 
 	    public boolean isModified()
 	    {
-	    	return (m_mask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	    	return (m_mask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
 	    }
 
 	    public boolean isReferenceChanged()
 	    {
 	    	return (m_mask & 
-	                (EventType.MODIFIED_REFERENCE_EVENT.maskValue()) |
-	                EventType.ADDED_REFERENCE_EVENT.maskValue() |
-	                EventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
+	                (MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue()) |
+	                MsoEventType.ADDED_REFERENCE_EVENT.maskValue() |
+	                MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
 	    }		
 
     }

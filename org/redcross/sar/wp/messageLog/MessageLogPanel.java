@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
@@ -130,7 +131,9 @@ public class MessageLogPanel
     	m_tablePanel.setFocusCycleRoot(true);
     	m_splitter1.setLeftComponent(m_tablePanel);
 
-        m_scrollPane1 = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        m_scrollPane1 = new JScrollPane(
+        		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+        		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         m_scrollPane1.setOpaque(false);
 
         m_tablePanel.add(m_scrollPane1, LOG_ID);
@@ -177,8 +180,8 @@ public class MessageLogPanel
         column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH * 2);
         column = m_logTable.getColumnModel().getColumn(6);
-        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+40);
-        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+40);
+        column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+65);
+        column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+65);
 
         // initialize custom renderer
         m_logTable.setDefaultRenderer(Object.class, new MessageTableRenderer());
@@ -186,6 +189,8 @@ public class MessageLogPanel
         JTableHeader tableHeader = m_logTable.getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
+
     }
 
     public void setLayersSelectable() {

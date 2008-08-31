@@ -14,7 +14,7 @@ import org.redcross.sar.ds.IDsIf;
 import org.redcross.sar.ds.IDsObjectIf;
 import org.redcross.sar.ds.event.DsEvent;
 import org.redcross.sar.ds.event.IDsUpdateListenerIf;
-import org.redcross.sar.ds.event.DsEvent.EventType;
+import org.redcross.sar.ds.event.DsEvent.DsEventType;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -318,17 +318,17 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 	 */
 	
 	private void fireAdded(RouteCost cost) {
-		fireUpdateEvent(new DsEvent.Update(this,EventType.ADDED_EVENT,0,new IDsObjectIf[]{cost}));
+		fireUpdateEvent(new DsEvent.Update(this,DsEventType.ADDED_EVENT,0,new IDsObjectIf[]{cost}));
 	}
 	
 	private void fireModified(List<RouteCost> costs, int flags) {
 		IDsObjectIf[] data = new IDsObjectIf[costs.size()]; 
 		costs.toArray(data);
-		fireUpdateEvent(new DsEvent.Update(this,EventType.MODIFIED_EVENT,flags,data));
+		fireUpdateEvent(new DsEvent.Update(this,DsEventType.MODIFIED_EVENT,flags,data));
 	}
 	
 	private void fireRemoved(RouteCost cost) {
-		fireUpdateEvent(new DsEvent.Update(this,EventType.REMOVED_EVENT,0,new IDsObjectIf[]{cost}));
+		fireUpdateEvent(new DsEvent.Update(this,DsEventType.REMOVED_EVENT,0,new IDsObjectIf[]{cost}));
 	}
 	
 	private void fireUpdateEvent(DsEvent.Update e) {

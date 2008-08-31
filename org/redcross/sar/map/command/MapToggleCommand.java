@@ -1,7 +1,8 @@
 package org.redcross.sar.map.command;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
@@ -25,6 +26,7 @@ public class MapToggleCommand extends AbstractDiskoCommand {
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
+		button.setFocusable(false);
 
 	}
 	
@@ -39,8 +41,14 @@ public class MapToggleCommand extends AbstractDiskoCommand {
 		try {
 			// forward
 			map.getMapManager().toggleMapBase();
-			// toggle nav bar icon
-			Utils.getApp().getNavBar().switchIcon("maptoggle", map.getMapBaseIndex());
+			if(map.getMapBaseIndex()==1) {
+				getButton().setIcon(DiskoIconFactory.getIcon(
+						DiskoEnumFactory.getIcon(DiskoCommandType.MAP_TOGGLE_COMMAND), "48x48"));
+			}
+			else { 
+				getButton().setIcon(DiskoIconFactory.getIcon(
+						DiskoEnumFactory.getText("DiskoCommandType.MAP_TOGGLE_COMMAND_2.icon",null), "48x48"));
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();

@@ -18,11 +18,11 @@ public class MsoClientUpdateAdapter implements IMsoUpdateListenerIf
         int mask = e.getEventTypeMask();
         Object source = e.getSource();
 
-        if ((mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) !=0)
+        if ((mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) !=0)
         {
             // Possible handling of ADDED_REFERENCE_EVENT
         }
-        if ((mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) !=0)
+        if ((mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) !=0)
         {
             // Possible handling of MODIFIED_DATA_EVENT
         }

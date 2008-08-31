@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -26,7 +25,7 @@ import java.util.List;
  *
  * @author thomasl
  */
-public class PersonnelOverviewTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class PersonnelTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 	private List<IPersonnelIf> m_persons;
@@ -59,7 +58,7 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
 		}
 	};
 
-	public PersonnelOverviewTableModel(IDiskoWpUnit wp)
+	public PersonnelTableModel(IDiskoWpUnit wp)
 	{
 		m_wpModule = wp;
 		wp.getMsoModel().getEventManager().addClientUpdateListener(this);
@@ -127,7 +126,7 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
         IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
         
         // get flag
-        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 		
         // clear all?
         if(clearAll) {
@@ -136,11 +135,11 @@ public class PersonnelOverviewTableModel extends AbstractTableModel implements I
         }
         else {
         	// get flags
-	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 			
 	        // add object?
 			if (createdObject) {

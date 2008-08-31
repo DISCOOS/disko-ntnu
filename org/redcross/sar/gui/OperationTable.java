@@ -46,7 +46,7 @@ public class OperationTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(true);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
         
         // add model lister to ensure data fit
         getModel().addTableModelListener(new TableModelListener() {
@@ -56,7 +56,7 @@ public class OperationTable extends JTable {
 				for(int i=0;i<getModel().getColumnCount();i++)
 					getColumnModel().getColumn(i).sizeWidthToFit();
 				// apply sorting
-				((TableRowSorter)getRowSorter()).sort();
+				((TableRowSorter<?>)getRowSorter()).sort();
 			}
         	
         });

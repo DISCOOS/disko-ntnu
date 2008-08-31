@@ -4,12 +4,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.redcross.sar.gui.panel.AbstractPanel;
-import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.gui.panel.MapFilterPanel;
 import org.redcross.sar.gui.panel.MapStatusPanel;
-import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 
@@ -20,7 +17,7 @@ import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.List;
+
 /**
  * This panel wraps IDiskoMap
  * 

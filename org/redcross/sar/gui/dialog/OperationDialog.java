@@ -104,9 +104,11 @@ public class OperationDialog extends DefaultDialog {
 		return contentPanel;
 	}
 
+	/*
 	public void setFixedSize() {
 		getContentPanel().onResize();
 	}	
+	*/
 	
 	public void load() {
 		// forward

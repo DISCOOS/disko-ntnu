@@ -37,7 +37,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -381,7 +380,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
         JTableHeader tableHeader = m_unitTable.getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(true));
         m_unitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_unitTable.setCellSelectionEnabled(true);
         JTableHeader th = m_unitTable.getTableHeader();

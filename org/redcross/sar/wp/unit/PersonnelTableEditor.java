@@ -27,14 +27,14 @@ import java.util.ResourceBundle;
  *
  * @author thomasl
  */
-public class PersonnelOverviewTableEditor
+public class PersonnelTableEditor
 {
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 	private JTable m_table;
 
 	private IDiskoWpUnit m_wpUnit;
 
-	public PersonnelOverviewTableEditor(IDiskoWpUnit wp)
+	public PersonnelTableEditor(IDiskoWpUnit wp)
 	{
 		m_wpUnit = wp;
 	}
@@ -84,7 +84,7 @@ public class PersonnelOverviewTableEditor
 				{
 					// Display selected personnel in details panel
 					int modelIndex = m_table.convertRowIndexToModel(m_editRow);
-					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
+					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf selectedPersonnel = model.getPersonnel(modelIndex);
 					m_wpUnit.setPersonnelLeft(selectedPersonnel);
 					m_wpUnit.setLeftView(IDiskoWpUnit.PERSONNEL_DETAILS_VIEW_ID);
@@ -115,7 +115,7 @@ public class PersonnelOverviewTableEditor
 			// update selection?
 			if(column<3) {
 				// Get personnel at row
-				PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)table.getModel();
+				PersonnelTableModel model = (PersonnelTableModel)table.getModel();
 				IPersonnelIf rowPersonnel = model.getPersonnel(table.convertRowIndexToModel(row));
 	
 				// Get personnel in personnel details panel
@@ -166,7 +166,7 @@ public class PersonnelOverviewTableEditor
 					
 					m_wpUnit.getMsoModel().suspendClientUpdate();
 					
-					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
+					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.callOutPersonnel(personnel);
 
@@ -190,7 +190,7 @@ public class PersonnelOverviewTableEditor
 				{
 					m_wpUnit.getMsoModel().suspendClientUpdate();
 
-					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
+					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.arrivedPersonnel(personnel);
 
@@ -214,7 +214,7 @@ public class PersonnelOverviewTableEditor
 				{
 					m_wpUnit.getMsoModel().suspendClientUpdate();
 
-					PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
+					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.releasePersonnel(personnel);
 
@@ -257,7 +257,7 @@ public class PersonnelOverviewTableEditor
 		{
 			// Get current personnel
 			int modelIndex = m_table.convertRowIndexToModel(m_row);
-			PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_table.getModel();
+			PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 			IPersonnelIf selectedPersonnel = model.getPersonnel(modelIndex);
 
 			if(selectedPersonnel!=null) {

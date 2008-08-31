@@ -79,9 +79,9 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 			rows.clear();
 			objects.clear();		
 			for(T it : ds.getItems()) {
-				if(select(it)) add(it,false);
+				if(select(it)) add(it);
 			}
-			sort();
+			//sort();
 			fireTableDataChanged();
 			return true;
 		}
@@ -105,7 +105,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 	
 	public abstract boolean select(T dsObj);
 	
-	public abstract void sort();
+	//public abstract void sort();
 	
 	/* =============================================================================
 	 * Protected methods
@@ -125,29 +125,31 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		return true;
 	}
 	
+	/*
 	protected void sort(Comparator<IDsObjectIf> comparator) {
 		Collections.sort(objects,comparator);
 	}
-			
+	*/
+	
 	/* =============================================================================
 	 * Private methods
 	 * ============================================================================= */
 	
-	private void add(IDsObjectIf dsObj, boolean sort) {
+	private void add(IDsObjectIf dsObj) {
 		int iRow = getRow(dsObj);
 		if (iRow == -1) {			
 			objects.add(dsObj);
 			rows.put(dsObj,new Object[attributes.size()]);
 		}
-		update(dsObj,sort);
+		update(dsObj);
 	}
 	
-	private void update(IDsObjectIf dsObj, boolean sort) {
+	private void update(IDsObjectIf dsObj) {
 		Object[] row = rows.get(dsObj);
-		update(dsObj,row,sort);
+		update(dsObj,row);
 	}
 	
-	private void update(IDsObjectIf dsObj, Object[] row, boolean sort) {
+	private void update(IDsObjectIf dsObj, Object[] row) {
 		try {
 			for(int i=0; i<attributes.size();i++) {				
 				String name = attributes.get(i);
@@ -162,7 +164,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		if(sort) sort();
+		//if(sort) sort();
 	}
 	
 	private void remove(IDsObjectIf dsObj, boolean sort) {
@@ -171,7 +173,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 			rows.remove(dsObj);
 			objects.remove(iRow);
 		}
-		if(sort) sort();
+		//if(sort) sort();
 	}
 	
 	/* =============================================================================
@@ -226,7 +228,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
         		
         		// add object?
 	        	if(select(dsObj) && dsObjectAdded(dsObj)) {
-					add(dsObj,false);
+					add(dsObj);
 					items.add(dsObj);
 	        	}	        	
         	}
@@ -255,8 +257,8 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 					// get index of object
 					int index = getRow(dsObj);
 					// add or update?
-					if(index ==-1) add(dsObj,false);
-					else update(dsObj,false);
+					if(index ==-1) add(dsObj);
+					else update(dsObj);
 					items.add(dsObj);
 	        	}	        	
         	}
@@ -310,7 +312,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		if(count>0) {
 			
 			// forward
-			sort();
+			//sort();
 			
 			// initialize indexes
 			int min = getRow(items.get(0));

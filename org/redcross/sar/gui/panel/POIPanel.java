@@ -29,6 +29,7 @@ import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.mso.Position;
 
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
@@ -114,8 +115,8 @@ public class POIPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.setGotoButtonVisible(false);
-			gotoPanel.setPreferredSize(new Dimension(290, 140));
+			//gotoPanel.setGotoButtonVisible(false);
+			gotoPanel.setPreferredSize(new Dimension(290, 40));
 			gotoPanel.addDiskoWorkListener(new IDiskoWorkListener() {
 
 				public void onWorkPerformed(DiskoWorkEvent e) {
@@ -129,7 +130,7 @@ public class POIPanel extends DefaultToolPanel {
 					try {
 					
 						// get position
-						Position p = getGotoPanel().getCoordinatePanel().getPosition();
+						Position p = getGotoPanel().getPosition();
 						
 						// has point?
 						if(p!=null) {
@@ -455,7 +456,13 @@ public class POIPanel extends DefaultToolPanel {
 				setCaptionText(getTool().getMap().getDrawAdapter().getDescription());
 			else 
 				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
-						getTool().getMsoCode(), getTool().getDrawMode())); 
+						getTool().getMsoCode(), getTool().getDrawMode())); 			
+			
+			// initialize map?
+			if(getGotoPanel().getMap()==null) getGotoPanel().setMap(getTool().getMap());
+			// initialize point?
+			IPoint p = getGotoPanel().getPoint();
+			if(p==null || p.isEmpty()) getGotoPanel().setPoint(); 
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

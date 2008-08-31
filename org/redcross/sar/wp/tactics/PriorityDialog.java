@@ -11,7 +11,6 @@ import javax.swing.event.ListSelectionListener;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.RadioListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -134,7 +133,7 @@ public class PriorityDialog extends DefaultDialog {
 				};
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setBodyComponent(getPriorityList());
 				
 			} catch (java.lang.Throwable e) {
@@ -213,13 +212,13 @@ public class PriorityDialog extends DefaultDialog {
 		// update icon
 		if(area!=null) {
 			getContentPanel().setCaptionIcon(
-					DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));			
-			getContentPanel().setCaptionText("<html>Endre prioritet for <b>" + 
-					MsoUtils.getMsoObjectName(area,0).toLowerCase() + "</b></html>");
+					DiskoIconFactory.getIcon("MAP.POLYGON","32x32"));			
+			getContentPanel().setCaptionText("Endre prioritet for <b>" + 
+					MsoUtils.getMsoObjectName(area,0).toLowerCase() + "</b>");
 			getPriorityList().setEnabled(true);
 		}
 		else {
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et søkeområde");			
 			getPriorityList().setEnabled(false);
 		}		

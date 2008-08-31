@@ -78,9 +78,11 @@ public class MessageDialog extends DefaultDialog {
 		return msgPanel;
 	}
 
+	/*
 	public void onResize() {
 		getMessagePanel().onResize();
 	}	
+	*/
 	
 	public String showMessage(String title, String msg, int type) {
 		// reset

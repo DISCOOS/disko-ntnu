@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.MsoEvent.EventType;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 
 public interface IUpdateHolderIf {
 

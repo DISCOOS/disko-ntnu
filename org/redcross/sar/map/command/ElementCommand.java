@@ -33,6 +33,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
+		button.setFocusable(false);
 
 		// create dialog
 		dialog = new ElementDialog(Utils.getApp().getFrame());
@@ -56,7 +57,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		}
 	}	
 	
-	public void onElementChange(Enum element) {
+	public void onElementChange(Enum<?> element) {
 		// update toggle button
 		button.setIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(element),"48x48"));
 		button.setToolTipText(DiskoEnumFactory.getTooltip(element));

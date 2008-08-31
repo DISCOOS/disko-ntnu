@@ -11,7 +11,6 @@ import javax.swing.JTable;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -114,7 +113,9 @@ public class DraftListDialog extends DefaultDialog {
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
 			try {
-				makeReadyButton = DiskoButtonFactory.createButton(TacticsActionType.MAKE_READY,ButtonSize.NORMAL);
+				makeReadyButton = DiskoButtonFactory.createButton(
+						TacticsActionType.MAKE_READY,
+						getContentPanel().getButtonSize());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

@@ -2,10 +2,8 @@ package org.redcross.sar.map.tool;
 
 import java.io.IOException;
 
-import javax.swing.SwingUtilities;
-
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.map.IDiskoMap;
-
 
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ICommand;
@@ -59,19 +57,42 @@ public class DiskoToolWrapper extends AbstractDiskoTool {
 	private ICommand command = null;
 	private WrapAction wrap = WrapAction.NONE;
 	
-	public static DiskoToolWrapper create(Object tool, WrapAction wrap) {
-		return new DiskoToolWrapper(tool,wrap);
+	/* ==========================================
+	 * Static methods
+	 * ==========================================
+	 */	
+	
+	public static DiskoToolWrapper create(Object tool, WrapAction wrap, boolean toggle, boolean isFocusable) {
+		return new DiskoToolWrapper(tool,wrap,toggle, isFocusable);
 	}
 	
-	public DiskoToolWrapper(Object tool, WrapAction wrap) {
+	/* ==========================================
+	 * Constructors
+	 * ==========================================
+	 */
+	
+	public DiskoToolWrapper(Object tool, WrapAction wrap, boolean toggle, boolean isFocusable) {
 		// prepare
 		this.wrap = wrap;
+		// create button
+		if(toggle)
+			this.button = DiskoButtonFactory.createToggleButton(buttonSize);
+		else {
+			this.button = DiskoButtonFactory.createButton(buttonSize);
+		}
+		this.button.setFocusable(isFocusable);
+		// cast to correct type
 		if(tool instanceof ITool)
 			this.tool = (ITool)tool;
 		if(tool instanceof ICommand)
-			this.command = (ICommand)tool;
+			this.command = (ICommand)tool;		
 	}
 
+	/* ==========================================
+	 * Public methods
+	 * ==========================================
+	 */
+	
 	public boolean isTool() {
 		return tool!=null;
 	}
@@ -186,6 +207,8 @@ public class DiskoToolWrapper extends AbstractDiskoTool {
 				e.printStackTrace();
 			}
 			afterAction(WrapAction.ONMOUSEDOWN);
+			// try to ensure focus
+			requestFocustOnButton();
 		}
 	}
 
@@ -405,8 +428,7 @@ public class DiskoToolWrapper extends AbstractDiskoTool {
 	
 	private void beforeAction(WrapAction type) {
 		// wrap?
-		if(!WrapAction.NONE.equals(wrap)  
-				&& type.equals(wrap)) {
+		if(!WrapAction.NONE.equals(wrap) && type.equals(wrap)) {
 			// trace event
 			//System.out.println(toString() + "::beforeAction("+type+")");						
 			// forward?
@@ -415,8 +437,7 @@ public class DiskoToolWrapper extends AbstractDiskoTool {
 	
 	private void afterAction(WrapAction type) {
 		// wrap?
-		if(!WrapAction.NONE.equals(wrap) 
-				&& type.equals(wrap)) {
+		if(!WrapAction.NONE.equals(wrap) && type.equals(wrap)) {
 			// trace event
 			//System.out.println(toString() + "::afterAction("+type+")");						
 		}		

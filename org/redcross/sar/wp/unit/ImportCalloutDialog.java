@@ -108,7 +108,7 @@ public class ImportCalloutDialog extends DefaultDialog
 		this.setPreferredSize(new Dimension(400, 450));
 		
 		// create content panel
-		m_contentsPanel = new DefaultPanel("");
+		m_contentsPanel = new DefaultPanel();
 		m_contentsPanel.setRequestHideOnFinish(false);
 		m_contentsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
 				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
@@ -236,7 +236,7 @@ public class ImportCalloutDialog extends DefaultDialog
 		layoutComponent(m_importPanel, m_wpUnit.getBundleText("FileName.text"), m_fileTextField, gbc, 0);
 
 		String text = m_wpUnit.getBundleText("File.text");
-		m_fileDialogButton = DiskoButtonFactory.createButton(text,text,null,ButtonSize.NORMAL);
+		m_fileDialogButton = DiskoButtonFactory.createButton(text,text,null,m_contentsPanel.getButtonSize());
 		m_fileDialogButton.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -304,11 +304,12 @@ public class ImportCalloutDialog extends DefaultDialog
 
 	private void initializeButtons()
 	{
-		m_backButton = DiskoButtonFactory.createButton("GENERAL.BACK",ButtonSize.NORMAL);
+		ButtonSize buttonSize = m_contentsPanel.getButtonSize();
+		m_backButton = DiskoButtonFactory.createButton("GENERAL.BACK",buttonSize);
 		m_backButton.setEnabled(false);
 		m_contentsPanel.insertButton("finish", m_backButton, "back");
 		
-		m_nextButton = DiskoButtonFactory.createButton("GENERAL.NEXT",ButtonSize.NORMAL);
+		m_nextButton = DiskoButtonFactory.createButton("GENERAL.NEXT",buttonSize);
 		m_contentsPanel.insertButton("finish", m_nextButton, "next");
 		
 		m_okButton = (JButton)m_contentsPanel.getButton("finish");

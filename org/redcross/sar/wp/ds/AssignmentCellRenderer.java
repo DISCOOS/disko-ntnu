@@ -22,10 +22,13 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value, 
-			boolean isSelected, boolean hasFocus, int row, int column) {
+			boolean isSelected, boolean hasFocus, int row, int col) {
 
+		// convert indexes to model
+		row = table.convertRowIndexToModel(row);
+		
 		// set icon
-		if (column == 0) {
+		if (col == 0) {
 			IAssignmentIf assignment = (IAssignmentIf)value;
 			Enum<?> type = MsoUtils.getType(assignment,true);
 			setIcon(DiskoIconFactory.getIcon(
@@ -36,7 +39,7 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 		}
 		
 		// set text
-		setText(converter.toString(table.getModel(),row,column));
+		setText(converter.toString(table.getModel(),row,col));
 		
 		// update selection state
 		if (isSelected){

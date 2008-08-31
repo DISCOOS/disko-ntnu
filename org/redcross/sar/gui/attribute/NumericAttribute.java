@@ -22,40 +22,71 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private static final int DEFAULT_DECIMAL_PRECISION = 0;
+	private static final int DEFAULT_MAX_DIGITS = 0;
+	private static final boolean ALLOW_NEGATIVE = false;
+	
 	private Class<? extends Number> m_numericClass = Integer.class;
 	
-	public NumericAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */
+	
+	public NumericAttribute(String name, String caption, boolean isEditable) {
+		super(name, caption, isEditable);
 		// forward
-		this(attribute,caption,width,-1,0,false,isEditable);		
+		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 	
-	public NumericAttribute(IAttributeIf attribute, String caption, int width,  
-			int maxDigits, int decimalPrecision, boolean allowNegative, boolean isEditable) {
+	public NumericAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
 		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
+		super(name, caption, isEditable, width, height, value);
+		// forward
+		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
+	}
+
+	public NumericAttribute(String name, String caption, boolean isEditable ,
+			int width, int height, Object value,  
+			int maxDigits, int decimalPrecision, boolean allowNegative) {
+		// forward
+		super(name, caption, isEditable,width, height, value);
+		// forward
+		initialize(maxDigits,decimalPrecision,allowNegative);		
+	}
+		
+	
+	public NumericAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable) {
+		// forward
+		super(attribute, caption, isEditable);
+		// forward
+		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
+	}
+
+	public NumericAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable,
+			int width, int height) {
+		// forward
+		super(attribute, caption, isEditable, width, height);
+		// forward
+		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
+	}
+	
+	public NumericAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable,
+			int width, int height,   
+			int maxDigits, int decimalPrecision, boolean allowNegative) {
+		// forward
+		super(attribute, caption, isEditable, width, height);
+		// forward
+		initialize(maxDigits,decimalPrecision,allowNegative);		
+	}
+	
+	private void initialize(int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// apply number document
 		getTextField().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
 		// forward
 		registerChangeListener();
-		// get value from attribute
-		load();		
-	}
-	
-	public NumericAttribute(String name, String caption, int width, Object value, boolean isEditable) {
-		// forward
-		this(name,caption,width,value,-1,0,false,isEditable);
-	}
-	
-	public NumericAttribute(String name, String caption, int width, Object value, 
-			int maxDigits, int decimalPrecision, boolean allowNegative, boolean isEditable) {
-		// forward
-		super(name,caption,width,null,isEditable);
-		// apply number document
-		getTextField().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
-		// forward
-		registerChangeListener();		
 	}
 	
 	/*==================================================================
@@ -119,7 +150,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		return false;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// reset?
 		if(attribute==null) {
 			// reset
@@ -129,8 +160,8 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 			// is supported?
 			if(isMsoAttributeSupported(attribute)) {
 				// match component type and attribute
-				if(attribute instanceof AttributeImpl.MsoInteger ||
-						attribute instanceof AttributeImpl.MsoDouble) {
+				if( 	attribute instanceof AttributeImpl.MsoInteger ||
+						attribute instanceof AttributeImpl.MsoDouble		) {
 					// save attribute
 					m_attribute = attribute;
 					// update name

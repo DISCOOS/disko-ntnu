@@ -106,10 +106,10 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     	 * Setting a new attribute value is dependent on the
     	 * update mode of the MSO model. If the model is in 
     	 * LOOPBACK_UPDATE_MODE, the attribute should reflect
-    	 * the server value without conflict detection made. If the
+    	 * the server value without any conflict detection. If the
     	 * model is in REMOTE_UPDATE_MODE, a change from the server
     	 * is registered and the attribute value should be analyzed
-    	 * to detect any conflicts between local value (changes) and 
+    	 * to detect any conflicts between local value (private) and 
     	 * the server value (shared). If the model is in 
     	 * LOCAL_UPDATE_MODE, the attribute value state should be 
     	 * updated according to the passed attribute value.
@@ -118,14 +118,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     	 * concurrently during a local update sequence (between two 
     	 * commit() or rollback() invocations), or if a conflict has 
     	 * occurred (remote update during a local update sequence).
-    	 * Hence, if the attribute is in a LOCAL_STATE or 
-    	 * CONFLICTING_STATE, both values will be present. Else (REMOVE_STATE),
-    	 * only server value will be present.
+    	 * Hence, if the attribute is in a LOCAL or CONFLICTING, 
+    	 * both values will be present. Else, only server value will 
+    	 * be present (SERVER state).
     	 *  
     	 * A commit() or rollback() will reset the local value
     	 * to null to ensure state consistency. 
-    	 * 
-    	 * AttributeImpl.setAttrValue(T aValue, boolean isCreating);
     	 * 
     	 * ======================================================== */    	    	
     	
@@ -159,7 +157,9 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * executed without any exception from the message queue, then all 
             	 * changes was posted and forwarded to all listeners. Hence, the
             	 * attribute value can be put in server mode directly after a commit 
-            	 * is executed. The postProcessCommit() implements this fix. 
+            	 * is executed. 
+            	 * 
+            	 * 		!!! The postProcessCommit() implements this fix !!!
             	 * 
             	 * If the source of each change could be uniquely identified 
             	 * (at the model instance level), change messages received as a 
@@ -168,13 +168,19 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * be the correct and intended usage of this mode.
             	 * 
             	 * =========================================================== */
+            	
+                // only server value is kept
+                m_localValue = null;
+                
+            	// set new state
                 newState = IMsoModelIf.ModificationState.STATE_SERVER;
+                
+                // any change?
                 if (!equal(m_serverValue, aValue))
                 {
                     m_serverValue = aValue;
                     valueChanged = true;
                 }
-                m_localValue = null;
                 
                 break;
                 
@@ -185,20 +191,19 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * Update to server value state with conflict detection.
             	 * 
             	 * If the model is in REMOTE_UPDATE_MODE, this indicates that
-            	 * an external change i detected (message queue update), an the 
+            	 * an external change is detected (message queue update), and the 
             	 * model should be update accordingly.
             	 * 
-            	 * If the attribute is in a local value state, the local value may 
-            	 * be different from the server value. The local changes is made 
-            	 * by the user (GUI) or a local service (the application). When an 
+            	 * If the attribute is in local state, the local value may 
+            	 * be different from the server value. Local changes are made 
+            	 * by the user (GUI) or a local service (the application). When a 
             	 * remote update occurs (a change received from the message queue), 
-            	 * the new attribute value state depends on the new server state 
-            	 * and current local state. If these are different, a conflict has 
-            	 * occurred. This is indicated by setting the attribute value state 
-            	 * to conflicting, and methods for resolving this conflict is found
-            	 * in the attribute class. If the new server value and local value 
-            	 * is equal, the attribute value state is changed to the server 
-            	 * value state. 
+            	 * the new attribute state depends on the new server value 
+            	 * and current (local) value. If these are different, a conflict has 
+            	 * occurred. This is indicated by setting the attribute state 
+            	 * to CONFLICTING. Methods for resolving conflicts are supplied 
+				 * by this class. If the new server value and local value 
+            	 * are equal, the attribute state is changed to SERVER. 
             	 * 
             	 * =========================================================== */
             	

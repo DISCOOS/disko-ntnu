@@ -33,7 +33,7 @@ public class DefaultToolPanel extends BaseToolPanel {
 	public DefaultToolPanel(String caption, IDiskoTool tool) {
 		// forward
 		super(caption,tool);
-		// initialise gui
+		// initialize gui
 		initialize();
 	}
 	

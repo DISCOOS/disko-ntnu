@@ -10,6 +10,7 @@ import org.redcross.sar.gui.dialog.GotoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -30,6 +31,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
+		button.setFocusable(false);
 
 		// shows dialog first time onClick is invoked
 		showDirect = true; 
@@ -55,6 +57,13 @@ public class GotoCommand extends AbstractDiskoCommand {
 
 	@Override
 	public void onClick() {
+		// prepare?
+		if(!dialog.isVisible()) {
+			// update on center of map
+			((GotoDialog)dialog).getPoint();
+			// activate SelectFeatureTool
+			Utils.getApp().invoke(DiskoToolType.SELECT_TOOL,false);
+		}
 		// forward
 		super.onClick();
 	}	

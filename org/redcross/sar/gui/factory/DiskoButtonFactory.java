@@ -1,5 +1,6 @@
 package org.redcross.sar.gui.factory;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ResourceBundle;
@@ -9,8 +10,8 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -184,14 +185,14 @@ public class DiskoButtonFactory
 	/**
 	 * Creates a JButton based on size and name argument
 	 */	
-	public static JButton createButton(Enum e, ButtonSize size) {
+	public static JButton createButton(Enum<?> e, ButtonSize size) {
 		return createButton(e,size,null);
 	}
 	
 	/**
 	 * Creates a JButton based on size and name argument
 	 */	
-	public static JButton createButton(Enum e, ButtonSize size, Object resource) {
+	public static JButton createButton(Enum<?> e, ButtonSize size, Object resource) {
 		return createButton(e,size,0,0,resource);
 	}
 	
@@ -199,7 +200,7 @@ public class DiskoButtonFactory
 	 * Creates a JButton based on size and name argument
 	 */	
 	public static JButton createButton(
-			Enum e, ButtonSize size, int dx, int dy, Object resource)
+			Enum<?> e, ButtonSize size, int dx, int dy, Object resource)
 	{
 		// create button
 		JButton button = createButton(size,dx,dy);
@@ -217,14 +218,14 @@ public class DiskoButtonFactory
 	/**
 	 * Creates a JToggleButton based on size and name arguments
 	 */	
-	public static JToggleButton createToggleButton(Enum e, ButtonSize size){
+	public static JToggleButton createToggleButton(Enum<?> e, ButtonSize size){
 		return createToggleButton(e,size,null);
 	}
 	
 	/**
 	 * Creates a JToggleButton based on size and name arguments
 	 */	
-	public static JToggleButton createToggleButton(Enum e, ButtonSize size, Object resource){
+	public static JToggleButton createToggleButton(Enum<?> e, ButtonSize size, Object resource){
 		return createToggleButton(e,size,0,0,resource);
 	}
 	
@@ -232,7 +233,7 @@ public class DiskoButtonFactory
 	 * Creates a JToggleButton based on size and name arguments
 	 */	
 	public static JToggleButton createToggleButton(
-			Enum e, ButtonSize size, int dx, int dy, Object resource)
+			Enum<?> e, ButtonSize size, int dx, int dy, Object resource)
 	{
 		// create button
 		JToggleButton button = createToggleButton(size,dx,dy);
@@ -553,11 +554,11 @@ public class DiskoButtonFactory
 		
 	}
 		
-	public static void setIcon(AbstractButton button, Enum e, String catalog) {
+	public static void setIcon(AbstractButton button, Enum<?> e, String catalog) {
 		setIcon(button,e,catalog,null);
 	}
 	
-	public static void setIcon(AbstractButton button, Enum e, String catalog, Object resource) {
+	public static void setIcon(AbstractButton button, Enum<?> e, String catalog, Object resource) {
 		
 		// get get icon
 		button.setIcon(getIcon(BasicDiskoFactory.getKey(e,"icon"),catalog,resource));
@@ -565,12 +566,12 @@ public class DiskoButtonFactory
 	}
 	
 	public static void setIconTextTooltip(
-			AbstractButton button, Enum e, String catalog) {
+			AbstractButton button, Enum<?> e, String catalog) {
 		setIconTextTooltip(button,e,catalog,null);
 	}
 	
 	public static void setIconTextTooltip(
-			AbstractButton button, Enum e, String catalog, Object resource) {
+			AbstractButton button, Enum<?> e, String catalog, Object resource) {
 		
 		// set tooltip text
 		button.setToolTipText(getTooltip(e,resource));
@@ -711,27 +712,60 @@ public class DiskoButtonFactory
 		return value;
 	}	
 	
-	public static String getText(Enum e) {
+	public static String getText(Enum<?> e) {
 		return getText(e, null);
 	}
 	
-	public static String getTooltip(Enum e) {
+	public static String getTooltip(Enum<?> e) {
 		return getTooltip(e, null);
 	}
 	
-	public static Icon getIcon(Enum e, String catalog) {
+	public static Icon getIcon(Enum<?> e, String catalog) {
 		return getIcon(e,catalog,null);
 	}
 	
-	public static String getText(Enum e, Object resource) {
+	public static String getText(Enum<?> e, Object resource) {
 		return getText(BasicDiskoFactory.getKey(e, "text"),resource);
 	}
 	
-	public static String getTooltip(Enum e, Object resource) {
+	public static String getTooltip(Enum<?> e, Object resource) {
 		return getText(BasicDiskoFactory.getKey(e, "tooltip"),resource);
 	}
 	
-	public static Icon getIcon(Enum e, String catalog, Object resource) {
+	public static Icon getIcon(Enum<?> e, String catalog, Object resource) {
 		return getIcon(BasicDiskoFactory.getKey(e, "icon"),catalog,resource);
+	}
+
+	public static void setFixedHeight(Component c, ButtonSize size) {
+		setFixedHeight(c,size,0);
+	}
+	
+	public static void setFixedHeight(Component c, ButtonSize size, int adjust) {
+		// limit height, allow any width
+		Dimension d = DiskoButtonFactory.getButtonSize(size);
+		// forward
+		Utils.setFixedHeight(c, d.height, adjust);
+	}
+	
+	public static void setFixedWidth(Component c, ButtonSize size) {
+		setFixedWidth(c,size,0);
+	}
+	
+	public static void setFixedWidth(Component c, ButtonSize size, int adjust) {
+		// limit height, allow any width
+		Dimension d = DiskoButtonFactory.getButtonSize(size);
+		// forward
+		Utils.setFixedWidth(c, d.width, adjust);
+	}
+	
+	public static void setFixedSize(Component c, ButtonSize size) {
+		setFixedSize(c,size,0,0);
+	}
+	
+	public static void setFixedSize(Component c, ButtonSize size, int dw, int dh) {
+		// limit height, allow any width
+		Dimension d = DiskoButtonFactory.getButtonSize(size);
+		// forward
+		Utils.setFixedSize(c, d.width, d.height, dw, dh);
 	}
 }

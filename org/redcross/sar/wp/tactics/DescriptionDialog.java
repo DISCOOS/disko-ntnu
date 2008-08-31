@@ -10,7 +10,6 @@ import javax.swing.table.TableColumn;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.model.POITableModel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -127,7 +126,7 @@ public class DescriptionDialog extends DefaultDialog {
 					}
 					
 				};
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setBodyComponent(getPoiTable());
@@ -206,14 +205,14 @@ public class DescriptionDialog extends DefaultDialog {
 		
 		// update icon
 		if(assignment!=null) {
-			Enum e = MsoUtils.getType(assignment,true);
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
-			getContentPanel().setCaptionText("<html>Stegvis beskrivelse av <b>" + 
-					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b></html>");
+			Enum<?> e = MsoUtils.getType(assignment,true);
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"32x32"));
+			getContentPanel().setCaptionText("Stegvis beskrivelse av <b>" + 
+					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b>");
 			getPoiTable().setEnabled(true);
 		}
 		else {
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
 			getPoiTable().setEnabled(false);
 		}

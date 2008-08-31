@@ -16,7 +16,6 @@ import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -113,7 +112,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new DefaultPanel(ButtonSize.NORMAL) {
+				contentPanel = new DefaultPanel("",false,true) {
 					
 					private static final long serialVersionUID = 1L;
 
@@ -158,7 +157,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 				};
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));		
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));		
 				contentPanel.insertButton("finish", getAssignButton(), "assign");
 				contentPanel.insertButton("finish", getReclaimButton(), "reclaim");				
 				contentPanel.setBodyComponent(getUnitTable());
@@ -188,7 +187,9 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private JButton getAssignButton() {
 		if (assignButton == null) {
 			try {
-				assignButton = DiskoButtonFactory.createButton("STATUS.QUEUED",ButtonSize.NORMAL);
+				assignButton = DiskoButtonFactory.createButton(
+						"STATUS.QUEUED",
+						getContentPanel().getButtonSize());
 				assignButton.setToolTipText("Legg oppdrag i kø til valgt enhet");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -205,7 +206,9 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private JButton getReclaimButton() {
 		if (reclaimButton == null) {
 			try {
-				reclaimButton = DiskoButtonFactory.createButton("STATUS.CANCELED",ButtonSize.NORMAL);
+				reclaimButton = DiskoButtonFactory.createButton(
+						"STATUS.CANCELED",
+						getContentPanel().getButtonSize());
 				reclaimButton.setToolTipText("Fjern siste oppdrag fra køen");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -526,7 +529,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 				for (int row = 0; row < table.getRowCount(); row++) {
 					IUnitIf unit = (IUnitIf)table.getValueAt(row, 0);
 					if (unit != null) {
-						List list = unit.getAllocatedAssignments();
+						List<IAssignmentIf> list = unit.getAllocatedAssignments();
 						if (list!=null && list.contains(assignment)) {
 							// select in table
 							table.setRowSelectionInterval(row, row);
@@ -557,18 +560,18 @@ public class UnitSelectionDialog extends DefaultDialog {
 		
 		// update icon
 		if(assignment!=null) {
-			Enum e = MsoUtils.getType(assignment,true);
+			Enum<?> e = MsoUtils.getType(assignment,true);
 			getContentPanel().setCaptionIcon(
-					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
-			getContentPanel().setCaptionText("<html>Legg <b>" + 
+					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"32x32"));
+			getContentPanel().setCaptionText("Legg <b>" + 
 					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + 
 					"</b> i kø til en enhet i listen" + (assignment instanceof ISearchIf ? 
-							"    (<i>mannskapsbehov</i>: <b>" + ((ISearchIf)assignment).getPlannedPersonnel() + "</b>)</html>" : "</html>"));
+							"    (<i>mannskapsbehov</i>: <b>" + ((ISearchIf)assignment).getPlannedPersonnel() + "</b>)" : "</html>"));
 			getAssignButton().setEnabled(true);
 			getReclaimButton().setEnabled(true);
 		}
 		else {
-			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må velge et oppdrag før du kan legge det til køen til enhet");
 			getAssignButton().setEnabled(false);
 			getReclaimButton().setEnabled(false);

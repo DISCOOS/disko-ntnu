@@ -23,20 +23,34 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 	
 	private JTextArea m_textArea;
 	
-	public TextAreaAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
-		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
-		// get value from attribute
-		load();		
-	}
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */	
 	
-	public TextAreaAttribute(String name, String caption, int width, String value, boolean isEditable) {
+	public TextAreaAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable, int width, int height) {
 		// forward
-		super(name,caption,width,value,isEditable);
+		super(attribute, caption, isEditable, width, height);
 	}
-	
+
+	public TextAreaAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable) {
+		// forward
+		super(attribute, caption, isEditable);
+	}
+
+	public TextAreaAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		// forward
+		super(name, caption, isEditable, width, height, value);
+	}
+
+	public TextAreaAttribute(String name, String caption, boolean isEditable) {
+		// forward
+		super(name, caption, isEditable);
+	}
+
 	/*==================================================================
 	 * Public methods
 	 *================================================================== 
@@ -90,7 +104,7 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
-	public Object getValue() {
+	public String getValue() {
 		return getTextArea().getText();
 	}
 	
@@ -101,7 +115,7 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 		return true;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute

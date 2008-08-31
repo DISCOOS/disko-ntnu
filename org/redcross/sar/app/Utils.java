@@ -17,14 +17,10 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
-import no.cmr.common.util.SimpleDecimalFormat;
-
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
-
-import com.esri.arcgis.system.NumericFormat;
 
 /**
  * Utility class containing access to methods for handling properties.
@@ -188,15 +184,54 @@ public class Utils {
 		return packageName.substring (lastDot+1,packageName.length()).toUpperCase();
 	}	
 	
-	public static void setFixedSize(Component c, int w, int h) {
-		Dimension dim = new Dimension(w,h);
-		c.setSize(dim);
-		c.setMinimumSize(dim);
-		c.setPreferredSize(dim);
-		c.setMaximumSize(dim);
+	public static void setFixedHeight(Component c, int h) {
+		setFixedHeight(c,h,0);
 	}
 	
-	public static List<Enum<?>> getListOf(Enum e) {
+	public static void setFixedHeight(Component c, int h, int adjust) {
+		// limit height, allow any width
+		c.setMinimumSize(new Dimension(0,h+adjust));
+		c.setPreferredSize(new Dimension(h+adjust,h+adjust));
+		c.setMaximumSize(new Dimension(Integer.MAX_VALUE,h+adjust));
+	}
+	
+	public static void setFixedWidth(Component c, int w) {
+		setFixedWidth(c,w,0);
+	}
+	
+	public static void setFixedWidth(Component c, int w, int adjust) {
+		// limit height, allow any width
+		c.setMinimumSize(new Dimension(w+adjust, 0));
+		c.setPreferredSize(new Dimension(w+adjust,w+adjust));
+		c.setMaximumSize(new Dimension(w+adjust, Integer.MAX_VALUE));
+	}
+	
+	public static void setFixedSize(Component c, int w, int h) {
+		setFixedSize(c,w,h,0,0);
+	}
+	
+	public static void setFixedSize(Component c, int w, int h, int dw, int dh) {
+		Dimension d = new Dimension(w+dw,h+dh);
+		c.setSize(d);
+		c.setMinimumSize((Dimension)d.clone());
+		c.setPreferredSize((Dimension)d.clone());
+		c.setMaximumSize((Dimension)d.clone());
+	}
+	
+	public static void setAnySize(Component c, int w, int h) {
+		setAnySize(c,w,h,0,0);
+	}
+	
+	public static void setAnySize(Component c, int w, int h, int dw, int dh) {
+		Dimension d = new Dimension(w+dw,h+dh);
+		c.setSize(d);
+		c.setPreferredSize((Dimension)d.clone());
+		c.setMinimumSize(new Dimension(0,0));
+		c.setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));		
+	}
+	
+	
+	public static List<Enum<?>> getListOf(Enum<?> e) {
 		List<Enum<?>> list = new ArrayList<Enum<?>>();
 		list.add(e);
 		return list;
@@ -204,7 +239,7 @@ public class Utils {
 	
 	public static List<Enum<?>> getListOfAll(Class e) {
 		List<Enum<?>> list = new ArrayList<Enum<?>>();
-		Iterator<Enum> it = EnumSet.allOf(e).iterator();
+		Iterator<Enum<?>> it = EnumSet.allOf(e).iterator();
 		while(it.hasNext()) {
 			list.add(it.next());
 		}
@@ -213,7 +248,7 @@ public class Utils {
 	
 	public static List<Enum<?>> getListNoneOf(Class e) {
 		List<Enum<?>> list = new ArrayList<Enum<?>>();
-		Iterator<Enum> it = EnumSet.noneOf(e).iterator();
+		Iterator<Enum<?>> it = EnumSet.noneOf(e).iterator();
 		while(it.hasNext()) {
 			list.add(it.next());
 		}
@@ -390,5 +425,17 @@ public class Utils {
 				+ ":" + formatter.format(minutes) 
 				+ ":" + formatter.format(seconds); 
 	}    
+	
+	public static String stripHtml(String caption) {
+		if(caption.length()>5) {
+			if(caption.substring(0, 6).equalsIgnoreCase("<html>"))
+				caption = caption.substring(6, caption.length());			
+		}
+		if(caption.length()>6) {
+			if(caption.substring(caption.length()-7, caption.length()).equalsIgnoreCase("</html>"))
+				caption = caption.substring(0, caption.length()-7);
+		}
+		return caption;
+	}
     
 }

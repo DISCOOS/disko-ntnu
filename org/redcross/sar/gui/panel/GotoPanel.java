@@ -26,6 +26,8 @@ import com.esri.arcgis.display.SimpleMarkerSymbol;
 import com.esri.arcgis.display.esriScreenCache;
 import com.esri.arcgis.display.esriSimpleMarkerStyle;
 import com.esri.arcgis.geometry.IPoint;
+import com.esri.arcgis.geometry.ISpatialReference;
+import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
 import javax.swing.BorderFactory;
@@ -45,22 +47,23 @@ public class GotoPanel extends DefaultPanel {
 	private static final long serialVersionUID = 1L;
 	private static final double MARKER_SIZE = 12;
 	
-	private JTabbedPane m_tabbedPane = null;
-	private JPanel m_mgrsPanel = null;
-	private JPanel m_utmPanel = null;
-	private JPanel m_degPanel = null;
-	private JPanel m_demPanel = null;
-	private JPanel m_desPanel = null;
-	private CoordinatePanel m_coordinatePanel = null;
-	private JButton m_gotoButton = null;
+	private JTabbedPane m_tabbedPane;
+	private JPanel m_mgrsPanel;
+	private JPanel m_utmPanel;
+	private JPanel m_degPanel;
+	private JPanel m_demPanel;
+	private JPanel m_desPanel;
+	private CoordinatePanel m_coordinatePanel;
+	private JButton m_gotoButton;
 	
 	private IPoint m_p = null;
 	private IDiskoMap m_map = null;
-	protected SimpleMarkerSymbol markerSymbol = null;
+	protected SimpleMarkerSymbol markerSymbol;
 	
-	private boolean m_isAutoUpdate = false;
-	private boolean m_isCaptionUpdate = true;
+	private boolean m_isAutoUpdate;
 	private boolean m_isPositionMarked = false;
+	
+	private String m_caption;
 	
 	/**
 	 * Constructor 
@@ -68,17 +71,7 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	public GotoPanel() {
 		// forward
-		this("",true);		
-	}
-
-	/**
-	 * Constructor 
-	 * 
-	 * @param caption
-	 * @param isAutoUpdate Update coordinate from clicks in map
-	 */
-	public GotoPanel(String caption, boolean isAutoUpdate) {
-		this(caption,isAutoUpdate,true,false,false,ButtonSize.NORMAL);
+		this("Gå til posisjon",true);
 	}
 		
 	/**
@@ -88,8 +81,8 @@ public class GotoPanel extends DefaultPanel {
 	 * @param isAutoUpdate Update coordinate from clicks in map
 	 * @param isAutoCaption Update caption according to selected format
 	 */
-	public GotoPanel(String caption, boolean isAutoUpdate, boolean isCaptionUpdate) {
-		this(caption,isAutoUpdate,isCaptionUpdate,false,false,ButtonSize.NORMAL);
+	public GotoPanel(String caption, boolean isAutoUpdate) {
+		this(caption,isAutoUpdate,false,false,ButtonSize.SMALL);
 	}
 	
 	/**
@@ -97,14 +90,13 @@ public class GotoPanel extends DefaultPanel {
 	 * 
 	 * @param caption
 	 */
-	public GotoPanel(String caption, boolean isAutoUpdate, boolean isCaptionUpdate, boolean finish, boolean cancel, ButtonSize buttonSize) {
+	public GotoPanel(String caption, boolean isAutoUpdate, boolean finish, boolean cancel, ButtonSize buttonSize) {
 
 		// forward
 		super(caption,finish,cancel,buttonSize);
 		
 		// prepare
 		m_isAutoUpdate = isAutoUpdate;
-		m_isCaptionUpdate = isCaptionUpdate;
 
 		try {
 			// create the symbol to draw with
@@ -129,18 +121,16 @@ public class GotoPanel extends DefaultPanel {
 		// initialize GUI
 		initialize();
 		
-		// force caption
+		// update caption
 		setCaptionText(caption);
 		
 	}
 	
 	private void initialize() {
 		try {
-			this.setCaptionText("Gå til posisjon");
 			this.setBodyComponent(getTabbedPane());
-			this.setScrollBarPolicies(
-					BasePanel.VERTICAL_SCROLLBAR_NEVER, 
-					BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+			this.setNotScrollBars();
+			this.insertButton("finish", getGotoButton(), "goto");
 			formatChanged(1);
 		}
 		catch(Exception e) {
@@ -148,27 +138,30 @@ public class GotoPanel extends DefaultPanel {
 		}
 	}
 
+	@Override
+	public void setCaptionText(String caption) {
+		setChangeable(false);
+		m_caption = caption;
+		formatChanged(getCoordinatePanel().getFormat());
+		setChangeable(true);
+	}	
 	
 	public void setAutoUpdate(boolean isAutoUpdate) {
-		// save state
-		m_isAutoUpdate = isAutoUpdate;
-		// set listener status
-		registerMouseListener(isAutoUpdate);
+		// any change?
+		if(m_isAutoUpdate!=isAutoUpdate) {
+			// forward
+			unregisterMouseListener();
+			// save state
+			m_isAutoUpdate = isAutoUpdate;
+			// forward
+			registerMouseListener();
+		}
 	}
 	
 	public boolean isAutoUpdate() {
 		return m_isAutoUpdate;
 	}
 
-	public void setCaptionUpdate(boolean isCaptionUpdate) {
-		// save state
-		m_isCaptionUpdate = isCaptionUpdate;
-	}
-	
-	public boolean isCaptionUpdate() {
-		return m_isCaptionUpdate;
-	}
-	
 	public void setPositionMarked(boolean isPositionMarked) {
 		// save state
 		m_isPositionMarked = isPositionMarked;
@@ -299,7 +292,7 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	private JButton getGotoButton() {
 		if (m_gotoButton == null) {
-			m_gotoButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.NORMAL);			
+			m_gotoButton = DiskoButtonFactory.createButton("MAP.CENTERAT",getButtonSize());
 			m_gotoButton.setEnabled(false);
 			m_gotoButton.addActionListener(new ActionListener() {
 
@@ -322,29 +315,76 @@ public class GotoPanel extends DefaultPanel {
 	}
 	
 	public void reset() {
-		if(m_map!=null) 
-			getClickPoint();
-		else
-			getCoordinatePanel().setText(null);		
+		setPoint();
+	}
+	
+	public IDiskoMap getMap() {
+		return m_map;
 	}
 	
 	public void setMap(IDiskoMap map) {
-		// unregister 
-		registerMouseListener(false);
+		// forward
+		unregisterMouseListener();
 		// prepare
 		this.m_map = map;		
 		// Enable goto button?
 		getGotoButton().setEnabled(m_map!=null);
-		// set listener status
-		registerMouseListener(m_isAutoUpdate);
+		// forward
+		registerMouseListener();
+	}
+
+	public Position getPosition() {
+		return getCoordinatePanel().getPosition();
 	}
 	
-	public void getClickPoint() {
+	public void setPosition(Position p) {
+		getCoordinatePanel().setPosition(p);
+	}
+	
+	public Point getPoint(ISpatialReference srs) {
+		return getCoordinatePanel().getPoint(srs);
+	}
+	
+	public Point getPoint() {
+		try {
+			if(m_map!=null)
+				return getCoordinatePanel().getPoint(m_map.getSpatialReference());
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void setPoint(Point p) {
+		getCoordinatePanel().setPoint(p);
+	}
+	
+	public void setPoint() {
+		if(m_map!=null) {
+			if(m_isAutoUpdate)
+				setClickPoint();
+			else 
+				setCenterPoint();
+		}
+		else
+			getCoordinatePanel().setText(null);				
+	}
+	
+	public void setCenterPoint() {
+		if(m_map!=null)
+			getCoordinatePanel().setPoint(m_map.getCenterPoint());
+	}
+	
+	public void setClickPoint() {
 		if(m_map!=null)
 			getCoordinatePanel().setPoint(m_map.getClickPoint());
 	}
 	
-	public void getMovePoint() {
+	public void setMovePoint() {
 		if(m_map!=null)
 			getCoordinatePanel().setPoint(m_map.getMovePoint());
 	}
@@ -392,8 +432,12 @@ public class GotoPanel extends DefaultPanel {
 			m_tabbedPane.addChangeListener(new ChangeListener() {
 
 				public void stateChanged(ChangeEvent e) {
+					// suspend change event
+					setChangeable(false);
 					// forward
 					formatChanged(m_tabbedPane.getSelectedIndex()+1);
+					// resume change events
+					setChangeable(true);
 				}
 				
 			});
@@ -425,33 +469,33 @@ public class GotoPanel extends DefaultPanel {
 		// set new
 		switch(format) {
 		case 1:
-			caption = "Gå til posisjon (MGRS)";
-			getMGRSPanel().add(getCoordinatePanel(),BorderLayout.WEST);
-			getMGRSPanel().add(getGotoButton(),BorderLayout.EAST);			
+			caption = m_caption + " (MGRS)";
+			getMGRSPanel().add(getCoordinatePanel(),BorderLayout.CENTER); // BorderLayout.WEST
+			//getMGRSPanel().add(getGotoButton(),BorderLayout.EAST);
 			break;
 		case 2:			
-			caption = "Gå til posisjon (UTM)";
+			caption = m_caption + " (UTM)";
 			getUTMPanel().add(getCoordinatePanel(),BorderLayout.WEST);
-			getUTMPanel().add(getGotoButton(),BorderLayout.EAST);			
+			//getUTMPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 3:			
-			caption = "Gå til posisjon (desimal grader)";
-			getDESPanel().add(getCoordinatePanel(),BorderLayout.WEST);
-			getDESPanel().add(getGotoButton(),BorderLayout.EAST);			
+			caption = m_caption + " (desimal grader)";
+			getDESPanel().add(getCoordinatePanel(),BorderLayout.CENTER);
+			//getDESPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 4:			
-			caption = "Gå til posisjon (desimal minutter)";
-			getDEMPanel().add(getCoordinatePanel(),BorderLayout.WEST);
-			getDEMPanel().add(getGotoButton(),BorderLayout.EAST);			
+			caption = m_caption + " (desimal minutter)";
+			getDEMPanel().add(getCoordinatePanel(),BorderLayout.CENTER);
+			//getDEMPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		case 5:			
-			caption = "Gå til posisjon (grad-minutt-sekund)";
-			getDEGPanel().add(getCoordinatePanel(),BorderLayout.WEST);
-			getDEGPanel().add(getGotoButton(),BorderLayout.EAST);			
+			caption = m_caption + " (grad minutt sekund)";
+			getDEGPanel().add(getCoordinatePanel(),BorderLayout.CENTER);
+			//getDEGPanel().add(getGotoButton(),BorderLayout.EAST);			
 			break;
 		}
-		if(m_isCaptionUpdate)
-			this.setCaptionText("Gå til posisjon (grad-minutt-sekund)");
+		// forward
+		super.setCaptionText(caption);
 			
 		// forward
 		getCoordinatePanel().setFormat(format);
@@ -535,19 +579,28 @@ public class GotoPanel extends DefaultPanel {
 		
 	}
 
-	private void registerMouseListener(boolean register) {
+	private void registerMouseListener() {
 		try {
-			if(m_map!=null) {
-				if(register)
-					m_map.addIMapControlEvents2Listener(m_mouseAdapter);
-				else
-					m_map.removeIMapControlEvents2Listener(m_mouseAdapter);							
+			if(m_map!=null && m_isAutoUpdate) {
+				m_map.addIMapControlEvents2Listener(m_mouseAdapter);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	private void unregisterMouseListener() {
+		try {
+			if(m_map!=null && m_isAutoUpdate) {
+				m_map.removeIMapControlEvents2Listener(m_mouseAdapter);							
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	
 	private final IMapControlEvents2Adapter m_mouseAdapter = new IMapControlEvents2Adapter() {
 
@@ -565,7 +618,7 @@ public class GotoPanel extends DefaultPanel {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					// update point?
-					if (m_map != null) getClickPoint();
+					if (m_map != null) setClickPoint();
 				}
 			});			
 		}

@@ -172,6 +172,8 @@ public interface IDiskoApplication extends IModelDriverListenerIf {
 	boolean isLoading();
 	
 	public DiskoKeyEventDispatcher getKeyEventDispatcher();
+	
+	public boolean invoke(Enum<?> cmd, boolean requestFocus);
 
     
 }

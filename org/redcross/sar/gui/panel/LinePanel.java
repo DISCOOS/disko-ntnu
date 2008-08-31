@@ -6,10 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -30,7 +27,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	private static final long serialVersionUID = 1L;
 
 	private JButton snapToButton = null;
-	private DefaultPanel optionsPanel = null;
+	private AttributesPanel optionsPanel = null;
 	private CheckBoxAttribute snapToAttr = null;
 	private TextFieldAttribute minStepAttr = null;
 	private TextFieldAttribute maxStepAttr = null;
@@ -72,22 +69,16 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private DefaultPanel getOptionsPanel() {
+	private AttributesPanel getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
-				optionsPanel = new DefaultPanel("Alternativer",false,false);
-				JPanel body = (JPanel)optionsPanel.getBodyComponent();
-				body.setPreferredSize(new Dimension(200, 150));
-				body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
-				body.add(Box.createVerticalStrut(5));
-				body.add(getSnapToAttr());
-				body.add(Box.createVerticalStrut(5));
-				body.add(getConstraintAttr());
-				body.add(Box.createVerticalStrut(5));
-				body.add(getMinStepAttr());
-				body.add(Box.createVerticalStrut(5));
-				body.add(getMaxStepAttr());
-				body.add(Box.createVerticalStrut(5));
+				
+				optionsPanel = new AttributesPanel("Alternativer","",false,false,ButtonSize.SMALL);
+				optionsPanel.setPreferredBodySize(new Dimension(200, 150));
+				optionsPanel.addAttribute(getSnapToAttr());
+				optionsPanel.addAttribute(getConstraintAttr());
+				optionsPanel.addAttribute(getMinStepAttr());
+				optionsPanel.addAttribute(getMaxStepAttr());
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -98,10 +89,9 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	
 	private CheckBoxAttribute getSnapToAttr() {
 		if(snapToAttr == null) {
-			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",150,false,true);
+			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",true,135,35,false);
 			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
 			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
-			snapToAttr.setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL),true);
 			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
 
 				public void itemStateChanged(ItemEvent e) {
@@ -123,8 +113,9 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 				}
 				
 			});
-			snapToAttr.getButton().setActionCommand("editsnap");
-			snapToAttr.getButton().addActionListener(new ActionListener() {
+			snapToAttr.setButtonVisible(true);
+			snapToAttr.setButtonCommand("editsnap");
+			snapToAttr.addButtonActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
 					// forward
@@ -140,7 +131,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		
 	private CheckBoxAttribute getConstraintAttr() {
 		if(constraintAttr == null) {
-			constraintAttr = new CheckBoxAttribute("constaint","Begrens avstand",150,true,true);
+			constraintAttr = new CheckBoxAttribute("constaint","Begrens avstand",true,135,25,true);
 			constraintAttr.setToolTipText("Begrenser avstand mellom punkter på en linje");
 			constraintAttr.getCheckBox().addItemListener(new ItemListener() {
 
@@ -163,7 +154,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	
 	private TextFieldAttribute getMinStepAttr() {
 		if(minStepAttr == null) {
-			minStepAttr = new TextFieldAttribute("min","Minium avstand",150,"10",true);
+			minStepAttr = new TextFieldAttribute("min","Minium avstand",true,135,25,"10");
 			minStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
 			minStepAttr.setToolTipText("Minimum avstand mellom to punktet");
 			minStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
@@ -189,7 +180,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	
 	private TextFieldAttribute getMaxStepAttr() {
 		if(maxStepAttr == null) {
-			maxStepAttr = new TextFieldAttribute("max","Maximum avstand",150,"100",true);
+			maxStepAttr = new TextFieldAttribute("max","Maximum avstand",true,135,25,"100");
 			maxStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
 			maxStepAttr.setToolTipText("Maximum avstand mellom to punktet");
 			maxStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
@@ -276,6 +267,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	 * ===========================================
 	 */
 	
+	/*
 	@Override
 	public void setFixedSize() {
 		super.setFixedSize();
@@ -287,7 +279,8 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		Utils.setFixedSize(getMinStepAttr(),w,h);	
 		Utils.setFixedSize(getMaxStepAttr(),w,h);	
 	}
-
+	*/
+	
 	/* ===========================================
 	 * SnapListener interface implementation
 	 * ===========================================

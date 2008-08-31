@@ -5,9 +5,7 @@ import java.awt.Frame;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JDialog;
-import javax.swing.JRootPane;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
@@ -15,10 +13,7 @@ import javax.swing.text.BadLocationException;
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.panel.DefaultPanel;
-
-import sun.font.FontFamily;
-
+ 
 public class NumPadDialog extends JDialog {
 
 	private BasePanel buttonPanel = null;  //  @jve:decl-index=0:visual-constraint="328,118"
@@ -87,7 +82,7 @@ public class NumPadDialog extends JDialog {
 			GridLayout gridLayout = new GridLayout();
 			gridLayout.setRows(4);
 			gridLayout.setColumns(3);
-			buttonPanel = new BasePanel("Tastatur",ButtonSize.NORMAL);
+			buttonPanel = new BasePanel("Tastatur");
 			JPanel panel = (JPanel)buttonPanel.getBodyComponent();
 			panel.setLayout(gridLayout);		
 			panel.add(getOneButton(), null);

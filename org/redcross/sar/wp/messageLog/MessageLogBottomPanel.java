@@ -42,6 +42,7 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -49,8 +50,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -122,6 +121,8 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			m_currentMessage.setCreated(Calendar.getInstance());
 			m_currentMessage.setOccuredTime(Calendar.getInstance());
 			m_currentMessage.setBroadcast(isBroadcast);
+			m_currentMessage.setSender((ICommunicatorIf)m_wpMessageLog.getCmdPost());
+			m_currentMessage.setSingleReceiver((ICommunicatorIf)m_wpMessageLog.getCmdPost());
 			m_wpMessageLog.getMsoModel().resumeClientUpdate();
 			m_newMessage = true;
 			m_messageDirty = false;
@@ -196,6 +197,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     private JToggleButton  m_changeTasksButton;
 
     private static JPanel m_statusPanel;
+    private static JLabel m_statusLabel;
     private static JButton m_cancelStatusButton;
     private static JButton m_waitEndStatusButton;
     private static JButton m_finishedStatusButton;
@@ -207,7 +209,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     {
     	
     	// forward
-    	super(TIP_DO_WORK);
+    	super(TIP_DO_WORK,ButtonSize.SMALL);
     	
     	// prepare
     	m_newMessage = false;
@@ -226,15 +228,15 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	initComponents();
 	}
 
-    private JPanel createPanel(int width, int height)
+    private JPanel createPanel(int minWidth, int maxWidth, int height)
     {
     	JPanel panel = new JPanel();
     	panel.setLayout(new BorderLayout());
-
-    	panel.setMinimumSize(new Dimension(width, height));
-    	panel.setPreferredSize(new Dimension(width, height));
-    	panel.setMaximumSize(new Dimension(width, height));
-
+    	
+    	panel.setMinimumSize(new Dimension(minWidth!=-1 ? minWidth : 0, 0));
+    	panel.setPreferredSize(new Dimension(maxWidth!=-1 ? maxWidth : 0, height));
+    	panel.setMaximumSize(new Dimension(maxWidth!=-1 ? maxWidth : Integer.MAX_VALUE, Integer.MAX_VALUE));
+    	
     	return panel;
     }
 
@@ -393,6 +395,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		m_fromLabel.setText("");
 		m_toLabel.setText("");
 		m_taskLabel.setText("");
+		m_statusLabel.setText("");
 		m_tipPanel.setCaptionText(TIP_DO_WORK);
 
 		for(IEditMessageComponentIf component : m_editComponents)
@@ -416,24 +419,11 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	m_tipPanel = getHeaderPanel();
     	
     	// calculate body height
-    	int h = PANEL_HEIGHT - 30;
+    	int h = PANEL_HEIGHT - 40;
     	
     	// prepare to add
     	JPanel panel = (JPanel)getBodyComponent();    	
-    	panel.setPreferredSize(new Dimension(SMALL_PANEL_WIDTH*16,h));    	
-    	panel.setLayout(new GridBagLayout());
-    	
-    	// prepare grid contraints
-    	GridBagConstraints gbc = new GridBagConstraints();
-    	gbc.fill = GridBagConstraints.BOTH;
-    	gbc.weightx = 1.0;
-    	gbc.weighty = 0.0;
-    	gbc.gridx = 0;
-    	gbc.gridy = 0;
-
-    	// prepare first row
-        gbc.gridy=0;
-    	gbc.gridwidth = 15;
+    	panel.setPreferredSize(new Dimension(SMALL_PANEL_WIDTH*16,h));
     	
     	// Add table header
     	JTableHeader header = logTable.getTableHeader();
@@ -442,65 +432,67 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	{
     		header.removeMouseListener(ml);
     	}
-    	panel.add(header, gbc);
+    	panel.add(header, BorderLayout.NORTH);
     	logTable.setTableHeader(null);
-
-    	// prepare next row
-        gbc.gridy++;
-    	gbc.gridwidth = 1;
-    	gbc.weighty = 1.0;
-    	gbc.weightx = 0.0;
+    	header.setTable(logTable);
+    	
+    	JPanel columns = new JPanel();
+    	columns.setLayout(new BoxLayout(columns,BoxLayout.X_AXIS));
+    	panel.add(columns, BorderLayout.CENTER);
 
     	// calculate column height
     	h -= header.getHeight();
     	
-    	// Nr panel
-        m_nrPanel = createPanel(SMALL_PANEL_WIDTH - 3, h);
+    	// set separator width
+        int dx = 1;
+        
+        // set label position
+        String position = BorderLayout.NORTH;
+
+    	// Message Number panel
+    	TableColumn column = header.getColumnModel().getColumn(0);    	
+        m_nrPanel = createPanel(column.getMinWidth() - dx,column.getMaxWidth() - dx, h);
         m_nrLabel = new JLabel();
-        m_nrPanel.add(m_nrLabel, BorderLayout.CENTER);
+        m_nrPanel.add(m_nrLabel, position);
         m_nrPanel.add(Box.createRigidArea(DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL)), BorderLayout.SOUTH);
-        panel.add(m_nrPanel, gbc);
-        gbc.gridx++;
-        panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
+        columns.add(m_nrPanel);
+        columns.add(new JSeparator(JSeparator.VERTICAL));
 
         // DTG panel
-        m_dtgPanel = createPanel(SMALL_PANEL_WIDTH + 9, h);
+        column = header.getColumnModel().getColumn(1);
+        m_dtgPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_dtgLabel = new JLabel();
-        m_dtgPanel.add(m_dtgLabel, BorderLayout.CENTER);
+        m_dtgPanel.add(m_dtgLabel, position);
         m_dtgPanel.add(m_changeDTGButton, BorderLayout.SOUTH);
-        gbc.gridx++;
-        panel.add(m_dtgPanel, gbc);
-        gbc.gridx++;
-        panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
+        columns.add(m_dtgPanel);
+        columns.add(new JSeparator(JSeparator.VERTICAL));
         
         // From panel
-        m_fromPanel = createPanel(SMALL_PANEL_WIDTH, h);
+        column = header.getColumnModel().getColumn(2);
+        m_fromPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_fromLabel = new JLabel();
-        m_fromPanel.add(m_fromLabel, BorderLayout.CENTER);
+        m_fromPanel.add(m_fromLabel, position);
         m_fromPanel.add(m_changeFromButton, BorderLayout.SOUTH);
-        gbc.gridx++;
-        panel.add(m_fromPanel, gbc);
-        gbc.gridx++;
-        panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
+        columns.add(m_fromPanel);
+        columns.add(new JSeparator(JSeparator.VERTICAL));
         
         // To panel
-        m_toPanel = createPanel(SMALL_PANEL_WIDTH, h);
+        column = header.getColumnModel().getColumn(3);
+        m_toPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_toLabel = new JLabel();
-        m_toPanel.add(m_toLabel, BorderLayout.CENTER);
+        m_toPanel.add(m_toLabel, position);
         m_toPanel.add(m_changeToButton, BorderLayout.SOUTH);
-        gbc.gridx++;
-        panel.add(m_toPanel, gbc);
-        gbc.gridx++;
-        panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
+        columns.add(m_toPanel);
+        columns.add(new JSeparator(JSeparator.VERTICAL));
 
         // Message panel
-        gbc.weightx = 1.0;
         m_messagePanel = new JPanel();
         BoxLayout boxLayout = new BoxLayout(m_messagePanel, BoxLayout.Y_AXIS);
         m_messagePanel.setLayout(boxLayout);
         m_cardsPanel = new JPanel();
         m_cardsPanel.setLayout(new CardLayout());
-        m_cardsPanel.setPreferredSize(new Dimension(SMALL_PANEL_WIDTH*8, h-100));
+        column = header.getColumnModel().getColumn(4);
+        m_cardsPanel.setPreferredSize(new Dimension(column.getMaxWidth() - dx*2 + 20, h-100));
         m_cardsPanel.setAlignmentX(0.0f);
         m_cardsPanel.add(new JPanel(), EMPTY_PANEL_ID);
         CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
@@ -508,45 +500,38 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
         m_messagePanel.add(m_cardsPanel);
 
         m_buttonRow.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-        m_buttonRow.setMaximumSize(new Dimension(SMALL_PANEL_WIDTH*9,
+        m_buttonRow.setMaximumSize(new Dimension(column.getMaxWidth() - dx*2,
         		(int)DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height));
         m_buttonRow.setAlignmentX(0.0f);
         m_messagePanel.add(m_buttonRow);
-        gbc.gridx++;
-        panel.add(m_messagePanel, gbc);
-        gbc.weightx = 0.0;
-        gbc.gridx++;
-        panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
+        columns.add(m_messagePanel);
+        columns.add(new JSeparator(JSeparator.VERTICAL));
 
         // Task panel
-        gbc.weightx = 0.0;
-        m_taskPanel = createPanel(2*SMALL_PANEL_WIDTH - 1, h);
+        column = header.getColumnModel().getColumn(5);
+        m_taskPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_taskLabel = new JLabel();
-        m_taskPanel.add(m_taskLabel, BorderLayout.CENTER);
+        m_taskPanel.add(m_taskLabel, position);
         JPanel taskButtonPanel = new JPanel();
         taskButtonPanel.setLayout(new BoxLayout(taskButtonPanel, BoxLayout.PAGE_AXIS));
         taskButtonPanel.setBorder(null);
         taskButtonPanel.add(m_changeTasksButton);
         m_taskPanel.add(taskButtonPanel, BorderLayout.SOUTH);
-        gbc.gridx++;
-        panel.add(m_taskPanel, gbc);
-        gbc.gridx++;
-        panel.add(new JSeparator(JSeparator.VERTICAL), gbc);
-        
-        // Fill to match table scroll-bar
-        gbc.gridx++;
-        panel.add(Box.createRigidArea(new Dimension(43, 10)), gbc);
+        columns.add(m_taskPanel);
+        columns.add(new JSeparator(JSeparator.VERTICAL));
         
         // Status panel
-        m_statusPanel = createPanel(SMALL_PANEL_WIDTH + 18, h);
+        column = header.getColumnModel().getColumn(6);
+        m_statusPanel = createPanel(column.getMinWidth() - dx*2 + 25,column.getMaxWidth() - dx*2 + 25, h);
+        m_statusLabel = new JLabel();
+        m_statusPanel.add(m_statusLabel,position);
         JPanel actionButtonPanel = new JPanel();
         actionButtonPanel.setLayout(new BoxLayout(actionButtonPanel, BoxLayout.PAGE_AXIS));
         actionButtonPanel.add(m_cancelStatusButton);
         actionButtonPanel.add(m_waitEndStatusButton);
         actionButtonPanel.add(m_finishedStatusButton);
         m_statusPanel.add(actionButtonPanel, BorderLayout.SOUTH);
-        gbc.gridx++;
-        panel.add(m_statusPanel, gbc);
+        columns.add(m_statusPanel);
     }
 
     private void initComponents()
@@ -679,6 +664,9 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			}
 			tasksString.append("</html>");
 			m_taskLabel.setText(tasksString.toString());
+			
+			// set status
+			m_statusLabel.setText(m_currentMessage.getStatusText());
 
 			// Update dialogs
 			for(int i=0; i<m_editComponents.size(); i++)
@@ -1143,7 +1131,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 					}
 					else {
 						// notify
-						Utils.showMessage("Du må først legge til en meldingslinje");
+						Utils.showWarning("Begrensning","Du må først legge til en meldingslinje");
 						// reset selection
 						m_dummyButton.doClick();
 					}

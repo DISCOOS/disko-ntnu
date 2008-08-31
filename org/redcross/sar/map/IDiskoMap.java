@@ -130,7 +130,7 @@ public interface IDiskoMap {
 	public List<IFeatureLayer> getSnappableLayers() throws IOException, AutomationException;
 	
 	public Point getClickPoint();
-	
+	public Point getCenterPoint();
 	public Point getMovePoint();
 
 	public double getScale();

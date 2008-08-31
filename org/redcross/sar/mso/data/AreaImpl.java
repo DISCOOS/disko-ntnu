@@ -145,7 +145,8 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     /*-------------------------------------------------------------------------------------------
      * Overridden Methods
      *-------------------------------------------------------------------------------------------*/
-
+    
+    @Override
     public boolean delete()
     {
         if (canDelete())

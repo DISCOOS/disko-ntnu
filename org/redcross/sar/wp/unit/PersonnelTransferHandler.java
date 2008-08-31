@@ -39,7 +39,7 @@ public class PersonnelTransferHandler extends TransferHandler
 	}
 
 	/**
-	 * Exports personnel from {@link PersonnelOverviewTableModel} or {@link UnitPersonnelTableModel}, depending
+	 * Exports personnel from {@link PersonnelTableModel} or {@link UnitPersonnelTableModel}, depending
 	 * on which way the user drags.
 	 */
 	@Override
@@ -49,7 +49,7 @@ public class PersonnelTransferHandler extends TransferHandler
 		int selectedRow = table.getSelectedRow();
 		TableModel model = table.getModel();
 		IPersonnelIf personnel = null;
-		if(model instanceof PersonnelOverviewTableModel)
+		if(model instanceof PersonnelTableModel)
 		{
 			// Exporting from personnel overview table
 			personnel = (IPersonnelIf)table.getValueAt(selectedRow, 2);
@@ -85,7 +85,7 @@ public class PersonnelTransferHandler extends TransferHandler
 
         // Always allowed to remove personnel from a unit (?)
         JTable targetTable = (JTable)support.getComponent();
-        if(targetTable.getModel() instanceof PersonnelOverviewTableModel)
+        if(targetTable.getModel() instanceof PersonnelTableModel)
         {
         	return true;
         }

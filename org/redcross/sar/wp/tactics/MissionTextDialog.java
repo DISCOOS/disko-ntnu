@@ -9,7 +9,6 @@ import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -125,7 +124,7 @@ public class MissionTextDialog extends DefaultDialog {
 				
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
-				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setBodyComponent(getTextArea());
 				
 			} catch (java.lang.Throwable e) {
@@ -199,14 +198,14 @@ public class MissionTextDialog extends DefaultDialog {
 		IOperationAreaIf area = (IOperationAreaIf)getMsoObject();
 		// update icon
 		if(area!=null) {
-			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON","48x48"));
-			getContentPanel().setCaptionText("<html>Skriv inn ordre fra oppdragsgiver for <b>" + 
+			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("MAP.POLYGON","32x32"));
+			getContentPanel().setCaptionText("Skriv inn ordre fra oppdragsgiver for <b>" + 
 					MsoUtils.getOperationAreaName(area,true).toLowerCase() 
-					+ "</b></html>");
+					+ "</b>");
 			getTextArea().setVisible(true);
 		}
 		else {
-			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));
+			contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et operasjonsområde");			
 			getTextArea().setVisible(false);
 		}		

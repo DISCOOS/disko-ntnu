@@ -1,14 +1,15 @@
 package org.redcross.sar.gui.attribute;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -33,24 +34,26 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	private static final long serialVersionUID = 1L;
 	
-	protected JLabel m_captionLabel = null;
-	protected Component m_component = null;
-	protected AbstractButton m_button = null;
+	protected static final int DEFAULT_CAPTION_WIDTH = 80;
+	protected static final int DEFAULT_MAXIMUM_HEIGHT = 25;
 	
-	protected String m_caption = null;
+	protected JLabel m_captionLabel;
+	protected Component m_component;
+	protected AbstractButton m_button;
+	protected Component m_buttonStrut;
 	
-	protected Dimension m_fixedSize = null;
-
-	protected IAttributeIf<?> m_attribute = null;
+	protected String m_caption;
+	
+	protected IAttributeIf<?> m_attribute;
 	
 	protected boolean m_isDirty = false;
 	protected boolean m_autoSave = false;
 	protected boolean m_isEditable = false;
 	
-	protected int m_captionWidth = 80;
-	protected int m_maximumHeight = 25;
-	
 	private int m_isConsume = 0;
+	
+	private int m_fixedWidth;
+	private int m_fixedHeight;
 	
 	
 	private List<IDiskoWorkListener> listeners = null;
@@ -60,7 +63,11 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 *================================================================== 
 	 */
 	
-	protected AbstractDiskoAttribute(String name, String caption, int width, Object value, boolean isEditable) {
+	protected AbstractDiskoAttribute(String name, String caption, boolean isEditable) {
+		this(name,caption,isEditable,DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT,null);
+	}
+	
+	protected AbstractDiskoAttribute(String name, String caption, boolean isEditable, int width, int height, Object value) {
 		// prepare
 		listeners = new ArrayList<IDiskoWorkListener>();
 		// initialize GUI
@@ -70,8 +77,31 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		setCaption(caption);
 		setValue(value);
 		setEditable(isEditable);		
-		setCaptionWidth(width);
+		setFixedCaptionWidth(width);
+		setFixedHeight(height);
+		//setBorder(BorderFactory.createLineBorder(Color.RED)); // USED TO DEBUG LAYOUT PROBLEMS
 	}
+	
+	protected AbstractDiskoAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable) {
+		// forward
+		this(attribute.getName(),caption,isEditable);
+		// set attribute
+		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
+		// get value from attribute
+		load();		
+	}
+	
+	protected AbstractDiskoAttribute(IAttributeIf<?> attribute, 
+			String caption, boolean isEditable, 
+			int width, int height) {
+		// forward
+		this(attribute.getName(),caption,isEditable,width,height,null);
+		// set attribute
+		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
+		// get value from attribute
+		load();		
+	}
+	
 	
 	/*==================================================================
 	 * Protected methods
@@ -83,6 +113,8 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 			m_captionLabel = new JLabel(m_caption);
 			m_captionLabel.setVerticalAlignment(SwingConstants.TOP);
 			m_captionLabel.setLabelFor(getComponent());
+			m_captionLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+			m_captionLabel.setAlignmentY(JComponent.CENTER_ALIGNMENT);
 		}
 		return m_captionLabel;
 	}
@@ -128,6 +160,18 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return null;
 	}
 	
+	/**
+	 * This method initializes Button	
+	 * 	
+	 * @return {@link AbstractButton}
+	 */
+	protected AbstractButton getButton() {
+		if (m_button == null) {
+			m_button = DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL);
+			m_button.setVisible(false);
+		}
+		return m_button;
+	}			
 	
 	/*==================================================================
 	 * Private methods
@@ -135,27 +179,17 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 */
 	
 	private void initialize() {
-		BorderLayout bl = new BorderLayout();
-		bl.setHgap(5);
-		bl.setVgap(5);
-		this.setLayout(bl);
-		this.add(getCaptionLabel(),BorderLayout.WEST);
-		this.add(getComponent(),BorderLayout.CENTER);
-		this.add(getButton(), BorderLayout.EAST);
-		addComponentListener(new ComponentAdapter() {
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-				setSizes();
-			}
-
-			@Override
-			public void componentShown(ComponentEvent e) {
-				setSizes();
-			}
-			
-		});
-		
+		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
+		this.add(getCaptionLabel());
+		Component c = getComponent();
+		if(c instanceof JComponent) {
+			((JComponent)c).setAlignmentX(JComponent.LEFT_ALIGNMENT);
+			((JComponent)c).setAlignmentY(JComponent.CENTER_ALIGNMENT);
+		}
+		this.add(getComponent());
+		this.add(getButton());
+		// do not add before button is made visible
+		m_buttonStrut = Box.createHorizontalStrut(5);
 	}
 						
 	/*==================================================================
@@ -197,40 +231,35 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 			return m_isDirty;
 	}
 	
-	public int getCaptionWidth() {
-		return m_captionWidth ==-1 ? getCaptionLabel().getWidth() : m_captionWidth ;
+	public int getFixedCaptionWidth() {
+		return m_fixedWidth;
 	}
 
-	public void setCaptionWidth(int width) {
-		// update
-		m_captionWidth = width;
-		// apply
-		setSizes();
+	public void setFixedCaptionWidth(int width) {
+		// save width
+		m_fixedWidth = width;
+		// translate
+		if(width==-1)
+			Utils.setFixedSize(getCaptionLabel(),DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT);
+		else
+			Utils.setFixedSize(getCaptionLabel(), width, Integer.MAX_VALUE);
 	}	
 	
-	public int getMaximumHeight() {
-		return m_maximumHeight ==-1 ? getHeight() : m_maximumHeight ;
+	public int getFixedHeight() {
+		return m_fixedHeight;
 	}
 
-	public void setMaximumHeight(int height) {
-		// update
-		m_maximumHeight = height;
-		// apply
-		setSizes();
+	public void setFixedHeight(int height) {
+		// save height
+		m_fixedHeight = height;
+		// constrain height to button
+		height = m_button!=null && m_button.isVisible() ? Math.max(height,m_button.getPreferredSize().height) : height;
+		// translate
+		if(height==-1)
+			Utils.setFixedHeight(this, DEFAULT_MAXIMUM_HEIGHT);
+		else
+			Utils.setFixedHeight(this, height);
 	}	
-	
-	private void setSizes() {
-		// get sizes
-		int cw = getCaptionWidth();
-		int mh = Math.max(getMaximumHeight(), getHeight());
-		// set as absolute caption size
-		Utils.setFixedSize(getCaptionLabel(),cw,mh);
-		// set width
-		int mw = Math.max(getWidth() - getCaptionWidth() - getButton().getWidth() - 10, 75);
-		// set absolute component size
-		Utils.setFixedSize(getComponent(), mw, mh);			
-		
-	}
 	
 	@Override
 	public void setEnabled(boolean isEnabled) {
@@ -272,7 +301,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	public boolean load() {
 		// consume?
 		if(isConsume()) return false;
-		// initialise
+		// initialize
 		boolean bFlag = false;
 		// consume change
 		setConsume(true);
@@ -286,7 +315,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 			}	
 		}
 		else {
-			// reapply current value
+			// re-apply current value
 			bFlag = setValue(getValue());
 		}
 		// reset flag
@@ -336,11 +365,11 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return (m_attribute!=null);
 	}
 	
-	public IAttributeIf getMsoAttribute() {
+	public IAttributeIf<?> getMsoAttribute() {
 		return m_attribute;
 	}
 
-  	public static boolean isMsoAttributeSupported(IAttributeIf attribute) {
+  	public static boolean isMsoAttributeSupported(IAttributeIf<?> attribute) {
 		return !(attribute instanceof AttributeImpl.MsoPolygon || 
 				attribute instanceof AttributeImpl.MsoRoute || 
 				attribute instanceof AttributeImpl.MsoTrack);  		
@@ -357,44 +386,113 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	public void setButton(AbstractButton button, boolean isVisible) {
 		// remove current?
-		if(m_button!=null) this.remove(m_button);
-		// add new?
-		if(button!=null) this.add(button, BorderLayout.EAST);
+		if(m_button!=null) {
+			if(m_button.isVisible()) this.remove(m_buttonStrut);
+			this.remove(m_button);
+		}
 		// prepare
 		m_button = button;
-		// update?
-		if(m_button!=null) {
-			// update 
-			m_button.setVisible(isVisible);
-			m_button.setEnabled(isEnabled() && isEditable());
-		}
+		// force?
+		if(m_button==null) getButton();
+		// update 
+		m_button.setVisible(isVisible);
+		m_button.setEnabled(isEnabled() && isEditable());
+		m_button.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+		m_button.setAlignmentY(JComponent.CENTER_ALIGNMENT);			
+		if(isVisible) this.add(m_buttonStrut);
+		if(button!=null) this.add(button);
+		setFixedHeight(m_fixedHeight);
 	}
 	
-	/**
-	 * This method initializes Button	
-	 * 	
-	 * @return {@link AbstractButton}
-	 */
-	public AbstractButton getButton() {
-		if (m_button == null) {
-			m_button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
-			m_button.setVisible(false);
-		}
-		return m_button;
+	public String getButtonText() {
+		return getButton().getText();
 	}
+
+	public void setButtonText(String text) {
+		getButton().setText(text);		
+	}
+
+	public String getButtonTooltipText() {
+		return getButton().getToolTipText();
+	}
+
+	public void setButtonTooltipText(String text) {
+		getButton().setToolTipText(text);		
+	}
+
+	public boolean isButtonVisible() {
+		return getButton().isVisible();
+	}
+	
+	public void setButtonVisible(boolean isVisible) {
+		if(getButton().isVisible()!=isVisible) {
+			if(getButton().isVisible()) {
+				this.remove(m_buttonStrut);
+			}
+			else {
+				this.remove(getButton());
+				this.add(m_buttonStrut);
+				this.add(getButton());
+			}			
+			getButton().setVisible(isVisible);
+			setFixedHeight(m_fixedHeight);			
+		}
+	}	
+	
+	public boolean isButtonEnabled() {
+		return getButton().isEnabled();
+	}
+
+	public void setButtonEnabled(boolean isEnabled) {
+		getButton().setEnabled(isEnabled);		
+	}
+
+	public Icon getButtonIcon() {
+		return getButton().getIcon();
+	}
+
+	public void setButtonIcon(Icon icon) {
+		getButton().setIcon(icon);				
+	}
+
+	public String getButtonCommand() {
+		return getButton().getActionCommand();
+	}
+
+	public void setButtonCommand(String name) {
+		getButton().setActionCommand(name);
 		
+	}
+	
+	public boolean addButtonActionListener(ActionListener listener) {
+		if(listener!=null && m_button!=null) {
+			getButton().addActionListener(listener);
+			return true;
+		}
+		return false;		
+	}
+
+	public boolean removeButtonActionListener(ActionListener listener) {
+		if(listener!=null && m_button!=null) {
+			getButton().removeActionListener(listener);
+			return true;
+		}
+		return false;		
+	}
+	
 	/*==================================================================
 	 * Abstract public methods
 	 *================================================================== 
 	 */
-	
+
+
 	public abstract Object getValue();
 	
 	public abstract boolean setValue(Object value);
 	
 	public abstract Component getComponent();	
 	
-	public abstract boolean setMsoAttribute(IAttributeIf attribute);
+	public abstract boolean setMsoAttribute(IAttributeIf<?> attribute);
 	
 	
 }

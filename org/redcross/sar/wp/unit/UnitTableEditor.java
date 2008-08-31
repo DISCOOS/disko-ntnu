@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
  *
  * @author thomasl
  */
-public class UnitOverviewTableEditor
+public class UnitTableEditor
 {
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
@@ -38,7 +38,7 @@ public class UnitOverviewTableEditor
 
 	private IDiskoWpUnit m_wpUnit;
 
-	public UnitOverviewTableEditor(IDiskoWpUnit wp)
+	public UnitTableEditor(IDiskoWpUnit wp)
 	{
 		m_wpUnit = wp;
 	}
@@ -93,7 +93,7 @@ public class UnitOverviewTableEditor
 				{
 					// Set unit i unit details view
 					int index = m_table.convertRowIndexToModel(m_editingRow);
-					UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
+					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 					m_wpUnit.setUnit(unit);
 					m_wpUnit.setLeftView(IDiskoWpUnit.UNIT_VIEW_ID);
@@ -121,7 +121,7 @@ public class UnitOverviewTableEditor
 		{
 			// Get unit at row
 			int index = m_table.convertRowIndexToModel(row);
-			UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
+			UnitTableModel model = (UnitTableModel)m_table.getModel();
 			IUnitIf rowUnit = model.getUnit(index);
 
 			// Get editing unit
@@ -198,7 +198,7 @@ public class UnitOverviewTableEditor
 					
 					// release unit
 					int index = m_table.convertRowIndexToModel(m_editingRow);
-					UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
+					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 
 					m_wpUnit.getMsoModel().suspendClientUpdate();
@@ -252,7 +252,7 @@ public class UnitOverviewTableEditor
 		private void updateCell(int row)
 		{
 			int index = m_table.convertRowIndexToModel(row);
-			UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
+			UnitTableModel model = (UnitTableModel)m_table.getModel();
 			IUnitIf unit = model.getUnit(index);
 
 			// Update buttons

@@ -213,8 +213,8 @@ public class TrackDialog extends DefaultDialog  {
 			Enum<?> e = MsoUtils.getType(assignment,true);
 			getContentPanel().setCaptionIcon(
 					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"48x48"));
-			getContentPanel().setCaptionText("<html>Estimer rute for <b>" + 
-					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b></html>");
+			getContentPanel().setCaptionText("Estimer rute for <b>" + 
+					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b>");
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "48x48"));

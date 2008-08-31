@@ -1,8 +1,7 @@
 package org.redcross.sar.gui.panel;
 
-import java.awt.CardLayout;
 import java.awt.Component;
-import java.awt.Container;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
 import org.redcross.sar.gui.attribute.CheckBoxAttribute;
 import org.redcross.sar.gui.attribute.DTGAttribute;
@@ -24,11 +24,18 @@ import org.redcross.sar.gui.attribute.IDiskoAttribute;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.attribute.PositionAttribute;
 import org.redcross.sar.gui.attribute.TextAreaAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
+import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
+import org.redcross.sar.mso.data.AttributeImpl.MsoDouble;
+import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
+import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
+import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
+import org.redcross.sar.mso.data.AttributeImpl.MsoString;
+import org.redcross.sar.mso.data.AttributeImpl.MsoTimePos;
 
 /**
  * @author kennetgu
@@ -38,79 +45,88 @@ public class AttributesPanel extends DefaultPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private List<String> m_attributes = null;
-	private Map<String,IDiskoAttribute> m_panels = null;
+	private List<String> m_names;
+	private Map<String,IDiskoAttribute> m_attributes;
 	
-	private JPanel m_listPanel = null;
-	private JLabel m_emptyLabel = null;
+	private JLabel m_messageLabel;
 	
-	private Component glue = null;
+	private Component glue;
 	
 	private float m_attribAlignX = Component.LEFT_ALIGNMENT;
 	private float m_attribAlignY = Component.CENTER_ALIGNMENT;
+	
+	private boolean m_isMessageVisible = false;
 	
 	public AttributesPanel() {
 		this("Egenskaper","Ingen egenskaper funnet",true,true);
 	}
 	
 	public AttributesPanel(String caption, String message, boolean finish, boolean cancel) {
-		this(caption,message,finish,cancel,ButtonSize.NORMAL);
+		this(caption,message,finish,cancel,ButtonSize.SMALL);
 	}
 
 	public AttributesPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
 		// forward
 		super(caption,finish,cancel,buttonSize);
 		// prepare
-		m_attributes = new ArrayList<String>();
-		m_panels = new HashMap<String, IDiskoAttribute>();		
+		m_names = new ArrayList<String>();
+		m_attributes = new HashMap<String, IDiskoAttribute>();		
 		// initialize GUI
 		initialize(message);
 	}
 	
 	private void initialize(String message) {
-		// set body layout
-		setBodyLayout(new CardLayout());
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		JLabel label = getEmptyLabel();
-		label.setText(message);
-		this.addBodyChild(getEmptyLabel(),"message");
-		this.addBodyChild(getListPanel(),"list");
-		// show list
-		showCard("message");
+		// get body panel
+		JPanel panel = (JPanel)getBodyComponent();
+		// get body panel border
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		// set layout
+		//panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+		// prepare message label
+		getMessageLabel().setText(message);		
+		// show message
+		setMessageVisible(true);
 	}
 	
-	private void showCard(String name)  {
-		CardLayout c = (CardLayout)getBodyLayout();
-		c.show((Container)getBodyComponent(), name);
+	public boolean isMessageVisible() {
+		return m_isMessageVisible;
 	}
 	
-	private JPanel getListPanel() {
-		if(m_listPanel==null) {
-			m_listPanel = new JPanel();
-			m_listPanel.setLayout(new BoxLayout(m_listPanel,BoxLayout.Y_AXIS));
-			m_listPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+	public void setMessageVisible(boolean isVisible)  {
+		// any change?
+		if(m_isMessageVisible!=isVisible) {			
+			m_isMessageVisible = isVisible;
+			JPanel panel = (JPanel)getBodyComponent();
+			panel.removeAll();
+			if(isVisible) {
+				panel.setLayout(new GridLayout(5,5));
+				panel.add(getMessageLabel());
+			}
+			else {
+				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+				rebuild();
+			}
 		}
-		return m_listPanel;
 	}
 	
-	private JLabel getEmptyLabel() {
-		if(m_emptyLabel==null) {
-			m_emptyLabel = new JLabel();
-			m_emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-			m_emptyLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+	private JLabel getMessageLabel() {
+		if(m_messageLabel==null) {
+			m_messageLabel = new JLabel();
+			m_messageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+			m_messageLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
 		}
-		return m_emptyLabel;
+		return m_messageLabel;
 	}
 	
 	public void setMessage(String text) {
-		getEmptyLabel().setText(text);
+		getMessageLabel().setText("<html>"+Utils.stripHtml(text)+"</html>");
 	}
 	
 	public String getMessage() {
-		return getEmptyLabel().getText();
+		return Utils.stripHtml(getMessageLabel().getText());
 	}
 		
-	public void create(IMsoObjectIf msoObject, int width, boolean isEditable) {
+	public void create(IMsoObjectIf msoObject, boolean isEditable) {
 		// invalid argument?
 		if(msoObject==null) throw new NullPointerException("MsoObject can not be null");
 		// get attributes
@@ -120,10 +136,23 @@ public class AttributesPanel extends DefaultPanel {
 			attributes.add(it.next());
 		}
 		// forward
-		create(msoObject,attributes,attributes,width,true,isEditable);
+		create(msoObject,attributes,attributes,isEditable,80,25,true);
 	}
 	
-	public int create(IMsoObjectIf msoObject, String[] attributes, String[] captions, int width, boolean include, boolean isEditable) {
+	public void create(IMsoObjectIf msoObject, boolean isEditable, int width, int height) {
+		// invalid argument?
+		if(msoObject==null) throw new NullPointerException("MsoObject can not be null");
+		// get attributes
+		List<String> attributes = new ArrayList<String>(msoObject.getAttributes().size());
+		Iterator<String> it = msoObject.getAttributes().keySet().iterator();
+		while(it.hasNext()) {
+			attributes.add(it.next());
+		}
+		// forward
+		create(msoObject,attributes,attributes,isEditable,width,height,true);
+	}
+	
+	public int create(IMsoObjectIf msoObject, String[] attributes, String[] captions, boolean isEditable, int width, int height, boolean include) {
 		List<String> attrList = new ArrayList<String>();
 		List<String> capsList = new ArrayList<String>();
 		if(attributes!=null) {
@@ -136,10 +165,10 @@ public class AttributesPanel extends DefaultPanel {
 				capsList.add(captions[i]);
 			}			
 		}
-		return create(msoObject, attrList, capsList, width, include, isEditable);
+		return create(msoObject, attrList, capsList, isEditable, width, height, include);
 	}
 	
-	public int create(IMsoObjectIf msoObject, List<String> attributes, List<String> captions, int width, boolean include, boolean isEditable) {
+	public int create(IMsoObjectIf msoObject, List<String> attributes, List<String> captions, boolean isEditable, int width, int height, boolean include) {
 
 		// initialize
 		int added = 0;
@@ -159,7 +188,7 @@ public class AttributesPanel extends DefaultPanel {
 					// is supported?
 					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
-						added += (addAttribute(attr,captions.get(i),width,isEditable)!=null ? 1 : 0);
+						added += (addAttribute(attr,captions.get(i),isEditable,width,height)!=null ? 1 : 0);
 					}
 				}
 			}		
@@ -174,7 +203,7 @@ public class AttributesPanel extends DefaultPanel {
 					// is supported?
 					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
-						added += (addAttribute(attr,attr.getName(),width,isEditable)!=null ? 1 : 0);
+						added += (addAttribute(attr,attr.getName(),isEditable,width,height)!=null ? 1 : 0);
 					}
 				}
 			}					
@@ -184,11 +213,11 @@ public class AttributesPanel extends DefaultPanel {
 	}
 	
 	public int getAttributeCount() {
-		return (m_attributes!=null ? m_attributes.size(): 0);
+		return (m_names!=null ? m_names.size(): 0);
 	}
 	
 	public void load() {
-		for(IDiskoAttribute it: m_panels.values()) {
+		for(IDiskoAttribute it: m_attributes.values()) {
 			it.load();
 		}
 	}
@@ -199,7 +228,7 @@ public class AttributesPanel extends DefaultPanel {
 	
 	public int save() {
 		int count = 0;
-		for(IDiskoAttribute it: m_panels.values()) {
+		for(IDiskoAttribute it: m_attributes.values()) {
 			count += (it.save() ? 1 : 0);
 		}
 		setDirty(false);
@@ -215,13 +244,13 @@ public class AttributesPanel extends DefaultPanel {
 		return false;
 	}
 	
-	public IDiskoAttribute addAttribute(IAttributeIf<?> attribute, String caption, int width, boolean isEditable)  {
+	public IDiskoAttribute addAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
-		if(!m_attributes.contains(name)) {
+		if(!m_names.contains(name)) {
 			// forward
-			IDiskoAttribute attr = createAttribute(attribute,caption,width,isEditable);
+			IDiskoAttribute attr = createAttribute(attribute,caption,isEditable,width,height);
 			// forward
 			if(addAttribute(attr)) {
 				// forward
@@ -234,40 +263,48 @@ public class AttributesPanel extends DefaultPanel {
 	}
 	
 	public boolean addAttribute(IDiskoAttribute attribute)  {
+		// initialize flag
+		boolean bFlag = false;
 		// string get name
 		String name = attribute.getName();
 		// valid attribute?
-		if(attribute instanceof JComponent && !m_attributes.contains(name)) {
+		if(attribute instanceof JComponent && !m_names.contains(name)) {
+			// get component
+			JComponent c = ((JComponent)attribute);
+			// get list panel
+			JPanel list = (JPanel)getBodyComponent();
 			// apply current alignment
-			((JComponent)attribute).setAlignmentX(m_attribAlignX);
-			((JComponent)attribute).setAlignmentY(m_attribAlignY);
+			c.setAlignmentX(m_attribAlignX);
+			c.setAlignmentY(m_attribAlignY);
 			// add strut?
-			if(m_attributes.size()>0) {
-				getListPanel().remove(glue);
-				getListPanel().add(Box.createVerticalStrut(5));
+			if(m_names.size()>0) {
+				list.remove(glue);
+				list.add(Box.createVerticalStrut(5));
 			}
 			else glue = Box.createVerticalGlue();
-			getListPanel().add((Component)attribute);
-			getListPanel().add(glue);
+			list.add((Component)attribute);
+			list.add(glue);
 			// add to list
-			m_attributes.add(name);			
-			m_panels.put(name,attribute);			
+			m_names.add(name);			
+			m_attributes.put(name,attribute);			
 			// add listener
 			attribute.addDiskoWorkListener(this);
 			// success
-			return true;
+			bFlag = true;
 		}
+  		// show message?
+		setMessageVisible(getAttributeCount()==0);					
 		// failure
-		return false;
+		return bFlag;
 	}
 	
 	public IDiskoAttribute getAttribute(String name) {
 		// has mso object?
-		if(m_attributes!=null) {
+		if(m_names!=null) {
 			// has attribute
-			if (m_attributes.contains(name)) {
+			if (m_names.contains(name)) {
 				// return panel
-				return m_panels.get(name);
+				return m_attributes.get(name);
 			}
 		}
 		// failure
@@ -280,85 +317,93 @@ public class AttributesPanel extends DefaultPanel {
 		// has panel?
 		if(attr!=null) {
 			// remove
-			m_panels.remove(name);
 			m_attributes.remove(name);
-			// rebuild
-			getListPanel().removeAll();
-			boolean isFirst = true;
-			for(IDiskoAttribute it : m_panels.values()) {
-				if(!isFirst)
-					getListPanel().add(Box.createVerticalStrut(5));
-				else
-					isFirst = false;
-				getListPanel().add((JComponent)it);
-			}
+			m_names.remove(name);
+			// forward
+			rebuild();
 		}
 		update();
 		// failure
 		return false;
 	}
+
+	private void rebuild() {
+		// get list panel
+		JPanel list = (JPanel)getBodyComponent();
+		list.removeAll();
+		boolean isFirst = true;
+		for(IDiskoAttribute it : m_attributes.values()) {
+			if(!isFirst)
+				list.add(Box.createVerticalStrut(5));
+			else
+				isFirst = false;
+			list.add((JComponent)it);
+		}		
+	}
 	
 	public void clearAttributes()  {
 		// remove old panels?
-		if(m_panels!=null) {
-			m_panels.clear();
+		if(m_attributes!=null) {
 			m_attributes.clear();
-			getListPanel().removeAll();			
+			m_names.clear();
+			// get list panel
+			JPanel list = (JPanel)getBodyComponent();
+			list.removeAll();			
 		}		
 	}
 	
 	public double getCaptionWidth(String name) {
-		return m_panels.get(name).getCaptionWidth();
+		return m_attributes.get(name).getFixedCaptionWidth();
 	}
 
 	public void setCaptionWidth(int width) {
-		for(IDiskoAttribute it: m_panels.values())
-			it.setCaptionWidth(width);		
+		for(IDiskoAttribute it: m_attributes.values())
+			it.setFixedCaptionWidth(width);		
 	}	
 	
 	public void setCaptionWidth(String name, int width) {
-		m_panels.get(name).setCaptionWidth(width);		
+		m_attributes.get(name).setFixedCaptionWidth(width);		
 	}	
 	
-  	public static IDiskoAttribute createAttribute(IAttributeIf<?> attribute, String caption, int width, boolean isEditable) {
+  	public static IDiskoAttribute createAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
   		// initialize component
   		IDiskoAttribute component = null;
 		try {
 			// dispatch attribute type
-			if (attribute instanceof AttributeImpl.MsoBoolean) {
+			if (attribute instanceof MsoBoolean) {
 				// get checkbox attribute
 			    component = new CheckBoxAttribute(
-			    		(AttributeImpl.MsoBoolean)attribute,caption,width,isEditable);
+			    		(MsoBoolean)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoInteger) {
+			else if (attribute instanceof MsoInteger) {
 				// get numeric attribute
 			    component = new NumericAttribute(
-			    		(AttributeImpl.MsoInteger)attribute,caption,width,isEditable);
+			    		(MsoInteger)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoDouble) {
+			else if (attribute instanceof MsoDouble) {
 				// get numeric attribute
 			    component = new NumericAttribute(
-			    		(AttributeImpl.MsoDouble)attribute,caption,width,isEditable);
+			    		(MsoDouble)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoString) {
+			else if (attribute instanceof MsoString) {
 				// get text attribute
 			    component = new TextAreaAttribute(
-			    		(AttributeImpl.MsoString)attribute,caption,width,isEditable);
+			    		(MsoString)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoCalendar) {
+			else if (attribute instanceof MsoCalendar) {
 				// get DTG attribute
 			    component = new DTGAttribute(
-			    		(AttributeImpl.MsoCalendar)attribute,caption,width,isEditable);
+			    		(MsoCalendar)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoPosition) {
+			else if (attribute instanceof MsoPosition) {
 				// get position attribute
 			    component = new PositionAttribute(
-			    		(AttributeImpl.MsoPosition)attribute,caption,width,isEditable);
+			    		(MsoPosition)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoTimePos) {
+			else if (attribute instanceof MsoTimePos) {
 				// get position attribute
 			    component = new PositionAttribute(
-			    		(AttributeImpl.MsoTimePos)attribute,caption,width,isEditable);
+			    		(MsoTimePos)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof AttributeImpl.MsoPolygon) {
 			    //AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
@@ -372,10 +417,10 @@ public class AttributesPanel extends DefaultPanel {
 			    //AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
 			    //throw new IllegalArgumentException("MsoTrack is not supported");
 			}
-			else if (attribute instanceof AttributeImpl.MsoEnum) {
+			else if (attribute instanceof MsoEnum<?>) {
 				// get enum attribute
-			    component = new EnumAttribute(
-			    		(AttributeImpl.MsoEnum<?>)attribute,caption,width,isEditable);
+			    component = new EnumAttribute((MsoEnum<?>)attribute,caption,
+			    		width,height,isEditable);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -386,40 +431,32 @@ public class AttributesPanel extends DefaultPanel {
   	public void update() {
   		
   		// calculate dirty bit
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
   			if(it.isDirty()) {
   				setDirty(true,false); break;
   			}
   		}
 
-  		// select card
-		if(getAttributeCount()==0) {
-			showCard("message");
-		}
-		else {
-			showCard("list");
-		}
-  		
   		// forward 
   		super.update();
   	}
 
   	public void setAutoSave(boolean autoSave) {
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
 			it.setAutoSave(autoSave);
   		}
   	}
   	
   	public int getAutoSave() {
   		int count = 0;
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
 			if(it.getAutoSave()) count++;
   		}
   		return count;
   	}
   	
   	public void setEditable(boolean isEditable) {
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
 			it.setEditable(isEditable);
   		}
   	}
@@ -427,7 +464,7 @@ public class AttributesPanel extends DefaultPanel {
   	@Override
   	public void setEnabled(boolean isEnabled) {
   		super.setEnabled(isEnabled);
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
   			if(it instanceof Component)
   				((Component)it).setEnabled(isEnabled);
   		}
@@ -438,7 +475,7 @@ public class AttributesPanel extends DefaultPanel {
   		// forward
   		super.setChangeable(isChangeable);
   		// loop over all attributes
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
   			it.setConsume(!isChangeable);
   		}
 	}
@@ -447,7 +484,7 @@ public class AttributesPanel extends DefaultPanel {
 		// prepare
 		m_attribAlignX = position;
   		// loop over all attributes
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
@@ -475,7 +512,7 @@ public class AttributesPanel extends DefaultPanel {
 		// prepare
 		m_attribAlignY = position;
   		// loop over all attributes
-  		for(IDiskoAttribute it : m_panels.values()) {
+  		for(IDiskoAttribute it : m_attributes.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
@@ -488,7 +525,7 @@ public class AttributesPanel extends DefaultPanel {
 		if(this.msoObject == msoObj) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoAttribute it: m_panels.values()) {
+			for(IDiskoAttribute it: m_attributes.values()) {
 				if(it.isMsoAttribute()) {
 					if(map.containsValue(it.getMsoAttribute())) {
 						it.load();
@@ -504,7 +541,7 @@ public class AttributesPanel extends DefaultPanel {
 		if(this.msoObject == msoObj) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoAttribute it: m_panels.values()) {
+			for(IDiskoAttribute it: m_attributes.values()) {
 				if(it.isMsoAttribute()) {
 					if(map.containsValue(it.getMsoAttribute())) {
 						it.load();
@@ -521,7 +558,7 @@ public class AttributesPanel extends DefaultPanel {
 			// TODO: Implement deleted attribute indication in GUI 
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoAttribute it: m_panels.values()) {
+			for(IDiskoAttribute it: m_attributes.values()) {
 				if(it.isMsoAttribute()) {
 					if(map.containsValue(it.getMsoAttribute())) {
 						it.setMsoAttribute(null);
@@ -534,11 +571,12 @@ public class AttributesPanel extends DefaultPanel {
 	
 	@Override
 	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
+		// forward
 		super.msoObjectClearAll(msoObject, mask);
 		// TODO: Implement deleted attribute indication in GUI 
-		Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+		//Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 		// loop over attributes
-		for(IDiskoAttribute it: m_panels.values()) {
+		for(IDiskoAttribute it: m_attributes.values()) {
 			if(it.isMsoAttribute()) {
 				it.setMsoAttribute(null);
 				it.load();

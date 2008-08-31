@@ -4,7 +4,9 @@ import org.redcross.sar.ds.IDsObjectIf;
 
 public class DsEvent extends java.util.EventObject {
 
-    public enum EventType
+	private static final long serialVersionUID = 1L;
+
+	public enum DsEventType
     {
     	ADDED_EVENT,
     	MODIFIED_EVENT,
@@ -12,9 +14,9 @@ public class DsEvent extends java.util.EventObject {
     }
 	
     private int m_flags;
-    private EventType m_eventType;
+    private DsEventType m_eventType;
     
-    public DsEvent(Object source, EventType type, int flags)
+    public DsEvent(Object source, DsEventType type, int flags)
     {
         super(source);
         m_flags = flags;
@@ -25,7 +27,7 @@ public class DsEvent extends java.util.EventObject {
     	return m_flags;
     }
     
-    public EventType getType() {
+    public DsEventType getType() {
     	return m_eventType;
     }
     
@@ -36,7 +38,7 @@ public class DsEvent extends java.util.EventObject {
 		
 		private final IDsObjectIf[] m_data;
     	
-        public Update(Object source, EventType type, int flags, IDsObjectIf[] data)
+        public Update(Object source, DsEventType type, int flags, IDsObjectIf[] data)
         {
             super(source,type,flags);
             m_data = data;

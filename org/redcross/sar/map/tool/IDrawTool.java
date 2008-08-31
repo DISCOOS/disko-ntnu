@@ -1,9 +1,5 @@
 package org.redcross.sar.map.tool;
 
-import javax.swing.JToggleButton;
-
-
-
 public interface IDrawTool extends IDiskoTool {
 	
 	public enum FeatureType {
@@ -22,8 +18,6 @@ public interface IDrawTool extends IDiskoTool {
 		MODE_DELETE,
 		MODE_SNAPTO
 	}	
-	
-	public JToggleButton getButton();
 	
 	public SnapAdapter getSnapAdapter();
 	

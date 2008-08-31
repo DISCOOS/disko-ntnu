@@ -23,7 +23,6 @@ import javax.swing.event.TableModelListener;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
@@ -37,20 +36,21 @@ import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 public class ListDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private DefaultPanel contentPanel = null;
-	private JButton printButton = null;
-	private JButton makeReadyButton = null;
-	private JButton makeDraftButton = null;
-	private JLabel statusLabel = null;
-	private JComboBox statusComboBox = null;
-	private JLabel scaleLabel = null;
-	private JComboBox scaleComboBox = null;	
-	private JPanel centerPanel = null;
-	private JPanel optionsPanel = null; 
+	
+	private DefaultPanel contentPanel;
+	private JButton printButton;
+	private JButton makeReadyButton;
+	private JButton makeDraftButton;
+	private JLabel statusLabel;
+	private JComboBox statusComboBox;
+	private JLabel scaleLabel;
+	private JComboBox scaleComboBox;	
+	private JPanel centerPanel;
+	private JPanel optionsPanel; 
 
-	private IDiskoWpModule wp = null;
-	private IDiskoApplication app = null;
-	private AssignmentTable assignmentTable = null;
+	private IDiskoWpModule wp;
+	private IDiskoApplication app;
+	private AssignmentTable assignmentTable;
 	
 	private DiskoReportManager report = null;
 	
@@ -128,7 +128,9 @@ public class ListDialog extends DefaultDialog {
 	private JButton getMakeDraftButton() {
 		if (makeDraftButton == null) {
 			try {
-				makeDraftButton = DiskoButtonFactory.createButton(TacticsActionType.CHANGE_TO_DRAFT,ButtonSize.NORMAL);
+				makeDraftButton = DiskoButtonFactory.createButton(
+						TacticsActionType.CHANGE_TO_DRAFT,
+						getContentPanel().getButtonSize());
 				makeDraftButton.setEnabled(false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -145,7 +147,9 @@ public class ListDialog extends DefaultDialog {
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
 			try {
-				makeReadyButton = DiskoButtonFactory.createButton(TacticsActionType.MAKE_READY,ButtonSize.NORMAL);
+				makeReadyButton = DiskoButtonFactory.createButton(
+						TacticsActionType.MAKE_READY,
+						getContentPanel().getButtonSize());
 				makeReadyButton.setEnabled(false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -163,7 +167,9 @@ public class ListDialog extends DefaultDialog {
 	private JButton getPrintButton() {
 		if (printButton == null) {
 			try {
-				printButton = DiskoButtonFactory.createButton(TacticsActionType.PRINT_SELECTED,ButtonSize.NORMAL);
+				printButton = DiskoButtonFactory.createButton(
+						TacticsActionType.PRINT_SELECTED,
+						getContentPanel().getButtonSize());
 				printButton.setEnabled(false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

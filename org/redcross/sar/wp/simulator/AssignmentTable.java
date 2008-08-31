@@ -34,7 +34,7 @@ public class AssignmentTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
         
         // set default renderer
         setDefaultRenderer(Object.class, new AssignmentCellRenderer());

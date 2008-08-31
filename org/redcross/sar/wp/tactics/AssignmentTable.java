@@ -45,7 +45,7 @@ public class AssignmentTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(tableHeader.getDefaultRenderer()));
+        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
         
         // misc.
 		setRowHeight(34);

@@ -13,7 +13,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.gui.OperationTable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 
 public class OperationPanel extends DefaultPanel {
 
@@ -36,7 +35,7 @@ public class OperationPanel extends DefaultPanel {
 		// insert button
 		insertButton("finish", getCreateButton(), "create");
 		// set table
-		setBodyComponent(getTable());		
+		setBodyComponent(getTable());
 	}
 	
 	/**
@@ -86,7 +85,7 @@ public class OperationPanel extends DefaultPanel {
 	 */
 	private JButton getCreateButton() {
 		if(m_createButton == null) {
-			m_createButton = DiskoButtonFactory.createButton("SYSTEM.CREATE", ButtonSize.NORMAL);
+			m_createButton = DiskoButtonFactory.createButton("SYSTEM.CREATE", getButtonSize());
 		}
 		return m_createButton;
 	}

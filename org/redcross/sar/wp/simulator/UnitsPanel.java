@@ -2,6 +2,8 @@ package org.redcross.sar.wp.simulator;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,15 +15,9 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.ds.ete.RouteCost;
-import org.redcross.sar.ds.event.IDsUpdateListenerIf;
-import org.redcross.sar.ds.event.DsEvent.Update;
 import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.util.mso.Track;
 
-import com.esri.arcgis.geometry.IEnvelope;
 
 public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 
@@ -48,7 +44,7 @@ public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 			public void tableChanged(TableModelEvent e) {
 				switch(e.getType()) {
 				case TableModelEvent.INSERT:
-					insert(e.getFirstRow(),e.getLastRow());
+					insert(e.getFirstRow(),e.getLastRow(),true);
 					break;
 				case TableModelEvent.UPDATE:
 					update(e.getFirstRow(),e.getLastRow());
@@ -59,8 +55,18 @@ public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 				}
 			}
 			
+		});	
+		addAction("toggle");
+		addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String cmd = e.getActionCommand();
+				if(cmd.equalsIgnoreCase("toggle"))
+					validate();
+			}
+			
 		});
-		
 		// initialize gui
 		initialize();
 		
@@ -81,16 +87,17 @@ public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 		items.setLayout(new BoxLayout(items,BoxLayout.Y_AXIS));
 	}
 	
-	private void insert(int firstRow, int lastRow) {
+	private void insert(int firstRow, int lastRow, boolean arrange) {
 		for(int i = firstRow;i<=lastRow;i++) {
 			IUnitIf unit = m_model.getUnit(i);
 			Component strut = Box.createVerticalStrut((i>0) ? 5 : 0); 
 			UnitStatusPanel panel = new UnitStatusPanel(unit);
 			panel.addDiskoWorkListener(this);
+			panel.addActionListener(this);
 			m_struts.put(unit, strut);
 			m_units.put(unit, panel);
 		}
-		arrange();
+		if(arrange) arrange();
 	}
 	
 	private void update(int firstRow, int lastRow) {
@@ -120,6 +127,7 @@ public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 			if(items.getComponent(i) instanceof UnitStatusPanel) {
 				UnitStatusPanel panel = (UnitStatusPanel)items.getComponent(i);
 				panel.removeDiskoWorkListener(this);
+				panel.removeActionListener(this);
 			}
 		}
 		items.removeAll();
@@ -134,7 +142,10 @@ public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 			if(strut==null) continue;
 			// add to component
 			items.add(m_struts.get(unit));
-			items.add(m_units.get(unit));			
+			UnitStatusPanel panel = m_units.get(unit);
+			panel.addDiskoWorkListener(this);
+			panel.addActionListener(this);			
+			items.add(panel);			
 		}
 		items.add(Box.createVerticalGlue());		
 	}
@@ -142,9 +153,10 @@ public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 	public void load() {
 		m_struts.clear();
 		m_units.clear();
-		insert(0,m_model.getRowCount()-1);
-	}
-
+		insert(0,m_model.getRowCount()-1,false);
+		arrange();
+	}	
+	
 	/*
 	@Override
 	public void handleDsUpdateEvent(Update e) {

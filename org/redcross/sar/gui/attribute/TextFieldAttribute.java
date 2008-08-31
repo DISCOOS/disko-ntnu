@@ -20,25 +20,37 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public TextFieldAttribute(IAttributeIf attribute, String caption, int width, boolean isEditable) {
-		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
-		// get value from attribute
-		load();		
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */	
+	
+	
+	public TextFieldAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable, int width, int height) {
+		super(attribute, caption, isEditable, width, height);
+	}
+
+	public TextFieldAttribute(IAttributeIf<?> attribute, String caption,
+			boolean isEditable) {
+		super(attribute, caption, isEditable);
+	}
+
+	public TextFieldAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		super(name, caption, isEditable, width, height, value);
+	}
+
+	public TextFieldAttribute(String name, String caption, boolean isEditable) {
+		super(name, caption, isEditable);
 	}
 	
-	public TextFieldAttribute(String name, String caption, int width, String value, boolean isEditable) {
-		// forward
-		super(name,caption,width,value,isEditable);
-	}
-				
+
 	/*==================================================================
 	 * Public methods
 	 *================================================================== 
 	 */
-	
+
 	public Component getComponent() {
 		if(m_component==null) {
 			JFormattedTextField field = new JFormattedTextField();
@@ -75,7 +87,7 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
-	public Object getValue() {
+	public String getValue() {
 		return ((JFormattedTextField)m_component).getText();
 	}
 	
@@ -86,7 +98,7 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 		return true;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute

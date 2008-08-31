@@ -8,6 +8,7 @@ import org.redcross.sar.ds.IDsIf;
 import org.redcross.sar.ds.ete.RouteCost;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.table.DiskoTable;
+import org.redcross.sar.mso.data.IAssignmentIf;
 
 public class AssignmentTable extends DiskoTable {
 
@@ -30,6 +31,7 @@ public class AssignmentTable extends DiskoTable {
 		// add row sorter
 		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
 		tableRowSorter.setStringConverter(new AssignmentStringConverter());
+		tableRowSorter.setComparator(0, IAssignmentIf.ASSIGNMENT_COMPERATOR);
 		tableRowSorter.setSortsOnUpdates(true);
 		setRowSorter(tableRowSorter);
 		

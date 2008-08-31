@@ -20,7 +20,7 @@ import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.EventType;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.Selector;
 
@@ -147,7 +147,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			int mask = e.getEventTypeMask();
 			
 	        // get flag
-	        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+	        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 			
 	        // get mso object and feature class
 	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -163,11 +163,11 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	        else {
 	        	
 	        	// get flags
-				boolean createdObject  = (mask & EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-				boolean deletedObject  = (mask & EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-				boolean modifiedObject = (mask & EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-				boolean addedReference = (mask & EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-				boolean removedReference = (mask & EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
+				boolean createdObject  = (mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+				boolean deletedObject  = (mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+				boolean modifiedObject = (mask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+				boolean addedReference = (mask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+				boolean removedReference = (mask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
 				
 				// get list of
 				List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);

@@ -51,7 +51,7 @@ public class LoginDialog extends DefaultDialog {
             this.setUndecorated(true);
             this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(275,160));
+            this.setPreferredSize(new Dimension(275,132));
             this.pack();
 				
 		}
@@ -71,7 +71,7 @@ public class LoginDialog extends DefaultDialog {
 			contentPanel.setScrollBarPolicies(
 					DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
 					DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
-			contentPanel.setPreferredBodySize(new Dimension(275,100));
+			contentPanel.setPreferredBodySize(new Dimension(275,80));
 			JPanel panel = (JPanel)contentPanel.getBodyComponent();
 			panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -98,14 +98,6 @@ public class LoginDialog extends DefaultDialog {
 		return contentPanel;
 	}
 
-	public void onResize() {
-		int offset = 0;
-		getContentPanel().onResize();
-		Utils.setFixedSize(getRoles(),getWidth()-offset, 25);	
-		Utils.setFixedSize(getUserName(),getWidth()-offset, 25);	
-		Utils.setFixedSize(getPassword(),getWidth()-offset, 25);	
-	}	
-	
 	private void authorize() {
 		// get values
 		String role = (String)getRoles().getValue();
@@ -138,7 +130,7 @@ public class LoginDialog extends DefaultDialog {
 	public TextFieldAttribute getUserName() {
 		if (attrUserName == null) {
 			try {
-				attrUserName = new TextFieldAttribute("username","Brukernavn",100,"",true);
+				attrUserName = new TextFieldAttribute("username","Brukernavn",true,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -154,7 +146,7 @@ public class LoginDialog extends DefaultDialog {
 	public TextFieldAttribute getPassword() {
 		if (attrPassword == null) {
 			try {
-				attrPassword = new TextFieldAttribute("password","Passord",100,"",true);
+				attrPassword = new TextFieldAttribute("password","Passord",true,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -170,7 +162,7 @@ public class LoginDialog extends DefaultDialog {
 	public ComboAttribute getRoles() {
 		if (attrRoles == null) {
 			try {
-				attrRoles = new ComboAttribute("roles","Roller",100,"",false);
+				attrRoles = new ComboAttribute("roles","Roller",false,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

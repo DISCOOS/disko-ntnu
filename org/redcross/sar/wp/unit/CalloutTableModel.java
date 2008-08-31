@@ -19,13 +19,13 @@ import java.util.EnumSet;
  *
  * @author thomasl
  */
-public class CalloutOverviewTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class CalloutTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
 	private IDiskoWpModule m_wpModule;
 
-	public CalloutOverviewTableModel(IDiskoWpUnit wp)
+	public CalloutTableModel(IDiskoWpUnit wp)
 	{
 		m_wpModule = wp;
 		wp.getMsoModel().getEventManager().addClientUpdateListener(this);
@@ -48,10 +48,16 @@ public class CalloutOverviewTableModel extends AbstractTableModel implements IMs
 	}
 
 	@Override
-    public String getColumnName(int column)
-    {
-    	return null;
-    }
+	public String getColumnName(int column) {
+		switch (column) {
+		case 0:
+			return "Varsling";
+		case 1:
+			return "DTG";
+		default:
+			return null;
+		}
+	}
 
 	public int getColumnCount()
 	{

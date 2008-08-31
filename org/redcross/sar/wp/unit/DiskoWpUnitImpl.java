@@ -33,6 +33,7 @@ import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -184,7 +185,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private void initTables()
 	{
 		// Personnel
-		PersonnelOverviewTableModel personnelModel = new PersonnelOverviewTableModel(this);
+		PersonnelTableModel personnelModel = new PersonnelTableModel(this);
 		m_personnelOverviewTable = new JTable(personnelModel);
 		m_personnelOverviewTable.setColumnSelectionAllowed(false);
 		m_personnelOverviewTable.setRowSelectionAllowed(true);
@@ -207,14 +208,14 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			
 		});
 		
-		TableRowSorter<PersonnelOverviewTableModel> tableRowSorter = 
-				new TableRowSorter<PersonnelOverviewTableModel>(personnelModel);
+		TableRowSorter<PersonnelTableModel> tableRowSorter = 
+				new TableRowSorter<PersonnelTableModel>(personnelModel);
 		m_personnelOverviewTable.setRowSorter(tableRowSorter);;
 		tableRowSorter.setSortsOnUpdates(true);
 		tableRowSorter.setSortable(2, false);
 		tableRowSorter.setSortable(3, false);
 		
-		PersonnelOverviewTableEditor personnelRenderer = new PersonnelOverviewTableEditor(this);
+		PersonnelTableEditor personnelRenderer = new PersonnelTableEditor(this);
 		personnelRenderer.setTable(m_personnelOverviewTable);
 		
 		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
@@ -226,19 +227,21 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(dim.width * 3 + 20);
 		column.setMaxWidth(dim.width * 3 + 20);
 	    
+		m_personnelOverviewTable.getTableHeader().setDefaultRenderer(new DiskoHeaderRenderer());
+		
 		JScrollPane personnelOverviewScrollPane = new JScrollPane(m_personnelOverviewTable);
 		m_overviewTabPane.addTab(getBundleText("Personnel.text"), 
 				DiskoIconFactory.getIcon("GENERAL.PERSONNEL", "32x32"), personnelOverviewScrollPane);
 		
 		// Unit
-		UnitOverviewTableModel unitModel = new UnitOverviewTableModel(this);
+		UnitTableModel unitModel = new UnitTableModel(this);
 		m_unitOverviewTable = new JTable(unitModel);
 		m_unitOverviewTable.setColumnSelectionAllowed(false);
 		m_unitOverviewTable.setRowSelectionAllowed(true);
 		m_unitOverviewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_unitOverviewTable.addMouseListener(new UnitTableMouseListener());
 		
-		UnitOverviewTableEditor unitRenderer = new UnitOverviewTableEditor(this);
+		UnitTableEditor unitRenderer = new UnitTableEditor(this);
 		unitRenderer.setTable(m_unitOverviewTable);
 		
 		m_unitOverviewTable.setRowHeight(dim.height + 10);
@@ -249,14 +252,14 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(dim.width * 2 + 15);
 		column.setMaxWidth(dim.width * 2 + 15);
 		
-		m_unitOverviewTable.setTableHeader(null);
+		m_unitOverviewTable.getTableHeader().setDefaultRenderer(new DiskoHeaderRenderer());
 
 		JScrollPane unitOverviewScrollPane = new JScrollPane(m_unitOverviewTable);
 		m_overviewTabPane.addTab(getBundleText("Unit.text"), 
 				DiskoIconFactory.getIcon("GENERAL.UNIT", "32x32"), unitOverviewScrollPane);
 		
 		// Call-out
-		CalloutOverviewTableModel calloutModel = new CalloutOverviewTableModel(this);
+		CalloutTableModel calloutModel = new CalloutTableModel(this);
 		m_calloutOverviewTable = new JTable(calloutModel);
 		m_calloutOverviewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_calloutOverviewTable.addMouseListener(new CalloutTableMouseListener());
@@ -266,7 +269,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(80);
 		column.setMaxWidth(80);
 		
-		m_calloutOverviewTable.setTableHeader(null);
+		m_calloutOverviewTable.getTableHeader().setDefaultRenderer(new DiskoHeaderRenderer());
 		
 		JScrollPane OverviewScrollPane = new JScrollPane(m_calloutOverviewTable);
 		m_overviewTabPane.addTab(getBundleText("CallOut.text"), 
@@ -884,7 +887,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			Point clickedPoint = new Point(e.getX(), e.getY());
 			int clickedColumn = m_personnelOverviewTable.columnAtPoint(clickedPoint);			
 			int clickedRow = m_personnelOverviewTable.rowAtPoint(clickedPoint);
-			PersonnelOverviewTableModel model = (PersonnelOverviewTableModel)m_personnelOverviewTable.getModel();
+			PersonnelTableModel model = (PersonnelTableModel)m_personnelOverviewTable.getModel();
 			IPersonnelIf clickedPersonnel = model.getPersonnel(clickedRow);
 			
 			if(clickedColumn == 0) 
@@ -938,7 +941,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			Point clickedPoint = new Point(e.getX(), e.getY());
 			int clickedColumn = m_unitOverviewTable.columnAtPoint(clickedPoint);
 			int clickedRow = m_unitOverviewTable.rowAtPoint(clickedPoint);
-			UnitOverviewTableModel model = (UnitOverviewTableModel)m_unitOverviewTable.getModel();
+			UnitTableModel model = (UnitTableModel)m_unitOverviewTable.getModel();
 			IUnitIf clickedUnit = model.getUnit(clickedRow);
 			
 			if(clickedColumn ==0)  
@@ -986,7 +989,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				Point clickedPoint = new Point(e.getX(), e.getY());
 				int row = m_calloutOverviewTable.rowAtPoint(clickedPoint);
 				int index = m_calloutOverviewTable.convertRowIndexToModel(row);
-				CalloutOverviewTableModel model = (CalloutOverviewTableModel)m_calloutOverviewTable.getModel();
+				CalloutTableModel model = (CalloutTableModel)m_calloutOverviewTable.getModel();
 				ICalloutIf callout = model.getCallout(index);
 				
 				// update bottom message

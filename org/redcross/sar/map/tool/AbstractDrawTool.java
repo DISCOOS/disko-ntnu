@@ -1,15 +1,12 @@
 package org.redcross.sar.map.tool;
-
+ 
 import java.awt.Event;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.Utils;
@@ -19,9 +16,6 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.event.DrawEvent;
-import org.redcross.sar.map.event.IDrawListenerIf;
-import org.redcross.sar.map.event.DrawEvent.EventType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -112,11 +106,11 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	protected int maxStep = 100;
 
 	// gesture constants
-	protected DrawAction onMouseDownAction = null;
-	protected DrawAction onMouseMoveAction = null;
-	protected DrawAction onMouseUpAction = null;	
-	protected DrawAction onClickAction = null;	
-	protected DrawAction onDblClickAction = null;	
+	protected DrawAction onMouseDownAction;
+	protected DrawAction onMouseMoveAction;
+	protected DrawAction onMouseUpAction;	
+	protected DrawAction onClickAction;	
+	protected DrawAction onDblClickAction;	
 	
 	// draw feature constant
 	protected FeatureType featureType = null;
@@ -129,30 +123,28 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	protected Point p = null;
 		
 	// holds draw geometry
-	protected Polyline geoPath = null;
-	protected Point geoPoint = null;
-	protected Polyline geoRubber = null;
-	protected IGeometry geoSnap = null;
+	protected Polyline geoPath;
+	protected Point geoPoint;
+	protected Polyline geoRubber;
+	protected IGeometry geoSnap;
 		
 	// adapters
-	protected DrawAdapter drawAdapter = null;
-	protected SnapAdapter snapAdapter = null;
-	protected MapControlAdapter mapAdapter = null;
+	protected DrawAdapter drawAdapter;
+	protected SnapAdapter snapAdapter;
+	protected MapControlAdapter mapAdapter;
 	
 	// some draw information used to ensure that old draw 
 	// geometries are removed from the screen
-	protected InvalidArea lastInvalidArea = null;
+	protected InvalidArea lastInvalidArea;
 	
 	// draw symbols
-	protected SimpleMarkerSymbol markerSymbol = null;
-	protected SimpleLineSymbol pathSymbol = null;
-	protected SimpleLineSymbol snapSymbol = null;	
+	protected SimpleMarkerSymbol markerSymbol;
+	protected SimpleLineSymbol pathSymbol;
+	protected SimpleLineSymbol snapSymbol;	
 
 	// elements
 	protected DrawFrame drawFrame = null;	
 	
-	// listeners
-	protected List<IDrawListenerIf> listeners = null;	
 	
 	/**
 	 * Constructs the DrawTool
@@ -206,7 +198,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		this.showDirect = false;
 		
 		// create button
-		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+		button = DiskoButtonFactory.createToggleButton(buttonSize);
 
 		// add show dialog listener
 		button.addMouseListener(new MouseListener() {
@@ -236,19 +228,12 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// create map control adapter
 		mapAdapter = new MapControlAdapter();
 		
-		// create lists
-		listeners = new ArrayList<IDrawListenerIf>();
-		
 	}
 
 	/* ==================================================
 	 * Public methods (override with care) 
 	 * ==================================================
 	 */
-	
-	public JToggleButton getButton() {
-		return (JToggleButton)button;
-	}
 	
 	public boolean isDrawing() {
 		return isDrawing;
@@ -518,7 +503,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	
 	@Override
 	public void onDblClick() {
-		// forward to extenders
+		// forward to extender
 		onAction(onDblClickAction);		
 	}	
 	
@@ -527,6 +512,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		try {
 			// get position in map units
 			p = toMapPoint(x,y);
+			// set focus on button?
+			requestFocustOnButton();
 			// forward to draw adapter?
 			if(drawAdapter==null || !drawAdapter.onMouseDown(button,shift,p)){
 				// do snapping
@@ -1661,32 +1648,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// failure
 		return null;
 	}	
-	
-	/* ==================================================
-	 * IDrawListenerIf
-	 * ==================================================
-	 */
-	
-	public boolean addDrawListener(IDrawListenerIf listener) {
-		if(!listeners.contains(listener)) {
-			return listeners.add(listener); 
-		}
-		return false;
-	}
-	
-	public boolean removeDrawListener(IDrawListenerIf listener) {
-		if(listeners.contains(listener)) {
-			return listeners.remove(listener); 
-		}
-		return false;
-	}
-	
-	private void fireOnDraw(EventType type, int flags) {
-		DrawEvent e = new DrawEvent(this,type,flags);
-		for(IDrawListenerIf listener : listeners) {
-			listener.onAction(e);
-		}
-	}
 	
 	/* ==================================================
 	 * Inner classes

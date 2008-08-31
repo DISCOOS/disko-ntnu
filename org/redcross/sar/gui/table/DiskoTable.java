@@ -18,8 +18,7 @@ public class DiskoTable extends JTable {
 	
 	private void initialize() {
 		setBorder(null);
-		getTableHeader().setDefaultRenderer(
-				new DiskoHeaderRenderer(getTableHeader().getDefaultRenderer()));
+		getTableHeader().setDefaultRenderer(new DiskoHeaderRenderer());
 	}
 	
 	/* ====================================================

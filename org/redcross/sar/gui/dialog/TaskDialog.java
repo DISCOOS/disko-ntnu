@@ -33,7 +33,7 @@ public class TaskDialog extends DefaultDialog  {
 
 	private void initialize() {
 		try {
-	        Utils.setFixedSize(this, 500, 455);
+	        Utils.setFixedSize(this, 500, 435);
 	        this.setContentPane(getTaskPanel());
 	        this.setModal(true);
 	        this.pack();

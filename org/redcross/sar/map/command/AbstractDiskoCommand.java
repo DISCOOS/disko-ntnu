@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 public abstract class AbstractDiskoCommand extends BaseCommand implements IDiskoCommand {
 	
@@ -428,13 +427,14 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 	public class DiskoCommandState implements IDiskoCommandState {
 
 		// flags
-		private boolean showDirect = false;
-		private boolean showDialog = false;
+		private boolean showDirect;
+		private boolean showDialog;
+		private boolean isDialogVisible;
 
 		// mso objects and draw information
 		private IMsoObjectIf msoOwner = null;
 		private IMsoObjectIf msoObject = null;
-		private IMsoManagerIf.MsoClassCode msoClassCode = null;
+		private IMsoManagerIf.MsoClassCode msoClassCode;
 		
 		// other objects
 		private JPanel propertyPanel = null;
@@ -451,6 +451,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 			this.msoObject = command.msoObject;
 			this.msoOwner = command.msoOwner;
 			this.propertyPanel = command.propertyPanel;
+			this.isDialogVisible = command.dialog!=null ? command.dialog.isVisible() : false;
 		}
 		
 		public void load(AbstractDiskoCommand command) {
@@ -460,6 +461,8 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 			command.msoObject = this.msoObject;
 			command.msoOwner = this.msoOwner;
 			command.propertyPanel = this.propertyPanel;
+			if(command.dialog!=null) 
+				command.dialog.setVisible(this.isDialogVisible);
 		}
 	}
 }

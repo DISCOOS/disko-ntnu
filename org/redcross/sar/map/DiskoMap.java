@@ -86,8 +86,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private static final double DPI = Toolkit.getDefaultToolkit().getScreenResolution();
 	private static final double PIXEL_SIZE = 0.00254/DPI; // pixels per meter
 	private static final double ZOOM_RATIO = 1.25;
-	private static final double MAX_DRAW_SCALE = 75000;
 	private static final double MAX_SNAP_SCALE = 50000;
+	private static final double MAX_DRAW_SCALE = 75000;	
 	
 	// properties
 	private String mxdDoc = null;
@@ -386,7 +386,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 	        
 	        // get flag
-	        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+	        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 			
 			// initialize
 			int count = 0;
@@ -1654,25 +1654,45 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	
 	
 	public Point getClickPoint() {
-		return clickPoint;
+		try {
+			return clickPoint!=null && !clickPoint.isEmpty() ? clickPoint : getCenterPoint();
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public Point getMovePoint() {
-		return movePoint;
+		try {
+			return movePoint!=null && !movePoint.isEmpty() ? movePoint : getCenterPoint();
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
-	/*
-	public static JPanel createPanel(IDiskoMap map, 
-			MapStatusBar statusBar, MapFilterBar filterBar, Border border) {
-		JPanel panel = MapStatusBar.createPanel(
-				map, statusBar, BorderLayout.NORTH, border);
-		map.setMapStatusBar(statusBar);
-		filterBar.setMap(map);
-		panel.add(filterBar,BorderLayout.SOUTH);
-		return panel;
-		
+	public Point getCenterPoint() {
+		try {
+			IEnvelope extent = getExtent();
+			if(extent!=null && !extent.isEmpty())
+				return (Point)MapUtil.getCenter(getExtent());
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;			
 	}
-	*/
 	
 	public boolean isEditSupportInstalled() {
 		return isEditSupportInstalled;

@@ -40,7 +40,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     }
     
     public void notifyClearAll(IMsoObjectIf root) {
-        fireUpdate(m_clientUpdateListeners, root, MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue());    	
+        fireUpdate(m_clientUpdateListeners, root, MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue());    	
     }
     
     public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask)
@@ -81,7 +81,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 
     public void notifyCommit(ICommitWrapperIf aSource)  throws CommitException
     {
-        fireCommit(m_commitListeners, aSource, MsoEvent.EventType.COMMIT_EVENT.maskValue());
+        fireCommit(m_commitListeners, aSource, MsoEvent.MsoEventType.COMMIT_EVENT.maskValue());
     }
 
     private void fireUpdate(Collection<IMsoUpdateListenerIf> theListeners, IMsoObjectIf aSource, int anEventTypeMask)
@@ -94,7 +94,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         }
         
         // get flag
-        boolean clearAll = (anEventTypeMask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+        boolean clearAll = (anEventTypeMask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
         
         MsoEvent.Update event = new MsoEvent.Update(aSource, anEventTypeMask);
         

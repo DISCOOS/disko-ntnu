@@ -9,8 +9,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 
-import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
 
 
 /**
@@ -21,20 +21,30 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public CheckBoxAttribute(AttributeImpl.MsoBoolean attribute, String caption, int width, boolean isEditable) {
-		// forward
-		super(attribute.getName(),caption,150,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
-		// get value from attribute
-		load();		
-	}
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */
 	
-	public CheckBoxAttribute(String name, String caption, int width, boolean value, boolean isEditable) {
-		// forward
-		super(name,caption,width,value,isEditable);
+	public CheckBoxAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		super(name, caption, isEditable, width, height, value);
+	}
+
+	public CheckBoxAttribute(String name, String caption, boolean isEditable) {
+		super(name, caption, isEditable);
 	}
 		
+	public CheckBoxAttribute(MsoBoolean attribute, String caption,
+			boolean isEditable) {
+		super(attribute, caption, isEditable);
+	}
+
+	public CheckBoxAttribute(MsoBoolean attribute, String caption, boolean isEditable,
+			int width, int height) {
+		super(attribute, caption, isEditable, width, height);
+	}
+	
 	/*==================================================================
 	 * Public methods
 	 *================================================================== 
@@ -69,10 +79,12 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		return m_autoSave;
 	}	
 	
+	@Override
 	public Boolean getValue() {
 		return ((JCheckBox)m_component).isSelected();
 	}
 	
+	@Override
 	public boolean setValue(Object value) {
 		if(value instanceof String)
 			((JCheckBox)m_component).setSelected(Boolean.valueOf((String)value));
@@ -86,11 +98,12 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 		return true;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	@Override
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoBoolean) {
+			if(attribute instanceof MsoBoolean) {
 				// save attribute
 				m_attribute = attribute;
 				// update name

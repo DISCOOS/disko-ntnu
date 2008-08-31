@@ -1,4 +1,4 @@
-package org.redcross.sar.wp.states;
+package org.redcross.sar.wp.sc;
 
 import java.awt.Dimension;
 

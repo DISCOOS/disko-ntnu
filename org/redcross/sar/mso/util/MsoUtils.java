@@ -7,9 +7,10 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Map;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -43,8 +44,6 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -72,7 +71,10 @@ public class MsoUtils {
 		if(area!=null) {
 			IAssignmentIf assignment = area.getOwningAssignment();
 			if(assignment!=null)
-				return AssignmentStatus.FINISHED.compareTo(assignment.getStatus())>0;
+				return IAssignmentIf.DELETABLE_SET.contains(assignment.getStatus());
+		}
+		else {
+			
 		}
 		return true;
 	}
@@ -132,18 +134,6 @@ public class MsoUtils {
 		if(area!=null) {
 		
 			try {
-				// delete POI
-				for(IPOIIf it : area.getAreaPOIsItems()) {
-					// get POIType
-					Enum type = getType(it, false);
-					// can only delete area poi
-					if(IPOIIf.AREA_SET.contains(type)) 
-						if(!it.delete()) return false;
-				}
-				// delete geodata
-				for(IMsoObjectIf it: area.getAreaGeodataItems()) {
-					if(!it.delete()) return false;
-				}
 				// delete area
 				return area.delete();	
 			}
@@ -220,10 +210,10 @@ public class MsoUtils {
 		return message;
 	}
 	
-	public static Enum getType(IMsoObjectIf msoObj, boolean subtype)
+	public static Enum<?> getType(IMsoObjectIf msoObj, boolean subtype)
     {
     	// initialize
-    	Enum e = null;
+    	Enum<?> e = null;
     	IMsoObjectIf msoOwn = null;
     	
 		// get type object
@@ -262,10 +252,10 @@ public class MsoUtils {
         return e;
     }    
     
-    public static Enum getStatus(IMsoObjectIf msoObj)
+    public static Enum<?> getStatus(IMsoObjectIf msoObj)
     {
     	// initialize
-    	Enum e = null;
+    	Enum<?> e = null;
     	IMsoObjectIf msoOwner = null;
     	
 		// get type object
@@ -493,9 +483,9 @@ public class MsoUtils {
 	}
 	
 	public static IPOIIf getPOI(IAreaIf area, POIType poiType) {
-		Iterator iter = area.getAreaPOIs().getItems().iterator();
+		Iterator<IPOIIf> iter = area.getAreaPOIs().getItems().iterator();
 		while (iter.hasNext()) {
-			IPOIIf poi = (IPOIIf)iter.next();
+			IPOIIf poi = iter.next();
 			if (poi.getType() == poiType) {
 				return poi;
 			}
@@ -898,7 +888,7 @@ public class MsoUtils {
 		Position p = null;
 		
 		// get assignment type
-		Enum type = assignment.getType();
+		Enum<?> type = assignment.getType();
 		
 		if(AssignmentType.SEARCH.equals(type)) {
 			// get sub type
@@ -924,7 +914,7 @@ public class MsoUtils {
 		return p;
 	}
 	
-	public static Object getAttribValue(IAttributeIf attribute) {
+	public static Object getAttribValue(IAttributeIf<?> attribute) {
 		// dispatch attribute type
 		if (attribute instanceof AttributeImpl.MsoBoolean) {
 		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
@@ -967,14 +957,15 @@ public class MsoUtils {
 		    return lAttr.getTrack();
 		}
 		else if (attribute instanceof AttributeImpl.MsoEnum) {
-		    AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) attribute;
+		    AttributeImpl.MsoEnum<?> lAttr = (AttributeImpl.MsoEnum<?>) attribute;
 		    return lAttr.getValue();
 		}
 		// failed
 		return null;
 	}
 	
-	public static boolean setAttribValue(IAttributeIf attribute, Object value) {
+	@SuppressWarnings("unchecked")
+	public static boolean setAttribValue(IAttributeIf<?> attribute, Object value) {
 		// dispatch attribute type
 		if (attribute instanceof AttributeImpl.MsoBoolean) {
 		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
@@ -1038,8 +1029,8 @@ public class MsoUtils {
 		}
 		else if (attribute instanceof AttributeImpl.MsoEnum) {
 		    AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) attribute;
-		    if(value instanceof Enum) {
-		    	lAttr.set((Enum)value); return true;
+		    if(value instanceof Enum<?>) {
+		    	lAttr.set((Enum<?>)value); return true;
 		    }
 		}
 		// failed

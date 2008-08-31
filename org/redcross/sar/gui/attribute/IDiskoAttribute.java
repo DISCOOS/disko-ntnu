@@ -1,6 +1,8 @@
 package org.redcross.sar.gui.attribute;
 
-import javax.swing.AbstractButton;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
 
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
@@ -20,11 +22,11 @@ public interface IDiskoAttribute {
 	public String getCaption();	
 	public void setCaption(String text);
 	
-	public int getCaptionWidth();
-	public void setCaptionWidth(int width);
+	public int getFixedCaptionWidth();
+	public void setFixedCaptionWidth(int width);
 	
-	public int getMaximumHeight();
-	public void setMaximumHeight(int height);
+	public int getFixedHeight();
+	public void setFixedHeight(int height);
 	
 	public boolean isEditable();
 	public void setEditable(boolean isEditable);
@@ -32,7 +34,23 @@ public interface IDiskoAttribute {
 	public Object getValue();		
 	public boolean setValue(Object value);
 	
-	public AbstractButton getButton();
+	public boolean isButtonVisible();
+	public void setButtonVisible(boolean isVisible);
+	
+	public boolean isButtonEnabled();
+	public void setButtonEnabled(boolean isEnabled);
+	
+	public String getButtonText();
+	public void setButtonText(String text);
+	
+	public Icon getButtonIcon();
+	public void setButtonIcon(Icon icon);
+	
+	public String getButtonTooltipText();
+	public void setButtonTooltipText(String text);
+	
+	public String getButtonCommand();
+	public void setButtonCommand(String name);
 	
 	public boolean load();
 	public boolean save();
@@ -43,5 +61,8 @@ public interface IDiskoAttribute {
 	
 	public boolean addDiskoWorkListener(IDiskoWorkListener listener);
 	public boolean removeDiskoWorkListener(IDiskoWorkListener listener);
+	
+	public boolean addButtonActionListener(ActionListener listener);	
+	public boolean removeButtonActionListener(ActionListener listener);
 	
 }

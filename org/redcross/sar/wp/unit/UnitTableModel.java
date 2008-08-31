@@ -19,7 +19,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class UnitTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -50,7 +50,7 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 		}
 	};
 
-	public UnitOverviewTableModel(IDiskoWpUnit wp)
+	public UnitTableModel(IDiskoWpUnit wp)
 	{
 		m_wpModule = wp;
 
@@ -72,7 +72,7 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
         IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
         
         // get flag
-        boolean clearAll = (mask & MsoEvent.EventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 		
         // clear all?
         if(clearAll) {
@@ -81,11 +81,11 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
         }
         else {		
         	// get flags
-	        boolean createdObject  = (mask & MsoEvent.EventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-	        boolean deletedObject  = (mask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-	        boolean modifiedObject = (mask & MsoEvent.EventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-	        boolean addedReference = (mask & MsoEvent.EventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-	        boolean removedReference = (mask & MsoEvent.EventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+	        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+	        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+	        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 			
 	        // add object?
 			if (createdObject) {
@@ -137,10 +137,18 @@ public class UnitOverviewTableModel extends AbstractTableModel implements IMsoUp
 	}
 
 	@Override
-    public String getColumnName(int column)
-    {
-    	return null;
-    }
+	public String getColumnName(int column) {
+		switch (column) {
+		case 0:
+			return "Enhet";
+		case 1:
+			return "Vis";
+		case 2:
+			return "Oppløs";
+		default:
+			return null;
+		}
+	}
 
 	public int getColumnCount()
 	{

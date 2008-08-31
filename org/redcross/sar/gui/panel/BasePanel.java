@@ -8,8 +8,6 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
@@ -35,14 +33,14 @@ public class BasePanel extends AbstractPanel {
 	public static final int VERTICAL_SCROLLBAR_AS_NEEDED = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED;
 	public static final int VERTICAL_SCROLLBAR_NEVER = JScrollPane.VERTICAL_SCROLLBAR_NEVER;
 
-	private Insets insets = null;
+	private Insets insets;
 	private boolean isBorderVisible = true;
 	private Color borderColor = Color.GRAY;
-	private ButtonSize buttonSize = ButtonSize.NORMAL;
+	private ButtonSize buttonSize = ButtonSize.SMALL;
 	
-	private HeaderPanel headerPanel = null;
-	private JScrollPane scrollPane = null;
-	private Component bodyComponent = null;
+	private HeaderPanel headerPanel;
+	private JScrollPane scrollPane;
+	private Component bodyComponent;
 	
 	/* ===========================================
 	 * Constructors
@@ -50,11 +48,11 @@ public class BasePanel extends AbstractPanel {
 	 */
 	
 	public BasePanel() {
-		this("",ButtonSize.NORMAL);
+		this("",ButtonSize.SMALL);
 	}
 	
 	public BasePanel(String caption) {
-		this(caption,ButtonSize.NORMAL);
+		this(caption,ButtonSize.SMALL);
 	}
 	
 	public BasePanel(ButtonSize buttonSize) {
@@ -87,22 +85,11 @@ public class BasePanel extends AbstractPanel {
 	private void initialize() {
 		// initialize body component
 		setBodyComponent(new JPanel());
+		setBodyLayout(new BorderLayout());
 		// prepare this
 		this.setLayout(new BorderLayout());		
 		this.add(getHeaderPanel(),BorderLayout.NORTH);
 		this.add(getScrollPane(),BorderLayout.CENTER);
-		this.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				// forward
-				onResize();	
-		    }
-			@Override
-			public void componentShown(ComponentEvent e) {
-				// forward
-				onResize();	
-			}			
-		});		
 		this.setBorderColor(borderColor);
 	}	
 	
@@ -110,8 +97,10 @@ public class BasePanel extends AbstractPanel {
 		// create?
 		if(isBorderVisible) {
 			// create border
-			return new DiskoBorder(insets.left, insets.top, insets.right, 
-					insets.bottom,borderColor);		
+			return new DiskoBorder(
+					insets.top, insets.left, 
+					insets.bottom, insets.right,
+					borderColor);		
 		}
 		else {
 			return null;
@@ -130,10 +119,6 @@ public class BasePanel extends AbstractPanel {
 		return buttonSize;
 	}
 	
-	public void onResize() {
-		getHeaderPanel().onResize();
-	}
-	
 	/**
 	 * This method initializes headerPanel
 	 *
@@ -143,7 +128,7 @@ public class BasePanel extends AbstractPanel {
 		if (headerPanel == null) {
 			try {
 				headerPanel = new HeaderPanel("",buttonSize);
-				headerPanel.setInsets(0,0,0,1);
+				headerPanel.setInsets(0,0,1,0);
 				headerPanel.addDiskoWorkEventListener(new IDiskoWorkListener() {
 
 					public void onWorkPerformed(DiskoWorkEvent e) {
@@ -235,7 +220,7 @@ public class BasePanel extends AbstractPanel {
 	public void setHeaderBorderVisible(boolean isVisible) {
 		if(isVisible) {
 			if(isBorderVisible)
-				getHeaderPanel().setInsets(0, 0, 0, 1);
+				getHeaderPanel().setInsets(0, 0, 1, 0);
 			else
 				getHeaderPanel().setInsets(1, 1, 1, 1);
 		}
@@ -248,7 +233,7 @@ public class BasePanel extends AbstractPanel {
 		return insets;
 	}
 	
-	public void setInsets(int l, int t, int r, int b) {
+	public void setInsets(int t, int l, int b, int r) {
 		insets = new Insets(t,l,b,r);
 		this.setBorder(createBorder());
 	}	

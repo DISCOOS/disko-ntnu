@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
@@ -42,7 +41,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 {
 	
 	private static final int UPDATE_TIME_DELAY = 1000;	// updates every second
-	private static final String CONTROL_CAPTION = "<html>Simulator - <b>Kontrollpanel</b> (%s)</html>";
+	private static final String CONTROL_CAPTION = "Simulator - <b>Kontrollpanel</b> (%s)";
 
 	private long m_timeCounter = 0;
 	
@@ -161,7 +160,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 
 	private void update(boolean init) {
 		if(!(isActive() && getMsoModel().getMsoManager().operationExists())) return;
-		SimpleDateFormat f = new SimpleDateFormat();
+		//SimpleDateFormat f = new SimpleDateFormat();
 		if(init || true) {
 			/*Calendar start = getMsoModel().getMsoManager().getOperation().getCreatedTime();
 			String dtg = DTG.CalToDTG(start);
@@ -234,7 +233,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_controlPanel == null)
         {
-        	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Pause"));
+        	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Pause"),ButtonSize.SMALL);
         	m_controlPanel.setPreferredSize(new Dimension(400,210));
         	m_controlPanel.addButton(getResumeButton(), "resume");
         	m_controlPanel.addButton(getSuspendButton(), "suspend");		
@@ -341,7 +340,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_startedTimeAttr == null)
         {
-        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl",130,0,false);
+        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", false, 130, 25, 0);
         	Utils.setFixedSize(m_startedTimeAttr,250,25);
         	
         }        
@@ -352,7 +351,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_effortTimeAttr == null)
         {
-        	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid",130,"",false);
+        	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid", false, 130, 25, 0);
         	Utils.setFixedSize(m_effortTimeAttr,250,25);
         	
         }        
@@ -363,7 +362,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_avgSimTimeAttr == null)
         {
-        	m_avgSimTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)",130,"",false);
+        	m_avgSimTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
         	Utils.setFixedSize(m_avgSimTimeAttr,250,25);
         	
         }        
@@ -374,7 +373,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_maxSimTimeAttr == null)
         {
-        	m_maxSimTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)",130,"",false);
+        	m_maxSimTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)", false, 130, 25, 0);
         	Utils.setFixedSize(m_maxSimTimeAttr,250,25);
         	
         }        
@@ -385,7 +384,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_utilSimTimeAttr == null)
         {
-        	m_utilSimTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)",130,"",false);
+        	m_utilSimTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
         	Utils.setFixedSize(m_utilSimTimeAttr,250,25);
         	
         }        

@@ -18,6 +18,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.ListSelectorPanel;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
 
 /**
  * @author kennetgu
@@ -32,35 +33,69 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	private ListSelectorPanel m_selectorPanel;
 	private ListSelectorDialog m_selectorDialog;
 	
-	public EnumAttribute(AttributeImpl.MsoEnum<?> attribute, String caption, int width, boolean isEditable) {
+	/*==================================================================
+	 * Constructors
+	 *================================================================== 
+	 */
+	
+	public EnumAttribute(String name, String caption, boolean isEditable) {
 		// forward
-		this(attribute,caption,width,getAllEnumValues(attribute),isEditable);						
+		super(name,caption,false);
+		// forward
+		initialize(null);
 	}
 	
-	public EnumAttribute(IAttributeIf<?> attribute, String caption, int width, Enum<?>[] values, boolean isEditable) {
+	public EnumAttribute(String name, String caption, Enum<?>[] values, boolean isEditable) {
 		// forward
-		super(attribute.getName(),caption,width,null,isEditable);
-		// set attribute
-		if(!setMsoAttribute(attribute)) throw new IllegalArgumentException("Attribute datatype not supported");
+		super(name,caption,false);
+		// forward
+		initialize(values);
+	}
+	
+	public EnumAttribute(String name, String caption, int width, int height, Enum<?> value, Enum<?>[] values, boolean isEditable) {
+		// forward
+		super(name,caption,false,width,height,null);
+		// forward
+		initialize(values);
+	}
+	
+	public EnumAttribute(MsoEnum<?> attribute, String caption,
+			boolean isEditable) {
+		// forward
+		super(attribute, caption, false);
+		// forward
+		initialize(getAllEnumValues(attribute));
+	}
+
+	public EnumAttribute(MsoEnum<?> attribute, String caption, Enum<?>[] values,
+			boolean isEditable) {
+		// forward
+		super(attribute, caption, false);
+		// forward
+		initialize(values);
+	}
+	
+	public EnumAttribute(MsoEnum<?> attribute, String caption, int width,
+			int height, boolean isEditable) {
+		// forward
+		super(attribute, caption, false, width, height);
+		// forward
+		initialize(getAllEnumValues(attribute));
+	}
+	
+	public EnumAttribute(MsoEnum<?> attribute, String caption, int width,
+			int height, Enum<?>[] values, boolean isEditable) {
+		// forward
+		super(attribute, caption, false, width, height);
+		// forward
+		initialize(values);
+	}
+	
+	private void initialize(Enum<?>[] values) {
 		// fill values
-		setValues(values);	
-		// get value from attribute
-		load();		
-		// forward
-		initalizeEdit();
-	}
-	
-	public EnumAttribute(String name, String caption, int width, Enum<?> value, boolean isEditable) {
-		this(name,caption,width,value,null,isEditable);
-	}
-	
-	public EnumAttribute(String name, String caption, int width, Enum<?> value, Enum<?>[] values, boolean isEditable) {
-		// forward
-		super(name,caption,width,null,isEditable);
-		// fill values
-		setValues(values);	
-		// forward
-		initalizeEdit();
+		setValues(values);
+		// forward?
+		initalizeEdit();		
 	}
 	
 	/*==================================================================
@@ -124,7 +159,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		// get list
 		JList list = getSelectorPanel().getList();
 		// get current selected value
-		Enum<?> current = (Enum<?>)list.getSelectedValue();
+		Enum<?> current = getValue();
 		// fill new values?
 		if(values!=null) {
 			for (int i = 0; i < values.length; i++) {
@@ -150,7 +185,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		return ((JList)m_component).getVisibleRowCount();
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf attribute) {
+	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
@@ -226,7 +261,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	 */
 	
 	@SuppressWarnings("unchecked")
-	private static Enum[] getAllEnumValues(AttributeImpl.MsoEnum attribute) {
+	private static Enum[] getAllEnumValues(MsoEnum attribute) {
 		Enum value = attribute.getValue();
 		if(value!=null) {
 			EnumSet set = EnumSet.allOf(value.getClass());

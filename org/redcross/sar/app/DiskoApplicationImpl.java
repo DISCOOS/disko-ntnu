@@ -11,6 +11,8 @@ import org.redcross.sar.gui.panel.SysBarPanel;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
+import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
+import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.output.DiskoReportManager;
@@ -19,8 +21,6 @@ import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.GlobalProps;
 import org.redcross.sar.util.Internationalization;
-
-import com.sun.corba.se.impl.oa.poa.ActiveObjectMap;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
@@ -35,6 +35,7 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
 
+import javax.swing.AbstractButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -62,7 +63,6 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	private static final String CHOOSETEXT = "CHOOSE.OP.TEXT";
 	private static final String WORK_ERROR_TEXT = "WORK.ERROR.TEXT";
 	private static final String WORK_ERROR_TITLE = "WORK.ERROR.TITLE";
-	private static final String INIT_ERROR_TEXT = "INIT.ERROR.TEXT";
 	private static final String INIT_ERROR_SHUTDOWN_TEXT = "INIT.ERROR.SHUTDOWN.TEXT";
 	private static final String FINISH_TITLE = "FINISH.HEADER";
 	private static final String FINISH_TEXT ="FINISH.TEXT";
@@ -73,7 +73,6 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	private static final String OPERATION_FINISHED_TITLE = "OPERATION.FINISHED.HEADER";
 	private static final String OPERATION_FINISHED_TEXT ="OPERATION.FINISHED.TEXT";
 	private static final String OPERATION_CREATED_TEXT = "OPERATION.CREATED.TEXT";
-	private static final String OPERATION_CREATED_TITLE = "OPERATION.CREATED.HEADER";
 
 	private static final long serialVersionUID = 1L;
 	
@@ -1143,5 +1142,23 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 			Utils.showError(bundle.getString(WORK_ERROR_TEXT));
 			shutdown();				
 		}		
+	}
+
+	@Override
+	public boolean invoke(Enum<?> cmd, boolean requestFocus) {
+		if(cmd instanceof DiskoCommandType ||
+		   cmd instanceof DiskoToolType) {
+			AbstractButton b = getNavBar().getButton(cmd);
+			if(b!=null) {
+				boolean hasFocus = b.hasFocus();
+				boolean isFocusable = b.isFocusable();
+				b.setFocusable(false);
+				b.doClick();
+				b.setFocusable(isFocusable);
+				if(requestFocus || hasFocus) b.requestFocusInWindow();
+				return true;
+			}
+		}
+		return false;
 	}
 }  // @jve:decl-index=0:visual-constraint="10,10"
