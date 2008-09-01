@@ -13,8 +13,8 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
  * @author kengu
  * 
  */
-public class DiskoWpStatesImpl extends AbstractDiskoWpModule 
-		implements IDiskoWpStates {
+public class DiskoWpScImpl extends AbstractDiskoWpModule 
+		implements IDiskoWpSc {
 
     private States m_states;
 
@@ -22,7 +22,7 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
 	 * Constructs a DiskoWpStatesImpl
 	 * 
 	 */
-	public DiskoWpStatesImpl() throws IllegalClassFormatException {
+	public DiskoWpScImpl() throws IllegalClassFormatException {
 		super();
 	    initialize();
 	}
@@ -32,13 +32,8 @@ public class DiskoWpStatesImpl extends AbstractDiskoWpModule
         layoutComponent(m_states);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
-	 */
 	public String getCaption() {
-		return "Tilstand";
+		return getBundleText("SC");
 	}
 
 	public void activate(IDiskoRole role) {

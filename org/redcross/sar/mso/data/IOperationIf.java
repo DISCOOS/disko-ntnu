@@ -2,7 +2,6 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf;
 
-import java.util.Calendar;
 import java.util.Collection;
 
 /**
@@ -31,10 +30,23 @@ public interface IOperationIf extends IMsoObjectIf
     public IAttributeIf.IMsoStringIf getOpNumberPrefixAttribute();
 
     /*-------------------------------------------------------------------------------------------
+     * Methods for references
+     *-------------------------------------------------------------------------------------------*/
+    
+    public void setSystem(ISystemIf aSystem);
+
+    public ISystemIf getSystem();
+
+    public IMsoModelIf.ModificationState getSystemState();
+
+    public IMsoReferenceIf<ISystemIf> getSystemAttribute();
+    
+    
+    /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
 
-    public void addCmdPostList(ICmdPostIf anICmdPostIf);
+    public void addCmdPost(ICmdPostIf anICmdPostIf);
 
     public ICmdPostListIf getCmdPostList();
 

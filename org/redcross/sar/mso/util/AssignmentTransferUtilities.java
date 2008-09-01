@@ -87,7 +87,7 @@ public class AssignmentTransferUtilities
         Calendar now = Calendar.getInstance();
         IMessageIf message = anMsoManager.createMessage();
         message.setCreated(now);
-        message.setOccuredTime(now);
+        message.setTimeStamp(now);
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         message.addConfirmedReceiver(aUnit);
         message.setSender(anMsoManager.getCmdPostCommunicator());

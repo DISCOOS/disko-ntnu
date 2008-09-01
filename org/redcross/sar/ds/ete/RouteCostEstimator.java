@@ -1065,7 +1065,7 @@ public class RouteCostEstimator extends AbstractDiskoWork<Boolean>
 					// has updates?
 					if(holder!=null) {
 						// is modified?
-						if(holder.isModified()) {
+						if(!holder.isCreated() && holder.isModified()) {
 							// set partial update
 							holder.setPartial(it.getTimeEstimatedFinishedAttribute().getName());
 							// add to updates?										

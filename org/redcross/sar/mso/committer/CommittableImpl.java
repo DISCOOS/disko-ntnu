@@ -1,10 +1,10 @@
 package org.redcross.sar.mso.committer;
 
 import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.CommitManager.CommitType;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -41,7 +41,7 @@ public abstract class CommittableImpl implements ICommittableIf
         {
             super(aCommitType);
             m_object = anObject;
-            m_partial = partial;
+            m_partial = partial!=null ? partial : new ArrayList<IAttributeIf>(0);
         }
 
         public IMsoObjectIf getObject()
@@ -50,11 +50,11 @@ public abstract class CommittableImpl implements ICommittableIf
         }
 
 		public List<IAttributeIf> getPartial() {
-			return CommitType.COMMIT_MODIFIED.equals(getType()) ? m_partial : null;
+			return m_partial;
 		}
 
 		public boolean isPartial() {
-			return CommitType.COMMIT_MODIFIED.equals(getType()) && m_partial!=null && m_partial.size()>0;
+			return (m_partial.size()>0);
 		}
     }
 

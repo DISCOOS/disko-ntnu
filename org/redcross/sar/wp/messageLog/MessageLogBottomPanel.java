@@ -119,7 +119,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			m_wpMessageLog.getMsoModel().suspendClientUpdate();
 			m_currentMessage = m_wpMessageLog.getMsoManager().createMessage();
 			m_currentMessage.setCreated(Calendar.getInstance());
-			m_currentMessage.setOccuredTime(Calendar.getInstance());
+			m_currentMessage.setTimeStamp(Calendar.getInstance());
 			m_currentMessage.setBroadcast(isBroadcast);
 			m_currentMessage.setSender((ICommunicatorIf)m_wpMessageLog.getCmdPost());
 			m_currentMessage.setSingleReceiver((ICommunicatorIf)m_wpMessageLog.getCmdPost());
@@ -625,7 +625,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			
 			// Update panel contents
 			m_nrLabel.setText(Integer.toString(m_currentMessage.getNumber()));
-			m_dtgLabel.setText(DTG.CalToDTG(m_currentMessage.getOccuredTime()));
+			m_dtgLabel.setText(DTG.CalToDTG(m_currentMessage.getTimeStamp()));
 
 			// Update FROM
 			ICommunicatorIf sender = m_currentMessage.getSender();

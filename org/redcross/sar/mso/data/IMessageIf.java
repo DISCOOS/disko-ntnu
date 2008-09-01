@@ -115,16 +115,6 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
     * Other specified methods
     *-------------------------------------------------------------------------------------------*/
 
-    public Calendar getOccuredTime();
-
-    public void setOccuredTime(Calendar aCalendar);
-
-    public IMsoModelIf.ModificationState getOccuredTimeState();
-
-    /*-------------------------------------------------------------------------------------------
-    * Other methods
-    *-------------------------------------------------------------------------------------------*/
-
     /**
      * Confirm receiver.
      * <p/>

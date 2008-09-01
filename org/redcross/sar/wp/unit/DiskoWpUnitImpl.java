@@ -201,7 +201,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				
 				if(m_leftViewId.equals(UNIT_VIEW_ID))
 				{
-					setPersonnelBottom((IPersonnelIf)m_personnelOverviewTable.getValueAt(e.getFirstIndex(),2));
+					if(e.getFirstIndex()>-1)
+						setPersonnelBottom((IPersonnelIf)m_personnelOverviewTable.getValueAt(e.getFirstIndex(),2));
 					setBottomView(PERSONNEL_DETAILS_VIEW_ID);
 				}			
 			}

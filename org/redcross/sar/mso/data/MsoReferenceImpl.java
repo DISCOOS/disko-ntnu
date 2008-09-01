@@ -129,7 +129,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	 * occurred (remote update during a local update sequence).
     	 * Hence, if the reference value is in a LOCAL or 
     	 * CONFLICTING, both values will be present. Else,
-    	 * only server value will be present (SERVER state).
+    	 * only server value will be present (REMOTE state).
     	 *  
     	 * A commit() or rollback() will reset the local value
     	 * to null to ensure state consistency. 
@@ -182,7 +182,11 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would 
             	 * be the correct and intended usage of this mode.
             	 * 
-            	 * IMPORTANT: The local reference is only deleted from its 
+            	 * ================================================================
+            	 * IMPORTANT 1 
+            	 * ================================================================
+
+            	 * The local reference is only deleted from its 
             	 * object holder if local and server references are 
             	 * different because  
             	 * 
@@ -191,6 +195,19 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * B) 	When local and server references are equal, 
             	 * 		the reference to the object holder is already 
             	 * 		established.
+            	 * 
+            	 * ================================================================
+            	 * IMPORTANT 2 
+            	 * ================================================================
+            	 * 
+            	 * This mode is by definition a violation of the SARA Protocol 
+            	 * which is based on the assumption that any local changes is only 
+            	 * valid when it equals the server value. Hence, REMOTE mode should 
+            	 * only be resumed if local value equals server value, or a REMOTE 
+            	 * update is explicitly received.
+            	 * 
+            	 * The use of postProcessCommit() and LOOPBACK mode is therefore
+            	 * discarded.
             	 * 
             	 * =========================================================== */
             	
@@ -254,7 +271,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * occurred. This is indicated by setting the reference state 
             	 * to CONFLICTING. Methods for resolving conflicts are supplied 
 				 * by this class. If the new server reference and current (local) 
-				 * reference are equal, the reference state is changed to SERVER.             	 
+				 * reference are equal, the reference state is changed to REMOTE.             	 
             	 *  
             	 * IMPORTANT: The local reference is never deleted from the object 
             	 * holder because
@@ -316,7 +333,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * not from an external change made on a different model 
             	 * instance (message queue). If the new local (current) 
             	 * reference equals the server reference, the reference state 
-            	 * should be set to SERVER. If the new reference is different 
+            	 * should be set to REMOTE. If the new reference is different 
             	 * from the server reference, the reference state should be 
             	 * set to LOCAL.
             	 * 
@@ -331,8 +348,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * 		local reference, current local reference is going to be 
             	 * 		replaced. Hence current reference must be removed from
             	 * 		the object holder.
-            	 * 
-            	 * C)
             	 * 
             	 * =========================================================== */
 

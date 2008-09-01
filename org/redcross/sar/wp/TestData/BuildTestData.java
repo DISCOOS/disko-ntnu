@@ -217,21 +217,21 @@ public class BuildTestData
 
         message = messageLog.createMessage();
         message.setCreated(Calendar.getInstance());
-        message.setOccuredTime(Calendar.getInstance());
+        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, null, true);
         messageLine.setLineText("Tekst Linje 1. Treng litt meir tekst for å sjekke om lina vert delt eller ikkje. Treng enda litt meir tekst for å sjekke dette");
 
         message = messageLog.createMessage();
         message.setCreated(Calendar.getInstance());
-        message.setOccuredTime(Calendar.getInstance());
+        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, null, true);
         messageLine.setLineText("Tekst Linje 2");
 
         message = messageLog.createMessage();
         message.setCreated(Calendar.getInstance());
-        message.setOccuredTime(Calendar.getInstance());
+        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, null, true);
         messageLine.setLineText("Tekst Linje 2. Test av ei enda lengre line. " +
@@ -246,7 +246,7 @@ public class BuildTestData
 
         message = messageLog.createMessage();
         message.setCreated(Calendar.getInstance());
-        message.setOccuredTime(Calendar.getInstance());
+        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.POSITION, true);
         IPOIIf poi = aMsoModel.getMsoManager().createPOI();
@@ -257,7 +257,7 @@ public class BuildTestData
 
         message = messageLog.createMessage();
         message.setCreated(Calendar.getInstance());
-        message.setOccuredTime(Calendar.getInstance());
+        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, true);
         messageLine.setLineText("Ei melding med eit funn");

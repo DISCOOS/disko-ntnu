@@ -147,8 +147,7 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
     // From ISerialNumberedIf
     public void setNumber(int aNumber)
     {
-        m_number.setValue(aNumber);
-    }
+    	setNumber(m_number,aNumber);    }
 
     public int getNumber()
     {

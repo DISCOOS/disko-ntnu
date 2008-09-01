@@ -133,7 +133,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setNumber(int aNumber)
     {
-        m_number.setValue(aNumber);
+    	setNumber(m_number,aNumber);
     }
 
     public int getNumber()

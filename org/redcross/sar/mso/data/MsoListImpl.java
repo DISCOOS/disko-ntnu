@@ -17,6 +17,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.committer.CommittableImpl;
 import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.mso.Selector;
 
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -92,7 +93,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     {
         if (!m_isMain)
         {
-            //throw new MsoRuntimeException(aMessage);
+            throw new MsoRuntimeException(aMessage);
         }
     }
 
@@ -613,23 +614,20 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     protected int makeSerialNumber()
     {
-        int retVal = 0;
+        int max = 0;
         for (M item : getItems())
         {
             try
             {
                 ISerialNumberedIf serialItem = (ISerialNumberedIf) item;
-                if (serialItem.getNumber() > retVal)
-                {
-                    retVal = serialItem.getNumber();
-                }
+                max = Math.max(max, serialItem.getNumber());
             }
             catch (ClassCastException e)
             {
                 //throw new MsoRuntimeException("Object " + item + " is not implementing ISerialNumberedIf");
             }
         }
-        return retVal + 1;
+        return max + 1;
     }
 
     void rearrangeSerialNumber()
@@ -724,13 +722,26 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         return retVal;
     }
 
-    public void renumberItems(M anItem)
+    protected List<M> renumberDuplicateNumbers(M anItem)
     {
-        List<M> candidates = selectCandidates(getRenumberSelector(anItem));
-        if (candidates.size() != 0)
-        {
-            renumberCandidates(candidates);
-        }
+    	List<M> updates = new ArrayList<M>(size());
+    	if(isNumberDuplicate(anItem))
+    		return renumberCandidates(selectCandidates(getRenumberSelector(anItem)));
+    	else
+    		return updates;
+    }
+    
+    private boolean isNumberDuplicate(M anItem) {
+    	if(anItem instanceof ISerialNumberedIf) {
+	    	ISerialNumberedIf s0 = (ISerialNumberedIf)anItem;
+	    	for(IMsoObjectIf it: m_items.values()) {
+	    		if(it instanceof ISerialNumberedIf) {
+	    			if(((ISerialNumberedIf)it).getNumber()==s0.getNumber())
+	    				return true;
+	    		}
+	    	}
+    	}
+    	return false;
     }
 
     protected Selector<M> getRenumberSelector(M anItem)
@@ -745,28 +756,42 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     }
 
     // Loop through all items with a number higher than
-    private void renumberCandidates(List<M> candidates)
+    private List<M> renumberCandidates(List<M> candidates)
     {
-        MsoModelImpl.getInstance().setLocalUpdateMode();
-        int nextNumber = -1;
-        for (M item : candidates)
+    	// initialize renumbered list
+    	List<M> renumbered = new ArrayList<M>(candidates.size());
+    	
+    	// loop over all candidates
+        if (candidates.size() != 0)
         {
-            if (item instanceof ISerialNumberedIf)
-            {
-                ISerialNumberedIf numberedItem = (ISerialNumberedIf) item;
-                if (numberedItem.getNumberState() != IMsoModelIf.ModificationState.STATE_SERVER)
-                {
-                    if (nextNumber < 0)
-                    {
-                        nextNumber = numberedItem.getNumber() + 1;
-                    }
-                    int tmpNumber = numberedItem.getNumber();
-                    numberedItem.setNumber(nextNumber);
-                    nextNumber = tmpNumber;
-                }
-            }
+    	
+	        MsoModelImpl.getInstance().setLocalUpdateMode();
+	        int nextNumber = -1;
+	        for (M item : candidates)
+	        {
+	            if (item instanceof ISerialNumberedIf)
+	            {
+	                ISerialNumberedIf numberedItem = (ISerialNumberedIf) item;
+	                if (numberedItem.getNumberState() != IMsoModelIf.ModificationState.STATE_SERVER)
+	                {
+	                    if (nextNumber < 0)
+	                    {
+	                        nextNumber = numberedItem.getNumber() + 1;
+	                    }
+	                    int tmpNumber = numberedItem.getNumber();
+	                    numberedItem.setNumber(nextNumber);
+	                    nextNumber = tmpNumber;
+	                    // add to list
+	                    renumbered.add(item);
+	                }
+	            }
+	        }
+	        MsoModelImpl.getInstance().restoreUpdateMode();
         }
-        MsoModelImpl.getInstance().restoreUpdateMode();
+        
+        // finished
+        return renumbered;
+        
     }
 
     private final Comparator<M> descendingNumberComparator = new Comparator<M>()

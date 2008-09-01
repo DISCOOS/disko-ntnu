@@ -356,7 +356,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     // From ISerialNumberedIf
     public void setNumber(int aNumber)
     {
-        m_number.setValue(aNumber);
+        setNumber(m_number,aNumber);
     }
 
     public int getNumber()

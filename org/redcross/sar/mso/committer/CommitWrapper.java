@@ -2,7 +2,6 @@ package org.redcross.sar.mso.committer;
 
 import org.redcross.sar.mso.CommitManager;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.MsoEvent;
 
 import java.util.ArrayList;
 import java.util.List;

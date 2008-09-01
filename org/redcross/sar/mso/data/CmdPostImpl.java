@@ -9,7 +9,6 @@ import java.util.ResourceBundle;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.Selector;
@@ -17,6 +16,7 @@ import org.redcross.sar.util.mso.Selector;
 /**
  * Command, control and communication center (command post)
  */
+@SuppressWarnings("unchecked")
 public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHierarchicalUnitIf, ICommunicatorIf
 {
     private final AttributeImpl.MsoCalendar m_established = new AttributeImpl.MsoCalendar(this, "Established");
@@ -38,7 +38,6 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final BriefingListImpl m_briefingList = new BriefingListImpl(this, "BriefingList", true, 100);
     private final CalloutListImpl m_calloutList = new CalloutListImpl(this, "CalloutList", true, 100);
     private final CheckpointListImpl m_checkpointList = new CheckpointListImpl(this, "CheckpointList", true, 100);
-    private final DataSourceListImpl m_dataSourceList = new DataSourceListImpl(this, "DataSourceList", true, 100);
     private final EnvironmentListImpl m_environmentList = new EnvironmentListImpl(this, "EnvironmentList", true, 100);
     private final EquipmentListImpl m_equipmentList = new EquipmentListImpl(this, "EquipmentList", true, 100);
     private final EventLogImpl m_eventLog = new EventLogImpl(this, "EventLog", true, 100);
@@ -113,7 +112,6 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         addList(m_briefingList);
         addList(m_calloutList);
         addList(m_checkpointList);
-        addList(m_dataSourceList);
         addList(m_environmentList);
         addList(m_equipmentList);
         addList(m_eventLog);
@@ -482,21 +480,6 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     public Collection<ICheckpointIf> getCheckpointListItems()
     {
         return m_checkpointList.getItems();
-    }
-
-    public IDataSourceListIf getDataSourceList()
-    {
-        return m_dataSourceList;
-    }
-
-    public IMsoModelIf.ModificationState getDataSourceListState(IDataSourceIf anIDataSourceIf)
-    {
-        return m_dataSourceList.getState(anIDataSourceIf);
-    }
-
-    public Collection<IDataSourceIf> getDataSourceListItems()
-    {
-        return m_dataSourceList.getItems();
     }
 
     public IEnvironmentListIf getEnvironmentList()

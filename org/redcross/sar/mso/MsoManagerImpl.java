@@ -123,6 +123,26 @@ public class MsoManagerImpl implements IMsoManagerIf
     	return m_operation;
     }
     
+    public ISystemIf getSystem()
+    {
+        return getExistingSystem();
+    }
+
+    private ISystemIf getExistingSystem()
+    {
+        ISystemIf system = getExistingOperation().getSystem();
+        if (system == null)
+        {
+            
+        	//System.out.println("CMDPOST:=null");
+            
+        	throw new MsoRuntimeException("No System exists.");
+        	
+        }
+        return system;
+    }
+    
+    
     public ICmdPostIf getCmdPost()
     {
         return getExistingCmdPost();
@@ -293,15 +313,30 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     public ICheckpointIf createCheckpoint(IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        return getExistingCmdPost().getCheckpointList().createCheckpoint(
-                anObjectId);
+        return getExistingCmdPost().getCheckpointList().createCheckpoint(anObjectId);
     }
 
+    public ISystemIf createSystem()
+    {
+        if (getExistingSystem() != null)
+        {
+            throw new DuplicateIdException("The system already exists");
+        }
+        OperationImpl opr = (OperationImpl)getExistingOperation();
+        return opr.createSystem();
+    }
+
+    public ISystemIf createSystem(IMsoObjectIf.IObjectIdIf anObjectId)
+    {
+        OperationImpl opr = (OperationImpl)getExistingOperation();
+        return opr.createSystem(anObjectId);
+    }    
+    
     public ICmdPostIf createCmdPost()
     {
         if (getExistingCmdPost() != null)
         {
-            throw new DuplicateIdException("An operation already exists");
+            throw new DuplicateIdException("An command post already exists");
         }
         
         return getExistingOperation().getCmdPostList().createCmdPost();
@@ -314,12 +349,12 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     public IDataSourceIf createDataSource()
     {
-        return getExistingCmdPost().getDataSourceList().createDataSource();
+        return getExistingOperation().getSystem().getDataSourceList().createDataSource();
     }
 
     public IDataSourceIf createDataSource(IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        return getExistingCmdPost().getDataSourceList().createDataSource(anObjectId);
+        return getExistingOperation().getSystem().getDataSourceList().createDataSource(anObjectId);
     }
 
     public IEnvironmentIf createEnvironment(Calendar aCalendar, String aText)

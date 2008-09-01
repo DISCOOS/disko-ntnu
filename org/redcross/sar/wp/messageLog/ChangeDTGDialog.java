@@ -173,7 +173,7 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 		try
 		{
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-			message.setOccuredTime(DTG.DTGToCal(this.getTime()));
+			message.setTimeStamp(DTG.DTGToCal(this.getTime()));
 			fireOnWorkFinish(this,message);
 		}
 		catch (IllegalMsoArgumentException e1)
@@ -199,7 +199,7 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 	{
     	// forward
 		setCreated(message.getCreated());
-		setTime(message.getOccuredTime());
+		setTime(message.getTimeStamp());
 	}
 
 	/**

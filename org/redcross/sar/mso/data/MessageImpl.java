@@ -16,10 +16,13 @@ import java.util.List;
 /**
  * Communication message
  */
+
+@SuppressWarnings("unchecked")
 public class MessageImpl extends AbstractTimeItem implements IMessageIf
 {
     private static final String CONFIRMED_RECEIVERS_NAME = "ConfirmedReceivers";
     private static final String UNCONFIRMED_RECEIVERS_NAME = "UnconfirmedReceivers";
+    
     private final AttributeImpl.MsoBoolean m_broadcast = new AttributeImpl.MsoBoolean(this, "Broadcast");
     private final AttributeImpl.MsoCalendar m_created = new AttributeImpl.MsoCalendar(this, "Created");
     private final AttributeImpl.MsoInteger m_number = new AttributeImpl.MsoInteger(this, "Number",true);
@@ -234,7 +237,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     // From ISerialNumberedIf
     public void setNumber(int aNumber)
     {
-        m_number.setValue(aNumber);
+    	setNumber(m_number,aNumber);
     }
 
     public int getNumber()
@@ -365,30 +368,6 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     /*-------------------------------------------------------------------------------------------
     * Other specified methods
     *-------------------------------------------------------------------------------------------*/
-
-    public Calendar getOccuredTime()
-    {
-        return getTimeStamp();
-    }
-
-    public void setOccuredTime(Calendar aCalendar)
-    {
-        setTimeStamp(aCalendar);
-    }
-
-    public IMsoModelIf.ModificationState getOccuredTimeState()
-    {
-        return getTimeStampState();
-    }
-
-    /*-------------------------------------------------------------------------------------------
-    * Other methods
-    *-------------------------------------------------------------------------------------------*/
-
-//    public String toString()
-//    {
-//        return "Message " + getNumber() + " " + super.toString();
-//    }
 
     public boolean addBroadcastNotAccepted(ICommunicatorIf aReceiver)
     {

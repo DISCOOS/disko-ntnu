@@ -1,7 +1,5 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
-
 import java.util.Calendar;
 
 public class EventLogImpl extends MsoListImpl<IEventIf> implements IEventLogIf

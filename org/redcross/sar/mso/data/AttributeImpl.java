@@ -120,7 +120,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     	 * occurred (remote update during a local update sequence).
     	 * Hence, if the attribute is in a LOCAL or CONFLICTING, 
     	 * both values will be present. Else, only server value will 
-    	 * be present (SERVER state).
+    	 * be present (REMOTE state).
     	 *  
     	 * A commit() or rollback() will reset the local value
     	 * to null to ensure state consistency. 
@@ -150,7 +150,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * LOOPBACK_UPDATE_MODE is only a proper update mode if the
             	 * received update is a loop back from this model instance, the
             	 * mode can not be used with the current SaraAPI. If used, 
-            	 * local changes will be overwritten by because conflict detection 
+            	 * local changes will be overwritten because conflict detection 
             	 * is disabled in this mode.
             	 * 
             	 * The fix to this problem is to assume that if a commit is
@@ -166,6 +166,19 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * result of a commit by this model, could be group together and 
             	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would 
             	 * be the correct and intended usage of this mode.
+            	 * 
+            	 * ================================================================
+            	 * IMPORTANT 
+            	 * ================================================================
+            	 * 
+            	 * This mode is by definition a violation of the SARA Protocol 
+            	 * which is based on the assumption that any local changes is only 
+            	 * valid when it equals the server value. Hence, REMOTE mode should 
+            	 * only be resumed if local value equals server value, or a REMOTE 
+            	 * update is explicitly received.
+            	 * 
+            	 * The use of postProcessCommit() and LOOPBACK mode is therefore
+            	 * discarded.
             	 * 
             	 * =========================================================== */
             	
@@ -203,7 +216,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * occurred. This is indicated by setting the attribute state 
             	 * to CONFLICTING. Methods for resolving conflicts are supplied 
 				 * by this class. If the new server value and local value 
-            	 * are equal, the attribute state is changed to SERVER. 
+            	 * are equal, the attribute state is changed to REMOTE. 
             	 * 
             	 * =========================================================== */
             	

@@ -9,11 +9,14 @@ import org.redcross.sar.mso.MsoModelImpl;
 
 import java.util.Collection;
 
+@SuppressWarnings("unchecked")
 public class OperationImpl extends AbstractMsoObject implements IOperationIf
 {
     private final AttributeImpl.MsoString m_opNumber = new AttributeImpl.MsoString(this, "OpNumber");
     private final AttributeImpl.MsoString m_opNumberPrefix = new AttributeImpl.MsoString(this, "OpNumberPrefix");
 
+    private final MsoReferenceImpl<ISystemIf> m_system = new MsoReferenceImpl<ISystemIf>(this, "System", 1, false);
+    
     private final CmdPostListImpl m_cmdPostList = new CmdPostListImpl(this, "CmdPostList", true);
 
     public OperationImpl(IMsoObjectIf.IObjectIdIf anObjectId, String aNumberPrefix, String aNumber)
@@ -36,6 +39,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
 
     protected void defineReferences()
     {
+    	addReference(m_system);
     }
 
     public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
@@ -107,10 +111,34 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     }
 
     /*-------------------------------------------------------------------------------------------
+     * Methods for references
+     *-------------------------------------------------------------------------------------------*/
+    
+    public void setSystem(ISystemIf aSystem)
+    {
+        m_system.setReference(aSystem);
+    }
+
+    public ISystemIf getSystem()
+    {
+        return m_system.getReference();
+    }
+
+    public IMsoModelIf.ModificationState getSystemState()
+    {
+        return m_system.getState();
+    }
+
+    public IMsoReferenceIf<ISystemIf> getSystemAttribute()
+    {
+        return m_system;
+    }
+    
+    /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
 
-    public void addCmdPostList(ICmdPostIf anICmdPostIf)
+    public void addCmdPost(ICmdPostIf anICmdPostIf)
     {
         m_cmdPostList.add(anICmdPostIf);
     }
@@ -148,5 +176,17 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         MsoModelImpl.getInstance().resumeClientUpdate();
         return true;
     }
+    
+    public ISystemIf createSystem() {
+    	IObjectIdIf id = MsoModelImpl.getInstance().getModelDriver().makeObjectId();
+        return createSystem(id);
+    }
 
+    public ISystemIf createSystem(IObjectIdIf id) {
+    	AbstractMsoObject msoObj = new SystemImpl(id);
+    	msoObj.setupReferences();
+    	msoObj.resumeClientUpdate();
+        return (ISystemIf)msoObj;
+    }
+    
 }

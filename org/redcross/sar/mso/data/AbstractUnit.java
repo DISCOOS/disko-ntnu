@@ -17,6 +17,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.naming.directory.ModificationItem;
+
 /**
  * Search or rescue unit.
  */
@@ -425,7 +427,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     // From ISerialNumberedIf
     public void setNumber(int aNumber)
     {
-        m_number.setValue(aNumber);
+        setNumber(m_number,aNumber);
     }
 
     public int getNumber()

@@ -17,10 +17,7 @@ import java.awt.event.ActionEvent;
 import java.util.Calendar;
 import java.util.logging.Logger;
 
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.util.mso.Route;
-import org.redcross.sar.wp.ds.old.RouteCostPanel;
-import org.redcross.sar.ds.ete.RouteCost;
 
 //import java.util.Random;
 
@@ -35,12 +32,12 @@ public class States extends JScrollPane implements ComponentListener, ActionList
 	private JPanel Resources = null;
 	private StateBar ProdState = null;
 	private JButton b1 = null;
-	private DiskoWpStatesImpl wp;
+	private DiskoWpScImpl wp;
 
 	/**
 	 * This is the default constructor
 	 */
-	public States(DiskoWpStatesImpl wp) {
+	public States(DiskoWpScImpl wp) {
 		super();
 		this.wp = wp;
 		initialize();

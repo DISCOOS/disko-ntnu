@@ -11,6 +11,10 @@ package org.redcross.sar.mso;
 
 import no.cmr.tools.Log;
 
+import java.util.List;
+import java.util.Set;
+import java.util.Stack;
+
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.modelDriver.IModelDriverIf;
 import org.redcross.sar.modelDriver.ModelDriver;
@@ -22,11 +26,6 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.util.GlobalProps;
 import org.redcross.sar.util.except.CommitException;
-
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
-
 
 /**
  * Singleton class for accessing the MSO model
@@ -224,11 +223,17 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
             rollback();
             return;
         }
+        /* ========================================================================
+         * postProcessCommit() is not used any more because only server updates
+         * should update the model 
+         * ======================================================================== */
+        /*
         suspendClientUpdate();
         setLoopbackUpdateMode();
         m_msoManager.postProcessCommit();
         restoreUpdateMode();
         resumeClientUpdate();
+        */
     }
 
     public synchronized void commit()
@@ -243,11 +248,17 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
             rollback();
             return;
         }
+        /* ========================================================================
+         * postProcessCommit() is not used any more because only server updates
+         * should update the model 
+         * ======================================================================== */
+        /*
         suspendClientUpdate();
         setLoopbackUpdateMode();
         m_msoManager.postProcessCommit();
         restoreUpdateMode();
         resumeClientUpdate();
+        */
     }
         
     public synchronized void rollback()

@@ -7,7 +7,7 @@ import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
- * The ICommittableIf and subinterfaces define methods that used by the commit handler when commiting objects and references.
+ * The ICommittableIf and subinterfaces define methods that used by the commit handler when committing objects and references.
  */
 public interface ICommittableIf
 {
@@ -27,15 +27,12 @@ public interface ICommittableIf
         public IMsoObjectIf getObject();
         
         /**
-         * Tells if only some attributes should be updated. Only 
-         * possible if getType() is COMMIT_MODIFIED 
+         * Tells if only some attributes should be updated. 
          */
         public boolean isPartial();
         
         /**
-         * Returns partial list of attributes to comnitt Only 
-         * possible if getType() is COMMIT_MODIFIED and isPartial()
-         * is true 
+         * Returns partial list of attributes to commit
          */
         public List<IAttributeIf> getPartial();
         

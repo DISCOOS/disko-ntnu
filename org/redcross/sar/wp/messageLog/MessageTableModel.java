@@ -149,7 +149,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
             case 0:
                 return message.getNumber();
             case 1:
-                return DTG.CalToDTG(message.getOccuredTime());
+                return DTG.CalToDTG(message.getTimeStamp());
             case 2:
                 ICommunicatorIf sender = message.getSender();
                 if (sender == null)

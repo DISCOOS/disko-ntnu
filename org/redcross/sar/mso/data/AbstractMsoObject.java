@@ -3,6 +3,7 @@ package org.redcross.sar.mso.data;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -14,19 +15,21 @@ import java.util.Set;
 import java.util.Vector;
 
 import no.cmr.tools.Log;
+
+import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommittableIf;
+import org.redcross.sar.mso.committer.IUpdateHolderIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.except.IllegalDeleteException;
 import org.redcross.sar.util.except.MsoNullPointerException;
 import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 import org.redcross.sar.util.mso.*;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Base class for all data objects in the MSO data model.
@@ -74,8 +77,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     /**
      * Change tracking counter
-     */
-    
+     */    
     private int m_changeCount = 0;
     
     /**
@@ -154,12 +156,66 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      *
      * This method is also called by from some constructors. In these cases, {@link #m_owningMainList} is null.
      */
-    protected void renumberDuplicateNumbers()
+    @SuppressWarnings("unchecked")
+	protected void setNumber(MsoInteger serial, int aNumber)
     {
-        if (m_owningMainList != null)
-        {
-            m_owningMainList.renumberItems(this);
-        }
+
+    	// update
+        serial.setValue(aNumber);
+        
+    	/* ==============================================================
+    	 * Renumbering of duplicates is required because serial number
+    	 * is locally incremented in each MSO model instance. Hence, 
+    	 * serial numbers are not generated globally by the server. 
+    	 * Hence, when  a new serial number is created, this only 
+    	 * applies locally. The same serial number may exist in another 
+    	 * MSO model, but this is not known before it is committed. When
+    	 * committed the duplicate serial number is detected by searching
+    	 * for other objects in the main list with the same serial number 
+    	 * as this object. If a different object with same serial number is
+    	 * found, the first created serial number is kept (the serial number 
+    	 * of this object). Every object with equal or greater serial number 
+    	 * than the serial number of this object is incremented. Any
+    	 * changes objects are returned as a list of IUpdateHolderIf, which
+    	 * MUST BE COMMITTED TO THE SERVER DIRECTLY! This ensures that
+    	 * conflict are resolved quickly without any user commit dependence. 
+    	 * If user commit is required, the resolved conflict may not become 
+    	 * visible in some time. During this time, the serial number may
+    	 * be used. When the resolved conflict is committed at a later state, 
+    	 * the changed serial number may confuse the user. 
+    	 * 
+    	 * The resolved conflict should produce cues visible to the user!
+    	 *  
+    	 * ============================================================== */
+    	
+    	if(!MsoModelImpl.getInstance().getUpdateMode().equals(UpdateMode.LOCAL_UPDATE_MODE)) {
+	        if (m_owningMainList != null)
+	        {
+	        	// get renumbered objects
+	            List<ISerialNumberedIf> renumbered = m_owningMainList.renumberDuplicateNumbers(this);
+	            // any conflicts found?
+	            if(renumbered.size()>0) {
+	            	// found, get items that must be update directly
+                	ICommitManagerIf committer = MsoModelImpl.getInstance();
+                	List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(renumbered.size());
+                    for(ISerialNumberedIf it : renumbered) {
+    					// get update holder set
+    					IUpdateHolderIf holder = committer.getUpdates(it);
+    					// has updates?
+    					if(holder!=null) {
+    						// try to set partial and to updates if succeeded	
+    						if(holder.setPartial(it.getNumberAttribute().getName())) {
+    							updates.add(holder);
+    						}
+    					}	                                        	
+                    }
+	            	// commit changes (this will not affect any other local changes)
+                    if(updates.size()>0) {
+                    	MsoModelImpl.getInstance().commit(updates);
+                    }
+	            }
+	        }
+    	}
     }
 
     protected abstract void defineAttributes();
@@ -212,9 +268,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     public void addDeleteListener(IMsoObjectHolderIf aHolder)
     {
-    	if(m_objectHolders.contains(aHolder))
-    		System.out.println("ERROR: Same handler added twice!");
-    	else
+    	// only add once
+    	if(!m_objectHolders.contains(aHolder))
     		m_objectHolders.add(aHolder);
     	
         //System.out.println("Add delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
@@ -222,10 +277,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     public void removeDeleteListener(IMsoObjectHolderIf aHolder)
     {
+    	// only remove if exists
     	if(m_objectHolders.contains(aHolder))
     		m_objectHolders.remove(aHolder);
-    	else
-    		System.out.println("ERROR: Tried to remove a non-existing handler!");
 
         //System.out.println("Remove delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
     }
@@ -380,7 +434,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         AttributeImpl retVal = m_attributeMap.get(aName.toLowerCase());
         if (retVal == null)
         {
-            throw new UnknownAttributeException("Unkbown attribute name '" + aName + "' in " + this.getClass().toString());
+            throw new UnknownAttributeException("Unknown attribute name '" + aName + "' in " + this.getClass().toString());
         }
         return retVal;
     }
@@ -416,7 +470,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         {
             return m_attributeList.get(anIndex);
         }
-        throw new UnknownAttributeException("Unkbown attribute index " + anIndex + " in " + this.getClass().toString());
+        throw new UnknownAttributeException("Unknown attribute index " + anIndex + " in " + this.getClass().toString());
     }
 
     public Map getAttributes()
@@ -845,9 +899,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 
         m_clientUpdateMask |= clientEventTypeMask;
-        
-        //if ((m_clientUpdateMask & MsoEvent.EventType.DELETED_OBJECT_EVENT.maskValue()) != 0 || // Always update when object is deleted
-        //        !(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
         
         if (!(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
         {

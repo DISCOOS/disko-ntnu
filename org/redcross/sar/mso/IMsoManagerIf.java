@@ -2,7 +2,6 @@ package org.redcross.sar.mso;
 
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.util.except.MsoException;
-import org.redcross.sar.util.except.MsoNullPointerException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 
@@ -21,6 +20,7 @@ public interface IMsoManagerIf
     public enum MsoClassCode
     {
         CLASSCODE_NOCLASS,
+        CLASSCODE_SYSTEM,
         CLASSCODE_OPERATION,
         CLASSCODE_CMDPOST,
         CLASSCODE_HYPOTHESIS,
@@ -90,6 +90,28 @@ public interface IMsoManagerIf
      * @return <code>true</code> if operation is deleted, <code>false</code> otherwise 
      */
     public boolean isOperationDeleted();
+    
+    /**
+     * Create a new {@link org.redcross.sar.mso.data.ISystemIf} object and add it to the collection of CmdPost objects.
+     *
+     * @return The created object, with an empty MSO structure.
+     */
+    public ISystemIf createSystem();
+
+    /**
+     * Create a new {@link org.redcross.sar.mso.data.ISystemIf} object and add it to the collection of CmdPost objects.
+     *
+     * @param anObjectId The Object id
+     * @return The created object, with an empty MSO structure.
+     */
+    public ISystemIf createSystem(IMsoObjectIf.IObjectIdIf anObjectId);
+
+    /**
+     * Get (Unique) {@link org.redcross.sar.mso.data.ICmdPostIf} object
+     *
+     * @return The {@link org.redcross.sar.mso.data.ISystemIf} object
+     */
+    public ISystemIf getSystem();    
     
     /**
      * Create a new {@link org.redcross.sar.mso.data.ICmdPostIf} object and add it to the collection of CmdPost objects.

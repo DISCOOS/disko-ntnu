@@ -13,6 +13,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
+import org.redcross.sar.mso.committer.ICommittableIf.ICommitObjectIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoCommitListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -409,7 +410,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     private void createMsoOperation(SarOperation oper)
     {
-        //Opprett alle Mso objekter fra hendelsens objekter
+        // only one active MSO operation allowed 
         IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
         if (!msoManager.operationExists())
         {
@@ -495,11 +496,11 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             sarSvc.getSession().createNewOperation("MSO", true);
         }
         
-        //sarSvc.getSession().beginCommit(sarOperation.getID());
-        //Iterer gjennom objektene, sjekk type og oppdater sara etter typen
+        //sarSvc.getSession().beginCommit(arg0)Commit(sarOperation.getID());
+        // Iterer gjennom objektene, sjekk type og oppdater sara etter typen
         ICommitWrapperIf wrapper = (ICommitWrapperIf) e.getSource();
-        List<ICommittableIf.ICommitObjectIf> objectList = wrapper.getObjects();
-        for (ICommittableIf.ICommitObjectIf ico : objectList)
+        List<ICommitObjectIf> objectList = wrapper.getObjects();
+        for (ICommitObjectIf ico : objectList)
         {
             //IF created, create SARA object
             if (ico.getType().equals(CommitManager.CommitType.COMMIT_CREATED))
@@ -509,7 +510,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 so.createNewOut();
             } else if (ico.getType().equals(CommitManager.CommitType.COMMIT_MODIFIED))
             {
-                //if modified, modify SaraObject.
+                // if modified, modify SaraObject.
                 updateSaraObject(ico);
             }
         }
@@ -527,7 +528,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
             msoReferenceChanged(ico, true);
         }
         //Handle delete object last
-        for (ICommittableIf.ICommitObjectIf ico : objectList)
+        for (ICommitObjectIf ico : objectList)
         {
             if (ico.getType().equals(CommitManager.CommitType.COMMIT_DELETED))
             {
@@ -596,7 +597,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         }
     }
 
-    private SarObject createSaraObject(ICommittableIf.ICommitObjectIf commitObject)
+    private SarObject createSaraObject(ICommitObjectIf commitObject)
     {
         IMsoObjectIf msoObj = commitObject.getObject();
         msoObj.getMsoClassCode();
@@ -616,52 +617,62 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
         //TODO sett attributter og tilordne til hendelse
         sbo.setOperation(sarOperation);
-        updateSaraObject(sbo, commitObject.getObject(), false);
+        updateSaraObject(sbo, commitObject.getObject(), commitObject.getPartial(), false);
         //Opprett instans av av denne og distribuer
         return sbo;
     }
 
-    private void updateSaraObject(ICommittableIf.ICommitObjectIf commitObject)
+    private void updateSaraObject(ICommitObjectIf commitObject)
     {
         // get sara object
     	SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());
         // ensure that this change is submitted to all listeners before any references is updated
-        updateSaraObject(soi, commitObject.getObject(), true);
+        updateSaraObject(soi, commitObject.getObject(), commitObject.getPartial(), true);
     }
 
-    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, boolean submitChanges)
+    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, List<IAttributeIf> partial, boolean submitChanges)
     {
     	// initialize
         SarSession sarSess = sarSvc.getSession();
         Map attrMap = msoObj.getAttributes();
         Map relMap = msoObj.getReferenceObjects();
         List<SarBaseObject> objs = sbo.getObjects();
-        //TODO legg inn begincommit
-        //sarSvc.getSession().beginCommit(sarOperation.getID());
+        
+        // loop over all objects in sara object 
         for (SarBaseObject so : objs)
         {
             try
             {
+            	// is attribute object?
                 if (so instanceof SarFact)
                 {
-                    //Map fact direkte mot attributtverdi
+                    // Map fact to attribute
                     String attrName = ((SarFact) so).getLabel();
                     IAttributeIf msoAttr = (IAttributeIf) attrMap.get(attrName.toLowerCase());
-                    if (msoAttr != null)
-                    {
-                        SarMsoMapper.mapMsoAttrToSarFact((SarFact) so, msoAttr, submitChanges);
-                    } else if (!attrName.equalsIgnoreCase("Objektnavn"))
-                    {
-                        Log.warning("Attribute " + attrName + " not found for " + sbo.getName());
+                    // only update fact if this is not a partial update, or if attribute 
+                    // is included in the partial update
+                    if(partial.size()==0 || partial.contains(msoAttr)) {
+	                    // found attribute?
+	                    if (msoAttr != null)
+	                    {
+	                        SarMsoMapper.mapMsoAttrToSarFact((SarFact) so, msoAttr, submitChanges);
+	                    } else if (!attrName.equalsIgnoreCase("Objektnavn"))
+	                    {
+	                        Log.warning("Attribute " + attrName + " not found for " + sbo.getName());
+	                    }
                     }
-
-                } else if (so instanceof SarObject)
+                // reference attributes (which is objects them selves) are
+                // only updated if this is a full update operation
+                } else if (partial.size()==0)
                 {
-                    String objName = ((SarObject) so).getName();
-                    IMsoObjectIf refAttr = (IMsoObjectIf) relMap.get(objName);
-                    if (refAttr != null)
-                    {
-                        updateSaraObject((SarObject) so, refAttr, submitChanges);
+                    if(so instanceof SarObject) {
+	                	String objName = ((SarObject) so).getName();
+	                    IMsoObjectIf refAttr = (IMsoObjectIf) relMap.get(objName);
+	                    if (refAttr != null)
+	                    {	                    	
+	                    	// reuse partial list, it is empty anyway...
+	                        updateSaraObject((SarObject) so, refAttr, partial, submitChanges);
+	                    }
                     }
                 }
             }
@@ -682,7 +693,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         
     }
 
-    private void deleteSaraObject(ICommittableIf.ICommitObjectIf commitObject)
+    private void deleteSaraObject(ICommitObjectIf commitObject)
     {
         //Finn mappet objekt
         SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());

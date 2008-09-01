@@ -7,10 +7,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -41,7 +39,6 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.mso.GeoPos;
@@ -342,24 +339,27 @@ public class MsoUtils {
     		// get model
     		IMsoModelIf anModel = Utils.getApp().getMsoModel();
     		
-            ICmdPostIf cmdPost = anModel.getMsoManager().getCmdPost();        
-            if(cmdPost!=null)	{
-            	
-		    	// get all areas
-		    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getItems());
-		
-		    	// searh for route
-		    	for(int i=0;i<areaList.size();i++) {
-		    		// get area
-		    		IAreaIf area = areaList.get(i); 
-		    		// found?
-		    		if(area.getAreaGeodata().contains(anRoute)) {
-		    			// found
-		    			found = area;
-		    			break;
-		    		}
-		    	}
-            }
+    		// can get command post?
+    		if(!anModel.getMsoManager().isOperationDeleted()) {
+	            ICmdPostIf cmdPost = anModel.getMsoManager().getCmdPost();        
+	            if(cmdPost!=null)	{
+	            	
+			    	// get all areas
+			    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getItems());
+			
+			    	// searh for route
+			    	for(int i=0;i<areaList.size();i++) {
+			    		// get area
+			    		IAreaIf area = areaList.get(i); 
+			    		// found?
+			    		if(area.getAreaGeodata().contains(anRoute)) {
+			    			// found
+			    			found = area;
+			    			break;
+			    		}
+			    	}
+	            }
+    		}
     	}
     	// return owning area
         return found;
@@ -376,26 +376,29 @@ public class MsoUtils {
     		// get model
     		IMsoModelIf anModel = Utils.getApp().getMsoModel();
     		
-    		// get cmd post
-    		ICmdPostIf cmdPost = anModel.getMsoManager().getCmdPost();
-    		
-    		// has cmd post?
-    		if(cmdPost!=null) {
-    			
-	    		// get all areas
-		    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(cmdPost.getAreaList().getItems());
-		
-		    	// searh for route
-		    	for(int i=0;i<areaList.size();i++) {
-		    		// get area
-		    		IAreaIf area = areaList.get(i); 
-		    		// found?
-		    		if(area.getAreaPOIs().contains(anPOI)) {
-		    			// found
-		    			found = area;
-		    			break;
-		    		}
-		    	}
+    		// can get command post?
+    		if(!anModel.getMsoManager().isOperationDeleted()) {
+	    		// get cmd post
+	    		ICmdPostIf cmdPost = anModel.getMsoManager().getCmdPost();
+	    		
+	    		// has cmd post?
+	    		if(cmdPost!=null) {
+	    			
+		    		// get all areas
+			    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(cmdPost.getAreaList().getItems());
+			
+			    	// searh for route
+			    	for(int i=0;i<areaList.size();i++) {
+			    		// get area
+			    		IAreaIf area = areaList.get(i); 
+			    		// found?
+			    		if(area.getAreaPOIs().contains(anPOI)) {
+			    			// found
+			    			found = area;
+			    			break;
+			    		}
+			    	}
+	    		}
     		}
     	}
     	
@@ -460,25 +463,29 @@ public class MsoUtils {
 
 	public static void setPOI(IAreaIf area, Point point, POIType poiType, boolean force)
 									throws IOException, AutomationException {
-		// try to get poi
-		IPOIIf poi = null;
-		if(!force) poi = getPOI(area, poiType);
-		
-		// has no poi of requested type?
-		if (poi == null) {
-			// get command post
-			ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
-			// get global poi list
-			IPOIListIf poiList = cmdPost.getPOIList();
-			// create new poi
-			poi = poiList.createPOI();
-			poi.setPosition(MapUtil.getMsoPosistion(point));
-			poi.setType(poiType);
-			// add to area
-			area.addAreaPOI(poi);
-		} else {
-			// update current position
-			poi.setPosition(MapUtil.getMsoPosistion(point));
+		// can get command post?
+		if(!MsoModelImpl.getInstance().getMsoManager().isOperationDeleted()) {
+
+			// try to get poi
+			IPOIIf poi = null;
+			if(!force) poi = getPOI(area, poiType);
+			
+			// has no poi of requested type?
+			if (poi == null) {
+				// get command post
+				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
+				// get global poi list
+				IPOIListIf poiList = cmdPost.getPOIList();
+				// create new poi
+				poi = poiList.createPOI();
+				poi.setPosition(MapUtil.getMsoPosistion(point));
+				poi.setType(poiType);
+				// add to area
+				area.addAreaPOI(poi);
+			} else {
+				// update current position
+				poi.setPosition(MapUtil.getMsoPosistion(point));
+			}
 		}
 	}
 	
@@ -542,36 +549,42 @@ public class MsoUtils {
 	
 	public static String getOperationAreaName(IOperationAreaIf area, boolean include) {
 		String name = "<Unknown>";
-		if(area!=null) {
-			name = DiskoEnumFactory.getText(MsoClassCode.CLASSCODE_OPERATIONAREA);
-			if(include) {
-				int i = 0;
-				IMsoModelIf model = MsoModelImpl.getInstance();
-				Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
-				Iterator<IOperationAreaIf> it = c.iterator();
-				while(it.hasNext()) {
-					i++;
-					if(it.next() == area)
-						break;			
+		// can get command post?
+		if(!MsoModelImpl.getInstance().getMsoManager().isOperationDeleted()) {
+			if(area!=null) {
+				name = DiskoEnumFactory.getText(MsoClassCode.CLASSCODE_OPERATIONAREA);
+				if(include) {
+					int i = 0;
+					IMsoModelIf model = MsoModelImpl.getInstance();
+					Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
+					Iterator<IOperationAreaIf> it = c.iterator();
+					while(it.hasNext()) {
+						i++;
+						if(it.next() == area)
+							break;			
+					}
+					name.concat(String.valueOf(getOperationNumber(area)));
 				}
-				name.concat(String.valueOf(getOperationNumber(area)));
 			}
 		}
 		return name; 
 	}
 	
 	public static int getOperationNumber(IOperationAreaIf operationArea) {
-		if(operationArea!=null) {
-			int i = 0;
-			IMsoModelIf model = MsoModelImpl.getInstance();
-			Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
-			Iterator<IOperationAreaIf> it = c.iterator();
-			while(it.hasNext()) {
-				i++;
-				if(it.next() == operationArea)
-					break;			
+		// can get command post?
+		if(!MsoModelImpl.getInstance().getMsoManager().isOperationDeleted()) {
+			if(operationArea!=null) {
+				int i = 0;
+				IMsoModelIf model = MsoModelImpl.getInstance();
+				Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
+				Iterator<IOperationAreaIf> it = c.iterator();
+				while(it.hasNext()) {
+					i++;
+					if(it.next() == operationArea)
+						break;			
+				}
+				return (i+1);
 			}
-			return (i+1);
 		}
 		return 0; 
 	}

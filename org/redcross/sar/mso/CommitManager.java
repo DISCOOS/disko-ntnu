@@ -215,16 +215,16 @@ public class CommitManager implements ICommitManagerIf
     class UpdateHolder implements IUpdateHolderIf
     {
         
-    	final IMsoObjectIf m_object;
-        int m_mask;
-        List<IAttributeIf> m_partial;
+    	private final IMsoObjectIf m_object;
+    	private final List<IAttributeIf> m_partial =  new ArrayList<IAttributeIf>(1);
 
+        private int m_mask;
+        
         UpdateHolder(IMsoObjectIf anObject, int aMask)
         {        	
         	// prepare
             m_object = anObject;
             m_mask = aMask;
-        	m_partial = new ArrayList<IAttributeIf>(0);
         }
 
 		public int getMask() {
@@ -241,37 +241,65 @@ public class CommitManager implements ICommitManagerIf
         }
         
         public boolean isPartial() {
-        	return m_partial.size()>0;
+        	return m_partial!=null && m_partial.size()>0;
         }
         
         public List<IAttributeIf> getPartial() {
         	return m_partial;
         }
         
-        public boolean setPartial(String attribute)
-        {
-        	List<String> list = new ArrayList<String>(1);
-        	list.add(attribute);
-        	return setPartial(list);
-        }
-        
-        public boolean setPartial(List<String> attributes)
-        {
-        	// prepare
-        	m_partial = new ArrayList<IAttributeIf>(attributes.size());
-            boolean modifiedObject = (m_mask 
-            		& MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+        public boolean addPartial(String attribute) {
         	
-            // is allowed?
-            if(modifiedObject) {
-	        	for(IAttributeIf<?> it : m_object.getAttributes().values()) {
-	        		String name = it.getName();
-	        		if(attributes.contains(name)) {
-	        			m_partial.add(it);
+        	// only allowed for an object that is
+        	// A) Already created
+        	// B) Is modified
+        	
+        	if(!isCreated() && isModified()) {
+	        	String name = attribute.toLowerCase();
+	        	if(m_object.getAttributes().containsKey(name)) {
+	        		IAttributeIf item = m_object.getAttributes().get(name);
+	        		if(!m_partial.contains(item)) {        			
+	        			return m_partial.add(item);
 	        		}
 	        	}
-            }
-            return m_partial.size()>0;
+        	}
+        	return false;
+        }
+        
+        public boolean removePartial(String attribute) {
+        	String name = attribute.toLowerCase();
+        	IAttributeIf found = null;
+        	for(IAttributeIf it : m_partial) {
+        		if(it.getName().equals(name)) {
+        			found = it;
+        			break;
+        		}
+        	}
+        	if(found!=null) {
+        		return m_partial.remove(found);
+        	}
+        	return false;
+        }
+        
+        public void clearPartial() {
+        	m_partial.clear();
+        }
+        
+        public boolean setPartial(String attribute)
+        {
+        	clearPartial();
+        	return addPartial(attribute);
+        }
+        
+        public int setPartial(List<String> attributes)
+        {
+        	int count = 0;
+        	
+            // forward
+        	for(String name : attributes) {
+        		if(addPartial(name)) count++;    		
+        	}
+            return count;
         }
 		
 	    public boolean isDeleted()

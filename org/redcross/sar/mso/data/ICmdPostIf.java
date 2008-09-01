@@ -137,12 +137,6 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public Collection<ICheckpointIf> getCheckpointListItems();
 
-    public IDataSourceListIf getDataSourceList();
-
-    public IMsoModelIf.ModificationState getDataSourceListState(IDataSourceIf anIDataSourceIf);
-
-    public Collection<IDataSourceIf> getDataSourceListItems();
-
     public IEnvironmentListIf getEnvironmentList();
 
     public IMsoModelIf.ModificationState getEnvironmentListState(IEnvironmentIf anIEnvironmentIf);

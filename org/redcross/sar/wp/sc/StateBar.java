@@ -11,10 +11,9 @@ import java.util.Random;
 import javax.swing.JPanel;
 
 public class StateBar extends JPanel {
-    /**
-	 * privare variables
-	 */
+
 	private static final long serialVersionUID = 1L;
+	
 	private int m_top = 30;
 	private int m_gap = 30;
 	private int m_step = 10;
