@@ -121,11 +121,11 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     {
         if (anObject instanceof IAssignmentIf)
         {
-            return m_unitAssignments.removeReference((IAssignmentIf) anObject);
+            return m_unitAssignments.remove((IAssignmentIf) anObject);
         }
         if (anObject instanceof IPersonIf)
         {
-            return m_unitPersonnel.removeReference((IPersonnelIf) anObject);
+            return m_unitPersonnel.remove((IPersonnelIf) anObject);
         }
         return false;
     }
@@ -465,7 +465,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
     public void removeUnitReference(IAssignmentIf anIAssignmentIf)
     {
-        m_unitAssignments.removeReference(anIAssignmentIf);
+        m_unitAssignments.remove(anIAssignmentIf);
         rearrangeAsgPrioritiesAfterReferenceChange(anIAssignmentIf);
     }
 

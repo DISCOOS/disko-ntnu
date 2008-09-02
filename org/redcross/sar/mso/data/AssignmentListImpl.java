@@ -24,7 +24,7 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
     public IAssignmentIf createAssignment(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IAssignmentIf retVal = getItem(anObjectId);
+        IAssignmentIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new AssignmentImpl(anObjectId, -1));
     }
 
@@ -37,7 +37,7 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
     public ISearchIf createSearch(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ISearchIf retVal = (ISearchIf) getItem(anObjectId);
+        ISearchIf retVal = (ISearchIf) getLoopback(anObjectId);
         return retVal != null ? retVal : (ISearchIf) createdItem(new SearchImpl(anObjectId, -1));
     }
 
@@ -50,8 +50,8 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
     public IAssistanceIf createAssistance(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IAssistanceIf retVal = (IAssistanceIf) getItem(anObjectId);
-        return retVal != null ? retVal :  (IAssistanceIf) createdItem(new AssistanceImpl(anObjectId, -1));
+        IAssistanceIf retVal = (IAssistanceIf) getLoopback(anObjectId);
+        return retVal != null ? retVal : (IAssistanceIf) createdItem(new AssistanceImpl(anObjectId, -1));
     }
 
 }

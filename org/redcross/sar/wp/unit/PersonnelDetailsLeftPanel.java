@@ -360,7 +360,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	            {
 	                if (unit.getStatus() != UnitStatus.RELEASED)
 	                {
-	                    if (unit.getUnitPersonnel().contains(m_currentPersonnel))
+	                    if (unit.getUnitPersonnel().exists(m_currentPersonnel))
 	                    {
 	                        personnelUnit = unit;
 	                        break;

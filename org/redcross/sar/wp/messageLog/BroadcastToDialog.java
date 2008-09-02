@@ -165,13 +165,13 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 						// Button has been unselected
 						if(m_selectionMode)
 						{
-							message.getUnconfirmedReceivers().removeReference(communicator);
-							message.getConfirmedReceivers().removeReference(communicator);
+							message.getUnconfirmedReceivers().remove(communicator);
+							message.getConfirmedReceivers().remove(communicator);
 						}
 						else
 						{
 							// Move from confirmed to selected
-							message.getConfirmedReceivers().removeReference(communicator);
+							message.getConfirmedReceivers().remove(communicator);
 							message.getUnconfirmedReceivers().add(communicator);
 						}
 					}
@@ -327,7 +327,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 					if(m_wpMessageLog.getMsoManager().operationExists()) {
 						for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
 						{
-							if(!message.getUnconfirmedReceivers().contains(communicator))
+							if(!message.getUnconfirmedReceivers().exists(communicator))
 							{
 								message.addUnconfirmedReceiver(communicator);
 							}
@@ -372,7 +372,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 					// Need to iterate over all active communicators to avoid concurrency issues, otherwise just selected communicators
 					for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
 					{
-						message.getUnconfirmedReceivers().removeReference(communicator);
+						message.getUnconfirmedReceivers().remove(communicator);
 					}
 
 					// Set unit type filter buttons
@@ -387,7 +387,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 				{
 					for(ICommunicatorIf communicator : m_wpMessageLog.getMsoManager().getCmdPost().getActiveCommunicators())
 					{
-						if(message.getConfirmedReceivers().removeReference(communicator))
+						if(message.getConfirmedReceivers().remove(communicator))
 						{
 							message.getUnconfirmedReceivers().add(communicator);
 						}
@@ -483,14 +483,14 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		{
 			if(communicator instanceof ICmdPostIf && type == UnitType.CP)
 			{
-				message.getUnconfirmedReceivers().removeReference(communicator);
+				message.getUnconfirmedReceivers().remove(communicator);
 			}
 			else if(communicator instanceof IUnitIf)
 			{
 				IUnitIf unit = (IUnitIf)communicator;
 				if(unit.getType() == type)
 				{
-					message.getUnconfirmedReceivers().removeReference(communicator);
+					message.getUnconfirmedReceivers().remove(communicator);
 				}
 			}
 		}
@@ -507,7 +507,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 			{
 				if(communicator instanceof ICmdPostIf && type == UnitType.CP)
 				{
-					if(!message.getUnconfirmedReceivers().contains(communicator))
+					if(!message.getUnconfirmedReceivers().exists(communicator))
 					{
 						message.getUnconfirmedReceivers().add(communicator);
 					}
@@ -515,7 +515,7 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 				else if(communicator instanceof IUnitIf)
 				{
 					IUnitIf unit = (IUnitIf)communicator;
-					if((unit.getType() == type) && (!message.getUnconfirmedReceivers().contains(communicator)))
+					if((unit.getType() == type) && (!message.getUnconfirmedReceivers().exists(communicator)))
 					{
 						message.getUnconfirmedReceivers().add(communicator);
 					}
@@ -546,11 +546,11 @@ public class BroadcastToDialog extends DefaultDialog implements IEditMessageComp
 		for(JToggleButton button : m_buttonCommunicatorMap.keySet())
 		{
 			communicator = m_buttonCommunicatorMap.get(button);
-			if(unconfirmedReceivers.contains(communicator))
+			if(unconfirmedReceivers.exists(communicator))
 			{
 				m_selectedCommuicators.add(communicator);
 			}
-			else if(confirmedReceivers.contains(communicator))
+			else if(confirmedReceivers.exists(communicator))
 			{
 				m_selectedCommuicators.add(communicator);
 				m_confirmedCommunicators.add(communicator);

@@ -23,7 +23,7 @@ public class ForecastListImpl extends MsoListImpl<IForecastIf> implements IForec
     public IForecastIf createForecast(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IForecastIf retVal = getItem(anObjectId);
+        IForecastIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new ForecastImpl(anObjectId));
     }
 }

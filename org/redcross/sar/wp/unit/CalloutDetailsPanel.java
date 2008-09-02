@@ -380,8 +380,8 @@ public class CalloutDetailsPanel extends JPanel
 					if(newPersonnelInstance != personnel)
 					{
 						// Personnel was reinstated. Replace reference in call-out
-						m_callout.getPersonnelList().removeReference(personnel);
-						if(!m_callout.getPersonnelList().contains(newPersonnelInstance))
+						m_callout.getPersonnelList().remove(personnel);
+						if(!m_callout.getPersonnelList().exists(newPersonnelInstance))
 						{
 							m_callout.getPersonnelList().add(newPersonnelInstance);
 						}

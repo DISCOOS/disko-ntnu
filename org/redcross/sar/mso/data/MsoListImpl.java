@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import no.cmr.tools.Log;
+
 import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.committer.CommittableImpl;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoRuntimeException;
@@ -33,6 +36,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     protected final HashMap<String, M> m_added;
     protected final HashMap<String, M> m_deleted;
     protected final HashMap<String, M> m_pending;
+    protected final HashMap<M, Integer> m_conflicts;
     protected final int m_cardinality;
     protected final boolean m_isMain;
     
@@ -63,6 +67,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         m_added = new LinkedHashMap<String, M>();
         m_deleted = new LinkedHashMap<String, M>();
         m_pending = new LinkedHashMap<String, M>();
+        m_conflicts = new LinkedHashMap<M, Integer>();
     }
 
     protected void setName(String aName)
@@ -140,21 +145,255 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         return retVal;
     }
 
+    public boolean isDeleted(IMsoObjectIf anObject) {
+    	if(anObject!=null) {
+    		return m_deleted.containsKey(anObject.getObjectId()) || isDeleting(anObject);
+    	}
+    	return false;
+    }
+    
+    public boolean isDeleting(IMsoObjectIf anObject) {
+    	if(anObject!=null) {
+    		return m_pending.containsKey(anObject.getObjectId());
+    	}
+    	return false;
+    }
+    
+    public boolean isLocal(IMsoObjectIf anObject) {
+    	if(anObject!=null) {
+    		return m_added.containsKey(anObject.getObjectId()) || isDeleted(anObject);
+    	}
+    	return false;
+    }
+
+    public boolean isRemote(IMsoObjectIf anObject) {
+    	if(anObject!=null) {
+    		return m_items.containsKey(anObject.getObjectId());
+    	}    	
+    	return false;
+    }
+    
+
+    public boolean exists(M anObject)
+    {
+        return (m_items.containsKey(anObject.getObjectId()) || m_added.containsKey(anObject.getObjectId()));
+    }
+
+    public boolean contains(M anObject)
+    {
+        return exists(anObject) || isDeleted(anObject);
+    }
+    
+    public ModificationState getState(M anObject)
+    {
+        if (isRemote(anObject))
+        {
+            return ModificationState.STATE_SERVER;
+        }
+        if (isLocal(anObject))
+        {
+            return ModificationState.STATE_LOCAL;
+        }
+        return ModificationState.STATE_UNDEFINED;
+    }
+    
+    protected M getLoopback(IMsoObjectIf.IObjectIdIf anObjectId)
+    {
+    	// check if exists
+    	M retVal = getItem(anObjectId.getId());
+        // move to REMOTE state?
+        if(isLocal(retVal)) add(retVal);
+    	// succeeded
+        return getItem(anObjectId.getId());
+    }
+    
+          
+    public boolean add(M anObject)
+    {
+    	
+    	// valid?
+        if (anObject != null && ((AbstractMsoObject) anObject).isSetup()) 
+        {
+        
+	    	/* ========================================================
+	    	 * Successfully adding a new object is dependent on the
+	    	 * update mode of the MSO model. 
+	    	 * 
+	    	 * If the model is in LOOPBACK_UPDATE_MODE, the added object
+	    	 * exist now remotely and should be added as such.
+	    	 * 
+	    	 * If the model is in REMOTE_UPDATE_MODE, any change from 
+	    	 * the server will be a new remote object that by definition
+	    	 * can not exist locally in this list. Hence, ADD operations
+	    	 * no list can not produce a conflict. Consequently, 
+	    	 * LOOPBACK_UPDATE_MODE and REMOTE_UPDATE_MODE is handled
+	    	 * equally.
+	    	 * 
+	    	 * If the model is in LOCAL_UPDATE_MODE, a object is
+	    	 * created locally and should be added as such.
+	    	 *  
+	    	 * A commit() or rollback() will remove all locally 
+	    	 * added and deleted objects. 
+	    	 * 
+	    	 * ======================================================== */    	    	
+	    	
+	        // update internal lists
+	        switch (MsoModelImpl.getInstance().getUpdateMode())
+	        {
+	            case LOOPBACK_UPDATE_MODE:
+	            case REMOTE_UPDATE_MODE:
+	            {
+	                
+	            	/* ===========================================================
+	            	 * Update to SERVER state
+	            	 * 
+			    	 * If the model is in LOOPBACK_UPDATE_MODE or REMOTE_UPDATE_MODE, 
+			    	 * any change from the server will be a new remote object. 
+			    	 * Consequently, this object can not exist locally. Hence, ADD 
+			    	 * operations can not produce a conflict. 
+	            	 * 
+	            	 * ================================================================
+	            	 * IMPORTANT 1
+	            	 * ================================================================
+	            	 * 
+	            	 * If the object exists locally, this directly yields that a 
+	            	 * proper LOOPBACK must have occurred. Any local existence should
+	            	 * be removed from the local ADDED list. A new remote object can 
+	            	 * not by definition be deleted locally because any locally 
+	            	 * deleted object is already added remotely and can thus not be
+	            	 * added once again. 
+	            	 * 
+	            	 * ================================================================
+	            	 * IMPORTANT 2 
+	            	 * ================================================================
+	            	 * 
+	            	 * The LOOPBACK mode is by definition a violation of the SARA 
+	            	 * Protocol. The use of postProcessCommit() and LOOPBACK mode 
+	            	 * is therefore discarded.
+	            	 * 
+	            	 * =========================================================== */
+	
+	            	// valid operation?
+	                if (!isRemote(anObject))
+	                {
+	            	            	
+		            	// get key
+		            	String id = anObject.getObjectId();
+		            	
+		            	// assume not loop back
+		            	boolean isLoopback = false; 
+		            	
+		                // delete local existence? 
+		                if(isLocal(anObject)) 
+		                {
+		                	// remove from lists
+		                	M msoObj = m_pending.remove(id);
+		                	if(msoObj!=null) {
+		                		// should not happen!
+		                		Log.error("ERROR: Local pending object found!");
+		                	}
+		                	msoObj = m_deleted.remove(id);	
+		                	if(msoObj!=null) {
+		                		// should not happen!
+		                		Log.error("ERROR: Local deleted object found!");
+		                	}
+		                	// this is a loopback if exists locally 
+		                	isLoopback = (m_added.remove(id)!=null);
+		                }
+		                
+		                // add to REMOTE state list
+		                m_items.put(id, anObject);
+		                
+		                // register?
+		                if(!isLoopback)
+		                	registerAddedReference(anObject,true);
+		            	
+		            	// update
+		                incrementChangeCount();
+		                
+		                // success
+		                return true;
+		                
+	                }
+	                
+	                break;
+	            }
+	            default: // LOCAL_UPDATE_MODE
+	            {
+	            	
+	            	/* ===========================================================
+	            	 * Update reference to the appropriate state
+	            	 * 
+	            	 * The default update mode is LOCAL_UPDATE_MODE. This mode
+	            	 * indicates that the change originates from a GUI (user) 
+	            	 * or Service (application) invocation. Local existence is
+	            	 * registered by adding to the ADDED list
+	            	 * 
+	            	 * ================================================================
+	            	 * IMPORTANT
+	            	 * ================================================================
+	            	 * 
+	            	 * The new object can not exist neither remotely nor locally.
+	            	 * 
+	            	 * =========================================================== */
+	
+	            	// valid operation?
+	                if (!exists(anObject))
+	                {
+		            	// get key
+		            	String id = anObject.getObjectId();
+		            	
+		                // add to LOCAL state list
+		                m_added.put(id, anObject);
+		                
+		                // register
+		            	registerAddedReference(anObject,true);
+		
+		            	// update
+		                incrementChangeCount();
+		                
+		                // success
+		                return true;
+		                
+	                }               
+	            }            
+	        }
+	    }
+        
+        // failure
+        return false;
+    }
+    
+    private void registerAddedReference(M anObject, boolean add)
+    {
+        if (anObject != null)
+        {
+        	if(add) ((AbstractMsoObject) anObject).addDeleteListener(this);
+        	((AbstractMsoObject) anObject).registerAddedReference();
+        }
+        if (m_owner != null)
+        {
+            ((AbstractMsoObject) m_owner).registerAddedReference();
+        }
+        
+    }
+
+    /*
     public void add(M anObject)
     {
         if (anObject == null)
         {
-            //throw new MsoRuntimeException(getName() + ": Cannot add null object");
+            throw new MsoRuntimeException(getName() + ": Cannot add null object");
         }
         String objectId = anObject.getObjectId();
         MsoModelImpl.UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
-        if ((m_items.containsKey(objectId) || m_added.containsKey(objectId)) && updateMode == IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE)
+        if ((m_items.containsKey(objectId) || m_added.containsKey(objectId)) && updateMode == UpdateMode.LOCAL_UPDATE_MODE)
         {
             throw new DuplicateIdException("ObjectId already added to list");
         }
         if (!((AbstractMsoObject) anObject).isSetup())
         {
-            //throw new MsoRuntimeException(getName() + ": Cannot add uninitialized object");
+            throw new MsoRuntimeException(getName() + ": Cannot add uninitialized object");
         }
 
         incrementChangeCount();
@@ -174,7 +413,137 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         }        
         //System.out.println("Added reference from " + m_owner + " to " + anObject);
     }
+	*/
+    
+    public boolean remove(M anObject)
+    {
+    	
+        if (anObject == null)
+        {
+            throw new MsoRuntimeException(getName() + ": Cannot remove null object");
+        }
+        
+    	/* ========================================================
+    	 * Successfully removing a object is dependent on the
+    	 * update mode of the MSO model. 
+    	 * 
+    	 * If the model is in LOOPBACK_UPDATE_MODE, the removed object
+    	 * does not exist remotely and should be removed from the 
+    	 * list completely. The same applies for REMOTE_UPDATE_MODE.
+    	 * Hence, REMOVE operations can not produce a conflict.
+    	 * 
+    	 * If the model is in LOCAL_UPDATE_MODE, a object is
+    	 * deleted locally and should be removed as such.
+    	 *  
+    	 * A commit() or rollback() will remove all locally 
+    	 * added and deleted objects. 
+    	 * 
+    	 * ======================================================== */    	    	
+        
+        // initialize
+    	boolean bFlag = false;
+    	
+    	// remove from list
+        if (isMain())
+        {
+            bFlag = anObject.delete();
+        } else
+        {
+            bFlag = doDeleteReference(anObject);
+        }
+        
+        // increment change count?
+        if(bFlag) incrementChangeCount();
+        
+        // finished
+        return bFlag;
+        
+    }
+    
+    
+    /*
+    public boolean remove(M anObject)
+    {
+    	boolean bFlag = false;
+        if (isMain())
+        {
+            bFlag = anObject.delete();
+        } else
+        {
+            bFlag = doDeleteReference(anObject);
+        }
+        
+        // increment change count?
+        if(bFlag) incrementChangeCount();
+        
+        return bFlag;        
+    }
+    */
+    
+    /**
+     * Can always execute doDeleteReference().
+     *
+     * @param anObject See implemented method {@link IMsoObjectHolderIf#canDeleteReference(IMsoObjectIf)}.
+     */
+    public boolean canDeleteReference(M anObject)
+    {
+    	return true; 
+    }
 
+    public boolean doDeleteReference(M anObject)
+    {
+    	MsoModelImpl model = MsoModelImpl.getInstance();
+        boolean isLocalUpdate = model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+        boolean updateServer = isLocalUpdate;
+        
+        /* ================================================================
+         * If client updates are suspended, deleted references must
+         * be kept until resumeClientUpdate() is called. If not, 
+         * the client will never be notified because deleted references
+         * are not present in m_added or m_items any more. m_pending
+         * is used to store deleted references until resumeClientUpdate()
+         * is called.
+         * ================================================================ */
+        
+        boolean isUpdateSuspended = model.isUpdateSuspended();
+
+        String key = anObject.getObjectId();
+
+        M refObj;
+        refObj = m_items.remove(key);
+        if (refObj != null)
+        {
+            if (isLocalUpdate)
+            {
+                m_deleted.put(key, anObject);
+            }
+            else {
+            	m_deleted.remove(key);
+            }
+        } else
+        {
+        	// remove locally added
+            refObj = m_added.remove(key);
+            updateServer = false;
+        }
+        if (refObj != null)
+        {
+            String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
+            System.out.println("Delete reference from " + s + " to " + anObject);
+            ((AbstractMsoObject) refObj).removeDeleteListener(this);
+            if(isUpdateSuspended) 
+            {
+            	m_pending.put(key, refObj);
+            }
+            if (m_owner != null)
+            {
+                ((AbstractMsoObject) m_owner).registerRemovedReference(updateServer);
+            }
+            return true;
+        }
+        return false;
+    }    
+    
     public void clear()
     {
     	incrementChangeCount();
@@ -183,9 +552,14 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         clearDeleted(m_deleted);
     }
 
-    private void clearList(HashMap<String, M> aList, boolean updateServer)      // todo Denne er feil, slettete elementer blir ikke dereferert.
+    private void clearList(HashMap<String, M> aList, boolean updateServer)      
     {
-        // Copy the list and clear the original before any events are sent around, since the events are checking the original list
+        /*
+         * Copy the list and clear the original before any 
+         * events are sent around, since the events are checking 
+         * the original list
+         * 
+         */ 
         if (aList.size() == 0)
         {
             return;
@@ -199,15 +573,12 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         Collection<String> tmpList = aList.keySet();
         while (tmpList.size() > 0)
         {
-            String key = tmpList.iterator().next();
-            //M refObj = aList.remove(key);
-            M refObj = aList.get(key);
+            M refObj = aList.get(tmpList.iterator().next());
             AbstractMsoObject abstrObj = (AbstractMsoObject) refObj;
             if (abstrObj != null)
             {
                 if (m_isMain)
                 {
-                    //abstrObj.doDelete();
                     abstrObj.delete();
                 } else
                 {
@@ -245,95 +616,20 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         }
     }
 
-    /**
-     * Can always execute doDeleteReference().
-     *
-     * @param anObject See implemented method {@link IMsoObjectHolderIf#canDeleteReference(IMsoObjectIf)}.
-     */
-    public boolean canDeleteReference(M anObject)
-    {
-    	return true; 
-    }
-
-    public boolean doDeleteReference(M anObject)
-    {
-    	MsoModelImpl model = MsoModelImpl.getInstance();
-        boolean localUpdateMode = model.getUpdateMode() == MsoModelImpl.UpdateMode.LOCAL_UPDATE_MODE;
-        boolean updateServer = localUpdateMode;
-        
-        /* ================================================================
-         * If client updates are suspended, deleted references must
-         * be kept until resumeClientUpdate() is called. If not, 
-         * the client will never be notified because deleted references
-         * are not present in m_added or m_items any more. m_pending
-         * is used to store deleted references until resumeClientUpdate()
-         * is called.
-         * ================================================================ */
-        
-        boolean isUpdateSuspended = model.isUpdateSuspended();
-
-        String key = anObject.getObjectId();
-
-        M refObj;
-        refObj = m_items.remove(key);
-        if (refObj != null)
-        {
-            if (localUpdateMode)
-            {
-                m_deleted.put(key, anObject);
-            }
-        } else
-        {
-            refObj = m_added.remove(key);
-            updateServer = false;
-        }
-        if (refObj != null)
-        {
-            String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
-            System.out.println("Delete reference from " + s + " to " + anObject);
-            ((AbstractMsoObject) refObj).removeDeleteListener(this);
-            if(isUpdateSuspended) 
-            {
-            	m_pending.put(key, refObj);
-            }
-            if (m_owner != null)
-            {
-                ((AbstractMsoObject) m_owner).registerRemovedReference(updateServer);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    public boolean removeReference(M anObject)
-    {
-    	boolean bFlag = false;
-        if (isMain())
-        {
-            bFlag = anObject.delete();
-        } else
-        {
-            bFlag = doDeleteReference(anObject);
-        }
-        
-        if(bFlag)
-        	incrementChangeCount();
-        
-        return bFlag;        
-    }
+ 
 
     /**
      * Re-insert an object in items.
      *
-     * @param refObj The object to undelete.
+     * @param anObject The object to undelete.
      */
-    protected void reInsert(M refObj)
+    protected void reInsert(M anObject)
     {
-        if (refObj != null)
+        if (anObject != null)
         {
-            m_items.put(refObj.getObjectId(), refObj);
-            ((AbstractMsoObject) refObj).addDeleteListener(this);
-            ((AbstractMsoObject) refObj).registerCreatedObject();
+            m_items.put(anObject.getObjectId(), anObject);
+            ((AbstractMsoObject) anObject).addDeleteListener(this);
+            ((AbstractMsoObject) anObject).registerCreatedObject();
         }
     }
 
@@ -345,9 +641,9 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     	
     	clearPending(m_deleted);
     	
-    	for (M refObj : m_deleted.values())
+    	for (M anObject : m_deleted.values())
         {            
-    		reInsert(refObj);
+    		reInsert(anObject);
         }
 
         if (m_owner != null && m_deleted.size() > 0)
@@ -369,22 +665,9 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         M refObj = getItem();
         while (refObj != null)
         {
-            removeReference(refObj);
+            remove(refObj);
             refObj = getItem();
         }
-    }
-
-    public IMsoModelIf.ModificationState getState(M aReference)
-    {
-        if (m_items.containsKey(aReference.getObjectId()))
-        {
-            return IMsoModelIf.ModificationState.STATE_SERVER;
-        }
-        if (m_added.containsKey(aReference.getObjectId()))
-        {
-            return IMsoModelIf.ModificationState.STATE_LOCAL;
-        }
-        return IMsoModelIf.ModificationState.STATE_UNDEFINED;
     }
 
     public boolean rollback()
@@ -630,27 +913,6 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         return max + 1;
     }
 
-    void rearrangeSerialNumber()
-    {
-        // todo make code
-        for (M item : getItems())
-        {
-            try
-            {
-                ISerialNumberedIf serialItem = (ISerialNumberedIf) item;
-            }
-            catch (ClassCastException e)
-            {
-                //throw new MsoRuntimeException("Object " + item + " is not implementing ISerialNumberedIf");
-            }
-        }
-    }
-
-    public boolean contains(M anObject)
-    {
-        return (m_items.containsKey(anObject.getObjectId()) || m_added.containsKey(anObject.getObjectId()));
-    }
-
     public boolean equals(Object o)
     {
         if (this == o)
@@ -665,7 +927,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         MsoListImpl<M> list;
         try
         {
-            list = (MsoListImpl<M>) o;
+            list = (MsoListImpl<M>)o;
         }
         catch (Exception e)
         {
@@ -772,7 +1034,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	            if (item instanceof ISerialNumberedIf)
 	            {
 	                ISerialNumberedIf numberedItem = (ISerialNumberedIf) item;
-	                if (numberedItem.getNumberState() != IMsoModelIf.ModificationState.STATE_SERVER)
+	                if (numberedItem.getNumberState() != ModificationState.STATE_SERVER)
 	                {
 	                    if (nextNumber < 0)
 	                    {

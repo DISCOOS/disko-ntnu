@@ -56,7 +56,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
     {
         if (anObject instanceof IPersonnelIf)
         {
-            return m_personnel.removeReference((IPersonnelIf) anObject);
+            return m_personnel.remove((IPersonnelIf) anObject);
         }
         return false;
     }

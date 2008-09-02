@@ -21,7 +21,7 @@ public class AreaListImpl extends MsoListImpl<IAreaIf> implements IAreaListIf
     public IAreaIf createArea(IMsoObjectIf.IObjectIdIf anObjectId,boolean hostile)
     {
         checkCreateOp();
-        IAreaIf retVal = getItem(anObjectId);
+        IAreaIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new AreaImpl(anObjectId,true));
     }
 }

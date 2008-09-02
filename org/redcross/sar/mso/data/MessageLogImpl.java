@@ -30,7 +30,7 @@ public class MessageLogImpl extends MsoListImpl<IMessageIf> implements IMessageL
     public IMessageIf createMessage(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IMessageIf retVal = getItem(anObjectId);
+        IMessageIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new MessageImpl(anObjectId, -1));
     }
 }

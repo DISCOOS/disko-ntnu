@@ -1,4 +1,4 @@
-package org.redcross.sar.modelDriver;
+package org.redcross.sar.modeldriver1;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.mso.CommitManager;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * For documentation, see {@link  org.redcross.sar.modelDriver.IModelDriverIf}
+ * For documentation, see {@link  org.redcross.sar.modeldriver.IModelDriverIf}
  */
 public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
 {

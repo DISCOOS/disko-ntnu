@@ -1,8 +1,9 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.committer.CommittableImpl;
 
 import java.util.Collection;
@@ -22,7 +23,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     protected int m_changeCount;    
     
     //private boolean m_changed = false;
-    protected IMsoModelIf.ModificationState m_state = IMsoModelIf.ModificationState.STATE_UNDEFINED;
+    protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
 
     public MsoReferenceImpl(AbstractMsoObject theOwner, String theName, int theCardinality, boolean canDelete)
     {
@@ -39,7 +40,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public T getReference()
     {
-        return m_state == IMsoModelIf.ModificationState.STATE_LOCAL ? m_localValue : m_serverValue;
+        return m_state == ModificationState.STATE_LOCAL ? m_localValue : m_serverValue;
     }
 
     public void setCanDelete(boolean canDelete)
@@ -49,10 +50,13 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public boolean canDelete()
     {
-    	if (MsoModelImpl.getInstance().getUpdateMode() != IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE)
+    	// In LOOPBACK and SERVER MODE, delete is always allowed. Only in 
+    	// LOCAL mode are delete operations validated.
+    	if (!MsoModelImpl.getInstance().isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
         {
             return true;
         }
+    	// query
         return m_canDelete;
     }
 
@@ -65,19 +69,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	m_changeCount++;
     }    
     
-    public IMsoModelIf.ModificationState getState()
+    public ModificationState getState()
     {
         return m_state;
-    }
-
-    private void registerDeletedReference(T anObject, boolean remove)
-    {
-        if (anObject != null)
-        {
-        	if(remove) ((AbstractMsoObject) anObject).removeDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerRemovedReference();
-
-        }
     }
 
     private void registerAddedReference(T anObject, boolean add)
@@ -89,6 +83,15 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         }
     }
 
+    private void registerDeletedReference(T anObject, boolean remove)
+    {
+        if (anObject != null)
+        {
+        	if(remove) ((AbstractMsoObject) anObject).removeDeleteListener(this);
+        	((AbstractMsoObject) anObject).registerRemovedReference();
+
+        }
+    }
     private void registerReferenceChange(T newRef, T oldRef)
     {
         if (newRef != null || oldRef != null)
@@ -136,8 +139,8 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	 * 
     	 * ======================================================== */    	    	
     	
-        IMsoModelIf.UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
-        IMsoModelIf.ModificationState newState;
+        UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
+        ModificationState newState;
         boolean valueChanged = false;
 
         // get current reference
@@ -212,7 +215,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * =========================================================== */
             	
             	// set state
-            	newState = IMsoModelIf.ModificationState.STATE_SERVER;
+            	newState = ModificationState.STATE_SERVER;
                 
             	// is equal?
             	boolean isConflict = !equal(m_localValue, aReference);
@@ -287,14 +290,14 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	
 
             	// check if a conflict has occurred?
-            	boolean isConflict = (m_state == IMsoModelIf.ModificationState.STATE_LOCAL 
-            			|| m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING) ? 
+            	boolean isConflict = (m_state == ModificationState.STATE_LOCAL 
+            			|| m_state == ModificationState.STATE_CONFLICTING) ? 
             			!equal(m_localValue, aReference) : false;
             	
             	// get next state
                 newState = isConflict ? 
-                		  IMsoModelIf.ModificationState.STATE_CONFLICTING 
-                		: IMsoModelIf.ModificationState.STATE_SERVER;
+                		  ModificationState.STATE_CONFLICTING 
+                		: ModificationState.STATE_SERVER;
                 
                 // only reset local value if no conflict is found, 
                 if(!isConflict) 
@@ -356,7 +359,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	if (equal(m_serverValue, aReference))
                 {
                 	// set server state
-                    newState = IMsoModelIf.ModificationState.STATE_SERVER;
+                    newState = ModificationState.STATE_SERVER;
                 	// register change
                     registerDeletedReference(m_localValue,true);
                     // set flag
@@ -366,7 +369,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
                 } else
                 {                	
                 	// set local state
-                    newState = IMsoModelIf.ModificationState.STATE_LOCAL;                    
+                    newState = ModificationState.STATE_LOCAL;                    
                 	// register
                     registerDeletedReference(m_localValue,true);
                     // prepare next
@@ -404,13 +407,13 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     CMR IMPLEMENTATION, replaced by Kengu
     public void setReference(T aReference)
     {
-        IMsoModelIf.UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
+        UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
         T oldReference = getReference();
-        IMsoModelIf.ModificationState newState;
+        ModificationState newState;
         boolean valueChanged = false;
 
         // prepare to replace current relation 
-        if (m_state != IMsoModelIf.ModificationState.STATE_LOCAL)
+        if (m_state != ModificationState.STATE_LOCAL)
         {
             if (m_serverValue != null)
             {
@@ -431,7 +434,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         {
             case LOOPBACK_UPDATE_MODE:
             {
-                newState = IMsoModelIf.ModificationState.STATE_SERVER;
+                newState = ModificationState.STATE_SERVER;
                 m_serverValue = aReference;
                 if (m_serverValue != null)
                 {
@@ -443,8 +446,8 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             }
             case REMOTE_UPDATE_MODE:
             {
-                newState = m_state == IMsoModelIf.ModificationState.STATE_LOCAL ? 
-                		IMsoModelIf.ModificationState.STATE_CONFLICTING : IMsoModelIf.ModificationState.STATE_SERVER;
+                newState = m_state == ModificationState.STATE_LOCAL ? 
+                		ModificationState.STATE_CONFLICTING : ModificationState.STATE_SERVER;
                 m_serverValue = aReference;
                 if (m_serverValue != null)
                 {
@@ -455,7 +458,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             }
             default:
             {
-                newState = IMsoModelIf.ModificationState.STATE_LOCAL;
+                newState = ModificationState.STATE_LOCAL;
                 m_localValue = aReference;
                 if (m_localValue != null)
                 {
@@ -490,7 +493,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public Vector<T> getConflictingValues()
     {
-        if (m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICTING)
         {
             Vector<T> retVal = new Vector<T>(2);
             retVal.add(m_serverValue);
@@ -519,9 +522,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     {
         T oldLocalValue = m_localValue;
         m_localValue = null;
-        boolean isChanged = m_state == IMsoModelIf.ModificationState.STATE_LOCAL 
-        				 || m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING;
-        m_state = IMsoModelIf.ModificationState.STATE_SERVER;
+        boolean isChanged = m_state == ModificationState.STATE_LOCAL 
+        				 || m_state == ModificationState.STATE_CONFLICTING;
+        m_state = ModificationState.STATE_SERVER;
         if (isChanged)
         {
         	// notify
@@ -537,9 +540,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
      */
     public void postProcessCommit()
     {
-        boolean isChanged = m_state == IMsoModelIf.ModificationState.STATE_LOCAL 
-        				 || m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING;
-        m_state = IMsoModelIf.ModificationState.STATE_SERVER;
+        boolean isChanged = m_state == ModificationState.STATE_LOCAL 
+        				 || m_state == ModificationState.STATE_CONFLICTING;
+        m_state = ModificationState.STATE_SERVER;
         if (isChanged)
         {
             m_serverValue = m_localValue;
@@ -551,11 +554,11 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
 
 
-    private boolean acceptConflicting(IMsoModelIf.ModificationState aState)
+    private boolean acceptConflicting(ModificationState aState)
     {
-        if (m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICTING)
         {
-            if (aState == IMsoModelIf.ModificationState.STATE_LOCAL)
+            if (aState == ModificationState.STATE_LOCAL)
             {
             	/* ==========================================================
             	 * resolve conflict as a local value state (keep local value)
@@ -590,7 +593,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     public boolean acceptLocal()
     {
         //MsoModelImpl.getInstance().setLocalUpdateMode();
-        boolean retVal = acceptConflicting(IMsoModelIf.ModificationState.STATE_LOCAL);
+        boolean retVal = acceptConflicting(ModificationState.STATE_LOCAL);
         //MsoModelImpl.getInstance().restoreUpdateMode();
         return retVal;
     }
@@ -598,7 +601,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     public boolean acceptServer()
     {
         //MsoModelImpl.getInstance().setRemoteUpdateMode();
-        boolean retVal = acceptConflicting(IMsoModelIf.ModificationState.STATE_SERVER);
+        boolean retVal = acceptConflicting(ModificationState.STATE_SERVER);
         //MsoModelImpl.getInstance().restoreUpdateMode();
         return retVal;
     }
@@ -606,7 +609,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public boolean isUncommitted()
     {
-        return m_state == IMsoModelIf.ModificationState.STATE_LOCAL;
+        return m_state == ModificationState.STATE_LOCAL;
     }
 
     public boolean canDeleteReference(T anObject)
@@ -616,7 +619,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public boolean doDeleteReference(T anObject)
     {
-        if (getReference() == anObject && canDelete())
+        if (canDelete())
         {
             String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
             System.out.println("Delete reference from " + s + " to " + anObject);
@@ -643,7 +646,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     public Collection<CommittableImpl.CommitReference> getCommittableRelations()
     {
         Vector<CommittableImpl.CommitReference> retVal = new Vector<CommittableImpl.CommitReference>();
-        if (m_state == IMsoModelIf.ModificationState.STATE_LOCAL)
+        if (m_state == ModificationState.STATE_LOCAL)
         {
             if (m_serverValue != null && !m_serverValue.hasBeenDeleted())
             {

@@ -356,7 +356,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     {
         public boolean select(IMessageIf anObject)
         {
-            return (anObject.getMessageLines().contains(m_object));
+            return (anObject.getMessageLines().exists(m_object));
         }
     };
 

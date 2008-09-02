@@ -89,7 +89,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
     {
         if (anObject instanceof ITaskIf)
         {
-            return m_eventTasks.removeReference((ITaskIf) anObject);
+            return m_eventTasks.remove((ITaskIf) anObject);
         }
         return super.removeObjectReference(anObject,aReferenceName);
     }

@@ -19,14 +19,14 @@ public class RouteListImpl extends MsoListImpl<IRouteIf> implements IRouteListIf
     public IRouteIf createRoute(IMsoObjectIf.IObjectIdIf anObjectId, Route aRoute)
     {
         checkCreateOp();
-        IRouteIf retVal = getItem(anObjectId);
+        IRouteIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new RouteImpl(anObjectId, aRoute));
     }
 
     public IRouteIf createRoute(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IRouteIf retVal = getItem(anObjectId);
+        IRouteIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new RouteImpl(anObjectId));
     }
 

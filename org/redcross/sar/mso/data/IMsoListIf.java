@@ -5,6 +5,7 @@ package org.redcross.sar.mso.data;
  */
 
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.mso.Selector;
 
@@ -51,9 +52,11 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * Add an object to the list.
      *
      * @param anObject The object to add
-     * @throws DuplicateIdException if the list already contains an object with the same object ID.
+     * @return <code>false</code> if the list already contains an object with 
+     * the same object ID, if object is null or not properly initialized 
+     * (<code>isSetup()==false</code>). <code>true</code> if added.  
      */
-    public void add(M anObject);
+    public boolean add(M anObject);
 
     /**
      * Returns the number of objects in the list.
@@ -69,16 +72,15 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * @param anObject The object to remove.
      * @return True if success, otherwise false.
      */
-    public boolean removeReference(M anObject);
+    public boolean remove(M anObject);
 
-    /**
-     * Get the {@link org.redcross.sar.mso.IMsoModelIf.ModificationState ModificationState} of the reference
-     *
-     * @param aReference The tested reference.
-     * @return The state, possible values are: {@link org.redcross.sar.mso.IMsoModelIf.ModificationState#STATE_SERVER},
-     *         {@link org.redcross.sar.mso.IMsoModelIf.ModificationState#STATE_LOCAL} and, if the object doesn't exist in the list, {@link org.redcross.sar.mso.IMsoModelIf.ModificationState#STATE_UNDEFINED}
-     */
-    public IMsoModelIf.ModificationState getState(M aReference);
+   /** 
+    * Generate an List of selected items from the list.
+    *
+    * @param aSelector A {@link org.redcross.sar.util.mso.Selector} that is used for selecting items.
+    * @return The generated list
+    */
+   public Set<M> selectItems(Selector<M> aSelector);
 
     /**
      * Generate an List of selected items from the list.
@@ -89,9 +91,6 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      */
     public List<M> selectItems(Selector<M> aSelector, Comparator<M> aComparator);
 
-
-    public Set<M> selectItems(Selector<M> aSelector);
-
     /**
      * Find an item in the list.
      *
@@ -101,13 +100,74 @@ public interface IMsoListIf<M extends IMsoObjectIf>
     public M selectSingleItem(Selector<M> aSelector);
 
     /**
-     * Check if the list contains a specific object.
+     * Check if the object exists only locally in the list (added locally only, thus not created remotely).
      *
-     * @param anObject Object whose presence in this list is to be tested
-     * @return <code>true</code> if this list contains the specific object's ObjectID
+     * @param anObject The object to match
+     * @return <code>true</code> if the specific object exists locally only
+     */
+    public boolean isLocal(M anObject);
+    
+    /**
+     * Check if the object exists only remotely in the list (created remotely, thus not added or deleted locally).
+     *
+     * @param anObject The object to match
+     * @return <code>true</code> if the specific object exists remotely only
+     */
+    public boolean isRemote(M anObject);
+    
+    /**
+     * Check if the object is deleted locally only (created remotely, deleted locally).
+     *
+     * @param anObject The object to match
+     * @return <code>true</code> if the specific object is deleted locally
+     */
+    public boolean isDeleted(M anObject);
+    
+    /**
+     * Check if the object is pending to be deleted after a client update.
+     *
+     * @param anObject The object to match
+     * @return <code>true</code> if the specific object is pending to be deleted after a client update.
+     */
+    public boolean isDeleting(M anObject);
+    
+    /**
+     * Check if the list contains a specific object that exists (created remotely, not deleted locally).
+     *
+     * @param anObject The object to match
+     * @return <code>true</code> if the specific object exists. Same as <code>exists():=isRemote()||isLocal()</code>
+     */
+    public boolean exists(M anObject);
+
+    /**
+     * Check if the list contains a specific object, regardless of state (exists either locally or remotely, or deleted locally).
+     *
+     * @param anObject The object to match
+     * @return <code>true</code> if the specific object is contained in the list. Same as <code>exists():=isRemote()||isLocal()||isDeleted()</code>
      */
     public boolean contains(M anObject);
-
+    
+    /**
+     * Get the {@link org.redcross.sar.mso.IMsoModelIf.ModificationState ModificationState} of the specified object
+     *
+     * @param anObject The tested reference.
+     * @return Potential return values are </p>
+     * <ol>
+     * 	<li> <code>STATE_UNDEFINED</code>: object does not exist, same <code>!exists()</code>
+     * 	<li> <code>STATE_SERVER</code>: same as <code>isRemote()</code>
+     * 	<li> <code>STATE_LOCAL</code>: same as <code>isLocal()</code>
+     * </ol> </p>
+     * 
+     * The state <code>STATE_CONFLICTING</code> is not defined for individual items in the 
+     * list. For lists, conflicts occur when the local list and the remote list on the server 
+     * differ during an remote update. However, during updates only one change at the time is
+     * received from the server. The server state of the list (existing objects at given point 
+     * in time) is thus not known and can therefore not be assumed to be synchronized. 
+     * Consequently, a STATE_CONFLICTING state is not feasible to
+     *  
+     */
+    public ModificationState getState(M aObject);    
+    
     /**
      * Get a clone of the list.
      *

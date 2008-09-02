@@ -20,7 +20,7 @@ public class TrackListImpl extends MsoListImpl<ITrackIf> implements ITrackListIf
     public ITrackIf createTrack(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ITrackIf retVal = getItem(anObjectId);
+        ITrackIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new TrackImpl(anObjectId));
     }
 
@@ -33,7 +33,7 @@ public class TrackListImpl extends MsoListImpl<ITrackIf> implements ITrackListIf
     public ITrackIf createTrack(IMsoObjectIf.IObjectIdIf anObjectId, Track aTrack)
     {
         checkCreateOp();
-        ITrackIf retVal = getItem(anObjectId);
+        ITrackIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new TrackImpl(anObjectId, aTrack));
     }
 

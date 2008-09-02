@@ -1,4 +1,4 @@
-package org.redcross.sar.modelDriver;
+package org.redcross.sar.modeldriver1;
 
 import no.cmr.geo.PositionOccurrence;
 import no.cmr.tools.Log;

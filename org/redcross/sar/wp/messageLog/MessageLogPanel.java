@@ -1,9 +1,14 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
-import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -12,14 +17,16 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapPanel;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import org.redcross.sar.mso.data.IMessageIf;
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,7 +52,7 @@ public class MessageLogPanel
     private static IDiskoWpMessageLog m_wpModule;
     private static IDiskoMap m_map;
     private static JTable m_logTable;
-    private MessageRowSelectionListener m_rowSelectionListener;
+    //private MessageRowSelectionListener m_rowSelectionListener;
     private static JScrollPane m_scrollPane1;
     private static JPanel m_tablePanel;
 
@@ -115,9 +122,6 @@ public class MessageLogPanel
         // Message panel should be informed of updates to MSO-model
         m_wpModule.getMsoEventManager().addClientUpdateListener(m_messagePanel);
         
-        // Let row selection listener update message panel
-        m_rowSelectionListener.setPanel(m_messagePanel);
-
         m_splitter1.setContinuousLayout(false);
         m_splitter1.setResizeWeight(1.0);
         m_splitter1.setRightComponent(m_messagePanel);
@@ -146,22 +150,116 @@ public class MessageLogPanel
         m_logTable = new JTable();
         m_scrollPane1.setViewportView(m_logTable);
 
-        m_rowSelectionListener = new MessageRowSelectionListener();
-        m_logTable.getSelectionModel().addListSelectionListener(m_rowSelectionListener);
-
-        final MessageTableModel model = new MessageTableModel(m_logTable, m_wpModule, m_rowSelectionListener);
-        m_rowSelectionListener.setModel(model);
+        final MessageTableModel model = new MessageTableModel(m_logTable, m_wpModule);
         m_logTable.setModel(model);
         m_logTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_logTable.setCellSelectionEnabled(false);
         m_logTable.setRowSelectionAllowed(true);
         m_logTable.setColumnSelectionAllowed(false);
-        m_logTable.setRowMargin(2);
-        m_logTable.setRowHeight(22);
+        m_logTable.setRowHeight(28);
 
-        // Register the log table with the row selection listener
-        m_rowSelectionListener.setTable(m_logTable);
+        // listen for mouse events
+        m_logTable.addMouseListener(new MouseAdapter() {
 
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int row = m_logTable.rowAtPoint(e.getPoint());
+				int col = m_logTable.columnAtPoint(e.getPoint());
+				if(row!=-1 && (e.getClickCount()==1 && col==0 || e.getClickCount()>1)) {
+					IMessageIf message = model.getMessage(row);
+					if(message!=null) {
+						// get expanded/collapsed state
+				        Boolean expanded = model.isMessageExpanded(message.getObjectId());
+				        expanded = (expanded == null ? false : !expanded);
+				        model.setMessageExpanded(message.getObjectId(),expanded);
+				        model.updateRowHeights();
+					}
+					MessageLogBottomPanel.showListPanel();
+				}				
+			}
+
+		});        
+        
+        // register a row selection listener        
+        m_logTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+
+				// consume?
+				if(e.getValueIsAdjusting()) return;
+				
+				// get selection model
+				ListSelectionModel m = (ListSelectionModel)e.getSource();
+
+				// force current selection?
+				if(m_logTable.getSelectedColumn()==0) {
+					IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+					if(message!=null) {
+						int row = model.findRow(message.getObjectId());
+						if(row!=-1) {
+							m.setSelectionInterval(row, row);
+							return;
+						}
+					}					
+				}
+								
+				// Get selected row index
+				int row = m.getMinSelectionIndex();
+
+				// get selected message
+		        IMessageIf message = (row!=-1 ? 
+		        		(IMessageIf)model.getMessage(m_logTable.convertRowIndexToModel(row)) : null);
+		        
+				// Update top message panel
+				MessageLogBottomPanel.newMessageSelected(message);
+				MessageLogBottomPanel.showListPanel();
+				
+		        // update table
+				m_logTable.repaint();
+				
+			}
+        	
+        });
+        
+        // listen to key events
+        m_logTable.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				switch(e.getKeyCode()) {
+				case KeyEvent.VK_SPACE: {
+					int row = m_logTable.convertRowIndexToModel(m_logTable.getSelectedRow());
+					if(row!=-1) {
+						IMessageIf message = model.getMessage(row);
+						MessageLogBottomPanel.newMessageSelected(message);
+						if(message!=null) {
+							// get expanded/collapsed state
+					        Boolean expanded = model.isMessageExpanded(message.getObjectId());
+					        expanded = (expanded == null ? false : !expanded);
+					        model.setMessageExpanded(message.getObjectId(),expanded);		
+					        model.updateRowHeights();
+					    }
+						MessageLogBottomPanel.showListPanel();
+					}
+					break;
+						
+				}
+				case KeyEvent.VK_ESCAPE:
+					int row = m_logTable.convertRowIndexToModel(m_logTable.getSelectedRow());
+					if(row!=-1) {
+						IMessageIf message = model.getMessage(row);
+						model.setMessageExpanded(message.getObjectId(), false);
+					}
+					m_logTable.clearSelection();
+					MessageLogBottomPanel.newMessageSelected(null);
+					MessageLogBottomPanel.showListPanel();
+					model.updateRowHeights();
+				}
+			}
+
+		});
+        
         // Set column widths
         TableColumn column = m_logTable.getColumnModel().getColumn(0);
         column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH);
@@ -183,8 +281,8 @@ public class MessageLogPanel
         column.setMinWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+65);
         column.setMaxWidth(MessageLogBottomPanel.SMALL_PANEL_WIDTH+65);
 
-        // initialize custom renderer
-        m_logTable.setDefaultRenderer(Object.class, new MessageTableRenderer());
+        // initialize custom renderers
+        m_logTable.setDefaultRenderer(Object.class, new MessageCellRenderer());
 
         JTableHeader tableHeader = m_logTable.getTableHeader();
         tableHeader.setResizingAllowed(false);

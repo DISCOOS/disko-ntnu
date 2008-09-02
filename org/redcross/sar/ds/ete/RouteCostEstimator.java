@@ -15,7 +15,7 @@ import org.redcross.sar.ds.IDsObjectIf;
 import org.redcross.sar.ds.event.DsEvent;
 import org.redcross.sar.ds.event.IDsUpdateListenerIf;
 import org.redcross.sar.ds.event.DsEvent.DsEventType;
-import org.redcross.sar.modelDriver.IModelDriverIf;
+import org.redcross.sar.modeldriver1.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;

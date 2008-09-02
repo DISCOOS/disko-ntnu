@@ -188,7 +188,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	 *  
     	 * ============================================================== */
     	
-    	if(!MsoModelImpl.getInstance().getUpdateMode().equals(UpdateMode.LOCAL_UPDATE_MODE)) {
+        // Only validate in REMOTE mode (server update)
+    	if(MsoModelImpl.getInstance().isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
 	        if (m_owningMainList != null)
 	        {
 	        	// get renumbered objects
@@ -315,8 +316,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     public boolean canDelete()
     {      
 
-    	// allowed by default?
-    	if (MsoModelImpl.getInstance().getUpdateMode() != IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE)
+    	// In LOOPBACK and SERVER MODE, delete is always allowed. Only in 
+    	// LOCAL mode are delete operations validated.
+    	if (!MsoModelImpl.getInstance().isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
         {
             return true;
         }

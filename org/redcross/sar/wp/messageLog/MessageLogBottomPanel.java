@@ -583,7 +583,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
      * An existing message is selected in the message log for editing.
      * @param aMessage The selected message
      */
-	public void newMessageSelected(IMessageIf aMessage)
+	public static void newMessageSelected(IMessageIf aMessage)
 	{
 		// Have user confirm message overwrite
 		if(m_currentMessage != null && (m_currentMessage != aMessage) && m_messageDirty)
@@ -677,6 +677,12 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 					: String.format(TIP_EDIT_MESSAGE,m_currentMessage.getNumber()));
 		}
 		else {
+	    	m_nrLabel.setText("");
+			m_dtgLabel.setText("");
+			m_fromLabel.setText("");
+			m_toLabel.setText("");
+			m_taskLabel.setText("");
+			m_statusLabel.setText("");
 			m_tipPanel.setCaptionText(TIP_DO_WORK);
 		}
 		setButtonColors();
@@ -904,6 +910,10 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	
 					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
 					layout.show(m_cardsPanel, TEXT_PANEL_ID);
+					
+					// prepare
+					getMessageTextPanel().showComponent();
+					
 					
 				}
 			});

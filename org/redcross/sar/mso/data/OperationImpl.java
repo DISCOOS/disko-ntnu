@@ -56,7 +56,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     {
         if (anObject instanceof ICmdPostIf)
         {
-            return m_cmdPostList.removeReference((ICmdPostIf)anObject);
+            return m_cmdPostList.remove((ICmdPostIf)anObject);
         }
         return true;
     }

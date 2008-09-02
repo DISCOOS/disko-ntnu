@@ -23,7 +23,7 @@ public class CmdPostListImpl extends MsoListImpl<ICmdPostIf> implements ICmdPost
     public ICmdPostIf createCmdPost(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ICmdPostIf retVal = getItem(anObjectId);
+        ICmdPostIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new CmdPostImpl(anObjectId));
     }
 

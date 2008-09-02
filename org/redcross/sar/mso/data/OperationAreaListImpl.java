@@ -24,7 +24,7 @@ public class OperationAreaListImpl extends MsoListImpl<IOperationAreaIf> impleme
     public IOperationAreaIf createOperationArea(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IOperationAreaIf retVal = getItem(anObjectId);
+        IOperationAreaIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new OperationAreaImpl(anObjectId));
     }
 

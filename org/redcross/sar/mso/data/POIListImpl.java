@@ -30,7 +30,7 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
     public IPOIIf createPOI(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IPOIIf retVal = getItem(anObjectId);
+        IPOIIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new POIImpl(anObjectId));
     }
 
@@ -43,7 +43,7 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
     public IPOIIf createPOI(IMsoObjectIf.IObjectIdIf anObjectId, IPOIIf.POIType aType, Position aPosition)
     {
         checkCreateOp();
-        IPOIIf retVal = getItem(anObjectId);
+        IPOIIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new POIImpl(anObjectId, aType, aPosition));
     }
     

@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
@@ -26,7 +27,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     protected T m_localValue = null;
     protected T m_serverValue = null;
-    protected IMsoModelIf.ModificationState m_state = IMsoModelIf.ModificationState.STATE_UNDEFINED;
+    protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
 
     protected AttributeImpl(Class aClass, AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, T theValue)
     {
@@ -59,10 +60,10 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     protected T getAttrValue()
     {
-        return m_state == IMsoModelIf.ModificationState.STATE_LOCAL ? m_localValue : m_serverValue;
+        return m_state == ModificationState.STATE_LOCAL ? m_localValue : m_serverValue;
     }
 
-    public IMsoModelIf.ModificationState getState()
+    public ModificationState getState()
     {
         return m_state;
     }
@@ -127,8 +128,8 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     	 * 
     	 * ======================================================== */    	    	
     	
-        IMsoModelIf.UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
-        IMsoModelIf.ModificationState newState;
+        UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
+        ModificationState newState;
         boolean valueChanged = false;
         switch (updateMode)
         {
@@ -186,7 +187,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
                 m_localValue = null;
                 
             	// set new state
-                newState = IMsoModelIf.ModificationState.STATE_SERVER;
+                newState = ModificationState.STATE_SERVER;
                 
                 // any change?
                 if (!equal(m_serverValue, aValue))
@@ -221,14 +222,14 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * =========================================================== */
             	
             	// check if a conflict has occurred?
-            	boolean isConflict = (m_state == IMsoModelIf.ModificationState.STATE_LOCAL 
-            			|| m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING) ? 
+            	boolean isConflict = (m_state == ModificationState.STATE_LOCAL 
+            			|| m_state == ModificationState.STATE_CONFLICTING) ? 
             			!equal(m_localValue, aValue) : false;
             	
             	// get next state
                 newState = isConflict ? 
-                		  IMsoModelIf.ModificationState.STATE_CONFLICTING 
-                		: IMsoModelIf.ModificationState.STATE_SERVER;
+                		  ModificationState.STATE_CONFLICTING 
+                		: ModificationState.STATE_SERVER;
                 
                 // any change?
                 if (!equal(m_serverValue, aValue))
@@ -267,12 +268,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	
             	if (equal(m_serverValue, aValue))
                 {
-                    newState = IMsoModelIf.ModificationState.STATE_SERVER;
+                    newState = ModificationState.STATE_SERVER;
                     m_localValue = null;
                     valueChanged = true;
                 } else
                 {
-                    newState = IMsoModelIf.ModificationState.STATE_LOCAL;
+                    newState = ModificationState.STATE_LOCAL;
                     if (!equal(m_localValue, aValue))
                     {
                         m_localValue = aValue;
@@ -315,7 +316,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public Vector<T> getConflictingValues()
     {
-        if (m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICTING)
         {
             Vector<T> retVal = new Vector<T>(2);
             retVal.add(m_serverValue);
@@ -327,34 +328,34 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public boolean rollback()
     {
-        boolean isChanged = m_state == IMsoModelIf.ModificationState.STATE_LOCAL || m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING;
+        boolean isChanged = m_state == ModificationState.STATE_LOCAL || m_state == ModificationState.STATE_CONFLICTING;
         if(isChanged)     
         {
 	        m_localValue = null;
-	        m_state = IMsoModelIf.ModificationState.STATE_SERVER;
+	        m_state = ModificationState.STATE_SERVER;
         }
         return isChanged;
     }
 
     public boolean postProcessCommit()
     {
-        boolean isChanged = m_state == IMsoModelIf.ModificationState.STATE_LOCAL || m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING;
+        boolean isChanged = m_state == ModificationState.STATE_LOCAL || m_state == ModificationState.STATE_CONFLICTING;
         if (isChanged)
         {
             m_serverValue = m_localValue;
             m_localValue = null;
-            m_state = IMsoModelIf.ModificationState.STATE_SERVER;
+            m_state = ModificationState.STATE_SERVER;
         }
        // m_changed = isChanged;
         return isChanged;
     }
 
 
-    private boolean acceptConflicting(IMsoModelIf.ModificationState aState)
+    private boolean acceptConflicting(ModificationState aState)
     {
-        if (m_state == IMsoModelIf.ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICTING)
         {
-            if (aState == IMsoModelIf.ModificationState.STATE_LOCAL)
+            if (aState == ModificationState.STATE_LOCAL)
             {
             	/* ==========================================================
             	 * resolve conflict as a local value state (keep local value)
@@ -363,6 +364,9 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * future conflict detection  
             	 * 
             	 * ========================================================== */
+            	
+            	// NOP
+            	
             } else
             {
             	/* ==========================================================
@@ -372,7 +376,9 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * erased
             	 * 
             	 * ========================================================== */
+            	
                 m_localValue = null;
+                
             }
             m_state = aState;
         	incrementChangeCount();
@@ -385,7 +391,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     public boolean acceptLocal()
     {
         //MsoModelImpl.getInstance().setLocalUpdateMode();
-        boolean retVal = acceptConflicting(IMsoModelIf.ModificationState.STATE_LOCAL);
+        boolean retVal = acceptConflicting(ModificationState.STATE_LOCAL);
         //MsoModelImpl.getInstance().restoreUpdateMode();
         return retVal;
     }
@@ -393,14 +399,14 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     public boolean acceptServer()
     {
         //MsoModelImpl.getInstance().setRemoteUpdateMode();
-        boolean retVal = acceptConflicting(IMsoModelIf.ModificationState.STATE_SERVER);
+        boolean retVal = acceptConflicting(ModificationState.STATE_SERVER);
         //MsoModelImpl.getInstance().restoreUpdateMode();
         return retVal;
     }
 
     public boolean isUncommitted()
     {
-        return m_state == IMsoModelIf.ModificationState.STATE_LOCAL;
+        return m_state == ModificationState.STATE_LOCAL;
     }
 
     public boolean isGisAttribute()

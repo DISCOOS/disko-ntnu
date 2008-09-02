@@ -80,14 +80,14 @@ public class POITableModel extends AbstractTableModel implements
             IPOIIf poi = (IPOIIf)e.getSource();
     		
             // handle event
-			if (createdObject && area != null && area.getAreaPOIs().contains(poi)) {
+			if (createdObject && area != null && area.getAreaPOIs().exists(poi)) {
 				add(poi);
 				super.fireTableDataChanged();
 			}
 			
 			// is object modified?
 			if ((modifiedObject || addedReference || removedReference) 
-					&& area != null && area.getAreaPOIs().contains(poi)) {
+					&& area != null && area.getAreaPOIs().exists(poi)) {
 				int index = getRow(poi);
 				if (index > -1) {
 					update(poi,rows.get(index));

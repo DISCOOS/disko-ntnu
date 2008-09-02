@@ -74,7 +74,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
-            return m_areaGeodata.removeReference(anObject);
+            return m_areaGeodata.remove(anObject);
         }
         if (anObject instanceof IPOIIf)
         {
@@ -88,7 +88,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        			return anObject.delete();
 	        		}
             	}
-                return m_areaPOIs.removeReference((IPOIIf) anObject);
+                return m_areaPOIs.remove((IPOIIf) anObject);
             }
             if ("AreaGeodata".equals(aReferenceName))
             {
@@ -97,7 +97,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
             		return anObject.delete();
             	}
             	else {
-            		return m_areaGeodata.removeReference(anObject);
+            		return m_areaGeodata.remove(anObject);
             	}
             }
         }
@@ -203,7 +203,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         IMsoObjectIf oldItem = getGeodataAt(anIndex);
         if (oldItem != null)
         {
-            m_areaGeodata.removeReference(oldItem);
+            m_areaGeodata.remove(oldItem);
         }
         addAreaGeodata(anIndex, anMsoObjectIf);
     }

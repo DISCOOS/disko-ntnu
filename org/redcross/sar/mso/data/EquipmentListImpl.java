@@ -24,7 +24,7 @@ public class EquipmentListImpl extends MsoListImpl<IEquipmentIf> implements IEqu
     public IEquipmentIf createEquipment(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IEquipmentIf retVal = getItem(anObjectId);
+        IEquipmentIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new EquipmentImpl(anObjectId));
     }
 

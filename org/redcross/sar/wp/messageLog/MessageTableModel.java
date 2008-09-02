@@ -1,6 +1,16 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.Utils;
+
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -14,6 +24,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
@@ -22,17 +33,6 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
-
-import javax.swing.JTable;
-import javax.swing.JTextPane;
-import javax.swing.table.AbstractTableModel;
-
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Table model providing log table with data
@@ -54,7 +54,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
      * @param aModule  Message log work process
      * @param listener Selection listener
      */
-    public MessageTableModel(JTable aTable, IDiskoWpMessageLog aModule, MessageRowSelectionListener listener)
+    public MessageTableModel(JTable aTable, IDiskoWpMessageLog aModule)
     {
         m_table = aTable;
         m_wpModule = aModule;
@@ -91,7 +91,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
 	    	// get message log
 	        IMessageLogIf messageLog = m_wpModule.getCmdPost().getMessageLog();
 	        // exclude message when selection
-	        m_messageSelector.exclude(MessageLogBottomPanel.isNewMessage() ? null : exclude);
+	        m_messageSelector.exclude(null);//MessageLogBottomPanel.isNewMessage() ? null : exclude);
 	        // select messages
 	        m_messageList = messageLog.selectItems(m_messageSelector, IMessageIf.MESSAGE_NUMBER_COMPARATOR);        
 	        // Update hash map
@@ -115,22 +115,6 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     }
 
     /**
-     *
-     */
-    @Override
-    public Class<?> getColumnClass(int c)
-    {
-        switch (c)
-        {
-            case 4:
-                return JTextPane.class;
-            default:
-                return String.class;
-
-        }
-    }
-
-    /**
      * Get value of message field
      *
      * @param rowIndex    Message number
@@ -139,30 +123,33 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     public Object getValueAt(int rowIndex, int columnIndex)
     {
     	// invalid index?
-    	if(rowIndex>=m_messageList.size() || Utils.getApp().isLocked()) return null;
+    	if(rowIndex>=m_messageList.size()) return null;
     	
     	// get message
         IMessageIf message = m_messageList.get(rowIndex);
 
         switch (columnIndex)
         {
-            case 0:
-                return message.getNumber();
-            case 1:
-                return DTG.CalToDTG(message.getTimeStamp());
-            case 2:
+            case 0: return message;
+            
+            case 1: return DTG.CalToDTG(message.getTimeStamp());
+            
+            case 2: 
+            	
                 ICommunicatorIf sender = message.getSender();
                 if (sender == null)
                 {
-                    sender = (ICommunicatorIf) m_wpModule.getCmdPost();
+                	sender = (ICommunicatorIf) m_wpModule.getCmdPost();
                 }
-                return sender!=null ? sender.getCommunicatorNumberPrefix() + " " + sender.getCommunicatorNumber(): null;
+                return sender;
+                     
             case 3:
+            	
                 if (message.isBroadcast())
                 {
     				int unconfirmed = message.getUnconfirmedReceivers().size();
     				int count = unconfirmed + message.getConfirmedReceivers().size();
-                    return String.format(m_wpModule.getBundleText("BroadcastLabel.text"),(count-unconfirmed),count);
+                    return new Integer[]{count-unconfirmed,count};
                 } else
                 {
                     ICommunicatorIf receiver = message.getSingleReceiver();
@@ -170,8 +157,9 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                     {
                         receiver = (ICommunicatorIf) m_wpModule.getCmdPost();
                     }
-                    return receiver!=null ? receiver.getCommunicatorNumberPrefix() + " " + receiver.getCommunicatorNumber() : null;
-                }
+                    return receiver;
+                }                                
+                
             case 4:
             	
             	// initialize
@@ -188,6 +176,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                 return stringBuilder.toString().split("LINEEND");
                 
             case 5:
+            	
                 StringBuilder taskBuilder = new StringBuilder();
                 for (ITaskIf task : message.getMessageTasksItems())
                 {
@@ -221,20 +210,18 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                     }
 
                     taskBuilder.append("\n");
-                }
+                }                
                 return taskBuilder.toString().split("\\n");
-            case 6:
-                return message.getStatus();
-            case 7:
-                return message;
-            default:
-                return null;
+                
+            case 6: return message.getStatus();
+            
+            case 7: return message;
+            
+            default: return null;
+            
         }
     }
 
-    /**
-     *
-     */
     @Override
     public String getColumnName(int column)
     {
@@ -404,6 +391,11 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         
     };
 
+    public IMessageIf getMessage(int row)
+    {
+        return m_messageList.get(row);
+    }
+    
     /**
      * @param messageId
      * @return Whether or not the message is extended in the message log table, i.e. display entire message in log
@@ -413,6 +405,16 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         return m_rowExpandedMap.get(messageId);
     }
 
+    public int findRow(String messageId) 
+    {
+    	for(int i=0;i<m_messageList.size();i++) {
+    		if(m_messageList.get(i).getObjectId().equals(messageId))
+    			return i;
+    	}
+    	return -1;
+    	
+    }
+    
     /**
      * Sets whether the message is extended in log view or not
      *
@@ -420,8 +422,15 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
      * @param expanded
      */
     public void setMessageExpanded(String messageId, Boolean expanded)
-    {
-        m_rowExpandedMap.put(messageId, expanded);
+    {    	
+    	int row = findRow(messageId);
+    	if(row!=-1) {
+    		if(numRows(row)>1)
+    			m_rowExpandedMap.put(messageId, expanded);
+    		else
+    			m_rowExpandedMap.put(messageId, false);
+    	}
+        
     }
 
     public void updateRowHeights()
@@ -449,9 +458,9 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     public void setRowExpanded(int rowIndex)
     {
         // Calculate row height so that all text is visible in cell without changing column width
-        int defaultRowHeight = 18; //m_messageTable.getRowHeight();
+        int defaultRowHeight = 26; //m_messageTable.getRowHeight();
         int numRows = numRows(rowIndex);
-        int rowHeight = defaultRowHeight * numRows + (numRows - 1) * 2 + 4;
+        int rowHeight = numRows==0 ? defaultRowHeight : defaultRowHeight * numRows; // + (numRows - 1) * 2 + 4;
         m_table.setRowHeight(rowIndex, rowHeight);
     }
 
@@ -462,7 +471,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
      */
     public void setRowCollapsed(int rowIndex)
     {
-        m_table.setRowHeight(rowIndex, m_table.getRowHeight());
+        m_table.setRowHeight(rowIndex, 26);
     }
 
     /**
@@ -472,7 +481,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
      */
     public int numRows(int rowIndex)
     {
-        MessageTableRenderer renderer = (MessageTableRenderer) m_table.getDefaultRenderer(Object.class);
+        MessageCellRenderer renderer = (MessageCellRenderer) m_table.getDefaultRenderer(Object.class);
         Font font = renderer.getFont();
         FontMetrics fm = renderer.getFontMetrics(font);
 
@@ -498,4 +507,21 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
 
         return Math.max(numMessageLines, numTaskLines);
     }
+    
+    public String getBundleText(String aKey) {
+    	return m_wpModule.getBundleText(aKey);    	
+    }
+    
+    public boolean isRowCurrentMessage(int row) {
+        IMessageIf rowMessage = m_messageList.get(row);
+        IMessageIf selectedMessage = MessageLogBottomPanel.getCurrentMessage(false);
+        return (selectedMessage != null && selectedMessage.equals(rowMessage));    	
+    }
+    
+    public MessageStatus getMessageStatus(int row) {
+        IMessageIf message = m_messageList.get(row);
+        return message.getStatus();
+    }
+    
+    
 }

@@ -24,7 +24,7 @@ public class TaskListImpl extends MsoListImpl<ITaskIf> implements ITaskListIf
     public ITaskIf createTask(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ITaskIf retVal = getItem(anObjectId);
+        ITaskIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new TaskImpl(anObjectId));
     }
 }

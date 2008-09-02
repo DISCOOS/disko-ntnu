@@ -607,13 +607,13 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		protected boolean showDialog;
 		protected boolean isDialogVisible;
 
-		// mso objects and draw information
-		protected IMsoObjectIf msoOwner = null;
-		protected IMsoObjectIf msoObject = null;
-		protected IMsoManagerIf.MsoClassCode msoClassCode = null;
+		// MSO objects and draw information
+		protected IMsoObjectIf msoOwner;
+		protected IMsoObjectIf msoObject;
+		protected IMsoManagerIf.MsoClassCode msoClassCode;
 		
 		// other objects
-		protected IToolPanel propertyPanel = null;
+		protected IToolPanel propertyPanel;
 		
 		// create state
 		public DiskoToolState(AbstractDiskoTool tool) {

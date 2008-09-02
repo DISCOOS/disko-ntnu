@@ -91,15 +91,15 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
     {
         if (anObject instanceof IForecastIf)
         {
-            return m_briefingForecasts.removeReference((IForecastIf) anObject);
+            return m_briefingForecasts.remove((IForecastIf) anObject);
         }
         if (anObject instanceof IEquipmentIf)
         {
-            return m_briefingEnvironments.removeReference((IEnvironmentIf) anObject);
+            return m_briefingEnvironments.remove((IEnvironmentIf) anObject);
         }
         if (anObject instanceof ISubjectIf)
         {
-            return m_briefingSubjects.removeReference((ISubjectIf) anObject);
+            return m_briefingSubjects.remove((ISubjectIf) anObject);
         }
         return false;
     }

@@ -30,7 +30,7 @@ public class MessageLineListImpl extends MsoListImpl<IMessageLineIf> implements 
     public IMessageLineIf createMessageLine(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IMessageLineIf retVal = getItem(anObjectId);
+        IMessageLineIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new MessageLineImpl(anObjectId));
     }
 }

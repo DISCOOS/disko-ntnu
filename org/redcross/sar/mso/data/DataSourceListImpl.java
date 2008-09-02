@@ -19,7 +19,7 @@ public class DataSourceListImpl extends MsoListImpl<IDataSourceIf> implements ID
     public IDataSourceIf createDataSource(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IDataSourceIf retVal = getItem(anObjectId);
+        IDataSourceIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new DataSourceImpl(anObjectId));
     }
 }

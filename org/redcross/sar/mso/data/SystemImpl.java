@@ -52,7 +52,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
     {
         if (anObject instanceof IDataSourceIf)
         {
-            return m_dataSourceList.removeReference((IDataSourceIf)anObject);
+            return m_dataSourceList.remove((IDataSourceIf)anObject);
         }
         return true;
     }

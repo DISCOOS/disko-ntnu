@@ -24,7 +24,7 @@ public class SketchListImpl extends MsoListImpl<ISketchIf> implements ISketchLis
     public ISketchIf createSketch(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ISketchIf retVal = getItem(anObjectId);
+        ISketchIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new SketchImpl(anObjectId));
     }
 

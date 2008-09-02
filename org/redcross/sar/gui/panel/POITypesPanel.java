@@ -3,6 +3,8 @@ package org.redcross.sar.gui.panel;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
@@ -103,6 +105,15 @@ public class POITypesPanel extends BasePanel {
             typeList = new JList();
             typeList.setVisibleRowCount(4);
             typeList.setCellRenderer(new BundleListCellRenderer(Internationalization.getBundle(IPOIIf.class)));
+            typeList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					if(e.getValueIsAdjusting()) return;
+					fireOnWorkChange(typeList, typeList.getSelectedValue());
+				}
+            	
+            });
 		}
 		return typeList;
 	}

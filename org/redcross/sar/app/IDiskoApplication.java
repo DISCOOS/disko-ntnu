@@ -8,7 +8,7 @@ import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.SysBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
-import org.redcross.sar.modelDriver.IModelDriverListenerIf;
+import org.redcross.sar.modeldriver1.IModelDriverListenerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.output.DiskoReportManager;
 

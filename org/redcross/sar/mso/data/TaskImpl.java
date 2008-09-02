@@ -478,7 +478,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     {
         public boolean select(IMessageIf anObject)
         {
-            return anObject.getMessageTasks().contains(m_object);
+            return anObject.getMessageTasks().exists(m_object);
         }
     };
 

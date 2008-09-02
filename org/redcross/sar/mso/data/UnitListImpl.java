@@ -45,7 +45,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IVehicleIf createVehicle(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IVehicleIf retVal = (IVehicleIf) getItem(anObjectId);
+        IVehicleIf retVal = (IVehicleIf) getLoopback(anObjectId);
         return retVal != null ? retVal : (IVehicleIf) createdItem(new VehicleImpl(anObjectId, -1));
     }
 
@@ -58,7 +58,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IBoatIf createBoat(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IBoatIf retVal = (IBoatIf) getItem(anObjectId);
+        IBoatIf retVal = (IBoatIf) getLoopback(anObjectId);
         return retVal != null ? retVal : (IBoatIf) createdItem(new BoatImpl(anObjectId, -1));
     }
 
@@ -71,7 +71,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IDogIf createDog(IObjectIdIf objectId)
     {
         checkCreateOp();
-        IDogIf retVal = (IDogIf) getItem(objectId);
+        IDogIf retVal = (IDogIf) getLoopback(objectId);
         return retVal != null ? retVal : (IDogIf) createdItem(new DogImpl(objectId, -1));
     }
 
@@ -84,7 +84,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IAircraftIf createAircraft(IObjectIdIf objectId)
     {
         checkCreateOp();
-        IAircraftIf retVal = (IAircraftIf) getItem(objectId);
+        IAircraftIf retVal = (IAircraftIf) getLoopback(objectId);
         return retVal != null ? retVal : (IAircraftIf) createdItem(new AircraftImpl(objectId, -1));
     }
 
@@ -97,7 +97,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public ITeamIf createTeam(IObjectIdIf objectId)
     {
         checkCreateOp();
-        ITeamIf retVal = (ITeamIf) getItem(objectId);
+        ITeamIf retVal = (ITeamIf) getLoopback(objectId);
         return retVal != null ? retVal : (ITeamIf) createdItem(new TeamImpl(objectId, -1));
     }
 

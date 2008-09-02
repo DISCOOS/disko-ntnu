@@ -24,7 +24,7 @@ public class PersonnelListImpl extends MsoListImpl<IPersonnelIf> implements IPer
     public IPersonnelIf createPersonnel(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IPersonnelIf retVal = getItem(anObjectId);
+        IPersonnelIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new PersonnelImpl(anObjectId));
     }
 }

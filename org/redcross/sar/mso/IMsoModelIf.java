@@ -11,10 +11,11 @@ package org.redcross.sar.mso;
 
 import java.util.List;
 
-import org.redcross.sar.modelDriver.IModelDriverIf;
+import org.redcross.sar.modeldriver1.IModelDriverIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.util.except.CommitException;
 
 
 /**
@@ -59,7 +60,7 @@ public interface IMsoModelIf
     public IMsoEventManagerIf getEventManager();
 
     /**
-     * Get the {@link org.redcross.sar.modelDriver.IModelDriverIf Model driver}
+     * Get the {@link org.redcross.sar.modeldriver.IModelDriverIf Model driver}
      *
      * @return The Model driver.
      */
@@ -93,6 +94,14 @@ public interface IMsoModelIf
     public UpdateMode getUpdateMode();
 
     /**
+     * Query update mode
+     * 
+     * @param mode
+     * @return
+     */    
+    public boolean isUpdateMode(UpdateMode mode);
+    
+    /**
      * Perform commit.
      * <p/>
      * Local modifications since previous commit or rollback are sent to server.
@@ -119,6 +128,10 @@ public interface IMsoModelIf
 
     public boolean hasUncommitedChanges();
 
+    public boolean hasUncommitedChanges(MsoClassCode code);
+    
+    public boolean hasUncommitedChanges(IMsoObjectIf msoObj);
+    
     public void suspendClientUpdate();
 
     public void resumeClientUpdate();

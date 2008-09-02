@@ -24,7 +24,7 @@ public class SubjectListImpl extends MsoListImpl<ISubjectIf> implements ISubject
     public ISubjectIf createSubject(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ISubjectIf retVal = getItem(anObjectId);
+        ISubjectIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new SubjectImpl(anObjectId));
     }
 

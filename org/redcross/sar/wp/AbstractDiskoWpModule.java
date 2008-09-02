@@ -365,7 +365,7 @@ public abstract class AbstractDiskoWpModule
     	// get navbar
     	NavBarPanel navBar = getApplication().getUIFactory().getMainPanel().getNavBar();
     	// save state
-		m_navState =  navBar.save();
+		m_navState = navBar.save();
 		// hide dialogs
 		navBar.hideDialogs();
 		// reset flags and title

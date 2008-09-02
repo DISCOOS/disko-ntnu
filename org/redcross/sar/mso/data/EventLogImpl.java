@@ -24,7 +24,7 @@ public class EventLogImpl extends MsoListImpl<IEventIf> implements IEventLogIf
     public IEventIf createEvent(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IEventIf retVal = getItem(anObjectId);
+        IEventIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new EventImpl(anObjectId, -1));
     }
 }

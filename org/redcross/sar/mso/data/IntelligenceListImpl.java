@@ -19,7 +19,7 @@ public class IntelligenceListImpl extends MsoListImpl<IIntelligenceIf> implement
     public IIntelligenceIf createIntelligence(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IIntelligenceIf retVal = getItem(anObjectId);
+        IIntelligenceIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new IntelligenceImpl(anObjectId));
     }
 

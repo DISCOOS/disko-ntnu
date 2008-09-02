@@ -21,7 +21,7 @@ public class CalloutListImpl extends MsoListImpl<ICalloutIf> implements ICallout
     public ICalloutIf createCallout(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ICalloutIf retVal = (ICalloutIf)getItem(anObjectId);
-        return retVal != null ? retVal : (ICalloutIf)createdItem(new CalloutImpl(anObjectId));
+        ICalloutIf retVal = (ICalloutIf) getLoopback(anObjectId);
+        return retVal != null ? retVal : (ICalloutIf) createdItem(new CalloutImpl(anObjectId));
     }
 }

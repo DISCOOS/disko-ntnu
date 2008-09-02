@@ -352,7 +352,7 @@ public class MsoUtils {
 			    		// get area
 			    		IAreaIf area = areaList.get(i); 
 			    		// found?
-			    		if(area.getAreaGeodata().contains(anRoute)) {
+			    		if(area.getAreaGeodata().exists(anRoute)) {
 			    			// found
 			    			found = area;
 			    			break;
@@ -392,7 +392,7 @@ public class MsoUtils {
 			    		// get area
 			    		IAreaIf area = areaList.get(i); 
 			    		// found?
-			    		if(area.getAreaPOIs().contains(anPOI)) {
+			    		if(area.getAreaPOIs().exists(anPOI)) {
 			    			// found
 			    			found = area;
 			    			break;

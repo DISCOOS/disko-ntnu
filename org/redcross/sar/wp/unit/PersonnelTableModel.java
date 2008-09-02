@@ -95,7 +95,7 @@ public class PersonnelTableModel extends AbstractTableModel implements IMsoUpdat
 	            {
 	                if (unit.getStatus() != UnitStatus.RELEASED)
 	                {
-	                    if (unit.getUnitPersonnel().contains(personnel))
+	                    if (unit.getUnitPersonnel().exists(personnel))
 	                    {
 	                        personnelUnit = unit;
 	                        break;

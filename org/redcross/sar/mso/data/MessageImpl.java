@@ -120,21 +120,21 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     {
         if (anObject instanceof ITaskIf)
         {
-            return m_messageTasks.removeReference((ITaskIf) anObject);
+            return m_messageTasks.remove((ITaskIf) anObject);
         }
         if (anObject instanceof IMessageLineIf)
         {
-            return m_messageLines.removeReference((IMessageLineIf) anObject);
+            return m_messageLines.remove((IMessageLineIf) anObject);
         }
         if (anObject instanceof ICommunicatorIf)
         {
             if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
             {
-                return m_confirmedReceivers.removeReference((ICommunicatorIf) anObject);
+                return m_confirmedReceivers.remove((ICommunicatorIf) anObject);
             }
             if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
             {
-                return m_unconfirmedReceivers.removeReference((ICommunicatorIf) anObject);
+                return m_unconfirmedReceivers.remove((ICommunicatorIf) anObject);
             }
         }
         return super.removeObjectReference(anObject, aReferenceName);
@@ -384,7 +384,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public boolean confirmReceiver(ICommunicatorIf anICommunicatorIf)
     {
-        if (!m_unconfirmedReceivers.removeReference(anICommunicatorIf))
+        if (!m_unconfirmedReceivers.remove(anICommunicatorIf))
         {
             return false;
         }
@@ -466,7 +466,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
             return false;
         }
         int deletedLineNumber = aLine.getLineNumber();
-        if (!m_messageLines.removeReference(aLine))
+        if (!m_messageLines.remove(aLine))
         {
             return false;
         }

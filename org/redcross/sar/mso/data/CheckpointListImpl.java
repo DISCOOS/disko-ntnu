@@ -24,7 +24,7 @@ public class CheckpointListImpl extends MsoListImpl<ICheckpointIf> implements IC
     public ICheckpointIf createCheckpoint(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        ICheckpointIf retVal = getItem(anObjectId);
+        ICheckpointIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new CheckpointImpl(anObjectId));
     }
 

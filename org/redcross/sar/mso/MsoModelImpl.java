@@ -16,9 +16,9 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.modelDriver.IModelDriverIf;
-import org.redcross.sar.modelDriver.ModelDriver;
-import org.redcross.sar.modelDriver.SarModelDriver;
+import org.redcross.sar.modeldriver1.IModelDriverIf;
+import org.redcross.sar.modeldriver1.ModelDriver;
+import org.redcross.sar.modeldriver1.SarModelDriver;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -177,10 +177,23 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         return m_updateModeStack.peek();
     }
 
+    public boolean isUpdateMode(UpdateMode mode) 
+    {
+        return getUpdateMode().equals(mode);
+    }
+    
     public boolean hasUncommitedChanges()
     {
         return m_commitManager.hasUncommitedChanges();
     }
+    
+    public boolean hasUncommitedChanges(MsoClassCode code) {
+    	return m_commitManager.getUpdates(code).size()>0;
+    }
+    
+    public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
+    	return m_commitManager.getUpdates(msoObj)!=null;    	
+    }    
     
 	public List<IUpdateHolderIf> getUpdates() {
 		return m_commitManager.getUpdates();
@@ -264,7 +277,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
     public synchronized void rollback()
     {
         suspendClientUpdate();
-        setLocalUpdateMode();
+        setRemoteUpdateMode();
         m_commitManager.rollback();
         m_msoManager.rollback();
         restoreUpdateMode();

@@ -97,11 +97,11 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     {
         if (anObject instanceof IPOIIf)
         {
-            return m_assignmentFindings.removeReference((IPOIIf) anObject);
+            return m_assignmentFindings.remove((IPOIIf) anObject);
         }
         if (anObject instanceof IEquipmentIf)
         {
-            return m_assignmentEquipment.removeReference((IEquipmentIf) anObject);
+            return m_assignmentEquipment.remove((IEquipmentIf) anObject);
         }
         return false;
     }
@@ -619,7 +619,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     {
         public boolean select(IUnitIf anObject)
         {
-            return (anObject.getUnitAssignments().contains(m_object));
+            return (anObject.getUnitAssignments().exists(m_object));
         }
     };
 

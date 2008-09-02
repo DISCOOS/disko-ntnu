@@ -25,7 +25,7 @@ public class EnvironmentListImpl extends MsoListImpl<IEnvironmentIf> implements 
     public IEnvironmentIf createEnvironment(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IEnvironmentIf retVal = getItem(anObjectId);
+        IEnvironmentIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new EnvironmentImpl(anObjectId));
     }
 

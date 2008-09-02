@@ -22,7 +22,7 @@ public class HypothesisListImpl extends MsoListImpl<IHypothesisIf> implements IH
     public IHypothesisIf createHypothesis(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
-        IHypothesisIf retVal = getItem(anObjectId);
+        IHypothesisIf retVal = getLoopback(anObjectId);
         return retVal != null ? retVal : createdItem(new HypothesisImpl(anObjectId, -1));
     }
 }
