@@ -63,112 +63,113 @@ public class MessageCellRenderer extends JLabel implements TableCellRenderer
 		// get model
 		MessageTableModel model = (MessageTableModel)table.getModel();
 		
-        // translate
-		switch(column)
+		// has value?
+		if(value!=null) 
 		{
-		case 0: // NUMBER
-		{
-			
-			// cast to IMessageIf
-			IMessageIf message = (IMessageIf)value;
-
-			// has more than one message line?
-			if(model.numRows(row)>1) {			
+	        // translate
+			switch(column)
+			{
+			case 0: // NUMBER
+			{
+				
+				// cast to IMessageIf
+				IMessageIf message = (IMessageIf)value;
+	
+				// has more than one message line?
+				if(model.numRows(row)>1) {			
+					// get expanded/collapsed state
+			        Boolean expanded = model.isMessageExpanded(message.getObjectId());
+			        if (expanded == null)
+			        {
+			            expanded = false;
+			        }
+			        icon = (expanded ? m_collapsed : m_expanded);
+				}
+				else {
+					icon = m_empty;
+				}
+		
+				// update
+		        setText(Integer.toString(message.getNumber()));
+		        setIcon(icon);
+		        
+	        	break;
+			}
+			case 2:	// FROM 
+			case 3: // TO
+			{
+	            if(value instanceof ICommunicatorIf) {
+	            	
+					// cast to ICommunicatorIf
+					ICommunicatorIf c = (ICommunicatorIf)value;
+					// convert to text
+		            setText(c.getCommunicatorNumberPrefix() + " " + c.getCommunicatorNumber());
+		            
+	            }
+	            else if(value instanceof Integer[]) {
+	            	// cast to integer array
+	            	Integer[] values = (Integer[])value;
+					// convert to broadcast status
+		            setText(String.format(model.getBundleText("BroadcastLabel.text"),values[0],values[1]));            	
+	            }
+	            break;
+	            
+			}
+			case 4: // LINES 
+			case 5: // TASKS
+			{
+				
+				// cast to IMessageIf
+				IMessageIf message = model.getMessage(row);
+				
 				// get expanded/collapsed state
 		        Boolean expanded = model.isMessageExpanded(message.getObjectId());
 		        if (expanded == null)
 		        {
 		            expanded = false;
 		        }
-		        icon = (expanded ? m_collapsed : m_expanded);
-			}
-			else {
-				icon = m_empty;
-			}
+				
+				// Message lines
+	        	StringBuilder messageString = new StringBuilder();
+	        	String[] messageLines = (String[]) value;
 	
-			// update
-	        setText(Integer.toString(message.getNumber()));
-	        setIcon(icon);
-	        
-        	break;
-		}
-		case 2:	// FROM 
-		case 3: // TO
-		{
-            if(value instanceof ICommunicatorIf) {
-            	
-				// cast to ICommunicatorIf
-				ICommunicatorIf c = (ICommunicatorIf)value;
-				// convert to text
-	            setText(c!=null ? c.getCommunicatorNumberPrefix() + " " + c.getCommunicatorNumber(): "");
-	            
-            }
-            else if(value instanceof Integer[]) {
-            	// cast to integer array
-            	Integer[] values = (Integer[])value;
-				// convert to broadcast status
-	            setText(String.format(model.getBundleText("BroadcastLabel.text"),values[0],values[1]));            	
-            }
-            break;
-            
-		}
-		case 4: // LINES 
-		case 5: // TASKS
-		{
-			
-			// cast to IMessageIf
-			IMessageIf message = model.getMessage(row);
-			
-			// get expanded/collapsed state
-	        Boolean expanded = model.isMessageExpanded(message.getObjectId());
-	        if (expanded == null)
-	        {
-	            expanded = false;
-	        }
-			
-			// Message lines
-        	StringBuilder messageString = new StringBuilder();
-        	String[] messageLines = (String[]) value;
-
-        	if(expanded)
-        	{
-        		// Show lines in expanded mode
-        		for (int i = 0; i < messageLines.length; i++)
-                {
-                    messageString.append(messageLines[i]);
-                    if(i+1<messageLines.length) messageString.append("<br>");
-                }
-	            setText("<html>"+messageString.toString()+"</html>");
-        	}
-        	else
-        	{
-        		// Show lines in compressed mode
-        		for (int i = 0; i < messageLines.length; i++)
-                {
-                    messageString.append(messageLines[i]);
-                    if(i+1<messageLines.length) messageString.append(". ");
-                }	        		
-	            setText(messageString.toString());
-        	}
-
-			break;
-		}
-		case 6: 
-		{
-			
-			// cast to status
-			MessageStatus status = (MessageStatus)value; 
-			// Message status
-			setText(DiskoEnumFactory.getText(status));
-			break;
-			
-		}
-		default:
-			if(value!=null) {
+	        	if(expanded)
+	        	{
+	        		// Show lines in expanded mode
+	        		for (int i = 0; i < messageLines.length; i++)
+	                {
+	                    messageString.append(messageLines[i]);
+	                    if(i+1<messageLines.length) messageString.append("<br>");
+	                }
+		            setText("<html>"+messageString.toString()+"</html>");
+	        	}
+	        	else
+	        	{
+	        		// Show lines in compressed mode
+	        		for (int i = 0; i < messageLines.length; i++)
+	                {
+	                    messageString.append(messageLines[i]);
+	                    if(i+1<messageLines.length) messageString.append(". ");
+	                }	        		
+		            setText(messageString.toString());
+	        	}
+	
+				break;
+			}
+			case 6: 
+			{
+				
+				// cast to status
+				MessageStatus status = (MessageStatus)value; 
+				// Message status
+				setText(DiskoEnumFactory.getText(status));
+				break;
+				
+			}
+			default:
 				setText(value.toString());
 			}
-			break;
-		}
+	    }
 		
 		// initialize colors
 		Color f = table.getForeground();
@@ -189,11 +190,11 @@ public class MessageCellRenderer extends JLabel implements TableCellRenderer
         	// update colors
         	if(MessageStatus.POSTPONED.equals(status))
         	{
-            	b = column==0 ? Color.LIGHT_GRAY : Color.ORANGE;
+            	b = Color.ORANGE; //column==0 ? b : Color.ORANGE;
         	}
         	else if(MessageStatus.UNCONFIRMED.equals(status))
         	{
-            	b = column==0 ? Color.LIGHT_GRAY : Color.YELLOW;
+            	b = Color.YELLOW; //column==0 ? b : Color.YELLOW;
         	}
         	f = table.getForeground();
         	

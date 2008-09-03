@@ -16,9 +16,9 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.modeldriver1.IModelDriverIf;
-import org.redcross.sar.modeldriver1.ModelDriver;
-import org.redcross.sar.modeldriver1.SarModelDriver;
+import org.redcross.sar.modeldriver.IModelDriverIf;
+import org.redcross.sar.modeldriver.ModelDriver;
+import org.redcross.sar.modeldriver.SarModelDriver;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -188,11 +188,11 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
     }
     
     public boolean hasUncommitedChanges(MsoClassCode code) {
-    	return m_commitManager.getUpdates(code).size()>0;
+    	return m_commitManager.hasUncommitedChanges(code);
     }
     
     public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
-    	return m_commitManager.getUpdates(msoObj)!=null;    	
+    	return m_commitManager.hasUncommitedChanges(msoObj);    	
     }    
     
 	public List<IUpdateHolderIf> getUpdates() {

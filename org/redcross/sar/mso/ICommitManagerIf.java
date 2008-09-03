@@ -68,6 +68,11 @@ public interface ICommitManagerIf {
      *
      * @return true if uncommited changes exist
      */
-    public boolean hasUncommitedChanges();    
+    public boolean hasUncommitedChanges();
+    
+    public boolean hasUncommitedChanges(MsoClassCode code);
+    
+    public boolean hasUncommitedChanges(IMsoObjectIf msoObj);
+    
 	
 }

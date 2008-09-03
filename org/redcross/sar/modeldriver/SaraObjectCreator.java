@@ -1,4 +1,4 @@
-package org.redcross.sar.modeldriver1;
+package org.redcross.sar.modeldriver;
 
 import no.cmr.hrs.sar.model.*;
 import no.cmr.tools.FileUtils;

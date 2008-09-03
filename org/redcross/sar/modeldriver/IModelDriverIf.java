@@ -1,4 +1,4 @@
-package org.redcross.sar.modeldriver1;
+package org.redcross.sar.modeldriver;
 
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.app.IDiskoApplication;

@@ -212,6 +212,14 @@ public class CommitManager implements ICommitManagerIf
         return m_updates.size() > 0;
     }
 
+    public boolean hasUncommitedChanges(MsoClassCode code) {
+    	return getUpdates(code).size()>0;
+    }
+    
+    public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
+    	return getUpdates(msoObj)!=null;    	
+    }        
+    
     class UpdateHolder implements IUpdateHolderIf
     {
         

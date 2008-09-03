@@ -41,11 +41,11 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
 {
     private static final long serialVersionUID = 1L;
 
-    List<IMessageIf> m_messageList;
-    JTable m_table;
+    private JTable m_table;
+    private List<IMessageIf> m_messageList;
 
-    private IMsoEventManagerIf m_eventManager;
-    IDiskoWpMessageLog m_wpModule;
+    private IDiskoWpMessageLog m_wpModule;
+    //private IMsoEventManagerIf m_eventManager;
 
     private HashMap<String, Boolean> m_rowExpandedMap;
 
@@ -58,8 +58,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     {
         m_table = aTable;
         m_wpModule = aModule;
-        m_eventManager = aModule.getMsoEventManager();
-        m_eventManager.addClientUpdateListener(this);
+        aModule.getMsoEventManager().addClientUpdateListener(this);
         m_rowExpandedMap = new HashMap<String, Boolean>();
     }
 
@@ -123,7 +122,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
     public Object getValueAt(int rowIndex, int columnIndex)
     {
     	// invalid index?
-    	if(rowIndex>=m_messageList.size()) return null;
+    	if(rowIndex>=m_messageList.size() || m_wpModule.getApplication().isLoading()) return null;
     	
     	// get message
         IMessageIf message = m_messageList.get(rowIndex);
@@ -489,20 +488,24 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
         int columnWidth = m_table.getColumnModel().getColumn(4).getWidth();
         int numMessageLines = 0;
         String[] messageLineStrings = (String[]) getValueAt(rowIndex, 4);
-        for (String line : messageLineStrings)
-        {
-            int lineWidth = fm.stringWidth(line);
-            numMessageLines += (lineWidth / columnWidth + 1);
+        if(messageLineStrings!=null) {
+	        for (String line : messageLineStrings)
+	        {
+	            int lineWidth = fm.stringWidth(line);
+	            numMessageLines += (lineWidth / columnWidth + 1);
+	        }
         }
-
+	
         // Tasks
         columnWidth = m_table.getColumnModel().getColumn(5).getWidth();
-        String[] taskStrings = (String[]) getValueAt(rowIndex, 5);
         int numTaskLines = 0;
-        for (String task : taskStrings)
-        {
-            int lineWidth = fm.stringWidth(task);
-            numTaskLines += (lineWidth / columnWidth + 1);
+        String[] taskStrings = (String[]) getValueAt(rowIndex, 5);
+        if(taskStrings!=null) {
+	        for (String task : taskStrings)
+	        {
+	            int lineWidth = fm.stringWidth(task);
+	            numTaskLines += (lineWidth / columnWidth + 1);
+	        }
         }
 
         return Math.max(numMessageLines, numTaskLines);

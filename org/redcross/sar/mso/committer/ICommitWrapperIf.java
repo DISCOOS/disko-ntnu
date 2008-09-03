@@ -25,5 +25,6 @@ public interface ICommitWrapperIf
      * @return The list
      */
     public List<ICommittableIf.ICommitReferenceIf> getListReferences();
+        
 
 }

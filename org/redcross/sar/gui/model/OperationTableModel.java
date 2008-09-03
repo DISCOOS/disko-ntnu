@@ -5,8 +5,8 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.app.Utils;
-import org.redcross.sar.modeldriver1.IModelDriverIf;
-import org.redcross.sar.modeldriver1.IModelDriverListenerIf;
+import org.redcross.sar.modeldriver.IModelDriverIf;
+import org.redcross.sar.modeldriver.IModelDriverListenerIf;
 
 public class OperationTableModel extends AbstractTableModel implements IModelDriverListenerIf {
 

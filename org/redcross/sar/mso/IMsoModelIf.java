@@ -11,7 +11,7 @@ package org.redcross.sar.mso;
 
 import java.util.List;
 
-import org.redcross.sar.modeldriver1.IModelDriverIf;
+import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -135,4 +135,5 @@ public interface IMsoModelIf
     public void suspendClientUpdate();
 
     public void resumeClientUpdate();
+    
 }
