@@ -3,7 +3,6 @@ package org.redcross.sar.wp.tactics;
 import java.util.Hashtable;
 
 import javax.swing.JCheckBox;
-import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -11,12 +10,12 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.mso.model.AssignmentTableModel;
-import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 
-public class AssignmentTable extends JTable {
+public class AssignmentTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -45,7 +44,6 @@ public class AssignmentTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DefaultHeaderRenderer());
         
         // misc.
 		setRowHeight(34);

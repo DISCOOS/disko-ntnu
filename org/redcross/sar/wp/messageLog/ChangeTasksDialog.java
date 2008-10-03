@@ -371,7 +371,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	/**
 	 * Clear button selection
 	 */
-	public void resetEditor()
+	public void reset()
 	{
 		Iterator<JToggleButton> iterator = m_buttonMap.keySet().iterator();
 		while(iterator.hasNext())

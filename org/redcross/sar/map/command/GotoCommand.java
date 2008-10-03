@@ -9,7 +9,7 @@ import org.redcross.sar.gui.dialog.GotoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -27,7 +27,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 		super();
 		
 		// set tool type
-		type = DiskoCommandType.GOTO_COMMAND;		
+		type = MapCommandType.GOTO_COMMAND;		
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
@@ -62,7 +62,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 			// update on center of map
 			((GotoDialog)dialog).getPoint();
 			// activate SelectFeatureTool
-			Utils.getApp().invoke(DiskoToolType.SELECT_TOOL,false);
+			Utils.getApp().invoke(MapToolType.SELECT_TOOL,false);
 		}
 		// forward
 		super.onClick();

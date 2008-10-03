@@ -14,6 +14,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SortOrder;
+import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -25,8 +26,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.io.IOException;
 import java.util.List;
 
@@ -338,12 +337,12 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_unitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_unitTable.setCellSelectionEnabled(true);
         TableColumnModel columns = m_unitTable.getColumnModel();
-        DiskoTable.setColumnWidth(columns.getColumn(0), 50, true, true, true);
-        DiskoTable.setColumnWidth(columns.getColumn(1), 50, true, true, true);
-        DiskoTable.setColumnWidth(columns.getColumn(2), 50, true, true, true);
-        DiskoTable.setColumnWidth(columns.getColumn(3), 50, true, true, true);
-        DiskoTable.setColumnWidth(columns.getColumn(4), 50, true, true, true);
-        DiskoTable.setColumnWidth(columns.getColumn(5), 50, true, true, false);
+        DiskoTable.setColumnWidth(columns.getColumn(0), 66, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(1), 66, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(2), 66, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(3), 66, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(4), 66, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(5), 66, true, true, false);
         
         final DiskoTableHeader header = m_unitTable.getDiskoTableHeader();
         header.setResizingAllowed(false);
@@ -549,7 +548,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
     	// prepare right content
         JPanel assignments = new JPanel();
         assignments.setLayout(new BoxLayout(assignments,BoxLayout.X_AXIS));
-        m_selectableAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new FlowLayout(FlowLayout.LEFT, 5, 5), m_labelActionHandler, true);
+        m_selectableAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new SpringLayout(), 5, 5, false, m_labelActionHandler, true);
         m_selectableAssignmentsPanel.getHeaderPanel().setPreferredSize(new Dimension(40, 40));
         m_selectableAssignmentsPanel.setMinimumSize(new Dimension(180, 100));
         m_selectableAssignmentsPanel.setFitBodyOnResize(true);
@@ -558,7 +557,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
         		ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        m_priAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new FlowLayout(FlowLayout.LEFT, 5, 5), m_labelActionHandler, true);
+        m_priAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new SpringLayout(), 5, 5, false, m_labelActionHandler, true);
         m_priAssignmentsPanel.getHeaderPanel().setPreferredSize(new Dimension(40, 40));
         m_priAssignmentsPanel.setMinimumSize(new Dimension(62, 100));
         m_priAssignmentsPanel.setPreferredSize(new Dimension(62, 100));

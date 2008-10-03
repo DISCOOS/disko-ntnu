@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.redcross.sar.gui.attribute;
+package org.redcross.sar.gui.field;
 
 import java.awt.Component;
 
@@ -67,7 +67,7 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 				public void removeUpdate(DocumentEvent e) { change(); }
 				
 				private void change() {
-					if(isConsume()) return;
+					if(!isChangeable()) return;
 					fireOnWorkChange();
 				}
 				

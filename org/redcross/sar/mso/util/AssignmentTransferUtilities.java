@@ -156,10 +156,10 @@ public class AssignmentTransferUtilities
         MessageLineType firstLineType;
         switch (oldStatus)
         {
-            //case READY: 
-            //case QUEUED:
-            //    firstLineType = MessageLineType.ALLOCATED;
-            //    break;
+            case READY: 
+            case QUEUED:
+                firstLineType = MessageLineType.ALLOCATED;
+                break;
             case ALLOCATED:
                 // Special consideration when moving allocated assignments between units.
                 if (anAssignment.getStatus() ==  AssignmentStatus.ALLOCATED)

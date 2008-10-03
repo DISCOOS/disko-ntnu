@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.redcross.sar.gui.attribute;
+package org.redcross.sar.gui.field;
 
 import java.awt.Component;
 import java.awt.event.ItemEvent;
@@ -57,7 +57,7 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 			field.setEditable(m_isEditable);
 			field.addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
-					if(isConsume()) return;
+					if(!isChangeable()) return;
 					fireOnWorkChange();
 					
 				}

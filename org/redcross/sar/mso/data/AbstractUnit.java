@@ -126,6 +126,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		if (anObject instanceof IPersonIf)
 		{
 			m_unitPersonnel.add((IPersonnelIf) anObject);
+			m_status.set(getAutoStatus());
 			return true;
 		}
 		return false;
@@ -139,7 +140,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 		if (anObject instanceof IPersonIf)
 		{
-			return m_unitPersonnel.remove((IPersonnelIf) anObject);
+			boolean bFlag = m_unitPersonnel.remove((IPersonnelIf) anObject);
+			m_status.set(getAutoStatus());
+			return bFlag;
 		}
 		return false;
 	}
@@ -153,6 +156,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	 * Resets correct subclass in case of incorrect changes by application or others.
 	 * Renumber duplicate numbers
 	 */
+	@Override
 	protected void registerModifiedData(Object source)
 	{
 		if (getType() != getTypeBySubclass())
@@ -160,6 +164,16 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			setType(getTypeBySubclass());
 		}
 		super.registerModifiedData(source);
+	}
+	
+	@Override
+	protected void registerRemovedReference(Object source, boolean updateServer) {
+		if (m_unitPersonnel == source)
+		{
+			m_status.setValue(getAutoStatus());
+		}
+		super.registerRemovedReference(source,updateServer);
+		
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -403,6 +417,8 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public void addUnitPersonnel(IPersonnelIf anPersonnel)
 	{
 		m_unitPersonnel.add(anPersonnel);
+		m_status.set(getAutoStatus());
+		
 	}
 
 	public IPersonnelListIf getUnitPersonnel()
@@ -1111,7 +1127,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 	}
 
-	private UnitStatus getAutoStatus() throws IllegalOperationException {
+	private UnitStatus getAutoStatus() {
 
 		// initialize on current status
 		UnitStatus aStatus = getStatus();
@@ -1127,7 +1143,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			}
 			else 
 			{
-				aStatus = UnitStatus.READY;
+				aStatus = m_unitPersonnel.size()>0 ? UnitStatus.READY : UnitStatus.EMPTY;
 			}
 			
 		}

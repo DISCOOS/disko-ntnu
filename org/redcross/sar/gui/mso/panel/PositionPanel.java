@@ -18,11 +18,11 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.gui.attribute.DTGAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
@@ -65,7 +65,7 @@ public class PositionPanel extends DefaultToolPanel {
 	private GotoPanel gotoPanel;
 	private DefaultPanel unitsPanel;
 	private JList unitList;
-	private AttributesPanel optionsPanel;
+	private FieldsPanel optionsPanel;
 	private DTGAttribute dtgAttr;
 	
 	private TimePos logEntry;
@@ -242,12 +242,12 @@ public class PositionPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes optionsPanel	
 	 * 	
-	 * @return {@link AttributesPanel}
+	 * @return {@link FieldsPanel}
 	 */
-	public AttributesPanel getOptionsPanel() {
+	public FieldsPanel getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
-				optionsPanel = new AttributesPanel("Egenskaper","Ingen egenskaper funnet",false,false);
+				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setPreferredSize(new Dimension(200,25));	
 				optionsPanel.addAttribute(getDTGAttr());
 				optionsPanel.addDiskoWorkListener(new IDiskoWorkListener() {

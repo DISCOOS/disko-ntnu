@@ -18,10 +18,10 @@ import javax.swing.SwingConstants;
 
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.AbstractDiskoAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
 import org.redcross.sar.gui.mso.panel.POIPanel;
 import org.redcross.sar.gui.mso.panel.POITypesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -30,8 +30,8 @@ import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.POITool;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
-import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
+import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -301,11 +301,6 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		return getPOIPanel().finish();
 	}
 	
-	@Override
-	public void reset() {
-		getPOIPanel().reset();
-	}	
-	
 	/**
 	 * Apply changes to message line
 	 */
@@ -439,7 +434,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		
 	}
 	
-	public void resetEditor()
+	public void reset()
 	{
 		getPOIPanel().reset();
 	}
@@ -492,7 +487,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 
 	private void setToolVisible(boolean isVisible) {
 		NavBarPanel bar = m_wp.getApplication().getNavBar();
-		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POI_TOOL);
+		List<Enum<?>> types = Utils.getListOf(MapToolType.POI_TOOL);
 		bar.setVisibleButtons(types, isVisible, true);		
 	}
 	

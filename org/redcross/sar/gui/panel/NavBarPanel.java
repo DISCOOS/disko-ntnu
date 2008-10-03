@@ -24,18 +24,18 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.ElementCommand;
 import org.redcross.sar.map.command.GotoCommand;
-import org.redcross.sar.map.command.IDiskoCommand;
+import org.redcross.sar.map.command.IMapCommand;
 import org.redcross.sar.map.command.MapToggleCommand;
 import org.redcross.sar.map.command.ScaleCommand;
 import org.redcross.sar.map.command.TocCommand;
-import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
-import org.redcross.sar.map.command.IDiskoCommand.IDiskoCommandState;
+import org.redcross.sar.map.command.IMapCommand.MapCommandType;
+import org.redcross.sar.map.command.IMapCommand.IDiskoCommandState;
 import org.redcross.sar.map.tool.DiskoToolWrapper;
 import org.redcross.sar.map.tool.DrawHostTool;
 import org.redcross.sar.map.tool.EraseTool;
 import org.redcross.sar.map.tool.FlankTool;
 import org.redcross.sar.map.tool.FreeHandTool;
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.IHostDiskoTool;
 import org.redcross.sar.map.tool.IToolCollection;
 import org.redcross.sar.map.tool.LineTool;
@@ -44,8 +44,8 @@ import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.map.tool.SelectTool;
 import org.redcross.sar.map.tool.SplitTool;
 import org.redcross.sar.map.tool.DiskoToolWrapper.WrapAction;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
-import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
+import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.ControlsMapFullExtentCommand;
@@ -149,49 +149,49 @@ public class NavBarPanel extends JPanel {
 		
 		// add all available commands
 		addCommand(getDrawHostToolToggleButton(), getDrawHostTool(), 
-				DiskoToolType.DRAW_HOST_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.DRAW_HOST_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getFreeHandToggleButton(), getFreeHandTool(), 
-				DiskoToolType.FREEHAND_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.FREEHAND_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getLineToolToggleButton(), getLineTool(), 
-				DiskoToolType.LINE_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.LINE_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getPOIToggleButton(), getPOITool(), 
-				DiskoToolType.POI_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.POI_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getPositionToggleButton(), getPositionTool(), 
-				DiskoToolType.POSITION_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.POSITION_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getFlankToggleButton(), getFlankTool(), 
-				DiskoToolType.FLANK_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.FLANK_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getSplitToggleButton(), getSplitTool(), 
-				DiskoToolType.SPLIT_TOOL, ButtonPlacement.LEFT,1);
+				MapToolType.SPLIT_TOOL, ButtonPlacement.LEFT,1);
 		addCommand(getSelectFeatureToggleButton(), getSelectFeatureTool(), 
-				DiskoToolType.SELECT_TOOL, ButtonPlacement.LEFT,0);
+				MapToolType.SELECT_TOOL, ButtonPlacement.LEFT,0);
 		addCommand(getEraseButton(), getEraseTool(), 
-				DiskoToolType.ERASE_TOOL, ButtonPlacement.LEFT,0);
+				MapToolType.ERASE_TOOL, ButtonPlacement.LEFT,0);
 		addCommand(getElementToggleButton(), getElementCommand(), 
-				DiskoCommandType.ELEMENT_COMMAND, ButtonPlacement.LEFT,1);
+				MapCommandType.ELEMENT_COMMAND, ButtonPlacement.LEFT,1);
 		addCommand(getZoomInToggleButton(), getZoomInTool(), 
-				DiskoToolType.ZOOM_IN_TOOL, ButtonPlacement.RIGHT,0);
+				MapToolType.ZOOM_IN_TOOL, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomOutToggleButton(), getZoomOutTool(), 
-				DiskoToolType.ZOOM_OUT_TOOL, ButtonPlacement.RIGHT,0);
+				MapToolType.ZOOM_OUT_TOOL, ButtonPlacement.RIGHT,0);
 		addCommand(getPanToggleButton(), getPanTool(), 
-				DiskoToolType.PAN_TOOL, ButtonPlacement.RIGHT,0);
+				MapToolType.PAN_TOOL, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomInFixedButton(), getZoomInFixedCommand(),
-				DiskoCommandType.ZOOM_IN_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.ZOOM_IN_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomOutFixedButton(), getZoomOutFixedCommand(),
-				DiskoCommandType.ZOOM_OUT_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.ZOOM_OUT_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getFullExtentButton(), getFullExtentCommand(), 
-				DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.ZOOM_FULL_EXTENT_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getZoomToLastExtentBackwardButton(), getZoomToLastExtentBackwardCommand(), 
-				DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND, ButtonPlacement.RIGHT,0);	
+				MapCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND, ButtonPlacement.RIGHT,0);	
 		addCommand(getZoomToLastExtentForwardButton(), getZoomToLastExtentForwardCommand(), 
-				DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getMapToggleButton(), getMapToggleCommand(), 
-				DiskoCommandType.MAP_TOGGLE_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.MAP_TOGGLE_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getScaleButton(), getScaleCommand(), 
-				DiskoCommandType.SCALE_COMMAND, ButtonPlacement.RIGHT,1);
+				MapCommandType.SCALE_COMMAND, ButtonPlacement.RIGHT,1);
 		addCommand(getTocToggleButton(), getTocTool(), 
-				DiskoCommandType.TOC_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.TOC_COMMAND, ButtonPlacement.RIGHT,0);
 		addCommand(getGotoToggleButton(), getGotoTool(), 
-				DiskoCommandType.GOTO_COMMAND, ButtonPlacement.RIGHT,0);
+				MapCommandType.GOTO_COMMAND, ButtonPlacement.RIGHT,0);
 	}
 	
 	private JPanel getLeftPanel() {
@@ -860,8 +860,8 @@ public class NavBarPanel extends JPanel {
 						}
 					}
 					else {
-						if (command instanceof IDiskoTool) {
-							((IDiskoTool)command).deactivate();
+						if (command instanceof IMapTool) {
+							((IMapTool)command).deactivate();
 						}
 						else if (command instanceof IHostDiskoTool) {
 							((IHostDiskoTool)command).deactivate();
@@ -895,8 +895,8 @@ public class NavBarPanel extends JPanel {
 		Iterator<ICommand> commandIter = commands.values().iterator();
 		while (commandIter.hasNext()) {
 			ICommand command = commandIter.next();
-			if (command instanceof IDiskoTool) {
-				IDiskoTool diskoTool = (IDiskoTool)command;
+			if (command instanceof IMapTool) {
+				IMapTool diskoTool = (IMapTool)command;
 				if (diskoTool.getDialog() != null) {
 					diskoTool.getDialog().setVisible(false);
 				}
@@ -907,8 +907,8 @@ public class NavBarPanel extends JPanel {
 					hostTool.getDialog().setVisible(false);
 				}				
 			}
-			if (command instanceof IDiskoCommand) {
-				IDiskoCommand discoCmd = (IDiskoCommand)command;
+			if (command instanceof IMapCommand) {
+				IMapCommand discoCmd = (IMapCommand)command;
 				if (discoCmd.getDialog() != null) {
 					discoCmd.getDialog().setVisible(false);
 				}				
@@ -955,7 +955,7 @@ public class NavBarPanel extends JPanel {
 	}
 	
 	public List<Enum<?>> getEnabledButtons(boolean isEnabled){
-		List<Enum<?>> myInterest = Utils.getListNoneOf(DiskoToolType.class);
+		List<Enum<?>> myInterest = Utils.getListNoneOf(MapToolType.class);
 		Iterator<Enum<?>> it = buttons.keySet().iterator();
 		while (it.hasNext()) {
 			Enum<?> key = it.next();
@@ -984,8 +984,8 @@ public class NavBarPanel extends JPanel {
 			AbstractButton button = (AbstractButton)buttons.get(key);
 			ICommand command = (ICommand)commands.get(key);
 			// is hosted?
-			if(command instanceof IDiskoTool) {
-				IDiskoTool tool = (IDiskoTool)command;
+			if(command instanceof IMapTool) {
+				IMapTool tool = (IMapTool)command;
 				if(tool.isHosted()) {
 					((IToolCollection)tool.getDialog())
 						.setEnabled(tool.getType(), isEnabled);
@@ -1002,7 +1002,7 @@ public class NavBarPanel extends JPanel {
 	}
 	
 	public List<Enum<?>> getVisibleButtons(boolean isVisible){
-		List<Enum<?>> myInterest = Utils.getListNoneOf(DiskoToolType.class);
+		List<Enum<?>> myInterest = Utils.getListNoneOf(MapToolType.class);
 		Iterator<Enum<?>> it = buttons.keySet().iterator();
 		while (it.hasNext()) {
 			Enum<?> key = it.next();
@@ -1033,8 +1033,8 @@ public class NavBarPanel extends JPanel {
 			AbstractButton button = (AbstractButton)buttons.get(key);
 			ICommand command = (ICommand)commands.get(key);
 			// is hosted?
-			if(command instanceof IDiskoTool) {
-				IDiskoTool tool = (IDiskoTool)command;
+			if(command instanceof IMapTool) {
+				IMapTool tool = (IMapTool)command;
 				if(tool.isHosted()) {
 					((IToolCollection)tool.getDialog())
 						.setVisible(tool.getType(), isVisible);
@@ -1050,7 +1050,7 @@ public class NavBarPanel extends JPanel {
 	
 	private void setupHostTools() {
 		// get draw host
-		IHostDiskoTool host = (IHostDiskoTool)commands.get(DiskoToolType.DRAW_HOST_TOOL);
+		IHostDiskoTool host = (IHostDiskoTool)commands.get(MapToolType.DRAW_HOST_TOOL);
 		// update
 		((IToolCollection)host.getDialog()).setup();
 	}
@@ -1062,7 +1062,7 @@ public class NavBarPanel extends JPanel {
 	class NavActionListener implements ActionListener {
 		
 		private int options = 0;
-		private IDiskoTool tool;
+		private IMapTool tool;
 		private ICommand command;
 		
 		NavActionListener(Object command, int options) {
@@ -1077,10 +1077,10 @@ public class NavBarPanel extends JPanel {
 					this.command = (ICommand)w;
 				// is tool?
 				if(w.isTool()) 
-					this.tool = (IDiskoTool)w;	
+					this.tool = (IMapTool)w;	
 			}
-			else if(command instanceof IDiskoTool)
-				this.tool = (IDiskoTool)command;
+			else if(command instanceof IMapTool)
+				this.tool = (IMapTool)command;
 			else if(command instanceof ICommand)
 				this.command = (ICommand)command;
 		}
@@ -1146,9 +1146,9 @@ public class NavBarPanel extends JPanel {
 				// get command
 				ICommand cmd = it.next();
 				// is a disko tool?
-				if(cmd instanceof IDiskoTool) {
+				if(cmd instanceof IMapTool) {
 					// get tool
-					IDiskoTool tool = (IDiskoTool)cmd;
+					IMapTool tool = (IMapTool)cmd;
 					// get state
 					IDiskoToolState state = tool.save();
 					// override isVisible?
@@ -1173,9 +1173,9 @@ public class NavBarPanel extends JPanel {
 						m_toolStates.put(key, state);					
 				}
 				// is a disko host tool?
-				else if(cmd instanceof IDiskoCommand) {
+				else if(cmd instanceof IMapCommand) {
 					// get host tool
-					IDiskoCommand diskoCmd = (IDiskoCommand)cmd;					
+					IMapCommand diskoCmd = (IMapCommand)cmd;					
 					// get state
 					IDiskoCommandState state = diskoCmd.save();
 					// put to command hashtable?
@@ -1202,11 +1202,11 @@ public class NavBarPanel extends JPanel {
 				// get command
 				ICommand cmd = it.next();
 				// is a disko tool?
-				if(cmd instanceof IDiskoTool) {	
+				if(cmd instanceof IMapTool) {	
 					// load tool
-					((IDiskoTool)cmd).load(m_toolStates.get(key));
+					((IMapTool)cmd).load(m_toolStates.get(key));
 					// cast to IDiskoTool
-					IDiskoTool tool = (IDiskoTool)cmd;
+					IMapTool tool = (IMapTool)cmd;
 					// is a hosted tool?
 					if(tool.isHosted()) {
 						// transfer state to draw dialog
@@ -1223,9 +1223,9 @@ public class NavBarPanel extends JPanel {
 					((IHostDiskoTool)cmd).load(m_toolStates.get(key));					
 				}
 				// is a disko host tool?
-				else if(cmd instanceof IDiskoCommand) {
+				else if(cmd instanceof IMapCommand) {
 					// load tool
-					((IDiskoCommand)cmd).load(m_cmdStates.get(key));					
+					((IMapCommand)cmd).load(m_cmdStates.get(key));					
 				}
 			}						
 			// get nav button

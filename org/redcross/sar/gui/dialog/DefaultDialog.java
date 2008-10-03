@@ -16,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.Timer;
 
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.gui.IMsoHolder;
 import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.BaseToolPanel;
@@ -45,7 +46,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	private int width  = -1;
 	private int height = -1;
 
-	private Component snapToBuddy = null;
+	private Component snapToComponent;
 	
 	private boolean isMoveable = true;
 	private boolean isEscapeable = true;
@@ -60,7 +61,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 			snapTo(false);
 		}
 		public void componentResized(ComponentEvent e) {
-			snapTo(false);
+			snapTo(true);
 		}
 		public void componentShown(ComponentEvent e) {
 			snapTo(false);
@@ -76,24 +77,10 @@ public class DefaultDialog extends JDialog implements IDialog {
 	}
 	
 	public DefaultDialog(Frame owner) {
+		
 		// forward
 		super(owner);
-        // listen to component events from frame
-        owner.addComponentListener(new ComponentListener() {
-			public void componentHidden(ComponentEvent e) {
-				setVisible(false);
-			}
-			public void componentMoved(ComponentEvent e) {
-				snapTo(false);
-			}
-			public void componentResized(ComponentEvent e) {
-				snapTo(false);
-			}
-			public void componentShown(ComponentEvent e) {
-				snapTo(false);
-			}
-		});        
-        
+		
 		// add global key-event listener
 		Utils.getApp().getKeyEventDispatcher().addKeyListener(
 				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
@@ -109,11 +96,11 @@ public class DefaultDialog extends JDialog implements IDialog {
 			}
 		});
 		        
-		// initialize ui
+		// initialize GUI
 		initialize();
 		
 		// set default location
-		setLocationRelativeTo(owner,POS_CENTER,false,true);
+		setLocationRelativeTo(owner,POS_CENTER,false,false);
 		
 	}
 	
@@ -135,7 +122,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	private void snapTo(boolean update) {
 		
 		// position not defined?
-		if (snapToBuddy == null || !snapToBuddy.isShowing()) return;
+		if (snapToComponent == null || !snapToComponent.isShowing()) return;
 		
 		// initialize size?
 		if (update || width == -1 || height == -1) {
@@ -145,12 +132,12 @@ public class DefaultDialog extends JDialog implements IDialog {
 		
 		// initialize
 		int offset = 2;
-		int x = snapToBuddy.getLocationOnScreen().x;
-		int y = snapToBuddy.getLocationOnScreen().y;
+		int x = snapToComponent.getLocationOnScreen().x;
+		int y = snapToComponent.getLocationOnScreen().y;
 		int w = 0;
 		int h = 0;
-		int bw = snapToBuddy.getWidth();
-		int bh = snapToBuddy.getHeight();
+		int bw = snapToComponent.getWidth();
+		int bh = snapToComponent.getHeight();
 		// get position data
 		switch (policy) {
 			case POS_WEST:	
@@ -194,9 +181,30 @@ public class DefaultDialog extends JDialog implements IDialog {
 		x = (x + w > screen.width) ? screen.width - w : x; 
 		y = (y + h > screen.height) ? screen.height - h : y; 
 		// update location
-		this.setLocation(x, y);
+		super.setLocation(x, y);
 		// apply location change
 		this.validate();
+	}
+	
+	private void registerSnapToComponent(Component c) {		
+		// register?
+		if(c!=null) {
+			// prepare
+			snapToComponent = c;
+			// add listener
+			c.addComponentListener(listener);
+			// forward?
+			if(isVisible()) snapTo(true);
+		}
+	}
+	
+	private void unregisterSnapToComponent() {
+		// unregister?
+		if(snapToComponent!=null) {
+			// remove listener
+			snapToComponent.removeComponentListener(listener);			
+		}
+		snapToComponent = null;
 	}
 	
 	/* ==========================================================
@@ -283,16 +291,13 @@ public class DefaultDialog extends JDialog implements IDialog {
 			
 	@Override
 	public void setLocationByPlatform(boolean locationByPlatform) {
-		// reset
-		snapToBuddy = null;
-		// forward
-		super.setLocationByPlatform(locationByPlatform);
+		// NOT ALLOWED
 	}
 
 	@Override
 	public void setLocation(int x, int y) {
 		// reset
-		snapToBuddy = null;
+		unregisterSnapToComponent();
 		// forward
 		super.setLocation(x, y);
 	}
@@ -300,7 +305,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	@Override
 	public void setLocation(Point p) {
 		// reset
-		snapToBuddy = null;
+		unregisterSnapToComponent();
 		// forward
 		super.setLocation(p);
 	}
@@ -308,33 +313,23 @@ public class DefaultDialog extends JDialog implements IDialog {
 	@Override
 	public void setLocationRelativeTo(Component c) {
 		// reset
-		snapToBuddy = null;
+		unregisterSnapToComponent();
 		// forward
 		super.setLocationRelativeTo(c);
 	}
 
-	public void setLocationRelativeTo(Component buddy, int policy, boolean sizeToFit, boolean snapToInside) {
+	public void setLocationRelativeTo(Component c, int policy, boolean sizeToFit, boolean snapToInside) {
 		
-		// unregister?
-		if(snapToBuddy!=null) {
-			// remove listener
-			snapToBuddy.removeComponentListener(listener);			
-		}
+		// unregister
+		unregisterSnapToComponent();
 		
 		// prepare
 		this.policy = policy;
 		this.sizeToFit = sizeToFit;
 		this.snapToInside = snapToInside;
-		this.snapToBuddy = buddy;
-	
-		// register?
-		if(snapToBuddy!=null) {
-			// add listener
-			snapToBuddy.addComponentListener(listener);
-			// forward
-			snapTo(false);
-		}
-		
+
+		// forward
+		registerSnapToComponent(c);
 	}
 	
 	public boolean isWorkSupported() {
@@ -373,14 +368,14 @@ public class DefaultDialog extends JDialog implements IDialog {
 	
 	public IMsoObjectIf getMsoObject() {
 		if(isWorkSupported()) {
-			return ((IPanel)getContentPane()).getMsoObject();
+			return ((IMsoHolder)getContentPane()).getMsoObject();
 		}
 		return null;
 	}
 	
 	public void setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).setMsoObject(msoObj);
+			((IMsoHolder)getContentPane()).setMsoObject(msoObj);
 	}
 	
 	public void reset() {
@@ -421,7 +416,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 		if(isMoveable()) {
 			int x = getLocation().x;
 	        int y = getLocation().y;
-	        setLocation(x+dx,y+dy);
+	        super.setLocation(x+dx,y+dy);
 	        return true;
 		}
 		return false;

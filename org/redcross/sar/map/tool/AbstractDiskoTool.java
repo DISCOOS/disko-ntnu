@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
 
-public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
+public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 	
 	// flags
 	protected boolean isDirty = false;			// true:=change is pending
@@ -59,7 +59,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	protected AbstractButton button;
 
 	// types
-	protected DiskoToolType type = null;
+	protected MapToolType type = null;
 	protected ButtonSize buttonSize = ButtonSize.NORMAL;
 	
 	// counter
@@ -121,7 +121,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 	/**
 	 * Returns the disko tool type
 	 */
-	public DiskoToolType getType() {
+	public MapToolType getType() {
 		return type;
 	}
 
@@ -204,7 +204,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IDiskoTool {
 		setMsoData(msoOwner,msoObject,msoCode);
 	}
 	
-	public void setMsoData(IDiskoTool tool) {
+	public void setMsoData(IMapTool tool) {
 		if(tool instanceof AbstractDiskoTool && tool!=this) {
 			AbstractDiskoTool abstractTool = (AbstractDiskoTool)tool;
 			setMsoData(abstractTool.msoOwner,abstractTool.msoObject,abstractTool.msoCode);

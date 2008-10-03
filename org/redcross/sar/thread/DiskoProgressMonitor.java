@@ -472,7 +472,7 @@ public class DiskoProgressMonitor {
 		// forward event to listeners
 		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_CANCEL);		
 		// reset position
-		setProgressLocationAt(null);
+		setProgressLocationAt(m_glassPane);
 	}
 	
 	private synchronized void scheduleEventFinish() {
@@ -481,7 +481,7 @@ public class DiskoProgressMonitor {
 		// forward event to listeners
 		fireUpdateProgressEvent(DiskoProgressEventType.EVENT_FINISH);							
 		// reset position
-		setProgressLocationAt(null);
+		setProgressLocationAt(Utils.getApp().getFrame().getLayeredPane());
 	}
 	
 	

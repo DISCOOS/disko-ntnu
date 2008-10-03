@@ -64,7 +64,7 @@ public class EraseTool extends AbstractDiskoTool {
 		enabled = true; 
 		
 		// set tool type
-		type = DiskoToolType.ERASE_TOOL;
+		type = MapToolType.ERASE_TOOL;
 
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

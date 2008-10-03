@@ -59,7 +59,7 @@ public class LineTool extends AbstractDrawTool {
 		enabled = true;
 		
 		// set tool type
-		type = DiskoToolType.LINE_TOOL;
+		type = MapToolType.LINE_TOOL;
 		
 		// show draw frame when appropriate
 		isShowDrawFrame = true;

@@ -65,7 +65,7 @@ public class PositionTool extends AbstractDrawTool {
 		enabled = true;
 		
 		// set tool type
-		type = DiskoToolType.POSITION_TOOL;		
+		type = MapToolType.POSITION_TOOL;		
 
 		// map draw operation
 		onMouseDownAction = DrawAction.ACTION_BEGIN;

@@ -9,7 +9,7 @@ import java.awt.event.WindowFocusListener;
 
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.util.Utils;
 
 /**
@@ -40,7 +40,7 @@ public class GotoDialog extends DefaultDialog {
 			@Override
 			public void windowGainedFocus(WindowEvent e) {
 				// activate selection tool
-				Utils.getApp().invoke(DiskoToolType.SELECT_TOOL,false);
+				Utils.getApp().invoke(MapToolType.SELECT_TOOL,false);
 			}
 
 			@Override

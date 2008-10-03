@@ -13,7 +13,7 @@ import org.redcross.sar.gui.panel.MainMenuPanel;
 import org.redcross.sar.gui.panel.SubMenuPanel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
@@ -257,7 +257,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
 			// forward
-			setupNavBar(Utils.getListNoneOf(DiskoToolType.class),false);
+			setupNavBar(Utils.getListNoneOf(MapToolType.class),false);
 		}		
         
         SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();

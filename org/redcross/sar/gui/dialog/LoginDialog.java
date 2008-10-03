@@ -15,9 +15,9 @@ import javax.swing.BoxLayout;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.attribute.ComboAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.gui.field.ComboAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.util.Utils;
 

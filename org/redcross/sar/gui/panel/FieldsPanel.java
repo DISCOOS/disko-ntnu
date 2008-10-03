@@ -14,15 +14,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
-import org.redcross.sar.gui.attribute.CheckBoxAttribute;
-import org.redcross.sar.gui.attribute.DTGAttribute;
-import org.redcross.sar.gui.attribute.EnumAttribute;
-import org.redcross.sar.gui.attribute.IDiskoAttribute;
-import org.redcross.sar.gui.attribute.NumericAttribute;
-import org.redcross.sar.gui.attribute.PositionAttribute;
-import org.redcross.sar.gui.attribute.TextAreaAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.AbstractDiskoAttribute;
+import org.redcross.sar.gui.field.CheckBoxAttribute;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.EnumAttribute;
+import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.IMsoField;
+import org.redcross.sar.gui.field.NumericAttribute;
+import org.redcross.sar.gui.field.PositionAttribute;
+import org.redcross.sar.gui.field.TextAreaAttribute;
 import org.redcross.sar.gui.util.SpringUtilities;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -41,12 +42,12 @@ import org.redcross.sar.util.Utils;
  * @author kennetgu
  *
  */
-public class AttributesPanel extends DefaultPanel {
+public class FieldsPanel extends DefaultPanel {
 
 	private static final long serialVersionUID = 1L;
 	
 	private List<String> m_names;
-	private Map<String,IDiskoAttribute> m_attributes;
+	private Map<String,IDiskoField> m_attributes;
 	
 	private JLabel m_messageLabel;
 	
@@ -59,37 +60,33 @@ public class AttributesPanel extends DefaultPanel {
 	
 	private int m_columns; 
 	
-	public AttributesPanel() {
+	public FieldsPanel() {
 		this("Egenskaper");
 	}
 	
-	public AttributesPanel(String caption) {
+	public FieldsPanel(String caption) {
 		this(caption,"Ingen egenskaper funnet",true,true);
 	}
 	
-	public AttributesPanel(String caption, String message, boolean finish, boolean cancel) {
+	public FieldsPanel(String caption, String message, boolean finish, boolean cancel) {
 		this(caption,message,finish,cancel,ButtonSize.SMALL,1);
 	}
 
-	public AttributesPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
+	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
 		this(caption,message,finish,cancel,buttonSize,1);
 	}
-	public AttributesPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize, int columns) {
+	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize, int columns) {
 		// forward
 		super(caption,finish,cancel,buttonSize);
 		// prepare
 		m_columns = columns;
 		m_names = new ArrayList<String>();
-		m_attributes = new HashMap<String, IDiskoAttribute>();		
+		m_attributes = new HashMap<String, IDiskoField>();		
 		// initialize GUI
 		initialize(message);
 	}
 	
 	private void initialize(String message) {
-		// get body panel
-		//JPanel panel = (JPanel)getBodyComponent();
-		// get body panel border
-		//panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 		// prepare message label
 		getMessageLabel().setText(message);		
 		// show message (layout manager is set here)
@@ -228,41 +225,44 @@ public class AttributesPanel extends DefaultPanel {
 		return (m_names!=null ? m_names.size(): 0);
 	}
 	
-	public void load() {
-		for(IDiskoAttribute it: m_attributes.values()) {
-			it.load();
-		}
-	}
-	
 	public boolean doWork() {
-		return (save()>0);
-	}
+		return finish();
+	}	
 	
-	public int save() {
-		int count = 0;
-		for(IDiskoAttribute it: m_attributes.values()) {
-			count += (it.save() ? 1 : 0);
+	
+	@Override
+	protected void afterFinish() {
+		for(IDiskoField it: m_attributes.values()) {
+			it.finish();
 		}
-		setDirty(false);
-		return count;
+		super.afterFinish();		
+	}
+		
+	@Override
+	protected void afterCancel() {
+		for(IDiskoField it: m_attributes.values()) {
+			it.cancel();
+		}
+		super.afterFinish();		
 	}
 	
 	@Override
-	public boolean cancel() {
-		if(super.cancel()) {
-			load();
-			return true;
+	public void reset() {
+		// forward
+		super.reset();
+		// forward
+		for(IDiskoField it: m_attributes.values()) {
+			it.reset();
 		}
-		return false;
 	}
 	
-	public IDiskoAttribute addAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
+	public IDiskoField addAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
 		if(!m_names.contains(name)) {
 			// forward
-			IDiskoAttribute attr = createAttribute(attribute,caption,isEditable,width,height);
+			IDiskoField attr = createAttribute(attribute,caption,isEditable,width,height);
 			// forward
 			if(addAttribute(attr)) {
 				// forward
@@ -274,7 +274,7 @@ public class AttributesPanel extends DefaultPanel {
 		return null;
 	}
 	
-	public boolean addAttribute(IDiskoAttribute attribute)  {
+	public boolean addAttribute(IDiskoField attribute)  {
 		// initialize flag
 		boolean bFlag = false;
 		// string get name
@@ -301,7 +301,7 @@ public class AttributesPanel extends DefaultPanel {
 		return bFlag;
 	}
 	
-	public IDiskoAttribute getAttribute(String name) {
+	public IDiskoField getAttribute(String name) {
 		// has mso object?
 		if(m_names!=null) {
 			// has attribute
@@ -409,7 +409,7 @@ public class AttributesPanel extends DefaultPanel {
 	}
 
 	public void setCaptionWidth(int width) {
-		for(IDiskoAttribute it: m_attributes.values())
+		for(IDiskoField it: m_attributes.values())
 			it.setFixedCaptionWidth(width);		
 	}	
 	
@@ -425,9 +425,9 @@ public class AttributesPanel extends DefaultPanel {
 		getAttribute(name).setValue(value);
 	}	
 	
-  	public static IDiskoAttribute createAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
+  	public static IDiskoField createAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
   		// initialize component
-  		IDiskoAttribute component = null;
+  		IDiskoField component = null;
 		try {
 			// dispatch attribute type
 			if (attribute instanceof MsoBoolean) {
@@ -490,7 +490,7 @@ public class AttributesPanel extends DefaultPanel {
   	public void update() {
   		
   		// calculate dirty bit
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
   			if(it.isDirty()) {
   				setDirty(true,false); break;
   			}
@@ -501,21 +501,21 @@ public class AttributesPanel extends DefaultPanel {
   	}
 
   	public void setAutoSave(boolean autoSave) {
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
 			it.setAutoSave(autoSave);
   		}
   	}
   	
   	public int getAutoSave() {
   		int count = 0;
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
 			if(it.getAutoSave()) count++;
   		}
   		return count;
   	}
   	
   	public void setEditable(boolean isEditable) {
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
 			it.setEditable(isEditable);
   		}
   	}
@@ -523,7 +523,7 @@ public class AttributesPanel extends DefaultPanel {
   	@Override
   	public void setEnabled(boolean isEnabled) {
   		super.setEnabled(isEnabled);
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
   			if(it instanceof Component)
   				((Component)it).setEnabled(isEnabled);
   		}
@@ -534,8 +534,8 @@ public class AttributesPanel extends DefaultPanel {
   		// forward
   		super.setChangeable(isChangeable);
   		// loop over all attributes
-  		for(IDiskoAttribute it : m_attributes.values()) {
-  			it.setConsume(!isChangeable);
+  		for(IDiskoField it : m_attributes.values()) {
+  			it.setChangeable(isChangeable);
   		}
 	}
   	  	  	
@@ -543,7 +543,7 @@ public class AttributesPanel extends DefaultPanel {
 		// prepare
 		m_attribAlignX = position;
   		// loop over all attributes
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
@@ -554,24 +554,16 @@ public class AttributesPanel extends DefaultPanel {
 	@Override
 	protected boolean beforeCancel() {
 		// forward
-		load();
+		reset();
 		// success
 		return true; 
-	}
-
-	@Override
-	protected boolean beforeFinish() {
-		// forward
-		save();
-		// success
-		return true;
 	}
 
 	public void setAttributeAlignmentY(float position) {
 		// prepare
 		m_attribAlignY = position;
   		// loop over all attributes
-  		for(IDiskoAttribute it : m_attributes.values()) {
+  		for(IDiskoField it : m_attributes.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
@@ -584,10 +576,10 @@ public class AttributesPanel extends DefaultPanel {
 		if(this.msoObject == msoObj) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoAttribute it: m_attributes.values()) {
-				if(it.isMsoAttribute()) {
-					if(map.containsValue(it.getMsoAttribute())) {
-						it.load();
+			for(IDiskoField it: m_attributes.values()) {				
+				if(it instanceof IMsoField) {
+					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
+						it.reset();
 					}
 				}
 			}
@@ -596,14 +588,27 @@ public class AttributesPanel extends DefaultPanel {
 	
 
 	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+		
+		/* 
+		 * 
+		 * TODO: Implement server value change indication in
+		 * GUI including lookup of source information 
+		 * functionality. For example source name (person, module) and 
+		 * location (IP address, master name, logical unit) 
+		 * 
+		 * TODO: Implement server/local value conflict indication in 
+		 * GUI and functionality for resolving this conflict action 
+		 *
+		 */ 
+		
 		super.msoObjectChanged(msoObject, mask);
 		if(this.msoObject == msoObj) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoAttribute it: m_attributes.values()) {
-				if(it.isMsoAttribute()) {
-					if(map.containsValue(it.getMsoAttribute())) {
-						it.load();
+			for(IDiskoField it: m_attributes.values()) {
+				if(it instanceof IMsoField) {
+					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
+						it.reset();
 					}
 				}
 			}
@@ -612,16 +617,23 @@ public class AttributesPanel extends DefaultPanel {
 
 	@Override
 	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+
+		// TODO: Implement deleted attribute indication in GUI
+		
+		// forward
 		super.msoObjectDeleted(msoObject, mask);
+		
+		// only notify attributes belonging to this object
 		if(this.msoObject == msoObj) {
 			// TODO: Implement deleted attribute indication in GUI 
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoAttribute it: m_attributes.values()) {
-				if(it.isMsoAttribute()) {
-					if(map.containsValue(it.getMsoAttribute())) {
-						it.setMsoAttribute(null);
-						it.load();
+			for(IDiskoField it: m_attributes.values()) {
+				if(it instanceof IMsoField) {
+					IMsoField field = ((IMsoField)it);
+					if(map.containsValue(field.getMsoAttribute())) {
+						field.setMsoAttribute(null);
+						it.reset();
 					}
 				}
 			}
@@ -630,15 +642,17 @@ public class AttributesPanel extends DefaultPanel {
 	
 	@Override
 	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
+		
+		// TODO: Implement deleted attribute indication in GUI 
+
 		// forward
 		super.msoObjectClearAll(msoObject, mask);
-		// TODO: Implement deleted attribute indication in GUI 
-		//Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 		// loop over attributes
-		for(IDiskoAttribute it: m_attributes.values()) {
-			if(it.isMsoAttribute()) {
-				it.setMsoAttribute(null);
-				it.load();
+		for(IDiskoField it: m_attributes.values()) {
+			if(it instanceof IMsoField) {
+				IMsoField field = ((IMsoField)it);
+				field.setMsoAttribute(null);
+				it.reset();
 			}
 		}
 	}	

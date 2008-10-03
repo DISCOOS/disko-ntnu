@@ -128,7 +128,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	protected IGeometry geoSnap;
 		
 	// adapters
-	protected DrawAdapter drawAdapter;
+	protected MsoDrawAdapter drawAdapter;
 	protected SnapAdapter snapAdapter;
 	protected MapControlAdapter mapAdapter;
 	
@@ -754,7 +754,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		}
 	}
 	
-	public DrawAdapter getDrawAdapter() {
+	public MsoDrawAdapter getDrawAdapter() {
 		return drawAdapter;
 	}
 	
@@ -1296,7 +1296,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					(isShowDrawFrame 
 							&& map.isEditSupportInstalled() 
 							&& drawFrame.isActive() 
-							&& this == drawAdapter.getSelectedTool()
+							&& this == drawAdapter.getSelectedDrawTool()
 					)
 				);
 		return bFlag;

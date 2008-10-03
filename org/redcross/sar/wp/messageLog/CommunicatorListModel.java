@@ -276,9 +276,6 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 	 */
 	public void handleMsoUpdateEvent(Update e)
 	{
-        // get ICommunicatorIf object
-		ICommunicatorIf c = (ICommunicatorIf)e.getSource();
-        
         // clear all?
         if(e.isClearAllEvent()) 
         {
@@ -286,6 +283,9 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
         }
         else {
 			
+            // get ICommunicatorIf object
+    		ICommunicatorIf c = (ICommunicatorIf)e.getSource();
+            
 	        // add object?
 			if (e.isCreateObjectEvent()) {
 				addElement(c);

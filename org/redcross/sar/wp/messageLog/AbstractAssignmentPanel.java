@@ -31,11 +31,11 @@ import javax.swing.SwingUtilities;
 
 import no.cmr.tools.Log;
 
-import org.redcross.sar.gui.attribute.DTGAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
@@ -77,7 +77,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     protected JList m_messageLineList = null;
     
     protected IAssignmentIf m_selectedAssignment = null;
-    protected AttributesPanel m_selectedPanel = null;
+    protected FieldsPanel m_selectedPanel = null;
     protected IUnitIf m_assignmentUnit = null;
     
     protected JPanel m_buttonPanel = null;
@@ -88,7 +88,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     
     protected ButtonSize buttonSize = ButtonSize.SMALL;
 
-    protected AttributesPanel m_editAssignmentPanel = null;
+    protected FieldsPanel m_editAssignmentPanel = null;
     protected IMessageLineIf m_editingLine = null;
     
     protected BasePanel m_nextAssignmentsPanel = null;
@@ -157,7 +157,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
      */
     public void cancelUpdate() {
     	
-    	resetEditor();
+    	reset();
 		
     }
 
@@ -223,7 +223,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     
     protected void initSelectedPanel() {
     	// create
-    	m_selectedPanel = new AttributesPanel("Oppdragsinformasjon","Ingen oppdrag tilgjengelig",false,false);
+    	m_selectedPanel = new FieldsPanel("Oppdragsinformasjon","Ingen oppdrag tilgjengelig",false,false);
     	//m_selectedPanel.setHeaderVisible(false);
     }
     
@@ -242,7 +242,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     protected void initEditAssignmentPanel()
     {
         
-    	m_editAssignmentPanel = new AttributesPanel("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
+    	m_editAssignmentPanel = new FieldsPanel("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
     	//m_editAssignmentPanel.setHeaderVisible(false);
     	
     	// add attributes
@@ -372,7 +372,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     /**
      *
      */
-    public void resetEditor()
+    public void reset()
     {
     	removeAddedLines(null,true);
     	//m_selected.clear();
@@ -667,7 +667,7 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     			m_selectedPanel.setValue("Assignment",MsoUtils.getAssignmentName(selected, 1));
     			m_selectedPanel.setValue("Priority",selected.getPriorityText());
     			// update dynamic properties
-    			m_selectedPanel.load();
+    			m_selectedPanel.reset();
     		}
     	}
     	else {

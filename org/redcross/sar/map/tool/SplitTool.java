@@ -47,7 +47,7 @@ public class SplitTool extends AbstractDiskoTool {
 		p.setY(0);
 		
 		// set tool type
-		type = DiskoToolType.SPLIT_TOOL;		
+		type = MapToolType.SPLIT_TOOL;		
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

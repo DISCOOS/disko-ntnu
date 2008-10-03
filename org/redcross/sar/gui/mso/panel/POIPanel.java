@@ -14,10 +14,10 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
@@ -46,7 +46,7 @@ public class POIPanel extends DefaultToolPanel {
 	private GotoPanel gotoPanel;
 	private JButton centerAtButton;
 	private POITypesPanel poiTypesPanel;
-	private AttributesPanel optionsPanel;
+	private FieldsPanel optionsPanel;
 	private TextFieldAttribute nameAttr;
 	private DefaultPanel remarksPanel;
 	private JTextArea remarksArea;
@@ -121,12 +121,12 @@ public class POIPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes optionsPanel	
 	 * 	
-	 * @return {@link AttributesPanel}
+	 * @return {@link FieldsPanel}
 	 */
-	public AttributesPanel getOptionsPanel() {
+	public FieldsPanel getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
-				optionsPanel = new AttributesPanel("Egenskaper","Ingen egenskaper funnet",false,false);
+				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setPreferredSize(new Dimension(200,25));	
 				optionsPanel.addAttribute(getNameAttr());
 				optionsPanel.addDiskoWorkListener(new IDiskoWorkListener() {

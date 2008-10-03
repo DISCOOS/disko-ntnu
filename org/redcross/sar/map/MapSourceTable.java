@@ -2,19 +2,20 @@ package org.redcross.sar.map;
 
 import java.util.List;
 
-import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.ListSelectionModel;
 
 import org.redcross.sar.gui.model.MapSourceTableModel;
 import org.redcross.sar.gui.renderer.BooleanCellRenderer;
 import org.redcross.sar.gui.renderer.MapSourceInfoCellRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
 
-public class MapSourceTable extends JTable {
+public class MapSourceTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
 
 	public MapSourceTable(List<MapSourceInfo> list){
+		super();
 		this.setDefaultRenderer(Boolean.class, new BooleanCellRenderer());
 		this.setDefaultRenderer(Object.class,new MapSourceInfoCellRenderer());
 		this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

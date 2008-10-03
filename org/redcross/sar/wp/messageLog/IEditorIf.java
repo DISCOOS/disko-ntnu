@@ -33,5 +33,5 @@ public interface IEditorIf
 	/**
 	 * Clears the content of child components for the components, e.g. resets text fields in a panel
 	 */
-	public void resetEditor();
+	public void reset();
 }

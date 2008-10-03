@@ -9,7 +9,7 @@ import javax.swing.JButton;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.IMapTool;
 
 public class DefaultToolPanel extends BaseToolPanel {
 
@@ -25,12 +25,12 @@ public class DefaultToolPanel extends BaseToolPanel {
 	 * ===========================================
 	 */	
 	
-	public DefaultToolPanel(IDiskoTool tool) {
+	public DefaultToolPanel(IMapTool tool) {
 		// forward
 		this(tool.getCaption(),tool);
 	}
 	
-	public DefaultToolPanel(String caption, IDiskoTool tool) {
+	public DefaultToolPanel(String caption, IMapTool tool) {
 		// forward
 		super(caption,tool);
 		// initialize gui

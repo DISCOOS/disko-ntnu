@@ -223,7 +223,7 @@ public class TextPanel extends DefaultPanel implements IEditorIf
 	/**
 	 *
 	 */
-	public void resetEditor()
+	public void reset()
 	{
 		m_textArea.setText("");
 	}

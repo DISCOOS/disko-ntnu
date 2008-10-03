@@ -26,7 +26,7 @@ public class TocCommand extends AbstractDiskoCommand {
 		super();
 		
 		// set tool type
-		type = DiskoCommandType.TOC_COMMAND;		
+		type = MapCommandType.TOC_COMMAND;		
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);

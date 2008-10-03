@@ -14,8 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.field.TextFieldAttribute;
 import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.tree.FileTree;

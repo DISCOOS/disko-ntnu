@@ -6,15 +6,13 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.event.IToolListenerIf;
-import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import com.esri.arcgis.systemUI.ITool;
 
-public interface IDiskoTool extends ITool {
+public interface IMapTool extends ITool {
 
-	public enum DiskoToolType {
+	public enum MapToolType {
 		DRAW_HOST_TOOL,
 		FREEHAND_TOOL,
 		LINE_TOOL,
@@ -35,7 +33,7 @@ public interface IDiskoTool extends ITool {
 	 */
 	
 	public String getName();
-	public DiskoToolType getType();
+	public MapToolType getType();
 	
 	public boolean isHosted();	
 	public IHostDiskoTool getHostTool();
@@ -52,18 +50,6 @@ public interface IDiskoTool extends ITool {
 	
 	public boolean isDirty();
 	public boolean resetDirtyFlag();
-
-	public IMsoObjectIf getMsoObject();
-	public void setMsoObject(IMsoObjectIf msoObj);
-		
-	public IMsoObjectIf getMsoOwner();
-	public void setMsoOwner(IMsoObjectIf msoOwn);
-	
-	public MsoClassCode getMsoCode();
-
-	public void setMsoData(IDiskoTool tool);	
-	public void setMsoData(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, MsoClassCode msoCode);
-	
 		
 	public IDiskoMap getMap();
 	

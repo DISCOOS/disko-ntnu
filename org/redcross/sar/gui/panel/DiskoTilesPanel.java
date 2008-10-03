@@ -140,16 +140,15 @@ public class DiskoTilesPanel extends BasePanel
         Dimension availableDim = getSize();
 
         int cols;
-        LayoutManager lm = getLayout();
-        if (lm instanceof GridLayout)
+        if (m_layout instanceof GridLayout)
         {
-            cols = ((GridLayout) lm).getColumns();
+            cols = ((GridLayout) m_layout).getColumns();
         } else
         {
             cols = availableDim.width / (aDimension.width + m_hgap);
         }
         cols = Math.max(cols, 1);
-        int rows = availableDim.height / (aDimension.height + m_vgap);
+        int rows = availableDim.height / (aDimension.height + m_vgap) - 1;
         rows = Math.max(rows, 1);
         return cols * rows;
     }
@@ -193,13 +192,12 @@ public class DiskoTilesPanel extends BasePanel
                 m_tileSize.height = height;
             }
 
-            LayoutManager lm = getLayout();
             if (m_colCount > 0)
             {
                 cols = m_colCount;
-            } else if (lm instanceof GridLayout)
+            } else if (m_layout instanceof GridLayout)
             {
-                cols = ((GridLayout) lm).getColumns();
+                cols = ((GridLayout) m_layout).getColumns();
             } else
             {
                 cols = myDimension.width / (m_tileSize.width + m_hgap);
@@ -224,13 +222,15 @@ public class DiskoTilesPanel extends BasePanel
 
         if (m_tileSizeSet)
         {
-            //
             if (m_layout instanceof GridBagLayout)
             { // layout components manually
                 layoutGridBag(rows, cols);
             } else if (m_layout instanceof SpringLayout)
             { // layout components manually
                 layoutSpring(rows, cols, myDimension.width + m_hgap);
+            }
+            else {
+            	m_layout.layoutContainer(getTileList());
             }
         }
 
@@ -240,7 +240,7 @@ public class DiskoTilesPanel extends BasePanel
             setPreferredSize(myDimension);
         }
         invalidate();
-        //repaint();
+        repaint();
     }
 
     protected TileList getTileList() {

@@ -17,7 +17,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.BaseCommand;
@@ -37,7 +37,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	protected boolean showDialog = true;
 
 	// current hosted tool
-	private IDiskoTool tool = null;
+	private IMapTool tool = null;
 	
 	// GUI components
 	protected DiskoMap map = null;
@@ -137,7 +137,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	}
 
 	
-	public void setTool(IDiskoTool tool, boolean activate) {
+	public void setTool(IMapTool tool, boolean activate) {
 		// host can't host as empty tool
 		if(tool!=null) {
 			// save tool
@@ -153,7 +153,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		}
 	}
 
-	public IDiskoTool getTool() {
+	public IMapTool getTool() {
 		return tool;
 	}
 
@@ -333,7 +333,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		private boolean showDialog = false;
 
 		// current hosted tool
-		private IDiskoTool tool = null;
+		private IMapTool tool = null;
 		
 		// create state
 		public DrawHostToolState(DrawHostTool tool) {

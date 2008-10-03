@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.redcross.sar.gui.attribute;
+package org.redcross.sar.gui.field;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -58,7 +58,7 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 			cb.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					if(isConsume()) return;
+					if(!isChangeable()) return;
 					fireOnWorkChange();
 				}
 				

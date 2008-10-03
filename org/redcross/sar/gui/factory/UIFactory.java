@@ -196,7 +196,6 @@ public class UIFactory {
 			loginDialog = new LoginDialog(app.getFrame());
 			loginDialog.getUserName().setValue("disko");
 			loginDialog.getPassword().setValue("disko");
-			loginDialog.setLocationRelativeTo(app.getFrame(),LoginDialog.POS_CENTER,false,true);
 			register(loginDialog);
 		}
 		loginDialog.load();
@@ -206,7 +205,6 @@ public class UIFactory {
 	public OperationDialog getOperationDialog() {
 		if (operationDialog == null) {
 			operationDialog= new OperationDialog(app.getFrame());
-			operationDialog.setLocationRelativeTo(app.getFrame(),OperationDialog.POS_CENTER,false,true);
 			register(operationDialog);
 		}
 		operationDialog.load();

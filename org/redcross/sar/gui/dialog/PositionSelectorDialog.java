@@ -8,7 +8,7 @@ import java.awt.Frame;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.Utils;
@@ -115,7 +115,7 @@ public class PositionSelectorDialog extends DefaultDialog {
 		// show position in map
 		getGotoPanel().setPositionMarked(true);
 		// activate SelectFeatureTool
-		Utils.getApp().invoke(DiskoToolType.SELECT_TOOL,false);
+		Utils.getApp().invoke(MapToolType.SELECT_TOOL,false);
 		// show
 		setVisible(true);
 		// hide position in map

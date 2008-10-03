@@ -11,8 +11,8 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IDiskoLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
-import org.redcross.sar.map.tool.DrawAdapter;
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.MsoDrawAdapter;
+import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -42,8 +42,8 @@ public interface IDiskoMap {
 		FORMAT_DES
 	}
 	
-	public IDiskoTool getActiveTool();
-	public boolean setActiveTool(IDiskoTool tool, int options) throws IOException, AutomationException;
+	public IMapTool getActiveTool();
+	public boolean setActiveTool(IMapTool tool, int options) throws IOException, AutomationException;
 	
 	public EnumSet<LayerCode> getSupportedLayers();
 	
@@ -146,7 +146,7 @@ public interface IDiskoMap {
 	
 	public boolean isEditSupportInstalled();
 	public void installEditSupport();
-	public DrawAdapter getDrawAdapter();	
+	public MsoDrawAdapter getDrawAdapter();	
 	public DrawDialog getDrawDialog();
 	public DrawFrame getDrawFrame();
 	public ElementDialog getElementDialog();	

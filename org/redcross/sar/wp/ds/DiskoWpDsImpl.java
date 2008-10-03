@@ -22,24 +22,24 @@ import org.redcross.sar.ds.DiskoDecisionSupport;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.attribute.DTGAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.dialog.DirectoryChooserDialog;
 import org.redcross.sar.gui.dialog.FileExplorerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
 import org.redcross.sar.gui.model.FileTreeModel;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
+import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.EstimatedPositionLayer;
 import org.redcross.sar.map.layer.IDiskoLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.thread.DiskoWorkPool;
@@ -60,7 +60,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private MapPanel m_mapPanel;
 	private JPanel m_estimatorPanel;
 	private BasePanel m_controlPanel;
-	private AttributesPanel m_estAttribsPanel;
+	private FieldsPanel m_estAttribsPanel;
 	private DTGAttribute m_startedTimeAttr;
 	private TextFieldAttribute m_effortTimeAttr;
 	private TextFieldAttribute m_avgEstTimeAttr;
@@ -111,18 +111,18 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	}
 	
 	private List<Enum<?>> getDefaultNavBarButtons() {
-		List<Enum<?>> myButtons = Utils.getListNoneOf(DiskoToolType.class);
-		myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
-		myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
-		myButtons.add(DiskoToolType.PAN_TOOL);
-		myButtons.add(DiskoToolType.SELECT_TOOL);
-		myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
-		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
-		myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
-		myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
-		myButtons.add(DiskoCommandType.SCALE_COMMAND);
-		myButtons.add(DiskoCommandType.TOC_COMMAND);
-		myButtons.add(DiskoCommandType.GOTO_COMMAND);
+		List<Enum<?>> myButtons = Utils.getListNoneOf(MapToolType.class);
+		myButtons.add(MapToolType.ZOOM_IN_TOOL);
+		myButtons.add(MapToolType.ZOOM_OUT_TOOL);
+		myButtons.add(MapToolType.PAN_TOOL);
+		myButtons.add(MapToolType.SELECT_TOOL);
+		myButtons.add(MapCommandType.ZOOM_FULL_EXTENT_COMMAND);
+		myButtons.add(MapCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
+		myButtons.add(MapCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
+		myButtons.add(MapCommandType.MAP_TOGGLE_COMMAND);
+		myButtons.add(MapCommandType.SCALE_COMMAND);
+		myButtons.add(MapCommandType.TOC_COMMAND);
+		myButtons.add(MapCommandType.GOTO_COMMAND);
 		return myButtons;
 	}
 	
@@ -279,11 +279,11 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		return m_stopButton;
 	}
 	
-	private AttributesPanel getEstAttribsPanel()
+	private FieldsPanel getEstAttribsPanel()
     {
         if (m_estAttribsPanel == null)
         {
-        	m_estAttribsPanel = new AttributesPanel("","",false,false);
+        	m_estAttribsPanel = new FieldsPanel("","",false,false);
         	m_estAttribsPanel.setHeaderVisible(false);
         	m_estAttribsPanel.setBorderVisible(false);
         	m_estAttribsPanel.setNotScrollBars();

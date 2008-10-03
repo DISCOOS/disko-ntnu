@@ -51,8 +51,8 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.*;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
-import org.redcross.sar.map.tool.DrawAdapter;
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.MsoDrawAdapter;
+import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.IDrawTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -94,7 +94,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private String mxdDoc = null;
 	private IMsoModelIf msoModel = null;
 	private IDiskoMapManager mapManager = null;
-	private IDiskoTool activeTool = null;
+	private IMapTool activeTool = null;
 	private int supressDrawing = 0;
 	private int notifySuspended = 0;
 	private int currentBase = 0;
@@ -125,7 +125,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	private DiskoMapProgressor progressor = null;
 	
 	// adapters
-	private DrawAdapter drawAdapter = null;
+	private MsoDrawAdapter drawAdapter = null;
 	private SnapAdapter snapAdapter = null;
 	private DiskoWorkRepeater workRepeater = null;
 	private ControlEventsAdapter ctrlAdapter = null;
@@ -537,18 +537,18 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	public void setCurrentToolByRef(ITool tool)
 			throws IOException, AutomationException {
 		// update locals
-		if (!(tool instanceof IDiskoTool))
+		if (!(tool instanceof IMapTool))
 			throw new IllegalArgumentException("Tools must implement the IDiskoTool interface");
 		// is valid tool (option 1 := toggle dialog show/hide)
-		setActiveTool((IDiskoTool)tool,1);
+		setActiveTool((IMapTool)tool,1);
 	}
 
 	@Override
-	public IDiskoTool getActiveTool() {
+	public IMapTool getActiveTool() {
 		return activeTool;
 	}	
 	
-	public boolean setActiveTool(IDiskoTool tool, int options)
+	public boolean setActiveTool(IMapTool tool, int options)
 			throws IOException, AutomationException {
 		// no change?
 		if(activeTool==tool) return true;
@@ -1726,13 +1726,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		return drawFrame;
 	}
 	
-	public DrawAdapter getDrawAdapter() {
+	public MsoDrawAdapter getDrawAdapter() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
 		// initialize?
 		if(drawAdapter == null) {
 			// create draw adapter
-			drawAdapter = new DrawAdapter(Utils.getApp());
+			drawAdapter = new MsoDrawAdapter(Utils.getApp());
 			// register objects
 			drawAdapter.register(this);
 		}

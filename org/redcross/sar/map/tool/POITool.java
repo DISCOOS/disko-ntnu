@@ -54,7 +54,7 @@ public class POITool extends AbstractDrawTool {
 		enabled = true;
 		
 		// set tool type
-		type = DiskoToolType.POI_TOOL;		
+		type = MapToolType.POI_TOOL;		
 
 		// show draw frame when appropriate
 		isShowDrawFrame = true;

@@ -1,6 +1,6 @@
 package org.redcross.sar.map.tool;
 
-public interface IDrawTool extends IDiskoTool {
+public interface IDrawTool extends IMapTool {
 	
 	public enum FeatureType {
 		FEATURE_POINT,
@@ -21,7 +21,7 @@ public interface IDrawTool extends IDiskoTool {
 	
 	public SnapAdapter getSnapAdapter();
 	
-	public DrawAdapter getDrawAdapter();
+	public MsoDrawAdapter getDrawAdapter();
 	
 	public boolean isDrawing();
 	public boolean isSnapToMode();

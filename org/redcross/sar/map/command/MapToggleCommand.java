@@ -19,7 +19,7 @@ public class MapToggleCommand extends AbstractDiskoCommand {
 		super();
 		
 		// set tool type
-		type = DiskoCommandType.MAP_TOGGLE_COMMAND;
+		type = MapCommandType.MAP_TOGGLE_COMMAND;
 		
 		// set flags
 		this.showDirect = true;
@@ -43,7 +43,7 @@ public class MapToggleCommand extends AbstractDiskoCommand {
 			map.getMapManager().toggleMapBase();
 			if(map.getMapBaseIndex()==1) {
 				getButton().setIcon(DiskoIconFactory.getIcon(
-						DiskoEnumFactory.getIcon(DiskoCommandType.MAP_TOGGLE_COMMAND), "48x48"));
+						DiskoEnumFactory.getIcon(MapCommandType.MAP_TOGGLE_COMMAND), "48x48"));
 			}
 			else { 
 				getButton().setIcon(DiskoIconFactory.getIcon(

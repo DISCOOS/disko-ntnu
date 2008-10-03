@@ -52,7 +52,7 @@ public class FlankTool extends AbstractDiskoTool {
 		super();
 		
 		// set tool type
-		type = DiskoToolType.FLANK_TOOL;
+		type = MapToolType.FLANK_TOOL;
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

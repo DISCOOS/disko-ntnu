@@ -1,6 +1,5 @@
 package org.redcross.sar.gui;
 
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 public interface IChangeable {
@@ -14,9 +13,6 @@ public interface IChangeable {
 	
 	public boolean isChangeable();
 	public void setChangeable(boolean isChangable);
-	
-	public IMsoObjectIf getMsoObject();
-	public void setMsoObject(IMsoObjectIf msoObj);
 	
 	public void reset();
 	public boolean finish();

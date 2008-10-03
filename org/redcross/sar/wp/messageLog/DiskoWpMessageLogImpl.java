@@ -1,8 +1,8 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.command.IMapCommand.MapCommandType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -61,17 +61,17 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		if(isNavBarSetupNeeded()) {
 			// get tool set 
 	        List<Enum<?>> myButtons = new ArrayList<Enum<?>>();	  
-	        myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
-	        myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
-	        myButtons.add(DiskoToolType.PAN_TOOL);
-	        myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
-	        myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
-	        myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
-	        myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
-	        myButtons.add(DiskoCommandType.SCALE_COMMAND);
-	        myButtons.add(DiskoCommandType.TOC_COMMAND);
-	        myButtons.add(DiskoCommandType.GOTO_COMMAND);
-	        myButtons.add(DiskoToolType.SELECT_TOOL);
+	        myButtons.add(MapToolType.ZOOM_IN_TOOL);
+	        myButtons.add(MapToolType.ZOOM_OUT_TOOL);
+	        myButtons.add(MapToolType.PAN_TOOL);
+	        myButtons.add(MapCommandType.ZOOM_FULL_EXTENT_COMMAND);
+	        myButtons.add(MapCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
+	        myButtons.add(MapCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
+	        myButtons.add(MapCommandType.MAP_TOGGLE_COMMAND);
+	        myButtons.add(MapCommandType.SCALE_COMMAND);
+	        myButtons.add(MapCommandType.TOC_COMMAND);
+	        myButtons.add(MapCommandType.GOTO_COMMAND);
+	        myButtons.add(MapToolType.SELECT_TOOL);
 			// forward
 			setupNavBar(myButtons,false);
 		}	

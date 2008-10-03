@@ -61,7 +61,7 @@ public class SelectTool extends AbstractDiskoTool {
 		screen.setLocation(0, 0);
 
 		// set tool type
-		type = DiskoToolType.SELECT_TOOL;		
+		type = MapToolType.SELECT_TOOL;		
 
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

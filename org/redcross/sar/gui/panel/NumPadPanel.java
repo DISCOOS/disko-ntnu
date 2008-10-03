@@ -486,6 +486,7 @@ public class NumPadPanel extends DefaultPanel {
 		public void removeUpdate(DocumentEvent e) { change(); }
 		
 		private void change() {
+			if(!isChangeable()) return;
 			fireOnWorkChange(getInputField(), getInputField().getText());
 		}
 	};

@@ -13,11 +13,12 @@ import javax.swing.table.TableRowSorter;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.mso.model.UnitTableModel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 
-public class UnitTable extends JTable {
+public class UnitTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -28,7 +29,9 @@ public class UnitTable extends JTable {
 	}
 	
 	public UnitTable(IMsoModelIf msoModel, String catalog,EnumSet<UnitStatus> status) {
-			
+		
+		super();
+		
 		// set default unit cell table renderers
 		setDefaultRenderer(AbstractUnit.class, new UnitCellRenderer(catalog));
 		setDefaultRenderer(UnitStatus.class, new UnitCellRenderer(catalog));		
@@ -59,7 +62,6 @@ public class UnitTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(true);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DefaultHeaderRenderer());
         
         // add model lister to ensure data fit
         getModel().addTableModelListener(new TableModelListener() {

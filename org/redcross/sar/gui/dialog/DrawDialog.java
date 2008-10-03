@@ -18,11 +18,13 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.IMsoTool;
+import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.IDrawTool;
 import org.redcross.sar.map.tool.IDrawToolCollection;
 import org.redcross.sar.map.tool.IHostDiskoTool;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMsoToolCollection;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.map.tool.IDrawTool.FeatureType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -42,7 +44,7 @@ import javax.swing.JSplitPane;
  * @author kennetgu
  *
  */
-public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, ActionListener {
+public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, IMsoToolCollection, ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -57,9 +59,9 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 	
 	private IDrawTool m_selectedTool = null;
 	
-	private HashMap<DiskoToolType, IDrawTool> m_tools = null;
-	private HashMap<DiskoToolType, IToolPanel> m_panels = null;
-	private HashMap<DiskoToolType, JToggleButton> m_buttons = null;
+	private HashMap<MapToolType, IDrawTool> m_tools = null;
+	private HashMap<MapToolType, IToolPanel> m_panels = null;
+	private HashMap<MapToolType, JToggleButton> m_buttons = null;
 
 	/**
 	 * Constructor 
@@ -72,9 +74,9 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		super(owner);
 		
 		// prepare
-		m_tools = new HashMap<DiskoToolType, IDrawTool>();
-		m_panels = new HashMap<DiskoToolType, IToolPanel>();
-		m_buttons = new HashMap<DiskoToolType, JToggleButton>();
+		m_tools = new HashMap<MapToolType, IDrawTool>();
+		m_panels = new HashMap<MapToolType, IToolPanel>();
+		m_buttons = new HashMap<MapToolType, JToggleButton>();
 		
 		// initialize GUI
 		initialize();
@@ -260,7 +262,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		return m_selectedTool;
 	}
 	
-	public void setSelectedTool(IDiskoTool tool, boolean activate) {
+	public void setSelectedTool(IMapTool tool, boolean activate) {
 		// validate
 		if(!(tool instanceof IDrawTool))
 			throw new IllegalArgumentException("Only tools implementing the " +
@@ -269,11 +271,11 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		selectTool((IDrawTool)tool,activate,true);
 	}	
 	
-	public boolean containsToolType(DiskoToolType type) {
+	public boolean containsToolType(MapToolType type) {
 		return m_tools.containsKey(type);
 	}
 	
-	public void register(IDiskoTool tool) {
+	public void register(IMapTool tool) {
 		
 		// validate
 		if(!(tool instanceof IDrawTool))
@@ -304,7 +306,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		// loop over all tools and update buttons
 		Iterator<IDrawTool> it = m_tools.values().iterator();
 		while(it.hasNext()) {
-			IDiskoTool tool = it.next();
+			IMapTool tool = it.next();
 			AbstractButton button = tool.getButton();
 			JToggleButton toggle = m_buttons.get(tool.getType());
 			if(toggle.getIcon()==null) {
@@ -330,15 +332,15 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		}
 	}	
 	
-	public IDiskoTool getTool(DiskoToolType type) {
+	public IMapTool getTool(MapToolType type) {
 		return m_tools.get(type);
 	}
 
-	public boolean getEnabled(DiskoToolType type) {
+	public boolean getEnabled(MapToolType type) {
 		// exists?
 		if(m_tools.containsKey(type)) {
 			// get tool
-			IDiskoTool tool = m_tools.get(type);
+			IMapTool tool = m_tools.get(type);
 			// supports the IDrawTool interface?
 			if(tool instanceof IDrawTool){
 				// cast to IDrawTool
@@ -355,7 +357,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		return false;
 	}
 
-	public boolean getVisible(DiskoToolType type) {
+	public boolean getVisible(MapToolType type) {
 		// exists?
 		if(m_tools.containsKey(type)) {
 			// get tool
@@ -371,11 +373,11 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		return false;
 	}
 
-	public void setEnabled(DiskoToolType type, boolean isEnabled) {
+	public void setEnabled(MapToolType type, boolean isEnabled) {
 		// exists?
 		if(m_tools.containsKey(type)) {
 			// get tool
-			IDiskoTool tool = m_tools.get(type);
+			IMapTool tool = m_tools.get(type);
 			// has button?
 			if(m_buttons.containsKey(tool.getType())) {
 				// get button
@@ -389,7 +391,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		}
 	}
 
-	public void setVisible(DiskoToolType type, boolean isVisible) {
+	public void setVisible(MapToolType type, boolean isVisible) {
 		// exists?
 		if(m_tools.containsKey(type)) {
 			// get tool
@@ -404,7 +406,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		}
 	}
 	
-	public Object getAttribute(DiskoToolType type, String attribute) {
+	public Object getAttribute(MapToolType type, String attribute) {
 		// exists?
 		if(m_tools.containsKey(type)) {
 			return m_tools.get(type).getAttribute(attribute);
@@ -412,7 +414,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		return null;
 	}
 
-	public void setAttribute(DiskoToolType type, Object value, String attribute) {
+	public void setAttribute(MapToolType type, Object value, String attribute) {
 		// exists?
 		if(m_tools.containsKey(type)) {
 			m_tools.get(type).setAttribute(value,attribute);
@@ -436,19 +438,21 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		}		
 	}
 	
-	public void setMsoDrawData(IDiskoTool source) {
+	public void setMsoData(IMsoTool source) {
 		Iterator<IDrawTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
-			IDiskoTool tool = tools.next();
-			if(tool!=source)
-				tool.setMsoData(source);
+			IMapTool tool = tools.next();
+			if(tool!=source && tool instanceof IMsoTool)
+				((IMsoTool)tool).setMsoData(source);
 		}		
 	}
 
-	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
+	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
 		Iterator<IDrawTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
-			tools.next().setMsoData(msoOwner,msoObject,msoClassCode);
+			IDrawTool tool = tools.next();
+			if(tool instanceof IMsoTool)
+				((IMsoTool)tool).setMsoData(msoOwner,msoObject,msoClassCode);
 		}		
 	}
 	
@@ -531,7 +535,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 	}
 	
 	public void enableTools(boolean isEnabled) {
-		for(IDiskoTool tool: m_tools.values()) {
+		for(IMapTool tool: m_tools.values()) {
 			// get button
 			AbstractButton b = tool.getButton();
 			// enable or diable?
@@ -554,7 +558,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, A
 		setup();
 	}
 
-	public void enableToolType(DiskoToolType type) {
+	public void enableToolType(MapToolType type) {
 		for(IDrawTool tool: m_tools.values()) {
 			// get button
 			AbstractButton b = tool.getButton();

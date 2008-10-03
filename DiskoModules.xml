@@ -2,8 +2,8 @@
 <DiskoApplication>
 	<DiskoRole name="al" title="Aksjonsleder">
 		<DiskoModule classname="org.redcross.sar.wp.simulator.DiskoWpSimulatorImpl" />
-		<DiskoModule classname="org.redcross.sar.wp.ds.DiskoWpDsImpl"  isDefault="true"/>
-		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.ds.DiskoWpDsImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" isDefault="true"/>
 		<DiskoModule classname="org.redcross.sar.wp.logistics.DiskoWpLogisticsImpl"/>
 		<DiskoModule classname="org.redcross.sar.wp.messageLog.DiskoWpMessageLogImpl" />
 		<DiskoModule classname="org.redcross.sar.wp.tasks.DiskoWpTasksImpl"/>

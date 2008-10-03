@@ -10,9 +10,9 @@ import org.redcross.sar.thread.event.IDiskoWorkListener;
 
 import com.esri.arcgis.systemUI.ICommand;
 
-public interface IDiskoCommand extends ICommand {
+public interface IMapCommand extends ICommand {
 
-	public enum DiskoCommandType {
+	public enum MapCommandType {
 		ZOOM_IN_FIXED_COMMAND,
 		ZOOM_OUT_FIXED_COMMAND,
 		ZOOM_FULL_EXTENT_COMMAND,
@@ -27,7 +27,7 @@ public interface IDiskoCommand extends ICommand {
 	
 	public String getName();
 	
-	public DiskoCommandType getType();
+	public MapCommandType getType();
 	
 	public void onCreate(Object obj);
 	
@@ -37,7 +37,7 @@ public interface IDiskoCommand extends ICommand {
 	
 	public IHostDiskoCommand getHostCommand();
 	
-	public void setMsoDrawData(IDiskoCommand command);
+	public void setMsoDrawData(IMapCommand command);
 	
 	public void setMsoDrawData(IMsoObjectIf msoOwner, 
 			IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode);

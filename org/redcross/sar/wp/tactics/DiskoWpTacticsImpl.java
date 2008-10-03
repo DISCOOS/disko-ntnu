@@ -30,10 +30,10 @@ import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
+import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.tool.DrawAdapter.IDrawAdapterListener;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.MsoDrawAdapter.IDrawAdapterListener;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -169,25 +169,25 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 	
 	private List<Enum<?>> getDefaultNavBarButtons(boolean left, boolean right) {
-		List<Enum<?>> myButtons = Utils.getListNoneOf(DiskoToolType.class);
+		List<Enum<?>> myButtons = Utils.getListNoneOf(MapToolType.class);
 		if(left){		
-			myButtons.add(DiskoToolType.FREEHAND_TOOL);
-			myButtons.add(DiskoToolType.LINE_TOOL);
-			myButtons.add(DiskoToolType.POI_TOOL);
-			myButtons.add(DiskoToolType.ERASE_TOOL);
+			myButtons.add(MapToolType.FREEHAND_TOOL);
+			myButtons.add(MapToolType.LINE_TOOL);
+			myButtons.add(MapToolType.POI_TOOL);
+			myButtons.add(MapToolType.ERASE_TOOL);
 		}
 		if(right) {
-			myButtons.add(DiskoToolType.ZOOM_IN_TOOL);
-			myButtons.add(DiskoToolType.ZOOM_OUT_TOOL);
-			myButtons.add(DiskoToolType.PAN_TOOL);
-			myButtons.add(DiskoToolType.SELECT_TOOL);
-			myButtons.add(DiskoCommandType.ZOOM_FULL_EXTENT_COMMAND);
-			myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
-			myButtons.add(DiskoCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
-			myButtons.add(DiskoCommandType.MAP_TOGGLE_COMMAND);
-			myButtons.add(DiskoCommandType.SCALE_COMMAND);
-			myButtons.add(DiskoCommandType.TOC_COMMAND);
-			myButtons.add(DiskoCommandType.GOTO_COMMAND);
+			myButtons.add(MapToolType.ZOOM_IN_TOOL);
+			myButtons.add(MapToolType.ZOOM_OUT_TOOL);
+			myButtons.add(MapToolType.PAN_TOOL);
+			myButtons.add(MapToolType.SELECT_TOOL);
+			myButtons.add(MapCommandType.ZOOM_FULL_EXTENT_COMMAND);
+			myButtons.add(MapCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND);
+			myButtons.add(MapCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND);
+			myButtons.add(MapCommandType.MAP_TOGGLE_COMMAND);
+			myButtons.add(MapCommandType.SCALE_COMMAND);
+			myButtons.add(MapCommandType.TOC_COMMAND);
+			myButtons.add(MapCommandType.GOTO_COMMAND);
 		}
 		return myButtons;		
 	}

@@ -3,13 +3,13 @@ package org.redcross.sar.map.tool;
 import javax.swing.AbstractButton;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
 
 public interface IHostDiskoTool {
 
-	public IDiskoTool getTool();
+	public IMapTool getTool();
 	
-	public void setTool(IDiskoTool tool, boolean activate);
+	public void setTool(IMapTool tool, boolean activate);
 	
 	public void onClick();
 	

@@ -36,7 +36,7 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -347,7 +347,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		// setup of navbar needed?
 		if(isNavBarSetupNeeded()) {
 			// forward
-			setupNavBar(Utils.getListNoneOf(DiskoToolType.class),false);
+			setupNavBar(Utils.getListNoneOf(MapToolType.class),false);
 		}		
 	}
 	
@@ -484,6 +484,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		
 		if(m_newUnit)
 		{
+			/*
 			// Unit is set to ready on first commit
 			IUnitIf unit = m_unitDetailsLeftPanel.getUnit();
 			try {
@@ -492,6 +493,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			*/
 			
 			m_unitOverviewTable.setEnabled(true);
 			m_newUnitButton.setSelected(false);

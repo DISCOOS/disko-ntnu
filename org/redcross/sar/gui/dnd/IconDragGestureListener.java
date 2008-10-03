@@ -83,8 +83,7 @@ public class IconDragGestureListener extends DragSourceAdapter implements
 				    		// paint on buffer
 				    		m_icon.paintIcon(m_source.getComponent(),buff.getGraphics(), 0, 0);
 				    	}
-				    	
-				    	
+				    					    	
 				    	// select icon display method
 				    	if(DragSource.isDragImageSupported()) {
 				    		de.startDrag(DragSource.DefaultMoveDrop, buff, new Point(0,0), data, this);

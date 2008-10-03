@@ -7,14 +7,14 @@ import java.util.EnumSet;
 
 import org.redcross.sar.ds.DiskoDecisionSupport;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
-import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.NumericAttribute;
 import org.redcross.sar.gui.mso.dialog.TrackDialog;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -31,7 +31,7 @@ public class EstimateDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;	
 
-	private AttributesPanel contentPanel = null;
+	private FieldsPanel contentPanel = null;
 	private NumericAttribute attrEta = null;
 	private TrackDialog trackDialog = null;
 	
@@ -81,10 +81,10 @@ public class EstimateDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private AttributesPanel getContentPanel() {
+	private FieldsPanel getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new AttributesPanel("Egenskaper",
+				contentPanel = new FieldsPanel("Egenskaper",
 						"Ingen egenskaper funnet",false,true) {
 					
 					private static final long serialVersionUID = 1L;
@@ -242,7 +242,7 @@ public class EstimateDialog extends DefaultDialog {
 		setChangeable(true);
 		
 		// load from mso
-		getEtaAttribute().load();
+		getEtaAttribute().reset();
 				
 	}
 	

@@ -1,25 +1,25 @@
 package org.redcross.sar.gui.panel;
 
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.IMapTool;
 
 public abstract class AbstractToolPanel extends AbstractPanel implements IToolPanel {
 
 
 	private static final long serialVersionUID = 1L;
 	
-	private IDiskoTool tool = null;		
+	private IMapTool tool = null;		
 	
 	/* ===========================================
 	 * Constructors
 	 * ===========================================
 	 */	
 	
-	public AbstractToolPanel(IDiskoTool tool) {
+	public AbstractToolPanel(IMapTool tool) {
 		// forward
 		this(tool.getCaption(),tool);
 	}
 	
-	public AbstractToolPanel(String caption, IDiskoTool tool) {
+	public AbstractToolPanel(String caption, IMapTool tool) {
 		
 		// forward
 		super(caption);
@@ -34,7 +34,7 @@ public abstract class AbstractToolPanel extends AbstractPanel implements IToolPa
 	 * ===========================================
 	 */	
 	
-	public IDiskoTool getTool() {
+	public IMapTool getTool() {
 		return tool;
 	}
 	

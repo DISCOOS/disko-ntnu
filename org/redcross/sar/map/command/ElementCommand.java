@@ -29,7 +29,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		super();
 		
 		// set tool type
-		type = DiskoCommandType.ELEMENT_COMMAND;		
+		type = MapCommandType.ELEMENT_COMMAND;		
 		
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);

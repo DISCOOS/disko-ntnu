@@ -7,10 +7,10 @@ import java.util.EnumSet;
 
 import javax.swing.BorderFactory;
 
-import org.redcross.sar.gui.attribute.DTGAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.NumPadPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -32,7 +32,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	private boolean m_isTabletMode = true;
 
 	private DefaultPanel m_contentPanel;
-	private AttributesPanel m_attributesPanel;
+	private FieldsPanel m_attributesPanel;
 	private NumPadPanel m_numPadPanel;
 	private DTGAttribute m_createdAttr;
 	private DTGAttribute m_timeAttr;
@@ -75,7 +75,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	 * @param created
 	 */
 	public void setCreated(Calendar created)
-	{
+	{		
 		getCreatedAttr().setValue(created);
 	}
 
@@ -103,9 +103,6 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	 * IEditorIf implementation
 	 * ==========================================================*/
 
-	/**
-	 * Sets the DTG field, get it from the message
-	 */
 	public void setMessage(IMessageIf message)
 	{
 
@@ -114,9 +111,6 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		
 	}
 
-	/**
-	 * Displays a numpad if in tablet mode
-	 */
 	public void showEditor()
 	{
 		
@@ -140,14 +134,9 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		this.setVisible(false);
 	}
 
-	/**
-	 * Reset created and time fields
-	 */
-	public void resetEditor()
+	public void reset()
 	{
-		Calendar time = Calendar.getInstance();
-		setCreated(time);
-		setTime(time);
+		getContentPanel().setMsoObject(null);
 	}
 	
 	/* ==========================================================
@@ -193,35 +182,18 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 					// forward
 					super.setMsoObject(msoObj);
 					
-					// has message?
-					if(msoObj instanceof IMessageIf) {
-						// cast to IMessageIf
-						IMessageIf message = (IMessageIf)msoObj;
-				    	// forward
-						setCreated(message.getCreated());
-						setTime(message.getTimeStamp());
-					}
-					else {
-						resetEditor();
-					}					
+					// consume?
+					if(!isChangeable()) return;
+					
+					// forward
+					load();
 					
 				}
 
 				@Override
 				protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-					setMessage((IMessageIf)msoObj);
+					load();
 				}
-
-				@Override
-				protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
-					resetEditor();
-				}		
-				
-				@Override
-				protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
-					resetEditor();
-				}
-
 				
 			};
 			m_contentPanel.setRequestHideOnCancel(true);
@@ -248,11 +220,11 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		return m_contentPanel;
 	}
 	
-	private AttributesPanel getAttributesPanel()
+	private FieldsPanel getAttributesPanel()
 	{
 		if (m_attributesPanel == null) {
 			// initialize
-			m_attributesPanel = new AttributesPanel("Dato-Tid-Gruppe","Ingen egenskaper definert",false,false);
+			m_attributesPanel = new FieldsPanel("Dato-Tid-Gruppe","Ingen egenskaper definert",false,false);
 			m_attributesPanel.setHeaderVisible(false);
 			m_attributesPanel.setPreferredSize(new Dimension(180,250));
 			m_attributesPanel.setNotScrollBars();			
@@ -260,9 +232,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_attributesPanel.addAttribute(getCreatedAttr());
 			m_attributesPanel.addAttribute(getTimeAttr());
 			// add listeners
-			m_attributesPanel.addDiskoWorkListener(getContentPanel());			
-			// initialize contents
-			resetEditor();			
+			m_attributesPanel.addDiskoWorkListener(getContentPanel());
 		}
 		return m_attributesPanel;
 	}
@@ -291,6 +261,31 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_numPadPanel.addDiskoWorkListener(getContentPanel());
 		}
 		return m_numPadPanel;
+	}
+	
+	private void load() {
+		
+		// disable listeners
+		setChangeable(false);
+		
+		// get message
+		IMessageIf message = (IMessageIf)getContentPanel().getMsoObject();
+		
+		// has message?
+		if(message!=null) {
+	    	// forward
+			setCreated(message.getCreated());
+			setTime(message.getTimeStamp());
+		}
+		else {
+			// initialize
+			Calendar time = Calendar.getInstance();
+			setCreated(time);
+			setTime(time);
+		}					
+		
+		// enable listeners
+		setChangeable(true);				
 	}
 	
 	private void change()

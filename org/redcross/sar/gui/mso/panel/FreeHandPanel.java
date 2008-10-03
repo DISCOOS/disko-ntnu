@@ -11,12 +11,12 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.gui.attribute.CheckBoxAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.CheckBoxAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.FreeHandTool;
@@ -29,7 +29,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	private static final long serialVersionUID = 1L;
 	
 	private JButton snapToButton = null;
-	private AttributesPanel optionsPanel = null;
+	private FieldsPanel optionsPanel = null;
 	private CheckBoxAttribute snapToAttr = null;
 	private TextFieldAttribute minStepAttr = null;
 	private TextFieldAttribute maxStepAttr = null;
@@ -71,11 +71,11 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private AttributesPanel getOptionsPanel() {
+	private FieldsPanel getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
 
-				optionsPanel = new AttributesPanel("Alternativer","",false,false,ButtonSize.SMALL);
+				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
 				optionsPanel.setPreferredBodySize(new Dimension(200, 150));
 				optionsPanel.addAttribute(getSnapToAttr());
 				optionsPanel.addAttribute(getConstraintAttr());

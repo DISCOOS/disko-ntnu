@@ -529,7 +529,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
             }
             if (m_owner != null)
             {
-                ((AbstractMsoObject) m_owner).registerRemovedReference(updateServer);
+                ((AbstractMsoObject) m_owner).registerRemovedReference(this,updateServer);
             }
             return true;
         }
@@ -559,7 +559,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
         if (m_owner != null)
         {
-            ((AbstractMsoObject) m_owner).registerRemovedReference(updateServer);
+            ((AbstractMsoObject) m_owner).registerRemovedReference(this,updateServer);
         }
 
         Collection<String> tmpList = aList.keySet();

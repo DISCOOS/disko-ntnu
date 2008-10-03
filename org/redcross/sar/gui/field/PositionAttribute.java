@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.redcross.sar.gui.attribute;
+package org.redcross.sar.gui.field;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -154,7 +154,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// update text panel
 		getTextField().setText(getCoordinatePanel().getText());
 		// notify change?
-		if(!isConsume()) fireOnWorkChange();
+		if(!isChangeable()) fireOnWorkChange();
 		// success
 		return true;
 	}
@@ -230,11 +230,11 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 					setValue(p);
 				else {
 					// consume
-					setConsume(true);
+					setChangeable(false);
 					// forward
 					setValue(resume);
 					// resume
-					setConsume(false);
+					setChangeable(true);
 				}
 				
 			}

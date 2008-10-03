@@ -1,20 +1,20 @@
-package org.redcross.sar.gui.attribute;
+package org.redcross.sar.gui.field;
 
 import java.awt.event.ActionListener;
 
 import javax.swing.Icon;
 
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 
-public interface IDiskoAttribute { 
+public interface IDiskoField extends IChangeable { 
 
 	public String getName();
 
 	public boolean isDirty();
 	
-	public boolean isConsume();
-	public void setConsume(boolean isConsume);
+	public boolean isChangeable();
+	public void setChangeable(boolean isConsume);
 
 	public boolean getAutoSave();
 	public void setAutoSave(boolean autoSave);	
@@ -55,15 +55,12 @@ public interface IDiskoAttribute {
 	public String getToolTipText();
 	public void setToolTipText(String text);
 	
-	public boolean load();
-	public boolean save();
+	public void reset();
+	public boolean cancel();
+	public boolean finish();
 	
-	public boolean isMsoAttribute();
-	public IAttributeIf<?> getMsoAttribute();
-	public boolean setMsoAttribute(IAttributeIf<?> attribute);
-	
-	public boolean addDiskoWorkListener(IDiskoWorkListener listener);
-	public boolean removeDiskoWorkListener(IDiskoWorkListener listener);
+	public void addDiskoWorkListener(IDiskoWorkListener listener);
+	public void removeDiskoWorkListener(IDiskoWorkListener listener);
 	
 	public boolean addButtonActionListener(ActionListener listener);	
 	public boolean removeButtonActionListener(ActionListener listener);

@@ -101,7 +101,7 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 		setVisible(true);
 		
 		// forward
-		initEditor();
+		load();
 		
 		// set focus on search field
 		getUnitField().requestFocusInWindow();
@@ -119,7 +119,7 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 	}
 
 	
-	public void resetEditor()
+	public void reset()
 	{
 		getContentPanel().setMsoObject(null);
 	}	
@@ -172,13 +172,13 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 					if(!isChangeable()) return;
 					
 					// forward
-					initEditor();
+					load();
 					
 				}
 
 				@Override
 				protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-					initEditor();
+					load();
 				}				
 				
 			};
@@ -412,11 +412,16 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 		return value;
 	}
 	
-	private void initEditor() {
+	private void load() {
+		// suspend
+		setChangeable(false);
+		// forward
 		getListPanel().clearSelection();
 		getNumberPanel().setValue(null);
 		load(true);
 		setCaption();
+		// resume
+		setChangeable(true);		
 		
 	}
 	
@@ -443,7 +448,7 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 	
 	private void change()
 	{
-		// disable change
+		// disable listeners
 		setChangeable(false);
 		
 		// get current message, create new if not exists
@@ -453,7 +458,7 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 		{
 			message.setSender(sender);
 		}
-		// enable change
+		// enable listeners
 		setChangeable(true);
 		
 	}	

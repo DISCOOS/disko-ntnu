@@ -12,11 +12,11 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.EnumSet;
 
-import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.ComboAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
@@ -40,7 +40,7 @@ public class RequirementDialog extends DefaultDialog {
 	private JPanel requirementPanel = null;
 	private BasePanel remarksPanel = null;
 	private JTextArea remarksTextArea = null;
-	private AttributesPanel attribsPanel = null; 
+	private FieldsPanel attribsPanel = null; 
 	private ComboAttribute accuracyCombo;
 	private ComboAttribute priorityCombo;
 	private ComboAttribute personnelCombo;
@@ -207,10 +207,10 @@ public class RequirementDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private AttributesPanel getAttribsPanel() {
+	private FieldsPanel getAttribsPanel() {
 		if (attribsPanel == null) {
 			try {
-				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
+				attribsPanel = new FieldsPanel("Egenskaper","",false,false);
 				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				attribsPanel.setPreferredSize(new Dimension(200,100));

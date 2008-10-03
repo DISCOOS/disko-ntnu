@@ -1695,6 +1695,7 @@ public class MapUtil {
 		
 		// create border element
 		SymbolBorder symbol = new SymbolBorder();
+		symbol.setGap(3);
 		symbol.setLineSymbol(getLineSymbol(style));
 		
 		// finished

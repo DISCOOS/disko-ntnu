@@ -8,12 +8,12 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
-import org.redcross.sar.gui.attribute.DTGAttribute;
-import org.redcross.sar.gui.attribute.EnumAttribute;
-import org.redcross.sar.gui.attribute.IDiskoAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.EnumAttribute;
+import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -29,7 +29,7 @@ public class AssignmentInfoPanel extends JPanel
 	private final static String ASG_PRINT = "AsgPrint";
 	private final static String ASG_CHANGE = "AsgChange";
 
-	private AttributesPanel m_infoPanel;
+	private FieldsPanel m_infoPanel;
 	private BasePanel m_remarksPanel;
 	private TextArea m_remarksArea;
 
@@ -105,9 +105,9 @@ public class AssignmentInfoPanel extends JPanel
 		add(getRemarksPanel());		
 	}
 
-	private AttributesPanel getInfoPanel() {
+	private FieldsPanel getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new AttributesPanel("","Ingen egenskaper",false,false);
+			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
 			m_infoPanel.setColumns(2);
 			m_infoPanel.addAttribute(createEnumAttribute("priority",0));
 			m_infoPanel.addAttribute(createDTGAttribute("eta",1));
@@ -144,23 +144,23 @@ public class AssignmentInfoPanel extends JPanel
 		return m_remarksArea;
 	}
 
-	private IDiskoAttribute createTextFieldAttribute(String name, int index) {
-		IDiskoAttribute attr = new TextFieldAttribute(name,
+	private IDiskoField createTextFieldAttribute(String name, int index) {
+		IDiskoField attr = new TextFieldAttribute(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25,"");
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
-	private IDiskoAttribute createEnumAttribute(String name, int index) {
-		IDiskoAttribute attr = new EnumAttribute(name,
+	private IDiskoField createEnumAttribute(String name, int index) {
+		IDiskoField attr = new EnumAttribute(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25);
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);
 		return attr;
 	}
 
-	private IDiskoAttribute createDTGAttribute(String name, int index) {
-		IDiskoAttribute attr = new DTGAttribute(name,
+	private IDiskoField createDTGAttribute(String name, int index) {
+		IDiskoField attr = new DTGAttribute(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25);
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;

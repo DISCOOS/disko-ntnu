@@ -15,12 +15,12 @@ import java.util.GregorianCalendar;
 import java.util.ResourceBundle;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.attribute.ComboAttribute;
-import org.redcross.sar.gui.attribute.DTGAttribute;
-import org.redcross.sar.gui.attribute.TextAreaAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.field.ComboAttribute;
+import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.TextAreaAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IMessageIf;

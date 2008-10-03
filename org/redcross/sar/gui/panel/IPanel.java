@@ -20,7 +20,7 @@ public interface IPanel extends IChangeable,
 								ActionListener {
 	
 	/* ================================================
-	 * IWork interface
+	 * IChangeable interface
 	 * ================================================ */
 	
 	public boolean isDirty();	
@@ -28,9 +28,6 @@ public interface IPanel extends IChangeable,
 	
 	public boolean isChangeable();
 	public void setChangeable(boolean isChangable);
-	
-	public IMsoObjectIf getMsoObject();
-	public void setMsoObject(IMsoObjectIf msoObj);
 	
 	public void reset();
 	public boolean finish();

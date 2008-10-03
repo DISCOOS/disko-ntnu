@@ -15,13 +15,13 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.gui.DiskoBorder;
-import org.redcross.sar.gui.attribute.NumericAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.NumericAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.CompassPanel;
 import org.redcross.sar.map.IDiskoMap;
@@ -54,7 +54,7 @@ public class UnitStatusPanel extends BasePanel {
 	private CompassPanel m_compassPanel;
 	private NumericAttribute m_bearingAttr;
 	private TextFieldAttribute m_activeAttr;
-	private AttributesPanel m_attribsPanel;
+	private FieldsPanel m_attribsPanel;
 	
 	public UnitStatusPanel(IUnitIf unit) {
 		// forward
@@ -235,11 +235,11 @@ public class UnitStatusPanel extends BasePanel {
         return m_activeAttr;
     }
 	
-	private AttributesPanel getAttribsPanel()
+	private FieldsPanel getAttribsPanel()
     {
         if (m_attribsPanel == null)
         {
-        	m_attribsPanel = new AttributesPanel("","Ingen egenskaper funnet",false,false);
+        	m_attribsPanel = new FieldsPanel("","Ingen egenskaper funnet",false,false);
         	m_attribsPanel.setHeaderVisible(false);
         	m_attribsPanel.setBorderVisible(false);
         	m_attribsPanel.setNotScrollBars();
@@ -314,7 +314,7 @@ public class UnitStatusPanel extends BasePanel {
 		// update attributes
 		getCompassPanel().setBearing((int)getCurrentBearing());
 		getBearingAttr().setValue((int)getCurrentBearing());
-		getAttribsPanel().load();
+		getAttribsPanel().reset();
 		getActiveAttr().setValue(getActiveAssignmentText());
 		
 		// resume changes

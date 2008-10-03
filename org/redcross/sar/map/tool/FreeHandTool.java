@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import javax.swing.SwingUtilities;
 
+import org.redcross.sar.gui.IMsoHolder;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.mso.panel.FreeHandPanel;
@@ -60,7 +61,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		enabled = true;
 				
 		// set tool type
-		type = DiskoToolType.FREEHAND_TOOL;
+		type = MapToolType.FREEHAND_TOOL;
 		
 		// show draw frame when appropriate
 		isShowDrawFrame = true;
@@ -155,7 +156,7 @@ public class FreeHandTool extends AbstractDrawTool {
 		// forward
 		super.setMsoData(msoOwner, msoObject, msoClassCode);
 		// select mso object
-		getToolPanel().setMsoObject((msoOwner!=null ? msoOwner : msoObject));
+		((IMsoHolder)getToolPanel()).setMsoObject((msoOwner!=null ? msoOwner : msoObject));
 	}
 
 	@Override

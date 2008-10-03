@@ -21,7 +21,7 @@ import javax.swing.border.Border;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.map.tool.IDiskoTool;
+import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 
@@ -42,12 +42,12 @@ public class BaseToolPanel extends AbstractToolPanel {
 	 * ===========================================
 	 */	
 	
-	public BaseToolPanel(IDiskoTool tool) {
+	public BaseToolPanel(IMapTool tool) {
 		// forward
 		this(tool.getCaption(),tool);
 	}
 	
-	public BaseToolPanel(String caption, IDiskoTool tool) {
+	public BaseToolPanel(String caption, IMapTool tool) {
 		
 		// forward
 		super(caption,tool);
@@ -455,7 +455,7 @@ public class BaseToolPanel extends AbstractToolPanel {
 	 * ===========================================
 	 */
 
-	public IDiskoTool getTool() {
+	public IMapTool getTool() {
 		return super.getTool();
 	}
 	

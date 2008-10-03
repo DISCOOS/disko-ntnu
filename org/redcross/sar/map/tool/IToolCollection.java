@@ -3,9 +3,7 @@ package org.redcross.sar.map.tool;
 import java.io.IOException;
 
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 
 public interface IToolCollection {
 	
@@ -14,33 +12,29 @@ public interface IToolCollection {
 	
 	public void setup();
 	
-	public IDiskoTool getTool(DiskoToolType type);
-	public boolean containsToolType(DiskoToolType type);	
+	public IMapTool getTool(MapToolType type);
+	public boolean containsToolType(MapToolType type);	
 	
-	public void register(IDiskoTool tool);
+	public void register(IMapTool tool);
 	public void register(IDiskoMap map) throws IOException;	
 	
-	public IDiskoTool getSelectedTool();	
-	public void setSelectedTool(IDiskoTool tool, boolean activate);
+	public IMapTool getSelectedTool();	
+	public void setSelectedTool(IMapTool tool, boolean activate);
 
-	public boolean getEnabled(DiskoToolType type);
-	public void setEnabled(DiskoToolType type, boolean isEnabled);
+	public boolean getEnabled(MapToolType type);
+	public void setEnabled(MapToolType type, boolean isEnabled);
 	
-	public boolean getVisible(DiskoToolType type);
-	public void setVisible(DiskoToolType type, boolean isVisible);
-	
-	
-	public void setMsoDrawData(IDiskoTool tool);	
-	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode);
-	
-	public Object getAttribute(DiskoToolType type, String attribute);	
+	public boolean getVisible(MapToolType type);
+	public void setVisible(MapToolType type, boolean isVisible);
+		
+	public Object getAttribute(MapToolType type, String attribute);	
 	public void setAttribute(Object value, String attribute);	
-	public void setAttribute(DiskoToolType type, Object value, String attribute);
+	public void setAttribute(MapToolType type, Object value, String attribute);
 	
 	public void setBatchUpdate(boolean isBatchUpdate);
 
 	public void enableTools(boolean isEnabled);	
-	public void enableToolType(DiskoToolType type);
+	public void enableToolType(MapToolType type);
 	
 	public void getToolCaption();
 	

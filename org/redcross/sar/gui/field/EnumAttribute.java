@@ -1,4 +1,4 @@
-package org.redcross.sar.gui.attribute;
+package org.redcross.sar.gui.field;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -147,7 +147,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 			// update
 			getTextField().setText(text);
 			// notify change?
-			if(!isConsume()) fireOnWorkChange();
+			if(isChangeable()) fireOnWorkChange();
 			// finished
 			return true;
 		}
@@ -255,11 +255,11 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 				}
 				else {
 					// consume
-					setConsume(true);
+					setChangeable(false);
 					// forward
 					setValue(getValue());
 					// resume
-					setConsume(false);
+					setChangeable(true);
 				}
 			}
 			

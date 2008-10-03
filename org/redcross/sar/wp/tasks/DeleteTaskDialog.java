@@ -1,9 +1,9 @@
 package org.redcross.sar.wp.tasks;
 
-import org.redcross.sar.gui.attribute.TextAreaAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.field.TextAreaAttribute;
+import org.redcross.sar.gui.field.TextFieldAttribute;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;

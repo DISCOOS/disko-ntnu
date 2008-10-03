@@ -338,7 +338,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		for(IEditorIf component : m_editComponents)
 		{
 			component.hideEditor();
-			component.resetEditor();
+			component.reset();
 		}
 		
 		updateMessageGUI();			

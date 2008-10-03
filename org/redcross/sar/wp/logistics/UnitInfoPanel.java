@@ -9,11 +9,11 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 
-import org.redcross.sar.gui.attribute.EnumAttribute;
-import org.redcross.sar.gui.attribute.IDiskoAttribute;
-import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.field.EnumAttribute;
+import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -29,7 +29,7 @@ public class UnitInfoPanel extends JPanel
     private final static String UNIT_PRINT = "UnitPrint";
     private final static String UNIT_CHANGE = "UnitChange";
 
-	private AttributesPanel m_infoPanel;
+	private FieldsPanel m_infoPanel;
 	private BasePanel m_membersPanel;
 	private JList m_membersList;
 
@@ -105,9 +105,9 @@ public class UnitInfoPanel extends JPanel
 		add(getMembersPanel());		
 	}
 
-	private AttributesPanel getInfoPanel() {
+	private FieldsPanel getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new AttributesPanel("","Ingen egenskaper",false,false);
+			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
 			m_infoPanel.setColumns(2);
 			m_infoPanel.addAttribute(createTextFieldAttribute("leader",0));
 			m_infoPanel.addAttribute(createTextFieldAttribute("assignment",1));
@@ -144,17 +144,17 @@ public class UnitInfoPanel extends JPanel
 		return m_membersList;
 	}
 
-	private IDiskoAttribute createTextFieldAttribute(String name, int index) {
-		IDiskoAttribute attr = new TextFieldAttribute(name,
-				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25);
-		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
+	private IDiskoField createTextFieldAttribute(String name, int index) {
+		IDiskoField attr = new TextFieldAttribute(name,
+				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,100,25);
+		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
-	private IDiskoAttribute createEnumAttribute(String name, int index) {
-		IDiskoAttribute attr = new EnumAttribute(name,
-				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25);
-		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
+	private IDiskoField createEnumAttribute(String name, int index) {
+		IDiskoField attr = new EnumAttribute(name,
+				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,100,25);
+		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);
 		return attr;
 	}

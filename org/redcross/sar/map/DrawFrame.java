@@ -82,8 +82,8 @@ public class DrawFrame {
 		
 		// add elements to group element
 		getGroupElement().addElement(getFrameElement());
-		getGroupElement().addElement(getTextBoxElement());
 		getGroupElement().addElement(getTextElement());
+		getGroupElement().addElement(getTextBoxElement());
 		getGroupElement().addElement(addIcon("cancel",DiskoIconFactory.getPath("GENERAL.CANCEL", "24x24", null)));
 		getGroupElement().addElement(addIcon("finish",DiskoIconFactory.getPath("GENERAL.FINISH", "24x24", null)));
 		getGroupElement().addElement(addIcon("replace",DiskoIconFactory.getPath("GENERAL.EQUAL", "24x24", null)));
@@ -186,7 +186,7 @@ public class DrawFrame {
 			// set name
 			textBoxElement.setName("DRAWFRAME.TEXTBOX");
 			// set frame border
-			textBoxElement.setBorder(null);
+			textBoxElement.setBorder(MapUtil.getSymbolBorder());
 			textBoxElement.setBackground(MapUtil.getSymbolBackground(5,1));
 		}
 		return textBoxElement;
@@ -441,11 +441,11 @@ public class DrawFrame {
 		// get symbol background
 		SymbolBackground bg = (SymbolBackground)getTextBoxElement().getBackground();
 		// get vertical spacing
-		double d = display.getDisplayTransformation().fromPoints(bg.getVerticalSpacing());
+		double d = display.getDisplayTransformation().fromPoints(bg.getVerticalSpacing()+1);
 		// get y-offset
-		double y = (b!=null && !b.isEmpty()) ? p.getY()+b.getHeight()/4 + d*0: p.getY();
+		double y = (b!=null && !b.isEmpty()) ? p.getY()+(b.getHeight()-d)/2: p.getY();
 		// get horizontal spacing
-		d = display.getDisplayTransformation().fromPoints(bg.getHorizontalSpacing());
+		d = display.getDisplayTransformation().fromPoints(bg.getHorizontalSpacing()*2-1);
 		// get x-offset
 		double x = (b!=null && !b.isEmpty()) ? p.getX()+b.getWidth()/2 + d: p.getX();
 		// offset this point
@@ -454,9 +454,13 @@ public class DrawFrame {
 		// move text element
 		getTextElement().setGeometry(p);
 		// get text boundery envelope again
-		b = display()!=null ? MapUtil.getElementBounds(display, getTextElement()) : null;
+		b = display!=null ? MapUtil.getElementBounds(display, getTextElement()) : null;
+		// expand
+		//b.expand(10, 10, false);
 		// move text box element
 		getTextBoxElement().setGeometry(b);
+		getTextBoxElement().setBorder(MapUtil.getSymbolBorder());
+		getTextBoxElement().setBackground(MapUtil.getSymbolBackground(2,2));
 		// finished
 		return y;
 	}

@@ -26,7 +26,7 @@ public class ScaleCommand extends AbstractDiskoCommand {
 		super();
 		
 		// set tool type
-		type = DiskoCommandType.SCALE_COMMAND;		
+		type = MapCommandType.SCALE_COMMAND;		
 
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);

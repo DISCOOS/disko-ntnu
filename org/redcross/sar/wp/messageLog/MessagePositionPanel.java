@@ -17,9 +17,9 @@ import javax.swing.SwingConstants;
 
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
-import org.redcross.sar.gui.attribute.DTGAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.AbstractDiskoAttribute;
+import org.redcross.sar.gui.field.DTGAttribute;
 import org.redcross.sar.gui.mso.panel.PositionPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -28,8 +28,8 @@ import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.PositionTool;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
-import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
+import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -283,11 +283,6 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 		return getPositionPanel().finish();
 	}
 	
-	@Override
-	public void reset() {
-		getPositionPanel().reset();
-	}
-	
 	/**
 	 * Apply changes to message line
 	 */
@@ -355,7 +350,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 		
 	}
 
-	public void resetEditor()
+	public void reset()
 	{
 		getPositionPanel().reset();
 	}
@@ -466,7 +461,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 
 	private void setToolVisible(boolean isVisible) {
 		NavBarPanel bar = m_wp.getApplication().getNavBar();
-		List<Enum<?>> types = Utils.getListOf(DiskoToolType.POSITION_TOOL);
+		List<Enum<?>> types = Utils.getListOf(MapToolType.POSITION_TOOL);
 		bar.setVisibleButtons(types, isVisible, true);		
 	}
 	
@@ -486,7 +481,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 				getPositionPanel().reset();				
 				// reset log entry and initialize log time stamp
 				getPositionPanel().setLogEntry(null);
-				getDTGAttr().load();
+				getDTGAttr().reset();
 			}
 			else {
 				// get log time stamp

@@ -112,7 +112,7 @@ public class MessageLinePanel extends JPanel implements IEditorIf
 	/**
 	 *
 	 */
-	public void resetEditor()
+	public void reset()
 	{
 		m_messageTableModel.clearMessageLines();
 	}

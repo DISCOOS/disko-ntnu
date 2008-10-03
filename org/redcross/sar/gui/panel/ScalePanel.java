@@ -20,7 +20,7 @@ import javax.swing.SwingUtilities;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
+import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.beans.map.MapBean;
@@ -179,7 +179,7 @@ public class ScalePanel extends DefaultPanel {
 	private JToggleButton createScaleItemButton() {
 		// add new button
 		JToggleButton item = DiskoButtonFactory.createToggleButton(
-				DiskoCommandType.SCALE_COMMAND, ButtonSize.SMALL);
+				MapCommandType.SCALE_COMMAND, ButtonSize.SMALL);
 		// add action listener
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

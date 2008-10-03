@@ -32,7 +32,7 @@ import java.util.Properties;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
-public abstract class AbstractDiskoCommand extends BaseCommand implements IDiskoCommand {
+public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCommand {
 	
 	// properties
 	protected int helpContextID = 0;
@@ -56,7 +56,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 	protected AbstractButton button = null;
 
 	// types
-	protected DiskoCommandType type = null;
+	protected MapCommandType type = null;
 	
 	// counter
 	private int workCount = 0;
@@ -95,7 +95,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 	/**
 	 * Returns the disko command type
 	 */
-	public DiskoCommandType getType() {
+	public MapCommandType getType() {
 		return type;
 	}
 
@@ -153,7 +153,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IDisko
 		setMsoDrawData(msoOwner,msoObject,msoClassCode);
 	}
 	
-	public void setMsoDrawData(IDiskoCommand command) {
+	public void setMsoDrawData(IMapCommand command) {
 		if(command instanceof AbstractDiskoCommand && command!=this) {
 			AbstractDiskoCommand abstractCommand = (AbstractDiskoCommand)command;
 			setMsoDrawData(abstractCommand.msoOwner,abstractCommand.msoObject,abstractCommand.msoClassCode);

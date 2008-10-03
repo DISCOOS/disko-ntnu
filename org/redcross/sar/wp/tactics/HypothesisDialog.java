@@ -26,14 +26,14 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.EnumSet;
 
-import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.gui.field.ComboAttribute;
 import org.redcross.sar.gui.mso.model.HypothesisListModel;
-import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
@@ -66,7 +66,7 @@ public class HypothesisDialog extends DefaultDialog {
 	private JLabel selectedLabel = null;
 	private BasePanel descriptionPanel = null;
 	private JTextArea descriptionTextArea = null;
-	private AttributesPanel attribsPanel;
+	private FieldsPanel attribsPanel;
 	private ComboAttribute statusCombo;
 	private ComboAttribute priorityCombo;
 	
@@ -480,10 +480,10 @@ public class HypothesisDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private AttributesPanel getAttribsPanel() {
+	private FieldsPanel getAttribsPanel() {
 		if (attribsPanel == null) {
 			try {
-				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
+				attribsPanel = new FieldsPanel("Egenskaper","",false,false);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
 				attribsPanel.setFitBodyOnResize(true);
 				attribsPanel.setNotScrollBars();

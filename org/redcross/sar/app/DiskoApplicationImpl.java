@@ -10,8 +10,8 @@ import org.redcross.sar.gui.panel.SysBarPanel;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
-import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
-import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.map.command.IMapCommand.MapCommandType;
+import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.output.DiskoReportManager;
@@ -1053,8 +1053,8 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 
 	@Override
 	public boolean invoke(Enum<?> cmd, boolean requestFocus) {
-		if(cmd instanceof DiskoCommandType ||
-		   cmd instanceof DiskoToolType) {
+		if(cmd instanceof MapCommandType ||
+		   cmd instanceof MapToolType) {
 			AbstractButton b = getNavBar().getButton(cmd);
 			if(b!=null) {
 				boolean hasFocus = b.hasFocus();

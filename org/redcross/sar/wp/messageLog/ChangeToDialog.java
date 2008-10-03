@@ -331,7 +331,7 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 		setVisible(true);
 		
 		// forward
-		initEditor();
+		load();
 		
 		// set focus on search field
 		getUnitField().requestFocusInWindow();
@@ -348,7 +348,7 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 		getContentPanel().setMsoObject(message);
 	}	
 	
-	public void resetEditor()
+	public void reset()
 	{
 		getContentPanel().setMsoObject(null);
 	}
@@ -420,13 +420,13 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 					if(!isChangeable()) return;
 					
 					// forward
-					initEditor();
+					load();
 
 				}
 
 				@Override
 				protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-					initEditor();
+					load();
 				}
 
 			};
@@ -726,29 +726,11 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
             	addGroupButton(button,type.name());
             	
             }
-            // add a dummy button for deselection
-            //JButton b =new JButton();
-            //b.setVisible(false);
-            //addGroupButton(b, "dummy");
 			
 		}
 		return m_groupPanel;
 	}
 	
-	/*
-	private JLabel getProgressLabel() {
-		if(m_progressLabel==null) {
-			m_progressLabel = new JLabel();
-			m_progressLabel.setBorder(UIFactory.createBorder());
-			m_progressLabel.setBackground(Color.GRAY);
-			m_progressLabel.setForeground(Color.WHITE);
-			m_progressLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			Utils.setFixedSize(m_progressLabel,110,50);
-		}
-		return m_progressLabel;
-	}
-	*/
-
 	private void addGroupButton(AbstractButton b, String command) {
 		
     	// add to panel
@@ -1126,7 +1108,7 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 	{
 		if(m_isBroadcastMode) 
 		{
-			return m_selection.size()>0;
+			return getReceivers().size()>0;
 		}	
 		else 
 		{
@@ -1179,11 +1161,16 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 		return value;
 	}
 	
-	private void initEditor() {
+	private void load() {
+		// suspend
+		setChangeable(false);
+		// update
 		getListPanel().clearSelection();
 		getNumberPanel().setValue(null);
 		load(true);
 		setCaption();		
+		// resume
+		setChangeable(true);
 	}
 	
 	private void load(boolean fromMSO) 
