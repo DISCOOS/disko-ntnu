@@ -8,10 +8,9 @@ import java.util.ArrayList;
 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.panel.FreeHandPanel;
+import org.redcross.sar.gui.mso.panel.FreeHandPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -19,6 +18,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;

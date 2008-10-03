@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -14,7 +15,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -23,6 +23,7 @@ import org.redcross.sar.gui.panel.IPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 
 public class DefaultDialog extends JDialog implements IDialog {
 
@@ -70,11 +71,10 @@ public class DefaultDialog extends JDialog implements IDialog {
 	 *  Constructors
 	 * ========================================================== */
 	
-	/**
-	 * Constructor 
-	 * 
-	 * @param owner
-	 */
+	public DefaultDialog() {
+		this(Utils.getApp().getFrame());
+	}
+	
 	public DefaultDialog(Frame owner) {
 		// forward
 		super(owner);
@@ -111,6 +111,10 @@ public class DefaultDialog extends JDialog implements IDialog {
 		        
 		// initialize ui
 		initialize();
+		
+		// set default location
+		setLocationRelativeTo(owner,POS_CENTER,false,true);
+		
 	}
 	
 	/* ==========================================================
@@ -276,7 +280,39 @@ public class DefaultDialog extends JDialog implements IDialog {
 			m_worker.start(isVisible,millisToShow);
 		}
 	}
-	
+			
+	@Override
+	public void setLocationByPlatform(boolean locationByPlatform) {
+		// reset
+		snapToBuddy = null;
+		// forward
+		super.setLocationByPlatform(locationByPlatform);
+	}
+
+	@Override
+	public void setLocation(int x, int y) {
+		// reset
+		snapToBuddy = null;
+		// forward
+		super.setLocation(x, y);
+	}
+
+	@Override
+	public void setLocation(Point p) {
+		// reset
+		snapToBuddy = null;
+		// forward
+		super.setLocation(p);
+	}
+
+	@Override
+	public void setLocationRelativeTo(Component c) {
+		// reset
+		snapToBuddy = null;
+		// forward
+		super.setLocationRelativeTo(c);
+	}
+
 	public void setLocationRelativeTo(Component buddy, int policy, boolean sizeToFit, boolean snapToInside) {
 		
 		// unregister?
@@ -392,7 +428,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	}
 
 	public boolean requestResize(int w, int h) {
-		if(isResizable()) {
+		if(isResizable() && !sizeToFit) {
 			setSize(w, h);
 			snapTo();
 			return true;

@@ -2,13 +2,11 @@ package org.redcross.sar.gui.model;
 
 import java.util.List;
 
-import javax.swing.table.AbstractTableModel;
-
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.modeldriver.IModelDriverListenerIf;
+import org.redcross.sar.util.Utils;
 
-public class OperationTableModel extends AbstractTableModel implements IModelDriverListenerIf {
+public class OperationTableModel extends DiskoTableModel implements IModelDriverListenerIf {
 
 	private static final long serialVersionUID = 1L;
 
@@ -16,6 +14,8 @@ public class OperationTableModel extends AbstractTableModel implements IModelDri
 	private IModelDriverIf modelDriver = null;
 	
 	public OperationTableModel() {
+		// forward
+		super();
 		// prepare
 		modelDriver = Utils.getApp().getMsoModel().getModelDriver();
 		// add to listeners

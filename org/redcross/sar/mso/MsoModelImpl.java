@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.modeldriver.ModelDriver;
 import org.redcross.sar.modeldriver.SarModelDriver;
@@ -24,7 +23,8 @@ import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
-import org.redcross.sar.util.GlobalProps;
+import org.redcross.sar.util.AppProps;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
 
 /**
@@ -68,7 +68,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         m_commitManager = new CommitManager(this);
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
-        m_modelDriver = GlobalProps.getText("integrate.sara").equalsIgnoreCase("true") ?
+        m_modelDriver = AppProps.getText("integrate.sara").equalsIgnoreCase("true") ?
                 new SarModelDriver() : new ModelDriver();
     }
 

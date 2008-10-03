@@ -290,7 +290,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         if (valueChanged && !isCreating)
         {
         	incrementChangeCount();
-            m_owner.registerModifiedData();
+            m_owner.registerModifiedData(this);
         }
     }
 
@@ -382,7 +382,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             }
             m_state = aState;
         	incrementChangeCount();
-            m_owner.registerModifiedData();
+            m_owner.registerModifiedData(this);
             return true;
         }
         return false;
@@ -679,25 +679,15 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             super(Calendar.class, theOwner, theName, theCardinality, theIndexNo, aCalendar);
         }
 
-        public void setDTG(String aDTG) throws IllegalMsoArgumentException
+        public void setValue(int year, int day, String aDTG) throws IllegalMsoArgumentException
         {
-            setValue(aDTG);
-        }
-
-        public void setDTG(Number aDTG) throws IllegalMsoArgumentException
-        {
-            setValue(aDTG);
-        }
-
-        public void setValue(String aDTG) throws IllegalMsoArgumentException
-        {
-            Calendar cal = DTG.DTGToCal(aDTG);
+            Calendar cal = DTG.DTGToCal(year,day,aDTG);
             setAttrValue(cal);
         }
 
-        public void setValue(Number aDTG) throws IllegalMsoArgumentException
+        public void setValue(int year, int day, Number aDTG) throws IllegalMsoArgumentException
         {
-            Calendar cal = DTG.DTGToCal(aDTG.longValue());
+            Calendar cal = DTG.DTGToCal(year,day,aDTG.longValue());
             setAttrValue(cal);
         }
 

@@ -10,7 +10,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.map.DiskoMap;
@@ -25,6 +24,7 @@ import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
@@ -33,6 +33,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IOperationAreaIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIListIf;
+import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ISearchIf;
@@ -41,6 +42,8 @@ import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
+import org.redcross.sar.mso.data.IUnitIf.UnitType;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -52,6 +55,7 @@ import org.redcross.sar.util.mso.Track;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
+import com.esri.arcgis.geometry.IUnit;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
@@ -240,6 +244,9 @@ public class MsoUtils {
 				// cast
 				e = ((AbstractUnit)msoObj).getSubType();
 			}
+		}
+		else if(msoObj instanceof ICmdPostIf) {
+			e = UnitType.CP;
 		}
 		else if(msoObj instanceof IPOIIf) {
 			e =((IPOIIf)msoObj).getType();
@@ -539,6 +546,20 @@ public class MsoUtils {
 		return name;
 	}
 	
+	public static String getCommunicatorName(ICommunicatorIf c, boolean include) {
+		String name = "<Unknown>";
+		if(c instanceof IUnitIf) {
+			name = getUnitName((IUnitIf)c, false);
+		}
+		else if(c instanceof ICmdPostIf) {
+			name = DiskoEnumFactory.getText(c.getMsoClassCode());
+		}
+		else {
+			name = c.getCommunicatorShortName();
+		}
+		return name + (include ? " (" + c.getToneID() + ")": "");
+	}
+	
 	public static String getUnitStatusText(IUnitIf unit) {
 		String name = "<Unknown>";
 		if(unit!=null) {
@@ -547,6 +568,25 @@ public class MsoUtils {
 		return name;
 	}
 	
+	public static String getPersonnelName(IPersonnelIf personnel, boolean include) {
+		String name = "<Unknown>";
+		if(personnel!=null) {
+			name = personnel.getFirstName() + " " + personnel.getLastName();
+			// include status text?
+			if(include)
+				name += " (" + (DiskoEnumFactory.getText(personnel.getStatus())) + ")";			
+		}
+		return name;
+	}
+
+	public static String getPersonnelStatusText(IPersonnelIf personnel) {
+		String name = "<Unknown>";
+		if(personnel!=null) {
+			name = DiskoEnumFactory.getText(personnel.getStatus());
+		}
+		return name;
+	}	
+
 	public static String getOperationAreaName(IOperationAreaIf area, boolean include) {
 		String name = "<Unknown>";
 		// can get command post?
@@ -646,14 +686,16 @@ public class MsoUtils {
 		
 		if(poi!=null) {
 
-			name = DiskoEnumFactory.getText(poi.getType()); 			
-			String remark = poi.getRemarks();
-			// replace with comment?
-			if (remark != null) {
-				if(replace && remark.length() > 0) {
-					return remark;
-				}
-			}
+			// get user supplied name
+			name = poi.getName();
+			boolean hasName = !(name==null || name.isEmpty());
+			
+			// get MSO name
+			String msoName = DiskoEnumFactory.getText(poi.getType());
+			
+			// select name
+			name = (hasName ? name : msoName);
+			
 			// include sequence number?
 			if(include) {			
 				IPOIIf.POIType type = poi.getType();
@@ -664,19 +706,27 @@ public class MsoUtils {
 						type == POIType.SILENT_WITNESS || 
 						type == POIType.OBSERVATION || 
 						type == POIType.VIA);
-				if (isNumberedPoi)
-					name += " " + (poi.getAreaSequenceNumber()+1);
+				if (isNumberedPoi) {
+					int number = poi.getAreaSequenceNumber()+1;
+					name += " " + (hasName ? "(" + msoName + " " + number + ")" : number);
+				}
+				else {
+					name += " " + (hasName ? "(" + msoName + ")" : "");					
+				}
 			}			
 		}
 		return name;
 	}
 	
-	public static String getCompleteMsoObjectName(IMsoObjectIf msoObj, int options) {
+	public static String getCompleteMsoObjectName(IMsoObjectIf msoObj, int options) {		
 		// try to get area of object
 		IAreaIf area = MsoUtils.getOwningArea(msoObj);
 		if(area!=null && area.getOwningAssignment()!=null) {
 			String name = MsoUtils.getAssignmentName(area.getOwningAssignment(), options);
-			return name += " - " + MsoUtils.getMsoObjectName(msoObj,options);
+			if(msoObj!=area)
+				return name += " - " + MsoUtils.getMsoObjectName(msoObj,options);
+			else 
+				return name;
 		}
 		return MsoUtils.getMsoObjectName(msoObj,options);		
 	}
@@ -719,6 +769,12 @@ public class MsoUtils {
 				return getTrackName((ITrackIf)msoObj, false);
 			else
 				return getTrackName((ITrackIf)msoObj, true);			
+		}
+		else if(msoObj instanceof IPersonnelIf) {
+			if(options==0)
+				return getPersonnelName((IPersonnelIf)msoObj, false);
+			else
+				return getPersonnelName((IPersonnelIf)msoObj, true);			
 		}
 		else if(msoObj!=null)
 			return DiskoEnumFactory.getText(msoObj.getMsoClassCode());
@@ -927,6 +983,37 @@ public class MsoUtils {
 		return p;
 	}
 	
+	public static Position getStopPosition(IAssignmentIf assignment) {
+		
+		// initialize
+		Position p = null;
+		
+		// get assignment type
+		Enum<?> type = assignment.getType();
+		
+		if(AssignmentType.SEARCH.equals(type)) {
+			// get sub type
+			type = getType(assignment,true);
+			// get start poi
+			IAreaIf area = assignment.getPlannedArea();
+			if(area!=null) {
+				IPOIIf poi = getPOI(area,POIType.STOP);
+				if(poi!=null) p = poi.getPosition();
+				// get last position in geodata list?
+				if(p==null) {
+					IMsoObjectIf data = area.getGeodataAt(0);
+					if(data instanceof IRouteIf) {
+						IRouteIf route = (IRouteIf)data;
+						List<GeoPos> geoPos = new ArrayList<GeoPos>(route.getGeodata().getItems());
+						if(geoPos.size()>0)
+							p = new Position("",geoPos.get(geoPos.size()-1).getPosition());
+					}
+				}
+			}
+			
+		}
+		return p;
+	}	
 	public static Object getAttribValue(IAttributeIf<?> attribute) {
 		// dispatch attribute type
 		if (attribute instanceof AttributeImpl.MsoBoolean) {

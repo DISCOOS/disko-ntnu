@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.redcross.sar.gui.dialog.DrawDialog;
-import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
+import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IDiskoLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -17,7 +17,7 @@ import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
-import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.util.mso.GeoPos;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.ILayer;
@@ -82,7 +82,7 @@ public interface IDiskoMap {
 	
 	public void flashSelected();
 	public void flashPoint(IPoint p);
-	public void flashPosition(Position p);
+	public void flashPosition(GeoPos p);
 	public void flashEnvelope(IEnvelope extent);
 	public void flashPolygon(IPolygon p);
 	public void flashPolyline(IPolyline p);
@@ -90,13 +90,13 @@ public interface IDiskoMap {
 	public void flashMsoObject(IMsoObjectIf msoObject);
 	
 	public void centerAt(IPoint p) throws IOException, AutomationException;
-	public void centerAtPosition(Position p) throws IOException, AutomationException;
+	public void centerAtPosition(GeoPos p) throws IOException, AutomationException;
 	public void centerAtSelected () throws IOException, AutomationException;
 	public void centerAtFeature(IFeature feature) throws IOException, AutomationException;
 	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
 	
 	public void zoomTo(IGeometry geom,double ratio) throws IOException, AutomationException;
-	public void zoomToPosition(Position p,double ratio) throws IOException, AutomationException;
+	public void zoomToPosition(GeoPos p,double ratio) throws IOException, AutomationException;
 	public void zoomToSelected () throws IOException, AutomationException;
 	public void zoomToSelected (double ratio) throws IOException, AutomationException;
 	public void zoomToFeature(IFeature feature) throws IOException, AutomationException;

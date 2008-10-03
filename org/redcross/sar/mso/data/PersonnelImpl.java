@@ -320,11 +320,15 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_type;
     }
 
-    public String getTypeText()
+    public String getTypeName()
+    {
+        return m_type.getName();
+    }
+    
+    public String getInternationalTypeName()
     {
         return m_type.getInternationalName();
     }
-
 
     public void setImportStatus(PersonnelImportStatus status)
     {
@@ -381,5 +385,11 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
     }
+    
+	public String getDefaultName()
+	{
+		return (getFirstName() + " " + getLastName());
+	}
+    
 
 }

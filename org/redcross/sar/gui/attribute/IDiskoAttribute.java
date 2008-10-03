@@ -19,8 +19,8 @@ public interface IDiskoAttribute {
 	public boolean getAutoSave();
 	public void setAutoSave(boolean autoSave);	
 	
-	public String getCaption();	
-	public void setCaption(String text);
+	public String getCaptionText();	
+	public void setCaptionText(String text);
 	
 	public int getFixedCaptionWidth();
 	public void setFixedCaptionWidth(int width);
@@ -51,6 +51,9 @@ public interface IDiskoAttribute {
 	
 	public String getButtonCommand();
 	public void setButtonCommand(String name);
+	
+	public String getToolTipText();
+	public void setToolTipText(String text);
 	
 	public boolean load();
 	public boolean save();

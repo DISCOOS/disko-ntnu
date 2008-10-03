@@ -2,6 +2,7 @@ package org.redcross.sar.util.mso;
 
 import java.awt.geom.Point2D;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 import org.redcross.sar.map.MapUtil;
@@ -109,6 +110,36 @@ public class Route extends AbstractGeodata
     }
     
     /**
+     * Finds the index of the GeoPos nearest in distance to passed GeoPos. Time is not considered. 
+     * 
+     * @param aGeoPos - the position to match
+     * @param max - the maximum distance allowed from track.  Pass <code>-1</code> if no limit
+     * 
+     * @return The index of nearest position. If no position is located closer than 
+     * <code>max</code> from <code>aGeoPos</code>, <code>-1</code> will be returned.
+     */
+    public int nearest(GeoPos aGeoPos, double max) {
+    	int index = -1;
+    	double min = Double.MAX_VALUE;
+    	//System.out.println("find::start");
+    	for(int i=0;i<m_route.size();i++) {
+    		// get distance
+    		double d = m_route.get(i).distance(aGeoPos);
+    		// limit?
+    		if(max==-1 || max>d) {
+    			// is nearer than last found?
+    			if(d<min) {
+    				index = i;
+    				min = d;
+    			}
+    		}
+    	}
+    	//System.out.println("nearest::stop(-1)");
+    	// finished
+    	return index;
+    }    
+    
+    /**
      * Get position from index
      * 
      * @param index
@@ -139,7 +170,7 @@ public class Route extends AbstractGeodata
      * 
      * @return number of GeoPos
      */
-    public int getCount() {
+    public int size() {
     	return m_route.size();
     }
     
@@ -197,6 +228,12 @@ public class Route extends AbstractGeodata
     
     public void removeAll(Route r) {
     	m_route.removeAll(r.m_route);
+    	incrementChangeCount();
+    }
+    
+    public void removeRange(int from, int to) {
+    	List<GeoPos> range = m_route.subList(from, to);
+    	m_route.removeAll(range);
     	incrementChangeCount();
     }
     

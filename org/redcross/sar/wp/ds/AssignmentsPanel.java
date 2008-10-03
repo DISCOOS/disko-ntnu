@@ -1,27 +1,35 @@
 package org.redcross.sar.wp.ds;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.model.DsObjectTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class AssignmentsPanel extends BasePanel {
 
 	private static final long serialVersionUID = 1L;
 	
+	private boolean m_archived;
+	
+	private IDiskoMap m_map;
 	private AssignmentTable m_table;
 	
-	public AssignmentsPanel() {
+	public AssignmentsPanel(IDiskoMap map, boolean archived) {
 		
 		// forward
 		super();
+		
+		// prepare
+		m_map = map;
+		m_archived = archived;
 		
 		// initialize gui
 		initialize();
@@ -31,28 +39,29 @@ public class AssignmentsPanel extends BasePanel {
 	private void initialize() {
 		// prepare base panel
 		setHeaderVisible(false);
-		setPreferredSize(new Dimension(300,100));
-		setScrollBarPolicies(
-				BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED, 
-				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+		Dimension d = new Dimension(getTable().getMinimumColumnTotalWidth(),100);
+		setPreferredSize(d);
+		setMinimumSize(d);
 		// set body component
 		setBodyComponent(getTable());
 	}
 
 	private AssignmentTable getTable() {
 		if(m_table==null) {
-			m_table = new AssignmentTable(null);
+			m_table = new AssignmentTable(null,m_map,m_archived);
+			int width = m_table.getMinimumColumnTotalWidth();
+			m_table.setMinimumSize(new Dimension(width,35));
 			m_table.addMouseListener(new DiskoMouseAdapter() {
 
 				@Override
 				public void mouseDownExpired(MouseEvent e) {
-					centerAtAssignment(getSelected());
+					centerAtAssignment(getSelected(e.getPoint()));
 				}
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if(e.getClickCount()==2) {
-						centerAtAssignment(getSelected());
+					if(e.getClickCount()>1) {
+						centerAtAssignment(getSelected(e.getPoint()));
 					}
 				}
 
@@ -61,9 +70,9 @@ public class AssignmentsPanel extends BasePanel {
 		return m_table;
 	}	
 	
-	private IAssignmentIf getSelected() {
+	private IAssignmentIf getSelected(Point p) {
 		IAssignmentIf assignment = null;
-		int row = getTable().getSelectedRow();
+		int row = getTable().rowAtPoint(p);
 		if(row>-1) {
 			assignment = (IAssignmentIf)((DsObjectTableModel<?>)
 					getTable().getModel()).getDsObject(row).getId();
@@ -79,12 +88,8 @@ public class AssignmentsPanel extends BasePanel {
 			try {
 				// center at position?
 				if(assignment!=null) {
-					map.suspendNotify();
-					map.clearSelected();
-					map.setSelected(assignment, true);
-					map.centerAtSelected();
-					map.flashSelected();
-					map.resumeNotify();
+					map.centerAtMsoObject(assignment);
+					map.flashMsoObject(assignment);
 				}
 				else
 					Utils.showWarning("Ingen oppdrag funnet");

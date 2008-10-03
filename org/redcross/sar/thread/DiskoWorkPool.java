@@ -91,7 +91,7 @@ public class DiskoWorkPool {
   		// create id
   		long id = createID();   		
   		// allocate id
-  		work.setID(id);
+  		work.setWorkID(id);
   		// execute on new thread?
   		if(WorkOnThreadType.WORK_ON_NEW.equals(work.getWorkOnThread())) {
   			// run work on a new swing worker new thread that is not 
@@ -153,7 +153,7 @@ public class DiskoWorkPool {
 		synchronized(m_workers) {
 			for(DiskoWorker it : m_workers.values()) { 
 				IDiskoWork<?> work = it.getWork();
-				if(id == work.getID())
+				if(id == work.getWorkID())
 					return work;
 			}
 		}

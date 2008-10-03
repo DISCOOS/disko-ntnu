@@ -114,6 +114,10 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         {
             if (clearAll || listener.hasInterestIn(aSource,mode))
             {
+            	
+            	//if(listener instanceof PositionPanel)
+            	//	System.out.println("PositionPanel");
+            	
                 try
                 {
                     listener.handleMsoUpdateEvent(event);

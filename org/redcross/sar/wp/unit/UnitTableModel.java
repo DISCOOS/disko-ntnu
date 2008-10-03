@@ -12,14 +12,14 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UnitTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 

@@ -10,7 +10,6 @@ import java.io.IOException;
 import javax.swing.AbstractButton;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
@@ -19,6 +18,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.interop.AutomationException;

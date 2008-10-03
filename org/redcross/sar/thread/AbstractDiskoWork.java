@@ -10,9 +10,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
@@ -95,17 +95,17 @@ public abstract class AbstractDiskoWork<S> implements IDiskoWork<S> {
 	}
 	
 	/**
-	 * Unique work id assigned by DiskoWorkPool 
+	 * Unique work id Allocated by DiskoWorkPool 
 	 */
-	public long getID() {
+	public long getWorkID() {
 		// TODO Auto-generated method stub
 		return m_id;
 	}
 
 	/**
-	 * Unique work id assigned by DiskoWorkPool 
+	 * Unique work id Allocated by DiskoWorkPool 
 	 */
-	public void setID(long id) {
+	public void setWorkID(long id) {
 		if(m_id==0) m_id = id;		
 	}
 	

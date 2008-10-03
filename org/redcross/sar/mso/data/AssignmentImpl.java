@@ -3,8 +3,8 @@ package org.redcross.sar.mso.data;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
-import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoCastException;
@@ -22,8 +22,6 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
     private final AttributeImpl.MsoInteger m_prioritySequence = new AttributeImpl.MsoInteger(this, "PrioritySequence");
     private final AttributeImpl.MsoCalendar m_timeEstimatedFinished = new AttributeImpl.MsoCalendar(this, "TimeEstimatedFinished");
-//    private final AttributeImpl.MsoCalendar m_timeAssigned = new AttributeImpl.MsoCalendar(this, "TimeAssigned");
-//    private final AttributeImpl.MsoCalendar m_timeStarted = new AttributeImpl.MsoCalendar(this, "TimeStarted");
 
 
     private final AttributeImpl.MsoEnum<AssignmentPriority> m_priority = new AttributeImpl.MsoEnum<AssignmentPriority>(this, "Priority", 1, AssignmentPriority.NORMAL);
@@ -38,6 +36,16 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     private final MsoReferenceImpl<IBriefingIf> m_assignmentBriefing = new MsoReferenceImpl<IBriefingIf>(this, "AssignmentBriefing", 0, true);
     private final MsoReferenceImpl<IAreaIf> m_plannedArea = new MsoReferenceImpl<IAreaIf>(this, "PlannedArea", 0, true);
     private final MsoReferenceImpl<IAreaIf> m_reportedArea = new MsoReferenceImpl<IAreaIf>(this, "ReportedArea", 0, true);
+
+    private final static TypeMessageLineSelector messageLineTypeSelector = new TypeMessageLineSelector();
+    
+    private final static SelfSelector<IAssignmentIf, IUnitIf> owningUnitSelector = new SelfSelector<IAssignmentIf, IUnitIf>()
+    {
+        public boolean select(IUnitIf anObject)
+        {
+            return (anObject.getUnitAssignments().exists(m_object));
+        }
+    };
 
     public static String getText(String aKey)
     {
@@ -55,9 +63,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     {
         addAttribute(m_remarks);
         addAttribute(m_prioritySequence);
-//        addAttribute(m_timeAssigned);
         addAttribute(m_timeEstimatedFinished);
-//        addAttribute(m_timeStarted);
         addAttribute(m_number);
         addAttribute(m_status);
         addAttribute(m_priority);
@@ -73,7 +79,6 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     protected void defineReferences()
     {
         addReference(m_assignmentBriefing);
-//        addReference(m_assignmentHypothesis);
         addReference(m_plannedArea);
         addReference(m_reportedArea);
     }
@@ -116,7 +121,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
      * Resets correct subclass in case of incorrect changes by application or others.
      * Renumber duplicate numbers
      */
-    public void registerModifiedData()
+    public void registerModifiedData(Object source)
     {
         if (getType() != getTypeBySubclass())
         {
@@ -124,13 +129,13 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
         if (getPlannedArea() != null)
         {
-            ((AreaImpl) getPlannedArea()).registerModifiedData();
+            ((AreaImpl) getPlannedArea()).registerModifiedData(getPlannedArea());
         }
         if (getReportedArea() != null)
         {
-            ((AreaImpl) getReportedArea()).registerModifiedData();
+            ((AreaImpl) getReportedArea()).registerModifiedData(getReportedArea());
         }
-        super.registerModifiedData();
+        super.registerModifiedData(this);
     }
 
     public static AssignmentImpl implementationOf(IAssignmentIf anInterface) throws MsoCastException
@@ -141,7 +146,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
         catch (ClassCastException e)
         {
-            throw new MsoCastException("Illegal cast to CmdPostImpl");
+            throw new MsoCastException("Illegal cast to AssignmentImpl");
         }
     }
 
@@ -156,72 +161,27 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     }
 
     /*-------------------------------------------------------------------------------------------
-    * Methods for ENUM attributes
-    *-------------------------------------------------------------------------------------------*/
-
+     * Methods for IEnumStatusHolder<IAssignmentIf>
+     *-------------------------------------------------------------------------------------------*/
+    
     public void setStatus(AssignmentStatus aStatus) throws IllegalOperationException
     {
-        setStatusAndOwner(aStatus, getOwningUnit());
-    }
-
-    public void setStatusAndOwner(AssignmentStatus aStatus, IUnitIf aUnit) throws IllegalOperationException
-    {
-        if (AssignmentTransferUtilities.assignmentCanChangeToStatus(this, aStatus, aUnit)!=0)
-        {
-            throw new IllegalOperationException("Cannont change status from " + getStatus() + " to " + aStatus);
-        }
-        changeStatusAndOwner(aUnit, aStatus);
+        setOwningUnit(aStatus, getOwningUnit());
     }
 
     public void setStatus(String aStatus) throws IllegalOperationException
-    {
-        setStatusAndOwner(aStatus, getOwningUnit());
-    }
-
-    public void setStatusAndOwner(String aStatus, IUnitIf aUnit) throws IllegalOperationException
     {
         AssignmentStatus status = getStatusAttribute().enumValue(aStatus);
         if (status == null)
         {
             return;
         }
-        setStatusAndOwner(status, aUnit);
+        setOwningUnit(status, getOwningUnit());
     }
 
-    private void changeStatusAndOwner(IUnitIf aUnit, AssignmentStatus aStatus)
-    {
-        IUnitIf owningUnit = getOwningUnit();
-        AssignmentStatus oldStatus = getStatus();
-        boolean changeOwner = aUnit != owningUnit;
-        if (changeOwner && owningUnit != null)
-        {
-            owningUnit.removeUnitReference(this);
-        }
-        m_status.setValue(aStatus);
-
-        if (aStatus == AssignmentStatus.QUEUED)
-        {
-            setPrioritySequence(Integer.MAX_VALUE);
-        }
-
-        if (aUnit != null)
-        {
-            // todo 21.08.07 Change unit status, use method in AssignmentTransferUtilities
-            if (changeOwner)
-            {
-                aUnit.addUnitReference(this);
-                // set position of unit automatically?
-                if(AssignmentStatus.EXECUTING.equals(aStatus)) {
-            		aUnit.setPosition(MsoUtils.getStartPosition(this));
-                }
-                
-            } else // prioritySequence can have been changed even if status is unchanged.
-            {
-                aUnit.rearrangeAsgPrioritiesAfterStatusChange(this, oldStatus);
-            }
-        }
-
-    }
+    /*-------------------------------------------------------------------------------------------
+    * Methods for ENUM attributes
+    *-------------------------------------------------------------------------------------------*/
 
     public AssignmentStatus getStatus()
     {
@@ -299,14 +259,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_type;
     }
 
-    public String getTypeText()
+    public String getInternationalTypeName()
     {
         return m_type.getInternationalName();
-    }
-
-    public String getTypeAndNumber()
-    {
-        return getTypeText() + " " + getNumber();
     }
 
     /*-------------------------------------------------------------------------------------------
@@ -374,56 +329,6 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_number;
     }
 
-//    public void setTimeAssigned(Calendar aTimeAssigned)
-//    {
-//        m_timeAssigned.setValue(aTimeAssigned);
-//    }
-
-    public Calendar getTimeAssigned()
-    {
-        return getMessageLineTime(IMessageLineIf.MessageLineType.ASSIGNED);
-    }
-
-    private Calendar getMessageLineTime(IMessageLineIf.MessageLineType aLineType)
-    {
-        IMessageLineIf line = getLatestStatusChangeMessageLine(aLineType);
-        if (line != null)
-        {
-            return line.getOperationTime();
-        }
-        return null;
-    }
-
-    private IMsoModelIf.ModificationState getMessageLineTimeState(IMessageLineIf.MessageLineType aLineType)
-    {
-        IMessageLineIf line = getLatestStatusChangeMessageLine(aLineType);
-        if (line != null)
-        {
-            return line.getOperationTimeState();
-        }
-        return null;
-    }
-
-    private IAttributeIf.IMsoCalendarIf getMessageLineTimeAttribute(IMessageLineIf.MessageLineType aLineType)
-    {
-        IMessageLineIf line = getLatestStatusChangeMessageLine(aLineType);
-        if (line != null)
-        {
-            return line.getOperationTimeAttribute();
-        }
-        return null;
-    }
-
-    public IMsoModelIf.ModificationState getTimeAssignedState()
-    {
-        return getMessageLineTimeState(IMessageLineIf.MessageLineType.ASSIGNED);
-    }
-
-    public IAttributeIf.IMsoCalendarIf getTimeAssignedAttribute()
-    {
-        return getMessageLineTimeAttribute(IMessageLineIf.MessageLineType.ASSIGNED);
-    }
-
     public void setTimeEstimatedFinished(Calendar aTimeEstimatedFinished)
     {
         m_timeEstimatedFinished.setValue(aTimeEstimatedFinished);
@@ -444,41 +349,6 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_timeEstimatedFinished;
     }
 
-//    public void setTimeStarted(Calendar aTimeStarted)
-//    {
-//        m_timeStarted.setValue(aTimeStarted);
-//    }
-
-    public Calendar getTimeStarted()
-    {
-        return getMessageLineTime(IMessageLineIf.MessageLineType.STARTED);
-    }
-
-    public IMsoModelIf.ModificationState getTimeStartedState()
-    {
-        return getMessageLineTimeState(IMessageLineIf.MessageLineType.STARTED);
-    }
-
-    public IAttributeIf.IMsoCalendarIf getTimeStartedAttribute()
-    {
-        return getMessageLineTimeAttribute(IMessageLineIf.MessageLineType.STARTED);
-    }
-
-    public Calendar getTimeFinished()
-    {
-        return getMessageLineTime(IMessageLineIf.MessageLineType.COMPLETED);
-    }
-
-    public IMsoModelIf.ModificationState getTimeFinishedState()
-    {
-        return getMessageLineTimeState(IMessageLineIf.MessageLineType.COMPLETED);
-    }
-
-    public IAttributeIf.IMsoCalendarIf getTimeFinishedAttribute()
-    {
-        return getMessageLineTimeAttribute(IMessageLineIf.MessageLineType.COMPLETED);
-    }
-    
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
@@ -527,6 +397,22 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     * Methods for references
     *-------------------------------------------------------------------------------------------*/
 
+    public IUnitIf getOwningUnit()
+    {
+        owningUnitSelector.setSelfObject(this);
+        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getUnitList().selectSingleItem(owningUnitSelector);
+    }
+
+    public void setOwningUnit(AssignmentStatus aStatus, IUnitIf aUnit) throws IllegalOperationException
+    {
+    	Object[] ans = AssignmentTransferUtilities.verifyMove(this, aUnit, aStatus);
+        if (Integer.valueOf(ans[0].toString())<0)
+        {
+            throw new IllegalOperationException(ans[1].toString());
+        }
+        changeOwnership(aUnit, aStatus);
+    }
+    
     public void setAssignmentBriefing(IBriefingIf aBriefing)
     {
         m_assignmentBriefing.setReference(aBriefing);
@@ -589,80 +475,86 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_reportedArea;
     }
 
+    /*-------------------------------------------------------------------------------------------
+     * Other Methods
+     *-------------------------------------------------------------------------------------------*/
 
+	public String getDefaultName()
+	{
+		return (getInternationalTypeName() + " " + getNumber()).trim();
+	}
+	
+    public Calendar getTime(Enum<?> aStatus) 
+    {
+    	// translate status type
+    	if(aStatus instanceof AssignmentStatus) {
+    	
+	    	// translate status
+	        switch((AssignmentStatus)aStatus) 
+	        {
+	        case EMPTY:
+	        case DRAFT:
+	        case READY:
+	        case QUEUED:
+	        case ABORTED:
+	        	return getMessageLineTime(MessageLineType.ABORTED);
+	        case ALLOCATED:
+	        	return getMessageLineTime(MessageLineType.ALLOCATED);
+	        case EXECUTING:
+	            return getMessageLineTime(MessageLineType.STARTED);
+	        case FINISHED:
+	        	return getMessageLineTime(MessageLineType.COMPLETED);
+	        }
+	        
+    	}
+    	else if(aStatus instanceof MessageLineType) 
+    	{
+            return getMessageLineTime((MessageLineType)aStatus);    		
+    	}
+        
+        // failed
+        return null;
+    }
+    
     public boolean isNotReady()
     {
         return getStatus().ordinal() < AssignmentStatus.READY.ordinal();
     }
 
-    public boolean hasBeenAllocated()
+    public boolean hasBeenEnqueued()
     {
         return getStatus().ordinal() >= AssignmentStatus.QUEUED.ordinal();
     }
 
-    public boolean hasBeenAssigned()
+    public boolean hasBeenAllocated()
     {
-        return getStatus().ordinal() >= AssignmentStatus.ASSIGNED.ordinal();
+        return getStatus().ordinal() >= AssignmentStatus.ALLOCATED.ordinal(); 
     }
 
     public boolean hasBeenStarted()
     {
-        return getStatus().ordinal() >= AssignmentStatus.EXECUTING.ordinal();
+    	return getStatus().ordinal() >= AssignmentStatus.EXECUTING.ordinal();
     }
 
     public boolean hasBeenFinished()
     {
-        return getStatus().ordinal() >= AssignmentStatus.ABORTED.ordinal();
+    	return getStatus().ordinal() >= AssignmentStatus.FINISHED.ordinal();
     }
 
-    private final static SelfSelector<IAssignmentIf, IUnitIf> owningUnitSelector = new SelfSelector<IAssignmentIf, IUnitIf>()
-    {
-        public boolean select(IUnitIf anObject)
-        {
-            return (anObject.getUnitAssignments().exists(m_object));
-        }
-    };
-
-    public IUnitIf getOwningUnit()
-    {
-        owningUnitSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getUnitList().selectSingleItem(owningUnitSelector);
+    public boolean hasBeenAborted() {
+    	return AssignmentStatus.ABORTED.equals(getStatus());    	
     }
-
-    public void verifyAllocatable(AssignmentStatus newStatus, IUnitIf aUnit, boolean unassignIfPossible) throws IllegalOperationException
-    {
-        // TODO: Test on type of assignment compared to type of unit.
-        if (AssignmentTransferUtilities.assignmentCanChangeToStatus(this, AssignmentStatus.QUEUED, aUnit)!=0)
-        {
-            throw new IllegalOperationException("Assignment " + this + " cannot change status to QUEUED.");
-        }
-        if (getStatus() == AssignmentStatus.QUEUED && !unassignIfPossible)
-        {
-            throw new IllegalOperationException("Assignment " + this + " is already allocated to another unit and cannot be reallocated.");
-        }
-        IUnitIf owningUnit = getOwningUnit();
-        if (owningUnit != null && owningUnit != aUnit)
-        {
-            owningUnit.removeUnitReference(this);
-        } else
-        {
-            setStatusAndOwner(newStatus, aUnit);
-        }
+    
+    public boolean hasBeenReported() {
+    	return AssignmentStatus.REPORTED.equals(getStatus());    	
     }
-
-    public int getTypenr()
-    {
-        return 0;
-    }
-
-
-    private final static TypeMessageLineSelector messageLineTypeSelector = new TypeMessageLineSelector();
-
-    public IMessageLineIf getLatestStatusChangeMessageLine(IMessageLineIf.MessageLineType aType)
+    
+    public IMessageLineIf getLatestStatusChangeMessageLine(MessageLineType aType)
     {
         messageLineTypeSelector.setSelectionCriteria(this, aType);
-        List<IMessageLineIf> retVal = MsoModelImpl.getInstance().getMsoManager().getCmdPost().getMessageLines().selectItems(messageLineTypeSelector,
-                IMessageLineIf.MESSAGE_LINE_TIME_COMPARATOR);
+        List<IMessageLineIf> retVal = MsoModelImpl.getInstance().getMsoManager()
+        	.getCmdPost().getMessageLines().selectItems(
+        			messageLineTypeSelector, IMessageLineIf.MESSAGE_LINE_TIME_COMPARATOR);
         return (retVal.size() == 0) ? null : retVal.get(0);
     }
 
@@ -673,18 +565,18 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public boolean transferMessageConfirmed(AssignmentStatus aStatus)
     {
-        IMessageLineIf.MessageLineType searchLineType;
+        MessageLineType searchLineType;
         switch (aStatus)
         {
-            case ASSIGNED:
-                searchLineType = IMessageLineIf.MessageLineType.ASSIGNED;
+            case ALLOCATED:
+                searchLineType = MessageLineType.ALLOCATED;
                 break;
             case EXECUTING:
-                searchLineType = IMessageLineIf.MessageLineType.STARTED;
+                searchLineType = MessageLineType.STARTED;
                 break;
             case FINISHED:
             case REPORTED:
-                searchLineType = IMessageLineIf.MessageLineType.COMPLETED;
+                searchLineType = MessageLineType.COMPLETED;
                 break;
             default:
                 return true;
@@ -696,22 +588,6 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
         IMessageIf owningMessage = foundMessageLine.getOwningMessage();
         return owningMessage == null || owningMessage.getStatus().equals(IMessageIf.MessageStatus.CONFIRMED);
-    }
-
-    static class TypeMessageLineSelector extends SelfSelector<IAssignmentIf, IMessageLineIf>
-    {
-        IMessageLineIf.MessageLineType m_type;
-
-        void setSelectionCriteria(IAssignmentIf anAssignment,IMessageLineIf.MessageLineType aType)
-        {
-            setSelfObject(anAssignment);
-            m_type = aType;
-        }
-
-        public boolean select(IMessageLineIf anObject)
-        {
-            return (anObject.getLineAssignment() == m_object && anObject.getLineType() == m_type && anObject.getOperationTime() != null);
-        }
     }
 
     private final static SelfSelector<IAssignmentIf, IMessageLineIf> referringMesssageLineSelector = new SelfSelector<IAssignmentIf, IMessageLineIf>()
@@ -733,5 +609,85 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         referringMesssageLineSelector.setSelfObject(this);
         return MsoListImpl.selectItemsInCollection(referringMesssageLineSelector,aCollection);
     }
+    
+    /*-------------------------------------------------------------------------------------------
+     * Helper Methods
+     *-------------------------------------------------------------------------------------------*/
+    
+    private Calendar getMessageLineTime(MessageLineType aLineType)
+    {
+        IMessageLineIf line = getLatestStatusChangeMessageLine(aLineType);
+        if (line != null)
+        {
+            return line.getOperationTime();
+        }
+        return null;
+    }
+    
+    private void changeOwnership(IUnitIf aUnit, AssignmentStatus aStatus) throws IllegalOperationException
+    {
+    	// initialize
+        IUnitIf owner = getOwningUnit();
+        AssignmentStatus oldStatus = getStatus();
+        // is a change in ownership required?
+        boolean changeOwner = aUnit != owner;
+        
+        if (changeOwner && owner != null)
+        {
+            ((AbstractUnit)owner).removeUnitAssignment(this);
+        }
+        m_status.setValue(aStatus);
+
+        /*
+         * if assignment is going to be enqueue, then
+         * add as tail which is default
+         * 
+         */         
+        if (aStatus == AssignmentStatus.QUEUED)
+        {
+            setPrioritySequence(Integer.MAX_VALUE);
+        }
+
+        if (aUnit != null)
+        {
+        	// was owner changed?
+            if (changeOwner)
+            {
+            	/* 
+            	 * add to unit using the helper method. This ensures
+            	 * that unit status is updated accordingly.
+            	 */
+            	((AbstractUnit)aUnit).addUnitAssignment(this);
+                
+            } else 
+            {
+            	// notify unit that assignment has changed
+                ((AbstractUnit)aUnit).assignmentChanged(this, oldStatus, true);
+            }
+        }
+
+    }    
+    
+    /*-------------------------------------------------------------------------------------------
+     * Inner classes
+     *-------------------------------------------------------------------------------------------*/
+    
+    static class TypeMessageLineSelector extends SelfSelector<IAssignmentIf, IMessageLineIf>
+    {
+        MessageLineType m_type;
+
+        void setSelectionCriteria(IAssignmentIf anAssignment,MessageLineType aType)
+        {
+            setSelfObject(anAssignment);
+            m_type = aType;
+        }
+
+        public boolean select(IMessageLineIf anObject)
+        {
+            return (anObject.getLineAssignment() == m_object && anObject.getLineType() == m_type && anObject.getOperationTime() != null);
+        }
+    }
+
+    
 
 }

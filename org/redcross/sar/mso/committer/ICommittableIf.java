@@ -57,6 +57,7 @@ public interface ICommittableIf
         * Get referred object.
         */
         public IMsoObjectIf getReferredObject();
+        
     }
 
 }

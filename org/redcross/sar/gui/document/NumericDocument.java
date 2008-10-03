@@ -9,16 +9,14 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
+import org.redcross.sar.util.Utils;
+
 /**
  * @author kennetgu
  *
  */
-
 public class NumericDocument extends PlainDocument {
    
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	//Variables
@@ -62,7 +60,7 @@ public class NumericDocument extends PlainDocument {
 	public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
         if (str != null){
         	// get numeric flag
-        	boolean isNumber = isNumeric(str,Double.class);
+        	boolean isNumber = Utils.isNumeric(str,Double.class);
         	// get decimal flag
         	boolean isDecimal = getText(0, getLength()).indexOf(",") != -1;
         	// validate number
@@ -101,42 +99,5 @@ public class NumericDocument extends PlainDocument {
         }
         return;
 	}
-   
-	public static boolean isNumeric(String str, Class<? extends Number> c)
-	{
-		try
-		{
-            if (c.equals(Byte.class))
-             {
-                Byte.parseByte(str);
-            }
-            else if (c.equals(Double.class))
-            {
-                Double.parseDouble(str);
-            }
-            else if (c.equals(Float.class))
-            {
-                Float.parseFloat(str);
-            }
-            else if (c.equals(Integer.class))
-            {
-                Integer.parseInt(str);
-            }
-            else if (c.equals(Long.class))
-            {
-                Long.parseLong(str);
-            }
-            else if (c.equals(Short.class))
-            {
-                Short.parseShort(str);
-            }
-        }
-        catch (NumberFormatException nfe)
-        {
-            return false;
-        }
- 
-        return true;
-    }
-   
+      
 }

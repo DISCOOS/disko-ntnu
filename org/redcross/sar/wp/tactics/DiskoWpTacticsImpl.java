@@ -21,12 +21,12 @@ import java.util.List;
 
 import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
@@ -49,6 +49,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
   
@@ -61,7 +62,6 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		implements IDiskoWpTactics, IDrawAdapterListener {
 
-	//private Dimension buttonSize = null;
 	private JToggleButton elementToggleButton = null;
 	private JToggleButton listToggleButton = null;
 	private JToggleButton missionToggleButton = null;
@@ -136,6 +136,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		MapPanel panel = new MapPanel(getMap());
 		panel.setNorthBarVisible(true);
 		panel.setSouthBarVisible(true);
+		panel.setBorder(UIFactory.createBorder());
 		layoutComponent(panel);
 		
 		// add layout buttons on sub menu
@@ -898,8 +899,10 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 		else if (MsoClassCode.CLASSCODE_POI.equals(element)) {
 			// setup buttons
-			if(MsoUtils.getOwningArea(msoObject)!=null)
+			if(MsoUtils.getOwningArea(msoObject)!=null) {
 				showSearchButtons();
+				element = MsoClassCode.CLASSCODE_ROUTE;
+			}
 			else
 				showOperationAreaButtons();
 		}

@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.committer;
 
 import org.redcross.sar.mso.CommitManager;
+import org.redcross.sar.mso.CommitManager.CommitType;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
@@ -34,10 +35,10 @@ public abstract class CommittableImpl implements ICommittableIf
      */
     public static class CommitObject extends CommittableImpl implements ICommitObjectIf
     {
-        public final IMsoObjectIf m_object;
-        public final List<IAttributeIf> m_partial;
+    	private final IMsoObjectIf m_object;
+    	private final List<IAttributeIf> m_partial;
 
-        public CommitObject(IMsoObjectIf anObject, CommitManager.CommitType aCommitType, List<IAttributeIf> partial)
+        public CommitObject(IMsoObjectIf anObject, CommitType aCommitType, List<IAttributeIf> partial)
         {
             super(aCommitType);
             m_object = anObject;
@@ -56,6 +57,7 @@ public abstract class CommittableImpl implements ICommittableIf
 		public boolean isPartial() {
 			return (m_partial.size()>0);
 		}
+		
     }
 
     /**
@@ -65,10 +67,9 @@ public abstract class CommittableImpl implements ICommittableIf
      */
     public static class CommitReference extends CommittableImpl implements ICommitReferenceIf
     {
-        public final String m_name;
-        public final IMsoObjectIf m_referringObject;
-        public final IMsoObjectIf m_referredObject;
-
+        private final String m_name;
+        private final IMsoObjectIf m_referringObject;
+        private final IMsoObjectIf m_referredObject;
 
         public CommitReference(String aName, IMsoObjectIf theReferringObject, IMsoObjectIf theReferredObject, CommitManager.CommitType aCommitType)
         {

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -23,7 +23,7 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 
-public class UnitTableModel extends AbstractTableModel implements
+public class UnitTableModel extends DiskoTableModel implements
 		IMsoUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;
@@ -113,7 +113,7 @@ public class UnitTableModel extends AbstractTableModel implements
 		// initialize
 		String text = "Ingen";
 		// get assignment
-		List<IAssignmentIf> data = unit.getAllocatedAssignments();
+		List<IAssignmentIf> data = unit.getEnqueuedAssignments();
 		// build string
 		for(int i=0;i<data.size();i++) {
 			// get name

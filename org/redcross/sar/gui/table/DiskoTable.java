@@ -1,32 +1,277 @@
 package org.redcross.sar.gui.table;
 
-import javax.swing.JTable;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import java.util.Enumeration;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.RowSorter;
+import javax.swing.Scrollable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableStringConverter;
+
+import org.redcross.sar.gui.model.DiskoTableColumnModel;
+import org.redcross.sar.util.Utils;
 
 public class DiskoTable extends JTable {
 
 	private static final long serialVersionUID = 1L;
 	
+	protected boolean m_autoFitWidths;
+	
+	protected TableStringConverter m_converter = null;
+		
 	/* ====================================================
 	 * Constructors
 	 * ==================================================== */
+	
 	public DiskoTable() {
+		// forward
+		super();
 		// initialize GUI
-		initialize();
+		initialize(false);
 	}
 	
-	private void initialize() {
-		setBorder(null);
-		getTableHeader().setDefaultRenderer(new DiskoHeaderRenderer());
+	public DiskoTable(boolean showVerticalHeaderLines) {
+		// forward
+		super();
+		// initialize GUI
+		initialize(showVerticalHeaderLines);
 	}
+	
+	public DiskoTable(TableModel model) {
+		// forward
+		super();
+		// initialize GUI
+		initialize(false);
+		// set model
+		setModel(model);
+	}
+	
+	public DiskoTable(TableModel model, boolean showVerticalHeaderLines) {
+		// forward
+		super();
+		// initialize GUI
+		initialize(showVerticalHeaderLines);
+		// set model
+		setModel(model);
+	}
+	
+	private void initialize(boolean showVerticalHeaderLines) {
+		
+		setBorder(null);
+		setAutoFitWidths(false);
+		setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		setTableHeader(new DiskoTableHeader(showVerticalHeaderLines));
+		setColumnModel(new DiskoTableColumnModel());	
+		
+		addMouseMotionListener(new MouseMotionAdapter() {
+
+			int m_editRow = -1;
+			int m_editCol = -1;
+			
+			@Override
+			public void mouseMoved(MouseEvent e) {
+
+				int row = rowAtPoint(e.getPoint());
+				int col = columnAtPoint(e.getPoint());
+				
+				if(row!=-1 && col!=-1 && 
+					(m_editRow!=row || m_editCol!=col)) {
+					 TableCellRenderer r = getCellRenderer(row, col);
+					 if(r instanceof AbstractTableCell) {
+						 m_editCol = col;
+						 m_editRow = row;
+						 editCellAt(row, col);
+					 }
+				}
+				
+			}
+			
+		});
+		
+		
+	}
+	
+	/* ====================================================
+	 * Overridden methods
+	 * ==================================================== */
+
+	/**
+     * Returns false to indicate that horizontal scrollbars are required
+     * to display the table while honoring perferred column widths. Returns
+     * true if the table can be displayed in viewport without horizontal
+     * scrollbars. For more information, see Java bug report #1027936.
+     * 
+     * @return true if an auto-resizing mode is enabled and the viewport 
+     * width is larger than the table's preferred size, otherwise return false.
+     * 
+     * @see Scrollable#getScrollableTracksViewportWidth
+     * 
+     */
+	
+	@Override
+    public boolean getScrollableTracksViewportWidth() {
+	   	if (autoResizeMode != AUTO_RESIZE_OFF) {
+	 	    if (getParent() instanceof JViewport) {
+	 	    	return (((JViewport)getParent()).getWidth() > getMinimumSize().width);
+	 	    }
+	 	} 
+	 	return super.getScrollableTracksViewportWidth();
+    }	
+    
+	@Override
+    public Dimension getMinimumSize() {
+        // Use correct resizing behavior
+        if (getParent() instanceof JViewport) {
+ 	    	JViewport viewPort = (JViewport)getParent();
+ 	    	int count = getRowCount();
+ 	    	int height = 0;
+ 	    	int overflowHeight = viewPort.getHeight(); 
+ 	    	for(int i=0;i<count;i++) {
+ 	    		int h = getRowHeight(i);
+ 	    		height += getRowHeight(i);
+ 	    		if(height+h>overflowHeight) {
+ 	    			break;
+ 	    		}
+ 	    		height += h;
+ 	    	}
+        	return new Dimension(getPreferredColumnTotalWidth(),height);
+        }
+        return super.getMinimumSize();
+    }	
+	
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		// auto fit column widths?
+		if(m_autoFitWidths) autoFitWidthColumns();
+		// forward
+		super.tableChanged(e);
+	}		
+	
+	@Override
+	public void setRowSorter(RowSorter<? extends TableModel> sorter) {
+		// forward
+		super.setRowSorter(sorter);
+	}	
 	
 	/* ====================================================
 	 * Public methods
 	 * ==================================================== */
 	
-	/*
-	public void autoWidthColumns() {
+	public DiskoTableHeader getDiskoTableHeader() {
+		if(getTableHeader() instanceof DiskoTableHeader)
+			return (DiskoTableHeader)getTableHeader();
+		return null;
+	}
+	
+	public int getColumnTotalWidth() {
+		int width = 0;
+		Enumeration<TableColumn> c = getColumnModel().getColumns();
+		
+		while(c.hasMoreElements()) {
+			width += c.nextElement().getWidth();
+		}
+		
+		return width;
+	}
+	
+	public int getMinimumColumnTotalWidth() {
+		int width = 0;
+		Enumeration<TableColumn> c = getColumnModel().getColumns();
+		
+		while(c.hasMoreElements()) {
+			width += c.nextElement().getMinWidth();
+		}
+		
+		return width;
+	}
+	
+	public int getPreferredColumnTotalWidth() {
+		int width = 0;
+		Enumeration<TableColumn> c = getColumnModel().getColumns();
+		
+		while(c.hasMoreElements()) {
+			width += c.nextElement().getPreferredWidth();
+		}		
+		return width;
+	}
+
+	public boolean isColumnVisible(int col) {
+		if(getColumnModel() instanceof DiskoTableColumnModel) {
+			DiskoTableColumnModel model = (DiskoTableColumnModel)getColumnModel();
+			col = convertColumnIndexToModel(col);
+			return model.isColumnVisible(model.getColumn(col));
+		}
+		return true;
+	}
+	
+	/**
+	 * Show/hide array of columns
+	 * @param idx - array of column indexes.
+	 * @param isVisible - show or hide column
+	 */
+	public void setVisibleColumns(String[] names, boolean isVisible) {
+		if(getColumnModel() instanceof DiskoTableColumnModel) {
+			DiskoTableColumnModel model = (DiskoTableColumnModel)getColumnModel();
+			for(int i=0; i<names.length;i++) {
+				int col = model.getColumnIndex(names[i]);				
+				if(col!=-1) {
+					model.setColumnVisible(model.getColumn(col),isVisible);
+				}
+			}			
+		}		
+	}
+	
+	/**
+	 * Show/hide array of columns
+	 * @param idx - array of column indexes.
+	 * @param isVisible - show or hide column
+	 */
+	public void setVisibleColumns(Integer[] idx, boolean isVisible) {
+		if(getColumnModel() instanceof DiskoTableColumnModel) {
+			DiskoTableColumnModel model = (DiskoTableColumnModel)getColumnModel();
+			for(int i=0; i<idx.length;i++) {
+				TableColumn column = model.getColumnByModelIndex(idx[i]);
+				if(column!=null) {
+					model.setColumnVisible(column,isVisible);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Hide all columns in table
+	 */
+	public void setNoneColumnsVisible() {
+		if(getColumnModel() instanceof DiskoTableColumnModel) {
+			DiskoTableColumnModel model = (DiskoTableColumnModel)getColumnModel();
+			model.setNoneColumnsVisible();
+		}		
+	}
+	
+	/**
+	 * Show all columns in table
+	 */
+	public void setAllColumnsVisible() {
+		if(getColumnModel() instanceof DiskoTableColumnModel) {
+			DiskoTableColumnModel model = (DiskoTableColumnModel)getColumnModel();
+			model.setAllColumnsVisible();
+		}		
+	}
+	
+	public void autoFitWidthColumns() {
 		// get models
 		TableModel data = getModel();
 		TableColumnModel columns = getColumnModel();
@@ -47,56 +292,74 @@ public class DiskoTable extends JTable {
 				// loop over all rows
 				for(int j=0;j<jCount;j++) {
 					// maximize width
-					max = Math.max(max, getCellWidth(g, data, j, i));
-				}
-				
-				// increase width
-	 			max = max + 20;
-				
-				// set preferred width
-	 			column.setWidth(max);
-				column.setMinWidth(max);
-				column.setPreferredWidth(max);
-				column.setMaxWidth(max);
-				//System.out.println(column.getWidth());
-				//column.setResizable(true);
+					max = Math.max(max,getCellWidth(g,j,i));
+				}				
+				// set width
+				setColumnWidth(column, max, true, true, false);				
 			}
 		}
+	}		
+	
+	public void setAutoFitWidths(boolean isEnabled) {
+		m_autoFitWidths = isEnabled;
 	}
 	
-	private int getHeaderWidth(Graphics g, TableColumn column, int index) {
-		Component c = null;
-		Object value = column.getHeaderValue();
-		if(column.getCellRenderer()!=null) {
-			c = column.getCellRenderer().getTableCellRendererComponent(this, value, false, false, 0, index);
-			return c.getWidth();
+	public TableStringConverter getStringConverter() {
+		return m_converter;
+	}
+	
+	public void setStringConverter(TableStringConverter converter) {
+		m_converter = converter;
+	}
+	
+	public static void setColumnWidth(TableColumn column, int width, boolean min, boolean preferred, boolean max) {
+		if(column!=null) {
+			if(min) column.setMinWidth(width);
+			if(preferred) column.setPreferredWidth(width);
+			if(max) column.setMaxWidth(width);
 		}
-		return getStringWidth(g, value);
+	}	
+	
+	/* ====================================================
+	 * Helper methods
+	 * ==================================================== */
+	
+	private int getHeaderWidth(Graphics g, TableColumn column, int index) {
+		Object value = column.getHeaderValue();
+		if(getTableHeader() instanceof DiskoTableHeader) {
+			return ((DiskoTableHeader)getTableHeader()).getRendererWidth(g,index);
+		} 
+		return Utils.getStringWidth(g,value);
 			
 	}
 	
-	private int getCellWidth(Graphics g, TableModel data, int row, int col) {
-		Component c = null;
-		Object value = data.getValueAt(row, col);
-		if(getCellRenderer(row, col)!=null) {
-			c = getCellRenderer(row, col).getTableCellRendererComponent(this,value,false,false,row,col);
-			return c.getWidth();
+	private int getCellWidth(Graphics g, int row, int col) {
+		// are indexes valid?
+		if(row!=-1 && row<getRowCount()&& col!=-1 && col<getColumnCount()) {
+			Object value = getValueAt(row, col);
+			TableCellRenderer renderer = getCellRenderer(row, col);
+			if(renderer instanceof AbstractTableCell) {
+				return ((AbstractTableCell)renderer).getCellWidth(g,this,row,col);
+			}	
+			String text = "";
+			Component c = renderer.getTableCellRendererComponent(this, value, false, false, row, col);
+			if(value instanceof Icon) {
+				return ((Icon)value).getIconWidth()+5;
+			}
+			else {
+				// prepare
+				text = value!=null ? value.toString() : "";
+				if(m_converter!=null) { 
+					row = convertRowIndexToModel(row);
+					col = convertColumnIndexToModel(col);
+					text = m_converter.toString(getModel(), row, col);
+				}
+			}
+			return Utils.getStringWidth(g,c.getFont(),text) + 
+			(c instanceof JLabel && ((JLabel)c).getIcon()!=null 
+					? ((JLabel)c).getIcon().getIconWidth() + ((JLabel)c).getIconTextGap() : 0) + 10;
 		}
-		return getStringWidth(g,value);
+		return 0;
 	}
 	
-	private int getStringWidth(Graphics g, Object value) {
-		return (value!=null ? g.getFontMetrics().stringWidth(value.toString()) : 0);
-	}
-	
-	@Override
-	public void tableChanged(TableModelEvent e) {
-		// auto fit column widths
-		autoWidthColumns();
-		// forward
-		super.tableChanged(e);
-	}
-	*/
-	
-
 }

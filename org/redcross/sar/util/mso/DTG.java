@@ -2,7 +2,6 @@ package org.redcross.sar.util.mso;
 
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -16,11 +15,11 @@ public class DTG
      * @return The created object
      * @throws IllegalMsoArgumentException If DTG has an illegal value.
      */
-    public static Calendar DTGToCal(String aDTG) throws IllegalMsoArgumentException
+    public static Calendar DTGToCal(int year, int month, String aDTG) throws IllegalMsoArgumentException
     {
         try
         {
-            return DTGToCal(Long.parseLong(aDTG));
+            return DTGToCal(year,month,Long.parseLong(aDTG));
         }
         catch (NumberFormatException e)
         {
@@ -38,7 +37,7 @@ public class DTG
      * @return The created object
      * @throws IllegalMsoArgumentException If DTG has an illegal value.
      */
-    public static Calendar DTGToCal(long aDTG) throws IllegalMsoArgumentException
+    public static Calendar DTGToCal(int year, int month, long aDTG) throws IllegalMsoArgumentException
     {
         Calendar calendar = Calendar.getInstance();
         int day = (int) aDTG / 10000;
@@ -60,6 +59,8 @@ public class DTG
             throw new IllegalMsoArgumentException("Illegal DTG day value in " + aDTG);
         }
 
+        calendar.set(Calendar.YEAR,year);
+        calendar.set(Calendar.MONTH,month);
         calendar.set(Calendar.DAY_OF_MONTH, day);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
@@ -95,6 +96,7 @@ public class DTG
         return aDay <= aCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
     }
 
+    /*
     public static void main(String[] argv)
     {
         for (int year = 2007; year <= 2008; year++)
@@ -120,4 +122,5 @@ public class DTG
             }
         }
     }
+    */
 }

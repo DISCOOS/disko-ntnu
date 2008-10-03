@@ -1,23 +1,25 @@
 package org.redcross.sar.wp.tasks;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.dialog.TaskDialog;
 import org.redcross.sar.gui.panel.MainMenuPanel;
 import org.redcross.sar.gui.panel.SubMenuPanel;
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskListIf;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
 
@@ -26,7 +28,6 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -54,7 +55,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 	
 	private JPanel m_contentsPanel;
 
-    private JTable m_taskTable;
+    private DiskoTable m_taskTable;
 
     private JButton m_newButton;
     private JButton m_changeButton;
@@ -196,7 +197,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     private void initTable()
     {
-        m_taskTable = new JTable();
+        m_taskTable = new DiskoTable();
         TaskTableModel model = new TaskTableModel(this, m_taskTable);
         m_taskTable.setModel(model);
         m_taskTable.getSelectionModel().addListSelectionListener(new TaskSelectionListener(this, m_taskTable));
@@ -236,10 +237,10 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         JTableHeader tableHeader = m_taskTable.getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
+        tableHeader.setDefaultRenderer(new DefaultHeaderRenderer());
 
 
-        JScrollPane tableScrollPane = new JScrollPane(m_taskTable);
+        JScrollPane tableScrollPane = UIFactory.createScrollPane(m_taskTable,true);
         tableScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         m_contentsPanel.add(tableScrollPane, BorderLayout.CENTER);
     }

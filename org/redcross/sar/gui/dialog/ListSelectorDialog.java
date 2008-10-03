@@ -2,10 +2,10 @@ package org.redcross.sar.gui.dialog;
 
 import java.awt.Frame;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.ListSelectorPanel;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu

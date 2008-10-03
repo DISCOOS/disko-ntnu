@@ -39,33 +39,47 @@ public class EstimatedPositionLayer extends AbstractDiskoLayer implements IDsUpd
 
 	public void handleDsUpdateEvent(Update e) {		
 		try {
+			Object[] data;
 			IEnvelope extent = null;
 			switch(e.getType()) {
 			case ADDED_EVENT:
-				extent = addCost((RouteCost)e.getData()[0]);
+				data = e.getData();
+				for(int i=0;i<data.length;i++) {
+					if(extent==null)
+						extent = addCost((RouteCost)data[i]);
+					else
+						extent.union(addCost((RouteCost)data[i]));
+				}
 				break;
 			case MODIFIED_EVENT:
-				Object[] data = e.getData();
-				for(int i=0;i<data.length;i++)
+				data = e.getData();
+				for(int i=0;i<data.length;i++) {
 					if(extent==null)
 						extent = update((RouteCost)data[i]);
 					else
 						extent.union(update((RouteCost)data[i]));
+				}
 				
 				break;
 			case REMOVED_EVENT:
-				extent = removeCost((RouteCost)e.getData()[0]);
+				data = e.getData();
+				for(int i=0;i<data.length;i++) {
+					if(extent==null)
+						extent = removeCost((RouteCost)data[i]);
+					else
+						extent.union(removeCost((RouteCost)data[i]));
+				}
 				break;
 			}
 			// forward
 			refresh(extent);
 			
-		} catch (AutomationException e1) {
+		} catch (AutomationException ex) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			ex.printStackTrace();
 		}
 	}
 	

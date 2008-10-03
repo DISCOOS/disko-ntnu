@@ -136,7 +136,9 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute();
 
-    public String getTypeText();
+    public String getTypeName();
+    
+    public String getInternationalTypeName();
 
     public void setSourceClass(IMsoManagerIf.MsoClassCode aSourceClass);
 
@@ -154,6 +156,8 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
     * Other specified methods
     *-------------------------------------------------------------------------------------------*/
 
+    public String getDefaultName();
+    
     public Calendar getDueTime();
 
     public void setDueTime(Calendar aCalendar);

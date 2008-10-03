@@ -79,7 +79,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         if (anObject != null)
         {
         	if(add) ((AbstractMsoObject) anObject).addDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerAddedReference();
+        	((AbstractMsoObject) anObject).registerAddedReference(this);
         }
     }
 
@@ -88,7 +88,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         if (anObject != null)
         {
         	if(remove) ((AbstractMsoObject) anObject).removeDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerRemovedReference();
+        	((AbstractMsoObject) anObject).registerRemovedReference(this);
 
         }
     }
@@ -99,15 +99,15 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             if (newRef != null && oldRef != null)
             {
             	incrementChangeCount();
-            	m_owner.registerModifiedReference();
+            	m_owner.registerModifiedReference(this);
             } else if (newRef != null)
             {
             	incrementChangeCount();
-                m_owner.registerAddedReference();
+                m_owner.registerAddedReference(this);
             } else
             {
             	incrementChangeCount();
-                m_owner.registerRemovedReference();
+                m_owner.registerRemovedReference(this);
             }
         }
     }    
@@ -584,7 +584,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             }
             m_state = aState;
             // notify
-            m_owner.registerModifiedReference();
+            m_owner.registerModifiedReference(this);
             return true;
         }
         return false;

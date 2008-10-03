@@ -4,18 +4,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.panel.PositionPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
-import org.redcross.sar.gui.panel.PositionPanel;
-import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.TimePos;
 
 import com.esri.arcgis.geometry.Point;
@@ -87,7 +85,7 @@ public class PositionTool extends AbstractDrawTool {
 		// create default property panel
 		toolPanel = addToolPanel();
 		
-		// registrate me in dialog
+		// register me in dialog
 		dialog.register(this);
 		
 	}
@@ -163,6 +161,14 @@ public class PositionTool extends AbstractDrawTool {
 	public void setUnit(IUnitIf msoUnit) {
 		// forward
 		setMsoData(msoOwner,msoUnit,msoCode);
+	}
+	
+	public Calendar getLogTimeStamp() {
+		return (Calendar)getAttribute("LOGTIMESTAMP");		
+	}
+	
+	public void setLogTimeStamp(Calendar time) {
+		setAttribute(time,"LOGTIMESTAMP");		
 	}
 	
 	@Override

@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.IOException;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.panel.POIPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
-import org.redcross.sar.gui.panel.POIPanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -21,6 +20,7 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
@@ -77,7 +77,7 @@ public class POITool extends AbstractDrawTool {
 		// create default property panel
 		toolPanel = addToolPanel();
 		
-		// registrate me in dialog
+		// register me in dialog
 		dialog.register(this);
 		
 	}
@@ -231,7 +231,7 @@ public class POITool extends AbstractDrawTool {
 			// update tool point
 			if(msoObj instanceof IPOIIf) {
 				IPOIIf msoPOI = (IPOIIf)msoObj;
-				setPoint(MapUtil.getEsriPoint(msoPOI.getPosition(), map.getSpatialReference()));
+				setPoint(MapUtil.getEsriPoint(msoPOI.getPosition().getGeoPos(), map.getSpatialReference()));
 			}
 			
 			// forward
@@ -293,6 +293,7 @@ public class POITool extends AbstractDrawTool {
 					// update dialog
 					poi.setType(panel.getPOIType());
 					poi.setRemarks(panel.getRemarks());
+					poi.setName(panel.getPOIName());
 				}
 				// is owner search assignment?
 				if(msoObj instanceof IAreaIf) {
@@ -366,11 +367,12 @@ public class POITool extends AbstractDrawTool {
 	
 	public class POIToolState extends DiskoToolState {
 		
-		private POIType type = null;
-		private POIType[] types = null;
-		private String remarks = null;
-		private boolean isDirty = false;
-		private SearchSubType searchSubType = null;
+		private POIType type;
+		private POIType[] types;
+		private String name;
+		private String remarks;
+		private boolean isDirty;
+		private SearchSubType searchSubType;
 		
 		// create state
 		public POIToolState(POITool tool) {
@@ -383,6 +385,7 @@ public class POITool extends AbstractDrawTool {
 			searchSubType = tool.searchSubType;
 			types = tool.getPOIPanel().getPOITypes();
 			type = tool.getPOIPanel().getPOIType();
+			name = tool.getPOIPanel().getPOIName();
 			remarks = tool.getPOIPanel().getRemarks();
 			isDirty = tool.getPOIPanel().isDirty();
 		}
@@ -394,6 +397,7 @@ public class POITool extends AbstractDrawTool {
 			tool.getPOIPanel().setPOIType(type);
 			tool.getPOIPanel().setPOITypes(types);
 			tool.getPOIPanel().setRemarks(remarks);
+			tool.getPOIPanel().setPOIName(name);
 			tool.getPOIPanel().setChangeable(true);
 			tool.getPOIPanel().setDirty(isDirty);
 		}

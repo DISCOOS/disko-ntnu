@@ -74,5 +74,4 @@ public interface ICommitManagerIf {
     
     public boolean hasUncommitedChanges(IMsoObjectIf msoObj);
     
-	
 }

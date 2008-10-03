@@ -12,7 +12,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.EnumSet;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -215,13 +214,10 @@ public class RequirementDialog extends DefaultDialog {
 				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
-				attribsPanel.setPreferredBodySize(new Dimension(200,100));
+				attribsPanel.setFitBodyOnResize(true);
 				attribsPanel.addAttribute(getPriorityCombo());
 				attribsPanel.addAttribute(getAccuracyCombo());
 				attribsPanel.addAttribute(getPersonnelCombo());
-				Utils.setFixedSize(getPriorityCombo(), 200,25);
-				Utils.setFixedSize(getAccuracyCombo(), 200,25);
-				Utils.setFixedSize(getPersonnelCombo(), 200,25);
 				attribsPanel.addDiskoWorkListener(new IDiskoWorkListener() {
 
 					@Override

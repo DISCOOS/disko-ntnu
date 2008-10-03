@@ -4,6 +4,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 public interface ICmdPostIf extends IMsoObjectIf
@@ -20,6 +21,9 @@ public interface ICmdPostIf extends IMsoObjectIf
         PAUSED,
         RELEASED
     }
+    
+    public final EnumSet<CmdPostStatus> ACTIVE_CMDPOST_SET = 
+		EnumSet.of(CmdPostStatus.IDLE, CmdPostStatus.OPERATING, CmdPostStatus.PAUSED);    
 
     /*-------------------------------------------------------------------------------------------
     * Methods for ENUM attributes
@@ -242,7 +246,9 @@ public interface ICmdPostIf extends IMsoObjectIf
     /*-------------------------------------------------------------------------------------------
     * Other List accessor methods
     *-------------------------------------------------------------------------------------------*/
-
+    
+    public ICommunicatorIf getCommunicator();
+    
     public AbstractDerivedList<ICommunicatorIf> getCommunicatorList();
 
     public List<ICommunicatorIf> getActiveCommunicators();

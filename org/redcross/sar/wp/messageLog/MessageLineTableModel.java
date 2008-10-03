@@ -2,7 +2,7 @@ package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.mso.data.*;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 import javax.swing.table.TableModel;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author thomasl
  */
-public class MessageLineTableModel extends AbstractTableModel
+public class MessageLineTableModel extends DiskoTableModel
 {
 	private final static long serialVersionUID = 1L;
 
@@ -147,10 +147,10 @@ public class MessageLineTableModel extends AbstractTableModel
 			}
 		}
 		break;
-		case ASSIGNED:
+		case Allocated:
 		{
 			IAssignmentIf assignment = line.getLineAssignment();
-			lineText = String.format(m_wpMessageLog.getBundleText("ListItemAssigned.text"),
+			lineText = String.format(m_wpMessageLog.getBundleText("ListItemAllocated.text"),
 					MsoUtils.getAssignmentName(assignment,1), DTG.CalToDTG(line.getOperationTime()));
 
 		}

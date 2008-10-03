@@ -83,7 +83,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         m_firstname.setValue(aFirstname);
     }
 
-    public String getFirstname()
+    public String getFirstName()
     {
         return m_firstname.getString();
     }
@@ -123,7 +123,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         m_lastname.setValue(aLastname);
     }
 
-    public String getLastname()
+    public String getLastName()
     {
         return m_lastname.getString();
     }

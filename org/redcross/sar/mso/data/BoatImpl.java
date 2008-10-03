@@ -10,13 +10,11 @@ import org.redcross.sar.util.except.MsoCastException;
  */
 public class BoatImpl extends AbstractTransportUnit implements IBoatIf
 {
-    private final AttributeImpl.MsoInteger m_averageSpeed = new AttributeImpl.MsoInteger(this, "AverageSpeed");
     private final AttributeImpl.MsoInteger m_capacity = new AttributeImpl.MsoInteger(this, "Capacity");
     private final AttributeImpl.MsoInteger m_depth = new AttributeImpl.MsoInteger(this, "Depth");
     private final AttributeImpl.MsoInteger m_freeboard = new AttributeImpl.MsoInteger(this, "Freeboard");
     private final AttributeImpl.MsoInteger m_height = new AttributeImpl.MsoInteger(this, "Height");
     private final AttributeImpl.MsoInteger m_length = new AttributeImpl.MsoInteger(this, "Length");
-    private final AttributeImpl.MsoInteger m_maxSpeed = new AttributeImpl.MsoInteger(this, "MaxSpeed");
     private final AttributeImpl.MsoEnum<BoatSubType> m_subType = new AttributeImpl.MsoEnum<BoatSubType>(this, "SubType", 1, BoatSubType.SEARCH_AND_RESCUE);
 
 
@@ -35,13 +33,11 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
     protected void defineAttributes()
     {
         super.defineAttributes();
-        addAttribute(m_averageSpeed);
         addAttribute(m_capacity);
         addAttribute(m_depth);
         addAttribute(m_freeboard);
         addAttribute(m_height);
         addAttribute(m_length);
-        addAttribute(m_maxSpeed);
         addAttribute(m_subType);
     }
 
@@ -123,26 +119,6 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
-
-    public void setAverageSpeed(int anAverageSpeed)
-    {
-        m_averageSpeed.setValue(anAverageSpeed);
-    }
-
-    public int getAverageSpeed()
-    {
-        return m_averageSpeed.intValue();
-    }
-
-    public IMsoModelIf.ModificationState getAverageSpeedState()
-    {
-        return m_averageSpeed.getState();
-    }
-
-    public IAttributeIf.IMsoIntegerIf getAverageSpeedAttribute()
-    {
-        return m_averageSpeed;
-    }
 
     public void setCapacity(int aCapacity)
     {
@@ -242,26 +218,6 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
     public IAttributeIf.IMsoIntegerIf getLengthAttribute()
     {
         return m_length;
-    }
-
-    public void setMaxSpeed(int aMaxSpeed)
-    {
-        m_maxSpeed.setValue(aMaxSpeed);
-    }
-
-    public int getMaxSpeed()
-    {
-        return m_maxSpeed.intValue();
-    }
-
-    public IMsoModelIf.ModificationState getMaxSpeedState()
-    {
-        return m_maxSpeed.getState();
-    }
-
-    public IAttributeIf.IMsoIntegerIf getMaxSpeedAttribute()
-    {
-        return m_maxSpeed;
     }
 
     /*-------------------------------------------------------------------------------------------

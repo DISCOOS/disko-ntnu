@@ -12,7 +12,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.mso.model.UnitTableModel;
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
@@ -59,7 +59,7 @@ public class UnitTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(true);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
+        tableHeader.setDefaultRenderer(new DefaultHeaderRenderer());
         
         // add model lister to ensure data fit
         getModel().addTableModelListener(new TableModelListener() {

@@ -9,11 +9,11 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoProgressPanel;
 import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.thread.DiskoProgressEvent.DiskoProgressEventType;
+import org.redcross.sar.util.Utils;
 
 /**
  * Singleton disko progress class. It decides if a progress dialog should

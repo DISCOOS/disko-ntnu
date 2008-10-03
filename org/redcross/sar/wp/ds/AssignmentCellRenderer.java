@@ -2,14 +2,10 @@ package org.redcross.sar.wp.ds;
 
 import java.awt.Component;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-
-import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.util.MsoUtils;
 
 public class AssignmentCellRenderer extends JLabel implements TableCellRenderer {
 	
@@ -26,21 +22,22 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 
 		// convert indexes to model
 		row = table.convertRowIndexToModel(row);
+		col = table.convertColumnIndexToModel(col);
 		
-		// set icon
-		if (col == 0) {
-			IAssignmentIf assignment = (IAssignmentIf)value;
-			Enum<?> type = MsoUtils.getType(assignment,true);
-			setIcon(DiskoIconFactory.getIcon(
-						DiskoEnumFactory.getIcon(type),"32x32"));
-		}
-		else {
-			setIcon(null);
+		// has row and col?
+		if(row!=-1 && col!=-1) {
+		
+			// set text
+			setText(converter.toString(table.getModel(),row,col));
+			
 		}
 		
-		// set text
-		setText(converter.toString(table.getModel(),row,col));
-		
+		// set border
+		if(getIcon()==null) 
+			setBorder(BorderFactory.createEmptyBorder(0,2,0,0));
+		else
+			setBorder(BorderFactory.createEmptyBorder());
+			
 		// update selection state
 		if (isSelected){
 			setBackground(table.getSelectionBackground());
@@ -50,7 +47,6 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 			setBackground(table.getBackground());
 			setForeground(table.getForeground());
 		}
-		if(hasFocus)  requestFocusInWindow();
 		
 		// finished
 		return this;

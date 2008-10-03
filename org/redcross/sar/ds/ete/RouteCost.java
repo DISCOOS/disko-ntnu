@@ -39,12 +39,37 @@ import com.esri.arcgis.interop.AutomationException;
  */
 public class RouteCost extends AbstractDsObject {
 
-	private static final long ESTIMATE_TIME_TOLERANCE = 1*60*60; /* if progress is larger then 1 hour, a
-																  * new estimate must be created */
+	/** 
+	 * if progressed longer than one hour without updated 
+	 * last known position (lkp), a new estimate must be calculated 
+	 */
+	private static final long ESTIMATE_TIME_TOLERANCE = 1*60*60; 
 
-	private static final String[] ATTRIBUTES = {"ete","eta","ede","eda","ecp",
-												"eas","fkp","lkp","mta","mda","mas"};
+	/**
+	 * IDsObjectIf attributes 
+	 */
+	public static final String[] ATTRIBUTE_NAMES = {
+		"cts",
+		"ete","eta","ede","eda","ese","esa","ecp",
+		"mte","mta","mde","mda","mse","msa","fkp","lkp", 
+		"xte","xta","xde","xda","xse","xsa"
+	};
     
+	/**
+	 * IDsObjectIf attribute classes
+	 */
+	public static final Class<?>[] ATTRIBUTE_CLASSES = {
+		Calendar.class,
+		Integer.class, Calendar.class, Double.class, Double.class, Double.class, Double.class, GeoPos.class,
+		Integer.class, Calendar.class, Double.class, Double.class, Double.class, Double.class, TimePos.class, TimePos.class, 
+		Double.class,  Double.class,   Double.class, Double.class, Double.class, Double.class
+	};
+	
+	
+	
+	/**
+	 * Surface types 
+	 */
 	public enum SurfaceType
     {
         DEFAULT,
@@ -56,7 +81,7 @@ public class RouteCost extends AbstractDsObject {
         INFINITE
     }
     
-	private RouteCostProps m_params = null;
+	private RouteCostProps m_params;
 
 	// objects	
 	private final SnowInfo m_info_si;
@@ -76,30 +101,30 @@ public class RouteCost extends AbstractDsObject {
 	private int m_method = 0;
 	
 	// states
-    private double m_propulsion = 0;							// current propulsion method along route
-	//private double m_h1 = 0;									// height at last visited position
-	private Calendar m_startTime = null;						// start time used when no 
-	private Track m_mt = null;									// measured track  - from first to last known position
-	private Track m_et = null;									// estimated track - from last known position to route destination
-	private Calendar m_eta = null;    							// estimated time of arrival at route destination
-	private List<Double> m_legs = null;							// leg distance between two consecutive points on route
-	private List<Double> m_slopes = null;						// leg slope between two consecutive points on route 
-	private List<Double> m_terrainLegCosts = null;				// terrain component cost of leg between two consecutive points on route
-	private List<Double> m_weatherLegCosts = null;				// weather component cost of leg between two consecutive points on route
-	private List<Double> m_lightLegCosts = null;				// light component cost of leg between two consecutive points on route
-	private List<Double> m_altitudes = null;					// altitude at each point
-	private LegData m_current = null;							// current leg
+    private double m_propulsion = 0;						// current propulsion method along route
+	//private double m_h1 = 0;								// height at last visited position
+	private Calendar m_startTime;							// start time used when no 
+	private Track m_mt;										// measured track  - measured points from first to last known position
+	private Track m_et;										// estimated track - estimated points from last known position to route destination
+	private Calendar m_eta;    								// estimated time of arrival at route destination
+	private List<Double> m_legs;							// leg distance between two consecutive points on route
+	private List<Double> m_slopes;							// leg slope between two consecutive points on route 
+	private List<Double> m_terrainLegCosts;					// terrain component cost of leg between two consecutive points on route
+	private List<Double> m_weatherLegCosts;					// weather component cost of leg between two consecutive points on route
+	private List<Double> m_lightLegCosts;					// light component cost of leg between two consecutive points on route
+	private List<Double> m_altitudes;						// altitude at each point
+	private LegData m_current;								// current leg
 	
 	// route data
-	private Route m_route = null;								// current route
-	private List<GeoPos> m_positions = null;					// list of densified positions from route
-	private Polyline m_polyline = null;							// a polyline created from m_positions
+	private Route m_route;									// current route
+	private List<GeoPos> m_positions;						// list of densified positions from route
+	private Polyline m_polyline;							// a polyline created from m_positions
 	
 	// flags
-	private boolean m_isSpatialChanged = false;					// if true, create() is invoked calculating a new spatial and temporal estimate
-	private boolean m_isTemporalChanged = false;				// if true, update() is invoked only updating the temporal part of the estimate
-	private boolean m_isArchived = false;						// if true, estimate() returns previous calculated ete() value
-	private boolean m_isSuspended = true;						// if true, estimate() returns previous calculated ete() value
+	private boolean m_isSpatialChanged = false;				// if true, create() is invoked calculating a new spatial and temporal estimate
+	private boolean m_isTemporalChanged = false;			// if true, update() is invoked only updating the temporal part of the estimate
+	private boolean m_isArchived = false;					// if true, estimate() returns previous calculated ete() value
+	private boolean m_isSuspended = true;					// if true, estimate() returns previous calculated ete() value
     
 	// properties
 	private final RouteCostProp m_p;		// propulsion type
@@ -211,20 +236,24 @@ public class RouteCost extends AbstractDsObject {
 	}
 	
 	public String getAttrName(int index) {
-		return ATTRIBUTES[index];
+		return ATTRIBUTE_NAMES[index];
 	}
 	
 	public int getAttrIndex(String name) {
-		int count = ATTRIBUTES.length;
+		int count = ATTRIBUTE_NAMES.length;
 		for(int i=0;i<count;i++) {
-			if(ATTRIBUTES[i].equals(name))
+			if(ATTRIBUTE_NAMES[i].equals(name))
 				return i;
 		}
 		return -1;
 	}
 	
 	public int getAttrCount() {
-		return ATTRIBUTES.length;
+		return ATTRIBUTE_NAMES.length;
+	}
+	
+	public Class<?> getAttrClass(int index) {
+		return ATTRIBUTE_CLASSES[index];
 	}
 
 	/* =====================================================================
@@ -331,7 +360,7 @@ public class RouteCost extends AbstractDsObject {
 	 * @param TimePos p - the position and arrival time 
 	 */
 	public boolean setLastKnownPosition(TimePos p) {
-		if(!equal(p,m_mt.getStopPoint())) {
+		if(p!=null && !equal(p,m_mt.getStopPoint())) {
 			m_mt.add(new TimePos(p.getPosition(),p.getTime()));
 			m_isTemporalChanged = true;
 			return true;
@@ -388,6 +417,7 @@ public class RouteCost extends AbstractDsObject {
 		
 		// can estimate?
 		if(hasRoute()) {
+			
 			// force initial time?
 			if(m_startTime == null) setStartTime(Calendar.getInstance());
 			
@@ -414,7 +444,7 @@ public class RouteCost extends AbstractDsObject {
 	 * <code>setLastKnownPosition(*)</code> will add a point to <code>mt</code>.
 	 */
 	public boolean canProgress() {
-		return !(m_et.getCount()==0 || m_mt.getCount()==0);
+		return !(m_et.size()==0 || m_mt.size()==0);
 	}
 	
 	/**
@@ -422,7 +452,7 @@ public class RouteCost extends AbstractDsObject {
 	 * 
 	 * @return <code>true</code> if estimated current position was updated (<code>ecp</code>), 
 	 * <code>false</code> otherwise. </p>
-	 * This method will only succeed if at least on leg exists in estimated track 
+	 * This method will only succeed if at least one leg exists in estimated track 
 	 * (<code>et</code>) and at least one position exits in measured track (<code>mt</code>).</p> 
 	 * <code>estimate()</code> will create <code>et</code>.</p>
 	 * <code>setLastKnownPosition(*)</code> will add a point to <code>mt</code>.
@@ -536,6 +566,7 @@ public class RouteCost extends AbstractDsObject {
 	 * Archive result
 	 */
 	public void archive() {
+		addSample();
 		m_isArchived = true;
 	}
 		
@@ -559,98 +590,178 @@ public class RouteCost extends AbstractDsObject {
 	public void resume() {
 		m_isSuspended = false;
 	}
-		
+			
 	/* =====================================================================
 	 * Estimate results
 	 * ===================================================================== */
 	
 	/**
-	 *  Gets estimated time enroute at route destination (ete)
+	 *  Gets current time step (cts)
 	 *  
-	 *  @return Estimated time enroute in seconds
+	 *  @return Time (Calendar)
+	 */		
+	public Calendar cts() {
+		return m_current!=null ? m_current.t : null;
+	}
+	
+	/**
+	 *  Gets estimated time from last known position to route destination (ete)
+	 *  
+	 *  @return Time (seconds)
 	 */		
 	public int ete() {
-		if (!(m_eta==null || m_isSpatialChanged)) {
-			if(m_current!=null)
-				return (int)(m_eta.getTimeInMillis() - m_current.t.getTimeInMillis())/1000;
-			else
-				return (int)(m_eta.getTimeInMillis() - m_startTime.getTimeInMillis())/1000;
+		if(m_isArchived) {
+			return (Integer)getAttrValue("ete", getSampleCount()-1);
 		}
-		else
+		else {
+			if (!(m_eta==null || m_isSpatialChanged)) {
+				if(m_current!=null)
+					return (int)(m_eta.getTimeInMillis() - m_current.t.getTimeInMillis())/1000;
+				else
+					return (int)(m_eta.getTimeInMillis() - m_startTime.getTimeInMillis())/1000;
+			}
+			// failure
 			return 0;
+		}
 	}	
 	
 	/**
 	 *  Gets estimated time of arrival at route destination (eta).
 	 *  
+	 *  @return Time (Calendar)
 	 */		
 	public Calendar eta() {
-		if (!(m_eta==null || m_isSpatialChanged))
-			return (Calendar)m_eta.clone();
-		else
+		if(m_isArchived) {
+			return (Calendar)getAttrValue("eta", getSampleCount()-1);
+		}
+		else {
+			if (!(m_eta==null || m_isSpatialChanged)) {
+				return (Calendar)m_eta.clone();
+			}
+			// failure
 			return null;
+		}
 	}
 	
 	/**
-	 * Gets estimated distance enroute at route destination (ede)
+	 * Gets estimated distance from last known position to route destination (ede)
 	 * 
+	 * @return Distance (meter)
 	 */	
 	public double ede() {
-		// get estimated current position
-		GeoPos ecp = ecp();
-		// has estimated point?
-		if(ecp!=null) {
-			// get index of to-point on current leg 
-			int index = Math.min(m_current.index - m_current.offset,m_et.getCount()-2);
-			// valid?
-			if(index>=0) {
-				// get to point on leg
-				GeoPos to = getLegToPoint(index);
-				// get rest distance of leg
-				double ede = MapUtil.greatCircleDistance(
-						ecp.getPosition().y, ecp.getPosition().x, 
-						to.getPosition().y, to.getPosition().x);
-				// get rest of estimated distance
-				ede += m_et.getDistance(index+1,m_et.getCount()-1,false);
-				// finished
-				return ede;
-			}
+		if(m_isArchived) {
+			return (Double)getAttrValue("ede", getSampleCount()-1);
 		}
-		return 0.0;
+		else {
+			if (!m_isSpatialChanged) {
+				// get estimated current position
+				GeoPos ecp = ecp();
+				// has estimated point?
+				if(ecp!=null) {
+					// get index of to-point on current leg 
+					int index = Math.min(m_current.index - m_current.offset,m_et.size()-2);
+					// valid?
+					if(index>=0) {
+						// get to point on leg
+						GeoPos to = getLegToPoint(index);
+						// get rest distance of leg
+						double ede = MapUtil.greatCircleDistance(
+								ecp.getPosition().y, ecp.getPosition().x,
+								to.getPosition().y, to.getPosition().x);
+						// get rest of estimated distance
+						if(index+1<=m_et.size()-1) {
+							ede += m_et.getDistance(index+1,m_et.size()-1,false);
+						}
+						// finished
+						return ede;
+					}
+				}
+			}
+			// failure
+			return 0.0;
+		}
 	}
 	
 	/**
-	 *  Gets the estimated moved distance at arrival (eda)
+	 *  Gets the estimated distance from first known position to destination (eda)
+	 *  
+	 *  @return Distance (meter)
 	 *  
 	 */		
 	public double eda() {
-		if (!m_isSpatialChanged)
-			return m_mt.getDistance() + m_et.getDistance();
-		else
+		if(m_isArchived) {
+			return (Double)getAttrValue("eda", getSampleCount()-1);
+		}
+		else {
+			if (!m_isSpatialChanged) {
+				int count = getSampleCount();
+				// get previous eda (sample)
+				double sda = count>0 ? (Double)getAttrValue("eda", count-1) : 0.0;
+				return sda + m_et.getDistance();
+			}
+			// failure
 			return 0.0;
+		}
 	}	
+	
+	/**
+	 * Get estimated average speed between last known position to and destination (ese)
+	 * 
+	 * @return Speed (m/s)
+	 */	
+	public double ese() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("ese", getSampleCount()-1);
+		}
+		else {
+			double ete = ete();
+			return ete>0 ? ede()/ete() : 0;
+		}
+	}
+		
+	/**
+	 * Get estimated average speed first known position to destination (esa)
+	 * 
+	 * @return Speed (m/s)
+	 */	
+	public double esa() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("esa", getSampleCount()-1);
+		}
+		else {
+			if (!m_isSpatialChanged) {
+				int count = getSampleCount();
+				// get previous esa (sample)
+				double ssa = count>0 ? (Double)getAttrValue("esa", 0) : 0.0;
+				// get current ese (estimate)
+				double ese = ese();
+				// recursively calculate estimated average speed from 
+				// first known position to destination
+				return (ssa + ese)/2;
+			}
+			// failure
+			return 0.0;
+		}
+	}
 	
 	/**
 	 * Gets estimated current position (ecp)
 	 * 
+	 * @return Position and Time (TimePos)
 	 */	
-	public GeoPos ecp() {
-		if(m_current!=null)
-			return new GeoPos(m_current.pd[1]);
-		else
+	public TimePos ecp() {
+		if(m_isArchived) {
+			return (TimePos)getAttrValue("ecp", getSampleCount()-1);
+		}
+		else {
+			if (!(m_isSpatialChanged || m_current==null)) {
+				return new TimePos(m_current.pd[1],m_current.t);
+			}
+			// failure
 			return null;
+		}
 	}
-		
-	/**
-	 * Get estimated average speed to destination (eas)
-	 * 
-	 * @return Speed in m/s
-	 */	
-	public double eas() {
-		double ete = ete();
-		return ete>0 ? ede()/ete() : 0;
-	}
-		
+			
 	/* =====================================================================
 	 * Measured results
 	 * ===================================================================== */
@@ -658,50 +769,244 @@ public class RouteCost extends AbstractDsObject {
 	/**
 	 * Gets a copy the first known position (fkp)
 	 * 
+	 * @return Position and Time (TimePos)
 	 */	
 	public TimePos fkp() {
-		return m_mt.getStartPoint();
+		if(m_isArchived) {
+			return (TimePos)getAttrValue("fkp", getSampleCount()-1);
+		}
+		else {
+			return m_mt.getStartPoint();
+		}
 	}
 		
 	/**
 	 * Gets a copy the last known position (lkp)
 	 * 
+	 * @return Position and Time (TimePos)
 	 */	
 	public TimePos lkp() {
-		TimePos tp = m_mt.getStopPoint();
-		if(tp!=null) {
-			return new TimePos(tp.getPosition(),tp.getTime());
+		if(m_isArchived) {
+			return (TimePos)getAttrValue("lkp", getSampleCount()-1);
 		}
-		return null;
+		else {
+			TimePos tp = m_mt.getStopPoint();
+			if(tp!=null) {
+				return new TimePos(tp.getPosition(),tp.getTime());
+			}
+			return null;
+		}
 	}	
 	
 	/**
-	 * Get measured moved time to arrival at last known position (mta)
+	 * Get measured time from first to last known position (mta)
 	 * 
-	 * @return Time moved in seconds
+	 * @return Time (Calendar)
 	 */	
-	public int mta() {
-		return m_mt!=null ? (int)m_mt.getDuration(): 0;
+	public Calendar mta() {
+		if(m_isArchived) {
+			return (Calendar)getAttrValue("mta", getSampleCount()-1);
+		}
+		else {
+			return m_mt.size()>0 ? m_mt.getStopPoint().getTime(): null;
+		}
 	}
 	
 	/**
-	 * Get measured distance to arrival at last known position (mda)
+	 * Get measured time from previous to last known position (mte)
+	 * 
+	 * @return Time (seconds)
+	 */	
+	public int mte() {
+		if(m_isArchived) {
+			return (Integer)getAttrValue("mte", getSampleCount()-1);
+		}
+		else {
+			return m_mt.size()>1 ? (int)m_mt.getReminder(m_mt.size()-2): 0;
+		}
+	}
+	
+	/**
+	 * Get measured distance from previous to last known position (mde)
+	 * 
+	 * @return Distance (meter)
+	 * 
+	 */	
+	public double mde() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("mde", getSampleCount()-1);
+		}
+		else {
+			int count = m_mt.size();
+			return count>1?  m_mt.getDistance(count-2,count-1,false) : 0.0;
+		}
+	}
+	
+	/**
+	 * Get measured distance from first to last known position (mda)
+	 * 
+	 * @return Distance (meter)
 	 * 
 	 */	
 	public double mda() {
-		return m_mt!=null ?  m_mt.getDistance() : 0.0;
+		if(m_isArchived) {
+			return (Double)getAttrValue("mda", getSampleCount()-1);
+		}
+		else {
+			return m_mt.size()>1 ?  m_mt.getDistance() : 0.0;
+		}
 	}
 	
 	/**
-	 * Get measured average speed to arrival at last known position (mas)
+	 * Get measured average speed between previous and last known position (mse)
+	 * 
+	 * @return Speed (m/s)
+	 */	
+	public double mse() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("mse", getSampleCount()-1);
+		}
+		else {
+			double mte = mte();
+			double mde = mde();
+			return mte>0 ? mde/mte : 0.0;
+		}
+	}	
+		
+	/**
+	 * Get measured average speed between first and last known position (mas)
+	 * 
+	 * @return Speed (m/s)
+	 */	
+	public double msa() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("mse", getSampleCount()-1);
+		}
+		else {
+			long mta = mta()!=null ? mta().getTimeInMillis() : -1;
+			double mda = mda();
+			return mta>0 ? mda/mta : 0.0;
+		}
+	}	
+	
+	/* =====================================================================
+	 * Error indicators
+	 * ===================================================================== */
+	
+	/**
+	 * Get error between estimated and measured time from previous to 
+	 * last known position. 
+	 * 
+	 * @return Time (seconds)
+	 */	
+	public double xte() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("xte", getSampleCount()-1);
+		}
+		else {
+			int ste = (Integer)getAttrValue("ete", getSampleCount()-1); 
+			int mte = mte(); 
+			return ste==-1 || mte==-1 ? 0.0 : ste - mte;
+		}
+	}	
+	
+	/**
+	 * Get error between estimated and measured time from first to last 
+	 * known position
+	 * 
+	 * @return Time (seconds)
+	 */	
+	public double xta() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("xta", getSampleCount()-1);
+		}
+		else {
+			Calendar t = (Calendar)getAttrValue("eta", getSampleCount()-1); 
+			long sta = t!=null ? t.getTimeInMillis() : -1; 
+			long mta = mta()!=null ? mta().getTimeInMillis() : -1; 
+			return sta==-1 || mta==-1 ? 0.0 : ((double)(sta - mta))/1000;
+		}
+	}	
+	
+	/**
+	 * Get error between estimated and measured distance from previous to 
+	 * last known position.
+	 * 
+	 * @return Distance (meter)
+	 */	
+	public double xde() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("xde", getSampleCount()-1);
+		}
+		else {
+			double sde = (Double)getAttrValue("ede", getSampleCount()-1);
+			double mde = mde(); 
+			return sde<=0.0 || mde<=0.0 ? 0.0 : sde - mde;
+		}
+	}	
+	
+	/**
+	 * Get error between estimated and measured distance from first to 
+	 * last known position
+	 * 
+	 * @return Distance (meter)
+	 */	
+	public double xda() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("xda", getSampleCount()-1);
+		}
+		else {
+			double sda = (Double)getAttrValue("eda", getSampleCount()-1); 
+			double mda = mda(); 
+			return sda<=0.0 || mda<=0.0 ? 0.0 : sda - mda;
+		}
+	}	
+	
+	/**
+	 * Get error between estimated and measured average speed time from previous 
+	 * to last known position
+	 * 
+	 * @return Speed (m/s)
+	 */	
+	public double xse() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("xse", getSampleCount()-1);
+		}
+		else {
+			double xde = xde(); 			
+			double xte = xte(); 
+			return xte>0 ? xde/xte : 0.0;
+		}
+	}	
+	
+	/**
+	 * Get error between estimated and measured average speed time from first 
+	 * to last known position
 	 * 
 	 * @return Speed in m/s
 	 */	
-	public double mas() {
-		double mta = mta();
-		return mta>0 ? mda()/mta : 0.0;
+	public double xsa() {
+		if(m_isArchived) {
+			return (Double)getAttrValue("xsa", getSampleCount()-1);
+		}
+		else {
+			double xda = xda(); 			
+			double xta = xta(); 
+			return xta>0 ? xda/xta : 0.0;
+		}
 	}	
-		
+	
+	/* =====================================================================
+	 * Overridden methods
+	 * ===================================================================== */
+
+	@Override
+	protected void addSample() {
+		if(!m_isArchived) {
+			super.addSample();
+		}
+	}
+	
 	/* =====================================================================
 	 * Private methods
 	 * ===================================================================== */
@@ -728,7 +1033,6 @@ public class RouteCost extends AbstractDsObject {
 		int offset = 0;					// position offset index
 		IPoint pe = null;				// A leg position (ESRI)
 		Point2D.Double pd = null;		// A leg position (Java)
-		boolean bCalculate = false;		// if true, calculate first step
 		Calendar t = null;				// the start time at first position
 		
 		// create new estimate?
@@ -787,7 +1091,7 @@ public class RouteCost extends AbstractDsObject {
 				pd = lkp.getPosition();
 				// get a copy of start time
 				t = (Calendar)lkp.getTime().clone();
-				// get offset
+				// get position offset
 				offset = findNearest(pd,-1,false,false);
 				// found?
 				if(offset!=-1) {
@@ -806,8 +1110,23 @@ public class RouteCost extends AbstractDsObject {
 					d = MapUtil.greatCircleDistance( pd.y,pd.x, next.y,next.x );
 					// initialize arguments
 					args.init(offset,t,h,pd,pe,prepare);
-					// calculate
-					bCalculate = true;
+					// initialize track
+					initEstimatedTrack(args,create);
+					// prepare to calculate time cost of this initial off track leg
+					args.next(offset,d,next,MapUtil.getEsriPoint(next,m_srs));				
+					/* 
+					 * calculate first step and add to estimate. Note that the first step is not on 
+					 * the track, it is a step from last known position to the nearest point on the
+					 * track. Hence, there is no a priori cost information, an estimation is therefore
+					 * required. In addition, this step should not be added to the a priori information
+					 * for later use. Consequently, the calculation method should have the arguments 
+					 * estimate:=true (do not try to use a priori information) and create:=false (do not
+					 * add this step information to the a priori information for later use). The result
+					 * should be added to the track. Hence add:=true is used.
+					 */ 
+					calculate(args,true,false,true);
+					// increment offset index to start point on next leg
+					args.offset++;
 				}
 			}
 			// get offset position?
@@ -830,26 +1149,9 @@ public class RouteCost extends AbstractDsObject {
 				// move to stop point on leg
 				offset++;
 				// initialize arguments
-				args.init(offset,t,h,pd,pe,prepare);			
-			}
-			
-			// get size of results
-			size = Math.max(10,m_positions.size() - args.offset - 1);
-			
-			// initialize estimated track
-			m_et = new Track("et","et",size);			
-			
-			// add first point in track 
-			m_et.add(new TimePos(pd,h,t));
-			
-			// calculate?
-			if(bCalculate) {
-				// prepare to calculate time cost of this initial leg
-				args.next(offset,d,getPoint(offset,false,false), getEsriPoint(offset,false,false));
-				// calculate first step and add to estimate
-				calculate(args,create,false,true);
-				// increment offset index to start point on 
-				args.offset++;
+				args.init(offset,t,h,pd,pe,prepare);	
+				// initialize track
+				initEstimatedTrack(args,create);
 			}
 			
 			// set current leg
@@ -870,6 +1172,49 @@ public class RouteCost extends AbstractDsObject {
 		}
 		// failed
 		return null;
+		
+	}
+	
+	private void initEstimatedTrack(LegData args, boolean create) {
+		
+		// get size of results
+		int size = Math.max(10,m_positions.size() - args.offset - 1);
+		
+		// create position
+		TimePos p = new TimePos(args.pd[0],args.h,args.t);
+		
+		// archive or clear samples?
+		if(create)
+			/* =============================================
+			 * When a route is spatial changed, all current 
+			 * estimate samples are deleted. 
+			 * ============================================= */
+			clearSamples();
+		else {
+			/* =============================================
+			 * Each time last known position (LKP) is updated, 
+			 * a new estimated track is calculated. Hence,
+			 * the current estimate only represents the
+			 * last estimation made. Information about 
+			 * earlier estimates are lost. Performance 
+			 * analysis of the algorithm requires that 
+			 * the relevant information about all estimation
+			 * passes is stored. When LKP is updated, the 
+			 * current estimate is sampled and stored for 
+			 * later use.
+			 * 
+			 * IMPORTANT: When a route is spatial changed,
+			 * all current estimate samples are deleted. 
+			 * 		 
+			 * ============================================= */
+			addSample();
+		}
+		
+		// initialize estimated track
+		m_et = new Track("et","et",size);			
+		
+		// add first point in new estimated track 
+		m_et.add(p);		
 		
 	}
 	
@@ -1100,10 +1445,10 @@ public class RouteCost extends AbstractDsObject {
 		if(!hasRoute() || track) {
 			if(all) {
 				// get measured point?
-				if(index<m_mt.getCount())
+				if(index<m_mt.size())
 					return m_mt.get(index).getPosition();  
 				// remove measured offset
-				index -= m_mt.getCount()-1;
+				index -= m_mt.size()-1;
 				// return estimated
 				return m_et.get(index).getPosition();  
 			}
@@ -1123,10 +1468,10 @@ public class RouteCost extends AbstractDsObject {
 			if(!hasRoute() || track) {
 				if(all) {
 					// get measured point?
-					if(index<m_mt.getCount())
+					if(index<m_mt.size())
 						return MapUtil.getEsriPoint(m_mt.get(index).getPosition(),m_srs);  
 					// remove measured offset
-					index -= m_mt.getCount()-1;
+					index -= m_mt.size()-1;
 					// return estimated
 					return MapUtil.getEsriPoint(m_et.get(index).getPosition(),m_srs);  
 				}

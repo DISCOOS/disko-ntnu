@@ -36,7 +36,7 @@ public class UnitFeature extends AbstractMsoFeature {
 		IUnitIf unit = (IUnitIf)msoObject;
 		geodata = unit.getPosition();
 		if (geodata !=null) {
-			geometry = MapUtil.getEsriPoint((Position)geodata, srs);
+			geometry = MapUtil.getEsriPoint(((Position)geodata).getGeoPos(), srs);
 			changeCount = geodata.getChangeCount();
 		}
 		else {

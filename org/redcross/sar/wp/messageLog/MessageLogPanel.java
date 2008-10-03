@@ -10,10 +10,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
@@ -22,7 +22,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
@@ -51,9 +51,9 @@ public class MessageLogPanel
     private static JSplitPane m_splitter1;
     private static IDiskoWpMessageLog m_wpModule;
     private static IDiskoMap m_map;
-    private static JTable m_logTable;
+    private static DiskoTable m_logTable;
     //private MessageRowSelectionListener m_rowSelectionListener;
-    private static JScrollPane m_scrollPane1;
+    private static JScrollPane m_scrollPane;
     private static JPanel m_tablePanel;
 
     /**
@@ -71,6 +71,7 @@ public class MessageLogPanel
         m_splitter1.setContinuousLayout(false);
         m_splitter1.setRequestFocusEnabled(true);
         m_splitter1.setOrientation(0);
+        m_splitter1.setBorder(BorderFactory.createEmptyBorder());
 
         WorkspacePanel.add(m_splitter1, BorderLayout.CENTER);
 
@@ -135,21 +136,13 @@ public class MessageLogPanel
     	m_tablePanel.setFocusCycleRoot(true);
     	m_splitter1.setLeftComponent(m_tablePanel);
 
-        m_scrollPane1 = new JScrollPane(
-        		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
-        		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        m_scrollPane1.setOpaque(false);
-
-        m_tablePanel.add(m_scrollPane1, LOG_ID);
-
 		MapPanel panel = new MapPanel(m_map);
 		panel.setNorthBarVisible(true);
 		panel.setSouthBarVisible(true);
         m_tablePanel.add(panel, MAP_ID);
 
-        m_logTable = new JTable();
-        m_scrollPane1.setViewportView(m_logTable);
-
+        m_logTable = new DiskoTable();
+        
         final MessageTableModel model = new MessageTableModel(m_logTable, m_wpModule);
         m_logTable.setModel(model);
         m_logTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -206,10 +199,13 @@ public class MessageLogPanel
 								
 				// Get selected row index
 				int row = m.getMinSelectionIndex();
+				
+				// convert to model
+				row = m_logTable.convertRowIndexToModel(row);
 
 				// get selected message
 		        IMessageIf message = (row!=-1 ? 
-		        		(IMessageIf)model.getMessage(m_logTable.convertRowIndexToModel(row)) : null);
+		        		(IMessageIf)model.getMessage(row) : null);
 		        
 				// Update top message panel
 				MessageLogBottomPanel.newMessageSelected(message);
@@ -287,11 +283,18 @@ public class MessageLogPanel
         JTableHeader tableHeader = m_logTable.getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
+        
+        m_scrollPane = new JScrollPane(m_logTable,
+        		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+        		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        m_scrollPane.setOpaque(false);
+        m_tablePanel.add(m_scrollPane, LOG_ID);
+
+        
 
     }
 
-    public void setLayersSelectable() {
+    public void setSelectableLayers() {
         try {
         	// buffer changes
         	m_map.suspendNotify();
@@ -332,7 +335,7 @@ public class MessageLogPanel
      */
     public void hidePanels()
     {
-    	MessageLogBottomPanel.hideEditPanels();
+    	MessageLogBottomPanel.hideEditPanels(false);
     }
 
     /**

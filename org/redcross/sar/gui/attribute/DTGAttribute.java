@@ -27,28 +27,45 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private int m_year;
+	private int m_month;
+	
 	/*==================================================================
 	 * Constructors
 	 *================================================================== 
 	 */
 	
-	public DTGAttribute(String name, String caption, boolean isEditable,
-			int width, int height, Object value) {
-		super(name, caption, isEditable, width, height, value);
-	}
-
 	public DTGAttribute(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
+		setOffset(Calendar.getInstance());
 	}
 		
+	public DTGAttribute(String name, String caption, boolean isEditable, int width, int height) {
+		super(name, caption, isEditable, width, height, null);
+		setOffset(Calendar.getInstance());
+	}
+	
+	public DTGAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Calendar time) {
+		super(name, caption, isEditable, width, height, time);
+		setOffset(time);
+	}
+
 	public DTGAttribute(MsoCalendar attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
+		setOffset(Calendar.getInstance());
 	}
 
 	public DTGAttribute(MsoCalendar attribute, String caption, boolean isEditable,
-			int width, int height) {
+			int width, int height, Calendar time) {
 		super(attribute, caption, isEditable, width, height);
+		setOffset(time);
+	}
+	
+	private void setOffset(Calendar t) {
+		m_year = t.get(Calendar.YEAR);
+		m_month = t.get(Calendar.MONTH);		
 	}
 	
 	/*==================================================================
@@ -103,7 +120,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 				? (Calendar)MsoUtils.getAttribValue(m_attribute) : null;
 		// try to get DTG from text field
 		try {
-			time = DTG.DTGToCal(((JFormattedTextField)m_component).getText());
+			time = DTG.DTGToCal(m_year,m_month,((JFormattedTextField)m_component).getText());
 		} catch (IllegalMsoArgumentException e) {
 			// consume
 		}
@@ -112,12 +129,47 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	
 	public boolean setValue(Object value) {
 		// validate data type
-		if(value instanceof Calendar)
+		if(value instanceof Calendar) {
+			setOffset((Calendar)value);
 			((JFormattedTextField)m_component).setText(DTG.CalToDTG((Calendar)value));
-		else 
+		}
+		else if (value instanceof String ||
+				 value instanceof Number) {
 			((JFormattedTextField)m_component).setText(String.valueOf(value));
+		}
+		else {
+			return false;
+		}
 		// success
 		return true;
+	}
+	
+	public String getDTG() {
+		return DTG.CalToDTG(getValue());
+	}
+	
+	public boolean setDTG(String aDTG) {
+		try {
+			setValue(DTG.DTGToCal(m_year, m_month, aDTG));
+			return true;
+		} catch (IllegalMsoArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public boolean setDTG(int year, int month, String aDTG) {
+		try {
+			m_year = year;
+			m_month = month;
+			setValue(DTG.DTGToCal(m_year, m_month, aDTG));
+			return true;
+		} catch (IllegalMsoArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
@@ -158,7 +210,7 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-			}
+			}			
 			return mf1;
 		}
 		

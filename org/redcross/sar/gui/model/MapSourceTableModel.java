@@ -3,11 +3,9 @@ package org.redcross.sar.gui.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.table.AbstractTableModel;
-
 import org.redcross.sar.map.MapSourceInfo;
 
-public class MapSourceTableModel extends AbstractTableModel {
+public class MapSourceTableModel extends DiskoTableModel {
 
 	private static final long serialVersionUID = 1L;
 

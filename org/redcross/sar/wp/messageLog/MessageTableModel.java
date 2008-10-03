@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
@@ -27,7 +27,6 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.DTG;
@@ -37,7 +36,7 @@ import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 /**
  * Table model providing log table with data
  */
-public class MessageTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class MessageTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
 {
     private static final long serialVersionUID = 1L;
 
@@ -151,7 +150,7 @@ public class MessageTableModel extends AbstractTableModel implements IMsoUpdateL
                     return new Integer[]{count-unconfirmed,count};
                 } else
                 {
-                    ICommunicatorIf receiver = message.getSingleReceiver();
+                    ICommunicatorIf receiver = message.getReceiver();
                     if (receiver == null)
                     {
                         receiver = (ICommunicatorIf) m_wpModule.getCmdPost();

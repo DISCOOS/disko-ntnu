@@ -12,6 +12,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.mso.model.POITableModel;
 import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -25,7 +26,7 @@ public class DescriptionDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
 	private DefaultPanel contentPanel = null;
-	private JTable poiTable = null;
+	private DiskoTable poiTable = null;
 	private IDiskoWpModule wp = null;
 	private POITableModel tableModel = null;
 
@@ -151,10 +152,10 @@ public class DescriptionDialog extends DefaultDialog {
 	 * 	
 	 * @return javax.swing.JTable	
 	 */
-	private JTable getPoiTable() {
+	private DiskoTable getPoiTable() {
 		if (poiTable == null) {
 			try {
-				poiTable = new JTable(getPOITableModel());
+				poiTable = new DiskoTable(getPOITableModel());
 				poiTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				poiTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 				poiTable.setColumnSelectionAllowed(false);

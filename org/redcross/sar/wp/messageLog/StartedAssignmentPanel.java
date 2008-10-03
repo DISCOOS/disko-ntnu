@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -11,6 +10,7 @@ import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.DTG;
 
 import java.awt.CardLayout;
@@ -35,7 +35,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 	{
 		super(wp);
 
-		m_editAssignmentPanel.getAttribute("Time").setCaption(
+		m_editAssignmentPanel.getAttribute("Time").setCaptionText(
 				 m_wpMessageLog.getBundleText("StartedTimeLabel.text") + ": ");
 
 	}
@@ -62,7 +62,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		{
 			time = DTG.CalToDTG(Calendar.getInstance());
 		}
-		m_editAssignmentPanel.getAttribute("Time").setValue(time);
+		m_editAssignmentPanel.setValue("Time",time);
 
 		CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
 		layout.show(m_cardsPanel, EDIT_ASSIGNMENT_ID);
@@ -103,14 +103,14 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 			
 		}
 		
-		if(unitHasAssignedAssignment(unit))
+		if(unitHasAllocatedAssignment(unit))
 		{
-			// If unit has assigned, ask if this is started
-			IAssignmentIf assignment = unit.getAssignedAssignment();
+			// If unit has Allocated, ask if this is started
+			IAssignmentIf assignment = unit.getAllocatedAssignment();
 
 			// try not committed assignments?
 			if(assignment==null) {
-				IMessageLineIf line = getAddedLine(MessageLineType.ASSIGNED);
+				IMessageLineIf line = getAddedLine(MessageLineType.ALLOCATED);
 				assignment = (line!=null) ? line.getLineAssignment() : null;			
 			}
 			
@@ -136,7 +136,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 				MessageLogBottomPanel.showStartPanel();
 			}
 		}
-		else if(unitHasNextAssignment(unit))
+		else if(unitEnqueuedAssignment(unit))
 		{
 			// Else unit could have started from allocated buffer
 			showNextAssignment();
@@ -148,7 +148,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		}
 		else {
 			Utils.showWarning("Du må først oppgi en lovlig avsender. Avsender er den som har utført oppdraget og kan derfor ikke være et KO");
-			MessageLogBottomPanel.showChangeFromPanel();
+			MessageLogBottomPanel.showFromPanel();
 			return;
 		}
 		// success
@@ -163,11 +163,11 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 			
 			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
-					MessageLineType.ASSIGNED, MessageLineType.STARTED,
+					MessageLineType.ALLOCATED, MessageLineType.STARTED,
 					Calendar.getInstance(), m_assignmentUnit, m_selectedAssignment);
 			
 			// add to lines
-			m_addedLines.add(message.findMessageLine(MessageLineType.ASSIGNED, m_selectedAssignment, false));
+			m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, m_selectedAssignment, false));
 			
 		}
@@ -175,9 +175,9 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		MessageLogBottomPanel.showStartPanel();
 	}
 	
-    public void showComponent()
+    public void showEditor()
     {
-    	super.showComponent();
+    	super.showEditor();
     	
     	m_messageLinesPanel.setCaptionText("Startet oppdrag");
         

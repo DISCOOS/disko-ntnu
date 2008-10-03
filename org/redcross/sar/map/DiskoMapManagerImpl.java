@@ -68,7 +68,10 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		this.app = app;
 		this.xmlFile = file;
 		// initialize
-		if(!loadXmlFile() || getMxdDocCount()==0) installMxdDocs();
+		if(!loadXmlFile() || getMxdDocCount()==0) 
+			installMxdDocs();
+		else
+			synchronizeMxdDocs();
 	}
 
 	private EnumSet<IMsoFeatureLayer.LayerCode> getPrintMapLayers() {	
@@ -238,7 +241,91 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	}
 	
 	/**
-	 * Reads all mxddoc paths from properties.
+	 * Searches for any changes in available mxd docs
+	 *
+	 */
+	public boolean isMxdDocsInSync() {
+		
+		// get mxd documents in catalog
+		List<String> files = getMxdDocsInCatalog(app.getProperty("MxdDocument.catalog.path"));
+		
+		// initialize
+		List<String> uninstalled = new ArrayList<String>();
+		List<String> missing = new ArrayList<String>();
+		
+		// compare available with installed
+		for (String filename : files){
+			if(!mxdDocs.containsKey(filename))
+				uninstalled.add(filename);
+		}
+		// compare installed with available
+		for (String filename : mxdDocs.keySet()){
+			if(!files.contains(filename))
+				missing.add(filename);
+		}
+		
+		// finished
+		return (uninstalled.size()==0 && missing.size()==0);
+		
+	}
+	
+	/**
+	 * Adds any available mxd documents, and removes missing mxd documents
+	 * 
+	 * @return <code>true</code> is installed mxd documents was changed, <code>false</code>. 
+	 */
+	
+	public boolean synchronizeMxdDocs() {
+		
+		// get mxd documents in catalog
+		List<String> files = getMxdDocsInCatalog(app.getProperty("MxdDocument.catalog.path"));
+		
+		// initialize
+		List<String> uninstalled = new ArrayList<String>();
+		List<String> missing = new ArrayList<String>();
+		
+		// compare available with installed
+		for (String filename : files){
+			if(!mxdDocs.containsKey(filename))
+				uninstalled.add(filename);
+		}
+		// compare installed with available
+		for (String filename : mxdDocs.keySet()){
+			if(!files.contains(filename))
+				missing.add(filename);
+		}
+		
+		// has to be synchronized?
+		if(!(uninstalled.size()==0 && missing.size()==0)) {
+			// notify
+			System.out.println("synchronizeMxdDocs()::started");
+			// uninstall missing mxd documents
+			for(String file : missing)
+				uninstallMxdDoc(file);
+			// install uninstalled
+			for (String file : uninstalled){			
+				try{
+					installMxdDoc(file);
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+			// update changes
+			storeXmlFile();
+			// notify
+			System.out.println("synchronizeMxdDocs()::finished, " 
+					+ "antall mxd'er installert: " +  uninstalled.size() 
+					+ ", antall mxd'er fjernet: " +  missing.size());
+			// is changed
+			return true;
+		}
+		
+		// no change
+		return false;
+	}
+	
+	/**
+	 * Installs all available mxd docs
 	 *
 	 */
 	public int installMxdDocs() {
@@ -252,21 +339,16 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// keep temporary map between uses
 		setKeepTmpMap(true);
 		
-		// load available mxd document file paths
-		String path = app.getProperty("MxdDocument.catalog.path");	
-		File f = FileSystemView.getFileSystemView().createFileObject(path);
-		File[] files = FileSystemView.getFileSystemView().getFiles(f, true);
-		for (int i=0; i < files.length; i++){			
-			String filename = files[i].getName();
-			if (filename.contains(".")){
-				try{
-					if (filename.substring(filename.lastIndexOf(".")).equalsIgnoreCase(".mxd")){
-						installMxdDoc(path + "\\" + filename);
-					}
-				}catch (Exception e){
-					e.printStackTrace();
-				}
-			}			
+		// get available mxd documents in catalog
+		List<String> files = getMxdDocsInCatalog(app.getProperty("MxdDocument.catalog.path"));
+		
+		// loop over found file names
+		for (String file : files){			
+			try{
+				installMxdDoc(file);
+			}catch (Exception e){
+				e.printStackTrace();
+			}
 		}
 		
 		// update xml file?
@@ -275,7 +357,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// get current mxd document
 		String mxddoc = this.mxdDoc;
 		
-		// get from name from propertes?
+		// get from name from properties? If not found, use last loaded mxd document
 		mxddoc = (mxddoc==null) ? app.getProperty("MxdDocument.path") : mxddoc;
 
 		// reset to allow for change
@@ -302,7 +384,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		setKeepTmpMap(false);
 		
 		// notify
-		System.out.println("installMxdDocs()::started, antall mxd'er installert: " +  mxdDocs.size());
+		System.out.println("installMxdDocs()::finished, antall mxd'er installert: " +  mxdDocs.size());
 		
 		// finished
 		return mxdDocs.size();
@@ -383,9 +465,36 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		rc.setAttribute("XMax", String.valueOf(info.getXMax()));
 		rc.setAttribute("YMin", String.valueOf(info.getYMin()));
 		rc.setAttribute("YMax", String.valueOf(info.getYMax()));
-				
+					
 	}
 	
+	private void removeMapSourceInfo(MapSourceInfo info) {
+		
+		// initialize
+		Element it = null;
+		String mxddoc = info.getMxdDoc();
+		NodeList elems = xmlDoc.getElementsByTagName("MxdDoc");
+		// locate and update
+		for (int i = 0; i < elems.getLength(); i++) {
+			Element e = (Element)elems.item(i);
+			if (mxddoc.equals(e.getAttribute("name"))) { 
+				it = e; break;
+			}
+		}			
+		
+		// delete?
+		if(it!=null) {
+			// root node
+			elems = xmlDoc.getElementsByTagName("DiskoApplication");
+			// found?
+			if(elems.getLength()>0) {
+				// get first element
+				Element disko = (Element)elems.item(0); 
+				disko.removeChild(it);
+			}
+		}		
+					
+	}
 
 	/**
 	 * Uninstalls all mxd documents.
@@ -405,6 +514,9 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			if(uninstallMxdDoc(it.getMxdDoc())) count++;
 		}
 		
+		// update xml file?
+		if(count>0) storeXmlFile();
+		
 		// finished
 		return count;
  
@@ -412,7 +524,8 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 
 	public boolean uninstallMxdDoc(String mxddoc) {
 		if(mxdDocs.containsKey(mxddoc)) {
-			mxdDocs.remove(mxddoc);
+			MapSourceInfo info = mxdDocs.remove(mxddoc);
+			removeMapSourceInfo(info);			
 			return true;
 		}
 		return false;
@@ -774,6 +887,32 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 
 	public boolean isMap(Component c) {
 		return maps.contains(c);
+	}
+	
+	/* ===============================================================================
+	 * Helper methods
+	 * =============================================================================== */
+	
+	private List<String> getMxdDocsInCatalog(String path) {
+		
+		// initialize
+		List<String> list = new ArrayList<String>();
+		
+		// load available mxd document file paths
+		File f = FileSystemView.getFileSystemView().createFileObject(path);
+		File[] files = FileSystemView.getFileSystemView().getFiles(f, true);
+		for (int i=0; i < files.length; i++){			
+			String filename = files[i].getName();
+			if (filename.contains(".")){
+				if (filename.substring(filename.lastIndexOf(".")).equalsIgnoreCase(".mxd")){
+					list.add(path + "\\" + filename);
+				}
+			}			
+		}
+		
+		// finished
+		return list;
+		
 	}
 	
 	/* ===============================================================================

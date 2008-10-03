@@ -21,12 +21,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 
 public class HeaderPanel extends JPanel {
 
@@ -38,6 +38,7 @@ public class HeaderPanel extends JPanel {
 	private Insets m_insets;
 	private boolean m_isBorderVisible = true;
 	private Color m_borderColor = Color.GRAY;
+	private int m_buttonDirection = SwingConstants.RIGHT;
 	private ButtonSize m_buttonSize = ButtonSize.NORMAL;
 	
 	private JPanel m_captionPanel;
@@ -60,8 +61,13 @@ public class HeaderPanel extends JPanel {
 	}
 	
 	public HeaderPanel(String caption, ButtonSize buttonSize) {
+		this(caption,buttonSize,SwingConstants.RIGHT);
+	}
+	
+	public HeaderPanel(String caption, ButtonSize buttonSize, int buttonDirection) {
 		// prepare
 		m_buttonSize = buttonSize;
+		m_buttonDirection = buttonDirection;
 		m_insets = new Insets(1,1,1,1);
 		m_actions = new HashMap<String, ActionEvent>();
 		m_actionListeners = new ArrayList<ActionListener>();
@@ -83,11 +89,21 @@ public class HeaderPanel extends JPanel {
 	private void initialize() {	
 		this.setOpaque(true);
 		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-		this.add(getCaptionPanel());
-		this.add(Box.createHorizontalStrut(5));
-		this.add(getButtonsPanel());		
+		if(m_buttonDirection==SwingConstants.RIGHT) {
+			this.add(getCaptionPanel());
+			this.add(Box.createHorizontalStrut(5));
+			this.add(getButtonsPanel());
+		}
+		else {
+			this.add(getButtonsPanel());
+			this.add(Box.createHorizontalStrut(5));
+			this.add(getCaptionPanel());			
+		}
 		this.setBorderColor(m_borderColor);
 		this.setCaptionColor(Color.WHITE,Color.LIGHT_GRAY);
+		// limit height, allow any width
+		DiskoButtonFactory.setFixedHeight(this, m_buttonSize);
+		
 	}
 	
 	private JPanel getCaptionPanel() {
@@ -99,8 +115,6 @@ public class HeaderPanel extends JPanel {
 				m_captionPanel.setLayout(new BoxLayout(m_captionPanel,BoxLayout.X_AXIS));
 				m_captionPanel.add(getIconLabel());
 				m_captionPanel.add(getCaptionLabel());
-				// limit height, allow any width
-				DiskoButtonFactory.setFixedHeight(m_captionPanel, m_buttonSize);
 				// align {left,center} in parent container
 				m_captionPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
 				m_captionPanel.setAlignmentY(JPanel.CENTER_ALIGNMENT);				
@@ -204,7 +218,7 @@ public class HeaderPanel extends JPanel {
 	 *
 	 */
 	public void setCaptionText(String caption) {
-		caption = Utils.stripHtml(caption);
+		caption = Utils.trimHtml(caption);
 		getCaptionLabel().setText("<html>"+caption+"</html>");
 		setCaptionVisible();
 	}	
@@ -263,7 +277,7 @@ public class HeaderPanel extends JPanel {
 	public ButtonsPanel getButtonsPanel() {
 		if (m_buttons == null) {
 			try {
-				m_buttons = new ButtonsPanel(SwingConstants.RIGHT,m_buttonSize);
+				m_buttons = new ButtonsPanel(m_buttonDirection,m_buttonSize);
 				m_buttons.setOpaque(true);
 				// align {left,center} in parent container
 				m_buttons.setAlignmentX(JPanel.LEFT_ALIGNMENT);

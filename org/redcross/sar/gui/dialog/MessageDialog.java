@@ -4,7 +4,6 @@ import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
-import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.MessagePanel;
 
 import java.awt.Dimension;
@@ -23,7 +22,7 @@ public class MessageDialog extends DefaultDialog {
 	
 	private String respons = null;
 	
-	private MessagePanel msgPanel = null;
+	private MessagePanel msgPanel;
 
 	/**
 	 * @param owner
@@ -62,9 +61,11 @@ public class MessageDialog extends DefaultDialog {
 	private MessagePanel getMessagePanel() {
 		if (msgPanel == null) {
 			msgPanel = new MessagePanel();
+			/*
 			msgPanel.setScrollBarPolicies(
 					DefaultPanel.VERTICAL_SCROLLBAR_NEVER, 
 					DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
+			*/
 			msgPanel.setPreferredSize(new Dimension(300,150));
 			msgPanel.setPreferredBodySize(new Dimension(270,100));
 			msgPanel.addActionListener(new ActionListener() {

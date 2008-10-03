@@ -4,16 +4,12 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
-import org.redcross.sar.wp.unit.PersonnelUtilities;
-import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 import java.util.ResourceBundle;
 
@@ -26,36 +22,7 @@ import javax.swing.JOptionPane;
  */
 public class UnitUtilities
 {
-    private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
-
-	/**
-	 * Toggles pause status for given unit
-	 * @param unit
-	 * @throws IllegalOperationException Thrown if pause status can't be toggled (i.e. unit is initializing)
-	 */
-	public static UnitStatus toggleUnitPause(IUnitIf unit, UnitStatus resume) throws IllegalOperationException
-	{
-		if(unit.getStatus() == UnitStatus.INITIALIZING || unit.getStatus() == UnitStatus.RELEASED)
-		{
-			throw new IllegalOperationException();
-		}
-
-		// get current status
-		UnitStatus status = unit.getStatus(); 
-		
-		// Toggle pause
-		if(status == UnitStatus.PAUSED)
-		{
-			unit.setStatus(resume);
-		}
-		else
-		{
-			unit.setStatus(UnitStatus.PAUSED);
-		}
-		
-		// return status
-		return status;
-	}
+    private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);	
 
 	/**
 	 * Releases a unit
@@ -137,7 +104,7 @@ public class UnitUtilities
 		// Check message log
 		for(IMessageIf message : wp.getCmdPost().getMessageLogItems())
 		{
-			if(message.getSender() == unit || message.getSingleReceiver() == unit)
+			if(message.getSender() == unit || message.getReceiver() == unit)
 			{
 				throw new IllegalOperationException();
 			}

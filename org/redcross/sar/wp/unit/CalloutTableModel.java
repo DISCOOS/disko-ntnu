@@ -11,7 +11,7 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 import java.util.EnumSet;
 
 /**
@@ -19,7 +19,7 @@ import java.util.EnumSet;
  *
  * @author thomasl
  */
-public class CalloutTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class CalloutTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 

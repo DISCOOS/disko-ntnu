@@ -5,6 +5,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.mso.Position;
 
@@ -65,21 +66,26 @@ public class BuildTestData
         IUnitListIf unitList = cmdPost.getUnitList();
         IUnitIf unit;
 
-        for (int i = 1; i < 3; i++)
-        {
-            unit = unitList.createVehicle("St 123" + i);
-            unit.setRemarks("This is a red car");
-            unit.setStatus(IUnitIf.UnitStatus.READY);
-            unit.setCallSign("888" + i);
+        try {
+			for (int i = 1; i < 3; i++)
+			{
+			    unit = unitList.createVehicle("St 123" + i);
+			    unit.setRemarks("This is a red car");
+			    unit.setStatus(IUnitIf.UnitStatus.READY);
+			    unit.setCallSign("888" + i);
 
-            unit = unitList.createVehicle("Su 987" + i);
-            unit.setStatus(IUnitIf.UnitStatus.READY);
-            unit.setCallSign("213" + i);
+			    unit = unitList.createVehicle("Su 987" + i);
+			    unit.setStatus(IUnitIf.UnitStatus.READY);
+			    unit.setCallSign("213" + i);
 
-            unit = unitList.createBoat("Jupiter" + "_" + i);
-            unit.setStatus(IUnitIf.UnitStatus.READY);
-            unit.setCallSign("999" + i);
-        }
+			    unit = unitList.createBoat("Jupiter" + "_" + i);
+			    unit.setStatus(IUnitIf.UnitStatus.READY);
+			    unit.setCallSign("999" + i);
+			}
+		} catch (IllegalOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
         aMsoModel.restoreUpdateMode();
         aMsoModel.commit();
@@ -92,30 +98,35 @@ public class BuildTestData
         IUnitListIf unitList = cmdPost.getUnitList();
         IUnitIf unit;
 
-        for (int j = 10; j < 30; j++)
-        {
-            unit = unitList.createVehicle("St 123" + j);
-            unit.setRemarks("This is a red car");
-            unit.setStatus(IUnitIf.UnitStatus.READY);
-            unit.setCallSign("888" + j);
+        try {
+			for (int j = 10; j < 30; j++)
+			{
+			    unit = unitList.createVehicle("St 123" + j);
+			    unit.setRemarks("This is a red car");
+			    unit.setStatus(IUnitIf.UnitStatus.READY);
+			    unit.setCallSign("888" + j);
 
-            unit = unitList.createVehicle("Su 987" + j);
-            unit.setStatus(IUnitIf.UnitStatus.READY);
-            unit.setCallSign("213" + j);
+			    unit = unitList.createVehicle("Su 987" + j);
+			    unit.setStatus(IUnitIf.UnitStatus.READY);
+			    unit.setCallSign("213" + j);
 
-            unit = unitList.createBoat("Jupiter" + "_" + j);
-            unit.setStatus(IUnitIf.UnitStatus.READY);
-            unit.setCallSign("999" + j);
-        }
+			    unit = unitList.createBoat("Jupiter" + "_" + j);
+			    unit.setStatus(IUnitIf.UnitStatus.READY);
+			    unit.setCallSign("999" + j);
+			}
 
-        unit = unitList.createVehicle("Sn 30000");
-        unit.setStatus(IUnitIf.UnitStatus.EMPTY);
+			unit = unitList.createVehicle("Sn 30000");
+			unit.setStatus(IUnitIf.UnitStatus.EMPTY);
 
-        unit = unitList.createVehicle("Sn 30001");
-        unit.setStatus(IUnitIf.UnitStatus.EMPTY);
+			unit = unitList.createVehicle("Sn 30001");
+			unit.setStatus(IUnitIf.UnitStatus.EMPTY);
 
-        unit = unitList.createVehicle("Sn 30002");
-        unit.setStatus(IUnitIf.UnitStatus.EMPTY);
+			unit = unitList.createVehicle("Sn 30002");
+			unit.setStatus(IUnitIf.UnitStatus.EMPTY);
+		} catch (IllegalOperationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
         IAssignmentListIf asgList = cmdPost.getAssignmentList();
         try
@@ -130,12 +141,12 @@ public class BuildTestData
                 for (int i = 0; i < 10; i++)
                 {
                     asg = asgList.createSearch();
-                    asg.setStatusAndOwner(IAssignmentIf.AssignmentStatus.DRAFT, null);
-                    asg.setStatusAndOwner(IAssignmentIf.AssignmentStatus.READY, null);
+                    asg.setOwningUnit(IAssignmentIf.AssignmentStatus.DRAFT, null);
+                    asg.setOwningUnit(IAssignmentIf.AssignmentStatus.READY, null);
                     ((ISearchIf) asg).setSubType(ISearchIf.SearchSubType.LINE);
                     if (unit != null)
                     {
-                        unit.addAllocatedAssignment(asg, prevAsg);
+                        unit.enqueueAssignment(asg, prevAsg);
                     }
                     prevAsg = insertionToggle ? asg : null;
                     insertionToggle = !insertionToggle;
@@ -145,12 +156,12 @@ public class BuildTestData
                 for (int i = 0; i < 8; i++)
                 {
                     asg = asgList.createSearch();
-                    asg.setStatusAndOwner(IAssignmentIf.AssignmentStatus.DRAFT, null);
-                    asg.setStatusAndOwner(IAssignmentIf.AssignmentStatus.READY, null);
+                    asg.setOwningUnit(IAssignmentIf.AssignmentStatus.DRAFT, null);
+                    asg.setOwningUnit(IAssignmentIf.AssignmentStatus.READY, null);
                     ((ISearchIf) asg).setSubType(ISearchIf.SearchSubType.DOG);
                     if (unit != null)
                     {
-                        unit.addAllocatedAssignment(asg, prevAsg);
+                        unit.enqueueAssignment(asg, prevAsg);
                     }
                     prevAsg = insertionToggle ? asg : null;
                     insertionToggle = !insertionToggle;
@@ -159,8 +170,8 @@ public class BuildTestData
                 for (int i = 0; i < 20; i++)
                 {
                     asg = asgList.createSearch();
-                    asg.setStatusAndOwner(IAssignmentIf.AssignmentStatus.DRAFT, null);
-                    asg.setStatusAndOwner(IAssignmentIf.AssignmentStatus.READY, null);
+                    asg.setOwningUnit(IAssignmentIf.AssignmentStatus.DRAFT, null);
+                    asg.setOwningUnit(IAssignmentIf.AssignmentStatus.READY, null);
                     switch (i % 3)
                     {
                         case 0:

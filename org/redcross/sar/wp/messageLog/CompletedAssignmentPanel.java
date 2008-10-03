@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -11,6 +10,7 @@ import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.AssignmentTransferUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Utils;
 
 import java.util.Calendar;
 
@@ -33,7 +33,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	{
 		super(wp);
 
-		m_editAssignmentPanel.getAttribute("Time").setCaption(
+		m_editAssignmentPanel.getAttribute("Time").setCaptionText(
 				 m_wpMessageLog.getBundleText("CompletedTimeLabel.text") + ": ");
 		
 	}
@@ -60,7 +60,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	}
 
 	/**
-	 * Add new started message line. If unit has started or assigned assignment this is completed, else unit
+	 * Add new started message line. If unit has started or Allocated assignment this is completed, else unit
 	 * assignment queue is shown, if this is empty assignment pool is shown
 	 */
 	protected void addNewMessageLine()
@@ -92,16 +92,16 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		IUnitIf unit = getAvailableUnit(message);
 
-		if(unitHasAssignedAssignment(unit) || unitHasStartedAssignment(unit)) {
+		if(unitHasAllocatedAssignment(unit) || unitHasStartedAssignment(unit)) {
 		
 			// get assignment status
-			IAssignmentIf assigned = unit.getAssignedAssignment();
+			IAssignmentIf Allocated = unit.getAllocatedAssignment();
 			IAssignmentIf executing = unit.getExecutingAssigment();
 
 			// try not committed assignments?
-			if(assigned==null) {
-				IMessageLineIf line = getAddedLine(MessageLineType.ASSIGNED);
-				assigned = (line!=null) ? line.getLineAssignment() : null;				
+			if(Allocated==null) {
+				IMessageLineIf line = getAddedLine(MessageLineType.ALLOCATED);
+				Allocated = (line!=null) ? line.getLineAssignment() : null;				
 				
 			}
 			if(executing==null) {
@@ -110,7 +110,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			}
 
 			// get assignment
-			IAssignmentIf assignment = executing == null ? assigned : executing;
+			IAssignmentIf assignment = executing == null ? Allocated : executing;
 			
 			// prompt user
 			Object[] options = {m_wpMessageLog.getBundleText("yes.text"), m_wpMessageLog.getBundleText("no.text")};
@@ -132,7 +132,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 					// Adding both started and completed lines
 					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, 
 							MessageLineType.STARTED, MessageLineType.COMPLETED, Calendar.getInstance(), unit, assignment);
-					m_addedLines.add(message.findMessageLine(MessageLineType.ASSIGNED, assignment, false));
+					m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, assignment, false));
 					m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, assignment, false));
 				}
 				else
@@ -147,7 +147,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			}
 			
 		}
-		else if(unitHasNextAssignment(unit))
+		else if(unitEnqueuedAssignment(unit))
 		{
 			// Else unit may have completed allocated assignment
 			showNextAssignment();
@@ -159,7 +159,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 		}
 		else {
 			Utils.showWarning("Du må først oppgi avsender. Avsender er den som har utført oppdraget og kan derfor ikke være et KO");
-			MessageLogBottomPanel.showChangeFromPanel();
+			MessageLogBottomPanel.showFromPanel();
 			return;
 		}
 		// success
@@ -177,13 +177,13 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 			
 			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
-					MessageLineType.ASSIGNED,
+					MessageLineType.ALLOCATED,
 					MessageLineType.COMPLETED,
 					Calendar.getInstance(),
 					m_assignmentUnit, m_selectedAssignment);
 			
 			// add to lines
-			m_addedLines.add(message.findMessageLine(MessageLineType.ASSIGNED, m_selectedAssignment, false));
+			m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETED, m_selectedAssignment, false));
 			
@@ -192,9 +192,9 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 		MessageLogBottomPanel.showCompletePanel();
 	}
 	
-    public void showComponent()
+    public void showEditor()
     {
-    	super.showComponent();
+    	super.showEditor();
     	
     	m_messageLinesPanel.setCaptionText("Utført oppdrag");
         

@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.SelectMsoObjectDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -19,6 +18,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.esriSpatialRelEnum;

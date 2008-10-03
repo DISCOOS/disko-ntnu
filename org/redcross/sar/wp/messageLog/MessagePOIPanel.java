@@ -1,5 +1,7 @@
 package org.redcross.sar.wp.messageLog;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.Calendar;
@@ -10,20 +12,22 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
+import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.panel.POIPanel;
+import org.redcross.sar.gui.mso.panel.POITypesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
+import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
-import org.redcross.sar.gui.panel.POIPanel;
-import org.redcross.sar.gui.panel.POITypesPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.POITool;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
@@ -40,6 +44,7 @@ import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
@@ -47,24 +52,26 @@ import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
  * 
  * @author thomasl
  */
-public class MessagePOIPanel extends BasePanel implements IEditMessageComponentIf
+public class MessagePOIPanel extends BasePanel implements IEditorIf
 {
 	private final static long serialVersionUID = 1L;
 
-	protected JPanel m_actionsPanel = null;
-	protected JButton m_finishButton = null;
-	protected JButton m_centerAtButton = null;
-	protected JButton m_cancelButton = null;
-	protected POIPanel m_poiPanel = null;
-	protected GotoPanel m_gotoPanel = null;
-	protected POITypesPanel m_typesPanel = null;
+	protected JPanel m_actionsPanel;
+	protected JButton m_finishButton;
+	protected JButton m_centerAtButton;
+	protected JButton m_cancelButton;
+	protected POIPanel m_poiPanel;
+	protected GotoPanel m_gotoPanel;
+	protected HeaderPanel m_optionsPanel;
+	protected POITypesPanel m_typesPanel;
+	protected TextFieldAttribute m_nameAttr;
 
-	protected IDiskoWpMessageLog m_wp = null;
+	protected IDiskoWpMessageLog m_wp;
 	
-	protected POITool m_tool = null;
-	protected POIType[] m_types = null;
-	protected IDiskoToolState m_toolState = null;
-	protected HashMap<String,IUnitIf> m_units = null;
+	protected POITool m_tool;
+	protected POIType[] m_types;
+	protected IDiskoToolState m_toolState;
+	protected HashMap<String,IUnitIf> m_units;
 	
 	/**
 	 * @param wp Message log work process
@@ -86,12 +93,12 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 
 	private void initialize()
 	{
-		// hide header and borders
+		// prepare
 		setHeaderVisible(false);
 		setBorderVisible(false);
-				
-		// add empty border
 		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setPreferredSize(new Dimension(400,115));
+		setPreferredBodySize(new Dimension(400,115));
 		
 		// hide me
 		setVisible(false);
@@ -102,15 +109,20 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 		// no scrollbars
 		setNotScrollBars();
 		
-		// set layout
-		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
-		
-		// add components (BorderLayout is default)
-		addBodyChild(getTypesPanel());
-		addBodyChild(Box.createHorizontalStrut(5));
-		addBodyChild(getGotoPanel());
-		addBodyChild(Box.createHorizontalStrut(5));
-		addBodyChild(getActionsPanel());
+		// create layout
+		JPanel inner = new JPanel();
+		inner.setLayout(new BoxLayout(inner,BoxLayout.X_AXIS));
+		inner.add(getTypesPanel());
+		inner.add(Box.createHorizontalStrut(5));
+		inner.add(getGotoPanel());
+		JPanel outer = new JPanel();
+		outer.setLayout(new BoxLayout(outer,BoxLayout.Y_AXIS));
+		outer.add(getOptionsPanel());
+		outer.add(Box.createVerticalStrut(5));
+		outer.add(inner);
+		setBodyLayout(new BorderLayout(5,5));
+		addBodyChild(outer,BorderLayout.CENTER);
+		addBodyChild(getActionsPanel(),BorderLayout.EAST);		
 		
 	}
 	
@@ -183,14 +195,21 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 		super.onWorkPerformed(e);
 		
 		if(e.isCancel()) {
+			// forward
+			hideEditor();
 			// cancel any changes
-			revert();
+			//revert();
 			// return to list view
 			MessageLogBottomPanel.showListPanel();
 		}
 		else if(e.isFinish()) {
 			// forward
-			if(apply()) MessageLogBottomPanel.showListPanel();										
+			if(apply()) {
+				// forward
+				hideEditor();
+		        // show message line list
+				MessageLogBottomPanel.showListPanel();										
+			}
 		}
 
 	}
@@ -207,13 +226,49 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 			// get hide goto button			
 			m_gotoPanel.setGotoButtonVisible(false);
 			// turn off vertical scrollbar
-			m_gotoPanel.setScrollBarPolicies(
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			m_gotoPanel.setNotScrollBars();
 			// set preferred size of body component
-			m_gotoPanel.setPreferredSize(new Dimension(275,115));
+			Utils.setFixedWidth(m_gotoPanel,275);
 		}
 		return m_gotoPanel;
+	}
+	
+	/**
+	 * This method initializes DTG attribute	
+	 * 	
+	 * @return javax.swing.JPanel
+	 */
+	private TextFieldAttribute getNameAttr() {
+		if (m_nameAttr == null) {
+			// get from position panel
+			m_nameAttr = (TextFieldAttribute)getPOIPanel().getOptionsPanel().getAttribute("Name");
+			m_nameAttr.setCaptionText("Navn i kart");
+			m_nameAttr.setFixedCaptionWidth(80);			
+		}
+		return m_nameAttr;
+	}
+	
+	/**
+	 * This method initializes OptionsPanel	
+	 * 	
+	 * @return javax.swing.JPanel
+	 */
+	private HeaderPanel getOptionsPanel() {
+		if (m_optionsPanel == null) {
+			// create header panel
+			m_optionsPanel = new HeaderPanel("",ButtonSize.SMALL,SwingConstants.LEFT);
+			// get name attribute
+			AbstractDiskoAttribute attr = getNameAttr();
+			// prepare layout
+			attr.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+			attr.setCaptionColor(Color.WHITE, Color.LIGHT_GRAY);
+			// get from position panel
+			m_optionsPanel.addItem(attr);
+			// set preferred size of body component
+			Utils.setFixedHeight(m_optionsPanel, 35);
+			
+		}
+		return m_optionsPanel;
 	}
 	
 	/**
@@ -235,13 +290,36 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 		}
 		return m_typesPanel;
 	}
+
+	@Override
+	public boolean cancel() {
+		return getPOIPanel().cancel();
+	}
+	
+	@Override
+	public boolean finish() {
+		return getPOIPanel().finish();
+	}
+	
+	@Override
+	public void reset() {
+		getPOIPanel().reset();
+	}	
 	
 	/**
-	 * apply POI position and type in current message based on values in GUI fields
+	 * Apply changes to message line
 	 */
 	private boolean apply()
 	{
 
+		/* ======================================================================
+		 * Apply changes to a new or existing message position line
+		 * 
+		 * IMPORTANT: Position and time stamp is updated by 
+		 * PositionPanel().finish(). Because PositionTool() is not in work 
+		 * pool mode, the result is available at the invocation of this method.
+		 * ====================================================================== */
+		
 		// consume?
 		if(!isChangeable()) return false;
 		
@@ -260,7 +338,7 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 		// initialize status flag
 		boolean bFlag = false;
 		
-		// get added poi
+		// get added or updated poi
 		IPOIIf poi = m_tool.getPOI();
 		
 		if(poi!=null && poi.getPosition()!=null) {
@@ -361,43 +439,18 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 		
 	}
 	
-	/**
-	 * Reverts contents of text fields to what is stored in MSO
-	 */
-	private void revert()
-	{
-		// suspend update events
-		m_wp.getMsoModel().suspendClientUpdate();
-		
-		// get current message, do not create if not exist
-		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-		
-		// has message?
-		if(message != null)
-		{
-			// get message line, do not create if not exist
-			IMessageLineIf line =  message.findMessageLine(MessageLineType.POI, false);
-
-			// has line
-			if(line != null)
-			{
-				IPOIIf poi = line.getLinePOI();
-				getPOIPanel().setPOI(poi);
-			}
-		}
-		// resume update
-		m_wp.getMsoModel().resumeClientUpdate();
-	}
-
-
-	public void clearContents()
+	public void resetEditor()
 	{
 		getPOIPanel().reset();
 	}
 
-	public void showComponent()
+	public void showEditor()
 	{
 		try {
+			
+			// get current tool state
+			m_toolState = m_tool.save();
+			
 			// show poi in map
 			IPOIIf poi = centerAtPOI(true);
 			// show tool
@@ -424,12 +477,10 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 		}
 	}
 
-	public void hideComponent()
+	public void hideEditor()
 	{
 		// hide tool
 		setToolVisible(false);
-		// hide num pad
-		m_wp.getApplication().getUIFactory().getNumPadDialog().setVisible(false);
 		// resume old tool state
 		m_tool.load(m_toolState);
 		// hide map
@@ -472,7 +523,7 @@ public class MessagePOIPanel extends BasePanel implements IEditMessageComponentI
 	/**
 	 * Update position fields with message POI position. Zoom to POI
 	 */
-	public void newMessageSelected(IMessageIf message)
+	public void setMessage(IMessageIf message)
 	{
 		// consume?
 		if(!isChangeable()) return;

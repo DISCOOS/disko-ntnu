@@ -32,6 +32,10 @@ public class ToolEvent extends java.util.EventObject {
     	return m_eventType;
     }        
     
+    public boolean isType(ToolEventType type) {
+    	return m_eventType.equals(type);
+    }        
+    
     public void consume() {
     	isConsumed=true;
     }

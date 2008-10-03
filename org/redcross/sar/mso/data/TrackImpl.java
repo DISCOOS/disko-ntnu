@@ -182,7 +182,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
 	public int getTrackPointCount() {
 		Track t = getGeodata();
 		if(t!=null) {
-			return t.getCount();
+			return t.size();
 		}
 		return 0;
 	}

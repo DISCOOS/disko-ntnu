@@ -14,26 +14,26 @@ import javax.swing.JComponent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.util.Utils;
 
 
 public class UnitsPanel extends BasePanel { // implements IDsUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;
 	
-	private UnitTableModel m_model = null;
-	private Map<IUnitIf,Component> m_struts = null;
-	private Map<IUnitIf,UnitStatusPanel> m_units = null;
+	private UnitTableModel m_model;
+	private Map<IUnitIf,Component> m_struts;
+	private Map<IUnitIf,UnitStatusPanel> m_units;
 			
-	public UnitsPanel() {
+	public UnitsPanel(boolean archived) {
 		
 		// forward
 		super();
-						
+		
 		// prepare
-		m_model = new UnitTableModel(Utils.getApp().getMsoModel());
+		m_model = new UnitTableModel(Utils.getApp().getMsoModel(),archived);
 		m_struts = new HashMap<IUnitIf,Component>();
 		m_units = new HashMap<IUnitIf,UnitStatusPanel>();
 		

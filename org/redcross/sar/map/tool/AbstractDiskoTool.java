@@ -10,7 +10,6 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriTransformDirection;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
@@ -25,6 +24,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;

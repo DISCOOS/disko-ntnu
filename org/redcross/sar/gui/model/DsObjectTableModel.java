@@ -1,13 +1,9 @@
 package org.redcross.sar.gui.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.ds.IDsIf;
 import org.redcross.sar.ds.IDsObjectIf;
@@ -15,61 +11,102 @@ import org.redcross.sar.ds.event.IDsUpdateListenerIf;
 import org.redcross.sar.ds.event.DsEvent.Update;
 
 public abstract class DsObjectTableModel<T extends IDsObjectIf> 
-								extends AbstractTableModel  
-								implements IDsUpdateListenerIf {
+								extends DiskoTableModel  
+								implements IDsUpdateListenerIf  {
 
 	private static final long serialVersionUID = 1L;
 
-	private IDsIf<T> ds;
-	private Map<IDsObjectIf,Object[]> rows;
-	private List<IDsObjectIf> objects;
-	private List<String> captions;
-	private List<String> attributes;
+	protected IDsIf<T> ds;
+	protected Map<IDsObjectIf,Object[]> rows;
+	protected List<IDsObjectIf> objects;
 	
 	/* =============================================================================
 	 * Constructors
 	 * ============================================================================= */
 	
 	public DsObjectTableModel(IDsIf<T> ds, 
+			   String[] attributes,
+			   String[] captions) {
+		// forward
+		this(ds,attributes,captions,captions.clone(),
+				defaultEditable(attributes.length),
+				defaultEditors(attributes.length,"button"));
+	}
+	
+	public DsObjectTableModel(IDsIf<T> ds, 
+			   String[] attributes,
+			   String[] captions,
+			   String[] tooltips) {
+		// forward
+		this(ds,attributes,captions,tooltips,
+				defaultEditable(attributes.length),
+				defaultEditors(attributes.length,"button"));		
+	}
+	
+	public DsObjectTableModel(IDsIf<T> ds, 
 							   String[] attributes,
-							   String[] captions) {
-		// prepare
-		this.rows = new HashMap<IDsObjectIf,Object[]>();		
-		this.captions = new ArrayList<String>();
-		this.attributes = new ArrayList<String>();
+							   String[] captions,
+							   String[] tooltips,
+							   Boolean[] editable,
+							   String[] editors) {
+		// forward
+		super(attributes,captions,tooltips,editable,editors);
+		
+		// prepare			
 		this.objects = new ArrayList<IDsObjectIf>();
+		this.rows = new HashMap<IDsObjectIf,Object[]>();
 		
 		// forward
-		install(ds,attributes,captions);
+		install(ds);
 		
 	}
+	
+	/* =============================================================================
+	 * Abstract methods
+	 * ============================================================================= */
+	
+	public abstract boolean select(T dsObj);
 	
 	/* =============================================================================
 	 * Public methods
 	 * ============================================================================= */
 	
-	public void install(IDsIf<T> ds) {
-		install(ds,attributes.toArray(),captions.toArray());
+	@Override
+	public void install(Object[] attributes, Object[] captions, Object[] tooltips, Object[] editable, Object[] editors) {
+		install(ds, attributes, captions, tooltips, editable, editors);
+	}
+
+	@Override
+	public void install(Object[] attributes, Object[] captions) {
+		install(ds,attributes, captions);
 	}
 	
+	public void install(IDsIf<T> ds) {
+		install(ds,	names.toArray(),
+					captions.toArray(),
+					tooltips.toArray(),
+					editable.toArray(),
+					editors.toArray());
+	}
+
 	public void install(IDsIf<T> ds, Object[] attributes, Object[] captions) {
+		// use captions as tooltips
+		install(ds, attributes, captions, captions.clone(),
+				defaultEditable(attributes.length),
+				defaultEditors(attributes.length,"button"));
+	}
+			
+	public void install(IDsIf<T> ds, Object[] attributes, Object[] captions, Object[] tooltips, Object[] editable, Object[] editors) {
+		// forward
+		super.install(attributes, captions, tooltips, editable, editors);
 		// uninstall
 		this.rows.clear();
 		this.objects.clear();
-		this.captions.clear();
-		this.attributes.clear();
 		if(this.ds!=null) ds.removeUpdateListener(this);
 		// prepare
 		this.ds = ds;
 		// add listener?
-		if(ds!=null) ds.addUpdateListener(this);
-		// add attributes?
-		if(attributes!=null) {
-			for(int i=0;i<attributes.length;i++) {
-				this.captions.add(captions[i].toString());
-				this.attributes.add(attributes[i].toString());
-			}
-		}
+		if(ds!=null) ds.addUpdateListener(this);	
 		// forward
 		load();
 	}
@@ -103,9 +140,25 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		return objects.get(row);
 	}
 	
-	public abstract boolean select(T dsObj);
+	/* =============================================================================
+	 * IDiskoTableModel implementation
+	 * ============================================================================= */
+		
+	public String getHeaderTooltipText(int column) {
+		return tooltips.get(column);
+	}
 	
-	//public abstract void sort();
+	public void setHeaderTooltipText(int column, String text) {
+		tooltips.set(column,text);
+	}
+	
+	public boolean isHeaderEditable(int column) {
+		return editable.get(column);
+	}
+	
+	public void setHeaderEditable(int column, boolean isEditable) {
+		editable.set(column,isEditable);
+	}
 	
 	/* =============================================================================
 	 * Protected methods
@@ -125,12 +178,6 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		return true;
 	}
 	
-	/*
-	protected void sort(Comparator<IDsObjectIf> comparator) {
-		Collections.sort(objects,comparator);
-	}
-	*/
-	
 	/* =============================================================================
 	 * Private methods
 	 * ============================================================================= */
@@ -139,7 +186,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		int iRow = getRow(dsObj);
 		if (iRow == -1) {			
 			objects.add(dsObj);
-			rows.put(dsObj,new Object[attributes.size()]);
+			rows.put(dsObj,new Object[names.size()]);
 		}
 		update(dsObj);
 	}
@@ -151,8 +198,8 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 	
 	private void update(IDsObjectIf dsObj, Object[] row) {
 		try {
-			for(int i=0; i<attributes.size();i++) {				
-				String name = attributes.get(i);
+			for(int i=0; i<names.size();i++) {				
+				String name = names.get(i);
 				if(dsObj.getAttrIndex(name)!=-1) {
 					row[i] = dsObj.getAttrValue(name);
 				}
@@ -180,10 +227,6 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 	 * AbstractTableModel methods
 	 * ============================================================================= */
 	
-	public int getColumnCount() {
-		return attributes.size();
-	}
-
 	public int getRowCount() {
 		return rows.size();
 	}
@@ -202,7 +245,16 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 	public String getColumnName(int column) {
 		return captions.get(column);
 	}
-	
+		
+	@Override
+	public int findColumn(String name) {
+		for(int i=0; i<captions.size();i++) {
+			if(captions.get(i).equals(name))
+				return i;
+		}
+		return -1;
+	}
+
 	/* =============================================================================
 	 * IDsUpdateListenerIf implementation
 	 * ============================================================================= */
@@ -218,6 +270,7 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 
         // initialize
         List<T> items = new ArrayList<T>(count);
+        List<T> removed = new ArrayList<T>(count);
         
         switch(e.getType()) {
         case ADDED_EVENT:
@@ -240,7 +293,12 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
     		if(idx!=null) {
     			
     			// notify
-				this.fireTableRowsInserted(idx[0], idx[1]);
+    			/*
+    			if(getRowCount()>1)
+    				this.fireTableRowsInserted(idx[0], idx[1]);
+    			else
+    			*/
+    			this.fireTableDataChanged();
 				
     		}   
 
@@ -253,24 +311,58 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
         		
         		T dsObj = data[i];
         		
-	        	if(select(dsObj) && dsObjectChanged(dsObj)) {
+        		if(!select(dsObj)) {
+					// get index of object
+					int index = getRow(dsObj);
+					// exists?
+					if(index!=-1) {
+						removed.add(dsObj);
+					}
+        		}
+        		else if(dsObjectChanged(dsObj)) {
 					// get index of object
 					int index = getRow(dsObj);
 					// add or update?
-					if(index ==-1) add(dsObj);
+					if(index==-1) add(dsObj);
 					else update(dsObj);
 					items.add(dsObj);
-	        	}	        	
+	        	}
+	        	
         	}
+        	    		
+        	// get removed indexes
+        	idx = getIndexes(removed);
         	
-        	// get indexes
+    		// is dirty?
+    		if(idx!=null) {
+    			
+    			// notify
+    			/*
+    			if(getRowCount()>1)
+					this.fireTableRowsDeleted(idx[0], idx[1]);
+    			else
+    			*/
+    			this.fireTableDataChanged();
+				
+				// remove
+				for(T it : items) {
+					remove(it, false);
+				}
+    		}   
+    		
+        	// get updated indexes
         	idx = getIndexes(items);
         	
     		// is dirty?
     		if(idx!=null) {
     			
     			// notify
-				this.fireTableRowsUpdated(idx[0], idx[1]);
+    			/*
+    			if(getRowCount()>1)
+    				this.fireTableRowsUpdated(idx[0], idx[1]);
+    			else
+    			*/
+    			this.fireTableDataChanged();    			
 				
     		}   
     		
@@ -292,13 +384,19 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
     		if(idx!=null) {
     			
     			// notify
-				this.fireTableRowsDeleted(idx[0], idx[1]);
+    			/*
+    			if(getRowCount()>1)
+    				this.fireTableRowsDeleted(idx[0], idx[1]);
+    			else
+    			*/
 				
 				// remove
 				for(T it : items) {
 					remove(it, false);
 				}
 				
+    			this.fireTableDataChanged();
+    			
     		}        		
         }        
     }
@@ -331,5 +429,6 @@ public abstract class DsObjectTableModel<T extends IDsObjectIf>
 		return null;
 		
 	}
+
 }
 	

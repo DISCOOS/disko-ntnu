@@ -184,7 +184,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
 
     public ISystemIf createSystem(IObjectIdIf id) {
     	AbstractMsoObject msoObj = new SystemImpl(id);
-    	msoObj.setupReferences();
+    	msoObj.setup();
     	msoObj.resumeClientUpdate();
         return (ISystemIf)msoObj;
     }

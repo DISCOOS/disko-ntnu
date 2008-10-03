@@ -1,18 +1,5 @@
 package org.redcross.sar.wp.logistics;
 
-import org.redcross.sar.gui.AbstractPopupHandler;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.data.AssignmentImpl;
-import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IAssignmentListIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.mso.Selector;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -28,13 +15,25 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
+import org.redcross.sar.gui.AbstractPopupHandler;
+import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IAssignmentListIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.mso.Selector;
+
 /**
  *  Model used for the Assignment Display part of the Logistics Panel
  */
 public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentListener
 {
-    private AssignmentScrollPanel m_selectableAssignments;
-    private AssignmentScrollPanel m_priAssignments;
+    private AssignmentTilesPanel m_selectableAssignments;
+    private AssignmentTilesPanel m_priAssignments;
     private IAssignmentListIf m_AssignmentList;
 
     /**
@@ -64,40 +63,37 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
     SelectionPopupHandler m_selectionMenu;
 
     /**
-     * Value for determinining in which panel a ready assignment shall be placed (divider between right and left part)
+     * Value for determining in which panel a ready assignment shall be placed (divider between right and left part)
      */
     private int m_readyDivider;
 
     /**
      * Constructor
      *
-     * @param panel1 Reference to left panel
-     * @param panel2 Reference to right panel
+     * @param selectable Reference to left panel
+     * @param priority Reference to right panel
      * @param anEventManager MSO model's event manager
      * @param anAssignmentList MSO model's assignment list.
      */
-    public AssignmentDisplayModel(AssignmentScrollPanel panel1, AssignmentScrollPanel panel2, IMsoEventManagerIf anEventManager, IAssignmentListIf anAssignmentList)
+    public AssignmentDisplayModel(AssignmentTilesPanel selectable, AssignmentTilesPanel priority, IMsoEventManagerIf anEventManager, IAssignmentListIf anAssignmentList)
     {
-        m_selectableAssignments = panel1;
+        m_selectableAssignments = selectable;
         m_selectableAssignments.setLastIndex(-1);
         m_selectableSelector = IAssignmentIf.READY_SELECTOR;
         m_selectableAssignments.setHeaderPopupHandler(new SelectionPopupHandler(this));
 
-        m_priAssignments = panel2;
+        m_priAssignments = priority;
         m_priAssignments.setFirstIndex(0);
         m_priSelector = IAssignmentIf.READY_SELECTOR;
-        m_priAssignments.getHeaderLabel().setText("Pri");
+        m_priAssignments.getHeaderPanel().setCaptionText("Pri");
         m_priAssignments.setSelectedStatus(IAssignmentIf.AssignmentStatus.READY);
 
         anEventManager.addClientUpdateListener(this);
 
         m_AssignmentList = anAssignmentList;
 
-        panel2.getParent().addComponentListener(this);
-
         // set header text
-        m_selectableAssignments.getHeaderLabel().setText(Internationalization.translate(m_assigmentSelection));
-        //setSelectedStatus(IAssignmentIf.AssignmentStatus.READY);
+        m_selectableAssignments.getHeaderPanel().setCaptionText(Internationalization.translate(m_assigmentSelection));
 
         handleMsoUpdateEvent(null);
     }
@@ -114,7 +110,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      */
     public void handleMsoUpdateEvent(MsoEvent.Update e)
     {
-    	if(e == null || e.isClearAllEvent()) {
+    	if(e!=null && e.isClearAllEvent()) {
     		m_priAssignments.setAssignmentList(new ArrayList<IAssignmentIf>());
     	}
     	else {
@@ -147,8 +143,9 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      */
     private void setSelectableList()
     {
-        Collection<IAssignmentIf> selectionList = m_assigmentSelection == IAssignmentIf.AssignmentStatus.READY ? m_priAssignments.getAssignmens() : selectAssignments(m_selectableSelector);
-        //Collection<IAssignmentIf> selectionList = selectAssignments(m_selectableSelector);
+        Collection<IAssignmentIf> selectionList = 
+        	(m_assigmentSelection == IAssignmentIf.AssignmentStatus.READY ? 
+        			m_priAssignments.getAssignmens() : selectAssignments(m_selectableSelector));
         m_selectableAssignments.setAssignmentList(selectionList);
         m_selectableAssignments.setSelectedStatus(m_selectableStatus);
     }
@@ -195,7 +192,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      */
     private void calculateDivider()
     {
-        m_readyDivider = m_priAssignments.getMaxNonscrollItems();
+        m_readyDivider = m_priAssignments.getMaxNonScrollItems();
     }
 
     /**
@@ -204,12 +201,10 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      */
     public void setSelectedStatus(IAssignmentIf.AssignmentStatus aSelection)
     {
-        //if (m_assigmentSelection != aSelection)
-        //{
-            m_assigmentSelection = aSelection;
-            m_selectableAssignments.getHeaderLabel().setText(Internationalization.translate(m_assigmentSelection));
-            selectionChanged();
-        //}
+        m_assigmentSelection = aSelection;
+        m_selectableAssignments.getHeaderPanel().setCaptionText(Internationalization.translate(m_assigmentSelection));
+        selectionChanged();
+        
     }
 
     /**
@@ -234,26 +229,26 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
                 m_selectableStatus = IAssignmentIf.AssignmentStatus.READY;
                 break;
             case QUEUED:
-                m_selectableSelector = IAssignmentIf.ALLOCATED_SELECTOR;
+                m_selectableSelector = IAssignmentIf.QUEUED_SELECTOR;
                 m_selectableStatus = IAssignmentIf.AssignmentStatus.QUEUED;
                 break;
-            case ASSIGNED:
-                m_selectableSelector = IAssignmentIf.ASSIGNED_SELECTOR;
-                m_selectableStatus = IAssignmentIf.AssignmentStatus.ASSIGNED;
+            case ALLOCATED:
+                m_selectableSelector = IAssignmentIf.ALLOCATED_SELECTOR;
+                m_selectableStatus = IAssignmentIf.AssignmentStatus.ALLOCATED;
                 break;
             case EXECUTING:
-                m_selectableSelector = AssignmentImpl.EXECUTING_SELECTOR;
+                m_selectableSelector = IAssignmentIf.EXECUTING_SELECTOR;
                 m_selectableStatus = IAssignmentIf.AssignmentStatus.EXECUTING;
                 break;
             case FINISHED:
-                m_selectableSelector = AssignmentImpl.FINISHED_SELECTOR;
+                m_selectableSelector = IAssignmentIf.FINISHED_SELECTOR;
                 m_selectableStatus = IAssignmentIf.AssignmentStatus.FINISHED;
                 break;
         }
         setSelectableList();
         renderSelectablePanel();
     }
-
+    
     /**
      * Draw right panel.
      */
@@ -283,7 +278,9 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      */
     public static class SelectButton extends JRadioButtonMenuItem
     {
-        final IAssignmentIf.AssignmentStatus m_selection;
+		private static final long serialVersionUID = 1L;
+		
+		final IAssignmentIf.AssignmentStatus m_selection;
 
         public SelectButton(AbstractAction anAction, IAssignmentIf.AssignmentStatus aSelection)
         {
@@ -293,7 +290,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
     }
 
     /**
-     * Handler of popup events, after they are detected by a {@link org.redcross.sar.gui.PopupListener}
+     * Handler of popup events, after they are detected by a {@link org.redcross.sar.gui.PopupAdapter}
      */
     public static class SelectionPopupHandler extends AbstractPopupHandler
     {
@@ -316,7 +313,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
 
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.READY));
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.QUEUED));
-            addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.ASSIGNED));
+            addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.ALLOCATED));
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.EXECUTING));
             addButton(buttonWithAction(IAssignmentIf.AssignmentStatus.FINISHED));
         }
@@ -337,14 +334,16 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
          * Button factory
          *
          * @param aSelection The {@link IAssignmentIf.AssignmentStatus} the button shall select.
-         * @return The creatd button.
+         * @return The created button.
          */
         private SelectButton buttonWithAction(final IAssignmentIf.AssignmentStatus aSelection)
         {
             String buttonText = Internationalization.translate(aSelection);
             AbstractAction action = new AbstractAction(buttonText)
             {
-                public void actionPerformed(ActionEvent e)
+				private static final long serialVersionUID = 1L;
+
+				public void actionPerformed(ActionEvent e)
                 {
                     m_model.setSelectedStatus(aSelection);
                 }

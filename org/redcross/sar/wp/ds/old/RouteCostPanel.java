@@ -331,7 +331,7 @@ public class RouteCostPanel extends JPanel
 					IAreaIf area = MsoUtils.getOwningArea(m_currentMsoObj);
 					if(area!=null) {
 						if(area.getOwningAssignment() instanceof ISearchIf){
-							getRouteNameText().setText(area.getOwningAssignment().getTypeAndNumber());						
+							getRouteNameText().setText(area.getOwningAssignment().getDefaultName());						
 						}
 						else {
 							getRouteNameText().setText(area.getObjectId());

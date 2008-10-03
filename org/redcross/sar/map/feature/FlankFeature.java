@@ -12,7 +12,6 @@ import com.esri.arcgis.geometry.Line;
 import com.esri.arcgis.geometry.Polygon;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoListIf;
@@ -20,6 +19,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Route;
 

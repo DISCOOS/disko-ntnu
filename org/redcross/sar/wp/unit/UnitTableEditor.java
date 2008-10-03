@@ -1,18 +1,16 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
@@ -93,6 +91,7 @@ public class UnitTableEditor
 				{
 					// Set unit i unit details view
 					int index = m_table.convertRowIndexToModel(m_editingRow);
+					if(index==-1) return;
 					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 					m_wpUnit.setUnit(unit);
@@ -121,13 +120,16 @@ public class UnitTableEditor
 		{
 			// Get unit at row
 			int index = m_table.convertRowIndexToModel(row);
-			UnitTableModel model = (UnitTableModel)m_table.getModel();
-			IUnitIf rowUnit = model.getUnit(index);
-
-			// Get editing unit
-			IUnitIf editingUnit = m_wpUnit.getEditingUnit();
-
-			m_editButton.setSelected(editingUnit == rowUnit);
+			if(index!=-1) 
+			{
+				UnitTableModel model = (UnitTableModel)m_table.getModel();
+				IUnitIf rowUnit = model.getUnit(index);
+	
+				// Get editing unit
+				IUnitIf editingUnit = m_wpUnit.getEditingUnit();
+	
+				m_editButton.setSelected(editingUnit == rowUnit);
+			}
 
 			return m_panel;
 		}

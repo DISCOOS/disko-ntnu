@@ -7,9 +7,9 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.TocPanel;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu

@@ -1,6 +1,5 @@
 package org.redcross.sar.gui.mso.table;
 
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 
@@ -14,10 +13,10 @@ public class TrackTable extends DiskoTable {
 	public TrackTable() {
 		
 		// forward
-		super();
+		super(new TrackTableModel());
 		
-		// create the model
-		TrackTableModel model = new TrackTableModel();
+		// get the model
+		TrackTableModel model = (TrackTableModel)getModel();
 		
 		// set the model
 		setModel(model);
@@ -29,8 +28,8 @@ public class TrackTable extends DiskoTable {
         // prepare table
 		setBorder(null);
         setRowHeight(20);
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setShowGrid(false);
+        setAutoFitWidths(true);
         setFillsViewportHeight(true);
         setAutoCreateRowSorter(true);
         setRowSelectionAllowed(true);

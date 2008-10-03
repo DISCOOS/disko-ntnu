@@ -38,14 +38,6 @@ public interface IBoatIf extends ITransportIf
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setAverageSpeed(int anAverageSpeed);
-
-    public int getAverageSpeed();
-
-    public IMsoModelIf.ModificationState getAverageSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getAverageSpeedAttribute();
-
     public void setCapacity(int aCapacity);
 
     public int getCapacity();
@@ -86,11 +78,4 @@ public interface IBoatIf extends ITransportIf
 
     public IAttributeIf.IMsoIntegerIf getLengthAttribute();
 
-    public void setMaxSpeed(int aMaxSpeed);
-
-    public int getMaxSpeed();
-
-    public IMsoModelIf.ModificationState getMaxSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getMaxSpeedAttribute();
 }

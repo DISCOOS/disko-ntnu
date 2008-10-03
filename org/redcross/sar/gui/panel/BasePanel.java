@@ -8,8 +8,12 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -18,6 +22,7 @@ import javax.swing.border.Border;
 
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
@@ -41,6 +46,9 @@ public class BasePanel extends AbstractPanel {
 	private HeaderPanel headerPanel;
 	private JScrollPane scrollPane;
 	private Component bodyComponent;
+	private boolean isFitBodyOnResize = false;
+	
+	private ComponentListener componentListener;
 	
 	/* ===========================================
 	 * Constructors
@@ -321,10 +329,7 @@ public class BasePanel extends AbstractPanel {
 	 */
 	public JScrollPane getScrollPane() {
 		if(scrollPane==null) {
-			scrollPane = new JScrollPane(getBodyComponent());
-			scrollPane.setBorder(null);
-			scrollPane.setViewportBorder(null);
-			scrollPane.setOpaque(true);
+			scrollPane = UIFactory.createScrollPane(getBodyComponent());
 		}
 		return scrollPane;
 	}
@@ -353,9 +358,34 @@ public class BasePanel extends AbstractPanel {
 		return bodyComponent;
 	}
 	
-	public void setPreferredBodySize(Dimension dimension) {
+	public boolean isFitBodyOnResize() {
+		return isFitBodyOnResize;
+	}
+	
+	public void setFitBodyOnResize(boolean isFitBodyOnResize) {
+		if(this.isFitBodyOnResize != isFitBodyOnResize) {
+			if(componentListener!=null) {
+				componentListener = null;
+				removeComponentListener(componentListener);
+			}
+			this.isFitBodyOnResize = isFitBodyOnResize;
+			if(isFitBodyOnResize) {
+				componentListener = new ComponentAdapter() {
+					@Override
+					public void componentResized(ComponentEvent e) {
+						getBodyComponent().setPreferredSize(scrollPane.getViewport().getSize());
+					}
+					
+				};				
+				addComponentListener(componentListener);
+			}
+			
+		}		
+	}
+	
+	public void setPreferredBodySize(Dimension size) {
 		if(bodyComponent instanceof JComponent)
-			((JComponent)bodyComponent).setPreferredSize(dimension);
+			((JComponent)bodyComponent).setPreferredSize(size);
 	}
 	
 	public LayoutManager getBodyLayout() {
@@ -390,8 +420,11 @@ public class BasePanel extends AbstractPanel {
 	}
 	
 	public void setBodyComponent(Component body) {
-		// update viewport
+		// update scrollpane and viewport
 		getScrollPane().setViewportView(body);
+		getScrollPane().setBorder(BorderFactory.createEmptyBorder());
+		getScrollPane().setViewportBorder(BorderFactory.createEmptyBorder());		
+		
 		// save hook
 		bodyComponent = body;
 		// update borders
@@ -411,7 +444,6 @@ public class BasePanel extends AbstractPanel {
 	public boolean doAction(String command) {
 		return getHeaderPanel().doAction(command);
 	}
-
   	
   	@Override
   	public void setEnabled(boolean isEnabled) {
@@ -449,8 +481,7 @@ public class BasePanel extends AbstractPanel {
   	  	
 	/* ===========================================
 	 * IPanel implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 	
 	public void update() { /* Override this */ }
 	

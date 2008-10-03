@@ -23,9 +23,11 @@ public interface IMessageLineIf extends IMsoObjectIf
         TEXT,
         POSITION,
         POI,
-        ASSIGNED,
+        ALLOCATED,
         STARTED,
-        COMPLETED
+        COMPLETED,
+        ABORTED,
+        RELEASED
     }
 
     public static final Comparator<IMessageLineIf> MESSAGE_LINE_TIME_COMPARATOR = new Comparator<IMessageLineIf>()

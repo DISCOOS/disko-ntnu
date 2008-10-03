@@ -10,6 +10,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 
@@ -58,7 +59,7 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 	
 	public Component getComponent() {
 		if(m_component==null) {
-			JScrollPane scrollPane = new JScrollPane(getTextArea());
+			JScrollPane scrollPane = UIFactory.createScrollPane(getTextArea(),true);
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// save the component
@@ -85,7 +86,7 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 				}
 				
 			});
-			m_textArea.setRows(10);
+			m_textArea.setRows(2);
 			m_textArea.setLineWrap(true);
 			m_textArea.setWrapStyleWord(true);			
 		}

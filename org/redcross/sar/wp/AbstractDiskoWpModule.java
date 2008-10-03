@@ -2,7 +2,6 @@ package org.redcross.sar.wp;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -27,6 +26,7 @@ import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.DiskoWorkRepeater;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
@@ -45,6 +45,7 @@ import java.util.TimerTask;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
 
 /**
  * This abstract class is a base class that has a default implementation of the
@@ -585,7 +586,7 @@ public abstract class AbstractDiskoWpModule
     private static final int TIMER_DELAY = 1000; // 1 second
     private static final Timer timer = new Timer(true);
     private static final WpTicker ticker = new WpTicker();
-    private static final ArrayList<ITickEventListenerIf> tickListeners = new ArrayList<ITickEventListenerIf>();
+    private static final EventListenerList tickListeners = new EventListenerList();
     
     private static boolean isTimerRunning = false;
     private static long tickTime = 0;
@@ -622,12 +623,12 @@ public abstract class AbstractDiskoWpModule
 
     public void addTickEventListener(ITickEventListenerIf listener)
     {
-        tickListeners.add(listener);
+        tickListeners.add(ITickEventListenerIf.class,listener);
     }
 
     public void removeTickEventListener(ITickEventListenerIf listener)
     {
-        tickListeners.remove(listener);
+        tickListeners.remove(ITickEventListenerIf.class,listener);
     }
 
     /**
@@ -641,13 +642,18 @@ public abstract class AbstractDiskoWpModule
         // ensure access to listeners are serialized
         synchronized(tickListeners) {
         	
-	        if (tickListeners.size() == 0 || aMilli == 0)
+	        if (tickListeners.getListenerCount() == 0 || aMilli == 0)
 	        {
 	            return;
 	        }
 
-	        for (ITickEventListenerIf listener : tickListeners)
+	        ITickEventListenerIf[] list = tickListeners.getListeners(ITickEventListenerIf.class);
+	        
+	        for (int i=0; i<list.length; i++)
 	        {
+	        	
+	        	ITickEventListenerIf listener = list[i];
+	        	
 	        	TickEvent e = new TickEvent(listener);
 	
 	            long timer = listener.getTimeCounter() - aMilli;

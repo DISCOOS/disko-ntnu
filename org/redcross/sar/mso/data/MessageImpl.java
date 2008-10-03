@@ -8,6 +8,7 @@ import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.mso.Selector;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -190,18 +191,18 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setBroadcast(boolean aBroadcast)
-    {
-    	// Clear receiver lists when changing broadcast state
-    	m_unconfirmedReceivers.deleteAll();
-    	m_confirmedReceivers.deleteAll();
-
-        m_broadcast.setValue(aBroadcast);
-    }
-
     public boolean isBroadcast()
     {
         return m_broadcast.booleanValue();
+    }
+
+    public void setBroadcast(boolean aBroadcast)
+    {
+    	// clear receiver lists when changing broadcast state
+    	m_unconfirmedReceivers.deleteAll();
+    	m_confirmedReceivers.deleteAll();
+    	// update
+        m_broadcast.setValue(aBroadcast);
     }
 
     public IMsoModelIf.ModificationState getBroadcastState()
@@ -259,11 +260,6 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
 
-    public void addConfirmedReceiver(ICommunicatorIf anICommunicatorIf)
-    {
-        m_confirmedReceivers.add(anICommunicatorIf);
-    }
-
     public IMsoListIf<ICommunicatorIf> getConfirmedReceivers()
     {
         return m_confirmedReceivers;
@@ -279,6 +275,21 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_confirmedReceivers.getItems();
     }
 
+    public IMsoListIf<ICommunicatorIf> getUnconfirmedReceivers()
+    {
+        return m_unconfirmedReceivers;
+    }
+
+    public IMsoModelIf.ModificationState getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf)
+    {
+        return m_unconfirmedReceivers.getState(anICommunicatorIf);
+    }
+
+    public Collection<ICommunicatorIf> getUnconfirmedReceiversItems()
+    {
+        return m_unconfirmedReceivers.getItems();
+    }
+        
     public void addMessageTask(ITaskIf anITaskIf)
     {
         m_messageTasks.add(anITaskIf);
@@ -321,26 +332,6 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_messageLines.getItems();
     }
 
-    public void addUnconfirmedReceiver(ICommunicatorIf anICommunicatorIf)
-    {
-        m_unconfirmedReceivers.add(anICommunicatorIf);
-    }
-
-    public IMsoListIf<ICommunicatorIf> getUnconfirmedReceivers()
-    {
-        return m_unconfirmedReceivers;
-    }
-
-    public IMsoModelIf.ModificationState getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf)
-    {
-        return m_unconfirmedReceivers.getState(anICommunicatorIf);
-    }
-
-    public Collection<ICommunicatorIf> getUnconfirmedReceiversItems()
-    {
-        return m_unconfirmedReceivers.getItems();
-    }
-
     /*-------------------------------------------------------------------------------------------
     * Methods for references
     *-------------------------------------------------------------------------------------------*/
@@ -369,11 +360,23 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     * Other specified methods
     *-------------------------------------------------------------------------------------------*/
 
-    public boolean addBroadcastNotAccepted(ICommunicatorIf aReceiver)
+    public boolean setUnconfirmed(ICommunicatorIf aReceiver)
     {
+    	
+    	// remove from confirmed
+        m_confirmedReceivers.remove(aReceiver);
+        
+        // can only be added once
         try
         {
+        	
+        	// add to unconfirmed
             m_unconfirmedReceivers.add(aReceiver);
+            
+        	// set broadcast mode
+        	m_broadcast.set(true);
+        	
+            // success
             return true;
         }
         catch (MsoRuntimeException e)
@@ -382,15 +385,22 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         }
     }
 
-    public boolean confirmReceiver(ICommunicatorIf anICommunicatorIf)
+    public boolean setConfirmed(ICommunicatorIf aReceiver)
     {
-        if (!m_unconfirmedReceivers.remove(anICommunicatorIf))
-        {
-            return false;
-        }
+    	// remove from unconfirmed
+        m_unconfirmedReceivers.remove(aReceiver); 
+        
+        // can only be added once
         try
         {
-            m_confirmedReceivers.add(anICommunicatorIf);
+        	// add to confirmed
+            m_confirmedReceivers.add(aReceiver);
+            // update broadcast state?
+            if(!m_broadcast.getAttrValue()) 
+        	{
+            	m_broadcast.set(getReceivers().size()>1);
+        	}
+            // success
             return true;
         }
         catch (MsoRuntimeException e)
@@ -399,27 +409,30 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         }
     }
 
-    public MsoListImpl<ICommunicatorIf> getBroadcastUnconfirmed()
+    public void removeReceiver(ICommunicatorIf communicator)
     {
-        return m_unconfirmedReceivers;
+        m_unconfirmedReceivers.remove(communicator);
+        m_confirmedReceivers.remove(communicator);
     }
-
-    public MsoListImpl<ICommunicatorIf> getBroadcastConfirmed()
-    {
-        return m_confirmedReceivers;
-    }
-
-    public ICommunicatorIf getSingleReceiver()
+    
+    public ICommunicatorIf getReceiver()
     {
         return m_confirmedReceivers.getItem();
     }
 
-    public void setSingleReceiver(ICommunicatorIf communicator)
+    public Collection<ICommunicatorIf> getReceivers()
     {
-        setBroadcast(false);
-        m_unconfirmedReceivers.deleteAll();
-        m_confirmedReceivers.deleteAll();
+    	List<ICommunicatorIf> list = new ArrayList<ICommunicatorIf>();
+    	list.addAll(m_unconfirmedReceivers.getItems());
+    	list.addAll(m_confirmedReceivers.getItems());
+        return list;
+    }
+    
+    public void setReceiver(ICommunicatorIf communicator)
+    {
+    	setBroadcast(false);
         m_confirmedReceivers.add(communicator);
+        
     }
 
     private int getNextLineNumber()
@@ -499,7 +512,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return retVal;
     }
 
-    private static EnumSet<IMessageLineIf.MessageLineType> assignmentLines = EnumSet.of(MessageLineImpl.MessageLineType.ASSIGNED,
+    private static EnumSet<IMessageLineIf.MessageLineType> assignmentLines = EnumSet.of(MessageLineImpl.MessageLineType.ALLOCATED,
             MessageLineImpl.MessageLineType.STARTED, MessageLineImpl.MessageLineType.COMPLETED);
 
     public IMessageLineIf findMessageLine(IMessageLineIf.MessageLineType aType, boolean makeNewLine)

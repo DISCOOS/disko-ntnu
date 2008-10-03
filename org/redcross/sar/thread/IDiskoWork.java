@@ -36,9 +36,9 @@ public interface IDiskoWork<T> extends Runnable {
 	
 	public T get();
 	
-	public long getID();
+	public long getWorkID();
 	
-	public void setID(long id);
+	public void setWorkID(long id);
 	
 	public boolean isLoop();
 	

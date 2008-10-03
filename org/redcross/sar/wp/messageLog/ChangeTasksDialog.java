@@ -3,9 +3,9 @@ package org.redcross.sar.wp.messageLog;
 import no.cmr.tools.Log;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.dialog.TaskDialog;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -45,7 +45,7 @@ import javax.swing.JToggleButton;
  *
  * @author thomasl
  */
-public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComponentIf, IMsoUpdateListenerIf
+public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -330,7 +330,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 	/**
 	 *
 	 */
-	public void hideComponent()
+	public void hideEditor()
 	{
 		this.setVisible(false);
 		TaskDialog taskDialog = m_wpMessageLog.getApplication().getUIFactory().getTaskDialog();
@@ -340,7 +340,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 	/**
 	 * Updates button selection based on which tasks exists in the new message
 	 */
-	public void newMessageSelected(IMessageIf message)
+	public void setMessage(IMessageIf message)
 	{
 		// Loop through all tasks in new/updated message
 		Collection<ITaskIf> messageTasks = message.getMessageTasks().getItems();
@@ -363,7 +363,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 	/**
 	 *
 	 */
-	public void showComponent()
+	public void showEditor()
 	{
 		this.setVisible(true);
 	}
@@ -371,7 +371,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditMessageComp
 	/**
 	 * Clear button selection
 	 */
-	public void clearContents()
+	public void resetEditor()
 	{
 		Iterator<JToggleButton> iterator = m_buttonMap.keySet().iterator();
 		while(iterator.hasNext())

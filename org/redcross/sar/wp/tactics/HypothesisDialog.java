@@ -26,7 +26,6 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.EnumSet;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.ComboAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -49,6 +48,7 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class HypothesisDialog extends DefaultDialog {
@@ -485,13 +485,10 @@ public class HypothesisDialog extends DefaultDialog {
 			try {
 				attribsPanel = new AttributesPanel("Egenskaper","",false,false);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
-				attribsPanel.setPreferredBodySize(new Dimension(200, 100));
-				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
-						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				attribsPanel.setFitBodyOnResize(true);
+				attribsPanel.setNotScrollBars();
 				attribsPanel.addAttribute(getPriorityCombo());
 				attribsPanel.addAttribute(getStatusCombo());
-				Utils.setFixedSize(getPriorityCombo(), 200,25);
-				Utils.setFixedSize(getStatusCombo(), 200,25);				
 				attribsPanel.addDiskoWorkListener(new IDiskoWorkListener() {
 
 					@Override

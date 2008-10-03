@@ -4,26 +4,33 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.DiskoDecisionSupport;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.attribute.DTGAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
+import org.redcross.sar.gui.dialog.DirectoryChooserDialog;
+import org.redcross.sar.gui.dialog.FileExplorerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.MapPanel;
@@ -35,6 +42,9 @@ import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.util.AppProps;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.ds.AssignmentsPanel;
 
@@ -46,24 +56,26 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 
 	private long m_timeCounter = 0;
 	
-	private JSplitPane m_splitPane = null;
-	private MapPanel m_mapPanel = null;
-	private JPanel m_estimatorPanel = null;
-	private BasePanel m_controlPanel = null;
-	private AttributesPanel m_estAttribsPanel = null;
-	private DTGAttribute m_startedTimeAttr = null;
-	private TextFieldAttribute m_effortTimeAttr = null;	
-	private TextFieldAttribute m_avgEstTimeAttr = null;	
-	private TextFieldAttribute m_maxEstTimeAttr = null;	
-	private TextFieldAttribute m_utilEstTimeAttr = null;	
-	private JButton m_resumeButton = null;
-	private JButton m_suspendButton = null;
-	private JButton m_stopButton = null;	
-	private JTabbedPane m_tabbedPane = null;
-	private AssignmentsPanel m_assignmentsPanel = null;
+	private JSplitPane m_splitPane;
+	private MapPanel m_mapPanel;
+	private JPanel m_estimatorPanel;
+	private BasePanel m_controlPanel;
+	private AttributesPanel m_estAttribsPanel;
+	private DTGAttribute m_startedTimeAttr;
+	private TextFieldAttribute m_effortTimeAttr;
+	private TextFieldAttribute m_avgEstTimeAttr;
+	private TextFieldAttribute m_maxEstTimeAttr;
+	private TextFieldAttribute m_utilEstTimeAttr;
+	private TextFieldAttribute m_catalogAttr;
+	private JButton m_resumeButton;
+	private JButton m_suspendButton;
+	private JButton m_stopButton;
+	private JTabbedPane m_tabbedPane;
+	private AssignmentsPanel m_activeAssignmentsPanel;
+	private AssignmentsPanel m_archivedAssignmentsPanel;
 	
-	private DiskoDecisionSupport m_ds = null;
-	private RouteCostEstimator m_estimator = null; 
+	private DiskoDecisionSupport m_ds;
+	private RouteCostEstimator m_estimator; 
 	
     public DiskoWpDsImpl() throws Exception
     {
@@ -141,29 +153,42 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 			Dimension dim = new Dimension(350,350);
 			m_tabbedPane.setMinimumSize(dim);
 			m_tabbedPane.setPreferredSize(dim);
-			m_tabbedPane.addTab("Oppdrag", 
-					DiskoIconFactory.getIcon("GENERAL.ELEMENT","32x32"), 
-					getAssignmentsPanel(), null);
+			m_tabbedPane.addTab("Aktive", 
+					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"), 
+					getActiveAssignmentsPanel(), null);
+			m_tabbedPane.addTab("Utførte", 
+					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"), 
+					getArchivedAssignmentsPanel(), null);
 			m_tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		}
 		return m_tabbedPane;
 	
 	}    
 	
-	private AssignmentsPanel getAssignmentsPanel()
+	private AssignmentsPanel getActiveAssignmentsPanel()
     {
-        if (m_assignmentsPanel == null)
+        if (m_activeAssignmentsPanel == null)
         {
-        	m_assignmentsPanel = new AssignmentsPanel();
+        	m_activeAssignmentsPanel = new AssignmentsPanel(getMap(),false);
         }        
-        return m_assignmentsPanel;
+        return m_activeAssignmentsPanel;
     }
         
+	private AssignmentsPanel getArchivedAssignmentsPanel()
+    {
+        if (m_archivedAssignmentsPanel == null)
+        {
+        	m_archivedAssignmentsPanel = new AssignmentsPanel(getMap(),true);
+        }        
+        return m_archivedAssignmentsPanel;
+    }
+	
     private JSplitPane getSplitPane()
     {
         if (m_splitPane == null)
         {
         	m_splitPane = new JSplitPane();
+        	m_splitPane.setBorder(BorderFactory.createEmptyBorder());
         	m_splitPane.setLeftComponent(getMapPanel());
         	m_splitPane.setRightComponent(getEstimatorPanel());
         }
@@ -177,8 +202,9 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         	m_mapPanel = new MapPanel(getMap());
         	m_mapPanel.setNorthBarVisible(true);
         	m_mapPanel.setSouthBarVisible(true);
+        	m_mapPanel.setBorder(UIFactory.createBorder());
 			m_mapPanel.setMinimumSize(new Dimension(350,350));
-			m_mapPanel.setPreferredSize(new Dimension(500,350));
+			m_mapPanel.setPreferredSize(new Dimension(450,350));
         	
         }        
         return m_mapPanel;
@@ -201,7 +227,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_controlPanel == null)
         {
         	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Stoppet"),ButtonSize.SMALL);
-        	m_controlPanel.setPreferredSize(new Dimension(400,210));
+        	m_controlPanel.setPreferredSize(new Dimension(400,235));
         	m_controlPanel.addButton(getResumeButton(), "resume");
         	m_controlPanel.addButton(getSuspendButton(), "suspend");		
         	m_controlPanel.addButton(getStopButton(), "stop");		
@@ -266,6 +292,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         	m_estAttribsPanel.addAttribute(getAvgEstTimeAttr());
         	m_estAttribsPanel.addAttribute(getMaxEstTimeAttr());
         	m_estAttribsPanel.addAttribute(getUtilEstTimeAttr());
+        	m_estAttribsPanel.addAttribute(getCatalogAttr());
         }        
         return m_estAttribsPanel;
     }
@@ -274,8 +301,8 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     {
         if (m_startedTimeAttr == null)
         {
-        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", false, 130, 25, 0);
-        	Utils.setFixedSize(m_startedTimeAttr,250,25);
+        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", 
+        			false, 130, 25, Calendar.getInstance());
         	
         }        
         return m_startedTimeAttr;
@@ -286,7 +313,6 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_effortTimeAttr == null)
         {
         	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid", false, 130, 25, 0);
-        	Utils.setFixedSize(m_effortTimeAttr,250,25);
         	
         }        
         return m_effortTimeAttr;
@@ -297,7 +323,6 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_avgEstTimeAttr == null)
         {
         	m_avgEstTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
-        	Utils.setFixedSize(m_avgEstTimeAttr,250,25);
         	
         }        
         return m_avgEstTimeAttr;
@@ -308,7 +333,6 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_maxEstTimeAttr == null)
         {
         	m_maxEstTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)", false, 130, 25, 0);
-        	Utils.setFixedSize(m_maxEstTimeAttr,250,25);
         	
         }        
         return m_maxEstTimeAttr;
@@ -319,11 +343,42 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_utilEstTimeAttr == null)
         {
         	m_utilEstTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
-        	Utils.setFixedSize(m_utilEstTimeAttr,250,25);
         	
         }        
         return m_utilEstTimeAttr;
     }
+	
+	private TextFieldAttribute getCatalogAttr() {
+		if (m_catalogAttr==null) {
+			m_catalogAttr = new TextFieldAttribute("Catalog","Katalog",false,130,25,AppProps.getText("DS.ETE.LOGGING.path"));
+			m_catalogAttr.setButtonVisible(true);
+			m_catalogAttr.setButtonEnabled(true);
+			m_catalogAttr.addButtonActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					/*
+					DirectoryChooserDialog dirChooser = new DirectoryChooserDialog();
+					File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
+					dirChooser.setRoot(FileTreeModel.COMPUTER);
+					*/
+					FileExplorerDialog dirChooser = new FileExplorerDialog();
+					File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
+					dirChooser.setRoot(FileTreeModel.COMPUTER);
+					
+					String msg = "Velg katalog";
+					Icon icon = UIManager.getIcon("OptionPane.informationIcon");					
+					Object selected = dirChooser.select(file.toString(), msg, icon);
+					if(selected != null) {
+						m_catalogAttr.setValue(selected);
+						AppProps.setText("DS.ETE.LOGGING.path",m_catalogAttr.getValue());
+					}        					
+				}
+				
+			});
+		}
+		return m_catalogAttr;
+	}
 	
     /**
      * Checking if any tasks have reached their alert time, and give the appropriate role a warning
@@ -409,16 +464,16 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     private void install() {
     	String oprID = getActiveOperationId();    	
     	m_estimator = (RouteCostEstimator)getDs().install(RouteCostEstimator.class, oprID);
+    	EstimatedPositionLayer l = ((EstimatedPositionLayer)getMap().getDiskoLayer(LayerCode.ESTIMATED_POSITION_LAYER));
+    	l.setEstimator(m_estimator);
+    	getActiveAssignmentsPanel().install(m_estimator);
+    	getArchivedAssignmentsPanel().install(m_estimator);
     	m_estimator.load();
-    	((EstimatedPositionLayer)getMap()
-    			.getDiskoLayer(LayerCode.ESTIMATED_POSITION_LAYER))
-    				.setEstimator(m_estimator);
-    	getAssignmentsPanel().install(m_estimator);
     }
     
     private void resume() {
     	// forward
-    	getDs().start(getActiveOperationId());
+    	doWork(1);
     	// forward
     	getControlPanel().setCaptionText(String.format(CONTROL_CAPTION,"Spiller"));  	
     }
@@ -451,5 +506,65 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		update(true);
 						
 	}
+	
+	private boolean doWork(int task) {
+		try {
+			// forward work
+			DiskoWorkPool.getInstance().schedule(new DsWork(task));
+			// do work
+			return true;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	class DsWork extends ModuleWork<Boolean> {
+
+		private int m_task = 0;
+		
+		/**
+		 * Constructor
+		 * 
+		 * @param task
+		 */
+		DsWork(int task) throws Exception {
+			// forward
+			super();
+			// prepare
+			m_task = task;
+		}
+		
+		@Override
+		public Boolean doWork() {
+			try {
+				// dispatch task
+				switch(m_task) {
+				case 1: start(); return true;
+				case 2: rollback(); return true;
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		
+		private void start() {
+			try{
+		    	// load?
+		    	if(!(m_estimator.isSuspended() || m_estimator.isWorking()))
+		    		m_estimator.load();
+		    	// forward
+		    	getDs().start(getActiveOperationId());
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
     
 }

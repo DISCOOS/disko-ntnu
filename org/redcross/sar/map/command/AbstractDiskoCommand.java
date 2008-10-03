@@ -4,7 +4,6 @@ import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.geometry.*;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -20,6 +19,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 

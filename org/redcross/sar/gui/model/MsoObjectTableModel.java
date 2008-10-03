@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.table.AbstractTableModel;
-
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
@@ -23,31 +21,53 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 
 public abstract class MsoObjectTableModel<T extends IMsoObjectIf> 
-								extends AbstractTableModel  
+								extends DiskoTableModel  
 								implements IMsoUpdateListenerIf, Selector<T> {
 
 	private static final long serialVersionUID = 1L;
 
-	private Map<IMsoObjectIf,Object[]> rows = null;
-	private List<IMsoObjectIf> objects = null;
-	private MsoClassCode code = null;
-	private List<String> captions = null;
-	private List<String> attributes = null;
-	private EnumSet<MsoClassCode> interests = null;
-	private EnumSet<MsoClassCode> coUpdateCodes = null;
+	private Map<IMsoObjectIf,Object[]> rows;
+	private List<IMsoObjectIf> objects;
+	private MsoClassCode code;
+	private EnumSet<MsoClassCode> interests;
+	private EnumSet<MsoClassCode> coUpdateCodes;
 	
 	/* =============================================================================
 	 * Constructors
 	 * ============================================================================= */
 	
+	public MsoObjectTableModel(IMsoModelIf model,
+								MsoClassCode code,
+								String[] attributes,
+								String[] captions) {
+		// forward
+		this(model,code,attributes,captions,captions.clone(),
+				defaultEditable(attributes.length),
+				defaultEditors(attributes.length,"button"));
+	}
+	
 	public MsoObjectTableModel(IMsoModelIf model, 
-							   MsoClassCode code,
-							   String[] attributes,
-							   String[] captions) {
+		   	MsoClassCode code,
+		   	String[] attributes,
+		   	String[] captions,
+		   	String[] tooltips) {
+		// forward
+		this(model,code,attributes,captions,tooltips,
+				defaultEditable(attributes.length),
+				defaultEditors(attributes.length,"button"));		
+	}
+	
+	public MsoObjectTableModel(IMsoModelIf model, 
+							   	MsoClassCode code,
+							   	String[] attributes,
+							   	String[] captions,
+							   	String[] tooltips,
+							   	Boolean[] editable,
+							   	String[] editors) {
+		// forward
+		super(attributes,captions,tooltips,editable,editors);
 		// prepare
 		this.rows = new HashMap<IMsoObjectIf,Object[]>();		
-		this.captions = new ArrayList<String>();
-		this.attributes = new ArrayList<String>();
 		this.objects = new ArrayList<IMsoObjectIf>();
 		this.interests = EnumSet.of(code);
 		this.coUpdateCodes = EnumSet.noneOf(MsoClassCode.class);
@@ -61,23 +81,45 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 	}
 	
 	/* =============================================================================
+	 * Abstract methods
+	 * ============================================================================= */
+		
+	public abstract void sort();
+	
+	public abstract boolean select(T msoObj);
+	
+	/* =============================================================================
 	 * Public methods
 	 * ============================================================================= */
 	
-	public void install(MsoClassCode code, String[] attributes, String[] captions) {
+	@Override
+	public void install(Object[] attributes, Object[] captions, Object[] tooltips,
+			Object[] editable, Object[] editors) {
+		// forward
+		install(code, attributes, captions, tooltips, editable, editors);
+	}
+
+	@Override
+	public void install(Object[] attributes, Object[] captions) {
+		// forward
+		install(code,attributes, captions);
+	}
+	
+	public void install(MsoClassCode code, Object[] attributes, Object[] captions) {
+		// use captions as tooltips
+		install(code, attributes, captions, captions.clone(),
+				defaultEditable(attributes.length),
+				defaultEditors(attributes.length,"button"));
+	}
+	
+	public void install(MsoClassCode code, Object[] attributes, Object[] captions, Object[] tooltips, Object[] editable, Object[] editors) {
+		// forward
+		super.install(attributes, captions, tooltips, editable, editors);
 		// prepare
 		this.code = code;
 		// reset
 		this.rows.clear();
-		this.captions.clear();
-		this.attributes.clear();
-		// add?
-		if(attributes!=null) {
-			for(int i=0;i<attributes.length;i++) {
-				this.captions.add(captions[i]);
-				this.attributes.add(attributes[i]);
-			}
-		}
+		this.objects.clear();
 	}
 	
 	public boolean addCoUpdateClass(MsoClassCode code) {
@@ -124,9 +166,25 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 		return objects.get(row);
 	}
 	
-	public abstract boolean select(T msoObj);
+	/* =============================================================================
+	 * IDiskoTableModel implementation
+	 * ============================================================================= */
+		
+	public String getHeaderTooltipText(int column) {
+		return tooltips.get(column);
+	}
 	
-	public abstract void sort();
+	public void setHeaderTooltipText(int column, String text) {
+		tooltips.set(column,text);
+	}
+	
+	public boolean isHeaderEditable(int column) {
+		return editable.get(column);
+	}
+	
+	public void setHeaderEditable(int column, boolean isEditable) {
+		editable.set(column,isEditable);
+	}
 	
 	/* =============================================================================
 	 * Protected methods
@@ -162,7 +220,7 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 		int iRow = getRow(msoObj);
 		if (iRow == -1) {			
 			objects.add(msoObj);
-			rows.put(msoObj,new Object[attributes.size()]);
+			rows.put(msoObj,new Object[names.size()]);
 		}
 		update(msoObj,sort);
 	}
@@ -175,8 +233,8 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 	private void update(IMsoObjectIf msoObj, Object[] row, boolean sort) {
 		try {
 			Map attrs = msoObj.getAttributes();
-			for(int i=0; i<attributes.size();i++) {
-				String name = attributes.get(i);
+			for(int i=0; i<names.size();i++) {
+				String name = names.get(i);
 				if(attrs.containsKey(name)) {
 					row[i] = getMsoAttrValue((IAttributeIf)attrs.get(name));
 				}
@@ -204,10 +262,6 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 	 * AbstractTableModel methods
 	 * ============================================================================= */
 	
-	public int getColumnCount() {
-		return attributes.size();
-	}
-
 	public int getRowCount() {
 		return rows.size();
 	}
@@ -321,9 +375,22 @@ public abstract class MsoObjectTableModel<T extends IMsoObjectIf>
 				if(iDeleted!=-1) {
 					iDeleted = getRow(msoObj);
 					this.fireTableRowsDeleted(iDeleted, iDeleted);
-					remove(msoObj,false);
-					
+					remove(msoObj,false);					
 				}						
+	        }
+	        else {
+				
+	        	// get delete object index
+	        	iDeleted = getRow(msoObj);
+		
+				// sort?
+				if(iAdded!=-1 || iChanged!=-1 || iDeleted!=-1) sort();
+				
+				if(iDeleted!=-1) {
+					this.fireTableRowsDeleted(iDeleted, iDeleted);
+					remove(msoObj,false);					
+				}						
+	        	
 	        }
         }
 	}

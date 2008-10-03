@@ -25,6 +25,19 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */	
 	
+	public TextFieldAttribute(String name, String caption, boolean isEditable) {
+		super(name, caption, isEditable);
+	}
+		
+	public TextFieldAttribute(String name, String caption, 
+			boolean isEditable, int width, int height) {
+		super(name, caption, isEditable, width, height, "");
+	}
+	
+	public TextFieldAttribute(String name, String caption, boolean isEditable,
+			int width, int height, Object value) {
+		super(name, caption, isEditable, width, height, value);
+	}
 	
 	public TextFieldAttribute(IAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height) {
@@ -35,16 +48,6 @@ public class TextFieldAttribute extends AbstractDiskoAttribute {
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
 	}
-
-	public TextFieldAttribute(String name, String caption, boolean isEditable,
-			int width, int height, Object value) {
-		super(name, caption, isEditable, width, height, value);
-	}
-
-	public TextFieldAttribute(String name, String caption, boolean isEditable) {
-		super(name, caption, isEditable);
-	}
-	
 
 	/*==================================================================
 	 * Public methods

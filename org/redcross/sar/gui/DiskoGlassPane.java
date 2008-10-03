@@ -24,9 +24,9 @@ import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ProgressDialog;
+import org.redcross.sar.util.Utils;
 
 /** 
  * GlassPane tutorial 

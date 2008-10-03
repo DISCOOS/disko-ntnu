@@ -107,7 +107,7 @@ public class Internationalization
     /**
      * Translate international text from a given java.util.ResourceBundle.
      * <p/>
-     * The method shall give the same type of results as {@link org.redcross.sar.app.Utils#translate(Object)}.
+     * The method shall give the same type of results as {@link org.redcross.sar.util.Utils#translate(Object)}.
      *
      * @param aBundle The ResourceBundle to use
      * @param obj     Lookup value
@@ -192,7 +192,7 @@ public class Internationalization
     /**
      * Translate international text for an Enum
      * <p/>
-     * The method shall give the same type of results as {@link org.redcross.sar.app.Utils#translate(Object)}.
+     * The method shall give the same type of results as {@link org.redcross.sar.util.Utils#translate(Object)}.
      *
      * @param anEnum Lookup value
      * @return Same as {@link #getEnumText(java.util.ResourceBundle,Enum)} or {@link #getText(java.util.ResourceBundle,String)}, depending on type of obj.

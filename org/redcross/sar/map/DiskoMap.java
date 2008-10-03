@@ -41,11 +41,10 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
-import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
+import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -69,6 +68,8 @@ import org.redcross.sar.thread.DiskoMapProgressor;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.thread.event.DiskoWorkRepeater;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
+import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.Position;
 
 /**
@@ -749,7 +750,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			super.centerAt(p);
 	}
 	
-	public void centerAtPosition(Position p) throws IOException, AutomationException {
+	public void centerAtPosition(GeoPos p) throws IOException, AutomationException {
 		// get esri point
 		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
 		if (!point.isEmpty()) {
@@ -798,7 +799,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		flashShape(p);
 	}
 	
-	public void flashPosition(Position p) {
+	public void flashPosition(GeoPos p) {
 		try {
 			// get esri point
 			IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
@@ -918,7 +919,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		setExtent(MapUtil.expand(ratio,geom.getEnvelope()));		
 	}
 	
-	public void zoomToPosition(Position p, double ratio) throws IOException, AutomationException {
+	public void zoomToPosition(GeoPos p, double ratio) throws IOException, AutomationException {
 		// get esri point
 		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
 		if (!point.isEmpty()) {

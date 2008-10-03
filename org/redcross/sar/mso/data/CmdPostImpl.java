@@ -742,6 +742,15 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     * Other List accessor methods
     *-------------------------------------------------------------------------------------------*/
 
+	@Override
+	public String getCommunicatorShortName() {
+		return getCommunicatorNumberPrefix() + " " + getCommunicatorNumber();
+	}
+	
+    public ICommunicatorIf getCommunicator() {
+    	return this;
+    }
+    
     public ITimeLineIf getTimeLine()
     {
         return m_timeLine;

@@ -19,8 +19,11 @@ import com.esri.arcgis.geodatabase.ISelectionSet;
 import com.esri.arcgis.geodatabase.ISpatialFilter;
 import com.esri.arcgis.geodatabase.IWorkspace;
 import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
+import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.IGeometry;
+import com.esri.arcgis.geometry.IGeometryCollection;
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.IRelationalOperator;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.interop.AutomationException;
@@ -155,37 +158,51 @@ public class MsoFeatureClass implements IFeatureClass, IGeoDataset {
 			for (int i = 0; i < data.size(); i++) {
 				IFeature feature = (IFeature)data.get(i);
 				IGeometry geom = feature.getShape();
-				if(geom != null) { 
-					switch(relation) {
-					case esriSpatialRelEnum.esriSpatialRelContains:
-						if (filterGeom.contains(geom))
-							cursor.add(feature);
-						break;
-					case esriSpatialRelEnum.esriSpatialRelCrosses:
-						if (filterGeom.crosses(geom))
-							cursor.add(feature);
-						break;
-					case esriSpatialRelEnum.esriSpatialRelOverlaps:
-						if (filterGeom.overlaps(geom))
-							cursor.add(feature);
-						break;
-					case esriSpatialRelEnum.esriSpatialRelTouches:
-						if (filterGeom.touches(geom))
-							cursor.add(feature);
-						break;
-					case esriSpatialRelEnum.esriSpatialRelWithin:
-						if (filterGeom.within(geom))
-							cursor.add(feature);
-						break;
-					default:
-						if (!filterGeom.disjoint(geom))
-							cursor.add(feature);
-						break;						
+				if(geom instanceof GeometryBag) {
+					// get bag
+					GeometryBag bag = (GeometryBag)geom;
+					// only match valid geometries (line, polygon and point)
+					for(int j=0;j<bag.getGeometryCount();j++) {
+						// get geometry
+						geom = bag.getGeometry(j);
+						// line, polygon or point?
+						if(geom instanceof IPoint || 
+								geom instanceof IGeometryCollection) {
+							if(matches(filterGeom,geom,relation)){
+								cursor.add(feature);
+							}							
+						}
 					}
 				}
+				else if(matches(filterGeom,geom,relation)){
+					cursor.add(feature);
+				}
+
 			}
 		}
 		return cursor;
+	}
+		
+	private boolean matches(IRelationalOperator filter, IGeometry geom, int relation) 
+		throws AutomationException, IOException {
+		
+		if(geom != null) { 
+			switch(relation) {
+			case esriSpatialRelEnum.esriSpatialRelContains:
+				return filter.contains(geom);
+			case esriSpatialRelEnum.esriSpatialRelCrosses:
+				return filter.crosses(geom);
+			case esriSpatialRelEnum.esriSpatialRelOverlaps:
+				return filter.overlaps(geom);
+			case esriSpatialRelEnum.esriSpatialRelTouches:
+				return filter.touches(geom);
+			case esriSpatialRelEnum.esriSpatialRelWithin:
+				return filter.within(geom);
+			default:
+				return !filter.disjoint(geom);
+			}
+		}	
+		return false;
 	}
 
 	public ISelectionSet select(IQueryFilter arg0, int arg1, int arg2,

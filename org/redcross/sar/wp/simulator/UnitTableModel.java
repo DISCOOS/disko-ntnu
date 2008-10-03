@@ -17,11 +17,14 @@ public class UnitTableModel extends MsoObjectTableModel<IUnitIf> {
 	private static final String[] ATTRIBUTES = new String[]{MSO_OBJECT};
 	private static final String[] CAPTIONS = new String[]{"Enhet"};
 
-	private static final Selector<IUnitIf> m_unitSelector = new Selector<IUnitIf>()
+	private final Selector<IUnitIf> m_unitSelector = new Selector<IUnitIf>()
 	{
 		public boolean select(IUnitIf anObject)
 		{
-			return true;
+			// get history flag
+			boolean isHistory = anObject.isReleased();
+			// finished
+			return m_archived ? isHistory : !isHistory;	
 		}
 	};
 
@@ -42,9 +45,13 @@ public class UnitTableModel extends MsoObjectTableModel<IUnitIf> {
 		}
 	};
 	
-	public UnitTableModel(IMsoModelIf model) {
+	private boolean m_archived;
+	
+	public UnitTableModel(IMsoModelIf model,boolean archived) {
 		// forward
 		super(model, MsoClassCode.CLASSCODE_UNIT, ATTRIBUTES, CAPTIONS);
+		// prepare
+		m_archived = archived;
 		// get command post
 		ICmdPostIf cmdPost = model.getMsoManager().getCmdPost();
 		// load data?

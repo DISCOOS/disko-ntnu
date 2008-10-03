@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.MapUtil;
@@ -20,7 +20,7 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 
-public class POITableModel extends AbstractTableModel implements
+public class POITableModel extends DiskoTableModel implements
 		IMsoUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;
@@ -32,7 +32,7 @@ public class POITableModel extends AbstractTableModel implements
 	public POITableModel(IMsoModelIf msoModel) {
 		
 		myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI);
-		//myInterests.add(IMsoManagerIf.MsoClassCode.CLASSCODE_AREA);
+		
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
 		msoEventManager.addClientUpdateListener(this);
 		rows = new ArrayList<Object[]>();

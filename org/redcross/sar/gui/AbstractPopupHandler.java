@@ -20,12 +20,14 @@ public abstract class AbstractPopupHandler
      * Show the popup menu.
      * @param e The event that is triggered by the popup action
      */
-    public void showPopup(MouseEvent e)
+    public boolean showPopup(MouseEvent e)
     {
         JPopupMenu menu = getMenu(e);
         if (menu != null)
         {
             menu.show(e.getComponent(), e.getX(), e.getY());
+            return false;
         }
+        return true;
     }
 }

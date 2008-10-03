@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
@@ -34,7 +35,7 @@ public class IconRenderer implements Icon
     private final static int innerLeft = 5;
 
     // Not so very fixed design parameter
-    private final Color selectedColor = Color.pink;
+    private final Color selectedColor = Color.PINK;
 
     // Parameters related to source icon
     protected Image m_iconImage;
@@ -132,6 +133,17 @@ public class IconRenderer implements Icon
         int tx, ty;
         int sw, sh;
 
+        // cast to Graphics2D
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Determine if antialiasing is enabled
+        RenderingHints rhints = g2d.getRenderingHints();
+        boolean antialiasOn = rhints.containsValue(RenderingHints.VALUE_ANTIALIAS_ON);
+            
+        // Enable antialiasing for shapes
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                             RenderingHints.VALUE_ANTIALIAS_ON);
+        
         if (m_iconImage == null)
         {
             sw = 0;
@@ -185,8 +197,8 @@ public class IconRenderer implements Icon
         // draw border?
         if (m_hasBorder)
         {
-            int rectWidth = m_isMultiple ? m_width - 1 - innerLeft : m_width - 1;
-            int rectHeight = m_isMultiple ? m_height - 1 - innerTop : m_height - 1;
+            int rectWidth = m_isMultiple ? m_width - 1 - innerLeft : m_width - 3;
+            int rectHeight = m_isMultiple ? m_height - 1 - innerTop : m_height - 3;
             g.setColor(bgColor);
             g2.fillRoundRect(1, 1, rectWidth, rectHeight, arcDiam, arcDiam);
             g.setColor(c.getForeground());
@@ -210,12 +222,13 @@ public class IconRenderer implements Icon
         {
             g.setColor(c.getForeground());
             if (m_hasBorder && m_isMultiple)
-            	g.drawImage(m_iconImage, dx1+3, dy1+3, dx2-3, dy2-3, sx1, sy1, sx2, sy2, bgColor, null);
+            	g.drawImage(m_iconImage, dx1+4, dy1+4, dx2-4, dy2-4, sx1, sy1, sx2, sy2, bgColor, null);
             else
             	g.drawImage(m_iconImage, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, bgColor, null);
         }
 
-        g2.setStroke(oldStroke); // restore stroke
+        // resume old stroke
+        g2d.setStroke(oldStroke);
 
         Font oldFont = g.getFont();
         // Font size depends on string length an icon size
@@ -223,11 +236,15 @@ public class IconRenderer implements Icon
         g.setFont(oldFont.deriveFont(Font.BOLD, fontSize));
         Rectangle2D rc = (g.getFontMetrics()).getStringBounds(m_iconText, g);
         g.setColor(Color.WHITE);
-        g.fillRoundRect(tx-(int)rc.getWidth(), ty-(int)rc.getHeight()+5, (int)rc.getWidth(), (int)rc.getHeight()-3,2,2);
+        g.fillRoundRect(tx-(int)rc.getWidth(), ty-(int)rc.getHeight()+4, (int)rc.getWidth(), (int)rc.getHeight()-3,2,2);
         g.setColor(c.getForeground());
-        g.drawString(m_iconText, tx-(int)rc.getWidth(), ty);
+        g.drawString(m_iconText, tx-(int)rc.getWidth(), ty-1);
         g.setFont(oldFont);           //Restore font
         g.translate(-x, -y);   //Restore graphics object
+        
+        // resume old state        
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+        		antialiasOn ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);        
     }
 
     public boolean isSelectable()
@@ -486,7 +503,7 @@ public class IconRenderer implements Icon
 
     public static class InfoIcon extends IconRenderer
     {
-        static final Dimension m_iconSize = new Dimension(30, 50);
+        static final Dimension m_iconSize = new Dimension(50, 50);
 
         public InfoIcon(String anIconText, boolean isSelected)
         {

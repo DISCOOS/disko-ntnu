@@ -1,7 +1,6 @@
 package org.redcross.sar.map.tool;
  
 import java.awt.Event;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -9,12 +8,12 @@ import java.util.Calendar;
 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.event.ToolEvent.ToolEventType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -38,6 +37,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
@@ -259,27 +259,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				// forward?
 				if (!prepareDrawFrame() && isGeometriesDrawn())
 					refresh();
-				
-				/*
-				// update frame later?
-				if(isShowDrawFrame()) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							try {
-								// forward?
-								if (!prepareDrawFrame() && isGeometriesDrawn())
-									refresh();
-							} catch (AutomationException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					});
-				}
-				*/
 				// finished
 				return true;
 			}
@@ -907,13 +886,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					// cast to IPOIIf
 					IPOIIf msoPoi = (IPOIIf)msoObject;	
 					// get polyline
-					p = MapUtil.getEsriPoint(msoPoi.getPosition(),map.getSpatialReference());
+					p = MapUtil.getEsriPoint(msoPoi.getPosition().getGeoPos(),map.getSpatialReference());
 				}
 				else if (MsoClassCode.CLASSCODE_UNIT.equals(msoObject.getMsoClassCode())) {
 					// cast to unit
 					IUnitIf msoUnit = (IUnitIf)msoObject;
 					// get polyline
-					p = MapUtil.getEsriPoint(msoUnit.getPosition(),map.getSpatialReference());
+					p = MapUtil.getEsriPoint(msoUnit.getPosition().getGeoPos(),map.getSpatialReference());
 				}
 				// update geometry point
 				geoPoint = p;
@@ -1500,6 +1479,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		// set as working (prevents reentry)
 		setIsWorking();
 		
+		// notify
+		fireToolEvent(ToolEventType.BEGIN_EVENT, 0);		
+		
 		// valid
 		return true;
 			
@@ -1507,7 +1489,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 
 	private void afterBegin(boolean success) {
 
-		// was begin operation successfull?
+		// was begin operation successful?
 		if(success) {
 
 			try {
@@ -1522,8 +1504,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			// apply any change
-			// afterChange(true);
+			// notify
+			fireToolEvent(ToolEventType.BEGIN_EVENT, 1);
 		}
 		// reset work flag
 		setIsNotWorking();
@@ -1536,6 +1518,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		
 		// set working flag
 		setIsWorking();
+		
+		// notify
+		fireToolEvent(ToolEventType.CHANGE_EVENT, 0);		
 		
 		// valid
 		return true;
@@ -1553,6 +1538,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			}
 			// notify
 			fireOnWorkChange(this, msoObject);
+			// notify
+			fireToolEvent(ToolEventType.CHANGE_EVENT, 1);		
 		}
 		// reset working flag
 		setIsNotWorking();		
@@ -1564,6 +1551,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		if(!isActive || !isDrawing) return false;
 		// set working flag
 		setIsWorking();
+		// notify
+		fireToolEvent(ToolEventType.CANCEL_EVENT, 0);		
 		// is valid
 		return true;
 	}
@@ -1581,6 +1570,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			}
 			// notify
 			fireOnWorkCancel(this,msoObject);
+			// notify
+			fireToolEvent(ToolEventType.CANCEL_EVENT, 1);		
 		}
 		// reset working flag
 		setIsNotWorking();
@@ -1591,33 +1582,43 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		if(!isActive || !isDrawing || isWorking()) return false;
 		// set working flag
 		setIsWorking();
+		// notify
+		fireToolEvent(ToolEventType.FINISH_EVENT, 0);		
 		// valid
 		return true;
 	}
 	
 	private void afterFinish(boolean success) {
 		
-		try {
+		// was finish operation successful?
+		if(success) {
 			
-			// set flags
-			setIsDrawing(false);
-			
-			// forward?
-			if(isDirty) 
-				prepareDrawFrame();
-			else
-				reset();
-			
-			// draw geometries only
-			refresh();	
-			
-			// reset last invalid area
-			lastInvalidArea = null;
-			
+			try {
+				
+				// set flags
+				setIsDrawing(false);
+				
+				// forward?
+				if(isDirty) 
+					prepareDrawFrame();
+				else
+					reset();
+				
+				// draw geometries only
+				refresh();	
+				
+				// reset last invalid area
+				lastInvalidArea = null;
+				
+				// notify
+				fireToolEvent(ToolEventType.FINISH_EVENT, 1);		
+				
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		
 		// reset working flag
 		setIsNotWorking();
 	}
@@ -1852,7 +1853,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					// mso draw data is not supported
 					workDone = false;
 					// notify
-					Toolkit.getDefaultToolkit().beep();
+					//Toolkit.getDefaultToolkit().beep();
 				}
 			}
 			catch(Exception e) {
@@ -1936,7 +1937,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 					// mso draw data is not supported
 					workDone = false;
 					// notify
-					Toolkit.getDefaultToolkit().beep();
+					//Toolkit.getDefaultToolkit().beep();
 				}
 			}
 			catch(Exception e) {
@@ -1961,7 +1962,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				// nothing to do?
 				if(geoPoint==null) return false;
 				
-				// reset current mso object?
+				// reset current MSO object?
 				if(isCreateMode() && !doSnapTo)
 					doMsoInit();
 				
@@ -1976,14 +1977,14 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				// move or add?
 				if(msoObject==null || isCreateMode()) {
 					
-					// dispatch the mso draw data
+					// dispatch the MSO draw data
 					if (msoCode == MsoClassCode.CLASSCODE_ROUTE 
 							|| msoCode == MsoClassCode.CLASSCODE_POI) {
 					
 						// get command post
 						ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
 						
-						// get poi list
+						// get POI list
 						IPOIListIf poiList = cmdPost.getPOIList();
 						
 						// add to global list
@@ -2004,13 +2005,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 						// is drawing an area?
 						if (msoCode == MsoClassCode.CLASSCODE_ROUTE) {
 							
-							// get poi type
+							// get POI type
 							POIType poiType = poi.getType();
 							
 							// get flag
 							boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
 							
-							//is an area poi type?
+							//is an area POI type?
 							if(isAreaPOI) {									
 								
 								// create owner?
@@ -2044,7 +2045,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 				}
 				else {
 
-					// dispatch the mso draw data
+					// dispatch the MSO draw data
 					if (msoCode != MsoClassCode.CLASSCODE_UNIT) {
 						// cast to IPOIIf
 						IPOIIf poi = (IPOIIf)msoObject;	
@@ -2096,12 +2097,8 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 								TimePos found = track.getGeodata().get(i);
 								// only update unit position if logged point equals current position
 								bUpdatePosition = found.getGeoPos().equals(msoUnit.getPosition().getGeoPos());
-								/*bUpdatePosition = MapUtil.isFloatEqual(
-										found.getPosition(),msoUnit.getPosition().getPosition());*/ 
 								// update logged position
 								track.getGeodata().set(i,p.getPosition());
-								//TimePos test = track.getGeodata().get(i);
-								//System.out.println(test.equals(found));
 							}
 							else {
 								System.out.println("Error! Did not find required track point in log");

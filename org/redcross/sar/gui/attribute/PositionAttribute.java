@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.PositionSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -21,6 +20,7 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.Point;
@@ -48,7 +48,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name, caption, isEditable);
 		// forward
-		initialize(null,DEFAULT_FORMAT);
+		initialize(null,DEFAULT_FORMAT,isEditable);
 	}
 
 	public PositionAttribute(String name, String caption, boolean isEditable,
@@ -56,7 +56,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name, caption, isEditable, width, height, value);
 		// forward
-		initialize(value,DEFAULT_FORMAT);
+		initialize(value,DEFAULT_FORMAT,isEditable);
 	}
 
 	public PositionAttribute(String name, String caption, boolean isEditable,
@@ -64,14 +64,14 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name, caption, isEditable, width, height, value);
 		// forward
-		initialize(value,format);
+		initialize(value,format,isEditable);
 	}
 	
 	public PositionAttribute(MsoPosition attribute, String caption, boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
 		// forward
-		initialize(null,DEFAULT_FORMAT);
+		initialize(null,DEFAULT_FORMAT,isEditable);
 	}
 
 	public PositionAttribute(IAttributeIf<?> attribute, String caption,
@@ -79,7 +79,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(attribute, caption, isEditable, width, height);
 		// forward
-		initialize(getValue(),DEFAULT_FORMAT);
+		initialize(getValue(),DEFAULT_FORMAT,isEditable);
 	}
 
 	public PositionAttribute(IAttributeIf<?> attribute, String caption,
@@ -87,16 +87,18 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(attribute, caption, isEditable, width, height);
 		// forward
-		initialize(getValue(),format);
+		initialize(getValue(),format,isEditable);
 	}
 	
-	private void initialize(Object value, int format) {
+	private void initialize(Object value, int format, boolean isEditable) {
 		// set format
 		setFormat(format);
 		// set value
 		setValue(value);
 		// forward
 		initalizeEdit();
+		// forward
+		setEditable(isEditable);
 	}
 	
 	/*==================================================================
@@ -206,7 +208,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	
 	private void initalizeEdit() {
 		// initialize gui
-		setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
+		installButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
 		// handle actions
 		getButton().addActionListener(new ActionListener() {
 	
@@ -222,7 +224,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 				else
 					getSelectorDialog().setLocationRelativeTo(getButton(), DefaultDialog.POS_WEST, false, false);
 				// select position
-				Position p = getSelectorDialog().select();
+				Position p = getSelectorDialog().select(resume);
 				// update or resume?
 				if(p!=null)
 					setValue(p);

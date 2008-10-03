@@ -22,7 +22,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
         DRAFT,
         READY,
         QUEUED,
-        ASSIGNED,
+        ALLOCATED,
         EXECUTING,
         ABORTED,
         FINISHED,
@@ -48,19 +48,13 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     * Methods for ENUM attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setStatusAndOwner(AssignmentStatus aStatus, IUnitIf aUnit) throws IllegalOperationException;
-
-    public void setStatusAndOwner(String aStatus, IUnitIf aUnit) throws IllegalOperationException;
-
     public AssignmentType getType();
 
     public IMsoModelIf.ModificationState getTypeState();
 
     public IAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute();
 
-    public String getTypeText();
-
-    public String getTypeAndNumber();
+    public String getInternationalTypeName();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -82,18 +76,6 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute();
 
-    public Calendar getTimeAssigned();
-
-    public IMsoModelIf.ModificationState getTimeAssignedState();
-
-    public IAttributeIf.IMsoCalendarIf getTimeAssignedAttribute();
-
-    public Calendar getTimeStarted();
-
-    public IMsoModelIf.ModificationState getTimeStartedState();
-
-    public IAttributeIf.IMsoCalendarIf getTimeStartedAttribute();
-
     public void setTimeEstimatedFinished(Calendar aTimeEstimatedFinished);
 
     public Calendar getTimeEstimatedFinished();
@@ -102,11 +84,6 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute();
 
-    public Calendar getTimeFinished();
-
-    public IMsoModelIf.ModificationState getTimeFinishedState();
-
-    public IAttributeIf.IMsoCalendarIf getTimeFinishedAttribute();
     
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
@@ -132,6 +109,10 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     * Methods for references
     *-------------------------------------------------------------------------------------------*/
 
+    public IUnitIf getOwningUnit();
+
+    public void setOwningUnit(AssignmentStatus aStatus, IUnitIf aUnit) throws IllegalOperationException;
+
     public void setAssignmentBriefing(IBriefingIf aBriefing);
 
     public IBriefingIf getAssignmentBriefing();
@@ -144,7 +125,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
      * Assign planned area
      *
      * @param anArea The area to assign
-     * @throws IllegalOperationException If the area has been assigned to another assignment.
+     * @throws IllegalOperationException If the area has been allocated to another assignment.
      */
     public void setPlannedArea(IAreaIf anArea) throws IllegalOperationException;
 
@@ -158,7 +139,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
      * Assign reported area
      *
      * @param anArea The area to assign
-     * @throws IllegalOperationException If the area has been assigned to another assignment.
+     * @throws IllegalOperationException If the area has been allocated to another assignment.
      */
     public void setReportedArea(IAreaIf anArea) throws IllegalOperationException;
 
@@ -172,44 +153,39 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     * Other methods
     *-------------------------------------------------------------------------------------------*/
 
+	public String getDefaultName();
+    
+    public Calendar getTime(Enum<?> aStatus);
+
     public boolean isNotReady();
 
-    public boolean hasBeenAllocated();
+    public boolean hasBeenEnqueued();
 
-    public boolean hasBeenAssigned();
+    public boolean hasBeenAllocated();
 
     public boolean hasBeenStarted();
 
     public boolean hasBeenFinished();
-
-    public IUnitIf getOwningUnit();
-
-    /**
-     * Verify that the assigment can be assigned to a given unit.
-     *
-     * @param newStatus          The new status that the assignment shall have.
-     * @param aUnit              The unit that shall have the assigment.
-     * @param unassignIfPossible If <code>true</code>, the assigment will be assigned from any other possible other unit.
-     * @throws IllegalOperationException If the assignment cannot be done (verification failed).
-     */
-    public void verifyAllocatable(AssignmentStatus newStatus, IUnitIf aUnit, boolean unassignIfPossible) throws IllegalOperationException;
-
-    int getTypenr();
+    
+    public boolean hasBeenAborted();
+    
+    public boolean hasBeenReported();
 
     /**
      * Often uses status sets
      */    
-    public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ASSIGNED, AssignmentStatus.EXECUTING);
+    public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
+    public static final EnumSet<AssignmentStatus> WORKING_SET = EnumSet.of(AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> FINISHED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED);
     public static final EnumSet<AssignmentStatus> FINISHED_AND_REPORTED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED, AssignmentStatus.REPORTED);
-    public static final EnumSet<AssignmentStatus> DELETABLE_SET = EnumSet.range(AssignmentStatus.EMPTY, AssignmentStatus.ASSIGNED);
+    public static final EnumSet<AssignmentStatus> DELETABLE_SET = EnumSet.range(AssignmentStatus.EMPTY, AssignmentStatus.ALLOCATED);
     
     /**
      * Often uses selectors
      */       
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> READY_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.READY);
-    public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ALLOCATED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.QUEUED);
-    public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ASSIGNED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.ASSIGNED);
+    public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> QUEUED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.QUEUED);
+    public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ALLOCATED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.ALLOCATED);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> EXECUTING_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.EXECUTING);
     public static final AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus> FINISHED_SELECTOR = new AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus>(FINISHED_AND_REPORTED_SET);
 
@@ -273,4 +249,5 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     public Set<IMessageLineIf> getReferringMessageLines();
 
     public Set<IMessageLineIf> getReferringMessageLines(Collection<IMessageLineIf> aCollection);
+    
 }

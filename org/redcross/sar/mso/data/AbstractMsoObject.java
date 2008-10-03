@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.mso.util.EnumHistory;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoNullPointerException;
 import org.redcross.sar.util.except.MsoRuntimeException;
@@ -68,11 +70,13 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private final Map<String, MsoReferenceImpl> m_referenceObjects = new LinkedHashMap<String, MsoReferenceImpl>();
 
     /**
-     * Mask for suspended update events for client
+     * Mask for suspended client update events 
      */
     private int m_clientUpdateMask = 0;
 
-
+    /**
+     * Mask for suspended derived update events for client
+     */
     private int m_derivedUpdateMask = 0;
 
     /**
@@ -81,15 +85,18 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private int m_changeCount = 0;
     
     /**
-     * Inticator that tells if {@link #m_attributeList} is sorted
+     * Indicator that tells if {@link #m_attributeList} is sorted
      */
     private boolean m_listSorted = true;
 
     /**
-     * Suspend event flag
+     * Suspend client event flag
      */
     private boolean m_suspendClientUpdate = false;
 
+    /**
+     * Suspend derived update events flag
+     */
     private boolean m_suspendDerivedUpdate = false;
 
     /**
@@ -97,15 +104,30 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      */
     private final Set<IMsoObjectHolderIf> m_objectHolders = new HashSet<IMsoObjectHolderIf>();
 
-//    private boolean m_isCommitted = false;
-
+    /**
+     * Flag indicating that required abstract methods are called
+     */
     private boolean m_isSetup = false;
 
-
+    /**
+     * Flag indicating that the object has been successfully deleted
+     */
     private boolean m_hasBeenDeleted;
 
+    /**
+     * Hook to the main list owning this object
+     */    
     private MsoListImpl m_owningMainList;
+    
+    /**
+     * List of status changes since creation
+     */        
+    private final EnumHistory<Enum<?>> m_statusHistory = new EnumHistory<Enum<?>>();
 
+	/*-------------------------------------------------------------------------------------------
+	 * Constructors
+	 *-------------------------------------------------------------------------------------------*/
+    
     /**
      * Constructor
      *
@@ -122,10 +144,22 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         System.out.println("Created " + this);
         suspendClientUpdate();
         suspendDerivedUpdate();
-        registerCreatedObject();
+        registerCreatedObject(this);
     }
 
-    public void setupReferences()
+	/*-------------------------------------------------------------------------------------------
+	 * Initializing methods
+	 *-------------------------------------------------------------------------------------------*/
+    
+    /**
+     * This method MUST be called after creation of IMsoObjectIf objects. 
+     * 
+     * If not, no MSO attributes, lists or references will be created. If this
+     * is created by a MsoListImpl, the list will invoke the method 
+     * automatically.
+     *  
+     */
+    public void setup()
     {
         if (m_isSetup)
         {
@@ -138,93 +172,47 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         resumeDerivedUpdate();
     }
 
-    void setOwningMainList(MsoListImpl aList)
-    {
-        if (aList == null)
-        {
-            throw new MsoRuntimeException("Try to assign a null main list.");
-        }
-        if (m_owningMainList != null && aList != m_owningMainList)
-        {
-            throw new MsoRuntimeException("Try to assign another main list.");
-        }
-        m_owningMainList = aList;
-    }
-
     /**
-     * Renumber duplicate numbers
-     *
-     * This method is also called by from some constructors. In these cases, {@link #m_owningMainList} is null.
+     * This empty method should contain all IAttributeIf defining actions 
+     * 
+     * The method must be implemented by extending object
      */
-    @SuppressWarnings("unchecked")
-	protected void setNumber(MsoInteger serial, int aNumber)
-    {
-
-    	// update
-        serial.setValue(aNumber);
-        
-    	/* ==============================================================
-    	 * Renumbering of duplicates is required because serial number
-    	 * is locally incremented in each MSO model instance. Hence, 
-    	 * serial numbers are not generated globally by the server. 
-    	 * Hence, when  a new serial number is created, this only 
-    	 * applies locally. The same serial number may exist in another 
-    	 * MSO model, but this is not known before it is committed. When
-    	 * committed the duplicate serial number is detected by searching
-    	 * for other objects in the main list with the same serial number 
-    	 * as this object. If a different object with same serial number is
-    	 * found, the first created serial number is kept (the serial number 
-    	 * of this object). Every object with equal or greater serial number 
-    	 * than the serial number of this object is incremented. Any
-    	 * changes objects are returned as a list of IUpdateHolderIf, which
-    	 * MUST BE COMMITTED TO THE SERVER DIRECTLY! This ensures that
-    	 * conflict are resolved quickly without any user commit dependence. 
-    	 * If user commit is required, the resolved conflict may not become 
-    	 * visible in some time. During this time, the serial number may
-    	 * be used. When the resolved conflict is committed at a later state, 
-    	 * the changed serial number may confuse the user. 
-    	 * 
-    	 * The resolved conflict should produce cues visible to the user!
-    	 *  
-    	 * ============================================================== */
-    	
-        // Only validate in REMOTE mode (server update)
-    	if(MsoModelImpl.getInstance().isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
-	        if (m_owningMainList != null)
-	        {
-	        	// get renumbered objects
-	            List<ISerialNumberedIf> renumbered = m_owningMainList.renumberDuplicateNumbers(this);
-	            // any conflicts found?
-	            if(renumbered.size()>0) {
-	            	// found, get items that must be update directly
-                	ICommitManagerIf committer = MsoModelImpl.getInstance();
-                	List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(renumbered.size());
-                    for(ISerialNumberedIf it : renumbered) {
-    					// get update holder set
-    					IUpdateHolderIf holder = committer.getUpdates(it);
-    					// has updates?
-    					if(holder!=null) {
-    						// try to set partial and to updates if succeeded	
-    						if(holder.setPartial(it.getNumberAttribute().getName())) {
-    							updates.add(holder);
-    						}
-    					}	                                        	
-                    }
-	            	// commit changes (this will not affect any other local changes)
-                    if(updates.size()>0) {
-                    	MsoModelImpl.getInstance().commit(updates);
-                    }
-	            }
-	        }
-    	}
-    }
-
     protected abstract void defineAttributes();
 
+    /**
+     * This empty method should contain all IMsoListIf defining actions 
+     * 
+     * This method must be implemented by extending object
+     */
     protected abstract void defineLists();
 
-    protected abstract void defineReferences();
+    /**
+     * This empty method should contain all IMsoReferenceIf defining actions 
+     * 
+     * This method must be implemented by extending object
+     */
+    protected abstract void defineReferences();   
 
+    /**
+     * Add a list reference to a given object in a given reference list
+     * @param anObject The object to add
+     * @param aReferenceName The reference list
+     * @return <code>true</code> if successfully added, <code>false</code> otherwise
+     */
+    public abstract boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName);
+
+    /**
+     * Remove a list reference to a given object in a given reference list
+     * @param anObject The object to remove
+     * @param aReferenceName The reference list
+     * @return <code>true</code> if successfully removed, <code>false</code> otherwise
+     */
+    public abstract boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName);
+
+    /*-------------------------------------------------------------------------------------------
+	 * Public methods
+	 *-------------------------------------------------------------------------------------------*/
+    
     public String getObjectId()
     {
         return m_MsoObjectId.getId();
@@ -253,10 +241,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_changeCount;
     }
     
-    protected void incrementChangeCount() {
-    	m_changeCount++;
-    }
-
     public String shortDescriptor()
     {
         return toString();
@@ -376,103 +360,12 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 
         m_hasBeenDeleted = true;
-        registerDeletedObject();
+        registerDeletedObject(this);
     }
 
     public boolean isSetup()
     {
         return m_isSetup;
-    }
-
-    /**
-     * Add a new attribute.
-     * Maintains the double bookkeeping under the following conditions: Do not accept duplicated names, duplicated numbers are accepted.
-     *
-     * @param anAttribute Attribute to add
-     */
-    public void addAttribute(AttributeImpl anAttribute)
-    {
-        if (anAttribute != null)
-        {
-            String attrName = anAttribute.getName().toLowerCase();
-            if (m_attributeMap.containsKey(attrName))
-            {
-                AttributeImpl attr = m_attributeMap.remove(attrName);
-                m_attributeList.remove(attr);
-            }
-            m_attributeMap.put(attrName, anAttribute);
-            m_attributeList.add(anAttribute);
-            m_listSorted = false;
-        } else
-        {
-            Log.error("Error in setup: " + this + ": Try to add null Attribute");
-        }
-    }
-
-    protected void addList(MsoListImpl aList)
-    {
-        if (aList != null)
-        {
-            m_referenceLists.put(aList.getName().toLowerCase(), aList);
-        } else
-        {
-            Log.error("Error in setup: " + this + ": Try to add null list");
-        }
-    }
-
-    protected void addReference(MsoReferenceImpl aReference)
-    {
-        if (aReference != null)
-        {
-            m_referenceObjects.put(aReference.getName().toLowerCase(), aReference);
-        } else
-        {
-            Log.error("Error in setup: " + this + ": Try to add null reference");
-        }
-    }
-
-    private AttributeImpl getAttribute(String aName) throws UnknownAttributeException
-    {
-        AttributeImpl retVal = m_attributeMap.get(aName.toLowerCase());
-        if (retVal == null)
-        {
-            throw new UnknownAttributeException("Unknown attribute name '" + aName + "' in " + this.getClass().toString());
-        }
-        return retVal;
-    }
-
-    UnknownAttributeException attributeCast(String aName, Class aClass)
-    {
-        return new UnknownAttributeException("Unknown attribute name '" + aName + "' of class " + aClass.toString() + " in " + this.getClass().toString());
-    }
-
-    UnknownAttributeException attributeCast(int anIndex, Class aClass)
-    {
-        return new UnknownAttributeException("Unknown attribute index '" + anIndex + "' of class " + aClass.toString() + " in " + this.getClass().toString());
-    }
-
-    private AttributeImpl getAttribute(String aName, Class aClass) throws UnknownAttributeException
-    {
-
-        AttributeImpl retVal = getAttribute(aName);
-        if (!retVal.getAttributeClass().isAssignableFrom(aClass))
-        {
-            throw attributeCast(aName, aClass);
-        }
-        return retVal;
-    }
-
-    private AttributeImpl getAttribute(int anIndex) throws UnknownAttributeException
-    {
-        if (!m_listSorted)
-        {
-            arrangeList();
-        }
-        if (m_attributeList.size() > anIndex && anIndex >= 0)
-        {
-            return m_attributeList.get(anIndex);
-        }
-        throw new UnknownAttributeException("Unknown attribute index " + anIndex + " in " + this.getClass().toString());
     }
 
     public Map getAttributes()
@@ -489,22 +382,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
         return m_referenceLists;
     }
-
-    /**
-     * Add a list reference to a given object in a given reference list
-     * @param anObject The object to add
-     * @param aReferenceName The reference list
-     * @return <code>true</code> if successfully added, <code>false</code> otherwise
-     */
-    public abstract boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName);
-
-    /**
-     * Remove a list reference to a given object in a given reference list
-     * @param anObject The object to remove
-     * @param aReferenceName The reference list
-     * @return <code>true</code> if successfully removed, <code>false</code> otherwise
-     */
-    public abstract boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName);
 
     public IAttributeIf.IMsoBooleanIf getBooleanAttribute(int anIndex) throws UnknownAttributeException
     {
@@ -770,17 +647,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
-    private void arrangeList()
-    {
-        Collections.sort(m_attributeList);
-        int i = 0;
-        for (AttributeImpl attr : m_attributeList)
-        {
-            attr.renumber(i++);
-        }
-        m_listSorted = true;
-    }
-
     public void rearrangeAttribute(AttributeImpl anAttr, int anIndexNo)
     {
         if (!m_listSorted)
@@ -812,17 +678,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         arrangeList();
     }
 
-    private void setAttributeValue(AttributeImpl anAttr, Object aValue) throws MsoNullPointerException
-    {
-        if (anAttr != null)
-        {
-            anAttr.set(aValue);
-        } else
-        {
-            throw new MsoNullPointerException("Trying to assign value to null attribute");
-        }
-    }
-
     public void setAttribute(String aName, Object aValue) throws UnknownAttributeException
     {
         AttributeImpl attr = getAttribute(aName);
@@ -835,81 +690,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         attr.set(aValue);
     }
 
-    public void registerAddedReference()
-    {
-        System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT, true);
-    }
-
-    public void registerRemovedReference()
-    {
-        System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, true);
-    }
-
-    public void registerRemovedReference(boolean updateServer)
-    {
-    	System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, updateServer);
-    }
-
-    public void registerModifiedReference()
-    {
-    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, true);
-    }
-
-    public void registerModifiedReference(boolean updateServer)
-    {
-    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, updateServer);
-    }
-
-    public void registerCreatedObject()
-    {
-    	System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.CREATED_OBJECT_EVENT, true);
-    }
-
-    public void registerDeletedObject()
-    {
-        System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.DELETED_OBJECT_EVENT, true);
-    }
-
-    public void registerModifiedData()
-    {
-        System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.MODIFIED_DATA_EVENT, true);
-    }
-
-    private void registerUpdate(MsoEvent.MsoEventType anEventType, boolean updateServer)
-    {
-        
-    	// track change
-    	incrementChangeCount();
-        
-    	// get update mode
-    	IMsoModelIf.UpdateMode anUpdateMode = MsoModelImpl.getInstance().getUpdateMode();
-        int clientEventTypeMask = anEventType.maskValue();
-        int serverEventTypeMask = (updateServer && anUpdateMode == IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
-
-        m_derivedUpdateMask |= clientEventTypeMask;
-        if (!m_suspendDerivedUpdate)
-        {
-            notifyDerivedUpdate();
-        }
-
-        m_clientUpdateMask |= clientEventTypeMask;
-        
-        if (!(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
-        {
-            notifyClientUpdate();
-        }
-
-        notifyServerUpdate(serverEventTypeMask);
-    }
-    
     /**
      * Rollback local changes.
      * Generates client update event.
@@ -924,7 +704,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         if (dataModified)
         {
-            registerModifiedData();
+            registerModifiedData(this);
         }
 
         for (MsoListImpl list : m_referenceLists.values())
@@ -951,7 +731,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         if (dataModified)
         {
-            registerModifiedData();
+            registerModifiedData(this);
         }
 
         for (MsoListImpl list : m_referenceLists.values())
@@ -964,45 +744,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             reference.postProcessCommit();
         }
     }
-
-
-    /**
-     * Notify server listeners
-     *
-     * @param anEventTypeMask Mask for Type of event for server
-     */
-    protected void notifyServerUpdate(int anEventTypeMask)
-    {
-        if (anEventTypeMask != 0)
-        {
-            m_eventManager.notifyServerUpdate(this, anEventTypeMask);
-        }
-    }
-
-    /**
-     * Notify derived listeners
-     */
-    protected void notifyDerivedUpdate()
-    {
-        if (m_derivedUpdateMask != 0)
-        {
-            m_eventManager.notifyDerivedUpdate(this, m_derivedUpdateMask);
-            m_derivedUpdateMask = 0;
-        }
-    }
-
-    /**
-     * Notify client listeners
-     */
-    protected void notifyClientUpdate()
-    {
-        if (m_clientUpdateMask != 0)
-        {
-            m_eventManager.notifyClientUpdate(this, m_clientUpdateMask);
-            m_clientUpdateMask = 0;
-        }
-    }
-
 
     /**
      * Suspend update of client listeners.
@@ -1028,17 +769,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         m_suspendClientUpdate = false;
         notifyClientUpdate();
         m_clientUpdateMask = 0;
-    }
-
-    protected void suspendDerivedUpdate()
-    {
-        m_suspendDerivedUpdate = true;
-    }
-
-    public void resumeDerivedUpdate()
-    {
-        m_suspendDerivedUpdate = false;
-        notifyDerivedUpdate();
     }
 
     /**
@@ -1079,12 +809,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return true;
     }
     
-    private boolean isTrue(Object value) {
-    	if(value instanceof Boolean)
-    		return (Boolean)value;
-    	return false;
-    }    
-    
     public Collection<ICommittableIf.ICommitReferenceIf> getCommittableAttributeRelations()
     {
         Vector<ICommittableIf.ICommitReferenceIf> retVal = new Vector<ICommittableIf.ICommitReferenceIf>();
@@ -1108,7 +832,390 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return retVal;
     }
 
+	/*-------------------------------------------------------------------------------------------
+	 * Protected methods
+	 *-------------------------------------------------------------------------------------------*/
+    
+    /**
+     * This method is called by the owning IMsoListIf object 
+     * when this is created.
+     */
+    protected void setOwningMainList(MsoListImpl aList)
+    {
+        if (aList == null)
+        {
+            throw new MsoRuntimeException("Try to assign a null main list.");
+        }
+        if (m_owningMainList != null && aList != m_owningMainList)
+        {
+            throw new MsoRuntimeException("Try to assign another main list.");
+        }
+        m_owningMainList = aList;
+    }
 
+    /**
+     * Renumber duplicate numbers
+     *
+     * This method is also called by from some constructors. In these cases, {@link #m_owningMainList} is null.
+     */
+    @SuppressWarnings("unchecked")
+	protected void setNumber(MsoInteger serial, int aNumber)
+    {
+
+    	// update
+        serial.setValue(aNumber);
+        
+    	/* ==============================================================
+    	 * Renumbering of duplicates is required because serial number
+    	 * is locally incremented in each MSO model instance. Hence, 
+    	 * serial numbers are not generated globally by the server. 
+    	 * Hence, when  a new serial number is created, this only 
+    	 * applies locally. The same serial number may exist in another 
+    	 * MSO model, but this is not known before it is committed. When
+    	 * committed the duplicate serial number is detected by searching
+    	 * for other objects in the main list with the same serial number 
+    	 * as this object. If a different object with same serial number is
+    	 * found, the first created serial number is kept (the serial number 
+    	 * of this object). Every object with equal or greater serial number 
+    	 * than the serial number of this object is incremented. Any
+    	 * changes objects are returned as a list of IUpdateHolderIf, which
+    	 * MUST BE COMMITTED TO THE SERVER DIRECTLY! This ensures that
+    	 * conflict are resolved quickly without any user commit dependence. 
+    	 * If user commit is required, the resolved conflict may not become 
+    	 * visible in some time. During this time, the serial number may
+    	 * be used. When the resolved conflict is committed at a later state, 
+    	 * the changed serial number may confuse the user. 
+    	 * 
+    	 * The resolved conflict should produce cues visible to the user!
+    	 *  
+    	 * ============================================================== */
+    	
+        // Only validate in REMOTE mode (server update)
+    	if(MsoModelImpl.getInstance().isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
+	        if (m_owningMainList != null)
+	        {
+	        	// get renumbered objects
+	            List<ISerialNumberedIf> renumbered = m_owningMainList.renumberDuplicateNumbers(this);
+	            // any conflicts found?
+	            if(renumbered.size()>0) {
+	            	// found, get items that must be update directly
+                	ICommitManagerIf committer = MsoModelImpl.getInstance();
+                	List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(renumbered.size());
+                    for(ISerialNumberedIf it : renumbered) {
+    					// get update holder set
+    					IUpdateHolderIf holder = committer.getUpdates(it);
+    					// has updates?
+    					if(holder!=null) {
+    						// try to set partial and to updates if succeeded	
+    						if(holder.setPartial(it.getNumberAttribute().getName())) {
+    							updates.add(holder);
+    						}
+    					}	                                        	
+                    }
+	            	// commit changes (this will not affect any other local changes)
+                    if(updates.size()>0) {
+                    	MsoModelImpl.getInstance().commit(updates);
+                    }
+	            }
+	        }
+    	}
+    }
+
+    /**
+     * Add a status change to status history
+     * 
+     * @param aStatus
+     * @param time
+     */    
+    protected void registerStatus(Enum<?> aStatus, Calendar time) 
+    {
+    	m_statusHistory.add(aStatus,time);
+    }
+    
+    /**
+     * Get status history
+     * 
+     * @param aStatus - the status to get history of
+     */    
+    protected List<Calendar> getStatusHistory(Enum<?> aStatus) 
+    {
+    	return m_statusHistory.getHistory(aStatus);
+    }
+
+    /**
+     * Add a new attribute. </p>
+     * 
+     * Maintains the double bookkeeping under the following conditions:  
+     * 1) do not accept duplicated names, 2) duplicated numbers are accepted. </p> 
+     * 
+     * The extending object should call this method from <code>defineAttributes</code>
+     *
+     * @param anAttribute - Attribute to add
+     */
+    protected void addAttribute(AttributeImpl anAttribute)
+    {
+        if (anAttribute != null)
+        {
+            String attrName = anAttribute.getName().toLowerCase();
+            if (m_attributeMap.containsKey(attrName))
+            {
+                AttributeImpl attr = m_attributeMap.remove(attrName);
+                m_attributeList.remove(attr);
+            }
+            m_attributeMap.put(attrName, anAttribute);
+            m_attributeList.add(anAttribute);
+            m_listSorted = false;
+        } else
+        {
+            Log.error("Error in setup: " + this + ": Try to add null Attribute");
+        }
+    }
+
+    /**
+     * Add a one-to-many reference (a MSO list of references from this to other IMsoObjectIf)</p>
+     * 
+     * The extending object should call 
+     * this method from <code>defineLists</code>
+     * 
+     * @param aList - the list to add
+     */
+    protected void addList(MsoListImpl aList)
+    {
+        if (aList != null)
+        {
+            m_referenceLists.put(aList.getName().toLowerCase(), aList);
+        } else
+        {
+            Log.error("Error in setup: " + this + ": Try to add null list");
+        }
+    }
+
+    /**
+     * Add a one-to-one object reference (from this to another IMsoObjectIf)</p>
+     * 
+     * The extending object should call this method from <code>defineReference</code>
+     * 
+     * @param aReference - the reference to add 
+     */
+    protected void addReference(MsoReferenceImpl aReference)
+    {
+        if (aReference != null)
+        {
+            m_referenceObjects.put(aReference.getName().toLowerCase(), aReference);
+        } else
+        {
+            Log.error("Error in setup: " + this + ": Try to add null reference");
+        }
+    }
+    
+    
+    protected void incrementChangeCount() {
+    	m_changeCount++;
+    }
+
+    protected void registerAddedReference(Object source)
+    {
+        System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT, true);
+    }
+
+    protected void registerRemovedReference(Object source)
+    {
+        System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, true);
+    }
+
+    protected void registerRemovedReference(Object source, boolean updateServer)
+    {
+    	System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, updateServer);
+    }
+
+    protected void registerModifiedReference(Object source)
+    {
+    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, true);
+    }
+
+    protected void registerModifiedReference(Object source, boolean updateServer)
+    {
+    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, updateServer);
+    }
+
+    protected void registerCreatedObject(Object source)
+    {
+    	System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.CREATED_OBJECT_EVENT, true);
+    }
+
+    protected void registerDeletedObject(Object source)
+    {
+        System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.DELETED_OBJECT_EVENT, true);
+    }
+
+    protected void registerModifiedData(Object source)
+    {
+        System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
+        registerUpdate(MsoEvent.MsoEventType.MODIFIED_DATA_EVENT, true);
+    }
+    
+    /**
+     * Notify server listeners
+     *
+     * @param anEventTypeMask Mask for Type of event for server
+     */
+    protected void notifyServerUpdate(int anEventTypeMask)
+    {
+        if (anEventTypeMask != 0)
+        {
+            m_eventManager.notifyServerUpdate(this, anEventTypeMask);
+        }
+    }
+
+    /**
+     * Notify derived listeners
+     */
+    protected void notifyDerivedUpdate()
+    {
+        if (m_derivedUpdateMask != 0)
+        {
+            m_eventManager.notifyDerivedUpdate(this, m_derivedUpdateMask);
+            m_derivedUpdateMask = 0;
+        }
+    }
+
+    /**
+     * Notify client listeners
+     */
+    protected void notifyClientUpdate()
+    {
+        if (m_clientUpdateMask != 0)
+        {
+            m_eventManager.notifyClientUpdate(this, m_clientUpdateMask);
+            m_clientUpdateMask = 0;
+        }
+    }
+
+    protected void suspendDerivedUpdate()
+    {
+        m_suspendDerivedUpdate = true;
+    }
+
+    protected void resumeDerivedUpdate()
+    {
+        m_suspendDerivedUpdate = false;
+        notifyDerivedUpdate();
+    }
+    
+    /*-------------------------------------------------------------------------------------------
+	 * Helper methods
+	 *-------------------------------------------------------------------------------------------*/
+
+    private void registerUpdate(MsoEvent.MsoEventType anEventType, boolean updateServer)
+    {
+        
+    	// track change
+    	incrementChangeCount();
+        
+    	// get update mode
+    	IMsoModelIf.UpdateMode anUpdateMode = MsoModelImpl.getInstance().getUpdateMode();
+        int clientEventTypeMask = anEventType.maskValue();
+        int serverEventTypeMask = (updateServer && anUpdateMode == IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
+
+        m_derivedUpdateMask |= clientEventTypeMask;
+        if (!m_suspendDerivedUpdate)
+        {
+            notifyDerivedUpdate();
+        }
+
+        m_clientUpdateMask |= clientEventTypeMask;
+        
+        if (!(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
+        {
+            notifyClientUpdate();
+        }
+
+        notifyServerUpdate(serverEventTypeMask);
+    }
+        
+    private boolean isTrue(Object value) {
+    	if(value instanceof Boolean)
+    		return (Boolean)value;
+    	return false;
+    }    
+    
+    private UnknownAttributeException attributeCast(String aName, Class aClass)
+    {
+        return new UnknownAttributeException("Unknown attribute name '" + aName + "' of class " + aClass.toString() + " in " + this.getClass().toString());
+    }
+
+    private UnknownAttributeException attributeCast(int anIndex, Class aClass)
+    {
+        return new UnknownAttributeException("Unknown attribute index '" + anIndex + "' of class " + aClass.toString() + " in " + this.getClass().toString());
+    }
+
+    private AttributeImpl getAttribute(String aName, Class aClass) throws UnknownAttributeException
+    {
+
+        AttributeImpl retVal = getAttribute(aName);
+        if (!retVal.getAttributeClass().isAssignableFrom(aClass))
+        {
+            throw attributeCast(aName, aClass);
+        }
+        return retVal;
+    }
+
+    private AttributeImpl getAttribute(int anIndex) throws UnknownAttributeException
+    {
+        if (!m_listSorted)
+        {
+            arrangeList();
+        }
+        if (m_attributeList.size() > anIndex && anIndex >= 0)
+        {
+            return m_attributeList.get(anIndex);
+        }
+        throw new UnknownAttributeException("Unknown attribute index " + anIndex + " in " + this.getClass().toString());
+    }
+    
+    private AttributeImpl getAttribute(String aName) throws UnknownAttributeException
+    {
+        AttributeImpl retVal = m_attributeMap.get(aName.toLowerCase());
+        if (retVal == null)
+        {
+            throw new UnknownAttributeException("Unknown attribute name '" + aName + "' in " + this.getClass().toString());
+        }
+        return retVal;
+    }
+
+    private void arrangeList()
+    {
+        Collections.sort(m_attributeList);
+        int i = 0;
+        for (AttributeImpl attr : m_attributeList)
+        {
+            attr.renumber(i++);
+        }
+        m_listSorted = true;
+    }
+
+    private void setAttributeValue(AttributeImpl anAttr, Object aValue) throws MsoNullPointerException
+    {
+        if (anAttr != null)
+        {
+            anAttr.set(aValue);
+        } else
+        {
+            throw new MsoNullPointerException("Trying to assign value to null attribute");
+        }
+    }	
+    
+    /*-------------------------------------------------------------------------------------------
+	 * Inner classes
+	 *-------------------------------------------------------------------------------------------*/
+    
     /**
      * Class for holding Object ID Strings
      * <p/>
@@ -1245,6 +1352,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             return m_valueSet.contains(anObject.getStatus());
         }
     }
+    
+    
 
 
 }

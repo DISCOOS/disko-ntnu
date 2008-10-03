@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.awt.GridBagLayout;
 
-import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -30,12 +29,12 @@ import org.redcross.sar.gui.format.DESFormat;
 import org.redcross.sar.gui.format.MGRSFormat;
 import org.redcross.sar.gui.format.UTMFormat;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Point;
 
-import java.awt.BorderLayout;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -82,7 +81,6 @@ public class CoordinatePanel extends JPanel {
 	
 	private JComboBox m_ZoneCombo = null;
 	private JComboBox m_SquareCombo = null;
-	private JPanel m_positionPanel = null;
 	
 	private int workCount = 0;	
 	private boolean isInvalid = true;
@@ -112,9 +110,11 @@ public class CoordinatePanel extends JPanel {
 	 */
 	private void initialize() {
 		// setup content pane
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
+		Utils.setFixedSize(this, 225, 50);
 		// add components
-		this.add(getPositionPanel());
+		this.add(getLeft());
+		this.add(getRight());
 		// set MGRS format
 		setFormat(1); 
 	}
@@ -310,15 +310,17 @@ public class CoordinatePanel extends JPanel {
 		if (m_left == null) {
 			// create panel
 			m_left = new JPanel();
-			Dimension dim = new Dimension(100, 45);
-			m_left.setPreferredSize(dim);
-			m_left.setMinimumSize(dim);
-			m_left.setMaximumSize(dim);
 			m_left.setLayout(new GridBagLayout());
+			m_left.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+			m_left.setAlignmentY(JPanel.TOP_ALIGNMENT);
+			m_left.setOpaque(false);			
+			Utils.setFixedSize(m_left, 90,50);
 			// create labels
 			m_zoneLabel = new JLabel();
+			m_zoneLabel.setOpaque(false);
 			m_zoneLabel.setText("Sone");
 			m_squareLabel = new JLabel();
+			m_squareLabel.setOpaque(false);
 			m_squareLabel.setText("Rute");
 			// create constraints
 			GridBagConstraints c1 = new GridBagConstraints();
@@ -340,7 +342,7 @@ public class CoordinatePanel extends JPanel {
 			c3.gridy = 1;
 			c3.fill = GridBagConstraints.HORIZONTAL;
 			c3.anchor = GridBagConstraints.NORTHWEST;
-			c3.insets = new Insets(0, 0, 0, 5);
+			c3.insets = new Insets(0, 0, 0, 0);
 			GridBagConstraints c4 = new GridBagConstraints();
 			c4.gridx = 1;
 			c4.gridy = 1;
@@ -366,15 +368,17 @@ public class CoordinatePanel extends JPanel {
 		if (m_right == null) {
 			// create panel
 			m_right = new JPanel();
-			Dimension dim = new Dimension(150, 45);
-			m_right.setPreferredSize(dim);
-			m_right.setPreferredSize(dim);
-			m_right.setPreferredSize(dim);
 			m_right.setLayout(new GridBagLayout());
+			m_right.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+			m_right.setAlignmentY(JPanel.TOP_ALIGNMENT);
+			m_right.setOpaque(false);
+			Utils.setFixedSize(m_right, 135, 50);
 			// create labels
 			m_latitudeLabel = new JLabel();
+			m_latitudeLabel.setOpaque(false);
 			m_latitudeLabel.setText("X");
 			m_longetudeLabel = new JLabel();
+			m_longetudeLabel.setOpaque(false);
 			m_longetudeLabel.setText("Y");
 			// create constraints
 			GridBagConstraints c1 = new GridBagConstraints();
@@ -525,26 +529,6 @@ public class CoordinatePanel extends JPanel {
 		}
 		return m_SquareCombo;
 	}
-
-	/**
-	 * This method initializes m_positionPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getPositionPanel() {
-		if (m_positionPanel == null) {
-			m_positionPanel = new JPanel();
-			FlowLayout fl = new FlowLayout();
-			fl.setAlignment(FlowLayout.LEFT);
-			fl.setHgap(0);
-			fl.setVgap(0);
-			m_positionPanel.setLayout(fl);
-			// add components
-			m_positionPanel.add(getLeft(), BorderLayout.WEST);
-			m_positionPanel.add(getRight(), BorderLayout.CENTER);
-		}
-		return m_positionPanel;
-	}
 	
 	public int getFormat() {
 		return m_format;
@@ -620,7 +604,7 @@ public class CoordinatePanel extends JPanel {
 				p = MapUtil.getPositionFromDEG(text);
 				break;
 			}
-			return p!=null ? MapUtil.getEsriPoint(p, srs) : null;
+			return p!=null ? MapUtil.getEsriPoint(p.getGeoPos(), srs) : null;
 		}
 		catch (Exception e) {
 			// consume;

@@ -13,16 +13,26 @@ import org.redcross.sar.util.mso.Selector;
 public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 
 	private static final long serialVersionUID = 1L;
-	private static final String NAME = "Name";
-	private static final String[] ATTRIBUTES = new String[]{NAME, "status", "timeestimatedfinished"};
-	private static final String[] CAPTIONS = new String[]{"Oppdrag","Status","ETA"};
-	
+	private static final String NAME = "name";
+	private static final String STATUS = "status";
+	private static final String UNIT = "unit";
+	private static final String ETA = "timeestimatedfinished";
+	private static final String CHANGED = "changed";
+	private static final String[] ATTRIBUTES = new String[]{NAME, UNIT, ETA, CHANGED, STATUS};
+	private static final String[] CAPTIONS = new String[]{"Oppdrag","Enhet","ETA", "Endret","Status"};	
 
-	private static final Selector<IAssignmentIf> m_assignmentSelector = new Selector<IAssignmentIf>()
+	private final Selector<IAssignmentIf> m_assignmentSelector = new Selector<IAssignmentIf>()
 	{
+		
 		public boolean select(IAssignmentIf msoObj)
 		{
-			return true;
+			if(msoObj!=null ) {
+				// get history flag
+				boolean isHistory = (msoObj.hasBeenAborted() || msoObj.hasBeenFinished());
+				// finished
+				return m_archived ? isHistory : !isHistory;	
+			}
+			return false;
 		}
 	};
 
@@ -43,9 +53,13 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 		}
 	};
 	
-	public AssignmentTableModel(IMsoModelIf model) {
+	private boolean m_archived;
+	
+	public AssignmentTableModel(IMsoModelIf model, boolean archived) {
 		// forward
 		super(model, MsoClassCode.CLASSCODE_ASSIGNMENT, ATTRIBUTES, CAPTIONS);
+		// prepare
+		m_archived = archived;
 		// get command post
 		ICmdPostIf cmdPost = model.getMsoManager().getCmdPost();
 		// load data?
@@ -57,6 +71,12 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 	protected Object getMsoValue(IMsoObjectIf msoObj, String name) {
 		if(NAME.equals(name)) {
 			return (IAssignmentIf)msoObj;
+		}
+		else if(UNIT.equals(name)) {
+			return ((IAssignmentIf)msoObj).getOwningUnit();
+		}
+		else if(CHANGED.equals(name)) {
+			return ((IAssignmentIf)msoObj);
 		}
 		// failed
 		return null;
@@ -70,6 +90,6 @@ public class AssignmentTableModel extends MsoObjectTableModel<IAssignmentIf> {
 	@Override
 	public void sort() {
 		sort(m_assignmentComparator);
-	}
-
+	}	
+	
 }

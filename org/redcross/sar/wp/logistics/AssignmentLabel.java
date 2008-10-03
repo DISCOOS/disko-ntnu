@@ -7,7 +7,6 @@ import org.redcross.sar.mso.util.MsoUtils;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
 import java.awt.Color;
@@ -25,8 +24,8 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
 {
 
 	private final static long serialVersionUID = 1L;
-	private final static Border LabelBorder = new DiskoRoundBorder(2, 6, false);
-    private final static Dimension LabelDimension = new Dimension(150, 50);
+	private final static Border m_border = new DiskoRoundBorder(2, 6, false);
+    private final static Dimension m_dimension = new Dimension(150, 50);
     
     private boolean m_isSelected;
     private IAssignmentIf m_assignment;
@@ -78,13 +77,13 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
         {
             setBackground(Color.WHITE);
             setOpaque(true);
-            setBorder(LabelBorder);
+            setBorder(m_border);
             if (getIcon() == null)
             {
-                setMinimumSize(LabelDimension);
+                setMinimumSize(m_dimension);
             }
-            setPreferredSize(LabelDimension);
-            setHorizontalAlignment(SwingConstants.CENTER);
+            setPreferredSize(m_dimension);
+            //setHorizontalAlignment(SwingConstants.LEFT);
         }
     }
 
@@ -136,8 +135,7 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
         {
             setText(MessageFormat.format("{0}: {1}", anAssignment.getPrioritySequence(), MsoUtils.getAssignmentName(anAssignment,1)));
         } else
-        {
-        	//IMessageLineIf line = anAssignment.getLatestStatusChangeMessageLine(MessageLineType.COMPLETED);
+        {        	
             setText(MsoUtils.getAssignmentName(anAssignment,1));
         }
         setIcon(null);
@@ -146,7 +144,7 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
     /**
      * Get the {@link IAssignmentIf} associated with the label.
      *
-     * @return The assigment
+     * @return The assignment
      */
     public IAssignmentIf getAssignment()
     {

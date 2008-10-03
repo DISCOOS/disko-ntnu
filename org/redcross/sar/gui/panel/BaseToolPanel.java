@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.tool.IDiskoTool;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
@@ -33,8 +34,8 @@ public class BaseToolPanel extends AbstractToolPanel {
 	private HeaderPanel captionPanel = null;	
 	private HeaderPanel actionsPanel = null;	
 
-	private JScrollPane m_scrollPane = null;
-	private Component m_bodyComponent = null;	
+	private JScrollPane scrollPane = null;
+	private Component bodyComponent = null;	
 	
 	/* ===========================================
 	 * Constructors
@@ -92,25 +93,6 @@ public class BaseToolPanel extends AbstractToolPanel {
 		add(Box.createVerticalStrut(5));
 		add(getScrollPane());
 		add(Box.createVerticalStrut(5));
-		/*
-		// ensure correct header size
-		this.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				// forward
-				super.componentResized(e);
-				// forward
-				setFixedSize();	
-		    }
-			@Override
-			public void componentShown(ComponentEvent e) {
-				// forward
-				super.componentShown(e);
-				// forward
-				setFixedSize();	
-			}			
-		});
-		*/		
 	}
 
 	/**
@@ -119,21 +101,16 @@ public class BaseToolPanel extends AbstractToolPanel {
 	 * @return {@link JScrollPane}
 	 */
 	public JScrollPane getScrollPane() {
-		if(m_scrollPane==null) {
-			m_scrollPane = new JScrollPane(getBodyComponent());
-			m_scrollPane.setBorder(null);
-			m_scrollPane.setOpaque(true);
+		if(scrollPane==null) {
+			scrollPane = new JScrollPane(getBodyComponent());
+			scrollPane.setOpaque(true);
+			scrollPane.setBorder(null);
+			scrollPane.setViewportBorder(null);
+			scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, UIFactory.createCorner());
+			scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, UIFactory.createCorner());						
 		}
-		return m_scrollPane;
+		return scrollPane;
 	}
-	
-	/*
-	public void setFixedSize() {
-		// forward
-		getCaptionPanel().onResize();	
-		getActionsPanel().onResize();
-	}
-	*/
 	
 	private HeaderPanel getCaptionPanel() {
 		if (captionPanel == null) {
@@ -189,44 +166,44 @@ public class BaseToolPanel extends AbstractToolPanel {
 	}
 	
 	public Component getBodyComponent() {
-		return m_bodyComponent;
+		return bodyComponent;
 	}
 	
 	public void setPreferredBodySize(Dimension dimension) {
-		if(m_bodyComponent instanceof JComponent)
-			((JComponent)m_bodyComponent).setPreferredSize(dimension);
+		if(bodyComponent instanceof JComponent)
+			((JComponent)bodyComponent).setPreferredSize(dimension);
 	}
 	
 	public void setBodyLayout(LayoutManager manager) {
-		if(m_bodyComponent instanceof JComponent)
-			((JComponent)m_bodyComponent).setLayout(manager);
+		if(bodyComponent instanceof JComponent)
+			((JComponent)bodyComponent).setLayout(manager);
 	}
 		
 	public void setBodyBorder(Border border) {
-		if(m_bodyComponent instanceof JComponent)
-			((JComponent)m_bodyComponent).setBorder(border);
+		if(bodyComponent instanceof JComponent)
+			((JComponent)bodyComponent).setBorder(border);
 	}
 	
 	public void addBodyChild(Component c) {
-		if(m_bodyComponent instanceof JComponent)
-			((JComponent)m_bodyComponent).add(c);
+		if(bodyComponent instanceof JComponent)
+			((JComponent)bodyComponent).add(c);
 	}
 	
 	public void addBodyChild(Component c, int property) {
-		if(m_bodyComponent instanceof JComponent)
-			((JComponent)m_bodyComponent).add(c,property);
+		if(bodyComponent instanceof JComponent)
+			((JComponent)bodyComponent).add(c,property);
 	}
 	
 	public void addBodyChild(Component c, Object property) {
-		if(m_bodyComponent instanceof JComponent)
-			((JComponent)m_bodyComponent).add(c,property);
+		if(bodyComponent instanceof JComponent)
+			((JComponent)bodyComponent).add(c,property);
 	}
 	
 	public void setBodyComponent(Component body) {
 		// update viewport
 		getScrollPane().setViewportView(body);
 		// update hool
-		m_bodyComponent = body;
+		bodyComponent = body;
 	}
 	
 	/**

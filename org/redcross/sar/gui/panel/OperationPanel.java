@@ -11,8 +11,8 @@ import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.gui.OperationTable;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.table.OperationTable;
 
 public class OperationPanel extends DefaultPanel {
 

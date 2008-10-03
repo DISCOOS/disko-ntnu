@@ -287,16 +287,8 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		                if(isLocal(anObject)) 
 		                {
 		                	// remove from lists
-		                	M msoObj = m_pending.remove(id);
-		                	if(msoObj!=null) {
-		                		// should not happen!
-		                		Log.error("ERROR: Local pending object found!");
-		                	}
-		                	msoObj = m_deleted.remove(id);	
-		                	if(msoObj!=null) {
-		                		// should not happen!
-		                		Log.error("ERROR: Local deleted object found!");
-		                	}
+		                	m_pending.remove(id);
+		                	m_deleted.remove(id);	
 		                	// this is a loopback if exists locally 
 		                	isLoopback = (m_added.remove(id)!=null);
 		                }
@@ -369,11 +361,11 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         if (anObject != null)
         {
         	if(add) ((AbstractMsoObject) anObject).addDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerAddedReference();
+        	((AbstractMsoObject) anObject).registerAddedReference(this);
         }
         if (m_owner != null)
         {
-            ((AbstractMsoObject) m_owner).registerAddedReference();
+            ((AbstractMsoObject) m_owner).registerAddedReference(this);
         }
         
     }
@@ -629,7 +621,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         {
             m_items.put(anObject.getObjectId(), anObject);
             ((AbstractMsoObject) anObject).addDeleteListener(this);
-            ((AbstractMsoObject) anObject).registerCreatedObject();
+            ((AbstractMsoObject) anObject).registerCreatedObject(this);
         }
     }
 
@@ -648,7 +640,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
         if (m_owner != null && m_deleted.size() > 0)
         {
-            ((AbstractMsoObject) m_owner).registerAddedReference();
+            ((AbstractMsoObject) m_owner).registerAddedReference(this);
         }
 
         m_deleted.clear();
@@ -846,7 +838,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     protected M createdItem(M anObject)
     {
         //MsoModelImpl.getInstance().suspendClientUpdate();
-    	((AbstractMsoObject) anObject).setupReferences();
+    	((AbstractMsoObject) anObject).setup();
         ((AbstractMsoObject) anObject).setOwningMainList(this);
         add(anObject);
         anObject.resumeClientUpdate();

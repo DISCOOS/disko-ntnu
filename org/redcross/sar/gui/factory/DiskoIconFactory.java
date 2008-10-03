@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 
 import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.util.Internationalization;
 
 /**
@@ -139,4 +140,8 @@ public class DiskoIconFactory {
 		// failure
 		return null;
 	}	
+	
+	public static String getCatalog(ButtonSize size) {
+		return DiskoButtonFactory.getCatalog(size);
+	}
 }

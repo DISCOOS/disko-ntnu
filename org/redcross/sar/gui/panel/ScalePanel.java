@@ -17,11 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.beans.map.MapBean;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;

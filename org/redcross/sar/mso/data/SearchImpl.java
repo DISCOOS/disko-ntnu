@@ -103,7 +103,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_subType.getValue();
     }
 
-    public String getSubTypeText()
+    public String getInternationalSubTypeName()
     {
         return m_subType.getInternationalName();
 
@@ -387,15 +387,10 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
     }
 
     @Override
-    public int getTypenr()
+    public String getDefaultName()
     {
-        return 2;
-    }
-
-    @Override
-    public String getTypeText()
-    {
-        return getSubTypeText(getSubType());
+        return (m_subType.getAttrValue()==null ? 
+        		getInternationalTypeName() : getInternationalSubTypeName()) + " " + getNumber();
     }
 
 

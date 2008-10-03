@@ -15,9 +15,17 @@ public class DiskoBorder implements Border {
 	  private int m_right;  
 	  private Color m_color = null;   
 
+	  /* ================================================================
+	   * Constructors
+	   * ================================================================ */
+	  
 	  public DiskoBorder() {  
 		  this(1,1,1,1,Color.GRAY);   
 	  }   
+	  
+	  public DiskoBorder(int top, int left, int bottom, int right) {  
+		  this(top,left,bottom,right,Color.GRAY);   		  
+	  }
 	  
 	  public DiskoBorder(int top, int left, int bottom, int right, Color color) {  
 	      this.m_top = top;   
@@ -27,6 +35,11 @@ public class DiskoBorder implements Border {
 	      this.m_color = color;   
 	  }   
 
+	  /* ================================================================
+	   * Overridden methods
+	   * ================================================================ */
+	  
+	  @Override
 	  public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 
 
@@ -50,10 +63,12 @@ public class DiskoBorder implements Border {
 	      g.setColor(old);	      
 	  }   
 
+	  @Override
 	  public Insets getBorderInsets(Component c) {  
 	      return new Insets(m_top, m_left, m_bottom, m_right);  
 	  }   
 
+	  @Override
 	  public boolean isBorderOpaque() {   
 	      return true;  
 	  }   

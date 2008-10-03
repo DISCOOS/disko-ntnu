@@ -14,28 +14,19 @@ import java.util.Set;
 /**
  * Point of interest
  */
+@SuppressWarnings("unchecked")
 public class POIImpl extends AbstractMsoObject implements IPOIIf
 {
+    private final AttributeImpl.MsoString m_name = new AttributeImpl.MsoString(this, "Name",0,0,"");
     private final AttributeImpl.MsoPosition m_position = new AttributeImpl.MsoPosition(this, "Position");
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
     private final AttributeImpl.MsoEnum<POIType> m_type = new AttributeImpl.MsoEnum<POIType>(this, "Type", 1, POIType.GENERAL);
     private final AttributeImpl.MsoInteger m_areaSequenceNumber = new AttributeImpl.MsoInteger(this, "AreaSequenceNumber");
 
-    public static ResourceBundle getBundle()
-    {
-        return Internationalization.getBundle(IPOIIf.class);
-    }
-
-    public static String getText(String aKey)
-    {
-        return Internationalization.getString(Internationalization.getBundle(IPOIIf.class),aKey);
-    }
-
-    public String getTypeText()
-    {
-        return m_type.getInternationalName();
-    }
-
+    /*-------------------------------------------------------------------------------------------
+     * Constructors
+     *-------------------------------------------------------------------------------------------*/
+    
     public POIImpl(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         this(anObjectId, POIType.GENERAL, null);
@@ -48,9 +39,29 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         m_position.setValue(aPosition);
     }
 
-    protected void defineAttributes()
+    /*-------------------------------------------------------------------------------------------
+     * Dependent methods
+     *-------------------------------------------------------------------------------------------*/
+    
+    public static ResourceBundle getBundle()
     {
-        addAttribute(m_position);
+        return Internationalization.getBundle(IPOIIf.class);
+    }
+
+    public static String getText(String aKey)
+    {
+        return Internationalization.getString(Internationalization.getBundle(IPOIIf.class),aKey);
+    }
+
+    public String getInternationalTypeName()
+    {
+        return m_type.getInternationalName();
+    }
+    
+    protected void defineAttributes()
+    {    	
+    	addAttribute(m_name);
+    	addAttribute(m_position);
         addAttribute(m_remarks);
         addAttribute(m_type);
         addAttribute(m_areaSequenceNumber);
@@ -125,6 +136,26 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
+    public void setName(String aName)
+    {
+        m_name.setValue(aName);
+    }
+
+    public String getName()
+    {
+        return m_name.getString();
+    }
+
+    public IMsoModelIf.ModificationState getNameState()
+    {
+        return m_name.getState();
+    }
+
+    public IAttributeIf.IMsoStringIf getNameAttribute()
+    {
+        return m_name;
+    }
+    
     public void setPosition(Position aPosition)
     {
         m_position.setValue(aPosition);
@@ -185,14 +216,15 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_areaSequenceNumber;
     }
 
-    private final static SelfSelector<IPOIIf, IMessageLineIf> referringMesssageLineSelector = new SelfSelector<IPOIIf, IMessageLineIf>()
-    {
-        public boolean select(IMessageLineIf anObject)
-        {
-            return (m_object.equals(anObject.getLinePOI()));
-        }
-    };
-
+    /*-------------------------------------------------------------------------------------------
+     * Other Methods 
+     *-------------------------------------------------------------------------------------------*/
+    
+	public String getDefaultName()
+	{
+		return (getInternationalTypeName() + " " + getAreaSequenceNumber()).trim();
+	}
+	
     public Set<IMessageLineIf> getReferringMessageLines()
     {
         referringMesssageLineSelector.setSelfObject(this);
@@ -204,4 +236,18 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         referringMesssageLineSelector.setSelfObject(this);
         return MsoListImpl.selectItemsInCollection(referringMesssageLineSelector,aCollection);
     }
+    
+    /*-------------------------------------------------------------------------------------------
+     * Anonymous classes 
+     *-------------------------------------------------------------------------------------------*/
+    
+    private final static SelfSelector<IPOIIf, IMessageLineIf> referringMesssageLineSelector = new SelfSelector<IPOIIf, IMessageLineIf>()
+    {
+        public boolean select(IMessageLineIf anObject)
+        {
+            return (m_object.equals(anObject.getLinePOI()));
+        }
+    };
+
+    
 }

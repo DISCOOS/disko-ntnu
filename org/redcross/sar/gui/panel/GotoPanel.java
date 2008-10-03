@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMap.CoordinateFormat;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.beans.map.MapBean;
@@ -131,7 +131,7 @@ public class GotoPanel extends DefaultPanel {
 			this.setBodyComponent(getTabbedPane());
 			this.setNotScrollBars();
 			this.insertButton("finish", getGotoButton(), "goto");
-			formatChanged(1);
+			this.formatChanged(1);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -181,12 +181,7 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	private JPanel getMGRSPanel() {
 		if (m_mgrsPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			m_mgrsPanel = new JPanel();
-			m_mgrsPanel.setLayout(bl);
-			m_mgrsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_mgrsPanel = createTabPane();
 		}
 		return m_mgrsPanel;
 	}
@@ -198,12 +193,7 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	private JPanel getUTMPanel() {
 		if (m_utmPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			m_utmPanel = new JPanel();
-			m_utmPanel.setLayout(bl);
-			m_utmPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_utmPanel = createTabPane();
 		}
 		return m_utmPanel;
 	}
@@ -215,12 +205,7 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	private JPanel getDEGPanel() {
 		if (m_degPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			m_degPanel = new JPanel();
-			m_degPanel.setLayout(bl);
-			m_degPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_degPanel = createTabPane();
 		}
 		return m_degPanel;
 	}
@@ -232,12 +217,7 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	private JPanel getDEMPanel() {
 		if (m_demPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			m_demPanel = new JPanel();
-			m_demPanel.setLayout(bl);
-			m_demPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_demPanel = createTabPane();
 		}
 		return m_demPanel;
 	}
@@ -249,14 +229,16 @@ public class GotoPanel extends DefaultPanel {
 	 */
 	private JPanel getDESPanel() {
 		if (m_desPanel == null) {
-			BorderLayout bl = new BorderLayout();
-			bl.setHgap(5);
-			bl.setVgap(5);
-			m_desPanel = new JPanel();
-			m_desPanel.setLayout(bl);
-			m_desPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_desPanel = createTabPane();
 		}
 		return m_desPanel;
+	}
+	
+	private JPanel createTabPane() {
+		JPanel pane = new JPanel(new BorderLayout(5,5));
+		pane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		pane.setOpaque(false);
+		return pane;
 	}
 	
 	/**
@@ -268,6 +250,7 @@ public class GotoPanel extends DefaultPanel {
 		if (m_coordinatePanel == null) {
 			try {
 				m_coordinatePanel = new CoordinatePanel();
+				m_coordinatePanel.setOpaque(false);
 				m_coordinatePanel.addChangeListener(new ChangeListener() {
 
 					public void stateChanged(ChangeEvent e) {
@@ -397,8 +380,8 @@ public class GotoPanel extends DefaultPanel {
 				Position p = getCoordinatePanel().getPosition();
 				// center at position?
 				if(p!=null) {
-					m_map.centerAtPosition(p);
-					m_map.flashPosition(p);
+					m_map.centerAtPosition(p.getGeoPos());
+					m_map.flashPosition(p.getGeoPos());
 				}
 				else
 					Utils.showWarning("Du må oppgi korrekte koordinater");

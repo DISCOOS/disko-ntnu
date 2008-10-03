@@ -33,7 +33,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public SearchSubType getSubType();
 
-    public String getSubTypeText();
+    public String getInternationalSubTypeName();
 
     public IMsoModelIf.ModificationState getSubTypeState();
 

@@ -6,12 +6,12 @@ package org.redcross.sar.gui.mso.table;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 
 import no.cmr.common.util.SimpleDecimalFormat;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
@@ -19,15 +19,15 @@ import org.redcross.sar.util.mso.Track;
  * @author kennetgu
  *
  */
-public class TrackTableModel extends AbstractTableModel {
+public class TrackTableModel extends DiskoTableModel {
 
 	private static final long serialVersionUID = 1L;
 	
 	private static final String[] COLUMNS = {"Index",
 											"Altitude",
-											"Leg distance",
-											"Leg time",
-											"Leg speed",
+											"Distance",
+											"Time",
+											"Speed",
 											"EAD",			// estimated altitude difference 
 											"EDE",			// estimated distance enroute
 											"ETE",			// estimated time enroute
@@ -84,7 +84,7 @@ public class TrackTableModel extends AbstractTableModel {
 		// has track?
 		if(track!=null) {
 			// get point count
-			int count = track.getCount();
+			int count = track.size();
 			// is a valid track?
 			if(count>1) {
 				// initialize altitude difference

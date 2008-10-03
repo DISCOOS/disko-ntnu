@@ -127,12 +127,13 @@ public interface IPersonnelIf extends IPersonIf
 
     public PersonnelType getType();
 
-    public String getTypeText();
-
     public IMsoModelIf.ModificationState getTypeState();
 
     public IAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute();
 
+    public String getTypeName();
+    
+    public String getInternationalTypeName();
 
     public void setImportStatus(PersonnelImportStatus status);
 

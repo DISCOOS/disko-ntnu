@@ -1,10 +1,10 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.map.command.IDiskoCommand.DiskoCommandType;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
@@ -44,7 +44,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
         layoutComponent(m_logPanel.getPanel());
         
         // ensure tha wp spesific layers are selectable 
-        m_logPanel.setLayersSelectable();
+        m_logPanel.setSelectableLayers();
         
 		// install draw support in map 
 		getMap().installEditSupport();

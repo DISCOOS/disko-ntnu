@@ -14,8 +14,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.CompassPanel;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
@@ -25,6 +23,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.CompassPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -32,6 +31,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.wp.IDiskoWpModule;
 
@@ -216,7 +216,7 @@ public class UnitStatusPanel extends BasePanel {
     {
         if (m_bearingAttr == null)
         {
-        	m_bearingAttr = new NumericAttribute(m_unit.getBearingAttribute(),"Grad", false, 30, 25);
+        	m_bearingAttr = new NumericAttribute("Bearing","Grad", false, 30, 25, 0);
         	m_bearingAttr.setMaxDigits(3);
         	m_bearingAttr.setDecimalPrecision(0);
         	m_bearingAttr.setAllowNegative(false);        	
@@ -229,7 +229,7 @@ public class UnitStatusPanel extends BasePanel {
         if (m_activeAttr == null)
         {
         	m_activeAttr = new TextFieldAttribute("active","Aktivt oppdrag",false,100,25,"Ingen oppdrag");
-        	m_activeAttr.setButton(getCenterAtAssignmentButton(), true);
+        	m_activeAttr.installButton(getCenterAtAssignmentButton(), true);
         	getCenterAtAssignmentButton().setEnabled(true);
         }        
         return m_activeAttr;
@@ -253,7 +253,7 @@ public class UnitStatusPanel extends BasePanel {
 		return m_unit;
 	}
 	
-	public int getCurrentBearing() {
+	public double getCurrentBearing() {
 		return m_unit !=null ? m_unit.getBearing() : 0;
 	}
 	
@@ -262,11 +262,11 @@ public class UnitStatusPanel extends BasePanel {
 		if(m_unit !=null) {
 			assignment =  m_unit.getActiveAssignment();
 			if(assignment==null) {
-				assignment = m_unit.getAssignedAssignment();
+				assignment = m_unit.getAllocatedAssignment();
 				if(assignment == null) {
-					int count = m_unit.getAllocatedAssignments().size();
+					int count = m_unit.getEnqueuedAssignments().size();
 					if(count>0) {
-						assignment = m_unit.getAllocatedAssignments().get(0);
+						assignment = m_unit.getEnqueuedAssignments().get(0);
 					}
 				}
 			}
@@ -281,9 +281,9 @@ public class UnitStatusPanel extends BasePanel {
 		if(m_unit !=null) {
 			assignment =  m_unit.getActiveAssignment();
 			if(assignment==null) {
-				assignment = m_unit.getAssignedAssignment();
+				assignment = m_unit.getAllocatedAssignment();
 				if(assignment == null) {
-					int count = m_unit.getAllocatedAssignments().size();
+					int count = m_unit.getEnqueuedAssignments().size();
 					if(count>0) {
 						text = count + " oppdrag i kø";
 					}
@@ -312,8 +312,8 @@ public class UnitStatusPanel extends BasePanel {
 		setCaptionText("Simulering - <b>"+MsoUtils.getUnitName(m_unit, true)+"</b>");
 		
 		// update attributes
-		getCompassPanel().setBearing(getCurrentBearing());
-		getBearingAttr().load();
+		getCompassPanel().setBearing((int)getCurrentBearing());
+		getBearingAttr().setValue((int)getCurrentBearing());
 		getAttribsPanel().load();
 		getActiveAttr().setValue(getActiveAssignmentText());
 		
@@ -349,8 +349,8 @@ public class UnitStatusPanel extends BasePanel {
 			try {
 				// center at position?
 				if(p!=null) {
-					map.centerAtPosition(p);
-					map.flashPosition(p);
+					map.centerAtPosition(p.getGeoPos());
+					map.flashPosition(p.getGeoPos());
 				}
 				else
 					Utils.showWarning("Ingen posisjon funnet");

@@ -31,7 +31,7 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.GlobalProps;
+import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
@@ -106,7 +106,7 @@ public class MapUtil {
 	
 	public static Workspace getWorkspace() throws AutomationException, IOException {
 		if (workspace == null) {
-			String dbPath = GlobalProps.getText("Database.path");
+			String dbPath = AppProps.getText("Database.path");
 			FileGDBWorkspaceFactory factory = new FileGDBWorkspaceFactory();
 			workspace = (Workspace) factory.openFromFile(dbPath, 0);
 		}
@@ -137,7 +137,7 @@ public class MapUtil {
 		p.project(srs);
 		return p;
 	}
-	public static Point getEsriPoint(Position pos, ISpatialReference srs) 
+	public static Point getEsriPoint(GeoPos pos, ISpatialReference srs) 
 			throws IOException, AutomationException {
 		return getEsriPoint(pos.getPosition(),srs);
 	}
@@ -333,7 +333,7 @@ public class MapUtil {
 			geomBag.setSpatialReferenceByRef(srs);
 			for(IPOIIf poi : msoList.getItems()) {
 				// get object
-				IGeometry geo = getEsriPoint(poi.getPosition(), srs);					
+				IGeometry geo = getEsriPoint(poi.getPosition().getGeoPos(), srs);					
 				// add?
 				if(geo!=null)
 					geomBag.addGeometry(geo, null, null);
@@ -1903,7 +1903,7 @@ public class MapUtil {
 	
 	public static IEnvelope getPOIExtent(IPOIIf poi, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// get polyline
-		IPoint p = getEsriPoint(poi.getPosition(),map.getSpatialReference());
+		IPoint p = getEsriPoint(poi.getPosition().getGeoPos(),map.getSpatialReference());
 		// limit to minimal extent
 		if(constrain) 
 			return getConstrainExtent(p,map);
@@ -1913,7 +1913,7 @@ public class MapUtil {
 	
 	public static IEnvelope getUnitExtent(IUnitIf unit, IDiskoMap map, boolean constrain) throws AutomationException, IOException {
 		// get point
-		IPoint p = getEsriPoint(unit.getPosition(),map.getSpatialReference());
+		IPoint p = getEsriPoint(unit.getPosition().getGeoPos(),map.getSpatialReference());
 		// limit to minimal extent
 		if(constrain) 
 			return getConstrainExtent(p,map);

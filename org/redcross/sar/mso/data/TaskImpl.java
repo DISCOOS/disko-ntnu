@@ -200,7 +200,12 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_type;
     }
 
-    public String getTypeText()
+    public String getTypeName()
+    {
+        return m_type.getName();
+   }
+    
+    public String getInternationalTypeName()
     {
         return m_type.getInternationalName();
    }
@@ -448,6 +453,10 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     * Other specified methods
     *-------------------------------------------------------------------------------------------*/
 
+    public String getDefaultName() {
+    	return getInternationalTypeName();
+    }
+    
     public Calendar getDueTime()
     {
         return getTimeStamp();

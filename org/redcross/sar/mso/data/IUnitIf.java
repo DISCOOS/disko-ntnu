@@ -1,7 +1,6 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Selector;
@@ -21,7 +20,8 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Unit";
     
-    public static final EnumSet<UnitStatus> ACTIVE_RANGE = EnumSet.range(UnitStatus.READY, UnitStatus.PENDING);
+    public static final EnumSet<UnitStatus> ACTIVE_RANGE = EnumSet.range(UnitStatus.READY, UnitStatus.PAUSED);
+    public static final EnumSet<UnitStatus> MANAGED_RANGE = ACTIVE_RANGE.clone();    
     
     public static final Selector<IUnitIf> ACTIVE_UNIT_SELECTOR = new Selector<IUnitIf>()
     {
@@ -50,9 +50,9 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
         CP,
         TEAM,
         DOG,
+        VEHICLE,
         AIRCRAFT,
-        BOAT,
-        VEHICLE
+        BOAT
     }
 
     public enum UnitStatus
@@ -60,9 +60,9 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
         EMPTY,
         READY,
         INITIALIZING,
-        PAUSED,
         WORKING,
         PENDING,
+        PAUSED,
         RELEASED
     }
 
@@ -70,42 +70,51 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     * Methods for ENUM attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setStatus(UnitStatus aStatus);
-
+    /**
+     * Sets a specified status. </p> 
+     * 
+     * Only a subset of the available status values are allowed to change manually. These 
+     * statuses are  EMPTY, READY and RELEASED. EMPTY and READY can be toggled as long
+     * as no active assignment exists or the unit is not paused. If an active assignment
+     * exist or the unit is paused, an org.redcross.sar.util.except.IllegalOperationException 
+     * will be thrown. If RELEASED is set, the unit status is irrevocable. Any further
+     * attempts to change the status will throw IllegalOperationException. This complies to the
+     * history rules of MSO model. </p>
+     * 
+     * The remaining status values are managed by the MSO model. The MSO model ensures that
+     * the unit status at all times corresponds to the active assignment state. If an active
+     * assignment exists, INITIALIZING or WORKING is chosen depending if the active assignment
+     * is allocated or executing. The PAUSED status is managed according to the pause/resume 
+     * rules for IUnitIf. The methods <code>pause()</code> and <code>resume()</code> is supplied 
+     * to control the pause state. If active assignment status has changed since PAUSED was entered,
+     * MSO model will ensure that a legal status is set automatically.     
+     * 
+     * @throws org.redcross.sar.util.except.IllegalOperationException
+     */
+    public void setStatus(String aStatus) throws IllegalOperationException;
+    
+    public void setStatus(UnitStatus aStatus) throws IllegalOperationException;
+    
     public UnitType getType();
 
     public IMsoModelIf.ModificationState getTypeState();
 
     public IAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute();
 
-    public String getTypeText();
+    public String getInternationalTypeName();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public String getUnitNumber();
+    public void setName(String aName);
 
-    public String getTypeAndNumber();
+    public String getName();
 
-    public char getUnitNumberPrefix();
+    public IMsoModelIf.ModificationState getNameState();
 
-    public void setAverageSpeed(int anAverageSpeed);
-
-    public int getAverageSpeed();
-
-    public IMsoModelIf.ModificationState getAverageSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getAverageSpeedAttribute();
-
-    public void setBearing(int aBearing);
-
-    public int getBearing();
-
-    public IMsoModelIf.ModificationState getBearingState();
-
-    public IAttributeIf.IMsoIntegerIf getBearingAttribute();
-
+    public IAttributeIf.IMsoStringIf getNameAttribute();
+    
     public void setCallSign(String aCallSign);
 
     public String getCallSign();
@@ -113,14 +122,6 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     public IMsoModelIf.ModificationState getCallSignState();
 
     public IAttributeIf.IMsoStringIf getCallSignAttribute();
-
-    public void setMaxSpeed(int aMaxSpeed);
-
-    public int getMaxSpeed();
-
-    public IMsoModelIf.ModificationState getMaxSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getMaxSpeedAttribute();
 
     public void setPosition(Position aPosition);
 
@@ -138,42 +139,21 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
 
     public IAttributeIf.IMsoStringIf getRemarksAttribute();
 
-    public void setSpeed(int aSpeed);
-
-    public int getSpeed();
-
-    public IMsoModelIf.ModificationState getSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getSpeedAttribute();
-
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
 
-    /**
-     * @param anIAssignmentIf The assigment to add
-     * @param newStatus       New status for the assignment
-     * @throws DuplicateIdException if the list already contains an object with the same object ID.
-     * @throws org.redcross.sar.util.except.IllegalOperationException
-     *                              if the assignment cannot be assigned.
-     */
-    public void addUnitAssignment(IAssignmentIf anIAssignmentIf, IAssignmentIf.AssignmentStatus newStatus) throws IllegalOperationException;
-
-    public void addUnitReference(IAssignmentIf anIAssignmentIf);
-
-    public void removeUnitReference(IAssignmentIf anIAssignmentIf);
-
     public IAssignmentListIf getUnitAssignments();
 
-    public IMsoModelIf.ModificationState getUnitAssignmentsState(IAssignmentIf anIAssignmentIf);
+    public IMsoModelIf.ModificationState getUnitAssignmentsState(IAssignmentIf anAssignment);
 
     public Collection<IAssignmentIf> getUnitAssignmentsItems();
 
-    public void addUnitPersonnel(IPersonnelIf anIPersonnelIf);
+    public void addUnitPersonnel(IPersonnelIf anPersonnel);
 
     public IPersonnelListIf getUnitPersonnel();
 
-    public IMsoModelIf.ModificationState getUnitPersonnelState(IPersonnelIf anIPersonnelIf);
+    public IMsoModelIf.ModificationState getUnitPersonnelState(IPersonnelIf anPersonnel);
 
     public Collection<IPersonnelIf> getUnitPersonnelItems();
 
@@ -201,36 +181,136 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     * Other methods
     *-------------------------------------------------------------------------------------------*/
 
-    public List<IAssignmentIf> getAllocatedAssignments();
+    /**
+     * Get short name of unit 
+     * 
+     * @return The concatenation <code>getNumberPrefix() + " " + getNumber()</code>
+     */
+    public String getShortName();
 
-    public IAssignmentIf getAssignedAssignment();
+    /**
+     * Get default name of unit 
+     * 
+     * @return The concatenation <code>getInternationalTypeName() + " " + getNumber()</code>
+     */
+    public String getDefaultName();
 
-    public Set<IAssignmentIf> getAssignedAssignments();
+    /**
+     * 
+     * @return Prefix used in <code>getShortName()</code>
+     */
+    public char getNumberPrefix();
+    
+    /**
+     * Pauses the unit if possible
+     * 
+     * @return Paused unit status
+     * @throws org.redcross.sar.util.except.IllegalOperationException is the unit is EMPTY or RELEASED.
+     */
+    public UnitStatus pause() throws IllegalOperationException;
+    
+    /**
+     * Resumes the unit if paused 
+     * 
+     * @return Paused unit status
+     * @throws org.redcross.sar.util.except.IllegalOperationException is the unit is not paused.
+     */    
+    public void resume() throws IllegalOperationException;
+    
+    /**
+     * Indicates the unit is paused. A paused unit can only be resumed by <code>resume()</code>. Any status
+     * change attempted on a paused unit will produce an org.redcross.sar.util.except.IllegalOperationException.
+     * Use this method to check if a exception will be produced before an status change is attempted.
+     * 
+     * @return <code>true</code> if paused, <code>false</code> else. 
+     */        
+    public boolean isPaused();
+    
+    
+    /**
+     * Indicates the unit is released. A released unit can not change status and only finished and reported 
+     * assignments can be added. Use this method to check if a status change, adding or removing a specific assignment 
+     * will produce a org.redcross.sar.util.except.IllegalOperationException. 
+     * 
+     * @return <code>true</code> if released, <code>false</code> else. 
+     */            
+    public boolean isReleased();
+    
+    /**
+     * Tries to release the active assignment. Only an allocated assignment
+     * is released. If no assignment is allocated, or if the active assignment is
+     * started, no release will occur. Any released assignment is given the status READY.
+     * 
+     * @param anAssignment - the assignment to reclaim
+     * @return The releases assignment, <code>null</code> else. 
+     * @throws org.redcross.sar.util.except.IllegalOperationException
+     */    
+    public IAssignmentIf releaseAssignment() throws IllegalOperationException;
+    
+    /**
+     * This method releases any enqueued or assigned assignment. Any released
+     * assignment is given the status READY.
+     * 
+     * @param anAssignment - the assignment to reclaim
+     * @return <code>true</code> if successfully released, <code>else</code>.
+     * @throws org.redcross.sar.util.except.IllegalOperationException 
+     */    
+    public boolean releaseAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
+    
+    /**
+     * Add an assignment to the unit assignment queue at a given place in the list
+     * 
+     * @param anAssignment The assignment to add
+     * @return <code>true</code> if successfully enqueued, <code>false</code> otherwise.
+     * @throws org.redcross.sar.util.except.IllegalOperationException 
+     */
+    public boolean enqueueAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
+    
+    /**
+     * Add an assignment to the unit assignment queue at a given place in the list
+     * 
+     * @param newAssignment The assignment to add
+     * @param beforeAssignment Place the new assignment before this, if null, place to the end.
+     * @return <code>true</code> if successfully enqueued, <code>false</code> otherwise.
+     * @throws org.redcross.sar.util.except.IllegalOperationException 
+     */
+    public boolean enqueueAssignment(IAssignmentIf newAssignment, IAssignmentIf beforeAssignment) throws IllegalOperationException;
 
+    /**
+     * Remove an assignment from the unit assignment queue
+     * 
+     * @param anAssignment The assignment to remove
+     * @return <code>true</code> if successfully dequeued, <code>false</code> otherwise.
+     * @throws org.redcross.sar.util.except.IllegalOperationException
+     */    
+    public boolean dequeueAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
+    
+    public List<IAssignmentIf> getEnqueuedAssignments();
+    
+    public IAssignmentIf allocateAssignment() throws IllegalOperationException;
+    
+    public IAssignmentIf allocateAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
+
+    public IAssignmentIf getAllocatedAssignment();
+
+    public Set<IAssignmentIf> getAllocatedAssignments();
+
+    public IAssignmentIf startAssignment() throws IllegalOperationException;
+    
+    public IAssignmentIf startAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
+    
     public IAssignmentIf getExecutingAssigment();
 
     public Set<IAssignmentIf> getExecutingAssigments();
 
+    public IAssignmentIf finishAssignment() throws IllegalOperationException;
+
+    public IAssignmentIf finishAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
+    
     public Set<IAssignmentIf> getFinishedAssigments();
 
     public IAssignmentIf getActiveAssignment();
 
-    public void rearrangeAsgPrioritiesAfterStatusChange(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus oldStatus);
-
-    /**
-     * Add an allocated assignment to the unit at a given place in the list
-     * @param newAssignment The assignment to add
-     * @param beforeAssignment Place the new assignment before this, if null, place to the end.
-     * @return <code>false</code> if an error ({@link org.redcross.sar.util.except.IllegalOperationException}) occured, <code>true</code> otherwise.
-     */
-    public boolean addAllocatedAssignment(IAssignmentIf newAssignment, IAssignmentIf beforeAssignment);
-
-    public long getPauseTimeInMillis();
-
-    public long getWorkTimeInMillis();
-
-    public long getIdleTimeInMillis();
-    
     public boolean logPosition();
     
     public boolean logPosition(Calendar aTime);
@@ -242,4 +322,63 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     public Set<IMessageIf> getReferringMessages();
 
     public Set<IMessageIf> getReferringMessages(Collection<IMessageIf> aCollection);
+    
+    
+    /**
+     * Get duration of given unit status. </p>
+     * 
+     * @param aStatus - The status to get duration for
+     * @param total - If <code>true</code> the sum of all durations for a given status 
+     * is returned, the duration of the last occurrence otherwise.
+     * 
+     * @return Duration (second)
+     */
+    public double getDuration(UnitStatus aStatus, boolean total);
+    
+    /**
+     * Get bearing from last known position to current position. </p>
+     * 
+     * If current position is unknown, the bearing of the last leg in track is used. 
+     * 
+     * @return Bearing (degrees)
+     */
+    public double getBearing();
+
+    /**
+     * Get current speed  
+     * 
+     * @return Speed (m/s)
+     */
+    public double getSpeed();
+
+    /**
+     * Get average speed from first known to from last known position
+     * 
+     * @return Speed (m/s)
+     */
+    public double getAverageSpeed();
+    
+    /**
+     * Get maximum speed from first known to from last known position
+     * 
+     * @return Speed (m/s)
+     */
+    public double getMaximumSpeed();
+    
+    /**
+     * Get minimum speed from first known to from last known position
+     * 
+     * @return Speed (m/s)
+     */
+    public double getMinimumSpeed();
+    
+    /**
+     * Get total distance traveled. This distance do not include the leg from last known
+     * position to current position.
+     * 
+     * @return Distance (m)
+     */
+    public double getDistance();
+    
+    
 }

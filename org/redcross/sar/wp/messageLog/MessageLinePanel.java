@@ -19,7 +19,7 @@ import org.redcross.sar.util.mso.Selector;
  *
  * @author thomasl
  */
-public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
+public class MessageLinePanel extends JPanel implements IEditorIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -76,7 +76,7 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 	/**
 	 * Updates message line list model with message lines in message
 	 */
-	public void newMessageSelected(IMessageIf message)
+	public void setMessage(IMessageIf message)
 	{
 		m_messageTableModel.clearMessageLines();
 		IMessageLineListIf messageLines = message.getMessageLines();
@@ -96,7 +96,7 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 	/**
 	 *
 	 */
-	public void showComponent()
+	public void showEditor()
 	{
 		this.setVisible(true);
 	}
@@ -104,7 +104,7 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 	/**
 	 *
 	 */
-	public void hideComponent()
+	public void hideEditor()
 	{
 		this.setVisible(false);
 	}
@@ -112,7 +112,7 @@ public class MessageLinePanel extends JPanel implements IEditMessageComponentIf
 	/**
 	 *
 	 */
-	public void clearContents()
+	public void resetEditor()
 	{
 		m_messageTableModel.clearMessageLines();
 	}

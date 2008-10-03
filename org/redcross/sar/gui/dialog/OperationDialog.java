@@ -8,9 +8,9 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.OperationPanel;
+import org.redcross.sar.util.Utils;
 
 public class OperationDialog extends DefaultDialog {
 

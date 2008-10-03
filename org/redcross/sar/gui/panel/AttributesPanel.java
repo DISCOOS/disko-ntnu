@@ -3,19 +3,17 @@ package org.redcross.sar.gui.panel;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SpringLayout;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.attribute.AbstractDiskoAttribute;
 import org.redcross.sar.gui.attribute.CheckBoxAttribute;
 import org.redcross.sar.gui.attribute.DTGAttribute;
@@ -25,6 +23,7 @@ import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.attribute.PositionAttribute;
 import org.redcross.sar.gui.attribute.TextAreaAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.util.SpringUtilities;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -36,6 +35,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
 import org.redcross.sar.mso.data.AttributeImpl.MsoString;
 import org.redcross.sar.mso.data.AttributeImpl.MsoTimePos;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
@@ -50,25 +50,35 @@ public class AttributesPanel extends DefaultPanel {
 	
 	private JLabel m_messageLabel;
 	
-	private Component glue;
-	
 	private float m_attribAlignX = Component.LEFT_ALIGNMENT;
 	private float m_attribAlignY = Component.CENTER_ALIGNMENT;
 	
+	private boolean m_isLayoutDirty = true;
+	private boolean m_isLayoutSuspended = true;
 	private boolean m_isMessageVisible = false;
 	
+	private int m_columns; 
+	
 	public AttributesPanel() {
-		this("Egenskaper","Ingen egenskaper funnet",true,true);
+		this("Egenskaper");
+	}
+	
+	public AttributesPanel(String caption) {
+		this(caption,"Ingen egenskaper funnet",true,true);
 	}
 	
 	public AttributesPanel(String caption, String message, boolean finish, boolean cancel) {
-		this(caption,message,finish,cancel,ButtonSize.SMALL);
+		this(caption,message,finish,cancel,ButtonSize.SMALL,1);
 	}
 
 	public AttributesPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
+		this(caption,message,finish,cancel,buttonSize,1);
+	}
+	public AttributesPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize, int columns) {
 		// forward
 		super(caption,finish,cancel,buttonSize);
 		// prepare
+		m_columns = columns;
 		m_names = new ArrayList<String>();
 		m_attributes = new HashMap<String, IDiskoAttribute>();		
 		// initialize GUI
@@ -77,15 +87,26 @@ public class AttributesPanel extends DefaultPanel {
 	
 	private void initialize(String message) {
 		// get body panel
-		JPanel panel = (JPanel)getBodyComponent();
+		//JPanel panel = (JPanel)getBodyComponent();
 		// get body panel border
-		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		// set layout
-		//panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+		//panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 		// prepare message label
 		getMessageLabel().setText(message);		
-		// show message
-		setMessageVisible(true);
+		// show message (layout manager is set here)
+		createMessage();
+	}
+	
+	public int getColumns() {
+		return m_columns;
+	}
+	
+	public void setColumns(int columns) {
+		if(m_columns!=columns) {
+			m_columns = columns;
+			if(!m_isMessageVisible) {
+				createGrid();
+			}
+		}
 	}
 	
 	public boolean isMessageVisible() {
@@ -96,16 +117,7 @@ public class AttributesPanel extends DefaultPanel {
 		// any change?
 		if(m_isMessageVisible!=isVisible) {			
 			m_isMessageVisible = isVisible;
-			JPanel panel = (JPanel)getBodyComponent();
-			panel.removeAll();
-			if(isVisible) {
-				panel.setLayout(new GridLayout(5,5));
-				panel.add(getMessageLabel());
-			}
-			else {
-				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-				rebuild();
-			}
+			validate();
 		}
 	}
 	
@@ -119,11 +131,11 @@ public class AttributesPanel extends DefaultPanel {
 	}
 	
 	public void setMessage(String text) {
-		getMessageLabel().setText("<html>"+Utils.stripHtml(text)+"</html>");
+		getMessageLabel().setText("<html>"+Utils.trimHtml(text)+"</html>");
 	}
 	
 	public String getMessage() {
-		return Utils.stripHtml(getMessageLabel().getText());
+		return Utils.trimHtml(getMessageLabel().getText());
 	}
 		
 	public void create(IMsoObjectIf msoObject, boolean isEditable) {
@@ -271,29 +283,20 @@ public class AttributesPanel extends DefaultPanel {
 		if(attribute instanceof JComponent && !m_names.contains(name)) {
 			// get component
 			JComponent c = ((JComponent)attribute);
-			// get list panel
-			JPanel list = (JPanel)getBodyComponent();
 			// apply current alignment
 			c.setAlignmentX(m_attribAlignX);
 			c.setAlignmentY(m_attribAlignY);
-			// add strut?
-			if(m_names.size()>0) {
-				list.remove(glue);
-				list.add(Box.createVerticalStrut(5));
-			}
-			else glue = Box.createVerticalGlue();
-			list.add((Component)attribute);
-			list.add(glue);
 			// add to list
 			m_names.add(name);			
 			m_attributes.put(name,attribute);			
 			// add listener
 			attribute.addDiskoWorkListener(this);
+			// set layout dirty
+			m_isLayoutDirty = true;
+			if(!m_isLayoutSuspended) doLayout();
 			// success
 			bFlag = true;
 		}
-  		// show message?
-		setMessageVisible(getAttributeCount()==0);					
 		// failure
 		return bFlag;
 	}
@@ -319,26 +322,71 @@ public class AttributesPanel extends DefaultPanel {
 			// remove
 			m_attributes.remove(name);
 			m_names.remove(name);
-			// forward
-			rebuild();
+			// set layout dirty
+			m_isLayoutDirty = true;			
 		}
 		update();
 		// failure
 		return false;
 	}
+	
+	public boolean isLayoutDirty() {
+		return m_isLayoutDirty;
+	}
 
-	private void rebuild() {
-		// get list panel
+	public boolean isLayoutSuspended() {
+		return m_isLayoutSuspended;
+	}
+	
+	public boolean suspendLayout() {
+		boolean bFlag = m_isLayoutSuspended;
+		m_isLayoutSuspended = true;
+		return bFlag;
+	}
+	
+	public boolean resumeLayout() {
+		boolean bFlag = m_isLayoutSuspended;
+		m_isLayoutSuspended = false;
+		if(bFlag && m_isLayoutDirty) doLayout();
+		return bFlag;
+	}	
+	
+	@Override
+	public void doLayout() {
+		// need to update view?
+		if(m_isLayoutDirty || true) {
+			if(m_isMessageVisible || getAttributeCount()==0)
+				createMessage();
+			else			
+				createGrid();
+			m_isLayoutDirty = false;
+		}
+		// forward
+		super.doLayout();
+	}
+	
+	private void createMessage() {
+		JPanel panel = (JPanel)getBodyComponent();
+		panel.removeAll();
+		panel.setLayout(new GridLayout(5,5));
+		panel.add(getMessageLabel());		
+	}
+	
+	private void createGrid() {
+		// clear current 
 		JPanel list = (JPanel)getBodyComponent();
 		list.removeAll();
-		boolean isFirst = true;
-		for(IDiskoAttribute it : m_attributes.values()) {
-			if(!isFirst)
-				list.add(Box.createVerticalStrut(5));
-			else
-				isFirst = false;
-			list.add((JComponent)it);
-		}		
+		list.setLayout(new SpringLayout());		
+		// add all attributes
+		for(String name : m_names) {
+			list.add((Component)m_attributes.get(name));
+		}
+		// get number of attributes 
+		int count = m_names.size();
+		// calculate rows
+		int rows = count/m_columns;		
+		// forward
+		SpringUtilities.makeCompactGrid(list, rows, m_columns, 5, 5, 5, 5);
 	}
 	
 	public void clearAttributes()  {
@@ -352,6 +400,10 @@ public class AttributesPanel extends DefaultPanel {
 		}		
 	}
 	
+	public boolean containsAttribute(String name) {
+		return m_attributes.containsKey(name);
+	}
+	
 	public double getCaptionWidth(String name) {
 		return m_attributes.get(name).getFixedCaptionWidth();
 	}
@@ -363,6 +415,14 @@ public class AttributesPanel extends DefaultPanel {
 	
 	public void setCaptionWidth(String name, int width) {
 		m_attributes.get(name).setFixedCaptionWidth(width);		
+	}	
+	
+	public Object getValue(String name) {
+		return getAttribute(name).getValue();
+	}
+	
+	public void setValue(String name, Object value) {
+		getAttribute(name).setValue(value);
 	}	
 	
   	public static IDiskoAttribute createAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
@@ -393,7 +453,7 @@ public class AttributesPanel extends DefaultPanel {
 			else if (attribute instanceof MsoCalendar) {
 				// get DTG attribute
 			    component = new DTGAttribute(
-			    		(MsoCalendar)attribute,caption,isEditable,width,height);
+			    		(MsoCalendar)attribute,caption,isEditable,width,height,Calendar.getInstance());
 			}
 			else if (attribute instanceof MsoPosition) {
 				// get position attribute
@@ -419,8 +479,7 @@ public class AttributesPanel extends DefaultPanel {
 			}
 			else if (attribute instanceof MsoEnum<?>) {
 				// get enum attribute
-			    component = new EnumAttribute((MsoEnum<?>)attribute,caption,
-			    		width,height,isEditable);
+			    component = new EnumAttribute((MsoEnum<?>)attribute,caption,isEditable,width,height);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

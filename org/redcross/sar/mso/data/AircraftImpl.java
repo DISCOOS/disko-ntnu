@@ -7,10 +7,7 @@ import org.redcross.sar.mso.IMsoModelIf;
  */
 public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
 {
-    private final AttributeImpl.MsoInteger m_averageSpeed = new AttributeImpl.MsoInteger(this, "AverageSpeed");
-    private final AttributeImpl.MsoInteger m_flightTime = new AttributeImpl.MsoInteger(this, "FlightTime");
     private final AttributeImpl.MsoBoolean m_infrared = new AttributeImpl.MsoBoolean(this, "Infrared");
-    private final AttributeImpl.MsoInteger m_maxSpeed = new AttributeImpl.MsoInteger(this, "MaxSpeed");
     private final AttributeImpl.MsoBoolean m_nightvision = new AttributeImpl.MsoBoolean(this, "Nightvision");
     private final AttributeImpl.MsoBoolean m_photo = new AttributeImpl.MsoBoolean(this, "Photo");
     private final AttributeImpl.MsoInteger m_range = new AttributeImpl.MsoInteger(this, "Range");
@@ -33,10 +30,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
     protected void defineAttributes()
     {
         super.defineAttributes();
-        addAttribute(m_averageSpeed);
-        addAttribute(m_flightTime);
         addAttribute(m_infrared);
-        addAttribute(m_maxSpeed);
         addAttribute(m_nightvision);
         addAttribute(m_photo);
         addAttribute(m_range);
@@ -114,46 +108,6 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setAverageSpeed(int anAverageSpeed)
-    {
-        m_averageSpeed.setValue(anAverageSpeed);
-    }
-
-    public int getAverageSpeed()
-    {
-        return m_averageSpeed.intValue();
-    }
-
-    public IMsoModelIf.ModificationState getAverageSpeedState()
-    {
-        return m_averageSpeed.getState();
-    }
-
-    public IAttributeIf.IMsoIntegerIf getAverageSpeedAttribute()
-    {
-        return m_averageSpeed;
-    }
-
-    public void setFlightTime(int aFlightTime)
-    {
-        m_flightTime.setValue(aFlightTime);
-    }
-
-    public int getFlightTime()
-    {
-        return m_flightTime.intValue();
-    }
-
-    public IMsoModelIf.ModificationState getFlightTimeState()
-    {
-        return m_flightTime.getState();
-    }
-
-    public IAttributeIf.IMsoIntegerIf getFlightTimeAttribute()
-    {
-        return m_flightTime;
-    }
-
     public void setInfrared(boolean hasInfrared)
     {
         m_infrared.setValue(hasInfrared);
@@ -172,26 +126,6 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
     public IAttributeIf.IMsoBooleanIf getInfraredAttribute()
     {
         return m_infrared;
-    }
-
-    public void setMaxSpeed(int aMaxSpeed)
-    {
-        m_maxSpeed.setValue(aMaxSpeed);
-    }
-
-    public int getMaxSpeed()
-    {
-        return m_maxSpeed.intValue();
-    }
-
-    public IMsoModelIf.ModificationState getMaxSpeedState()
-    {
-        return m_maxSpeed.getState();
-    }
-
-    public IAttributeIf.IMsoIntegerIf getMaxSpeedAttribute()
-    {
-        return m_maxSpeed;
     }
 
     public void setNightvision(boolean hasNightvision)

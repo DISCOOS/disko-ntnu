@@ -1,25 +1,27 @@
 package org.redcross.sar.wp.simulator;
 
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.wp.simulator.AssignmentTableModel;
 import org.redcross.sar.wp.simulator.AssignmentStringConverter;
 
-public class AssignmentTable extends JTable {
+public class AssignmentTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
 	
 	private TableRowSorter<AssignmentTableModel> tableRowSorter = null;
 	
 	@SuppressWarnings("unchecked")
-	public AssignmentTable(IMsoModelIf msoModel) {
+	public AssignmentTable(IMsoModelIf msoModel, boolean archived) {
+		
+		// forward
+		super();
 		
 		// create the model
-		AssignmentTableModel model = new AssignmentTableModel(msoModel);
+		AssignmentTableModel model = new AssignmentTableModel(msoModel, archived);
 		
 		// assign the model
 		setModel(model);
@@ -27,35 +29,29 @@ public class AssignmentTable extends JTable {
 		// add row sorter
 		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
 		tableRowSorter.setStringConverter(new AssignmentStringConverter());
-		tableRowSorter.setSortsOnUpdates(true);
 		setRowSorter(tableRowSorter);
-		
-		// set header
-        JTableHeader tableHeader = getTableHeader();
-        tableHeader.setResizingAllowed(false);
-        tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
-        
+		        
         // set default renderer
         setDefaultRenderer(Object.class, new AssignmentCellRenderer());
         
-        // misc.
-		setRowHeight(34);
-		setColumnSelectionAllowed(false);
+        // prepare layout
+		setRowHeight(35);
 		setColumnWidths();
+		setAutoFitWidths(true);
+		setColumnSelectionAllowed(false);
 		setShowVerticalLines(false);
-		setUpdateSelectionOnSort(true);
 				
 	}
 	
 	private void setColumnWidths() {
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 			TableColumn column = getColumnModel().getColumn(i);
-			column.setResizable(false);
 			switch(i) {
-				case 0: column.setPreferredWidth(175); break;
-				case 1: column.setPreferredWidth(50); break;
-				case 2: column.setPreferredWidth(50); break;
+				case 0: setColumnWidth(column, 175, true, true, false); break;
+				case 1: setColumnWidth(column, 100, true, true, false); break;
+				case 2: setColumnWidth(column, 55, true, true, false); break;
+				case 3: setColumnWidth(column, 55, true, true, false); break;
+				case 4: setColumnWidth(column, 100, true, true, false); break;
 			}
 		}
 	}	

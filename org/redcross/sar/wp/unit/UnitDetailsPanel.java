@@ -1,10 +1,10 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -13,6 +13,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -20,6 +21,7 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 
 import javax.swing.AbstractCellEditor;
@@ -33,7 +35,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -68,7 +70,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     private IUnitIf m_currentUnit;
 
     private JLabel m_topPanelLabel;
-    //private JToggleButton m_pauseToggleButton;
+    private JToggleButton m_pauseToggleButton;
     private JButton m_releaseButton;
     private JButton m_showReportButton;
 
@@ -109,19 +111,23 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         topButtonsPanel.setBorder(null);
         m_topPanelLabel = new JLabel();
         topPanel.add(m_topPanelLabel, BorderLayout.CENTER);
-        /*
+        
+        // add pause button        
         String text = m_resources.getString("PauseButton.text");
         String letter = m_resources.getString("PauseButton.letter");
         m_pauseToggleButton = DiskoButtonFactory.createToggleButton(letter,text,null,ButtonSize.NORMAL);
         m_pauseToggleButton.addActionListener(new ActionListener()
         {
-            public void actionPerformed(ActionEvent arg0)
+            public void actionPerformed(ActionEvent e)
             {
                 if (m_currentUnit != null)
                 {
                     try
                     {
-                        UnitUtilities.toggleUnitPause(m_currentUnit);
+                    	if(m_currentUnit.isPaused())
+                    		m_currentUnit.resume();
+                    	else
+                    		m_currentUnit.pause();
 
                         // Commit small changes right away if new unit has been committed
                         if (!m_wpUnit.getNewUnit())
@@ -129,17 +135,18 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                             m_wpUnit.getMsoModel().commit();
                         }
                     }
-                    catch (IllegalOperationException e)
+                    catch (IllegalOperationException ex)
                     {
+                    	Utils.showWarning("Enhet kan ikke endre status");
                     }
                 }
             }
         });
         topButtonsPanel.add(m_pauseToggleButton);
-        */
         
-        String text = m_resources.getString("DissolveButton.text");
-        String letter = m_resources.getString("DissolveButton.letter");        
+        // add release button
+        text = m_resources.getString("DissolveButton.text");
+        letter = m_resources.getString("DissolveButton.letter");        
         m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.NORMAL);
         m_releaseButton.addActionListener(new ActionListener()
         {
@@ -223,7 +230,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         layoutComponent(2, m_resources.getString("StopTime.text"), m_stopTimeTextField, gbc, 1);
 
         // Personnel table
-        m_personnelTable = new JTable();
+        m_personnelTable = new DiskoTable();
         m_personnelTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_personnelTable.addMouseListener(new UnitPersonnelMouseListener());
         m_personnelTable.setFillsViewportHeight(true);
@@ -285,7 +292,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         if (m_currentUnit != null)
         {
             // Fill in fields with unit values
-            String topText = m_currentUnit.getTypeText() + " " + m_currentUnit.getNumber() +
+            String topText = m_currentUnit.getInternationalTypeName() + " " + m_currentUnit.getNumber() +
                     " (" + m_currentUnit.getStatusText() + ")";
             m_topPanelLabel.setText(topText);
 
@@ -296,7 +303,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_releaseButton.setSelected(m_currentUnit.getStatus() == UnitStatus.RELEASED);
 
             IPersonnelIf leader = m_currentUnit.getUnitLeader();
-            String leaderName = leader == null ? "" : leader.getFirstname() + " " + leader.getLastname();
+            String leaderName = leader == null ? "" : leader.getFirstName() + " " + leader.getLastName();
             m_leaderTextField.setText(leaderName);
 
             String cell = leader == null ? "" : leader.getTelephone1();
@@ -312,7 +319,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_callsignTextField.setText(callsign);
 
             IAssignmentIf assignment = m_currentUnit.getActiveAssignment();
-            String assignmentString = assignment == null ? "" : assignment.getTypeAndNumber();
+            String assignmentString = assignment == null ? "" : assignment.getDefaultName();
             m_assignmentTextField.setText(assignmentString);
 
             updateFieldTime();
@@ -356,10 +363,10 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             IAssignmentIf assignment = m_currentUnit.getActiveAssignment();
             if (assignment != null)
             {
-                Calendar timeAssigned = assignment.getTimeAssigned();
-                if (timeAssigned != null)
+                Calendar timeAllocated = assignment.getTime(AssignmentStatus.ALLOCATED);
+                if (timeAllocated != null)
                 {
-                    long minutes = (Calendar.getInstance().getTimeInMillis() - timeAssigned.getTimeInMillis()) / 60000;
+                    long minutes = (Calendar.getInstance().getTimeInMillis() - timeAllocated.getTimeInMillis()) / 60000;
                     String fieldTime = null;
                     if (minutes > 59)
                     {
@@ -458,6 +465,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             Point clickedPoint = new Point(me.getX(), me.getY());
             int row = m_personnelTable.rowAtPoint(clickedPoint);
             int index = m_personnelTable.convertRowIndexToModel(row);
+            if(index==-1) return;
             UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
             IPersonnelIf personnel = model.getPersonnel(index);
 
@@ -523,7 +531,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
      *
      * @author thomasl
      */
-    public class UnitPersonnelTableModel extends AbstractTableModel
+    public class UnitPersonnelTableModel extends DiskoTableModel
     {
         private static final long serialVersionUID = 1L;
 
@@ -568,7 +576,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             switch (column)
             {
                 case 0:
-                    return personnel.getFirstname() + " " + personnel.getLastname();
+                    return personnel.getFirstName() + " " + personnel.getLastName();
                 case 1:
                     return personnel.getTelephone1();
                 case 2:
@@ -620,6 +628,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                     // has editing unit?
                     if(editingUnit!=null) {
 	                    int index = m_table.convertRowIndexToModel(m_editingRow);
+	                    if(index==-1) return;
 	                    UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
 	                    IPersonnelIf newLeader = model.getPersonnel(index);
 	
@@ -671,13 +680,16 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                                                        Object arg1, boolean arg2, boolean arg3, int row, int column)
         {
             int index = m_table.convertRowIndexToModel(row);
-            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
-            IPersonnelIf personnel = model.getPersonnel(index);
-
-            IUnitIf editingUnit = m_wpUnit.getEditingUnit();
-            if (editingUnit != null)
+            if(index!=-1) 
             {
-                m_leaderButton.setSelected(editingUnit.getUnitLeader() == personnel);
+	            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
+	            IPersonnelIf personnel = model.getPersonnel(index);
+	
+	            IUnitIf editingUnit = m_wpUnit.getEditingUnit();
+	            if (editingUnit != null)
+	            {
+	                m_leaderButton.setSelected(editingUnit.getUnitLeader() == personnel);
+	            }
             }
 
             return m_panel;

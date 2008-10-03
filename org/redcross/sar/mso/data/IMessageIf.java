@@ -67,13 +67,17 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
 
-    public void addConfirmedReceiver(ICommunicatorIf anICommunicatorIf);
-
     public IMsoListIf<ICommunicatorIf> getConfirmedReceivers();
 
     public IMsoModelIf.ModificationState getConfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
 
     public Collection<ICommunicatorIf> getConfirmedReceiversItems();
+    
+    public IMsoListIf<ICommunicatorIf> getUnconfirmedReceivers();
+
+    public IMsoModelIf.ModificationState getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
+
+    public Collection<ICommunicatorIf> getUnconfirmedReceiversItems();
 
     public void addMessageTask(ITaskIf anITaskIf);
 
@@ -90,14 +94,6 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
     public IMsoModelIf.ModificationState getMessageLinesState(IMessageLineIf anIMessageLineIf);
 
     public Collection<IMessageLineIf> getMessageLineItems();
-
-    public void addUnconfirmedReceiver(ICommunicatorIf anICommunicatorIf);
-
-    public IMsoListIf<ICommunicatorIf> getUnconfirmedReceivers();
-
-    public IMsoModelIf.ModificationState getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
-
-    public Collection<ICommunicatorIf> getUnconfirmedReceiversItems();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for references
@@ -116,33 +112,58 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
     *-------------------------------------------------------------------------------------------*/
 
     /**
-     * Confirm receiver.
-     * <p/>
-     * Trasnfer receiver to list og confirmed receivers.
+     * Register that the broadcast message is not received by communicator. <p/>
+     * 
+     * This will automatically set <code>isBroadcast()</code> flag <code>true</code>.
      *
-     * @param anICommunicatorIf The receiver to transfer.
+     * @param anICommunicatorIf The receiver that has not confirmed the message.
+     * 
      * @return <code>true</code> if succeeded, false otherwise
      */
-    public boolean confirmReceiver(ICommunicatorIf anICommunicatorIf);
+    public boolean setUnconfirmed(ICommunicatorIf aReceiver);
+    
+    /**
+     * Register that the broadcast message is received by communicator. <p/>
+     * 
+     * This will automatically set <code>isBroadcast()</code> flag <code>true</code>
+     * if the number of receivers is greater than 1.
+     * 
+     * @param anICommunicatorIf The receiver to transfer.
+     * 
+     * @return <code>true</code> if succeeded, false otherwise. 
+     */
+    public boolean setConfirmed(ICommunicatorIf anICommunicatorIf);
 
     /**
-     * Get list of unconfimred receivers.
-     *
-     * @return the list.
+     * Remove a receiver. If message is a broadcast, the receiver is
+     * removed from either unconfirmed or confirmed stack. 
+     *  
+     * @param ICommunicatorIf - communicatorIf
+     */    
+    public void removeReceiver(ICommunicatorIf communicator);
+    
+    /**
+     * Get all receivers of the message
+     *  
+     * @return ICommunicatorIf - the receiver
      */
-    public MsoListImpl<ICommunicatorIf> getBroadcastUnconfirmed();
+	public Collection<ICommunicatorIf> getReceivers();
+	
+    /**
+     * Get the confirmed receiver of a unicast message, or the first receiver in a broadcast message.
+     *  
+     * @return ICommunicatorIf - the receiver
+     */
+	public ICommunicatorIf getReceiver();
 
     /**
-     * Get list of confimred receivers.
-     *
-     * @return the list.
-     */
-    public MsoListImpl<ICommunicatorIf> getBroadcastConfirmed();
-
-    public void setSingleReceiver(ICommunicatorIf communicatorIf);
-
-	public ICommunicatorIf getSingleReceiver();
-
+     * Set a single receiver. This will reset all broadcast information and 
+     * <code>isBroadcast()</code> to <code>false</code>
+     *  
+     * @param ICommunicatorIf - communicatorIf
+     */    
+    public void setReceiver(ICommunicatorIf communicator);
+    
     /**
      * Find a (optionally create a new) message line of given type.
      *

@@ -2,8 +2,41 @@ package org.redcross.sar.wp.logistics;
 
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumnModel;
+
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.io.IOException;
+import java.util.List;
+
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.table.DiskoTable;
+import org.redcross.sar.gui.table.DiskoTableHeader;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
@@ -13,31 +46,9 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Utils;
+import org.redcross.sar.wp.logistics.UnitTableModel.UnitTableRowSorter;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -46,37 +57,39 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 
-/**
- *
- */
 public class LogisticsPanel implements IMsoLayerEventListener
 {
 
-    private JPanel WorkspacePanel;
-    private IDiskoMap m_map;
-    private JPanel m_assignmentPanel;
-    private JPanel m_unitPanel;
+	final private Icon checked = DiskoIconFactory.getIcon("GENERAL.FINISH", 
+			DiskoButtonFactory.getCatalog(ButtonSize.TINY));
+	final private Icon unchecked = DiskoIconFactory.getIcon("GENERAL.EMPTY", 
+		 	DiskoButtonFactory.getCatalog(ButtonSize.TINY));
+
+	private JPanel m_contentPanel;
+    private JSplitPane m_mainSplitter;
+    
+    private JSplitPane m_leftSplitter;
+    private MapPanel m_mapPanel;
     private JPanel m_infoPanel;
-    private JTable m_unitTable;
-    private JSplitPane m_splitter1;
-    private JSplitPane m_splitter2;
-    private JSplitPane m_splitter3;
-    private JScrollPane m_scrollPane1;
-    private JScrollPane m_AssignmentSubPaneLeft;
-    private JScrollPane m_AssignmentSubPaneRight;
+    
+    private JPanel m_rightPanel;
+    private AssignmentTilesPanel m_selectableAssignmentsPanel;
+    private AssignmentTilesPanel m_priAssignmentsPanel;
+    private JScrollPane m_unitsScrollPane;
+    private DiskoTable m_unitTable;
+
+    private IDiskoMap m_map;
     private IDiskoWpLogistics m_wpModule;
+    
     private IUnitListIf m_unitList;
     private IAssignmentListIf m_assignmentList;
-
+    
     private IUnitIf m_mapSelectedUnit;
     private IAssignmentIf m_mapSelectedAssignment;
-    private AssignmentScrollPanel m_selectableAssignmentsPanel;
-    private AssignmentScrollPanel m_priAssignmentsPanel;
-    //private AssignmentTransferHandler m_assignmentTransferHandler;
 
     private InfoPanelHandler m_infoPanelHandler;
 
-    AssignmentDisplayModel m_asgDisplayModel;
+    AssignmentDisplayModel m_assignmentDisplayModel;
     UnitTableModel m_unitTableModel;
     private AssignmentLabel.AssignmentLabelActionHandler m_labelActionHandler;
     private AssignmentLabel.AssignmentLabelActionHandler m_listPanelActionHandler;
@@ -87,31 +100,20 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     public LogisticsPanel(IDiskoWpLogistics aWp)
     {
-        setupUI();
+    	// prepare
         m_wpModule = aWp;
         m_map = m_wpModule.getMap();
-
         m_unitList = m_wpModule.getCmdPost().getUnitList();
         m_assignmentList = m_wpModule.getCmdPost().getAssignmentList();
 
-        /*if (!defineTransferHandler())
-        {
-            return;
-        }*/
         defineSubpanelActionHandlers();
 
-		MapPanel panel = new MapPanel(m_map);
-		panel.setNorthBarVisible(true);
-		panel.setSouthBarVisible(true);
-        m_splitter3.setLeftComponent(panel);
+        initialize();
         
-//        setSplitters();
-//        setPanelSizes();
-        initUnitTable();
-        initInfoPanels();
-        initAssignmentPanels();
         addToListeners();
-        WorkspacePanel.addComponentListener(new ComponentListener()
+
+        /*
+        m_contentPanel.addComponentListener(new ComponentListener()
         {
             boolean initialized = false;
 
@@ -129,7 +131,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
                 {
                     setSplitters();
                     setPanelSizes();
-                    WorkspacePanel.validate();
+                    m_contentPanel.validate();
                     initialized = true;
                 }
             }
@@ -138,6 +140,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
             {
             }
         });
+        */
     }
 
     public void reInitPanel()
@@ -146,10 +149,10 @@ public class LogisticsPanel implements IMsoLayerEventListener
          m_assignmentList = m_wpModule.getCmdPost().getAssignmentList();
          m_unitTableModel = (UnitTableModel) m_unitTable.getModel();
          m_unitTableModel.reInitModel(m_unitList);
-         m_asgDisplayModel.reInitModel(m_assignmentList);
+         m_assignmentDisplayModel.reInitModel(m_assignmentList);
      }
 
-    public void setLayersSelectable() {
+    public void setSelectableLayers() {
         try {
         	// buffer changes
         	m_map.suspendNotify();
@@ -168,22 +171,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
         	e.printStackTrace();
         }
 	}
-
-    /*
-    private boolean defineTransferHandler()
-    {
-        try
-        {
-            m_assignmentTransferHandler = new AssignmentTransferHandler(m_wpModule);
-        }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            return false;
-        }
-        return true;
-    }
-    */
 
     private void defineSubpanelActionHandlers()
     {
@@ -227,7 +214,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
     private void singelUnitClick(final IUnitIf anUnit)
     {
 
-    	//getUnitTable().clearSelection();
         setSelectedAssignmentInPanels(null);
         getInfoPanelHandler().setUnit(anUnit,true);
         
@@ -337,56 +323,85 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_priAssignmentsPanel.setSelectedAssignment(anAssignment);
     }
 
-    private void initAssignmentPanels()
-    {
-        m_AssignmentSubPaneRight.setMinimumSize(new Dimension(180, 0));
-        m_AssignmentSubPaneLeft.setPreferredSize(new Dimension(180, 0));
-        m_AssignmentSubPaneLeft.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        m_AssignmentSubPaneLeft.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        m_AssignmentSubPaneRight.setMinimumSize(new Dimension(60, 0));
-        m_AssignmentSubPaneRight.setPreferredSize(new Dimension(60, 0));
-        m_AssignmentSubPaneRight.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        m_AssignmentSubPaneRight.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        m_selectableAssignmentsPanel = new AssignmentScrollPanel(m_wpModule,m_AssignmentSubPaneLeft, new FlowLayout(FlowLayout.LEFT, 5, 5), m_labelActionHandler, true);
-        //m_selectableAssignmentsPanel.setTransferHandler(m_assignmentTransferHandler);
-
-        JLabel hl;
-        hl = m_selectableAssignmentsPanel.getHeaderLabel();
-        hl.setHorizontalAlignment(SwingConstants.CENTER);
-        hl.setPreferredSize(new Dimension(40, 40));
-
-        m_priAssignmentsPanel = new AssignmentScrollPanel(m_wpModule,m_AssignmentSubPaneRight, new FlowLayout(FlowLayout.LEFT, 5, 5), m_labelActionHandler, true);
-        //m_priAssignmentsPanel.setTransferHandler(m_assignmentTransferHandler);
-        hl = m_priAssignmentsPanel.getHeaderLabel();
-        hl.setHorizontalAlignment(SwingConstants.CENTER);
-        hl.setPreferredSize(new Dimension(40, 40));
-
-        m_asgDisplayModel = new AssignmentDisplayModel(m_selectableAssignmentsPanel, m_priAssignmentsPanel, m_wpModule.getMsoEventManager(), m_assignmentList);
-    }
-
     private void initUnitTable()
     {
         m_unitTableModel = new UnitTableModel(m_unitTable, m_wpModule, m_unitList, m_iconActionHandler);
         m_unitTable.setModel(m_unitTableModel);
         m_unitTable.setAutoCreateColumnsFromModel(true);
+        m_unitTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         m_unitTable.setDefaultRenderer(IconRenderer.UnitIcon.class, new LogisticsIconRenderer());
         m_unitTable.setDefaultRenderer(IconRenderer.AssignmentIcon.class, new LogisticsIconRenderer());
         m_unitTable.setDefaultRenderer(IconRenderer.InfoIcon.class, new LogisticsIconRenderer.InfoIconRenderer());
         m_unitTable.setShowHorizontalLines(false);
         m_unitTable.setShowVerticalLines(true);
         m_unitTable.setRowMargin(2);
-        JTableHeader tableHeader = m_unitTable.getTableHeader();
-        tableHeader.setResizingAllowed(false);
-        tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer(true));
         m_unitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_unitTable.setCellSelectionEnabled(true);
-        JTableHeader th = m_unitTable.getTableHeader();
-        th.setPreferredSize(new Dimension(40, 40));
-
-        //m_unitTable.setTransferHandler(m_assignmentTransferHandler);
+        TableColumnModel columns = m_unitTable.getColumnModel();
+        DiskoTable.setColumnWidth(columns.getColumn(0), 50, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(1), 50, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(2), 50, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(3), 50, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(4), 50, true, true, true);
+        DiskoTable.setColumnWidth(columns.getColumn(5), 50, true, true, false);
+        
+        final DiskoTableHeader header = m_unitTable.getDiskoTableHeader();
+        header.setResizingAllowed(false);
+        header.setReorderingAllowed(false);
+        header.setFixedHeight(40);
+        header.createPopupMenu("actions");
+        
+		// install popup menu		
+		header.createPopupMenu("actions");
+		header.installEditorPopup("actions","button");
+		header.addMenuItem("actions", "Fjern sortering", 
+				"GENERAL.CANCEL",DiskoButtonFactory.getCatalog(ButtonSize.TINY), 
+				"actions.edit.sorting");
+		header.addMenuItem("actions",  "Sorter kun en kolonne", 
+				"GENERAL.FINISH", DiskoButtonFactory.getCatalog(ButtonSize.TINY), 
+				"actions.edit.togglemaxsort");
+		
+		// listen to editor actions
+		header.addActionListener(new ActionListener() {
+				
+			public void actionPerformed(ActionEvent e) {
+				
+				// get row sorter
+				UnitTableRowSorter tableRowSorter = m_unitTableModel.getRowSorter();
+				
+				// get action command
+				String cmd = e.getActionCommand();
+				
+				// translate
+				if("actions.edit.sorting".equals(cmd)) {			
+					tableRowSorter.setSortKeys(null);
+				}
+				else if("actions.edit.togglemaxsort".equals(cmd)) {
+					// get toggle state
+					JMenuItem cb = (JMenuItem)e.getSource();
+					if(tableRowSorter.getMaxSortKeys()>1) {
+						int count = tableRowSorter.getSortKeys().size();
+						int column = count > 1 && !tableRowSorter.getSortKeys().get(0)
+							.getSortOrder().equals(SortOrder.UNSORTED) ?  tableRowSorter.getSortKeys().get(0).getColumn() : -1; 
+						tableRowSorter.setMaxSortKeys(1);
+						// reapply sort?
+						if(column!=-1) {
+							tableRowSorter.toggleSortOrder(column);
+							tableRowSorter.toggleSortOrder(column);
+						}
+						cb.setIcon(checked);
+					}
+					else {
+						tableRowSorter.setMaxSortKeys(3);
+						cb.setIcon(unchecked);
+					}
+				}
+				
+			}
+				
+		});
+        
+        
 
         ListSelectionListener l = new ListSelectionListener()
         {
@@ -406,86 +421,18 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_unitTable.getSelectionModel().addListSelectionListener(l);
         m_unitTable.getColumnModel().getSelectionModel().addListSelectionListener(l);
 
-        m_unitTable.addFocusListener(new FocusListener()
-        {
-            public void focusGained(FocusEvent e)
-            {
-                /*m_unitTableModel.setSelectedCell(m_unitTable.getSelectionModel().getLeadSelectionIndex(),
-                        m_unitTable.getColumnModel().getSelectionModel().
-                                getLeadSelectionIndex());
-                                */
-            }
-
-            public void focusLost(FocusEvent e)
-            {
-                //m_unitTable.clearSelection();
-            }
-        });
-    }
-
-    private void initInfoPanels()
-    {
-        m_infoPanelHandler = new InfoPanelHandler(m_infoPanel, m_wpModule, m_listPanelActionHandler);
-        //m_infoPanelHandler.setSelectionTransferHandler(m_assignmentTransferHandler);
     }
 
     private void addToListeners()
     {
-        //m_wpModule.getMsoEventManager().addClientUpdateListener(this);
         IMsoFeatureLayer msoLayer = m_map.getMsoLayer(LayerCode.AREA_LAYER);
         msoLayer.addMsoLayerEventListener(this);
     }
 
-    private void setPanelSizes()
-    {
-        // minimum and preferred sizes are nice to have
-        m_unitPanel.setMinimumSize(new Dimension(320, 600));
-        m_unitPanel.setPreferredSize(new Dimension(320, 600));
-        m_assignmentPanel.setMinimumSize(new Dimension(250, 600));
-        m_assignmentPanel.setPreferredSize(new Dimension(250, 600));
-        m_infoPanel.setMinimumSize(new Dimension(325, 200));
-        m_infoPanel.setPreferredSize(new Dimension(325, 200));
-    }
-
-    private void setSplitters()
-    {
-        // Splitter between map/info panels and assignment/unit panels
-        m_splitter1.setContinuousLayout(false);
-        m_splitter1.setDividerLocation(Math.max(375, m_splitter1.getWidth() - 590));
-        m_splitter1.setResizeWeight(1.0);
-
-        // Splitter between assignment and unit panels
-        m_splitter2.setContinuousLayout(false);
-        m_splitter2.setDividerLocation(250);
-        m_splitter2.setResizeWeight(1.0);
-
-        // Splitter between map and info panels, make tha map initially a square
-        m_splitter3.setContinuousLayout(false);
-        m_splitter3.setDividerLocation(Math.max(375, m_splitter3.getHeight() - 280));
-        m_splitter3.setResizeWeight(1.0);
-    }
-
-    /*
-    private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT,
-            IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
-
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return myInterests.contains(aMsoObject.getMsoClassCode());
-    }
-
-    public void handleMsoUpdateEvent(MsoEvent.Update e)
-    {
-    }
-	*/
-    
     public JPanel getPanel()
     {
         setTableData();
-        return WorkspacePanel;
+        return m_contentPanel;
     }
 
     public IDiskoMap getMap()
@@ -553,99 +500,103 @@ public class LogisticsPanel implements IMsoLayerEventListener
     }
 
 
-    private void setupUI()
+    private void initialize()
     {
-        WorkspacePanel = new JPanel();
-        WorkspacePanel.setLayout(new BorderLayout(0, 0));
-        m_splitter1 = new JSplitPane();
-        m_splitter1.setContinuousLayout(false);
-        m_splitter1.setRequestFocusEnabled(true);
-        WorkspacePanel.add(m_splitter1, BorderLayout.CENTER);
-        m_splitter2 = new JSplitPane();
-        m_splitter2.setContinuousLayout(false);
-        m_splitter1.setRightComponent(m_splitter2);
-        m_unitPanel = new JPanel();
-        m_unitPanel.setLayout(new BorderLayout(0, 0));
-        m_unitPanel.setFocusCycleRoot(true);
-        m_splitter2.setRightComponent(m_unitPanel);
-        m_scrollPane1 = new JScrollPane();
-        m_scrollPane1.setOpaque(false);
-        m_unitPanel.add(m_scrollPane1, BorderLayout.CENTER);
-        m_unitTable = new JTable();
-        m_scrollPane1.setViewportView(m_unitTable);
-        m_assignmentPanel = new JPanel();
-        m_assignmentPanel.setLayout(new BorderLayout(5,5));
-        m_splitter2.setLeftComponent(m_assignmentPanel);
-        m_AssignmentSubPaneLeft = new JScrollPane();
-        m_assignmentPanel.add(m_AssignmentSubPaneLeft, BorderLayout.CENTER);
-        m_AssignmentSubPaneRight = new JScrollPane();
-        m_AssignmentSubPaneRight.setRequestFocusEnabled(false);
-        m_assignmentPanel.add(m_AssignmentSubPaneRight, BorderLayout.EAST);
-        m_splitter3 = new JSplitPane();
-        m_splitter3.setContinuousLayout(false);
-        m_splitter3.setOrientation(0);
-        m_splitter1.setLeftComponent(m_splitter3);
+    	
+    	// create content panel
+        m_contentPanel = new JPanel();
+        m_contentPanel.setLayout(new BorderLayout(0, 0));
+        m_contentPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        // create main splitter (map and info on left, assignments and units on the right)
+        m_mainSplitter = new JSplitPane();
+        m_mainSplitter.setBorder(BorderFactory.createEmptyBorder());
+        m_mainSplitter.setResizeWeight(1.0);
+        m_mainSplitter.setContinuousLayout(false);
+        m_mainSplitter.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        m_contentPanel.add(m_mainSplitter, BorderLayout.CENTER);
+        
+        // create left splitter
+        m_leftSplitter = new JSplitPane();
+        m_leftSplitter.setBorder(BorderFactory.createEmptyBorder());
+        m_leftSplitter.setResizeWeight(1.0);
+        m_leftSplitter.setContinuousLayout(false);
+        m_leftSplitter.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        m_mainSplitter.setLeftComponent(m_leftSplitter);
+        
+        // create north part of left side of main split
+		m_mapPanel = new MapPanel(m_map,true);
+		m_mapPanel.setMinimumSize(new Dimension(325, 200));
+        m_mapPanel.setPreferredSize(new Dimension(325, 200));
+		m_mapPanel.setNorthBarVisible(true);
+		m_mapPanel.setSouthBarVisible(true);
+        m_leftSplitter.setTopComponent(m_mapPanel);
+        
+        // create south part of left side of main split
         m_infoPanel = new JPanel();
+        m_infoPanel.setMinimumSize(new Dimension(325, 400));
+        m_infoPanel.setPreferredSize(new Dimension(325, 400));
         m_infoPanel.setLayout(new CardLayout(0, 0));
-        m_splitter3.setRightComponent(m_infoPanel);
+        m_leftSplitter.setBottomComponent(m_infoPanel);
+        m_infoPanelHandler = new InfoPanelHandler(m_infoPanel, m_wpModule, m_listPanelActionHandler);
+        
+        // create right side panel of main split
+        m_rightPanel = new JPanel();
+        m_rightPanel.setBorder(null);
+        m_rightPanel.setLayout(new BoxLayout(m_rightPanel,BoxLayout.X_AXIS));
+        m_mainSplitter.setRightComponent(m_rightPanel);
+        
+    	// prepare right content
+        JPanel assignments = new JPanel();
+        assignments.setLayout(new BoxLayout(assignments,BoxLayout.X_AXIS));
+        m_selectableAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new FlowLayout(FlowLayout.LEFT, 5, 5), m_labelActionHandler, true);
+        m_selectableAssignmentsPanel.getHeaderPanel().setPreferredSize(new Dimension(40, 40));
+        m_selectableAssignmentsPanel.setMinimumSize(new Dimension(180, 100));
+        m_selectableAssignmentsPanel.setFitBodyOnResize(true);
+        m_selectableAssignmentsPanel.setMaximumSize(new Dimension(180, Integer.MAX_VALUE));
+        m_selectableAssignmentsPanel.setScrollBarPolicies(
+        		ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        m_priAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new FlowLayout(FlowLayout.LEFT, 5, 5), m_labelActionHandler, true);
+        m_priAssignmentsPanel.getHeaderPanel().setPreferredSize(new Dimension(40, 40));
+        m_priAssignmentsPanel.setMinimumSize(new Dimension(62, 100));
+        m_priAssignmentsPanel.setPreferredSize(new Dimension(62, 100));
+        m_priAssignmentsPanel.setMaximumSize(new Dimension(62, Integer.MAX_VALUE));
+        m_priAssignmentsPanel.setNotScrollBars();
+        
+        // create east part of right side of main split
+        assignments.add(m_selectableAssignmentsPanel);
+        assignments.add(Box.createHorizontalStrut(5));
+        assignments.add(m_priAssignmentsPanel);
+        
+        m_rightPanel.add(assignments);               
+        m_rightPanel.add(Box.createHorizontalStrut(5));
+        
+        // create west part of right side of main split                        
+        m_unitTable = new DiskoTable(true);
+        m_unitTable.setFocusCycleRoot(true);
+        m_unitsScrollPane = UIFactory.createScrollPane(m_unitTable);
+        m_unitsScrollPane.setBorder(UIFactory.createBorder());
+        m_unitsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        m_unitsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        m_unitsScrollPane.setOpaque(false);
+        Utils.setFixedWidth(m_unitsScrollPane, 400);
+        m_rightPanel.add(m_unitsScrollPane);
+        
+    	// prepare table
+        initUnitTable();
+
+        // prepare display model
+        m_assignmentDisplayModel = new AssignmentDisplayModel(m_selectableAssignmentsPanel, m_priAssignmentsPanel, m_wpModule.getMsoEventManager(), m_assignmentList);
+        m_rightPanel.addComponentListener(m_assignmentDisplayModel);
+        
+        // reset splitter divider locations
+        m_mainSplitter.resetToPreferredSizes();
+        m_leftSplitter.resetToPreferredSizes();
+        
+        
+        
     }
 
-    {
-// GUI initializer generated by IntelliJ IDEA GUI Designer
-// >>> IMPORTANT!! <<<
-// DO NOT EDIT OR ADD ANY CODE HERE!
-        $$$setupUI$$$();
-    }
-
-    /**
-     * Method generated by IntelliJ IDEA GUI Designer
-     * >>> IMPORTANT!! <<<
-     * DO NOT edit this method OR call it in your code!
-     *
-     * @noinspection ALL
-     */
-    private void $$$setupUI$$$()
-    {
-        WorkspacePanel = new JPanel();
-        WorkspacePanel.setLayout(new BorderLayout(0, 0));
-        m_splitter1 = new JSplitPane();
-        m_splitter1.setContinuousLayout(false);
-        m_splitter1.setRequestFocusEnabled(true);
-        WorkspacePanel.add(m_splitter1, BorderLayout.CENTER);
-        m_splitter2 = new JSplitPane();
-        m_splitter2.setContinuousLayout(false);
-        m_splitter1.setRightComponent(m_splitter2);
-        m_unitPanel = new JPanel();
-        m_unitPanel.setLayout(new BorderLayout(0, 0));
-        m_unitPanel.setFocusCycleRoot(true);
-        m_splitter2.setRightComponent(m_unitPanel);
-        m_scrollPane1 = new JScrollPane();
-        m_scrollPane1.setOpaque(false);
-        m_unitPanel.add(m_scrollPane1, BorderLayout.CENTER);
-        m_unitTable = new JTable();
-        m_scrollPane1.setViewportView(m_unitTable);
-        m_assignmentPanel = new JPanel();
-        m_assignmentPanel.setLayout(new BorderLayout(0, 0));
-        m_splitter2.setLeftComponent(m_assignmentPanel);
-        m_AssignmentSubPaneLeft = new JScrollPane();
-        m_assignmentPanel.add(m_AssignmentSubPaneLeft, BorderLayout.CENTER);
-        m_AssignmentSubPaneRight = new JScrollPane();
-        m_AssignmentSubPaneRight.setRequestFocusEnabled(false);
-        m_assignmentPanel.add(m_AssignmentSubPaneRight, BorderLayout.EAST);
-        m_splitter3 = new JSplitPane();
-        m_splitter3.setContinuousLayout(false);
-        m_splitter3.setOrientation(0);
-        m_splitter1.setLeftComponent(m_splitter3);
-        m_infoPanel = new JPanel();
-        m_infoPanel.setLayout(new CardLayout(0, 0));
-        m_splitter3.setRightComponent(m_infoPanel);
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$()
-    {
-        return WorkspacePanel;
-    }
 }

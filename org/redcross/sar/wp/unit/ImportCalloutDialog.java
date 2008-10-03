@@ -1,16 +1,18 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelImportStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
@@ -27,7 +29,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -278,7 +280,7 @@ public class ImportCalloutDialog extends DefaultDialog
 		m_confirmPanel.setPreferredSize(new Dimension(398,200));
 		
 		m_tableModel = new ImportPersonnelTableModel();
-		m_personnelTable = new JTable(m_tableModel);
+		m_personnelTable = new DiskoTable(m_tableModel);
 		
 		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
 		m_personnelTable.setRowHeight(dim.height + 10);
@@ -296,7 +298,7 @@ public class ImportCalloutDialog extends DefaultDialog
 		
 		m_personnelTable.setTableHeader(null);
 		
-		JScrollPane tableScrollPane = new JScrollPane(m_personnelTable);
+		JScrollPane tableScrollPane = UIFactory.createScrollPane(m_personnelTable,true);
 		m_confirmPanel.add(tableScrollPane);
 		
 		m_topPanel.add(m_confirmPanel, CONFIRM_ID);
@@ -333,10 +335,9 @@ public class ImportCalloutDialog extends DefaultDialog
 	
 	private void clearForm()
 	{
-		m_personnelList.clear();
-		
+		m_personnelList.clear();		
 		m_titleTextField.setText("");
-		m_dtgTextField.setText("");
+		m_dtgTextField.setText(DTG.CalToDTG(Calendar.getInstance()));
 		m_organizationTextField.setText("");
 		m_departmentTextField.setText("");
 		m_fileTextField.setText("");
@@ -441,7 +442,10 @@ public class ImportCalloutDialog extends DefaultDialog
 		
 		try
 		{
-			callout.setCreated(DTG.DTGToCal(m_dtgTextField.getText()));
+			Calendar t = Calendar.getInstance();
+			callout.setCreated(DTG.DTGToCal(
+					t.get(Calendar.YEAR),t.get(Calendar.MONTH),
+					m_dtgTextField.getText()));
 		} 
 		catch (IllegalMsoArgumentException e)
 		{
@@ -551,7 +555,7 @@ public class ImportCalloutDialog extends DefaultDialog
 		{
 			// Check name, for now
 			String thisName = m_firstName + " " + m_lastName;
-			String thatName = personnel.getFirstname() + " " + personnel.getLastname();
+			String thatName = personnel.getFirstName() + " " + personnel.getLastName();
 			boolean same = thisName.equals(thatName);
 			
 			if(same)
@@ -675,7 +679,7 @@ public class ImportCalloutDialog extends DefaultDialog
 	 * 
 	 * @author thomasl
 	 */
-	private class ImportPersonnelTableModel extends AbstractTableModel
+	private class ImportPersonnelTableModel extends DiskoTableModel
 	{
 		private static final long serialVersionUID = 1L;
 

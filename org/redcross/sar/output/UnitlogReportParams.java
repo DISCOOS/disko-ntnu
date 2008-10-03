@@ -60,7 +60,7 @@ public class UnitlogReportParams {
 				unitParams.put(UNIT_TYPE_NUMBER, MsoUtils.getUnitName(unit,false));
 				IPersonnelIf leader = unit.getUnitLeader();
 				if(leader != null){
-					unitParams.put(LEADER_NAME, leader.getFirstname() + " " + leader.getLastname());
+					unitParams.put(LEADER_NAME, leader.getFirstName() + " " + leader.getLastName());
 					unitParams.put(LEADER_TELEPHONE, leader.getTelephone1());
 				}
 				else{
@@ -112,7 +112,7 @@ public class UnitlogReportParams {
 		String keyReleased = new String();
 		while (personIter.hasNext()) {			
 			IPersonnelIf person = (IPersonnelIf)personIter.next();
-			personInfo = person.getFirstname() + " " + person.getLastname();
+			personInfo = person.getFirstName() + " " + person.getLastName();
 			personell[personCount][0] = personInfo;
 			personell[personCount][1] = person.getTelephone1();
 			keyPersonName = KEY_PERSON_NAME_PREFIX + Integer.toString(personCount+1);
@@ -121,13 +121,13 @@ public class UnitlogReportParams {
 			unitParams.put(keyPersonTele, person.getTelephone1());
 			if(person.getStatus() == person.getStatus().RELEASED){				
 				if (released == null){
-					released[0] = person.getFirstname()+" "+person.getLastname();
+					released[0] = person.getFirstName()+" "+person.getLastName();
 					keyReleased = KEY_RELEASED_PREFIX + Integer.toString(released.length+1);
 					unitParams.put(keyReleased, released[0]);
 					releasedCount++;
 				}
 				else{
-					released[released.length] = person.getFirstname()+" "+person.getLastname();					
+					released[released.length] = person.getFirstName()+" "+person.getLastName();					
 					keyReleased = KEY_RELEASED_PREFIX + Integer.toString(released.length+1);
 					unitParams.put(keyReleased , released[released.length]);
 					releasedCount++;
@@ -152,7 +152,7 @@ public class UnitlogReportParams {
 	private void makeCallSignsList(IUnitListIf unitList, IUnitIf unit){
 		//callsigns
 		callSigns[0][1] = unit.getCallSign();
-		callSigns[0][0] = unit.getUnitNumber();		
+		callSigns[0][0] = unit.getCommunicatorShortName();
 		int unitCount = unitList.size();
 		Collection <IUnitIf> unitCollection = unitList.getItems();
 		Iterator unitIter = unitCollection.iterator();
@@ -160,10 +160,10 @@ public class UnitlogReportParams {
 		String keyCallSign = KEY_CALLSIGN_PREFIX + Integer.toString(iter2);
 		String keyUnit = KEY_UNIT_PREFIX + Integer.toString(iter2);
 		unitParams.put(keyCallSign, unit.getCallSign());
-		unitParams.put(keyUnit, unit.getUnitNumber());
+		unitParams.put(keyUnit, unit.getShortName());
 		while (unitIter.hasNext() && iter2 < maxCallSignsInPrint){
 			IUnitIf unit2 = (IUnitIf)unitIter.next();
-			if (!callSigns[0][0].equalsIgnoreCase(unit2.getUnitNumber())){
+			if (!callSigns[0][0].equalsIgnoreCase(unit2.getShortName())){
 				String unitName = MsoUtils.getUnitName(unit2,false);
 				callSigns[iter2][0] = unitName;
 				callSigns[iter2][1] = unit2.getCallSign();
@@ -187,17 +187,18 @@ public class UnitlogReportParams {
 		//IAssignmentListIf assignments = unit.getUnitAssignments();
 		Collection<IAssignmentIf> assignmentsList = unit.getUnitAssignmentsItems();
 		int assignmentCount = assignmentsList.size();
-		Iterator assignmentIter = assignmentsList.iterator();
+		Iterator<IAssignmentIf> assignmentIter = assignmentsList.iterator();
 		String keyAssignmentNr = new String();
 		String keyAssignmentStatus = new String();
 		int iter3 = 1;
 		while (assignmentIter.hasNext()){
-			IAssignmentIf assignment = (IAssignmentIf)assignmentIter.next();
-			assignments[iter3][0] = assignment.getTypeAndNumber();
+			if(iter3>=maxAssignmentsInPrint) break;
+			IAssignmentIf assignment = assignmentIter.next();
+			assignments[iter3][0] = assignment.getDefaultName();
 			assignments[iter3][1] = assignment.getStatusText();
 			keyAssignmentNr = "KEY_ASSIGNMENT_PREFIX" + Integer.toString(iter3);
 			keyAssignmentStatus = "KEY_ASSIGNMENT_STATUS_PREFIX" + Integer.toString(iter3);
-			unitParams.put(keyAssignmentNr, assignment.getTypeAndNumber());
+			unitParams.put(keyAssignmentNr, assignment.getDefaultName());
 			unitParams.put(keyAssignmentStatus, assignment.getStatusText());
 			iter3++;
 		}		

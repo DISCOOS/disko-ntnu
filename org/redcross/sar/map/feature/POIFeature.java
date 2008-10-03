@@ -38,7 +38,7 @@ public class POIFeature extends AbstractMsoFeature {
 		pos = poi.getPosition();
 		geometry = null;
 		if (pos != null) {
-			geometry = MapUtil.getEsriPoint(pos, srs);
+			geometry = MapUtil.getEsriPoint(pos.getGeoPos(), srs);
 			changeCount=pos.getChangeCount();
 		}
 		else {

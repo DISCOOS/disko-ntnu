@@ -14,14 +14,13 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DrawDialog;
-import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.gui.mso.dialog.ElementDialog;
+import org.redcross.sar.gui.mso.panel.ElementPanel.ElementEvent;
+import org.redcross.sar.gui.mso.panel.ElementPanel.IElementEventListener;
 import org.redcross.sar.gui.panel.NavBarPanel;
-import org.redcross.sar.gui.panel.ElementPanel.ElementEvent;
-import org.redcross.sar.gui.panel.ElementPanel.IElementEventListener;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
@@ -54,6 +53,7 @@ import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
@@ -963,8 +963,8 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
     private void fireOnDrawFinished(DrawMode mode, IMsoObjectIf msoObject)
     {
 		// notify drawListeners
-		for (int i = 0; i < drawListeners.size(); i++) {
-			drawListeners.get(i).onDrawWorkFinished(mode,msoObject);
+		for (IDrawAdapterListener it : drawListeners) {
+			it.onDrawWorkFinished(mode,msoObject);
 		}
 		
 	}
@@ -1521,9 +1521,11 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(attributes[1], "DRAWPOLYGON");
 				drawDialog.setAttribute(attributes[2], "SEARCHSUBTYPE");				
-				// initialize
-				EnumSet<FeatureType> features = EnumSet.noneOf(FeatureType.class);				
+
 				// select enabled tools
+				EnumSet<FeatureType> features = EnumSet.allOf(FeatureType.class);
+				
+				/*
 				if (msoObj == null)
 					features = EnumSet.allOf(FeatureType.class);
 				else if (msoObj instanceof IPOIIf){
@@ -1534,6 +1536,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 							FeatureType.FEATURE_POLYGON,
 							FeatureType.FEATURE_POLYLINE);					
 				}
+				*/
 				// set tooltypes
 				drawDialog.enableToolTypes(features);				
 				// set mso draw data
@@ -1542,6 +1545,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 			} else if (MsoClassCode.CLASSCODE_POI.equals(code)) {
 				// iniitialize
 				POIType[] poiTypes = null;
+				SearchSubType searchSubType = null;
 				// get mso objects
 				IMsoObjectIf msoOwn = (IMsoObjectIf) attributes[2];
 				IMsoObjectIf msoObj = (IMsoObjectIf) attributes[3];
@@ -1552,17 +1556,22 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				// get attributes
 				if (isAreaPOI) {
 					// get available poi types
-					poiTypes = MsoUtils.getAvailablePOITypes(MsoClassCode.CLASSCODE_ROUTE,msoObj!=null ? msoObj : msoOwn);
+					if(msoObj==null)
+						poiTypes = MsoUtils.getAvailablePOITypes(MsoClassCode.CLASSCODE_ROUTE, msoOwn);
+					else
+						poiTypes = new POIType[]{((IPOIIf)msoObj).getType()};
+					// get search sub type
+					searchSubType = msoOwn instanceof ISearchIf ? ((ISearchIf)msoOwn).getSubType() : null;
 					// get allowed tool feature types
 					if (msoObj == null)
 						features = EnumSet.allOf(FeatureType.class);
-					else if (msoObj instanceof IPOIIf){
-						features = EnumSet.of(FeatureType.FEATURE_POINT);
-					}
-					else {
+					else if (msoOwn != null){
 						features = EnumSet.of(
 								FeatureType.FEATURE_POLYGON,
 								FeatureType.FEATURE_POLYLINE);					
+					}
+					else {
+						features = EnumSet.of(FeatureType.FEATURE_POINT);
 					}
 				} else {
 					// get available poi types
@@ -1574,7 +1583,7 @@ public class DrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(DiskoToolType.POI_TOOL, poiTypes,"POITYPES");
 				drawDialog.setAttribute(false, "DRAWPOLYGON");
-				drawDialog.setAttribute(null, "SEARCHSUBTYPE");
+				drawDialog.setAttribute(searchSubType, "SEARCHSUBTYPE");
 				// limit tool selection
 				drawDialog.enableToolTypes(features);
 				// set mso draw data

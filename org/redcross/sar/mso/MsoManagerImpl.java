@@ -1,12 +1,12 @@
 package org.redcross.sar.mso;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.except.MsoNullPointerException;
@@ -86,7 +86,7 @@ public class MsoManagerImpl implements IMsoManagerIf
             throw new DuplicateIdException("An operation already exists");
         }
         m_operation = new OperationImpl(operationId, aNumberPrefix, aNumber);
-        m_operation.setupReferences();
+        m_operation.setup();
         m_operation.resumeClientUpdate();
         return m_operation;
     }

@@ -10,7 +10,6 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -27,6 +26,7 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 
@@ -233,13 +233,13 @@ public class UnitSelectionDialog extends DefaultDialog {
 		return unitTable;
 	}
 	
-	public void selectedAssignedUnit(IAssignmentIf assignment) {
+	public void selectedUnit(IAssignmentIf assignment) {
 		JTable table = getUnitTable();
 		if(table != null) {
 			for (int row = 0; row < table.getRowCount(); row++) {
 				IUnitIf unit = (IUnitIf)table.getValueAt(row, 0);
 				if (unit != null) {
-					Collection<IAssignmentIf> assignments = unit.getAssignedAssignments();
+					Collection<IAssignmentIf> assignments = unit.getEnqueuedAssignments();
 					if (assignments != null && assignments.contains(assignment)) {
 						table.setRowSelectionInterval(row, row);
 						return;
@@ -281,13 +281,13 @@ public class UnitSelectionDialog extends DefaultDialog {
 			if(unit!=null) {
 	
 				// get count
-				int count = unit.getAllocatedAssignments().size();
+				int count = unit.getEnqueuedAssignments().size();
 				
 				// has assignments?
 				if(count>0) {
 					
 					// last assignment in list
-					IAssignmentIf assignment = unit.getAllocatedAssignments().get(count-1);
+					IAssignmentIf assignment = unit.getEnqueuedAssignments().get(count-1);
 					
 					
 					// initialize
@@ -305,7 +305,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 			                {
 			                    // change status and owner (will raise 
 			                	// illegal operation is not possible)
-			            		assignment.setStatusAndOwner(AssignmentStatus.READY, null);	
+			            		assignment.setOwningUnit(AssignmentStatus.READY, null);	
 								// notify
 								fireOnWorkChange(assignment);
 								// success!
@@ -367,7 +367,6 @@ public class UnitSelectionDialog extends DefaultDialog {
 				
 				// initialize
 				int ans = JOptionPane.NO_OPTION;
-				boolean reallocate = false;
 				
 				// can assignment be allocated directly?
 				if(AssignmentStatus.DRAFT.equals(assignment.getStatus()) ||
@@ -381,8 +380,6 @@ public class UnitSelectionDialog extends DefaultDialog {
 					if(!unit.equals(assignment.getOwningUnit())) {
 						// prompt user
 						ans = prompt(MessageBoxType.MESSAGE_REALLOCATE);
-						// set flag
-						reallocate = true;
 					}
 					else
 						prompt(MessageBoxType.MESSAGE_SAME_UNIT);
@@ -397,20 +394,18 @@ public class UnitSelectionDialog extends DefaultDialog {
 					
                     try
                     {
-    					// reallocate?
-    					if(reallocate) {
-	                        // change status and owner (will raise 
-	                    	// illegal operation if not possible)
-    						assignment.setStatusAndOwner(AssignmentStatus.QUEUED, unit);
-    					}
-    					else {
-    						// has assignment to unit
-    						unit.addUnitAssignment(assignment, AssignmentStatus.QUEUED);
-    					}
+						/*
+						 * enqueue assignment to unit. It the assignment is enqueued or allocated to 
+						 * another unit, the assignment will be released first, then enqueued.
+						 */  
+						unit.enqueueAssignment(assignment);
+						
     					// notify
     					fireOnWorkChange(assignment);
+    					
     					// success!
     					bFlag =  true;
+    					
                     }
                     catch (IllegalOperationException e) {
     					// prompt user
@@ -514,7 +509,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 		return null;
 	}
 	
-	private void selectAssignedUnit() {
+	private void selectUnit() {
 		
 		// get assignment
 		IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
@@ -529,7 +524,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 				for (int row = 0; row < table.getRowCount(); row++) {
 					IUnitIf unit = (IUnitIf)table.getValueAt(row, 0);
 					if (unit != null) {
-						List<IAssignmentIf> list = unit.getAllocatedAssignments();
+						List<IAssignmentIf> list = unit.getEnqueuedAssignments();
 						if (list!=null && list.contains(assignment)) {
 							// select in table
 							table.setRowSelectionInterval(row, row);
@@ -577,8 +572,8 @@ public class UnitSelectionDialog extends DefaultDialog {
 			getReclaimButton().setEnabled(false);
 		}		
 		
-		// get current assigned unit
-		selectAssignedUnit();
+		// get current Allocated unit
+		selectUnit();
 		
 		// resume changes
 		setChangeable(true);

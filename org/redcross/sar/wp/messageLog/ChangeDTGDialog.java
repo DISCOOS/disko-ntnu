@@ -1,205 +1,73 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.Utils;
-import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.dialog.NumPadDialog;
-import org.redcross.sar.gui.document.NumericDocument;
-import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.util.except.IllegalMsoArgumentException;
-import org.redcross.sar.util.mso.DTG;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Calendar;
+import java.util.EnumSet;
+
+import javax.swing.BorderFactory;
+
+import org.redcross.sar.gui.attribute.DTGAttribute;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.AttributesPanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.panel.NumPadPanel;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.IMessageIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 
 /**
  * Creates the dialog for changing DTG in message log edit mode.
+ * 
  * @author thomasl
  */
-public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEditMessageComponentIf
+public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 {
 	private static final long serialVersionUID = 1L;
 
-	private BasePanel m_contentsPanel = null;
+	private boolean m_isTabletMode = true;
 
-	private JPanel m_createdPanel;
-	private JLabel m_createdLabel;
-	private JTextField m_createdTextField;
-
-	private JPanel m_timePanel;
-	private JLabel m_timeLabel;
-	private JFormattedTextField m_timeTextField;
+	private DefaultPanel m_contentPanel;
+	private AttributesPanel m_attributesPanel;
+	private NumPadPanel m_numPadPanel;
+	private DTGAttribute m_createdAttr;
+	private DTGAttribute m_timeAttr;
+	
 	private IDiskoWpMessageLog m_wp;
 
-	private NumPadDialog m_numpad = null;
-	private static final boolean NOTEBOOK_MODE = true;
-
-	/**
-	 * @param wp Message log work process reference
-	 */
+	/* ==========================================================
+	 * Constructors
+	 * ==========================================================*/
+	
 	public ChangeDTGDialog(IDiskoWpMessageLog wp)
 	{
-		super(wp.getApplication().getFrame());
+		// forward
+		super();
+		
+		// prepare
 		m_wp = wp;
 
+		// initialize GUI
 		initialize();
+		
 	}
 
-	private void initialize()
-	{
-		try
-		{
-            this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(170,240));
-            this.setUndecorated(true);
-			this.pack();
-			m_timeTextField.requestFocus();
-		}
-		catch (java.lang.Throwable e){}
-
-		// Initialize numpad
-		if(NOTEBOOK_MODE)
-		{
-			m_numpad = new NumPadDialog(m_wp.getApplication().getFrame());
-			JButton okButton = m_numpad.getOkButton();
-			okButton.addActionListener(new ActionListener()
-			{
-				public void actionPerformed(ActionEvent arg0)
-				{
-					saveDTG();
-				}
-			});
-			m_numpad.setTextField(m_timeTextField);
-		}
-	}
-
-	private JPanel getContentPanel()
-	{
-		if (m_contentsPanel == null) {
-			try
-			{
-				m_contentsPanel = new BasePanel("Dato-Tid-Gruppe");
-				m_contentsPanel.setPreferredSize(new Dimension(180,250));
-				m_contentsPanel.setScrollBarPolicies(
-						BasePanel.VERTICAL_SCROLLBAR_NEVER, 
-						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-				JPanel panel = (JPanel)m_contentsPanel.getBodyComponent();
-				
-				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-			
-				m_createdPanel = new JPanel();
-				m_createdPanel.setLayout(new BoxLayout(m_createdPanel,BoxLayout.X_AXIS));
-				m_createdLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogCreated.text"));
-				m_createdLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				m_createdPanel.add(m_createdLabel);
-				Utils.setFixedSize(m_createdLabel,70,30);
-				m_createdPanel.add(Box.createHorizontalStrut(5));
-				m_createdTextField = new JTextField(6);
-				m_createdTextField.setEditable(false);
-				m_createdPanel.add(m_createdTextField);
-				m_createdPanel.add(Box.createHorizontalGlue());
-				Utils.setFixedSize(m_createdPanel,160,30);
-				
-
-				panel.add(m_createdPanel);				
-				panel.add(Box.createVerticalStrut(5));
-
-				m_timePanel = new JPanel();
-				m_timePanel.setLayout(new BoxLayout(m_timePanel,BoxLayout.X_AXIS));
-				m_timeLabel = new JLabel(m_wp.getBundleText("ChangeDTGDialogTime.text"));
-				m_timeLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				m_timePanel.add(m_timeLabel);
-				Utils.setFixedSize(m_timeLabel,70,30);
-				m_createdPanel.add(Box.createHorizontalStrut(5));
-				m_timeTextField = new JFormattedTextField();
-				m_timeTextField.setDocument(new NumericDocument(6,0,false));
-				m_timeTextField.addKeyListener(this);
-				m_timePanel.add(m_timeTextField);
-				m_timePanel.add(Box.createHorizontalGlue());
-				Utils.setFixedSize(m_timePanel,160,30); 
-
-				panel.add(m_timePanel);
-				panel.add(Box.createVerticalGlue());
-
-				
-				// initialize contents
-				clearContents();
-			}
-			catch (java.lang.Throwable e)
-			{
-			}
-		}
-		return m_contentsPanel;
-	}
+	/* ==========================================================
+	 * Public methods
+	 * ==========================================================*/
 
 	/**
-	 * @return Text in time text field
+	 * Get time stamp
+	 * 
+	 * @return Calendar time stamp
 	 */
-	public String getTime()
+	public Calendar getTime()
 	{
-		return m_timeTextField.getText();
-	}
-
-	/**
-	 * Saves DTG if key is enter
-	 */
-	public void keyPressed(KeyEvent ke)
-	{
-		// Changes should be checked, and if found correct, sent to mso, not commited
-		if(ke.getKeyCode() == KeyEvent.VK_ENTER)
-		{
-			saveDTG();
-		}
-	}
-
-	private void saveDTG()
-	{
-		this.setVisible(false);
-
-		try
-		{
-			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-			message.setTimeStamp(DTG.DTGToCal(this.getTime()));
-			fireOnWorkFinish(this,message);
-		}
-		catch (IllegalMsoArgumentException e1)
-		{
-			Utils.showError(m_wp.getBundleText("InvalidDTG.header"), m_wp.getBundleText("InvalidDTG.details"));
-			fireOnWorkCancel(this,null);
-		}
-	}
-
-	@Override
-	public boolean isFocusable()
-	{
-		return true;
-	}
-
-	public void keyReleased(KeyEvent arg0){}
-	public void keyTyped(KeyEvent arg0){}
-
-	/**
-	 * Sets the DTG field, get it from the message
-	 */
-	public void newMessageSelected(IMessageIf message)
-	{
-    	// forward
-		setCreated(message.getCreated());
-		setTime(message.getTimeStamp());
+		return m_timeAttr.getValue();
 	}
 
 	/**
@@ -208,69 +76,229 @@ public class ChangeDTGDialog extends DefaultDialog implements KeyListener, IEdit
 	 */
 	public void setCreated(Calendar created)
 	{
-		m_createdTextField.setText(DTG.CalToDTG(created));
+		getCreatedAttr().setValue(created);
 	}
 
 	/**
 	 * Sets the time text field
 	 * @param calendar
 	 */
-	public void setTime(Calendar calendar)
+	public void setTime(Calendar time)
 	{
-		m_timeTextField.setText(DTG.CalToDTG(calendar));
+		time = (time==null) ? Calendar.getInstance() : time;
+		getTimeAttr().setValue(time);
+	}
+	
+	/* ==========================================================
+	 * Overridden methods
+	 * ==========================================================*/
+	
+	@Override
+	public boolean isFocusable()
+	{
+		return true;
+	}
+
+	/* ==========================================================
+	 * IEditorIf implementation
+	 * ==========================================================*/
+
+	/**
+	 * Sets the DTG field, get it from the message
+	 */
+	public void setMessage(IMessageIf message)
+	{
+
+		// forward 
+		getContentPanel().setMsoObject(message);
+		
 	}
 
 	/**
-	 * Displays the numpad if in notebook mode
+	 * Displays a numpad if in tablet mode
 	 */
-	public void showComponent()
+	public void showEditor()
 	{
-		// get new message
-		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		
-		// has no message?
-		if(message==null) {		
-			// get time
-			Calendar time = Calendar.getInstance();
-			// update fields
-			setCreated(time);
-			setTime(time);
-		}
+		// show input?
+		getNumPadPanel().setVisible(m_isTabletMode);
+		
+		// fit to current content
+		this.pack();
 		
 		// show me
 		this.setVisible(true);
+		
+		// request focus on input field
+		getTimeAttr().getTextField().requestFocusInWindow();
 
-		// show num pad?
-		if(NOTEBOOK_MODE)
-		{
-			Point location = m_contentsPanel.getLocationOnScreen();
-			location.x += m_contentsPanel.getWidth();
-			location.y += m_contentsPanel.getHeight();
-			location.y -= m_numpad.getHeight();
-			m_numpad.setLocation(location);
-			m_numpad.setVisible(true);
-		}
+		
 	}
 
-	/**
-	 * Hides the numpad if in notebook mode
-	 */
-	public void hideComponent()
+	public void hideEditor()
 	{
 		this.setVisible(false);
-
-		if(NOTEBOOK_MODE)
-		{
-			m_numpad.setVisible(false);
-		}
 	}
 
 	/**
 	 * Reset created and time fields
 	 */
-	public void clearContents()
+	public void resetEditor()
 	{
-		m_createdTextField.setText("");
-		m_timeTextField.setText("");
+		Calendar time = Calendar.getInstance();
+		setCreated(time);
+		setTime(time);
 	}
+	
+	/* ==========================================================
+	 * Helper methods
+	 * ==========================================================*/
+	
+	private void initialize()
+	{
+		// prepare
+        this.setContentPane(getContentPanel());
+        this.setMoveable(false);
+		this.pack();
+
+	}
+
+	private DefaultPanel getContentPanel()
+	{
+		if(m_contentPanel==null) {
+			
+			// extend default panel
+			m_contentPanel = new DefaultPanel("<b>Endre DTG for melding</b>",true,true,ButtonSize.NORMAL) {
+				
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				protected boolean beforeFinish() {
+					
+					// allowed?
+					if(getTime()!=null) return true;
+					
+					// notify
+					Utils.showWarning(m_wp.getBundleText("InvalidDTG.header"), 
+							m_wp.getBundleText("InvalidDTG.details"));
+					
+					// not allowed
+					return false;
+					
+				}
+							
+				@Override
+				public void setMsoObject(IMsoObjectIf msoObj) {
+					
+					// forward
+					super.setMsoObject(msoObj);
+					
+					// has message?
+					if(msoObj instanceof IMessageIf) {
+						// cast to IMessageIf
+						IMessageIf message = (IMessageIf)msoObj;
+				    	// forward
+						setCreated(message.getCreated());
+						setTime(message.getTimeStamp());
+					}
+					else {
+						resetEditor();
+					}					
+					
+				}
+
+				@Override
+				protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+					setMessage((IMessageIf)msoObj);
+				}
+
+				@Override
+				protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
+					resetEditor();
+				}		
+				
+				@Override
+				protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
+					resetEditor();
+				}
+
+				
+			};
+			m_contentPanel.setRequestHideOnCancel(true);
+			m_contentPanel.setRequestHideOnFinish(true);
+			m_contentPanel.setBodyLayout(new BorderLayout(5,5));
+			m_contentPanel.setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_contentPanel.addBodyChild(getAttributesPanel(),BorderLayout.CENTER);
+			m_contentPanel.addBodyChild(getNumPadPanel(),BorderLayout.EAST);
+			m_contentPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+
+				@Override
+				public void onWorkPerformed(DiskoWorkEvent e) {
+					
+					// forward?
+					if(e.isFinish()) 
+						change();
+					
+				}
+				
+			});
+			m_contentPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_MESSAGE));
+			
+		}
+		return m_contentPanel;
+	}
+	
+	private AttributesPanel getAttributesPanel()
+	{
+		if (m_attributesPanel == null) {
+			// initialize
+			m_attributesPanel = new AttributesPanel("Dato-Tid-Gruppe","Ingen egenskaper definert",false,false);
+			m_attributesPanel.setHeaderVisible(false);
+			m_attributesPanel.setPreferredSize(new Dimension(180,250));
+			m_attributesPanel.setNotScrollBars();			
+			// add attributes
+			m_attributesPanel.addAttribute(getCreatedAttr());
+			m_attributesPanel.addAttribute(getTimeAttr());
+			// add listeners
+			m_attributesPanel.addDiskoWorkListener(getContentPanel());			
+			// initialize contents
+			resetEditor();			
+		}
+		return m_attributesPanel;
+	}
+
+	private DTGAttribute getCreatedAttr() {
+		if(m_createdAttr==null) {
+			m_createdAttr = new DTGAttribute("created",m_wp.getBundleText("ChangeDTGDialogCreated.text"),false);
+		}
+		return m_createdAttr;
+	}
+	
+	private DTGAttribute getTimeAttr() {
+		if(m_timeAttr==null) {
+			m_timeAttr = new DTGAttribute("time",m_wp.getBundleText("ChangeDTGDialogTime.text"),true);
+			Utils.setFixedHeight(m_timeAttr, 35);			
+		}
+		return m_timeAttr;
+	}
+		
+	private NumPadPanel getNumPadPanel() {
+		if(m_numPadPanel==null) {
+			m_numPadPanel = new NumPadPanel("Tastatur",false,false);
+			m_numPadPanel.setHeaderVisible(false);
+			m_numPadPanel.setInputVisible(false);
+			m_numPadPanel.setInputField(getTimeAttr().getTextField(), false);
+			m_numPadPanel.addDiskoWorkListener(getContentPanel());
+		}
+		return m_numPadPanel;
+	}
+	
+	private void change()
+	{
+		// get current message, create new if not exists
+		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+		// update time stamp
+		message.setTimeStamp(getTime());
+	}	
+
 }

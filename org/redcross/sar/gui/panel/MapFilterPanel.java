@@ -89,7 +89,7 @@ public class MapFilterPanel extends ToggableTabPane {
 			EnumSet.noneOf(AssignmentStatus.class);				
 		// get arguments
 		if(isTabSelected(0))
-			status.addAll(EnumSet.range(AssignmentStatus.EMPTY,AssignmentStatus.ASSIGNED));
+			status.addAll(EnumSet.range(AssignmentStatus.EMPTY,AssignmentStatus.ALLOCATED));
 		if(isTabSelected(1))
 			status.add(AssignmentStatus.EXECUTING);
 		if(isTabSelected(2))

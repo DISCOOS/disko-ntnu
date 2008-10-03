@@ -3,6 +3,7 @@ package org.redcross.sar.map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.gui.panel.MapFilterPanel;
@@ -35,45 +36,53 @@ public class MapPanel extends AbstractPanel {
 	private MapStatusPanel mapStatusBar;
 	private MapFilterPanel mapFilterBar;
 	
-	/**
-	 * Default constructor
-	 */
-	public MapPanel(final IDiskoMap map) {
+	/* ===============================================================
+	 * Constructors
+	 * ===============================================================*/
+	
+	public MapPanel(IDiskoMap map) {
+		this(map,false);
+	}
+	
+	public MapPanel(IDiskoMap map, boolean showBorder) {
 
+		// forward
+		super();
+		
 		// prepare
 		this.map = map;
 		this.setMsoLayers(map, map.getSupportedLayers());
 		
 		// initialize GUI
-		initialize();
+		initialize(showBorder);
 		
 		// listen for changes
 		map.addDiskoMapListener(new IDiskoMapListener() {
 
 			@Override
 			public void onExtentChanged() {
-				getMapStatusBar().setScale(map.getScale());				
+				getMapStatusBar().setScale(getMap().getScale());				
 			}
 
 			@Override
 			public void onMapReplaced() {
-				getMapStatusBar().setScale(map.getScale());				
+				getMapStatusBar().setScale(getMap().getScale());				
 			}
 
 			@Override
 			public void onMouseClick() {
-				getMapStatusBar().onMouseClick(map.getClickPoint());				
+				getMapStatusBar().onMouseClick(getMap().getClickPoint());				
 			}
 
 			@Override
 			public void onMouseMove() {
-				getMapStatusBar().onMouseMove(map.getMovePoint());				
+				getMapStatusBar().onMouseMove(getMap().getMovePoint());				
 			}
 			
 			@Override
 			public void onSelectionChanged() {
 				try {
-					getMapStatusBar().onSelectionChanged(map.getMsoSelection());
+					getMapStatusBar().onSelectionChanged(getMap().getMsoSelection());
 				} catch (AutomationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -87,14 +96,11 @@ public class MapPanel extends AbstractPanel {
 		
 	}
 
-	private void initialize() {
-		
-		BorderLayout bl = new BorderLayout();
-		bl.setVgap(0);
-		bl.setHgap(0);
+	private void initialize(boolean showBorder) {
 		
 		// set layout
-		setLayout(bl);
+		setLayout(new BorderLayout(0,0));
+		if(showBorder) setBorder(new DiskoBorder());
 		
 		// add components
 		add(getNorthBar(),BorderLayout.NORTH);

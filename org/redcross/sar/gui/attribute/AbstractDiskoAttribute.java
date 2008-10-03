@@ -1,11 +1,15 @@
 package org.redcross.sar.gui.attribute;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -14,8 +18,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -24,6 +28,7 @@ import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
@@ -49,6 +54,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	protected boolean m_isDirty = false;
 	protected boolean m_autoSave = false;
 	protected boolean m_isEditable = false;
+	protected boolean m_isTrackingFocus = false;
 	
 	private int m_isConsume = 0;
 	
@@ -74,7 +80,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		initialize();
 		// update
 		setName(name);
-		setCaption(caption);
+		setCaptionText(caption);
 		setValue(value);
 		setEditable(isEditable);		
 		setFixedCaptionWidth(width);
@@ -108,9 +114,10 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 *================================================================== 
 	 */
 	
-	protected JLabel getCaptionLabel() {
+	protected JLabel getCaption() {
 		if(m_captionLabel==null) {
 			m_captionLabel = new JLabel(m_caption);
+			m_captionLabel.setOpaque(false);
 			m_captionLabel.setVerticalAlignment(SwingConstants.TOP);
 			m_captionLabel.setLabelFor(getComponent());
 			m_captionLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -173,6 +180,17 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		return m_button;
 	}			
 	
+	protected void focusChanged(boolean inFocus) {
+		if(m_isTrackingFocus) {
+			if(inFocus) {
+				setBorder(UIFactory.createBorder(1, 1, 1, 1, Color.BLUE));
+			}
+			else {
+				setBorder(BorderFactory.createEmptyBorder());
+			}
+		}		
+	}
+	
 	/*==================================================================
 	 * Private methods
 	 *================================================================== 
@@ -180,7 +198,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	private void initialize() {
 		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-		this.add(getCaptionLabel());
+		this.add(getCaption());
 		Component c = getComponent();
 		if(c instanceof JComponent) {
 			((JComponent)c).setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -188,8 +206,13 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		}
 		this.add(getComponent());
 		this.add(getButton());
+		this.setOpaque(false);
 		// do not add before button is made visible
 		m_buttonStrut = Box.createHorizontalStrut(5);
+		// add focus listeners
+		getComponent().addFocusListener(m_focusListener);
+		getButton().addFocusListener(m_focusListener);
+		
 	}
 						
 	/*==================================================================
@@ -197,20 +220,28 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	 *================================================================== 
 	 */
 	
+	public boolean isTrackingFocus() {
+		return m_isTrackingFocus;		
+	}
+	
+	public void setTrackingFocus(boolean isTrackingFocus) {
+		m_isTrackingFocus = isTrackingFocus;
+	}
+	
 	public int getVerticalAlignment() {
-		return getCaptionLabel().getVerticalAlignment();
+		return getCaption().getVerticalAlignment();
 	}
 	
 	public int getHorizontalAlignment() {
-		return getCaptionLabel().getHorizontalAlignment();
+		return getCaption().getHorizontalAlignment();
 	}
 	
 	public void setVerticalAlignment(int alignment) {
-		getCaptionLabel().setVerticalAlignment(alignment);
+		getCaption().setVerticalAlignment(alignment);
 	}
 	
 	public void setHorizontalAlignment(int alignment) {
-		getCaptionLabel().setHorizontalAlignment(alignment);
+		getCaption().setHorizontalAlignment(alignment);
 	}
 	
 	public boolean isConsume() {
@@ -240,9 +271,9 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		m_fixedWidth = width;
 		// translate
 		if(width==-1)
-			Utils.setFixedSize(getCaptionLabel(),DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT);
+			Utils.setFixedSize(getCaption(),DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT);
 		else
-			Utils.setFixedSize(getCaptionLabel(), width, Integer.MAX_VALUE);
+			Utils.setFixedSize(getCaption(), width, Integer.MAX_VALUE);
 	}	
 	
 	public int getFixedHeight() {
@@ -288,14 +319,35 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		throw new IllegalArgumentException("AutoSave not supported");
 	}	
 	
-	public String getCaption() {
-		return getCaptionLabel().getText();
+	@Override
+	public void setToolTipText(String text) {
+		// TODO Auto-generated method stub
+		super.setToolTipText(text);
+		getCaption().setToolTipText(text);
+		if(getComponent() instanceof JComponent)
+			((JComponent)getComponent()).setToolTipText(text);		
 	}
 
-	public void setCaption(String text) {
-		getCaptionLabel().setText(text);
+	public String getCaptionText() {
+		return getCaption().getText();
 	}
 
+	public void setCaptionText(String text) {
+		getCaption().setText(text);
+	}
+
+	/**
+	 * This method sets the caption colors
+	 *
+	 */
+	public void setCaptionColor(Color foreground,Color background) {
+		this.setForeground(foreground);
+		this.setBackground(background);
+		getCaption().setForeground(foreground);
+		getCaption().setBackground(background);
+	}	
+	
+	
 	public boolean fill(Object values) { return true; };
 	
 	public boolean load() {
@@ -325,7 +377,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		// finished
 		return bFlag;
 	}
-	
+			
 	public boolean save() {
 		
 		// consume?
@@ -384,11 +436,13 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		
 	}
 	
-	public void setButton(AbstractButton button, boolean isVisible) {
+	public void installButton(AbstractButton button, boolean isVisible) {
 		// remove current?
 		if(m_button!=null) {
 			if(m_button.isVisible()) this.remove(m_buttonStrut);
+			m_button.removeFocusListener(m_focusListener);
 			this.remove(m_button);
+			
 		}
 		// prepare
 		m_button = button;
@@ -402,6 +456,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 		if(isVisible) this.add(m_buttonStrut);
 		if(button!=null) this.add(button);
 		setFixedHeight(m_fixedHeight);
+		m_button.addFocusListener(m_focusListener);
 	}
 	
 	public String getButtonText() {
@@ -494,5 +549,22 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoAtt
 	
 	public abstract boolean setMsoAttribute(IAttributeIf<?> attribute);
 	
+	/*==================================================================
+	 * Anonymous classes
+	 *================================================================== */
+	
+	private FocusListener m_focusListener = new FocusListener() {
+
+		@Override
+		public void focusGained(FocusEvent e) {
+			focusChanged(true);
+		}
+
+		@Override
+		public void focusLost(FocusEvent e) {
+			focusChanged(false);
+		}
+		
+	};
 	
 }

@@ -16,6 +16,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -32,9 +33,10 @@ public class ButtonsPanel extends JPanel {
 	
 	private ButtonSize m_buttonSize = ButtonSize.SMALL;
 	
-	private List<JComponent> m_items = null;
-	private Map<String, AbstractButton> m_commands = null;
-	private Map<AbstractButton, List<ActionListener>> m_listeners = null;
+	private List<JComponent> m_items = new ArrayList<JComponent>();
+	
+	final private Map<String, AbstractButton> m_commands = new HashMap<String, AbstractButton>();
+	final private EventListenerList m_listeners = new EventListenerList();;
 		
 	/* =======================================================
 	 * Constructors
@@ -65,9 +67,6 @@ public class ButtonsPanel extends JPanel {
 		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
 		this.setBorder(null);
 		this.setOpaque(true);
-		m_items = new ArrayList<JComponent>();
-		m_commands = new HashMap<String, AbstractButton>();
-		m_listeners = new HashMap<AbstractButton, List<ActionListener>>();
 	}	
 	
 	private JComponent insert(JComponent prefix, JComponent item) {
@@ -130,7 +129,8 @@ public class ButtonsPanel extends JPanel {
 	public AbstractButton addButton(AbstractButton button, String command) {
 		// exists?
 		if(!m_commands.containsKey(command)) {
-			// set action command name
+			// set name and action command
+			button.setName(command);
 			button.setActionCommand(command);
 			// align center in parent container
 			button.setAlignmentX(AbstractButton.CENTER_ALIGNMENT);
@@ -210,6 +210,23 @@ public class ButtonsPanel extends JPanel {
 		return false;		
 	}
 	
+	public AbstractButton[] getButtons() {
+		List<AbstractButton> buttons = new ArrayList<AbstractButton>();
+		for(JComponent it : m_items) {
+			if(it instanceof AbstractButton)
+				buttons.add((AbstractButton)it);
+		}
+		AbstractButton[] items = new AbstractButton[buttons.size()];
+		buttons.toArray(items);
+		return items;
+	}
+	
+	public JComponent[] getItems() {
+		JComponent[] items = new JComponent[m_items.size()];
+		m_items.toArray(items);
+		return items;
+	}
+	
 	public boolean containsButton(String command) {
 		return m_commands.containsKey(command);
 	}			
@@ -237,15 +254,11 @@ public class ButtonsPanel extends JPanel {
 	}
 
 	public void addActionListener(ActionListener listener) {
-		for(AbstractButton b: m_commands.values()) {
-			addActionListener(b,listener);
-		}
+		m_listeners.add(ActionListener.class, listener);
 	}
 	
 	public void removeActionListener(ActionListener listener) {
-		for(AbstractButton b: m_commands.values()) {
-			removeActionListener(b,listener);
-		}
+		m_listeners.remove(ActionListener.class, listener);
 	}
 	
 	public boolean doAction(String command) {
@@ -256,19 +269,27 @@ public class ButtonsPanel extends JPanel {
 		return false;
 	}
 	
-	public int getTotalButtonWidth() {
-		int w = 0;
-		for(JComponent it: m_items) {
-			if(it.isVisible())
-				w += (it.getWidth()>0 ? it.getWidth() : it.getPreferredSize().width);
-		}
-		return w;			
+	public int getTotalItemWidth() {
+		return getTotalItemWidth(false);			
 	}
 	
-	public int getMaxButtonHeigth() {
+	public int getTotalItemWidth(boolean onlyButtons) {
+		int w = 0;
+		for(JComponent it: m_items) {
+			if(it.isVisible() && (!onlyButtons || it instanceof AbstractButton))
+				w += (it.getWidth()>0 ? it.getWidth() : it.getPreferredSize().width);
+		}
+		return w;					
+	}
+	
+	public int getMaxItemHeigth() {
+		return getMaxItemHeigth(false);			
+	}
+	
+	public int getMaxItemHeigth(boolean onlyButtons) {
 		int max = 0;
 		for(JComponent it: m_items) {
-			if(it.isVisible())
+			if(it.isVisible() && (!onlyButtons || it instanceof AbstractButton))
 				max = Math.max(max, (it.getHeight()>0 ? it.getHeight() : it.getPreferredSize().width));
 		}
 		return max;			
@@ -279,28 +300,6 @@ public class ButtonsPanel extends JPanel {
   		for(int i=0;i<getComponentCount();i++) {
   			getComponent(i).setEnabled(isEnabled);
   		}
-  	}
-  	
-  	private boolean addActionListener(AbstractButton button, ActionListener listener) {
-  		List<ActionListener> list = m_listeners.get(button);
-  		if(list==null) {
-  			list = new ArrayList<ActionListener>(1);
-  			m_listeners.put(button,list);
-  		}
-  		if(!list.contains(listener)) {
-  			return list.add(listener);
-  		}
-  		return false;
-  	}
-  	
-  	private boolean removeActionListener(AbstractButton button, ActionListener listener) {
-  		List<ActionListener> list = m_listeners.get(button);
-  		if(list!=null) {
-  	  		if(list.contains(listener)) {
-  	  			return list.remove(listener);
-  	  		}
-  		}
-  		return false;
   	}
   	
   	/* ========================================================
@@ -319,17 +318,10 @@ public class ButtonsPanel extends JPanel {
   		@Override
   		public void actionPerformed(ActionEvent e) {
   			// get list of listeners
-  			List<ActionListener> list = m_listeners.get(e.getSource());
-  			if(list!=null) {
-  				for(ActionListener it : list) {
-  					it.actionPerformed(e);
-  				}
-  			}  			
-  		}
-  		
-  		public boolean listensTo(Object source) {
-  			List<ActionListener> list = m_listeners.get(source);
-  			return list!=null ? list.size()>0 : false;
+  			ActionListener[] list = m_listeners.getListeners(ActionListener.class);
+			for(int i=0; i<list.length ; i++) {
+				list[i].actionPerformed(e);
+			}
   		}
   		
   	};

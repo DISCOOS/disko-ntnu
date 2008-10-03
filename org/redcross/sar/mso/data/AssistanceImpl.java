@@ -72,9 +72,4 @@ public class AssistanceImpl extends AssignmentImpl implements IAssistanceIf
         setReportedArea(anArea);
     }
 
-    public int getTypenr()
-    {
-        return 1;
-    }
-
 }

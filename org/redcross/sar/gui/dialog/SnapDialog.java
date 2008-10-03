@@ -7,8 +7,8 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.SnapPanel;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu

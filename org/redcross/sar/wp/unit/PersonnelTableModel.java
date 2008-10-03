@@ -14,7 +14,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author thomasl
  */
-public class PersonnelTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class PersonnelTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 	private List<IPersonnelIf> m_persons;
@@ -49,10 +49,10 @@ public class PersonnelTableModel extends AbstractTableModel implements IMsoUpdat
 	{
 		public int compare(IPersonnelIf o1, IPersonnelIf o2)
 		{
-			if(o1.getFirstname()!=null)
-				return o1.getFirstname().compareTo(o2.getFirstname());
-			else if(o2.getFirstname()!=null) 
-				return o2.getFirstname().compareTo(o1.getFirstname());
+			if(o1.getFirstName()!=null)
+				return o1.getFirstName().compareTo(o2.getFirstName());
+			else if(o2.getFirstName()!=null) 
+				return o2.getFirstName().compareTo(o1.getFirstName());
 			else
 				return 0;
 		}
@@ -86,7 +86,7 @@ public class PersonnelTableModel extends AbstractTableModel implements IMsoUpdat
 		switch(column)
 		{
 		case 0:
-			return personnel.getFirstname() + " " + personnel.getLastname();
+			return personnel.getFirstName() + " " + personnel.getLastName();
 		case 1:
           // Set unit
             IUnitIf personnelUnit = null;

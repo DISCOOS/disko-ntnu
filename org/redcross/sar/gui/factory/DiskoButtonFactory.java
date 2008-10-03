@@ -11,7 +11,6 @@ import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -20,6 +19,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
 
 /**
  * <p>
@@ -49,11 +49,13 @@ public class DiskoButtonFactory
 	private final static Font BUTTON_FONT = 
 		new Font("DiskoButtonFactoryFont", Font.PLAIN, 12);
 	
+	private static Dimension tinySize = null;
 	private static Dimension smallSize = null;
 	private static Dimension normalSize = null;
 	private static Dimension longSize = null;
 	
 	public enum ButtonSize {	
+		TINY,
 		SMALL,
 		NORMAL,
 		LONG		
@@ -367,7 +369,10 @@ public class DiskoButtonFactory
 		String catalog = getCatalog(size);
 		
 		// apply icon
-		setIconTextTooltip(button,communicator,catalog,resource);		
+		setIconTextTooltip(button,communicator,catalog,resource);	
+		
+		// set icon and text position
+		button.setHorizontalAlignment(SwingConstants.LEFT);
 		
 		// return button
 		return button;
@@ -454,8 +459,19 @@ public class DiskoButtonFactory
 	}		
 	
 	private static Dimension getBundleButtonSize(ButtonSize size) {
-		// compare
-		if(ButtonSize.SMALL.equals(size)) {
+		// translate
+		switch(size) {
+		case TINY: {
+			// create?
+			if(tinySize==null) {
+				// get heigth and width
+				int width  = parseInt(m_default.getString("BUTTON.TINY.width"),50);
+				int height = parseInt(m_default.getString("BUTTON.TINY.height"),50);
+				tinySize = new Dimension(width, height);
+			}
+			return tinySize;
+		} 
+		case SMALL: {
 			// create?
 			if(smallSize==null) {
 				// get heigth and width
@@ -465,7 +481,7 @@ public class DiskoButtonFactory
 			}
 			return smallSize;
 		} 
-		else if(ButtonSize.NORMAL.equals(size)) {
+		case NORMAL: {
 			// create?
 			if(normalSize==null) {
 				// get heigth and width
@@ -475,7 +491,7 @@ public class DiskoButtonFactory
 			}
 			return normalSize;			
 		}
-		else if(ButtonSize.LONG.equals(size)) {
+		case LONG: {
 			// create?
 			if(longSize==null) {
 				// get heigth and width
@@ -484,21 +500,21 @@ public class DiskoButtonFactory
 				longSize = new Dimension(width, height);
 			}
 			return longSize;
-		}
+		}}
+		
 		// failure!
 		return null;
-		}
+	}
 	
 	public static String getCatalog(ButtonSize size) {
 		// compare
-		if(ButtonSize.SMALL.equals(size)) {
-			return "32x32";
+		switch(size) {
+		case TINY: return "24x24";
+		case SMALL: return "32x32";
+		case NORMAL: return "48x48";
+		case LONG: return "48x48";
+		default: return "48x48";
 		}
-		else if(ButtonSize.NORMAL.equals(size) || ButtonSize.LONG.equals(size)) {
-			return "48x48";
-		}
-		else
-			return "48x48";
 	}
 	
 	public static void setButtonSize(AbstractButton button, ButtonSize size) {
@@ -609,37 +625,36 @@ public class DiskoButtonFactory
 	}
 	
 	public static void setIconTextTooltip(
-			AbstractButton button, ICommunicatorIf communicator,String catalog, Object resource) {
+			AbstractButton button, ICommunicatorIf c,String catalog, Object resource) {
 		// initialize
-		String name = null;
+		String text = null;
 		UnitType type = null;
 		// update text and icon
-		if(communicator instanceof ICmdPostIf){
-			// cast to ICmdPostIf
-			ICmdPostIf cmdPost = ((ICmdPostIf)communicator);			
+		if(c instanceof ICmdPostIf){
 			// get type
 			type = UnitType.CP;
 			// set button icon from unit type
 			setIcon(button,type,catalog,resource);
-			// command post name
-			name = DiskoEnumFactory.getText(UnitType.CP) + " " + cmdPost.getCallSign();
 		}
-		else if(communicator instanceof IUnitIf) {
+		else if(c instanceof IUnitIf) {
 			// cast to IUnitIf
-			IUnitIf unit = ((IUnitIf)communicator);
+			IUnitIf unit = ((IUnitIf)c);
 			// get type
 			type = unit.getType();
 			// set button icon from unit type
 			setIcon(button,type, catalog,resource);
-			// get name
-			name = MsoUtils.getUnitName(unit, true);
-		}		
+		}
 		
+		// get id 
+		String callSign = c.getCallSign();
+		String toneID = c.getToneID();
+		// masks null values
+		callSign = callSign==null || callSign.isEmpty() ? "?" : callSign;
+		toneID = toneID==null || toneID.isEmpty() ? "?" : toneID;
 		// set text
-		button.setText(name);
-		
+		button.setText(MsoUtils.getCommunicatorName(c,false)); //+ " (" + callSign + " - " + toneID + ")");
 		// set tooltip
-		button.setToolTipText(name);
+		button.setToolTipText(text);
 		
 	}	
 	

@@ -2,6 +2,7 @@ package org.redcross.sar.app;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.thread.DiskoProgressMonitor;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -83,7 +85,7 @@ public class DiskoModuleManager {
 	 * @return A new IDiskoRole
 	 * @throws Exception
 	 */
-	public IDiskoRole parseRole(String name) throws Exception {
+	public IDiskoRole parseRole(String name)  {
 		NodeList elems = doc.getElementsByTagName("DiskoRole");
 		for (int i = 0; i < elems.getLength(); i++) {
 			Element elem = (Element)elems.item(i);
@@ -96,7 +98,7 @@ public class DiskoModuleManager {
 		return null;
 	}
 
-	private IDiskoRole parseDiskoRole(Element elem) throws Exception {
+	private IDiskoRole parseDiskoRole(Element elem) {
 		
 		// get role information
 		String name = elem.getAttribute("name");
@@ -126,16 +128,23 @@ public class DiskoModuleManager {
 				}
 				else {
 					// load module
-					Class cls = classLoader.loadClass(className);
-					String message = DiskoStringFactory.getText(Utils.getPackageName(cls));
-					message = String.format(DiskoStringFactory.getText("PROGRESS_LOADING_CLASS"),message);
-					DiskoProgressMonitor.getInstance().setNote(message);
-					Object obj = cls.getConstructors()[0].newInstance();
-					if (obj instanceof IDiskoWpModule) {
-						module = (IDiskoWpModule)obj;
-						modules.put(className,module);
+					try {
+						Class cls = classLoader.loadClass(className);
+						String message = DiskoStringFactory.getText(Utils.getPackageName(cls));
+						message = String.format(DiskoStringFactory.getText("PROGRESS_LOADING_CLASS"),message);
+						DiskoProgressMonitor.getInstance().setNote(message);
+						Object obj = cls.getConstructors()[0].newInstance();
+						if (obj instanceof IDiskoWpModule) {
+							module = (IDiskoWpModule)obj;
+							modules.put(className,module);
+						}
+						else throw new Exception("Unsupported class was found");
+					} catch (Exception e) { /* NOP */
+						// TODO: Handle failed load of work modules
+						//Utils.showError("Feil i arbeidsprosess", "Følgende feil funnet i "+ className + ":",e);						
+						System.out.println("Error"+e.getMessage());
+						e.printStackTrace();
 					}
-					else throw new Exception("Unsupported class was found");
 				}
 				// add module?
 				if(module!=null)

@@ -37,7 +37,7 @@ public class RouteCostProps {
 		try
 		{
 			// get resource
-			m_res = ResourceBundle.getBundle("org.redcross.sar.ds.ete.properties.RouteCostParams");
+			m_res = ResourceBundle.getBundle("org.redcross.sar.ds.ete.RouteCostParams");
 			// populate
 		}
 		catch(MissingResourceException e)

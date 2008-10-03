@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -27,6 +26,7 @@ import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDrawTool.FeatureType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.util.Utils;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;

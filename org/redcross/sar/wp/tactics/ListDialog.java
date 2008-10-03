@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -90,8 +91,8 @@ public class ListDialog extends DefaultDialog {
 			try {
 				contentPanel = new DefaultPanel("Oppdrag",false,true);
 				contentPanel.setBodyComponent(getCenterPanel());
-				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
-						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+				contentPanel.setPreferredBodySize(new Dimension(400, 350));
+				contentPanel.setNotScrollBars();
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
 				contentPanel.insertButton("finish",getPrintButton(), "print");
 				contentPanel.insertButton("finish",getMakeDraftButton(), "draft");
@@ -183,7 +184,9 @@ public class ListDialog extends DefaultDialog {
 			BorderLayout bl = new BorderLayout();
 			centerPanel = new JPanel(bl);
 			centerPanel.add(getOptionsPanel(),BorderLayout.NORTH);
-			centerPanel.add(getAssignmentTable(),BorderLayout.CENTER);
+			centerPanel.add(new JScrollPane(getAssignmentTable(), 
+					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),BorderLayout.CENTER);
 			centerPanel.setPreferredSize(new Dimension(400,300));
 		}
 		return centerPanel;

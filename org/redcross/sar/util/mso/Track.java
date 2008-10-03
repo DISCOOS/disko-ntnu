@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 import org.redcross.sar.map.MapUtil;
@@ -142,6 +143,36 @@ public class Track extends AbstractGeodata
     }
     
     /**
+     * Finds the index of the GeoPos nearest in distance to passed GeoPos. Time is not considered. 
+     * 
+     * @param aGeoPos - the position to match
+     * @param max - the maximum distance allowed from track. Pass <code>-1</code> if no limit
+     * 
+     * @return The index of nearest position. If no position is located closer than 
+     * <code>max</code> from <code>aGeoPos</code>, <code>-1</code> will be returned.
+     */
+    public int nearest(GeoPos aGeoPos, double max) {
+    	int index = -1;
+    	double min = Double.MAX_VALUE;
+    	//System.out.println("find::start");
+    	for(int i=0;i<m_track.size();i++) {
+    		// get distance
+    		double d = m_track.get(i).distance(aGeoPos);
+    		// limit?
+    		if(max==-1 || max>d) {
+    			// is nearer than last found?
+    			if(d<min) {
+    				index = i;
+    				min = d;
+    			}
+    		}
+    	}
+    	//System.out.println("nearest::stop(-1)");
+    	// finished
+    	return index;
+    }
+    
+    /**
      * Get position from index
      * 
      * @param index
@@ -172,7 +203,7 @@ public class Track extends AbstractGeodata
      * 
      * @return number of TimePos
      */
-    public int getCount() {
+    public int size() {
     	return m_track.size();
     }
     
@@ -232,6 +263,12 @@ public class Track extends AbstractGeodata
     	incrementChangeCount();
     }
     
+    public void removeRange(int from, int to) {
+    	List<TimePos> range = m_track.subList(from, to);
+    	m_track.removeAll(range);
+    	incrementChangeCount();
+    }
+        
 	public TimePos getStartPoint() {
 		if(m_track.size()>0)
 			return m_track.get(0);
@@ -256,7 +293,7 @@ public class Track extends AbstractGeodata
 	
 	public double getDistance(int from, int to, boolean direct) {
 		int uBound = m_track.size()-1;
-		if(m_track.size()==0 || from>uBound || to>uBound)
+		if(m_track.size()==0 || from>uBound || to>uBound || from==to)
 			return 0.0;
 		else if(direct){
 			return m_track.get(to).distance(m_track.get(from));			
@@ -267,30 +304,60 @@ public class Track extends AbstractGeodata
 		}
 	}
 	
+	/**
+	 * Get duration from start to stop
+	 * 
+	 * @return Duration (seconds)
+	 */
 	public double getDuration() {
 		return getDuration(0,m_track.size()-1);
 	}
 	
+	/**
+	 * Get duration from start to given point
+	 * 
+	 * @return Duration (seconds)
+	 */
 	public double getDuration(int index) {
 		return getDuration(0,index);
 	}
 	
+	/**
+	 * Get duration between two given points 
+	 * 
+	 * @return Duration (seconds)
+	 */
 	public double getDuration(int from, int to) {
 		int uBound = m_track.size()-1;
-		if(m_track.size()==0 || from>uBound || to>uBound)
+		if(m_track.size()==0 || from>uBound || to>uBound || from==to)
 			return 0.0;
 		else 
 			return m_track.get(to).timeSince(m_track.get(from));
 	}
 	
+	/**
+	 * Get time between given point and stop point
+	 * 
+	 * @return Reminder (seconds)
+	 */
 	public double getReminder(int index) {
 		return getDuration(index,m_track.size()-1);
 	}
 	
+	/**
+	 * Get average speed between start and stop points
+	 * 
+	 * @return Speed (m/s)
+	 */
 	public double getSpeed() {
 		return getSpeed(0,m_track.size()-1,false);
 	}
 	
+	/**
+	 * Get average speed between start and given point
+	 * 
+	 * @return Speed (m/s)
+	 */
 	public double getSpeed(int index) {
 		return getSpeed(0,index,false);
 	}
@@ -303,21 +370,114 @@ public class Track extends AbstractGeodata
 	 * else the distance along the track is used.
 	 * @return - speed (m/s)
 	 */
+	public double getMaximumSpeed(int from, int to, boolean direct) {
+		int uBound = m_track.size()-1;
+		if(m_track.size()==0 || from>uBound || to>uBound || from==to)
+			return 0.0;
+		else {
+			double max = 0;
+			for(int i=from ; i<to; i++) {
+				double d = getDistance(i,i+1,direct);
+				double t = getDuration(i,i+1);
+				max = Math.max(t>0 ? d/t:0.0,max);				
+			}
+			return max;
+		}		
+	}
+	
+	/**
+	 * Get minimum leg speed between start and stop points
+	 * 
+	 * @return Speed (m/s)
+	 */
+	public double getMinimumSpeed() {
+		return getMinimumSpeed(0,m_track.size()-1,false);
+	}
+	
+	/**
+	 * Get minimum leg speed between start and given point
+	 * 
+	 * @return Speed (m/s)
+	 */
+	public double getMinimumSpeed(int index) {
+		return getMinimumSpeed(0,index,false);
+	}
+	
+	/**
+	 * Minimum leg speed between two points
+	 * @param from - from point
+	 * @param to - to point
+	 * @param direct - if <code>true</code>, the direct line between the points are used, 
+	 * else the distance along the track is used.
+	 * @return - speed (m/s)
+	 */
+	public double getMinimumSpeed(int from, int to, boolean direct) {
+		int uBound = m_track.size()-1;
+		if(m_track.size()==0 || from>uBound || to>uBound  || from==to)
+			return 0.0;
+		else {
+			double min = Integer.MAX_VALUE;
+			for(int i=from ; i<to; i++) {
+				double d = getDistance(i,i+1,direct);
+				double t = getDuration(i,i+1);
+				min = Math.min(t>0 ? d/t:0.0,min);				
+			}
+			return min;
+		}		
+	}
+		
+	/**
+	 * Get maximum leg speed between start and stop points
+	 * 
+	 * @return Speed (m/s)
+	 */
+	public double getMaximumSpeed() {
+		return getMaximumSpeed(0,m_track.size()-1,false);
+	}
+		
+	/**
+	 * Get maximum leg speed between start and given point
+	 * 
+	 * @return Speed (m/s)
+	 */
+	public double getMaximumSpeed(int index) {
+		return getMaximumSpeed(0,index,false);
+	}	
+	
+	/**
+	 * Maximum leg speed between two points
+	 * @param from - from point
+	 * @param to - to point
+	 * @param direct - if <code>true</code>, the direct line between the points are used, 
+	 * else the distance along the track is used.
+	 * @return - speed (m/s)
+	 */
 	public double getSpeed(int from, int to, boolean direct) {
 		int uBound = m_track.size()-1;
-		if(m_track.size()==0 || from>uBound || to>uBound)
+		if(m_track.size()==0 || from>uBound || to>uBound || from==to)
 			return 0.0;
 		else {
 			double d = getDistance(from,to,direct);
 			double t = getDuration(from,to);
 			return (t>0 ? d/t:0.0);
 		}		
-	}
+	}	
 	
+	
+	/**
+	 * Get bearing from start to stop point
+	 * 
+	 * @return Bearing (degrees)
+	 */
 	public double getBearing() {
 		return getBearing(0,m_track.size()-1);
 	}
 	
+	/**
+	 * Get bearing from start to given point
+	 * 
+	 * @return Bearing (degrees)
+	 */
 	public double getBearing(int index) {
 		return getBearing(0,index);
 	}
@@ -330,7 +490,7 @@ public class Track extends AbstractGeodata
 	 */
 	public double getBearing(int from, int to) {
 		int uBound = m_track.size()-1;
-		if(m_track.size()==0 || from>uBound || to>uBound)
+		if(m_track.size()==0 || from>uBound || to>uBound || from==to)
 			return 0.0;
 		else 
 			return m_track.get(to).bearing(m_track.get(from));
@@ -370,8 +530,7 @@ public class Track extends AbstractGeodata
 		}
 		// finished
 		return i;			
-	}
-	
+	}	
 	
 	private void create() {
 		m_distance.clear();

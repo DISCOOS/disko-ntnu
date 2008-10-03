@@ -52,7 +52,7 @@ public interface IAreaIf extends IMsoObjectIf
     public IAssignmentIf getOwningAssignment();
 
     /**
-     * Verify that the area can be assigned to a given assigmnent.
+     * Verify that the area can be allocated to a given assigmnent.
      *
      * @param anAssignment The assigmnent that shall refer to the area.
      * @throws IllegalOperationException If the assignment cannot be done (verification failed).

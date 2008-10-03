@@ -18,6 +18,10 @@ public interface IDiskoMapManager {
 	public int getMxdDocCount();
 	public boolean installMxdDoc(String mxdDoc);
 	public boolean uninstallMxdDoc(String mxdDoc);
+	public boolean isMxdDocInstalled(String mxddoc);
+	
+	public boolean isMxdDocsInSync();
+	public boolean synchronizeMxdDocs();
 	
 	public String getMxdDoc();
 	public boolean setMxdDoc(String mxdDoc);

@@ -55,9 +55,9 @@ public class PersonnelUtilities
 			newPersonnel.setDataSourceName(personnel.getDataSourceName());
 			newPersonnel.setDepartment(personnel.getDepartment());
 			newPersonnel.setEstimatedArrival(personnel.getEstimatedArrival());
-			newPersonnel.setFirstname(personnel.getFirstname());
+			newPersonnel.setFirstname(personnel.getFirstName());
 			newPersonnel.setGender(personnel.getGender());
-			newPersonnel.setLastname(personnel.getLastname());
+			newPersonnel.setLastname(personnel.getLastName());
 			newPersonnel.setOrganization(personnel.getOrganization());
 			newPersonnel.setPhoto(personnel.getPhoto());
 			newPersonnel.setRemarks(personnel.getRemarks());
@@ -171,11 +171,11 @@ public class PersonnelUtilities
 
 	/**
 	 * @param personnel
-	 * @return Whether or not personnel can be assigned to any unit
+	 * @return Whether or not personnel can be Allocated to any unit
 	 */
 	public static boolean canAssignPersonnelToUnit(IPersonnelIf personnel)
 	{
-		// Only on route or arrived personnel can be assigned to a unit
+		// Only on route or arrived personnel can be Allocated to a unit
 		if(!(personnel.getStatus() == PersonnelStatus.ON_ROUTE ||
 				personnel.getStatus() == PersonnelStatus.ARRIVED))
 		{
@@ -183,7 +183,7 @@ public class PersonnelUtilities
 		}
 
 		if(m_msoManager.operationExists()) {
-			// Personnel can only be assigned to ONE unit                          // todo replace with more general method
+			// Personnel can only be Allocated to ONE unit                          // todo replace with more general method
 			for(IUnitIf unit : m_msoManager.getCmdPost().getUnitList().getItems())
 			{
 				for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())

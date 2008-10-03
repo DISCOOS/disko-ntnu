@@ -219,7 +219,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         {
             m_areaGeodata.add(anMsoObjectIf);
         }
-        registerModifiedData(); // in order to generate an event that the map draw tools recognize
+        registerModifiedData(this); // in order to generate an event that the map draw tools recognize
     }
 
     private boolean setAreaSequenceNumber(IMsoObjectIf anMsoObjectIf, int aNr)
@@ -281,7 +281,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         IAssignmentIf asg = getOwningAssignment();
         if (asg != null && asg != anAssignment)
         {
-            throw new IllegalOperationException("Area " + this + " is already assigned to an assigment.");
+            throw new IllegalOperationException("Area " + this + " is already allocated to an assigment.");
         }
     }
 

@@ -5,7 +5,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
 public class UpperCaseDocument extends PlainDocument {
-    public void insertString( int off, String string, AttributeSet attr ) {
+
+	private static final long serialVersionUID = 1L;
+
+	public void insertString( int off, String string, AttributeSet attr ) {
       try {
     	  if( string != null )
     		  super.insertString( off, string.toUpperCase(), attr );

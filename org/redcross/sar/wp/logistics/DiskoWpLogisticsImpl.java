@@ -54,7 +54,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         layoutComponent(m_logisticsPanel.getPanel());
 
         // ensure that wp spesific layers are selectable
-        m_logisticsPanel.setLayersSelectable();
+        m_logisticsPanel.setSelectableLayers();
               
     }
 
@@ -109,7 +109,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 	
     private String[] options = null;
 
-    public boolean confirmTransfer(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus aTargetStatus, IUnitIf aTargetUnit)
+    public boolean confirmTransfer(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus toStatus, IUnitIf toUnit)
     {
         if (options == null)
         {
@@ -119,14 +119,14 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         IAssignmentIf.AssignmentStatus sourceStatus = anAssignment.getStatus();
 
         // get names
-        String staName = Internationalization.translate(aTargetStatus);
-        String tarName = aTargetUnit != null ? MsoUtils.getUnitName(aTargetUnit,false) : "";
+        String staName = Internationalization.translate(toStatus);
+        String tarName = toUnit != null ? MsoUtils.getUnitName(toUnit,false) : "";
         String assName = MsoUtils.getAssignmentName(anAssignment,1);
 
         String question;
-        if (owningUnit == aTargetUnit)
+        if (owningUnit == toUnit)
         {
-            if (aTargetStatus == IAssignmentIf.AssignmentStatus.QUEUED && sourceStatus == aTargetStatus)
+            if (toStatus == IAssignmentIf.AssignmentStatus.QUEUED && sourceStatus == toStatus)
             {
                 // change assignment priority sequence in queue
                  question = String.format(getBundleText("confirm_assignmentTransfer_reorder.text"), tarName);
@@ -136,7 +136,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
                 // move assignment within same unit
                 question = String.format(getBundleText("confirm_assignmentTransfer_move.text"), assName, staName);
             }
-        } else if (aTargetUnit != null)
+        } else if (toUnit != null)
         {
             // replace units
             question = String.format(getBundleText("confirm_assignmentTransfer_replace.text"), assName, tarName, staName);
@@ -169,47 +169,57 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 		m_logisticsPanel.reInitPanel();
 	}
 
-	public boolean transfer(IAssignmentIf anAssignment, AssignmentStatus aStatus, IUnitIf aUnit) {
+	public boolean transfer(IAssignmentIf anAssignment, AssignmentStatus toStatus, IUnitIf toUnit) {
         
 		// initialize 
-        boolean bSuccess = false;
+        boolean bCommit = false;
         AssignmentStatus oldStatus = anAssignment.getStatus();
         
         try {
         	
             // Ask for confirmation and perform transfer
-            if (confirmTransfer(anAssignment, aStatus, aUnit)) {
+            if (confirmTransfer(anAssignment, toStatus, toUnit)) {
             
 		        // suspend for faster transfer
 				getMsoModel().suspendClientUpdate();
 				
+				// initialize
+		        boolean bCreate = true;
+				
 				// allocate assignment to unit?
-		        switch(aStatus) {
-		        case QUEUED:
-		        	bSuccess = aUnit.addAllocatedAssignment(anAssignment, null);
+		        switch(toStatus) {
+		        case READY:
+		        	anAssignment.setOwningUnit(AssignmentStatus.READY, null);
+		        	bCommit = true;
+		        	bCreate = false;
 		        	break;
-		        case ASSIGNED:
-		        	AssignmentTransferUtilities.unitAssignAssignment(aUnit, anAssignment);
-		        	bSuccess = true;
+		        case QUEUED:
+		        	bCommit = toUnit.enqueueAssignment(anAssignment, null);
+		        	break;
+		        case ALLOCATED:
+		        	toUnit.allocateAssignment(anAssignment);
+		        	bCommit = true;
 		        	break;
 		        case EXECUTING:
-		        	AssignmentTransferUtilities.unitStartAssignment(aUnit, anAssignment);
-		        	bSuccess = true;
+		        	toUnit.startAssignment(anAssignment);
+		        	bCommit = true;
 		        	break;
 		        case FINISHED:
-		        	AssignmentTransferUtilities.unitCompleteAssignment(aUnit, anAssignment);
-		        	bSuccess = true;
+		        	toUnit.finishAssignment(anAssignment);
+		        	bCommit = true;
 		        	break;
 		        }
 	
 		        // transfer OK?
-		        if (bSuccess){
+		        if (bCommit){
 		        	
-		        	// update transfer in message log 
-		            AssignmentTransferUtilities.createAssignmentChangeMessage(
-		            		getMsoManager(), aUnit, anAssignment, oldStatus);
+		        	// update transfer in message log?
+		        	if(bCreate) {
+			            AssignmentTransferUtilities.createAssignmentChangeMessage(
+			            		getMsoManager(), toUnit, anAssignment, oldStatus);
+		        	}
 	
-		            // comitt changes
+		            // commit changes
 		            commit();
 		            
 		        } 
@@ -228,7 +238,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
         }
         
         // return state
-        return bSuccess;
+        return bCommit;
 	}
 	
     @Override

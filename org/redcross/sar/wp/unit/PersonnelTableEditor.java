@@ -84,6 +84,7 @@ public class PersonnelTableEditor
 				{
 					// Display selected personnel in details panel
 					int modelIndex = m_table.convertRowIndexToModel(m_editRow);
+					if(modelIndex==-1) return;
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf selectedPersonnel = model.getPersonnel(modelIndex);
 					m_wpUnit.setPersonnelLeft(selectedPersonnel);
@@ -116,12 +117,16 @@ public class PersonnelTableEditor
 			if(column<3) {
 				// Get personnel at row
 				PersonnelTableModel model = (PersonnelTableModel)table.getModel();
-				IPersonnelIf rowPersonnel = model.getPersonnel(table.convertRowIndexToModel(row));
-	
-				// Get personnel in personnel details panel
-				IPersonnelIf editingPersonnel = m_wpUnit.getEditingPersonnel();
-	
-				m_editButton.setSelected(editingPersonnel == rowPersonnel);
+				row = table.convertRowIndexToModel(row);
+				if(row!=-1) 
+				{
+					IPersonnelIf rowPersonnel = model.getPersonnel(row);
+		
+					// Get personnel in personnel details panel
+					IPersonnelIf editingPersonnel = m_wpUnit.getEditingPersonnel();
+		
+					m_editButton.setSelected(editingPersonnel == rowPersonnel);
+				}
 			}
 			else
 				isSelected = false;

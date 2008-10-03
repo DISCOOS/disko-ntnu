@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.util.HashMap;
 
 import javax.swing.Icon;
-import javax.swing.JLabel;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -12,24 +11,19 @@ import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.util.MsoUtils;
 
 
-public class MsoIconRenderer extends JLabel {
+public class MsoIconRenderer extends MsoRenderer {
 
 	private static final long serialVersionUID = 1L;
 
-	private int options = 0;
-	private boolean complete = false;
 	private String catalog = "48x48";
 	
 	private HashMap<Enum<?>, Icon> icons = null;
 
 	public MsoIconRenderer(int options, boolean complete, String catalog)
 	{
-		super.setOpaque(true);
-		this.options = options;
-		this.complete = complete;
+		super(options,complete);
 		this.catalog = catalog;
 		this.icons = new HashMap<Enum<?>, Icon>();
 	}
@@ -56,19 +50,16 @@ public class MsoIconRenderer extends JLabel {
 		
 		// initialize
 		Icon icon = null;
-		String text = "<Tom>";
 		Enum<?> e = null;
 
-		// dispatch object
+		// forward
+		super.getRenderer(value);
+		
+		// get proper enum
 		if(value instanceof IMsoObjectIf) {
+			
 			// cast to IMsoObjectIf
 			IMsoObjectIf msoObject = (IMsoObjectIf)value;
-
-			// get name
-			if(complete)
-				text = MsoUtils.getCompleteMsoObjectName(msoObject, options);
-			else
-				text = MsoUtils.getMsoObjectName(msoObject, options);
 
 			// get icon
 			if(msoObject instanceof IAreaIf) {
@@ -86,12 +77,8 @@ public class MsoIconRenderer extends JLabel {
 			}
 		}
 		else if(value instanceof Enum) { 
-			text = DiskoEnumFactory.getText((Enum<?>)value);
 			e = (Enum<?>)value;
 		}
-
-		// update text
-		setText(text);
 
 		// update icon?
 		if(e!=null) {
@@ -99,6 +86,9 @@ public class MsoIconRenderer extends JLabel {
 			icon = selectIcon(e);
 			// set icon to label
 			setIcon(icon);
+		}
+		else {
+			setIcon(null);
 		}
 
 		// finished

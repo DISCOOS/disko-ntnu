@@ -1,15 +1,31 @@
 
 package org.redcross.sar.gui.panel;
  
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextAttribute;
+import java.awt.font.TextLayout;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
+
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.JEditorPane;
+
+import org.redcross.sar.util.Utils;
 
 public class MessagePanel extends DefaultPanel {
 
-	private static final long serialVersionUID = 1L;
-
-	private JLabel m_msgLabel = null;
+	private static final long serialVersionUID = 1L;	
+	
+	private JEditorPane m_msgPane;
+	
+	private int m_maxWidth = 1024;
+    private boolean m_isAutoFit = true;
+    private boolean m_isJustified = false;
+    private Insets m_margin = new Insets(5,5,5,5);
 	
 	public MessagePanel() {
 		// forward
@@ -23,32 +39,112 @@ public class MessagePanel extends DefaultPanel {
 	 */
 	private void initialize() {
 		// set table
-		setBodyComponent(getMessageLabel());
+		setBodyComponent(getMessagePane());
 	}
 	
 	/**
-	 * Initialize the message label 
+	 * Initialize the message pane 
 	 */
-	private JLabel getMessageLabel() {
-		if(m_msgLabel == null) {
-			m_msgLabel = new JLabel();
-			m_msgLabel.setOpaque(false);
-			m_msgLabel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-			m_msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
-			m_msgLabel.setVerticalAlignment(SwingConstants.CENTER);
+	private JEditorPane getMessagePane() {
+		if(m_msgPane == null) {
+			m_msgPane = new JEditorPane();
+			m_msgPane.setContentType("text/html");
+			m_msgPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+			m_msgPane.setEditable(false);
+			m_msgPane.setOpaque(false);
 		}
-		return m_msgLabel;
+		return m_msgPane;
 	}
 	
 	public String getMessage() {
-		return getMessageLabel().getText();
+		return getMessagePane().getText();
 	}
 	
 	public void setMessage(String msg) {
-		getMessageLabel().setText("<html>"+msg+"</html>");
-		if(getManager()!=null) {
-			getManager().requestResize(getWidth(),getHeaderPanel().getHeight()+getMessageLabel().getHeight());
-		}
+		getMessagePane().setText("<html>"+Utils.trimHtml(msg)+"</html>");
+		calcSize();
 	}
+	
+	public int getMaxWidth()
+    {
+        return m_maxWidth;
+    }
+ 
+    public void setMaxWidth(int width)
+    {
+        if (m_maxWidth <= 0) throw new IllegalArgumentException();
+        m_maxWidth = width;
+        calcSize();
+    }
+ 
+    public boolean isJustified()
+    {
+        return m_isJustified;
+    }
+ 
+    public void setJustified(boolean isJustified)
+    {
+        m_isJustified = isJustified;
+        calcSize();
+    }
+    
+    public boolean isAutoFit()
+    {
+        return m_isAutoFit;
+    }
+ 
+    public void setAutoFit(boolean isAutoFit)
+    {
+    	m_isAutoFit = isAutoFit;
+    	calcSize();
+    }
+    
+    private void calcSize() 
+    {
+    	if(m_isAutoFit) 
+    	{
+			Graphics2D g2d = (Graphics2D)getGraphics();
+			if(g2d!=null) {
+				Dimension size = calcSize(g2d, m_maxWidth);
+				getMessagePane().setPreferredSize(size);
+				if(getManager()!=null) {			
+					int h = size.height + getHeaderPanel().getHeight()+10;
+					getManager().requestResize(size.width,(h > 300 ? 300 : h));
+				}
+				
+			}
+    	}
+    }
+    
+	private Dimension calcSize(Graphics2D g, int width)
+    {
+		String text = Utils.stripHtml(getMessage());
+        Insets insets = getInsets();
+        width -= insets.left + insets.right + m_margin.left + m_margin.right;
+        float w = insets.left + insets.right + m_margin.left + m_margin.right;
+        float x = insets.left + m_margin.left, y=insets.top + m_margin.top;
+ 
+        if (width > 0 && text != null && text.length() > 0)
+        {
+              AttributedString as = new AttributedString(text);
+              as.addAttribute(TextAttribute.FONT, g.getFont());
+              AttributedCharacterIterator aci = as.getIterator();
+              FontRenderContext frc = g.getFontRenderContext();
+              LineBreakMeasurer lbm = new LineBreakMeasurer(aci, frc);
+              float max = 0;
+              while (lbm.getPosition() < aci.getEndIndex())
+              {
+                    TextLayout textLayout = lbm.nextLayout(600);
+                    if (g != null)
+                        textLayout.draw(g, x, y + textLayout.getAscent());
+                    y += textLayout.getDescent() + textLayout.getLeading() + textLayout.getAscent();
+                    max = Math.max(max, textLayout.getVisibleAdvance());
+              }
+              w += max;
+        }
+ 
+        return new Dimension((int)Math.ceil(w), (int)Math.ceil(y) + insets.bottom + m_margin.bottom);
+        
+    }	
 	
 }

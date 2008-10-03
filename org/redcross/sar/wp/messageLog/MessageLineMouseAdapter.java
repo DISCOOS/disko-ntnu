@@ -71,7 +71,7 @@ public class MessageLineMouseAdapter extends DiskoMouseAdapter
 				case POI:
 					MessageLogBottomPanel.showPOIPanel();
 					break;
-				case ASSIGNED:
+				case ALLOCATED:
 					MessageLogBottomPanel.showAssignPanel();
 					break;
 				case STARTED:

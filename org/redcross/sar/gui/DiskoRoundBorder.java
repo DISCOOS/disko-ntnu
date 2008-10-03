@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
@@ -72,13 +73,21 @@ public class DiskoRoundBorder implements Border
 
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height)
     {
-        Graphics2D g2 = (Graphics2D) g;
-        Stroke oldStroke = g2.getStroke();
+        Graphics2D g2d = (Graphics2D) g;
+        Stroke oldStroke = g2d.getStroke();
 
+        // Determine if antialiasing is enabled
+        RenderingHints rhints = g2d.getRenderingHints();
+        boolean antialiasOn = rhints.containsValue(RenderingHints.VALUE_ANTIALIAS_ON);
+            
+        // Enable antialiasing for shapes
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                             RenderingHints.VALUE_ANTIALIAS_ON);
+    
         g.setColor(c.getForeground());
-        g2.setStroke(linestroke);
+        g2d.setStroke(linestroke);
 
-        Arc2D corner = new Arc2D.Float();
+        Arc2D corner = new Arc2D.Double();
         Line2D line = new Line2D.Double();
 
         if (doubleLine)
@@ -93,19 +102,19 @@ public class DiskoRoundBorder implements Border
 
             // lower left corner
             corner.setArc(x + halfThickness, y + height - radius * 2 - halfThickness - vertDispl, radius * 2, radius * 2, 180, 90, Arc2D.OPEN);
-            g2.draw(corner);
+            g2d.draw(corner);
             // left side
             line.setLine(x + halfThickness, y + halfThickness + radius, x + halfThickness, y + height - radius - halfThickness - vertDispl);
-            g2.draw(line);
+            g2d.draw(line);
             // upper left corner
             corner.setArc(x + halfThickness, y + halfThickness, radius * 2, radius * 2, 90, 90, Arc2D.OPEN);
-            g2.draw(corner);
+            g2d.draw(corner);
             // top side
             line.setLine(x + halfThickness + radius, y + halfThickness, x + width - radius - halfThickness - horDispl, y + halfThickness);
-            g2.draw(line);
+            g2d.draw(line);
             // upper right corner
             corner.setArc(x + width - radius * 2 - halfThickness - horDispl, y + halfThickness, radius * 2, radius * 2, 0, 90, Arc2D.OPEN);
-            g2.draw(corner);
+            g2d.draw(corner);
         } else
         {
             int startInset, endInset;
@@ -113,7 +122,7 @@ public class DiskoRoundBorder implements Border
             if (left && bottom)
             {
                 corner.setArc(x + halfThickness, y + height - radius * 2 - halfThickness, radius * 2, radius * 2, 180, 90, Arc2D.OPEN);
-                g2.draw(corner);
+                g2d.draw(corner);
             }
             // left side
             if (left)
@@ -121,13 +130,13 @@ public class DiskoRoundBorder implements Border
                 startInset = top ? radius : 0;
                 endInset = bottom ? radius : 0;
                 line.setLine(x + halfThickness, y + halfThickness + startInset, x + halfThickness, y + height - endInset - halfThickness);
-                g2.draw(line);
+                g2d.draw(line);
             }
             // upper left corner
             if (left && top)
             {
                 corner.setArc(x + halfThickness, y + halfThickness, radius * 2, radius * 2, 90, 90, Arc2D.OPEN);
-                g2.draw(corner);
+                g2d.draw(corner);
             }
             // top side
             if (top)
@@ -135,13 +144,13 @@ public class DiskoRoundBorder implements Border
                 startInset = left ? radius : 0;
                 endInset = right ? radius : 0;
                 line.setLine(x + halfThickness + startInset, y + halfThickness, x + width - endInset - halfThickness, y + halfThickness);
-                g2.draw(line);
+                g2d.draw(line);
             }
             // upper right corner
             if (top && right)
             {
                 corner.setArc(x + width - radius * 2 - halfThickness, y + halfThickness, radius * 2, radius * 2, 0, 90, Arc2D.OPEN);
-                g2.draw(corner);
+                g2d.draw(corner);
             }
             // right side
             if (right)
@@ -149,13 +158,13 @@ public class DiskoRoundBorder implements Border
                 startInset = top ? radius : 0;
                 endInset = bottom ? radius : 0;
                 line.setLine(x + width - halfThickness, y + halfThickness + startInset, x + width - halfThickness, y + height - endInset - halfThickness);
-                g2.draw(line);
+                g2d.draw(line);
             }
             // lower right corner
             if (right && bottom)
             {
                 corner.setArc(x + width - radius * 2 - halfThickness, y + height - radius * 2 - halfThickness, radius * 2, radius * 2, 270, 90, Arc2D.OPEN);
-                g2.draw(corner);
+                g2d.draw(corner);
             }
             // bottom side
             if (bottom)
@@ -163,10 +172,14 @@ public class DiskoRoundBorder implements Border
                 startInset = left ? radius : 0;
                 endInset = right ? radius : 0;
                 line.setLine(x + halfThickness + startInset, y + height - halfThickness, x + width - endInset - halfThickness, y + height - halfThickness);
-                g2.draw(line);
+                g2d.draw(line);
             }
         }
-        g2.setStroke(oldStroke);
+        // resume old states
+        g2d.setStroke(oldStroke);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+        		antialiasOn ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);        
+        
     }
     
     /*

@@ -196,7 +196,6 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     public void setLinePosition(Position aPosition)
     {
     	m_linePosition.setValue(aPosition);
-    	IUnitIf unit = getLineUnit();
     }
     
 	public Position getLinePosition() {
@@ -342,7 +341,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 				}
 			}
 			break;
-        case ASSIGNED:
+        case ALLOCATED:
         case STARTED:
         case COMPLETED:
 			return String.format(template, 

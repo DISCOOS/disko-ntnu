@@ -17,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -47,6 +46,7 @@ import org.redcross.sar.map.tool.SplitTool;
 import org.redcross.sar.map.tool.DiskoToolWrapper.WrapAction;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.map.tool.IDiskoTool.IDiskoToolState;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.ControlsMapFullExtentCommand;
 import com.esri.arcgis.controls.ControlsMapPanTool;
@@ -905,6 +905,12 @@ public class NavBarPanel extends JPanel {
 				IHostDiskoTool hostTool = (IHostDiskoTool)command;
 				if (hostTool.getDialog() != null) {
 					hostTool.getDialog().setVisible(false);
+				}				
+			}
+			if (command instanceof IDiskoCommand) {
+				IDiskoCommand discoCmd = (IDiskoCommand)command;
+				if (discoCmd.getDialog() != null) {
+					discoCmd.getDialog().setVisible(false);
 				}				
 			}
 		}

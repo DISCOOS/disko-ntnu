@@ -1,6 +1,5 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -19,6 +18,7 @@ import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
@@ -190,6 +190,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 		// Expected
 		m_estimatedArrivalTextField = new JTextField();
+		m_calloutTextField.setEditable(false);
 		layoutComponent(2, m_resources.getString("ExpectedArrival.text"), m_estimatedArrivalTextField, gbc, 1);
 
 		// Arrived
@@ -198,7 +199,6 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 		// Released
 		m_releasedTextField = new JTextField();
-		m_releasedTextField.setEditable(false);
 		layoutComponent(2, m_resources.getString("Released.text"), m_releasedTextField, gbc, 1);
 
 		// Remarks
@@ -280,7 +280,10 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		
 		            try
 		            {
-		                Calendar callout = DTG.DTGToCal(m_calloutTextField.getText());
+		            	Calendar callout = m_currentPersonnel.getCallOut();
+		            	callout = (callout ==null ? Calendar.getInstance() : callout);
+		                callout = DTG.DTGToCal(callout.get(Calendar.YEAR),
+		                		callout.get(Calendar.MONTH),m_calloutTextField.getText());
 		                m_currentPersonnel.setCallOut(callout);
 		            }
 		            catch (IllegalMsoArgumentException e)
@@ -291,7 +294,10 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		
 		            try
 		            {
-		                Calendar arrived = DTG.DTGToCal(m_arrivedTextField.getText());
+		            	Calendar arrived = m_currentPersonnel.getArrived();
+		            	arrived = (arrived ==null ? Calendar.getInstance() : arrived);
+		            	arrived = DTG.DTGToCal(arrived.get(Calendar.YEAR),
+		            			arrived.get(Calendar.MONTH),m_arrivedTextField.getText());
 		                m_currentPersonnel.setArrived(arrived);
 		            }
 		            catch (IllegalMsoArgumentException e)
@@ -300,7 +306,10 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		
 		            try
 		            {
-		                Calendar released = DTG.DTGToCal(m_releasedTextField.getText());
+		            	Calendar released = m_currentPersonnel.getReleased();
+		            	released = (released ==null ? Calendar.getInstance() : released);
+		            	released = DTG.DTGToCal(released.get(Calendar.YEAR),
+		            			released.get(Calendar.MONTH),m_releasedTextField.getText());
 		                m_currentPersonnel.setReleased(released);
 		            }
 		            catch (IllegalMsoArgumentException e)
@@ -346,9 +355,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
             //m_changeStatusButton.setText("");
         } else
         {
-            m_topLabel.setText(m_currentPersonnel.getFirstname() + " " + m_currentPersonnel.getLastname() +
+            m_topLabel.setText(m_currentPersonnel.getFirstName() + " " + m_currentPersonnel.getLastName() +
                     " (" + m_currentPersonnel.getStatusText() + ")");
-            m_nameTextField.setText(m_currentPersonnel.getFirstname() + " " + m_currentPersonnel.getLastname());
+            m_nameTextField.setText(m_currentPersonnel.getFirstName() + " " + m_currentPersonnel.getLastName());
             m_cellTextField.setText(m_currentPersonnel.getTelephone1());
             m_propertyComboBox.setSelectedItem(m_currentPersonnel.getType());
             m_organizationTextField.setText(m_currentPersonnel.getOrganization());
@@ -367,7 +376,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	                    }
 	                }
 	            }
-	            m_unitTextField.setText(personnelUnit == null ? "" : personnelUnit.getTypeAndNumber());
+	            m_unitTextField.setText(personnelUnit == null ? "" : personnelUnit.getDefaultName());
 	
 	            if (personnelUnit != null)
 	            {

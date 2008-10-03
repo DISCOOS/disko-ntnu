@@ -7,10 +7,10 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
@@ -53,7 +53,7 @@ public class GotoDialog extends DefaultDialog {
 	private void initialize() {
 		try {
 			// prepare dialog
-			Utils.setFixedSize(this, 280, 140);
+			Utils.setFixedSize(this, 240, 140);
 	        this.setContentPane(getGotoPanel());
 	        this.pack();
 		}

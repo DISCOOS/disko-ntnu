@@ -217,7 +217,7 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
 	public int getRoutePointCount() {
 		Route r = getGeodata();
 		if(r!=null) {
-			return r.getCount();
+			return r.size();
 		}
 		return 0;
 	}

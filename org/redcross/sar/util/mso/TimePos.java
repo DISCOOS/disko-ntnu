@@ -3,6 +3,8 @@ package org.redcross.sar.util.mso;
 import java.awt.geom.Point2D;
 import java.util.Calendar;
 
+import org.redcross.sar.util.Utils;
+
 /**
  * Class for handling a position object with time
  */
@@ -126,5 +128,10 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
     
     public TimePos clone() {
     	return new TimePos(getPosition(),getTime());
+    }
+    
+    @Override
+    public String toString() {
+    	return super.toString() + " " + Utils.toString(getTime());
     }
 }

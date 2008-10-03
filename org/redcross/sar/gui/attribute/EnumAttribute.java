@@ -9,7 +9,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFormattedTextField;
 import javax.swing.JList;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ListSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -19,6 +18,7 @@ import org.redcross.sar.gui.panel.ListSelectorPanel;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
@@ -42,29 +42,36 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(name,caption,false);
 		// forward
-		initialize(null);
+		initialize(null,isEditable);
 	}
 	
-	public EnumAttribute(String name, String caption, Enum<?>[] values, boolean isEditable) {
+	public EnumAttribute(String name, String caption, boolean isEditable, Enum<?>[] values) {
 		// forward
 		super(name,caption,false);
 		// forward
-		initialize(values);
+		initialize(values,isEditable);
 	}
 	
-	public EnumAttribute(String name, String caption, int width, int height, Enum<?> value, Enum<?>[] values, boolean isEditable) {
+	public EnumAttribute(String name, String caption, boolean isEditable, int width, int height) {
 		// forward
 		super(name,caption,false,width,height,null);
 		// forward
-		initialize(values);
+		initialize(null,isEditable);
 	}
 	
-	public EnumAttribute(MsoEnum<?> attribute, String caption,
-			boolean isEditable) {
+	
+	public EnumAttribute(String name, String caption, boolean isEditable, int width, int height, Enum<?> value, Enum<?>[] values) {
+		// forward
+		super(name,caption,false,width,height,null);
+		// forward
+		initialize(values,isEditable);
+	}
+	
+	public EnumAttribute(MsoEnum<?> attribute, String caption, boolean isEditable) {
 		// forward
 		super(attribute, caption, false);
 		// forward
-		initialize(getAllEnumValues(attribute));
+		initialize(getAllEnumValues(attribute),isEditable);
 	}
 
 	public EnumAttribute(MsoEnum<?> attribute, String caption, Enum<?>[] values,
@@ -72,30 +79,32 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		// forward
 		super(attribute, caption, false);
 		// forward
-		initialize(values);
+		initialize(values,isEditable);
 	}
 	
-	public EnumAttribute(MsoEnum<?> attribute, String caption, int width,
-			int height, boolean isEditable) {
+	public EnumAttribute(MsoEnum<?> attribute, String caption, 
+			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, false, width, height);
 		// forward
-		initialize(getAllEnumValues(attribute));
+		initialize(getAllEnumValues(attribute),isEditable);
 	}
 	
-	public EnumAttribute(MsoEnum<?> attribute, String caption, int width,
-			int height, Enum<?>[] values, boolean isEditable) {
+	public EnumAttribute(MsoEnum<?> attribute, String caption, 
+			boolean isEditable, int width, int height, Enum<?>[] values) {
 		// forward
 		super(attribute, caption, false, width, height);
 		// forward
-		initialize(values);
+		initialize(values,isEditable);
 	}
 	
-	private void initialize(Enum<?>[] values) {
+	private void initialize(Enum<?>[] values, boolean isEditable) {
 		// fill values
 		setValues(values);
 		// forward?
-		initalizeEdit();		
+		initalizeEdit();	
+		// forward
+		setEditable(isEditable);		
 	}
 	
 	/*==================================================================
@@ -230,8 +239,10 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	}
 	
 	private void initalizeEdit() {
+		
 		// initialize gui
-		setButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
+		installButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
+		
 		// handle actions
 		getButton().addActionListener(new ActionListener() {
 	

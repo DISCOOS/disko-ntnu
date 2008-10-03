@@ -2,7 +2,7 @@ package org.redcross.sar.gui.mso.model;
 
 import java.util.EnumSet;
 
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -16,7 +16,7 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 
-public class AssignmentTableModel extends AbstractTableModel implements
+public class AssignmentTableModel extends DiskoTableModel implements
 		IMsoUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;

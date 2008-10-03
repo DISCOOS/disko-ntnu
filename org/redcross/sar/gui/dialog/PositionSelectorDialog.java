@@ -5,13 +5,13 @@ package org.redcross.sar.gui.dialog;
 
 import java.awt.Frame;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IDiskoTool.DiskoToolType;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 
 /**
@@ -98,10 +98,20 @@ public class PositionSelectorDialog extends DefaultDialog {
 	}
 	
 	public Position select() {
+		return select(null);
+	}
+	
+	public Position select(Position p) {
+		
 		// reset
 		m_cancel = false;
-		// select point
-		getPoint();
+		
+		// set initial select point
+		if(p==null)
+			getPoint();
+		else
+			getGotoPanel().setPosition(p);
+		
 		// show position in map
 		getGotoPanel().setPositionMarked(true);
 		// activate SelectFeatureTool

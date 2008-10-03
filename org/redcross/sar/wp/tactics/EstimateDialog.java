@@ -5,16 +5,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.DiskoDecisionSupport;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.attribute.NumericAttribute;
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.dialog.TrackDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.mso.dialog.TrackDialog;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -25,6 +24,7 @@ import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class EstimateDialog extends DefaultDialog {
@@ -133,9 +133,9 @@ public class EstimateDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-				contentPanel.setPreferredBodySize(new Dimension(400,100));
+				contentPanel.setPreferredSize(new Dimension(400,100));
+				contentPanel.setFitBodyOnResize(true);
 				contentPanel.addAttribute(getEtaAttribute());
-				Utils.setFixedSize(getEtaAttribute(), 400,32);
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -160,7 +160,7 @@ public class EstimateDialog extends DefaultDialog {
 				attrEta.setMaxDigits(6);
 				attrEta.setDecimalPrecision(0);
 				attrEta.setAllowNegative(false);
-				attrEta.setButton(DiskoButtonFactory.createButton("GENERAL.VIEW", ButtonSize.SMALL), true);
+				attrEta.installButton(DiskoButtonFactory.createButton("GENERAL.VIEW", ButtonSize.SMALL), true);
 				attrEta.setButtonVisible(true);
 				attrEta.setButtonEnabled(true);
 				attrEta.addButtonActionListener(new ActionListener() {

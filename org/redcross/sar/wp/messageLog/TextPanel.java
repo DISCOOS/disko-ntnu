@@ -1,12 +1,12 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
+import org.redcross.sar.util.Utils;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -26,7 +26,7 @@ import javax.swing.event.DocumentListener;
  *
  * @author thomasl
  */
-public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
+public class TextPanel extends DefaultPanel implements IEditorIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -189,7 +189,7 @@ public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
 	/**
 	 *
 	 */
-	public void hideComponent()
+	public void hideEditor()
 	{
 		this.setVisible(false);
 	}
@@ -197,7 +197,7 @@ public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
 	/**
 	 * If message has text message line, set contents in text area to text in that line
 	 */
-	public void newMessageSelected(IMessageIf message)
+	public void setMessage(IMessageIf message)
 	{
 		IMessageLineIf textMessageLine = message.findMessageLine(MessageLineType.TEXT, false);
 		if(textMessageLine != null)
@@ -213,7 +213,7 @@ public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
 	/**
 	 *
 	 */
-	public void showComponent()
+	public void showEditor()
 	{
 		this.setVisible(true);
 		setDirty(false);
@@ -223,7 +223,7 @@ public class TextPanel extends DefaultPanel implements IEditMessageComponentIf
 	/**
 	 *
 	 */
-	public void clearContents()
+	public void resetEditor()
 	{
 		m_textArea.setText("");
 	}

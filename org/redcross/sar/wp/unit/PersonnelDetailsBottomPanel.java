@@ -164,7 +164,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
             m_releasedTextField.setText("");
         } else
         {
-            String name = m_currentPersonnel.getFirstname() + " " + m_currentPersonnel.getLastname();
+            String name = m_currentPersonnel.getFirstName() + " " + m_currentPersonnel.getLastName();
             m_nameTextField.setText(name);
 
             String callout = m_currentPersonnel.getCallOut() == null ? ""

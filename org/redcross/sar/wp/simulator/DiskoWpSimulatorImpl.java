@@ -8,19 +8,20 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.attribute.DTGAttribute;
 import org.redcross.sar.gui.attribute.TextFieldAttribute;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.AttributesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -32,6 +33,7 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.thread.DiskoWorkPool;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -45,24 +47,26 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 
 	private long m_timeCounter = 0;
 	
-	private JSplitPane m_splitPane = null;
-	private MapPanel m_mapPanel = null;
-	private JPanel m_simulatorPanel = null;
-	private BasePanel m_controlPanel = null;
-	private AttributesPanel m_simAttribsPanel = null;
-	private DTGAttribute m_startedTimeAttr = null;
-	private TextFieldAttribute m_effortTimeAttr = null;	
-	private TextFieldAttribute m_avgSimTimeAttr = null;	
-	private TextFieldAttribute m_maxSimTimeAttr = null;	
-	private TextFieldAttribute m_utilSimTimeAttr = null;	
-	private JButton m_resumeButton = null;
-	private JButton m_suspendButton = null;
-	private JTabbedPane m_tabbedPane = null;
-	private UnitsPanel m_unitsPanel = null;
-	private AssignmentsPanel m_assignmentsPanel = null;
+	private JSplitPane m_splitPane;
+	private MapPanel m_mapPanel;
+	private JPanel m_simulatorPanel;
+	private BasePanel m_controlPanel;
+	private AttributesPanel m_simAttribsPanel;
+	private DTGAttribute m_startedTimeAttr;
+	private TextFieldAttribute m_effortTimeAttr;	
+	private TextFieldAttribute m_avgSimTimeAttr;	
+	private TextFieldAttribute m_maxSimTimeAttr;	
+	private TextFieldAttribute m_utilSimTimeAttr;	
+	private JButton m_resumeButton;
+	private JButton m_suspendButton;
+	private JTabbedPane m_tabbedPane;
+	private UnitsPanel m_activeUnitsPanel;
+	private UnitsPanel m_archivedUnitsPanel;
+	private AssignmentsPanel m_activeAssignmentsPanel;
+	private AssignmentsPanel m_archivedAssignmentsPanel;
 	
-	private Simulator m_simulator = null;
-	private DiskoWorkPool m_workPool = null;
+	private Simulator m_simulator;
+	private DiskoWorkPool m_workPool;
 	
     public DiskoWpSimulatorImpl() throws Exception
     {
@@ -197,6 +201,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_splitPane == null)
         {
         	m_splitPane = new JSplitPane();
+        	m_splitPane.setBorder(BorderFactory.createEmptyBorder());
         	m_splitPane.setLeftComponent(getMapPanel());
         	m_splitPane.setRightComponent(getSimulatorPanel());
         }
@@ -210,8 +215,9 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         	m_mapPanel = new MapPanel(getMap());
         	m_mapPanel.setNorthBarVisible(true);
         	m_mapPanel.setSouthBarVisible(true);
+        	m_mapPanel.setBorder(UIFactory.createBorder());
 			m_mapPanel.setMinimumSize(new Dimension(350,350));
-			m_mapPanel.setPreferredSize(new Dimension(500,350));
+			m_mapPanel.setPreferredSize(new Dimension(450,350));
         	
         }        
         return m_mapPanel;
@@ -340,8 +346,9 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
         if (m_startedTimeAttr == null)
         {
-        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", false, 130, 25, 0);
-        	Utils.setFixedSize(m_startedTimeAttr,250,25);
+        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", 
+        			false, 130, 25, Calendar.getInstance());
+        	//Utils.setFixedSize(m_startedTimeAttr,250,25);
         	
         }        
         return m_startedTimeAttr;
@@ -352,7 +359,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_effortTimeAttr == null)
         {
         	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid", false, 130, 25, 0);
-        	Utils.setFixedSize(m_effortTimeAttr,250,25);
+        	//Utils.setFixedSize(m_effortTimeAttr,250,25);
         	
         }        
         return m_effortTimeAttr;
@@ -363,7 +370,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_avgSimTimeAttr == null)
         {
         	m_avgSimTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
-        	Utils.setFixedSize(m_avgSimTimeAttr,250,25);
+        	//Utils.setFixedSize(m_avgSimTimeAttr,250,25);
         	
         }        
         return m_avgSimTimeAttr;
@@ -374,7 +381,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_maxSimTimeAttr == null)
         {
         	m_maxSimTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)", false, 130, 25, 0);
-        	Utils.setFixedSize(m_maxSimTimeAttr,250,25);
+        	//Utils.setFixedSize(m_maxSimTimeAttr,250,25);
         	
         }        
         return m_maxSimTimeAttr;
@@ -385,7 +392,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_utilSimTimeAttr == null)
         {
         	m_utilSimTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
-        	Utils.setFixedSize(m_utilSimTimeAttr,250,25);
+        	//Utils.setFixedSize(m_utilSimTimeAttr,250,25);
         	
         }        
         return m_utilSimTimeAttr;
@@ -402,35 +409,62 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 			Dimension dim = new Dimension(350,350);
 			m_tabbedPane.setMinimumSize(dim);
 			m_tabbedPane.setPreferredSize(dim);
-			m_tabbedPane.addTab("Oppdrag", 
-					DiskoIconFactory.getIcon("GENERAL.ELEMENT","32x32"), 
-					getAssignmentsPanel(), null);
-			m_tabbedPane.addTab("Bevegelse",
+			m_tabbedPane.addTab("Aktive", 
+					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"), 
+					getActiveAssignmentsPanel(), null);
+			m_tabbedPane.addTab("Utførte", 
+					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"), 
+					getArchivedAssignmentsPanel(), null);
+			m_tabbedPane.addTab("Aktive",
 					DiskoIconFactory.getIcon("GENERAL.UNIT","32x32"), 
-					getUnitsPanel(), null);
+					getActiveUnitsPanel(), null);
+			m_tabbedPane.addTab("Oppløste",
+					DiskoIconFactory.getIcon("GENERAL.UNIT","32x32"), 
+					getArchivedUnitsPanel(), null);
 			m_tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+						
+			
 		}
 		return m_tabbedPane;
 	
 	}    
 	
-	private AssignmentsPanel getAssignmentsPanel()
+	private AssignmentsPanel getActiveAssignmentsPanel()
     {
-        if (m_assignmentsPanel == null)
+        if (m_activeAssignmentsPanel == null)
         {
-        	m_assignmentsPanel = new AssignmentsPanel();
+        	m_activeAssignmentsPanel = new AssignmentsPanel(false);
         }        
-        return m_assignmentsPanel;
+        return m_activeAssignmentsPanel;
     }
     
-	private UnitsPanel getUnitsPanel()
+	private AssignmentsPanel getArchivedAssignmentsPanel()
     {
-        if (m_unitsPanel == null)
+        if (m_archivedAssignmentsPanel == null)
         {
-        	m_unitsPanel = new UnitsPanel();
-        	m_unitsPanel.addDiskoWorkListener(this);
+        	m_archivedAssignmentsPanel = new AssignmentsPanel(true);
         }        
-        return m_unitsPanel;
+        return m_archivedAssignmentsPanel;
+    }
+	
+	private UnitsPanel getActiveUnitsPanel()
+    {
+        if (m_activeUnitsPanel == null)
+        {
+        	m_activeUnitsPanel = new UnitsPanel(false);
+        	m_activeUnitsPanel.addDiskoWorkListener(this);
+        }        
+        return m_activeUnitsPanel;
+    }
+	
+	private UnitsPanel getArchivedUnitsPanel()
+    {
+        if (m_archivedUnitsPanel == null)
+        {
+        	m_archivedUnitsPanel = new UnitsPanel(true);
+        	m_archivedUnitsPanel.addDiskoWorkListener(this);
+        }        
+        return m_archivedUnitsPanel;
     }
 	
 	public void activate(IDiskoRole role) {

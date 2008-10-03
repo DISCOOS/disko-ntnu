@@ -11,7 +11,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.mso.model.AssignmentTableModel;
-import org.redcross.sar.gui.renderer.DiskoHeaderRenderer;
+import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -45,7 +45,7 @@ public class AssignmentTable extends JTable {
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        tableHeader.setDefaultRenderer(new DiskoHeaderRenderer());
+        tableHeader.setDefaultRenderer(new DefaultHeaderRenderer());
         
         // misc.
 		setRowHeight(34);

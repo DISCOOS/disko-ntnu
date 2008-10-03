@@ -29,7 +29,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public void setFirstname(String aFirstname);
 
-    public String getFirstname();
+    public String getFirstName();
 
     public IMsoModelIf.ModificationState getFirstnameState();
 
@@ -45,7 +45,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public void setLastname(String aLastname);
 
-    public String getLastname();
+    public String getLastName();
 
     public IMsoModelIf.ModificationState getLastnameState();
 

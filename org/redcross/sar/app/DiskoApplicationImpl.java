@@ -1,7 +1,6 @@
 package org.redcross.sar.app;
 
 import no.cmr.tools.Log;
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.ds.DiskoDecisionSupport;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
@@ -19,12 +18,14 @@ import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.DiskoProgressMonitor;
 import org.redcross.sar.thread.DiskoWorkPool;
-import org.redcross.sar.util.GlobalProps;
+import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
+
+import com.esri.arcgis.system.EngineInitializer;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
@@ -39,12 +40,9 @@ import javax.swing.AbstractButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 
 /**
  * Implements the DiskoApplication interface. This class is responsible for connecting to the
@@ -99,9 +97,11 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	 */
 	public static void main(String[] args)
 	{
-		com.esri.arcgis.system.EngineInitializer.initializeVisualBeans();
-		initLookAndFeel();
-
+		// prepare
+		EngineInitializer.initializeVisualBeans();		
+		UIFactory.initLookAndFeel();
+		
+		// initialize GUI on new thread
 		SwingUtilities.invokeLater(new Runnable()
 		{
 			public void run()
@@ -113,91 +113,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 	}
 
 	private Object[] loggedin=new Object[3];
-	private final static String DefaultFont = "Tahoma";
-	private final static String DialogFont = "Dialog";
-
-	private final static int MediumSize = 14;
-	private final static int LargeSize = 16;
-
-	private final static Font DEFAULT_BOLD_SMALL_FONT = new Font(DefaultFont, Font.PLAIN, 10);
-
-	private final static Font DEFAULT_PLAIN_MEDIUM_FONT = new Font(DefaultFont, Font.PLAIN, MediumSize);
-	//private final static Font DEFAULT_BOLD_MEDIUM_FONT = new Font(DefaultFont,Font.BOLD,MediumSize);
-	private final static Font DEFAULT_PLAIN_LARGE_FONT = new Font(DefaultFont, Font.PLAIN, LargeSize);
-	//private final static Font DEFAULT_BOLD_LARGE = new Font(DefaultFont,Font.BOLD,LargeSize);
-
-	private final static Font DIALOG_PLAIN_MEDIUM_FONT = new Font(DialogFont, Font.PLAIN, MediumSize);
-
-	private static void initLookAndFeel()
-	{
-		try
-		{
-		
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-			//UIManager.put("Button.font", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Button.font", DEFAULT_BOLD_SMALL_FONT);
-			UIManager.put("CheckBox.font", DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("CheckBoxMenuItem.acceleratorFont", DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("CheckBoxMenuItem.font", DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("ColorChooser.font", DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("ComboBox.font", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("EditorPane.font", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("FileChooser.listFont", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("FormattedTextField.font", DEFAULT_PLAIN_MEDIUM_FONT);
-//			UIManager.put("InternalFrame.titleFont",font Trebuchet MS,bold,13);
-			UIManager.put("Label.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("List.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Menu.acceleratorFont",DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("Menu.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("MenuBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("MenuItem.acceleratorFont",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("MenuItem.font",DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("OptionPane.buttonFont",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("OptionPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("OptionPane.messageFont",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Panel.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("PasswordField.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("PopupMenu.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ProgressBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("RadioButton.font",DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("RadioButtonMenuItem.acceleratorFont",DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("RadioButtonMenuItem.font", DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("ScrollPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Slider.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Spinner.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TabbedPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Table.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TableHeader.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			//          UIManager.put("TextArea.font",font Monospaced,plain,13);
-			UIManager.put("TextField.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TextPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TitledBorder.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ToggleButton.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ToolBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ToolTip.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Tree.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Viewport.font",DEFAULT_PLAIN_MEDIUM_FONT);
-
-			UIManager.put("ScrollBar.width", 25);
-			
-			// Because DISCO and ArcGIS Objects are mixing heavyweight (AWT.*) 
-			// and lightweight (Swing.*) component, default lightweight behaviors
-			// must be turned off. If not, components JPopup and JTooltips
-			// will be shown below ArcGIS AWT components (MapBean etc.		
-			// IMPORTANT: Do not put ArcGIS components which is implemented using
-			// AWT in a JScrollPane. This will not work correctly. Instead, 
-			// use an AWT ScrollPane.
-			JPopupMenu.setDefaultLightWeightPopupEnabled(false);			
-			ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);						
-
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
+	
 	/**
 	 * This is the default constructor
 	 */
@@ -749,7 +665,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 
 	public String getProperty(String key)
 	{
-		return GlobalProps.getText(key);
+		return AppProps.getText(key);
 	}
 
 	public String getProperty(String key, String defaultvalue)
@@ -762,7 +678,7 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 
 	public boolean setProperty(String key, String value)
 	{
-		return GlobalProps.setText(key,value);
+		return AppProps.setText(key,value);
 	}
 	
 	private void fireBeforeOperationChange() {
@@ -1063,40 +979,31 @@ public class DiskoApplicationImpl extends JFrame implements IDiskoApplication, W
 		/**
 		 * Worker
 		 * 
-		 * Loads spesific role into the application. This is a lengthy operation
+		 * Loads specific role into the application. This is a lengthy operation
 		 */	   
 		@Override
 		public Boolean doWork()
 		{
-			try {
-				
-				// initiate list?
-				if(roles==null)
-					roles = new Hashtable<String, IDiskoRole>();
-				
-				// parse role?
-				if (!roles.containsKey(loginRole)){
-					// get role from module manager
-					currentRole = getModuleManager().parseRole(loginRole);
-					// put to table
-					roles.put(loginRole, currentRole);
-				} 
-				else {
-					// get role from list
-					currentRole = roles.get(loginRole);
-					// activate current module
-					currentRole.selectDiskoWpModule(currentRole.getCurrentDiskoWpModule());
-				}
-				
-				// success
-				return true;
+			// initiate list?
+			if(roles==null)
+				roles = new Hashtable<String, IDiskoRole>();
+			
+			// parse role?
+			if (!roles.containsKey(loginRole)){
+				// get role from module manager
+				currentRole = getModuleManager().parseRole(loginRole);
+				// put to table
+				roles.put(loginRole, currentRole);
+			} 
+			else {
+				// get role from list
+				currentRole = roles.get(loginRole);
+				// activate current module
+				currentRole.selectDiskoWpModule(currentRole.getCurrentDiskoWpModule());
 			}
-			catch(Exception e) {
-				e.printStackTrace();
-				
-			}
-			// failed
-			return false;
+			
+			// success
+			return true;
 		}
 	
 		/**

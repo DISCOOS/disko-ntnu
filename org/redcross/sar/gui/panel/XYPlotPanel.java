@@ -12,7 +12,7 @@ import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.util.Utils;
 
 public class XYPlotPanel extends BasePanel {
 

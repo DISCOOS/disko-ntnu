@@ -33,27 +33,27 @@ public class DiskoEnumFactory {
 	private final static ResourceBundle m_default = 
 		ResourceBundle.getBundle("resources/enums");
 	
-	public static String getTooltip(Enum e) {
+	public static String getTooltip(Enum<?> e) {
 		return getText(e,"tooltip",null);
 	}
 	
-	public static String getText(Enum e) {
+	public static String getText(Enum<?> e) {
 		return getText(e,"text",null);
 	}
 	
-	public static String getIcon(Enum e) {
+	public static String getIcon(Enum<?> e) {
 		return getText(e,"icon",null);
 	}
 	
-	public static String getSymbol(Enum e) {
+	public static String getSymbol(Enum<?> e) {
 		return getText(e,"symbol",null);
 	}
 	
-	public static String getText(Enum e, String suffix) {
+	public static String getText(Enum<?> e, String suffix) {
 		return getText(e,suffix,null);
 	}
 	
-	public static String getText(Enum e, String suffix, Object resource) {
+	public static String getText(Enum<?> e, String suffix, Object resource) {
 		// get key
 		String text = getText(BasicDiskoFactory.getKey(e, suffix),resource);
 		// try get enum text from resource bundle assosiated with the enums declaring class?
@@ -64,7 +64,7 @@ public class DiskoEnumFactory {
 		return text;
 	}
 	
-	private static String translate(Enum e, String suffix) {
+	private static String translate(Enum<?> e, String suffix) {
 		// search for bundle
 		ResourceBundle bundle = Internationalization.getBundle(e);
 		// try to get value from resoures?
@@ -93,19 +93,19 @@ public class DiskoEnumFactory {
 		return text==null ? key : text;
 	}
 	
-	public static boolean setText(Enum e, String suffix, String value) {
+	public static boolean setText(Enum<?> e, String suffix, String value) {
 		// get key
 		String key = BasicDiskoFactory.getKey(e, suffix);
 		// only update disko properties anonymously
 		return BasicDiskoFactory.setText(key, value, false, true, m_default, "resources/disko");
 	}
 	
-	public static boolean setText(Enum e, String suffix, String value, Object resource) {
+	public static boolean setText(Enum<?> e, String suffix, String value, Object resource) {
 		// forward using a best effort principle if passed resource is unknown
 		return setText(e,suffix,value,resource, null);
 	}
 	
-	public static boolean setText(Enum e, String suffix, String value, Object resource, String filename) {
+	public static boolean setText(Enum<?> e, String suffix, String value, Object resource, String filename) {
 		// get key
 		String key = BasicDiskoFactory.getKey(e, suffix);
 		// forward 

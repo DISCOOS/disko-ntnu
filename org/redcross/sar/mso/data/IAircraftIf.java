@@ -42,22 +42,6 @@ public interface IAircraftIf extends ITransportIf
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setAverageSpeed(int anAverageSpeed);
-
-    public int getAverageSpeed();
-
-    public IMsoModelIf.ModificationState getAverageSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getAverageSpeedAttribute();
-
-    public void setFlightTime(int aFlightTime);
-
-    public int getFlightTime();
-
-    public IMsoModelIf.ModificationState getFlightTimeState();
-
-    public IAttributeIf.IMsoIntegerIf getFlightTimeAttribute();
-
     public void setInfrared(boolean hasInfrared);
 
     public boolean hasInfrared();
@@ -65,14 +49,6 @@ public interface IAircraftIf extends ITransportIf
     public IMsoModelIf.ModificationState getInfraredState();
 
     public IAttributeIf.IMsoBooleanIf getInfraredAttribute();
-
-    public void setMaxSpeed(int aMaxSpeed);
-
-    public int getMaxSpeed();
-
-    public IMsoModelIf.ModificationState getMaxSpeedState();
-
-    public IAttributeIf.IMsoIntegerIf getMaxSpeedAttribute();
 
     public void setNightvision(boolean hasNightvision);
 

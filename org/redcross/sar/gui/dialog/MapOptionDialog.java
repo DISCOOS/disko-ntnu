@@ -24,12 +24,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.redcross.sar.app.IDiskoApplication;
-import org.redcross.sar.app.Utils;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.CustomMapData;
 import org.redcross.sar.map.MapSourceInfo;
 import org.redcross.sar.map.MapSourceTable;
+import org.redcross.sar.util.Utils;
 
 public class MapOptionDialog extends DefaultDialog implements ActionListener {
 
@@ -80,6 +81,9 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 	private DefaultPanel getContentPanel() {		
 		if(contentPanel == null) {
 			contentPanel = new DefaultPanel("Oppsett kartografi");
+			contentPanel.insertButton("finish", 
+					DiskoButtonFactory.createButton("GENERAL.SYNCHRONIZE",contentPanel.getButtonSize()), 
+					"synchronize");
 			contentPanel.setBodyComponent(getTabbedPane());
 			contentPanel.setScrollBarPolicies(
 					JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
@@ -307,8 +311,10 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		// get command
+		String cmd = e.getActionCommand();
 		// translate
-		if("finish".equalsIgnoreCase(e.getActionCommand())) {
+		if("finish".equalsIgnoreCase(cmd)) {
 			switch(getTabbedPane().getSelectedIndex()) {
 			case 0: 
 				// initialize
@@ -366,11 +372,16 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 			// finished, hide dialog
 			setVisible(false);			
 		}
-		else if("cancel".equalsIgnoreCase(e.getActionCommand())) {
+		else if("cancel".equalsIgnoreCase(cmd)) {
 			// set flag
 			cancel = true;
 			// finished
 			setVisible(false);
+		}
+		else if("synchronize".equalsIgnoreCase(cmd)) {
+			// forward
+			if(app.getMapManager().synchronizeMxdDocs())
+				getMapSourceTable().load(app.getMapManager().getMapInfoList());
 		}
 		
 	}

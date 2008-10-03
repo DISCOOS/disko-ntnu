@@ -4,9 +4,9 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.panel.ScalePanel;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.util.Utils;
 
 public class ScaleDialog extends DefaultDialog {
 	

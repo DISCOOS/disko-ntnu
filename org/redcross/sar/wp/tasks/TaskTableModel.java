@@ -2,7 +2,7 @@ package org.redcross.sar.wp.tasks;
 
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.AbstractPopupHandler;
-import org.redcross.sar.gui.PopupListener;
+import org.redcross.sar.gui.PopupAdapter;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -20,7 +20,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
-import javax.swing.table.AbstractTableModel;
+import org.redcross.sar.gui.model.DiskoTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
@@ -46,7 +46,7 @@ import java.util.Set;
  *
  */
 @SuppressWarnings("unchecked")
-public class TaskTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+public class TaskTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
 {
 	private final static long serialVersionUID = 1L;
 
@@ -55,7 +55,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 
 	protected JTable m_table;
 	protected TaskTableRowSorter m_rowSorter;
-	protected PopupListener m_popupListener;
+	protected PopupAdapter m_popupListener;
 
 	protected static EnumSet<TaskPriority> m_priorityFilter = EnumSet.of(
 			TaskPriority.HIGH,
@@ -469,7 +469,7 @@ public class TaskTableModel extends AbstractTableModel implements IMsoUpdateList
 			tableHeader.removeMouseListener(m_popupListener);
 		// add new listener?
 		if(role!=null) {
-			m_popupListener = new PopupListener(new HeaderPopupHandler(role, this, m_table));
+			m_popupListener = new PopupAdapter(new HeaderPopupHandler(role, this, m_table));
 			tableHeader.addMouseListener(m_popupListener);
 		}
 	}

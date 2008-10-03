@@ -2,6 +2,8 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.model.DiskoTableModel;
+import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -24,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -114,7 +115,7 @@ public class CalloutDetailsPanel extends JPanel
 		layoutComponent(m_resources.getString("Department.text"), m_departmentTextField, gbc);
 
 		// Personnel table
-		m_personnelTable = new JTable(new CallOutPersonnelTableModel(null, m_wpUnit));
+		m_personnelTable = new DiskoTable(new CallOutPersonnelTableModel(null, m_wpUnit));
 		m_personnelTable.setFillsViewportHeight(true);
 		m_personnelTable.addMouseListener(new CallOutPersonnelMouseListener());
 		m_personnelTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -221,7 +222,7 @@ public class CalloutDetailsPanel extends JPanel
 	 *
 	 * @author thomasl
 	 */
-	private class CallOutPersonnelTableModel extends AbstractTableModel implements IMsoUpdateListenerIf
+	private class CallOutPersonnelTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -242,8 +243,8 @@ public class CalloutDetailsPanel extends JPanel
 		{
 			public int compare(IPersonnelIf arg0, IPersonnelIf arg1)
 			{
-				int res = arg0.getFirstname().compareTo(arg1.getFirstname());
-				return res == 0 ? arg0.getLastname().compareTo(arg1.getLastname()) : res;
+				int res = arg0.getFirstName().compareTo(arg1.getFirstName());
+				return res == 0 ? arg0.getLastName().compareTo(arg1.getLastName()) : res;
 			}
 		};
 
@@ -271,7 +272,7 @@ public class CalloutDetailsPanel extends JPanel
 			switch(column)
 			{
 			case 0:
-				return personnel.getFirstname() + " " + personnel.getLastname();
+				return personnel.getFirstName() + " " + personnel.getLastName();
 			case 1:
 				return personnel.getImportStatusText();
 			case 2:
@@ -375,6 +376,7 @@ public class CalloutDetailsPanel extends JPanel
 					// Set personnel status to arrived
 					CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 					int index = m_personnelTable.convertRowIndexToModel(m_editingRow);
+					if(index==-1) return;
 					IPersonnelIf personnel = (IPersonnelIf)model.getValueAt(index, 2);
 					IPersonnelIf newPersonnelInstance = PersonnelUtilities.arrivedPersonnel(personnel);
 					if(newPersonnelInstance != personnel)
@@ -408,6 +410,7 @@ public class CalloutDetailsPanel extends JPanel
 					// Release personnel
 					CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 					int index = m_personnelTable.convertRowIndexToModel(m_editingRow);
+					if(index==-1) return;
 					IPersonnelIf personnel = (IPersonnelIf)model.getValueAt(index, 2);
 					PersonnelUtilities.releasePersonnel(personnel);
 					if(!m_wpUnit.getNewCallOut())
@@ -447,6 +450,7 @@ public class CalloutDetailsPanel extends JPanel
 		{
 			CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 			int index = m_personnelTable.convertRowIndexToModel(row);
+			if(index==-1) return;
 			IPersonnelIf personnel = (IPersonnelIf)model.getValueAt(index, 2);
 
 			m_arrivedButton.setSelected(personnel.getStatus() == PersonnelStatus.ARRIVED);
@@ -461,6 +465,7 @@ public class CalloutDetailsPanel extends JPanel
 			Point clickedPoint = new Point(me.getX(), me.getY());
 			int row = m_personnelTable.rowAtPoint(clickedPoint);
 			int index = m_personnelTable.convertRowIndexToModel(row);
+			if(index==-1) return;
 			CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 			IPersonnelIf personnel = model.getPersonnel(index);
 

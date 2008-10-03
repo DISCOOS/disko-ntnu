@@ -39,12 +39,19 @@ public interface IPOIIf extends IMsoObjectIf
 
     public IAttributeIf.IMsoEnumIf<POIType> getTypeAttribute();
 
-    public String getTypeText();
+    public String getInternationalTypeName();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
 
+    public void setName(String aName);
+
+    public String getName();
+
+    public IMsoModelIf.ModificationState getNameState();
+
+    public IAttributeIf.IMsoStringIf getNameAttribute();
 
     public void setPosition(Position aPosition);
 
@@ -69,6 +76,12 @@ public interface IPOIIf extends IMsoObjectIf
     public IMsoModelIf.ModificationState getAreaSequenceNumberState();
 
     public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
+    
+    /*-------------------------------------------------------------------------------------------
+     * Other Methods
+     *-------------------------------------------------------------------------------------------*/
+    
+	public String getDefaultName();
 
     public Set<IMessageLineIf> getReferringMessageLines();
 

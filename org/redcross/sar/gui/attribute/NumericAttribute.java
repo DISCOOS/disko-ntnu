@@ -9,10 +9,10 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.app.Utils;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
