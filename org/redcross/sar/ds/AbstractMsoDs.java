@@ -250,9 +250,9 @@ public abstract class AbstractMsoDs<M extends IMsoObjectIf, T extends IDsObjectI
 	
 	public synchronized String exportSamples(String path) {
 		String stamp = Utils.toString(Calendar.getInstance());
-		stamp = stamp.replace(":", "").replace(".","").replace("+", "").replace(" ", "-");
-		exportSamplesToFile(path + getOprID() + "-" +  stamp + ".dss");
-		return stamp;
+		String name = getOprID() + "-" + stamp.replace(":", "").replace(".","").replace("+", "").replace(" ", "-");
+		exportSamplesToFile(path + "\\" + name + ".dss");
+		return name;
 	}
 	
 	public synchronized void exportSamplesToFile(String file) {

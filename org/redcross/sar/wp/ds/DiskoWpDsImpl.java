@@ -23,7 +23,6 @@ import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.dialog.DirectoryChooserDialog;
-import org.redcross.sar.gui.dialog.FileExplorerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -501,9 +500,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     
     private void save() {
 		String file = m_estimator.exportSamples(AppProps.getText("DS.ETE.LOGGING.path"));
-		getCatalogAttr().setValue(file);
-		Utils.showMessage("Bekreftelse","Loggfilen " + file + " er opprettet" +
-				"");
+		Utils.showMessage("Bekreftelse","Loggfilen " + file + " er opprettet");
     }
 
     private void resume() {
