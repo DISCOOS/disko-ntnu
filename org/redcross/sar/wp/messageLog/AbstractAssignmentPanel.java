@@ -33,8 +33,8 @@ import no.cmr.tools.Log;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.DTGAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
@@ -246,9 +246,9 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
     	//m_editAssignmentPanel.setHeaderVisible(false);
     	
     	// add attributes
-    	m_editAssignmentPanel.addAttribute(new TextFieldAttribute("Assignment",
+    	m_editAssignmentPanel.addAttribute(new TextLineField("Assignment",
     			m_wpMessageLog.getBundleText("AssignmentLabel.text"),false,150,25,"<velg oppdrag>"));
-    	m_editAssignmentPanel.addAttribute(new DTGAttribute("Time",
+    	m_editAssignmentPanel.addAttribute(new DTGField("Time",
     			m_wpMessageLog.getBundleText("AllocatedTimeLabel.text"),true,150,25,Calendar.getInstance()));    	
     	m_editAssignmentPanel.setCaptionWidth(100);
 		//Utils.setFixedSize((JComponent)m_editAssignmentPanel.getAttribute("Assignment"),560,25);
@@ -646,10 +646,10 @@ public abstract class AbstractAssignmentPanel extends JPanel implements IEditorI
 	    	// create?
     		if(m_selectedPanel.getAttributeCount()==0) {
 	    		// add attributes (this should only occur once)
-    			m_selectedPanel.addAttribute(new TextFieldAttribute("Assignment",
+    			m_selectedPanel.addAttribute(new TextLineField("Assignment",
     					m_wpMessageLog.getBundleText("AssignmentLabel.text"),false,
     					150,25, MsoUtils.getAssignmentName(selected, 1)));
-    			m_selectedPanel.addAttribute(new TextFieldAttribute("Priority",
+    			m_selectedPanel.addAttribute(new TextLineField("Priority",
     					m_wpMessageLog.getBundleText("PriorityLabel.text"),false,
     					150,25,selected.getPriorityText()));
     			m_selectedPanel.addAttribute(selected.getRemarksAttribute(),

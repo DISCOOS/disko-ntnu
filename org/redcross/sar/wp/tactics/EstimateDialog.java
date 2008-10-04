@@ -12,7 +12,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.NumericAttribute;
+import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.mso.dialog.TrackDialog;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -32,7 +32,7 @@ public class EstimateDialog extends DefaultDialog {
 	private static final long serialVersionUID = 1L;	
 
 	private FieldsPanel contentPanel = null;
-	private NumericAttribute attrEta = null;
+	private NumericField attrEta = null;
 	private TrackDialog trackDialog = null;
 	
 	private IDiskoWpModule wp = null;
@@ -149,12 +149,12 @@ public class EstimateDialog extends DefaultDialog {
 	 * 	
 	 * @return NumericAttribute	
 	 */
-	private NumericAttribute getEtaAttribute() {
+	private NumericField getEtaAttribute() {
 		if (attrEta == null) {
 			try {
 				
 				// create attribute
-				attrEta = new NumericAttribute("ETA","Estimert tidsbruk",false,120,25,"000000");
+				attrEta = new NumericField("ETA","Estimert tidsbruk",false,120,25,"000000");
 				
 				// set numeric properties
 				attrEta.setMaxDigits(6);

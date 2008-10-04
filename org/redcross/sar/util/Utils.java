@@ -490,7 +490,7 @@ public class Utils {
 		}
 		else if(value instanceof Calendar) {
 			DateFormat formatter = new SimpleDateFormat(DATA_STRING_FORMAT);
-			return formatter.format(value); 			
+			return formatter.format(((Calendar)value).getTime()); 			
 		}
 		else if(value instanceof TimePos) {
 			return ((TimePos)value).toString();

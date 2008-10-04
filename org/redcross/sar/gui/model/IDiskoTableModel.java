@@ -12,4 +12,5 @@ public interface IDiskoTableModel extends TableModel {
 	
 	public String getHeaderEditor(int column);
 	public void setHeaderEditor(int column, String name);
+	
 }

@@ -213,7 +213,7 @@ public abstract class AbstractMsoDs<M extends IMsoObjectIf, T extends IDsObjectI
 				T dsObj = null; 
 				Object[][] samples = null;
 				// get data
-				String matrix[][] = Utils.importText(file, "\\t");
+				String matrix[][] = Utils.importText(file, "\t");
 				// get upper bound
 				int iCount = matrix.length;
 				// loop over all objects
@@ -248,36 +248,53 @@ public abstract class AbstractMsoDs<M extends IMsoObjectIf, T extends IDsObjectI
 		return false;
 	}
 	
-	public synchronized void exportSamples() {
+	public synchronized String exportSamples(String path) {
 		String stamp = Utils.toString(Calendar.getInstance());
-		exportSamples(getOprID() + " " + stamp + ".dss");
+		stamp = stamp.replace(":", "").replace(".","").replace("+", "").replace(" ", "-");
+		exportSamplesToFile(path + getOprID() + "-" +  stamp + ".dss");
+		return stamp;
 	}
 	
-	public synchronized void exportSamples(String file) {
-		// allocate memory
-		String[][] matrix = new String[m_dsObjs.size()][];
+	public synchronized void exportSamplesToFile(String file) {
+		// get matrix row count
+		int row = 0;
+		int size = 0;
 		// loop over all objects
 		for(IDsObjectIf it : m_dsObjs.values()) {
-			// initialize
-			String id = toString(it);
 			// get attribute count
-			int iCount = it.getAttrCount();
-			// loop over all attributes
-			for(int i=0;i<iCount;i++) {
-				// get sample count
-				int jCount = it.getSampleCount();
-				// allocate memory
-				String[] samples = new String[jCount+2];
-				// set id and attribute index
-				samples[0] = id;
-				samples[1] = String.valueOf(i);
-				// loop over all samples
-				for(int j=0;j<jCount;j++) {
-					samples[j+2] = Utils.toString(it.getAttrValue(i,j));
+			size += it.getAttrCount();
+		}		
+		// has data?
+		if(size>0) {
+			// allocate memory
+			String[][] matrix = new String[size][];
+			// loop over all objects
+			for(IDsObjectIf it : m_dsObjs.values()) {
+				// initialize
+				String id = toString(it);
+				// get attribute count
+				int iCount = it.getAttrCount();
+				// loop over all attributes
+				for(int i=0;i<iCount;i++) {					
+					// get sample count
+					int jCount = it.getSampleCount();
+					// allocate memory
+					String[] samples = new String[jCount+2];
+					// set id and attribute index
+					samples[0] = id;
+					samples[1] = String.valueOf(i);
+					// loop over all samples
+					for(int j=0;j<jCount;j++) {
+						samples[j+2] = Utils.toString(it.getAttrValue(i,j));
+					}
+					// update matrix
+					matrix[row] = samples;
+					// increment row
+					row++;
 				}
 			}
+			Utils.exportText(matrix, file, "\t");
 		}
-		Utils.exportText(matrix, file, "\\t");
 	}
 	
 	public List<String> getImportFilesInCatalog(String path) {

@@ -18,7 +18,7 @@ import org.redcross.sar.mso.data.IAttributeIf;
  * @author kennetgu
  *
  */
-public class TextAreaAttribute extends AbstractDiskoAttribute {
+public class TextAreaField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -29,25 +29,25 @@ public class TextAreaAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */	
 	
-	public TextAreaAttribute(IAttributeIf<?> attribute, String caption,
+	public TextAreaField(IAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
 	}
 
-	public TextAreaAttribute(IAttributeIf<?> attribute, String caption,
+	public TextAreaField(IAttributeIf<?> attribute, String caption,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
 	}
 
-	public TextAreaAttribute(String name, String caption, boolean isEditable,
+	public TextAreaField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		// forward
 		super(name, caption, isEditable, width, height, value);
 	}
 
-	public TextAreaAttribute(String name, String caption, boolean isEditable) {
+	public TextAreaField(String name, String caption, boolean isEditable) {
 		// forward
 		super(name, caption, isEditable);
 	}

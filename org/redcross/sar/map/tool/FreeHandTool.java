@@ -31,8 +31,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public class FreeHandTool extends AbstractDrawTool {
-
+public class FreeHandTool extends AbstractMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -342,13 +341,13 @@ public class FreeHandTool extends AbstractDrawTool {
 	}
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new FreeHandToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof FreeHandToolState) {
 			((FreeHandToolState)state).load(this);
@@ -362,7 +361,7 @@ public class FreeHandTool extends AbstractDrawTool {
 	 * ==================================================
 	 */
 	
-	public class FreeHandToolState extends AbstractDrawTool.DrawToolState {
+	public class FreeHandToolState extends AbstractMsoDrawTool.DrawToolState {
 
 		// holds draw geometry
 		private Point p1 = null;
@@ -373,23 +372,23 @@ public class FreeHandTool extends AbstractDrawTool {
 
 		// create state
 		public FreeHandToolState(FreeHandTool tool) {
-			super((AbstractDrawTool)tool);
+			super((AbstractMsoDrawTool)tool);
 			save(tool);
 		}	
 		
 		public void save(FreeHandTool tool) {
-			super.save((AbstractDrawTool)tool);
+			super.save((AbstractMsoDrawTool)tool);
 			this.p1 = tool.p1;
 			this.p2 = tool.p2;
 			this.searchSubType = tool.searchSubType;
 		}
 		
 		public void load(FreeHandTool tool) {
-			super.load((AbstractDrawTool)tool);
 			tool.p1 = this.p1;
 			tool.p2 = this.p2;
 			tool.searchSubType = this.searchSubType;
 			tool.getToolPanel().update();
+			super.load((AbstractMsoDrawTool)tool);
 		}
 	}
 

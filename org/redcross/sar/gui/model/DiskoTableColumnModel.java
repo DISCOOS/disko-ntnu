@@ -1,9 +1,12 @@
 package org.redcross.sar.gui.model;
 
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableColumnModel;
 
 import javax.swing.table.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Enumeration;
 
@@ -33,6 +36,11 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 *  Holds all column objects, regardless of their visibility
 	 */
 	protected Vector<TableColumn> allTableColumns = new Vector<TableColumn>();
+	
+	/** Map of TableColumn and corresponding horizontal alignment in this model.
+	 */
+	protected Map<TableColumn,Integer> allColumnAlignments = new HashMap<TableColumn,Integer>();	
+	
 
 	/**
 	 * Creates an extended table column model.
@@ -147,6 +155,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 */    
 	public void addColumn(TableColumn column) {
 		allTableColumns.addElement(column);
+		allColumnAlignments.put(column,SwingConstants.LEFT);
 		super.addColumn(column);
 	}
 
@@ -160,6 +169,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 		int allColumnsIndex = allTableColumns.indexOf(column);
 		if(allColumnsIndex != -1) {
 			allTableColumns.removeElementAt(allColumnsIndex);
+			allColumnAlignments.remove(column);
 		}
 		super.removeColumn(column);
 	}
@@ -269,5 +279,15 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 		return onlyVisible ? (TableColumn)tableColumns.elementAt(columnIndex) : 
 			(TableColumn)allTableColumns.elementAt(columnIndex);
 	}
-		
+	
+	
+	public int getColumnAlignment(TableColumn aColumn) {
+		return allColumnAlignments.get(aColumn);
+	}
+	
+	public void setColumnAlignment(TableColumn aColumn, int alignment) {
+		allColumnAlignments.put(aColumn,alignment);
+	}
+	
+	
 }

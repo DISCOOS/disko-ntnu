@@ -16,7 +16,7 @@ import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
@@ -47,7 +47,7 @@ public class POIPanel extends DefaultToolPanel {
 	private JButton centerAtButton;
 	private POITypesPanel poiTypesPanel;
 	private FieldsPanel optionsPanel;
-	private TextFieldAttribute nameAttr;
+	private TextLineField nameAttr;
 	private DefaultPanel remarksPanel;
 	private JTextArea remarksArea;
 	
@@ -75,9 +75,13 @@ public class POIPanel extends DefaultToolPanel {
 
 			@Override
 			public void onAction(ToolEvent e) {
-				if(e.isType(ToolEventType.FINISH_EVENT)) {
+				if(e.isType(ToolEventType.FINISH_EVENT) && e.getFlags()==1) {
+					// suspend events
+					setChangeable(false);
 					// update position
 					getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());					
+					// resume events
+					setChangeable(false);
 				}				
 				
 			}
@@ -159,11 +163,11 @@ public class POIPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes nameAttr	
 	 * 	
-	 * @return {@link TextFieldAttribute}
+	 * @return {@link TextLineField}
 	 */
-	public TextFieldAttribute getNameAttr() {
+	public TextLineField getNameAttr() {
 		if (nameAttr == null) {
-			nameAttr = new TextFieldAttribute("Name","Navn",true,50,25,"");
+			nameAttr = new TextLineField("Name","Navn",true,50,25,"");
 		}
 		return nameAttr;
 	}

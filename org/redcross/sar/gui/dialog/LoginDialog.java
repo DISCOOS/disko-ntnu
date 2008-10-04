@@ -16,8 +16,8 @@ import javax.swing.BoxLayout;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.field.ComboAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.ComboBoxField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.util.Utils;
 
@@ -31,9 +31,9 @@ public class LoginDialog extends DefaultDialog {
 	
 	private DefaultPanel contentPanel = null;
 
-	private TextFieldAttribute attrUserName = null;
-	private TextFieldAttribute attrPassword = null;
-	private ComboAttribute attrRoles = null;
+	private TextLineField attrUserName = null;
+	private TextLineField attrPassword = null;
+	private ComboBoxField attrRoles = null;
 	
 	/**
 	 * @param owner
@@ -125,12 +125,12 @@ public class LoginDialog extends DefaultDialog {
 	/**
 	 * This method initializes UserName attribute
 	 * 	
-	 * @return {@link TextFieldAttribute}
+	 * @return {@link TextLineField}
 	 */
-	public TextFieldAttribute getUserName() {
+	public TextLineField getUserName() {
 		if (attrUserName == null) {
 			try {
-				attrUserName = new TextFieldAttribute("username","Brukernavn",true,80,25,"");
+				attrUserName = new TextLineField("username","Brukernavn",true,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -141,12 +141,12 @@ public class LoginDialog extends DefaultDialog {
 	/**
 	 * This method initializes Password attribute
 	 * 	
-	 * @return {@link TextFieldAttribute}
+	 * @return {@link TextLineField}
 	 */
-	public TextFieldAttribute getPassword() {
+	public TextLineField getPassword() {
 		if (attrPassword == null) {
 			try {
-				attrPassword = new TextFieldAttribute("password","Passord",true,80,25,"");
+				attrPassword = new TextLineField("password","Passord",true,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -157,12 +157,12 @@ public class LoginDialog extends DefaultDialog {
 	/**
 	 * This method initializes Roles attribute
 	 * 	
-	 * @return {@link ComboAttribute}
+	 * @return {@link ComboBoxField}
 	 */
-	public ComboAttribute getRoles() {
+	public ComboBoxField getRoles() {
 		if (attrRoles == null) {
 			try {
-				attrRoles = new ComboAttribute("roles","Roller",false,80,25,"");
+				attrRoles = new ComboBoxField("roles","Roller",false,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

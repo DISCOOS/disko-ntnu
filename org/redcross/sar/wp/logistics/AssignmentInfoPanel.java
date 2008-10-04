@@ -9,10 +9,10 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.field.DTGAttribute;
-import org.redcross.sar.gui.field.EnumAttribute;
+import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -145,14 +145,14 @@ public class AssignmentInfoPanel extends JPanel
 	}
 
 	private IDiskoField createTextFieldAttribute(String name, int index) {
-		IDiskoField attr = new TextFieldAttribute(name,
+		IDiskoField attr = new TextLineField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25,"");
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
 	private IDiskoField createEnumAttribute(String name, int index) {
-		IDiskoField attr = new EnumAttribute(name,
+		IDiskoField attr = new EnumField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25);
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);
@@ -160,7 +160,7 @@ public class AssignmentInfoPanel extends JPanel
 	}
 
 	private IDiskoField createDTGAttribute(String name, int index) {
-		IDiskoField attr = new DTGAttribute(name,
+		IDiskoField attr = new DTGField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,100,25);
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;

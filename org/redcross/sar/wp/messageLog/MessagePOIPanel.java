@@ -20,8 +20,8 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.AbstractDiskoAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.AbstractField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.mso.panel.POIPanel;
 import org.redcross.sar.gui.mso.panel.POITypesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -31,7 +31,7 @@ import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.POITool;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.IMapToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -64,13 +64,13 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	protected GotoPanel m_gotoPanel;
 	protected HeaderPanel m_optionsPanel;
 	protected POITypesPanel m_typesPanel;
-	protected TextFieldAttribute m_nameAttr;
+	protected TextLineField m_nameAttr;
 
 	protected IDiskoWpMessageLog m_wp;
 	
 	protected POITool m_tool;
 	protected POIType[] m_types;
-	protected IDiskoToolState m_toolState;
+	protected IMapToolState m_toolState;
 	protected HashMap<String,IUnitIf> m_units;
 	
 	/**
@@ -238,10 +238,10 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	 * 	
 	 * @return javax.swing.JPanel
 	 */
-	private TextFieldAttribute getNameAttr() {
+	private TextLineField getNameAttr() {
 		if (m_nameAttr == null) {
 			// get from position panel
-			m_nameAttr = (TextFieldAttribute)getPOIPanel().getOptionsPanel().getAttribute("Name");
+			m_nameAttr = (TextLineField)getPOIPanel().getOptionsPanel().getAttribute("Name");
 			m_nameAttr.setCaptionText("Navn i kart");
 			m_nameAttr.setFixedCaptionWidth(80);			
 		}
@@ -258,7 +258,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			// create header panel
 			m_optionsPanel = new HeaderPanel("",ButtonSize.SMALL,SwingConstants.LEFT);
 			// get name attribute
-			AbstractDiskoAttribute attr = getNameAttr();
+			AbstractField attr = getNameAttr();
 			// prepare layout
 			attr.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 			attr.setCaptionColor(Color.WHITE, Color.LIGHT_GRAY);

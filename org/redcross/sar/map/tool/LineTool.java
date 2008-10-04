@@ -28,7 +28,7 @@ import org.redcross.sar.util.Utils;
  * @author geira
  *
  */
-public class LineTool extends AbstractDrawTool {
+public class LineTool extends AbstractMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -519,13 +519,13 @@ public class LineTool extends AbstractDrawTool {
 	}*/
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new LineToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof LineToolState) {
 			((LineToolState)state).load(this);
@@ -539,7 +539,7 @@ public class LineTool extends AbstractDrawTool {
 	 * ==================================================
 	 */
 	
-	public class LineToolState extends DiskoToolState {
+	public class LineToolState extends AbstractMsoDrawTool.DrawToolState {
 
 		// points
 		private Point p1 = null;
@@ -552,11 +552,11 @@ public class LineTool extends AbstractDrawTool {
 
 		// create state
 		public LineToolState(LineTool tool) {
-			super((AbstractDiskoTool)tool);
+			super((AbstractMsoDrawTool)tool);
 			save(tool);
 		}		
 		public void save(LineTool tool) {
-			super.save((AbstractDiskoTool)tool);
+			super.save((AbstractMsoDrawTool)tool);
 			this.p1 = tool.p1;
 			this.p2 = tool.p2;
 			this.geoSnap1 = tool.geoSnap1;
@@ -565,12 +565,12 @@ public class LineTool extends AbstractDrawTool {
 		}
 		
 		public void load(LineTool tool) {
-			super.load((AbstractDiskoTool)tool);
 			tool.p1 = this.p1;
 			tool.p2 = this.p2;
 			tool.geoSnap1 = this.geoSnap1;
 			tool.geoSnap1 = this.geoSnap2;
 			tool.searchSubType = this.searchSubType;
+			super.load((AbstractMsoDrawTool)tool);
 		}
 	}
 }

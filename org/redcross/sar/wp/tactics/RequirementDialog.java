@@ -15,7 +15,7 @@ import java.util.EnumSet;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.field.ComboAttribute;
+import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -41,9 +41,9 @@ public class RequirementDialog extends DefaultDialog {
 	private BasePanel remarksPanel = null;
 	private JTextArea remarksTextArea = null;
 	private FieldsPanel attribsPanel = null; 
-	private ComboAttribute accuracyCombo;
-	private ComboAttribute priorityCombo;
-	private ComboAttribute personnelCombo;
+	private ComboBoxField accuracyCombo;
+	private ComboBoxField priorityCombo;
+	private ComboBoxField personnelCombo;
 	
 	private IDiskoWpModule wp = null;
 	
@@ -237,12 +237,12 @@ public class RequirementDialog extends DefaultDialog {
 	/**
 	 * This method initializes priorityCombo
 	 *
-	 * @return {@link ComboAttribute}
+	 * @return {@link ComboBoxField}
 	 */
-	private ComboAttribute getPriorityCombo() {
+	private ComboBoxField getPriorityCombo() {
 		if (priorityCombo == null) {
 			try {
-				priorityCombo = new ComboAttribute("priority", "Prioritet", false, 90, 25, null);
+				priorityCombo = new ComboBoxField("priority", "Prioritet", false, 90, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				AssignmentPriority[] values = AssignmentPriority.values();
 				for (int i = 0; i < values.length; i++) {
@@ -265,10 +265,10 @@ public class RequirementDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JComboBox
 	 */
-	private ComboAttribute getAccuracyCombo() {
+	private ComboBoxField getAccuracyCombo() {
 		if (accuracyCombo == null) {
 			try {
-				accuracyCombo = new ComboAttribute("accuracy", "Nøyaktighet", false, 90, 25, null);
+				accuracyCombo = new ComboBoxField("accuracy", "Nøyaktighet", false, 90, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				for (int i = 1; i < 4; i++) {
 					model.addElement(new Integer(i*25));
@@ -288,10 +288,10 @@ public class RequirementDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JComboBox
 	 */
-	private ComboAttribute getPersonnelCombo() {
+	private ComboBoxField getPersonnelCombo() {
 		if (personnelCombo == null) {
 			try {
-				personnelCombo = new ComboAttribute("personnel", "Antall mnsk", false, 90, 25, null);
+				personnelCombo = new ComboBoxField("personnel", "Antall mnsk", false, 90, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				for (int i = 1; i < 10; i++) {
 					model.addElement(new Integer(i));

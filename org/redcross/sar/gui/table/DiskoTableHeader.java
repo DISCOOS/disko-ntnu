@@ -22,6 +22,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.RowSorter;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.MouseInputListener;
@@ -34,6 +35,7 @@ import javax.swing.table.TableModel;
 import org.redcross.sar.gui.PopupManager;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.model.DiskoTableColumnModel;
 import org.redcross.sar.gui.model.IDiskoTableModel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.renderer.TableHeaderRenderer;
@@ -158,9 +160,16 @@ public class DiskoTableHeader extends JTableHeader {
 
 				// get rectangle of column header
 				Rectangle rc = getHeaderRect(column);
-								
+									
+				// get alignment
+				int alignment = SwingConstants.LEFT;
+				if(table.getColumnModel() instanceof DiskoTableColumnModel) {
+					DiskoTableColumnModel model = (DiskoTableColumnModel)table.getColumnModel();
+					alignment = model.getColumnAlignment(model.getColumn(column,false));
+				}
+				
 				// get center of arrow
-				int xCenter = rc.x + w/2 + 3;
+				int xCenter = rc.x + (alignment==SwingConstants.LEFT ? w/2 + 3 : rc.width - w/2 - 5);
 				int yCenter = rc.y + 2;
 				
 				// get direction

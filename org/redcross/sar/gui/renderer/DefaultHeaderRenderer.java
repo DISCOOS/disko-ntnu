@@ -17,6 +17,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 
+import org.redcross.sar.gui.model.DiskoTableColumnModel;
 import org.redcross.sar.gui.model.IDiskoTableModel;
 import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -150,6 +151,10 @@ public class DefaultHeaderRenderer implements TableHeaderRenderer {
 				col = table.convertColumnIndexToModel(col);
 				setEditor(model.getHeaderEditor(col));
 				setEditorVisible(model.isHeaderEditable(col));
+			}
+			if(table.getColumnModel() instanceof DiskoTableColumnModel) {
+				DiskoTableColumnModel model = (DiskoTableColumnModel)table.getColumnModel();
+				m_panel.setCaptionAlignment(model.getColumnAlignment(model.getColumn(col,false)));
 			}
 		}
 		return m_panel;

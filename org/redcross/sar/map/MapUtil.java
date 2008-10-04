@@ -1693,10 +1693,16 @@ public class MapUtil {
 	
 	public static SymbolBorder getSymbolBorder(int style) throws UnknownHostException, IOException {
 		
+		// finished
+		return getSymbolBorder(style,0);
+	}
+	
+	public static SymbolBorder getSymbolBorder(int style, int gap) throws UnknownHostException, IOException {
+		
 		// create border element
 		SymbolBorder symbol = new SymbolBorder();
-		symbol.setGap(3);
 		symbol.setLineSymbol(getLineSymbol(style));
+		symbol.setGap(gap);		
 		
 		// finished
 		return symbol;
@@ -1711,6 +1717,7 @@ public class MapUtil {
 		// finished
 		return symbol;
 	}
+	
 	
 	public static SymbolBackground getSymbolBackground(double sx, double sy) throws UnknownHostException, IOException {
 		

@@ -3,6 +3,7 @@ package org.redcross.sar.gui.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 
 public abstract class DiskoTableModel extends AbstractTableModel  
@@ -15,6 +16,7 @@ public abstract class DiskoTableModel extends AbstractTableModel
 	protected List<String> tooltips;
 	protected List<Boolean> editable;
 	protected List<String> editors;
+	protected List<Integer> alignments;
 	
 	/* =============================================================================
 	 * Constructors
@@ -55,6 +57,7 @@ public abstract class DiskoTableModel extends AbstractTableModel
 		this.editable = new ArrayList<Boolean>(size);
 		this.names = new ArrayList<String>(size);
 		this.editors = new ArrayList<String>(size);
+		this.alignments = new ArrayList<Integer>(size);
 		
 		// create lists
 		if(names!=null) {
@@ -64,6 +67,7 @@ public abstract class DiskoTableModel extends AbstractTableModel
 				this.tooltips.add(tooltips[i].toString());
 				this.editable.add(editable[i]);
 				this.editors.add(editors[i]);
+				this.alignments.add(SwingConstants.LEFT);
 			}
 		}
 		

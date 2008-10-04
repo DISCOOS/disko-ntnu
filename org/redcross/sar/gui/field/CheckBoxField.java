@@ -17,7 +17,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
  * @author kennetgu
  *
  */
-public class CheckBoxAttribute extends AbstractDiskoAttribute {
+public class CheckBoxField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -26,21 +26,21 @@ public class CheckBoxAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	public CheckBoxAttribute(String name, String caption, boolean isEditable,
+	public CheckBoxField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		super(name, caption, isEditable, width, height, value);
 	}
 
-	public CheckBoxAttribute(String name, String caption, boolean isEditable) {
+	public CheckBoxField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 	}
 		
-	public CheckBoxAttribute(MsoBoolean attribute, String caption,
+	public CheckBoxField(MsoBoolean attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
 	}
 
-	public CheckBoxAttribute(MsoBoolean attribute, String caption, boolean isEditable,
+	public CheckBoxField(MsoBoolean attribute, String caption, boolean isEditable,
 			int width, int height) {
 		super(attribute, caption, isEditable, width, height);
 	}

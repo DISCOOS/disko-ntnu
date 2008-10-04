@@ -10,9 +10,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.field.EnumAttribute;
+import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
@@ -145,14 +145,14 @@ public class UnitInfoPanel extends JPanel
 	}
 
 	private IDiskoField createTextFieldAttribute(String name, int index) {
-		IDiskoField attr = new TextFieldAttribute(name,
+		IDiskoField attr = new TextLineField(name,
 				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,100,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
 	private IDiskoField createEnumAttribute(String name, int index) {
-		IDiskoField attr = new EnumAttribute(name,
+		IDiskoField attr = new EnumField(name,
 				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,100,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);

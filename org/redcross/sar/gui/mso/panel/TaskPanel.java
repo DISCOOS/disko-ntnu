@@ -17,10 +17,10 @@ import java.util.ResourceBundle;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.field.ComboAttribute;
-import org.redcross.sar.gui.field.DTGAttribute;
-import org.redcross.sar.gui.field.TextAreaAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.ComboBoxField;
+import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.TextAreaField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -54,19 +54,19 @@ public class TaskPanel extends DefaultPanel
 	
 	private ITaskIf m_currentTask;
 
-	private TextFieldAttribute m_nameField;
-	private ComboAttribute m_typeCombo;
-	private DTGAttribute m_createdField;
-	private ComboAttribute m_priorityCombo;
-	private ComboAttribute m_dueCombo;
-	private ComboAttribute m_responsibleCombo;
-	private ComboAttribute m_alertCombo;
-	private ComboAttribute m_statusCombo;
-	private ComboAttribute m_progressCombo;
+	private TextLineField m_nameField;
+	private ComboBoxField m_typeCombo;
+	private DTGField m_createdField;
+	private ComboBoxField m_priorityCombo;
+	private ComboBoxField m_dueCombo;
+	private ComboBoxField m_responsibleCombo;
+	private ComboBoxField m_alertCombo;
+	private ComboBoxField m_statusCombo;
+	private ComboBoxField m_progressCombo;
 	private JButton m_useSourceButton;
-	private TextAreaAttribute m_descriptionArea;
-	private TextAreaAttribute m_sourceArea;
-	private TextFieldAttribute m_objectField;
+	private TextAreaField m_descriptionArea;
+	private TextAreaField m_sourceArea;
+	private TextLineField m_objectField;
 	private JPanel m_centerPanel;
 	private JPanel m_westPanel;
 	private JPanel m_eastPanel;
@@ -108,7 +108,7 @@ public class TaskPanel extends DefaultPanel
 	
 	private JPanel getNameField() {
 		if(m_nameField==null) {
-			m_nameField = new TextFieldAttribute("name",m_resources.getString("Task.text"),true);
+			m_nameField = new TextLineField("name",m_resources.getString("Task.text"),true);
 			//Utils.setFixedSize(m_nameField,490,25);
 		}
 		return m_nameField;
@@ -135,7 +135,7 @@ public class TaskPanel extends DefaultPanel
 			m_westPanel.setLayout(new BoxLayout(m_westPanel,BoxLayout.Y_AXIS));
 		
 			// Type (0,0)
-			m_typeCombo = new ComboAttribute("type",m_resources.getString("TaskType.text"),false);
+			m_typeCombo = new ComboBoxField("type",m_resources.getString("TaskType.text"),false);
 			m_typeCombo.fill(TaskType.values());
 			m_typeCombo.getComboBox().setSelectedIndex(3);
 			m_typeCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
@@ -150,7 +150,7 @@ public class TaskPanel extends DefaultPanel
 			m_westPanel.add(m_typeCombo);
 			
 			// Created date
-			m_createdField = new DTGAttribute("created",m_resources.getString("TaskCreated.text"),false);
+			m_createdField = new DTGField("created",m_resources.getString("TaskCreated.text"),false);
 			m_createdField.addDiskoWorkListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_createdField);
@@ -165,7 +165,7 @@ public class TaskPanel extends DefaultPanel
 			{
 				e1.printStackTrace();
 			}
-			m_responsibleCombo = new ComboAttribute("responsible", 
+			m_responsibleCombo = new ComboBoxField("responsible", 
 					m_resources.getString("TaskResponsible.text"),false);
 			m_responsibleCombo.fill(responsible);
 			m_responsibleCombo.getComboBox().setSelectedIndex(0);
@@ -181,7 +181,7 @@ public class TaskPanel extends DefaultPanel
 				TaskStatus.POSTPONED,
 				TaskStatus.FINISHED,
 			};
-			m_statusCombo = new ComboAttribute("status",m_resources.getString("TaskStatus.text"),false);
+			m_statusCombo = new ComboBoxField("status",m_resources.getString("TaskStatus.text"),false);
 			m_statusCombo.fill(statusItems);
 			m_statusCombo.getComboBox().setSelectedIndex(0);
 			m_statusCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
@@ -215,7 +215,7 @@ public class TaskPanel extends DefaultPanel
 			m_eastPanel.setLayout(new BoxLayout(m_eastPanel,BoxLayout.Y_AXIS));
 			
 			// Priority
-			m_priorityCombo = new ComboAttribute("priority",m_resources.getString("TaskPriority.text"),false);
+			m_priorityCombo = new ComboBoxField("priority",m_resources.getString("TaskPriority.text"),false);
 			m_priorityCombo.fill(TaskPriority.values());
 			m_priorityCombo.getComboBox().setSelectedIndex(3);
 			m_priorityCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
@@ -223,7 +223,7 @@ public class TaskPanel extends DefaultPanel
 			m_eastPanel.add(m_priorityCombo);
 
 			// Due (2,1)
-			m_dueCombo = new ComboAttribute("due", m_resources.getString("TaskDue.text"),true);
+			m_dueCombo = new ComboBoxField("due", m_resources.getString("TaskDue.text"),true);
 			updateDueComboBox();
 			m_dueCombo.getComboBox().setSelectedIndex(2);
 			JTextField field = (JTextField)m_dueCombo.getComboBox()
@@ -234,7 +234,7 @@ public class TaskPanel extends DefaultPanel
 			m_eastPanel.add(m_dueCombo);
 
 			// Alert (2,1)
-			m_alertCombo = new ComboAttribute("alert",m_resources.getString("TaskAlert.text"),true);
+			m_alertCombo = new ComboBoxField("alert",m_resources.getString("TaskAlert.text"),true);
 			updateAlertComboBox();
 			m_alertCombo.getComboBox().setSelectedIndex(2);
 			m_alertCombo.addDiskoWorkListener(this);
@@ -243,7 +243,7 @@ public class TaskPanel extends DefaultPanel
 			
 			// Progress 
 			String[] progressItems = {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "50%", "80%", "90%", "100%"};
-			m_progressCombo = new ComboAttribute("progress",m_resources.getString("TaskProgress.text"),false);
+			m_progressCombo = new ComboBoxField("progress",m_resources.getString("TaskProgress.text"),false);
 			m_progressCombo.fill(progressItems);
 			m_progressCombo.getComboBox().setSelectedIndex(0);
 			m_progressCombo.addDiskoWorkListener(this);
@@ -264,7 +264,7 @@ public class TaskPanel extends DefaultPanel
 			Utils.setFixedSize(m_bottomPanel,490,250);
 			
 			// Description
-			m_descriptionArea = new TextAreaAttribute("description",
+			m_descriptionArea = new TextAreaField("description",
 					m_resources.getString("TaskDescription.text"),true);
 			m_descriptionArea.setFixedHeight(100);
 			m_descriptionArea.getTextArea().setRows(0);
@@ -296,7 +296,7 @@ public class TaskPanel extends DefaultPanel
 			
 			
 			// Source
-			m_sourceArea = new  TextAreaAttribute("source",
+			m_sourceArea = new  TextAreaField("source",
 					m_resources.getString("TaskSource.text"),false);
 			m_sourceArea.setFixedHeight(100);
 			m_sourceArea.getTextArea().setRows(0);
@@ -305,7 +305,7 @@ public class TaskPanel extends DefaultPanel
 			m_bottomPanel.add(m_sourceArea);
 
 			// Object
-			m_objectField = new TextFieldAttribute("object",
+			m_objectField = new TextLineField("object",
 					m_resources.getString("TaskObject.text"),false);
 			m_objectField.addDiskoWorkListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));

@@ -34,7 +34,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
  * @author kennetgu
  *
  */
-public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoField, IMsoField {
+public abstract class AbstractField extends JPanel implements IDiskoField, IMsoField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -55,7 +55,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoFie
 	protected boolean m_isEditable = false;
 	protected boolean m_isTrackingFocus = false;
 	
-	private int m_isConsume = 0;
+	private int m_consumeCount = 0;
 	
 	private int m_fixedWidth;
 	private int m_fixedHeight;
@@ -67,15 +67,17 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoFie
 	 *================================================================== 
 	 */
 	
-	protected AbstractDiskoAttribute(String name, String caption, boolean isEditable) {
+	protected AbstractField(String name, String caption, boolean isEditable) {
 		this(name,caption,isEditable,DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT,null);
 	}
 	
-	protected AbstractDiskoAttribute(String name, String caption, boolean isEditable, int width, int height, Object value) {
+	protected AbstractField(String name, String caption, boolean isEditable, int width, int height, Object value) {
 		// forward
 		super();
 		// initialize GUI
 		initialize();
+		// suspend listeners
+		setChangeable(false);
 		// update
 		setName(name);
 		setCaptionText(caption);
@@ -83,10 +85,14 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoFie
 		setEditable(isEditable);		
 		setFixedCaptionWidth(width);
 		setFixedHeight(height);
+		
 		//setBorder(BorderFactory.createLineBorder(Color.RED)); // USE TO DEBUG LAYOUT PROBLEMS
+		
+		// resume listeners
+		setChangeable(true);
 	}
 	
-	protected AbstractDiskoAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable) {
+	protected AbstractField(IAttributeIf<?> attribute, String caption, boolean isEditable) {
 		// forward
 		this(attribute.getName(),caption,isEditable);
 		// set attribute
@@ -95,7 +101,7 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoFie
 		reset();		
 	}
 	
-	protected AbstractDiskoAttribute(IAttributeIf<?> attribute, 
+	protected AbstractField(IAttributeIf<?> attribute, 
 			String caption, boolean isEditable, 
 			int width, int height) {
 		// forward
@@ -245,14 +251,14 @@ public abstract class AbstractDiskoAttribute extends JPanel implements IDiskoFie
 	}
 	
 	public boolean isChangeable() {
-		return (m_isConsume>0);
+		return (m_consumeCount==0);
 	}
 	
-	public void setChangeable(boolean isConsume) {
-		if(isConsume)
-			m_isConsume++;
-		else if (m_isConsume>0)
-			m_isConsume--;
+	public void setChangeable(boolean isChangeable) {
+		if(!isChangeable)
+			m_consumeCount++;
+		else if(m_consumeCount>0)
+			m_consumeCount--;
 	}
 
 	public boolean isDirty() {

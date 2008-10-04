@@ -186,8 +186,8 @@ public class DrawFrame {
 			// set name
 			textBoxElement.setName("DRAWFRAME.TEXTBOX");
 			// set frame border
-			textBoxElement.setBorder(MapUtil.getSymbolBorder());
-			textBoxElement.setBackground(MapUtil.getSymbolBackground(5,1));
+			textBoxElement.setBorder(MapUtil.getSymbolBorder(esriSimpleLineStyle.esriSLSSolid,2));
+			textBoxElement.setBackground(MapUtil.getSymbolBackground(2,2));
 		}
 		return textBoxElement;
 	}
@@ -441,11 +441,11 @@ public class DrawFrame {
 		// get symbol background
 		SymbolBackground bg = (SymbolBackground)getTextBoxElement().getBackground();
 		// get vertical spacing
-		double d = display.getDisplayTransformation().fromPoints(bg.getVerticalSpacing()+1);
+		double d = display.getDisplayTransformation().fromPoints(bg.getVerticalSpacing()+2);
 		// get y-offset
 		double y = (b!=null && !b.isEmpty()) ? p.getY()+(b.getHeight()-d)/2: p.getY();
 		// get horizontal spacing
-		d = display.getDisplayTransformation().fromPoints(bg.getHorizontalSpacing()*2-1);
+		d = display.getDisplayTransformation().fromPoints(bg.getHorizontalSpacing()*2-2);
 		// get x-offset
 		double x = (b!=null && !b.isEmpty()) ? p.getX()+b.getWidth()/2 + d: p.getX();
 		// offset this point
@@ -455,12 +455,8 @@ public class DrawFrame {
 		getTextElement().setGeometry(p);
 		// get text boundery envelope again
 		b = display!=null ? MapUtil.getElementBounds(display, getTextElement()) : null;
-		// expand
-		//b.expand(10, 10, false);
 		// move text box element
 		getTextBoxElement().setGeometry(b);
-		getTextBoxElement().setBorder(MapUtil.getSymbolBorder());
-		getTextBoxElement().setBackground(MapUtil.getSymbolBackground(2,2));
 		// finished
 		return y;
 	}
@@ -680,9 +676,9 @@ public class DrawFrame {
 				if(e!=null && !e.isEmpty()) {
 					// add to dirty
 					if(dirtyArea!=null)
-						dirtyArea.union(MapUtil.expand(1.25,e));
+						dirtyArea.union(MapUtil.expand(1.75,e));
 					else
-						dirtyArea = MapUtil.expand(1.25,e);
+						dirtyArea = MapUtil.expand(1.75,e);
 				}
 			}
 		}

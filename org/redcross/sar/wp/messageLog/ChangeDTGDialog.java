@@ -9,7 +9,7 @@ import javax.swing.BorderFactory;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.NumPadPanel;
@@ -34,8 +34,8 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	private DefaultPanel m_contentPanel;
 	private FieldsPanel m_attributesPanel;
 	private NumPadPanel m_numPadPanel;
-	private DTGAttribute m_createdAttr;
-	private DTGAttribute m_timeAttr;
+	private DTGField m_createdAttr;
+	private DTGField m_timeAttr;
 	
 	private IDiskoWpMessageLog m_wp;
 
@@ -237,16 +237,16 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		return m_attributesPanel;
 	}
 
-	private DTGAttribute getCreatedAttr() {
+	private DTGField getCreatedAttr() {
 		if(m_createdAttr==null) {
-			m_createdAttr = new DTGAttribute("created",m_wp.getBundleText("ChangeDTGDialogCreated.text"),false);
+			m_createdAttr = new DTGField("created",m_wp.getBundleText("ChangeDTGDialogCreated.text"),false);
 		}
 		return m_createdAttr;
 	}
 	
-	private DTGAttribute getTimeAttr() {
+	private DTGField getTimeAttr() {
 		if(m_timeAttr==null) {
-			m_timeAttr = new DTGAttribute("time",m_wp.getBundleText("ChangeDTGDialogTime.text"),true);
+			m_timeAttr = new DTGField("time",m_wp.getBundleText("ChangeDTGDialogTime.text"),true);
 			Utils.setFixedHeight(m_timeAttr, 35);			
 		}
 		return m_timeAttr;

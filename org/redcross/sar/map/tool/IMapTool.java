@@ -83,11 +83,11 @@ public interface IMapTool extends ITool {
 	
 	public boolean removeToolPanel(IToolPanel panel);
 	
-	public IDiskoToolState save();
+	public IMapToolState save();
 	
-	public boolean load(IDiskoToolState state);
+	public boolean load(IMapToolState state);
 	
-	public interface IDiskoToolState {};
+	public interface IMapToolState {};
 	
 	/*===============================================
 	 * ICommand methods

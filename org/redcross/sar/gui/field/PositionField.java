@@ -29,7 +29,7 @@ import com.esri.arcgis.geometry.Point;
  * @author kennetgu
  *
  */
-public class PositionAttribute extends AbstractDiskoAttribute {
+public class PositionField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -44,14 +44,14 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */	
 		
-	public PositionAttribute(String name, String caption, boolean isEditable) {
+	public PositionField(String name, String caption, boolean isEditable) {
 		// forward
 		super(name, caption, isEditable);
 		// forward
 		initialize(null,DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionAttribute(String name, String caption, boolean isEditable,
+	public PositionField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		// forward
 		super(name, caption, isEditable, width, height, value);
@@ -59,7 +59,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		initialize(value,DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionAttribute(String name, String caption, boolean isEditable,
+	public PositionField(String name, String caption, boolean isEditable,
 			int width, int height, Object value, int format) {
 		// forward
 		super(name, caption, isEditable, width, height, value);
@@ -67,14 +67,14 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		initialize(value,format,isEditable);
 	}
 	
-	public PositionAttribute(MsoPosition attribute, String caption, boolean isEditable) {
+	public PositionField(MsoPosition attribute, String caption, boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
 		// forward
 		initialize(null,DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionAttribute(IAttributeIf<?> attribute, String caption,
+	public PositionField(IAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -82,7 +82,7 @@ public class PositionAttribute extends AbstractDiskoAttribute {
 		initialize(getValue(),DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionAttribute(IAttributeIf<?> attribute, String caption,
+	public PositionField(IAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height, int format) {
 		// forward
 		super(attribute, caption, isEditable, width, height);

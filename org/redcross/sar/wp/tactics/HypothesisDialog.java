@@ -31,7 +31,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.gui.field.ComboAttribute;
+import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.mso.model.HypothesisListModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -67,8 +67,8 @@ public class HypothesisDialog extends DefaultDialog {
 	private BasePanel descriptionPanel = null;
 	private JTextArea descriptionTextArea = null;
 	private FieldsPanel attribsPanel;
-	private ComboAttribute statusCombo;
-	private ComboAttribute priorityCombo;
+	private ComboBoxField statusCombo;
+	private ComboBoxField priorityCombo;
 	
 	private IDiskoWpModule wp = null;
 	
@@ -509,11 +509,11 @@ public class HypothesisDialog extends DefaultDialog {
 	/**
 	 * This method initializes priorityCombo
 	 *
-	 * @return {@link ComboAttribute}
+	 * @return {@link ComboBoxField}
 	 */
-	private ComboAttribute getPriorityCombo() {
+	private ComboBoxField getPriorityCombo() {
 		if (priorityCombo == null) {
-			priorityCombo = new ComboAttribute("priority", "Prioritet", false, 50, 25, null);
+			priorityCombo = new ComboBoxField("priority", "Prioritet", false, 50, 25, null);
 			DefaultComboBoxModel model = new DefaultComboBoxModel();
 			for (int i = 1; i < 6; i++) {
 				model.addElement(new Integer(i));
@@ -529,10 +529,10 @@ public class HypothesisDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JComboBox
 	 */
-	private ComboAttribute getStatusCombo() {
+	private ComboBoxField getStatusCombo() {
 		if (statusCombo == null) {
 			try {
-				statusCombo = new ComboAttribute("status", "Status", false, 50, 25, null);
+				statusCombo = new ComboBoxField("status", "Status", false, 50, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				HypothesisStatus[] values = HypothesisStatus.values();
 				for (int i = 0; i < values.length; i++) {

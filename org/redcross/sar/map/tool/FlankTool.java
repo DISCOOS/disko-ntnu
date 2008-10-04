@@ -32,7 +32,7 @@ import org.redcross.sar.util.mso.Route;
  * @author geira
  *
  */
-public class FlankTool extends AbstractDiskoTool {
+public class FlankTool extends AbstractMsoTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 200;
@@ -115,13 +115,13 @@ public class FlankTool extends AbstractDiskoTool {
 	}
 
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new FlankToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof FlankToolState) {
 			((FlankToolState)state).load(this);
@@ -135,25 +135,6 @@ public class FlankTool extends AbstractDiskoTool {
 	 * ==================================================
 	 */
 		
-	public class FlankToolState extends DiskoToolState {
-		private Point p = null;
-		
-		// create state
-		public FlankToolState(FlankTool tool) {
-			super((AbstractDiskoTool)tool);
-			save(tool);
-		}		
-		public void save(FlankTool tool) {
-			super.save((AbstractDiskoTool)tool);
-			this.p = tool.p;
-		}
-		
-		public void load(FlankTool tool) {
-			super.load((AbstractDiskoTool)tool);
-			tool.p = this.p; 			
-		}
-	}
-	
 	private boolean doFlankWork() {
 		
 		try {
@@ -266,5 +247,24 @@ public class FlankTool extends AbstractDiskoTool {
 			}			
 		}
 	}
+	
+	public class FlankToolState extends AbstractMsoTool.MsoToolState {
+		private Point p = null;
+		
+		// create state
+		public FlankToolState(FlankTool tool) {
+			super((AbstractMsoTool)tool);
+			save(tool);
+		}		
+		public void save(FlankTool tool) {
+			super.save((AbstractMsoTool)tool);
+			this.p = tool.p;
+		}
+		
+		public void load(FlankTool tool) {
+			super.load((AbstractMsoTool)tool);
+			tool.p = this.p; 			
+		}
+	}	
 	
 }

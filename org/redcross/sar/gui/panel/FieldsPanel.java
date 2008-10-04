@@ -15,15 +15,15 @@ import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.AbstractDiskoAttribute;
-import org.redcross.sar.gui.field.CheckBoxAttribute;
-import org.redcross.sar.gui.field.DTGAttribute;
-import org.redcross.sar.gui.field.EnumAttribute;
+import org.redcross.sar.gui.field.AbstractField;
+import org.redcross.sar.gui.field.CheckBoxField;
+import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
 import org.redcross.sar.gui.field.IMsoField;
-import org.redcross.sar.gui.field.NumericAttribute;
-import org.redcross.sar.gui.field.PositionAttribute;
-import org.redcross.sar.gui.field.TextAreaAttribute;
+import org.redcross.sar.gui.field.NumericField;
+import org.redcross.sar.gui.field.PositionField;
+import org.redcross.sar.gui.field.TextAreaField;
 import org.redcross.sar.gui.util.SpringUtilities;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -195,7 +195,7 @@ public class FieldsPanel extends DefaultPanel {
 					// get attribute
 					IAttributeIf<?> attr = map.get(it);
 					// is supported?
-					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
+					if(AbstractField.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
 						added += (addAttribute(attr,captions.get(i),isEditable,width,height)!=null ? 1 : 0);
 					}
@@ -210,7 +210,7 @@ public class FieldsPanel extends DefaultPanel {
 					// get attribute
 					IAttributeIf<?> attr = map.get(it);
 					// is supported?
-					if(AbstractDiskoAttribute.isMsoAttributeSupported(attr)) {
+					if(AbstractField.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
 						added += (addAttribute(attr,attr.getName(),isEditable,width,height)!=null ? 1 : 0);
 					}
@@ -432,37 +432,37 @@ public class FieldsPanel extends DefaultPanel {
 			// dispatch attribute type
 			if (attribute instanceof MsoBoolean) {
 				// get checkbox attribute
-			    component = new CheckBoxAttribute(
+			    component = new CheckBoxField(
 			    		(MsoBoolean)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof MsoInteger) {
 				// get numeric attribute
-			    component = new NumericAttribute(
+			    component = new NumericField(
 			    		(MsoInteger)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof MsoDouble) {
 				// get numeric attribute
-			    component = new NumericAttribute(
+			    component = new NumericField(
 			    		(MsoDouble)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof MsoString) {
 				// get text attribute
-			    component = new TextAreaAttribute(
+			    component = new TextAreaField(
 			    		(MsoString)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof MsoCalendar) {
 				// get DTG attribute
-			    component = new DTGAttribute(
+			    component = new DTGField(
 			    		(MsoCalendar)attribute,caption,isEditable,width,height,Calendar.getInstance());
 			}
 			else if (attribute instanceof MsoPosition) {
 				// get position attribute
-			    component = new PositionAttribute(
+			    component = new PositionField(
 			    		(MsoPosition)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof MsoTimePos) {
 				// get position attribute
-			    component = new PositionAttribute(
+			    component = new PositionField(
 			    		(MsoTimePos)attribute,caption,isEditable,width,height);
 			}
 			else if (attribute instanceof AttributeImpl.MsoPolygon) {
@@ -479,7 +479,7 @@ public class FieldsPanel extends DefaultPanel {
 			}
 			else if (attribute instanceof MsoEnum<?>) {
 				// get enum attribute
-			    component = new EnumAttribute((MsoEnum<?>)attribute,caption,isEditable,width,height);
+			    component = new EnumField((MsoEnum<?>)attribute,caption,isEditable,width,height);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -3,7 +3,7 @@ package org.redcross.sar.map.tool;
 import javax.swing.AbstractButton;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.IMapToolState;
 
 public interface IHostDiskoTool {
 
@@ -21,8 +21,8 @@ public interface IHostDiskoTool {
 	
 	public AbstractButton getButton();
 	
-	public IDiskoToolState save();
+	public IMapToolState save();
 	
-	public boolean load(IDiskoToolState state);
+	public boolean load(IMapToolState state);
 	
 }

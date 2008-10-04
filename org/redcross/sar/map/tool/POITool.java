@@ -30,7 +30,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  *
  */
-public class POITool extends AbstractDrawTool {
+public class POITool extends AbstractMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -345,13 +345,13 @@ public class POITool extends AbstractDrawTool {
 	}	
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new POIToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof POIToolState) {
 			((POIToolState)state).load(this);
@@ -365,7 +365,7 @@ public class POITool extends AbstractDrawTool {
 	 * ==================================================
 	 */
 	
-	public class POIToolState extends DiskoToolState {
+	public class POIToolState extends AbstractMsoDrawTool.DrawToolState {
 		
 		private POIType type;
 		private POIType[] types;
@@ -376,12 +376,12 @@ public class POITool extends AbstractDrawTool {
 		
 		// create state
 		public POIToolState(POITool tool) {
-			super((AbstractDiskoTool)tool);
+			super((AbstractMsoDrawTool)tool);
 			save(tool);
 		}		
 		
 		public void save(POITool tool) {
-			super.save((AbstractDiskoTool)tool);
+			super.save((AbstractMsoDrawTool)tool);
 			searchSubType = tool.searchSubType;
 			types = tool.getPOIPanel().getPOITypes();
 			type = tool.getPOIPanel().getPOIType();
@@ -391,7 +391,6 @@ public class POITool extends AbstractDrawTool {
 		}
 		
 		public void load(POITool tool) {
-			super.load((AbstractDiskoTool)tool);
 			tool.getPOIPanel().setChangeable(false);
 			tool.searchSubType = searchSubType;
 			tool.getPOIPanel().setPOIType(type);
@@ -400,6 +399,7 @@ public class POITool extends AbstractDrawTool {
 			tool.getPOIPanel().setPOIName(name);
 			tool.getPOIPanel().setChangeable(true);
 			tool.getPOIPanel().setDirty(isDirty);
+			super.load((AbstractMsoDrawTool)tool);
 		}
 	}
 }

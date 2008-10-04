@@ -13,6 +13,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.element.PositionElement;
 import org.redcross.sar.util.mso.GeoPos;
 
+import com.esri.arcgis.geometry.Envelope;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.interop.AutomationException;
@@ -45,29 +46,38 @@ public class EstimatedPositionLayer extends AbstractDiskoLayer implements IDsUpd
 			case ADDED_EVENT:
 				data = e.getData();
 				for(int i=0;i<data.length;i++) {
-					if(extent==null)
-						extent = addCost((RouteCost)data[i]);
-					else
-						extent.union(addCost((RouteCost)data[i]));
+					IEnvelope added = addCost((RouteCost)data[i]);
+					if(added!=null && !added.isEmpty()) {
+						if(extent==null)
+							extent = added;
+						else
+							extent.union(added);
+					}
 				}
 				break;
 			case MODIFIED_EVENT:
 				data = e.getData();
 				for(int i=0;i<data.length;i++) {
-					if(extent==null)
-						extent = update((RouteCost)data[i]);
-					else
-						extent.union(update((RouteCost)data[i]));
+					IEnvelope updated = update((RouteCost)data[i]);
+					if(updated!=null && !updated.isEmpty()) {
+						if(extent==null)
+							extent = updated;
+						else
+							extent.union(updated);
+					}
 				}
 				
 				break;
 			case REMOVED_EVENT:
 				data = e.getData();
 				for(int i=0;i<data.length;i++) {
-					if(extent==null)
-						extent = removeCost((RouteCost)data[i]);
-					else
-						extent.union(removeCost((RouteCost)data[i]));
+					IEnvelope removed = removeCost((RouteCost)data[i]);
+					if(removed!=null && !removed.isEmpty()) {
+						if(extent==null)
+							extent = removed;
+						else
+							extent.union(removed);
+					}
 				}
 				break;
 			}

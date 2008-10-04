@@ -20,8 +20,8 @@ import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.DTGAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
@@ -66,7 +66,7 @@ public class PositionPanel extends DefaultToolPanel {
 	private DefaultPanel unitsPanel;
 	private JList unitList;
 	private FieldsPanel optionsPanel;
-	private DTGAttribute dtgAttr;
+	private DTGField dtgAttr;
 	
 	private TimePos logEntry;
 	private boolean isSingleUnitOnly = false;
@@ -96,7 +96,7 @@ public class PositionPanel extends DefaultToolPanel {
 
 			@Override
 			public void onAction(ToolEvent e) {
-				if(e.getFlags()==1 && e.isType(ToolEventType.FINISH_EVENT)) {
+				if(e.isType(ToolEventType.FINISH_EVENT) && e.getFlags()==1) {
 					// update position
 					getGotoPanel().getCoordinatePanel().setPoint(getTool().getPoint());					
 				}				
@@ -280,11 +280,11 @@ public class PositionPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes nameAttr	
 	 * 	
-	 * @return {@link TextFieldAttribute}
+	 * @return {@link TextLineField}
 	 */
-	public DTGAttribute getDTGAttr() {
+	public DTGField getDTGAttr() {
 		if (dtgAttr == null) {			
-			dtgAttr = new DTGAttribute("DTG","DTG",true,35,25,Calendar.getInstance());
+			dtgAttr = new DTGField("DTG","DTG",true,35,25,Calendar.getInstance());
 		}
 		return dtgAttr;
 	}	

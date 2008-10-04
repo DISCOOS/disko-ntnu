@@ -30,7 +30,7 @@ import com.esri.arcgis.geometry.Point;
  * @author geira
  *
  */
-public class SelectTool extends AbstractDiskoTool {
+public class SelectTool extends AbstractMapTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 100;
@@ -242,13 +242,13 @@ public class SelectTool extends AbstractDiskoTool {
 	
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new SelectFeatureToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof SelectFeatureToolState) {
 			((SelectFeatureToolState)state).load(this);
@@ -262,7 +262,7 @@ public class SelectTool extends AbstractDiskoTool {
 	 * ==================================================
 	 */
 	
-	public class SelectFeatureToolState extends DiskoToolState {
+	public class SelectFeatureToolState extends MsoToolState {
 
 		private Point p = null;
 		private IEnvelope extent = null;
@@ -271,11 +271,11 @@ public class SelectTool extends AbstractDiskoTool {
 		
 		// create state
 		public SelectFeatureToolState(SelectTool tool) {
-			super((AbstractDiskoTool)tool);
+			super((AbstractMapTool)tool);
 			save(tool);
 		}		
 		public void save(SelectTool tool) {
-			super.save((AbstractDiskoTool)tool);
+			super.save((AbstractMapTool)tool);
 			this.p = tool.p;
 			this.extent = tool.extent;
 			this.isSelectByPoint = tool.isSelectByPoint;
@@ -283,7 +283,7 @@ public class SelectTool extends AbstractDiskoTool {
 		}
 		
 		public void load(SelectTool tool) {
-			super.load((AbstractDiskoTool)tool);
+			super.load((AbstractMapTool)tool);
 			tool.p = this.p;
 			tool.extent = this.extent;
 			tool.isSelectByPoint = this.isSelectByPoint;

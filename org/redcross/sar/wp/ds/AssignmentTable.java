@@ -9,6 +9,7 @@ import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
@@ -99,12 +100,29 @@ public class AssignmentTable extends DiskoTable {
 		setColumnSelectionAllowed(false);
 		setShowVerticalLines(false);
 		setNoneColumnsVisible();
-		
+				
 		if(archived)
 			setVisibleColumns(AssignmentTableModel.ARCHIVED_COLUMNS, true);
 		else
 			setVisibleColumns(AssignmentTableModel.ACTIVE_COLUMNS, true);
 						
+		// set header alignments
+		DiskoTableColumnModel columnModel = (DiskoTableColumnModel)getColumnModel();
+		for(int i=0; i< getColumnCount();i++) {
+			// set alignment
+			switch(i) {
+			case AssignmentTableModel.NAME_INDEX:				
+			case AssignmentTableModel.UNIT_INDEX:
+			case AssignmentTableModel.STATUS_INDEX:
+				columnModel.setColumnAlignment(columnModel.getColumn(i,false),SwingConstants.LEFT);
+				break;
+			default:
+				columnModel.setColumnAlignment(columnModel.getColumn(i,false),SwingConstants.RIGHT);
+				break;
+			}
+			
+		}
+		
 	}
 	
 	/* ===============================================================

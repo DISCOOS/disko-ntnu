@@ -18,7 +18,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoString;
  * @author kennetgu
  *
  */
-public class ComboAttribute extends AbstractDiskoAttribute {
+public class ComboBoxField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -27,21 +27,21 @@ public class ComboAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	public ComboAttribute(String name, String caption, boolean isEditable,
+	public ComboBoxField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		super(name, caption, isEditable, width, height, value);
 	}
 
-	public ComboAttribute(String name, String caption, boolean isEditable) {
+	public ComboBoxField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 	}
 	
-	public ComboAttribute(MsoString attribute, String caption,
+	public ComboBoxField(MsoString attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
 	}
 
-	public ComboAttribute(MsoString attribute, String caption, int width,
+	public ComboBoxField(MsoString attribute, String caption, int width,
 			int height, boolean isEditable) {
 		super(attribute, caption, isEditable, width, height);
 	}

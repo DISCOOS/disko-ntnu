@@ -32,7 +32,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  *
  */
-public class EraseTool extends AbstractDiskoTool {
+public class EraseTool extends AbstractMapTool {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -334,13 +334,13 @@ public class EraseTool extends AbstractDiskoTool {
 	}
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new EraseToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof EraseToolState) {
 			((EraseToolState)state).load(this);
@@ -354,7 +354,7 @@ public class EraseTool extends AbstractDiskoTool {
 	 * ==================================================
 	 */
 	
-	public class EraseToolState extends DiskoToolState {
+	public class EraseToolState extends MsoToolState {
 
 		private IPoint p = null;
 		private IEnvelope extent = null;
@@ -362,18 +362,18 @@ public class EraseTool extends AbstractDiskoTool {
 		
 		// create state
 		public EraseToolState(EraseTool tool) {
-			super((AbstractDiskoTool)tool);
+			super((AbstractMapTool)tool);
 			save(tool);
 		}		
 		public void save(EraseTool tool) {
-			super.save((AbstractDiskoTool)tool);
+			super.save((AbstractMapTool)tool);
 			this.p = tool.p;
 			this.extent = tool.extent;
 			this.isSelectByPoint = tool.isSelectByPoint;
 		}
 		
 		public void load(EraseTool tool) {
-			super.load((AbstractDiskoTool)tool);
+			super.load((AbstractMapTool)tool);
 			tool.p = this.p;
 			tool.extent = this.extent;
 			tool.isSelectByPoint = this.isSelectByPoint;

@@ -30,7 +30,7 @@ import java.io.IOException;
  * @author geira
  *
  */
-public class SplitTool extends AbstractDiskoTool {
+public class SplitTool extends AbstractMsoTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 200;
@@ -114,13 +114,13 @@ public class SplitTool extends AbstractDiskoTool {
 	}
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new SplitToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof SplitToolState) {
 			((SplitToolState)state).load(this);
@@ -133,27 +133,6 @@ public class SplitTool extends AbstractDiskoTool {
 	 * Inner classes
 	 * ==================================================
 	 */
-		
-	
-	public class SplitToolState extends DiskoToolState {
-
-		private Point p = null;
-		
-		// create state
-		public SplitToolState(SplitTool tool) {
-			super((AbstractDiskoTool)tool);
-			save(tool);
-		}		
-		public void save(SplitTool tool) {
-			super.save((AbstractDiskoTool)tool);
-			this.p = tool.p;
-		}
-		
-		public void load(SplitTool tool) {
-			super.load((AbstractDiskoTool)tool);
-			tool.p = this.p;
-		}
-	}			
 
 	private boolean doSplitWork() {
 		
@@ -248,7 +227,7 @@ public class SplitTool extends AbstractDiskoTool {
 				// get result
 				boolean workDone = (Boolean)get();
 				
-				// notify disko work listeners?
+				// notify listeners?
 				if(workDone)
 					fireOnWorkFinish(this,msoObject);
 				
@@ -257,5 +236,26 @@ public class SplitTool extends AbstractDiskoTool {
 				e.printStackTrace();
 			}			
 		}
-	}		
+	}
+		
+	public class SplitToolState extends MsoToolState {
+
+		private Point p = null;
+		
+		// create state
+		public SplitToolState(SplitTool tool) {
+			super((AbstractMsoTool)tool);
+			save(tool);
+		}		
+		public void save(SplitTool tool) {
+			super.save((AbstractMsoTool)tool);
+			this.p = tool.p;
+		}
+		
+		public void load(SplitTool tool) {
+			tool.p = this.p;
+			super.load((AbstractMsoTool)tool);
+		}
+	}			
+	
 }

@@ -223,6 +223,14 @@ public class HeaderPanel extends JPanel {
 		setCaptionVisible();
 	}	
 	
+	public void setCaptionAlignment(int align) {
+		getCaptionLabel().setHorizontalAlignment(align);
+	}
+	
+	public void getCaptionAlignment() {
+		getCaptionLabel().getHorizontalAlignment();
+	}
+	
 	/**
 	 * This method sets the border color
 	 *

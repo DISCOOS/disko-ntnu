@@ -18,8 +18,8 @@ import javax.swing.SwingConstants;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.AbstractDiskoAttribute;
-import org.redcross.sar.gui.field.DTGAttribute;
+import org.redcross.sar.gui.field.AbstractField;
+import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.mso.panel.PositionPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -29,7 +29,7 @@ import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.PositionTool;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.IMapToolState;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
@@ -55,13 +55,13 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 	protected PositionPanel m_positionPanel;
 	protected GotoPanel m_gotoPanel;
 	protected HeaderPanel m_optionsPanel;	
-	protected DTGAttribute m_dtgAttr;	
+	protected DTGField m_dtgAttr;	
 	protected DefaultPanel m_unitsPanel;
 	
 	protected IDiskoWpMessageLog m_wp;
 	
 	protected PositionTool m_tool;
-	protected IDiskoToolState m_toolState;
+	protected IMapToolState m_toolState;
 
 	//protected Calendar logTimeStamp;
 	
@@ -244,10 +244,10 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 	 * 	
 	 * @return javax.swing.JPanel
 	 */
-	private DTGAttribute getDTGAttr() {
+	private DTGField getDTGAttr() {
 		if (m_dtgAttr == null) {
 			// get from position panel
-			m_dtgAttr = (DTGAttribute)getPositionPanel().getOptionsPanel().getAttribute("DTG");
+			m_dtgAttr = (DTGField)getPositionPanel().getOptionsPanel().getAttribute("DTG");
 			m_dtgAttr.setCaptionText("Når");
 			m_dtgAttr.setFixedCaptionWidth(80);
 			
@@ -260,7 +260,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 			// create header panel
 			m_optionsPanel = new HeaderPanel("",ButtonSize.SMALL,SwingConstants.LEFT);
 			// get name attribute
-			AbstractDiskoAttribute attr = getDTGAttr();
+			AbstractField attr = getDTGAttr();
 			// prepare layout
 			attr.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 			attr.setCaptionColor(Color.WHITE, Color.LIGHT_GRAY);

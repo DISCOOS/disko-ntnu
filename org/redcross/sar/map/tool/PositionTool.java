@@ -24,7 +24,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public class PositionTool extends AbstractDrawTool {
+public class PositionTool extends AbstractMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -245,13 +245,13 @@ public class PositionTool extends AbstractDrawTool {
 	}	
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new PositionToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof PositionToolState) {
 			((PositionToolState)state).load(this);
@@ -265,7 +265,7 @@ public class PositionTool extends AbstractDrawTool {
 	 * ==================================================
 	 */
 	
-	public class PositionToolState extends DiskoToolState {
+	public class PositionToolState extends AbstractMsoDrawTool.DrawToolState {
 
 		private IUnitIf unit = null;
 		private boolean isDirty = false;
@@ -275,11 +275,11 @@ public class PositionTool extends AbstractDrawTool {
 		
 		// create state
 		public PositionToolState(PositionTool tool) {
-			super((AbstractDiskoTool)tool);
+			super((AbstractMsoDrawTool)tool);
 			save(tool);
 		}		
 		public void save(PositionTool tool) {
-			super.save((AbstractDiskoTool)tool);
+			super.save((AbstractMapTool)tool);
 			this.logPosition = tool.logPosition;
 			this.logTimeStamp = tool.logTimeStamp;
 			this.updateTrackPosition = tool.updateTrackPosition;
@@ -288,7 +288,6 @@ public class PositionTool extends AbstractDrawTool {
 		}
 		
 		public void load(PositionTool tool) {
-			super.load((AbstractDiskoTool)tool);
 			tool.logPosition = this.logPosition;
 			tool.logTimeStamp = this.logTimeStamp;
 			tool.updateTrackPosition = this.updateTrackPosition;
@@ -296,6 +295,7 @@ public class PositionTool extends AbstractDrawTool {
 			tool.getPositionPanel().setUnit(this.unit);
 			tool.getPositionPanel().setChangeable(true);
 			tool.getPositionPanel().setDirty(isDirty);
+			super.load((AbstractMsoDrawTool)tool);
 		}
 	}
 

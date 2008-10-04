@@ -45,7 +45,7 @@ import org.redcross.sar.map.tool.SelectTool;
 import org.redcross.sar.map.tool.SplitTool;
 import org.redcross.sar.map.tool.DiskoToolWrapper.WrapAction;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.map.tool.IMapTool.IDiskoToolState;
+import org.redcross.sar.map.tool.IMapTool.IMapToolState;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.ControlsMapFullExtentCommand;
@@ -1110,12 +1110,12 @@ public class NavBarPanel extends JPanel {
 
 		private ButtonState m_navButton = null;
 		private Hashtable<Enum<?>, ButtonState> m_buttons = null;
-		private Hashtable<Enum<?>, IDiskoToolState> m_toolStates = null;
+		private Hashtable<Enum<?>, IMapToolState> m_toolStates = null;
 		private Hashtable<Enum<?>, IDiskoCommandState> m_cmdStates = null;
 		
 		public NavState(NavBarPanel bar) {
 			// initialize
-			m_toolStates = new Hashtable<Enum<?>, IDiskoToolState>();
+			m_toolStates = new Hashtable<Enum<?>, IMapToolState>();
 			m_cmdStates = new Hashtable<Enum<?>, IDiskoCommandState>();
 			m_buttons = new Hashtable<Enum<?>,ButtonState>();
 			// forward
@@ -1150,7 +1150,7 @@ public class NavBarPanel extends JPanel {
 					// get tool
 					IMapTool tool = (IMapTool)cmd;
 					// get state
-					IDiskoToolState state = tool.save();
+					IMapToolState state = tool.save();
 					// override isVisible?
 					if(tool.isHosted()) {
 						// override
@@ -1167,7 +1167,7 @@ public class NavBarPanel extends JPanel {
 					// get host tool
 					IHostDiskoTool tool = (IHostDiskoTool)cmd;					
 					// get state
-					IDiskoToolState state = tool.save();
+					IMapToolState state = tool.save();
 					// put to command hashtable?
 					if(state!=null)
 						m_toolStates.put(key, state);					

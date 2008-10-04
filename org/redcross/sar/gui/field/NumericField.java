@@ -18,7 +18,7 @@ import org.redcross.sar.util.Utils;
  * @author kennetgu
  *
  */
-public class NumericAttribute extends AbstractDiskoAttribute {
+public class NumericField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -33,13 +33,13 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	public NumericAttribute(String name, String caption, boolean isEditable) {
+	public NumericField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 		// forward
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 	
-	public NumericAttribute(String name, String caption, boolean isEditable,
+	public NumericField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		// forward
 		super(name, caption, isEditable, width, height, value);
@@ -47,7 +47,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 
-	public NumericAttribute(String name, String caption, boolean isEditable ,
+	public NumericField(String name, String caption, boolean isEditable ,
 			int width, int height, Object value,  
 			int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// forward
@@ -57,7 +57,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 	}
 		
 	
-	public NumericAttribute(IAttributeIf<?> attribute, String caption,
+	public NumericField(IAttributeIf<?> attribute, String caption,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
@@ -65,7 +65,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 
-	public NumericAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable,
+	public NumericField(IAttributeIf<?> attribute, String caption, boolean isEditable,
 			int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -73,7 +73,7 @@ public class NumericAttribute extends AbstractDiskoAttribute {
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 	
-	public NumericAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable,
+	public NumericField(IAttributeIf<?> attribute, String caption, boolean isEditable,
 			int width, int height,   
 			int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// forward

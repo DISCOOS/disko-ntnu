@@ -2,8 +2,8 @@ package org.redcross.sar.wp.tasks;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.field.TextAreaAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.TextAreaField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -30,8 +30,8 @@ public class DeleteTaskDialog extends DefaultDialog
 	private final static long serialVersionUID = 1L;
 
 	protected DefaultPanel m_contentsPanel;
-	protected TextFieldAttribute m_taskAttr;
-	protected TextAreaAttribute m_descAttr;
+	protected TextLineField m_taskAttr;
+	protected TextAreaField m_descAttr;
 	protected JPanel m_attributesPanel;
 	protected JButton m_deleteButton;
 	
@@ -173,12 +173,12 @@ public class DeleteTaskDialog extends DefaultDialog
 	/**
 	 * This method initializes TaskAttr
 	 *
-	 * @return {@link TextFieldAttribute}
+	 * @return {@link TextLineField}
 	 */
-	private TextFieldAttribute getTaskAttr() {
+	private TextLineField getTaskAttr() {
 		if (m_taskAttr == null) {
 			try {
-				m_taskAttr = new TextFieldAttribute("Task",
+				m_taskAttr = new TextLineField("Task",
 						m_wpTasks.getBundleText("Task.text"),
 						false,100,25,null);
 				m_taskAttr.setPreferredSize(new Dimension(300,30));
@@ -193,12 +193,12 @@ public class DeleteTaskDialog extends DefaultDialog
 	/**
 	 * This method initializes DescAttr
 	 *
-	 * @return {@link TextAreaAttribute}
+	 * @return {@link TextAreaField}
 	 */
-	private TextAreaAttribute getDescAttr() {
+	private TextAreaField getDescAttr() {
 		if (m_descAttr == null) {
 			try {
-				m_descAttr = new TextAreaAttribute("Description",
+				m_descAttr = new TextAreaField("Description",
 						m_wpTasks.getBundleText("TaskDescription.text"),
 						false,100,100,null);
 				m_descAttr.setPreferredSize(new Dimension(300,100));

@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.redcross.sar.gui.IMsoHolder;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -25,7 +26,7 @@ import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.interop.AutomationException;
 
-public abstract class AbstractPanel extends JPanel implements IPanel {
+public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder {
 
 	private static final long serialVersionUID = 1L;
 

@@ -66,7 +66,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDrawTool {
+public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDrawTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final double FONT_SIZE = 12;
@@ -148,7 +148,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	/**
 	 * Constructs the DrawTool
 	 */
-	public AbstractDrawTool(boolean isRubberInUse, 
+	public AbstractMsoDrawTool(boolean isRubberInUse, 
 			FeatureType featureType) throws IOException {
 		
 		// forward
@@ -289,7 +289,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	 */
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof DrawToolState) {
 			((DrawToolState)state).load(this);
@@ -392,19 +392,6 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			return 0;
 		else 
 			return super.getCursor();
-		/*{
-			if(msoObject==null && isCreateMode())
-				return super.getCursorFromLocation("cursors/create.cur");
-			else if(msoObject!=null && isReplaceMode())
-				return super.getCursorFromLocation("cursors/replace.cur");
-			else if(msoObject!=null && isContinueMode())
-				return super.getCursorFromLocation("cursors/continue.cur");
-			else if(msoOwner!=null && isAppendMode())
-				return super.getCursorFromLocation("cursors/append.cur");
-			else
-				return super.getCursorFromLocation("cursors/cursor.cur");			
-		}	
-		 */
 	}
 	
 	public void onCreate(Object obj) {
@@ -414,7 +401,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		
 		try {
 
-			// only a DiskoMap object is accecpted
+			// only a DiskoMap object is accepted
 			if (obj instanceof DiskoMap) {	
 				
 				// unregister?
@@ -533,13 +520,15 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			
 			// only forward to extenders of this class if 
 			// drawing or mouse not over draw frame icon
-			if(!isMouseOverIcon || isDrawing || true)
+			if(!isMouseOverIcon || isDrawing)
 				onAction(onMouseMoveAction,button,shift,x,y);		
 			else {
+				// force a refresh?
+				boolean bFlag = geoSnap != null; 
 				// reset snap geometry
 				geoSnap = null;
 				// force a refresh?
-				if(isSnapToMode()) refresh();
+				if(bFlag || isSnapToMode()) refresh();
 			}
 			
 		} catch (Exception e) {
@@ -910,7 +899,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	}	
 	
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
 		return new DrawToolState(this);
 	}
@@ -2174,7 +2163,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			super.afterDone();
 			
 			// notify?
-			if(isDone) fireOnWorkFinish(AbstractDrawTool.this,msoObject);
+			if(isDone) fireOnWorkFinish(AbstractMsoDrawTool.this,msoObject);
 			
 		}		
 		
@@ -2222,7 +2211,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 	 * @author kennetgu
 	 *
 	 */
-	public class DrawToolState extends AbstractDiskoTool.DiskoToolState {
+	public class DrawToolState extends AbstractMsoTool.MsoToolState {
 
 		// flags
 		private boolean isDrawing = false;
@@ -2253,13 +2242,13 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 		InvalidArea lastInvalidArea = null;
 		
 		// create state
-		public DrawToolState(AbstractDrawTool tool) {
-			super((AbstractDiskoTool)tool);
+		public DrawToolState(AbstractMsoDrawTool tool) {
+			super((AbstractMsoTool)tool);
 			save(tool);
 		}
 		
-		public void save(AbstractDrawTool tool) {
-			super.save((AbstractDiskoTool)tool);
+		public void save(AbstractMsoDrawTool tool) {
+			super.save((AbstractMsoTool)tool);			
 			this.isDrawing = tool.isDrawing;
 			this.isMoving = tool.isMoving;
 			this.isShowDrawFrame = tool.isShowDrawFrame;
@@ -2276,11 +2265,9 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			this.geoRubber = tool.geoRubber;
 			this.geoSnap = tool.geoSnap;
 			this.lastInvalidArea = tool.lastInvalidArea;
-			
 		}
 		
-		public void load(AbstractDrawTool tool) {
-			super.load((AbstractDiskoTool)tool);
+		public void load(AbstractMsoDrawTool tool) {
 			tool.isMoving = this.isMoving;
 			tool.isShowDrawFrame = this.isShowDrawFrame;
 			tool.drawMode = this.drawMode;
@@ -2297,6 +2284,7 @@ public abstract class AbstractDrawTool extends AbstractDiskoTool implements IDra
 			tool.lastInvalidArea= this.lastInvalidArea;
 			tool.setDirty(this.isDirty);
 			tool.setIsDrawing(this.isDrawing);
+			super.load((AbstractMsoTool)tool);
 		}
 	}	
 }

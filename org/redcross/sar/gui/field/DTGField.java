@@ -23,7 +23,7 @@ import org.redcross.sar.util.mso.DTG;
  * @author kennetgu
  *
  */
-public class DTGAttribute extends AbstractDiskoAttribute {
+public class DTGField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -35,29 +35,29 @@ public class DTGAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	public DTGAttribute(String name, String caption, boolean isEditable) {
+	public DTGField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 		setOffset(Calendar.getInstance());
 	}
 		
-	public DTGAttribute(String name, String caption, boolean isEditable, int width, int height) {
+	public DTGField(String name, String caption, boolean isEditable, int width, int height) {
 		super(name, caption, isEditable, width, height, null);
 		setOffset(Calendar.getInstance());
 	}
 	
-	public DTGAttribute(String name, String caption, boolean isEditable,
+	public DTGField(String name, String caption, boolean isEditable,
 			int width, int height, Calendar time) {
 		super(name, caption, isEditable, width, height, time);
 		setOffset(time);
 	}
 
-	public DTGAttribute(MsoCalendar attribute, String caption,
+	public DTGField(MsoCalendar attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
 		setOffset(Calendar.getInstance());
 	}
 
-	public DTGAttribute(MsoCalendar attribute, String caption, boolean isEditable,
+	public DTGField(MsoCalendar attribute, String caption, boolean isEditable,
 			int width, int height, Calendar time) {
 		super(attribute, caption, isEditable, width, height);
 		setOffset(time);

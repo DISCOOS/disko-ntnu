@@ -19,8 +19,8 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.NumericAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.NumericField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.CompassPanel;
@@ -52,8 +52,8 @@ public class UnitStatusPanel extends BasePanel {
 	private JButton m_centerAtAssignmentButton;
 	private JPanel m_bearingPanel;
 	private CompassPanel m_compassPanel;
-	private NumericAttribute m_bearingAttr;
-	private TextFieldAttribute m_activeAttr;
+	private NumericField m_bearingAttr;
+	private TextLineField m_activeAttr;
 	private FieldsPanel m_attribsPanel;
 	
 	public UnitStatusPanel(IUnitIf unit) {
@@ -212,11 +212,11 @@ public class UnitStatusPanel extends BasePanel {
         return m_compassPanel;
     }
 	
-	private NumericAttribute getBearingAttr()
+	private NumericField getBearingAttr()
     {
         if (m_bearingAttr == null)
         {
-        	m_bearingAttr = new NumericAttribute("Bearing","Grad", false, 30, 25, 0);
+        	m_bearingAttr = new NumericField("Bearing","Grad", false, 30, 25, 0);
         	m_bearingAttr.setMaxDigits(3);
         	m_bearingAttr.setDecimalPrecision(0);
         	m_bearingAttr.setAllowNegative(false);        	
@@ -224,11 +224,11 @@ public class UnitStatusPanel extends BasePanel {
         return m_bearingAttr;
     }
 	
-	private TextFieldAttribute getActiveAttr()
+	private TextLineField getActiveAttr()
     {
         if (m_activeAttr == null)
         {
-        	m_activeAttr = new TextFieldAttribute("active","Aktivt oppdrag",false,100,25,"Ingen oppdrag");
+        	m_activeAttr = new TextLineField("active","Aktivt oppdrag",false,100,25,"Ingen oppdrag");
         	m_activeAttr.installButton(getCenterAtAssignmentButton(), true);
         	getCenterAtAssignmentButton().setEnabled(true);
         }        

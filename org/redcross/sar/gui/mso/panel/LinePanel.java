@@ -14,8 +14,8 @@ import javax.swing.event.DocumentListener;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.CheckBoxAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.CheckBoxField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
@@ -31,10 +31,10 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 
 	private JButton snapToButton = null;
 	private FieldsPanel optionsPanel = null;
-	private CheckBoxAttribute snapToAttr = null;
-	private TextFieldAttribute minStepAttr = null;
-	private TextFieldAttribute maxStepAttr = null;
-	private CheckBoxAttribute constraintAttr = null;
+	private CheckBoxField snapToAttr = null;
+	private TextLineField minStepAttr = null;
+	private TextLineField maxStepAttr = null;
+	private CheckBoxField constraintAttr = null;
 	
 	public LinePanel(LineTool tool) {
 		// forward
@@ -90,9 +90,9 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		return optionsPanel;
 	}
 	
-	private CheckBoxAttribute getSnapToAttr() {
+	private CheckBoxField getSnapToAttr() {
 		if(snapToAttr == null) {
-			snapToAttr = new CheckBoxAttribute("autosnap","Automatisk snapping",true,135,35,false);
+			snapToAttr = new CheckBoxField("autosnap","Automatisk snapping",true,135,35,false);
 			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
 			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
 			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
@@ -132,9 +132,9 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		return snapToAttr;
 	}
 		
-	private CheckBoxAttribute getConstraintAttr() {
+	private CheckBoxField getConstraintAttr() {
 		if(constraintAttr == null) {
-			constraintAttr = new CheckBoxAttribute("constaint","Begrens avstand",true,135,25,true);
+			constraintAttr = new CheckBoxField("constaint","Begrens avstand",true,135,25,true);
 			constraintAttr.setToolTipText("Begrenser avstand mellom punkter på en linje");
 			constraintAttr.getCheckBox().addItemListener(new ItemListener() {
 
@@ -155,9 +155,9 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		return constraintAttr;
 	}	
 	
-	private TextFieldAttribute getMinStepAttr() {
+	private TextLineField getMinStepAttr() {
 		if(minStepAttr == null) {
-			minStepAttr = new TextFieldAttribute("min","Minium avstand",true,135,25,"10");
+			minStepAttr = new TextLineField("min","Minium avstand",true,135,25,"10");
 			minStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
 			minStepAttr.setToolTipText("Minimum avstand mellom to punktet");
 			minStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
@@ -181,9 +181,9 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		return minStepAttr;
 	}	
 	
-	private TextFieldAttribute getMaxStepAttr() {
+	private TextLineField getMaxStepAttr() {
 		if(maxStepAttr == null) {
-			maxStepAttr = new TextFieldAttribute("max","Maximum avstand",true,135,25,"100");
+			maxStepAttr = new TextLineField("max","Maximum avstand",true,135,25,"100");
 			maxStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
 			maxStepAttr.setToolTipText("Maximum avstand mellom to punktet");
 			maxStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {

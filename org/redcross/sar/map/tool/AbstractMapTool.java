@@ -18,9 +18,6 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IToolListenerIf;
 import org.redcross.sar.map.event.ToolEvent;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.thread.AbstractDiskoWork;
 import org.redcross.sar.thread.event.DiskoWorkEvent;
 import org.redcross.sar.thread.event.IDiskoWorkListener;
@@ -34,7 +31,7 @@ import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
 
-public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
+public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	
 	// flags
 	protected boolean isDirty = false;			// true:=change is pending
@@ -45,11 +42,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 	// objects
 	protected Properties properties;
 	protected IDisplayTransformation transform;
-	
-	// mso objects information
-	protected IMsoObjectIf msoOwner = null;
-	protected IMsoObjectIf msoObject = null;
-	protected IMsoManagerIf.MsoClassCode msoCode = null;	
 	
 	// GUI components
 	protected DiskoMap map;
@@ -74,14 +66,14 @@ public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 	 * Constructor
 	 *
 	 */
-	protected AbstractDiskoTool() {
+	protected AbstractMapTool() {
 		// prepare
 		toolListeners = new ArrayList<IToolListenerIf>();		
 		workListeners = new ArrayList<IDiskoWorkListener>();		
 	}
 	
 	/*===============================================
-	 * IDiskoTool interface implementation
+	 * IMapTool interface implementation
 	 *===============================================
 	 */
 
@@ -184,47 +176,6 @@ public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 		return true;
 	}
 
-	public MsoClassCode getMsoCode() {
-		return msoCode;
-	}
-
-	public IMsoObjectIf getMsoObject() {
-		return msoObject;
-	}
-
-	public void setMsoObject(IMsoObjectIf msoObject) {
-		setMsoData(msoOwner,msoObject,msoCode);
-	}
-	
-	public IMsoObjectIf getMsoOwner() {
-		return msoOwner;
-	}
-
-	public void setMsoOwner(IMsoObjectIf msoOwner) {
-		setMsoData(msoOwner,msoObject,msoCode);
-	}
-	
-	public void setMsoData(IMapTool tool) {
-		if(tool instanceof AbstractDiskoTool && tool!=this) {
-			AbstractDiskoTool abstractTool = (AbstractDiskoTool)tool;
-			setMsoData(abstractTool.msoOwner,abstractTool.msoObject,abstractTool.msoCode);
-		}
-	}
-	
-	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode) {
-		
-		// is working?
-		if(isWorking()) return;
-		
-		// set mso owner object
-		this.msoOwner = msoOwner;
-		// set mso object
-		this.msoObject = msoObject;
-		// set mso object
-		this.msoCode = msoClassCode;
-		
-	}
-
 	public void addDiskoWorkListener(IDiskoWorkListener listener) {
 		workListeners.add(listener);
 	}
@@ -273,16 +224,16 @@ public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 	}
 		
 	@Override
-	public IDiskoToolState save() {
+	public IMapToolState save() {
 		// get new state
-		return new DiskoToolState(this);
+		return new MsoToolState(this);
 	}
 	
 	@Override
-	public boolean load(IDiskoToolState state) {
+	public boolean load(IMapToolState state) {
 		// valid state?
-		if(state instanceof DiskoToolState) {
-			((DiskoToolState)state).load(this);
+		if(state instanceof MsoToolState) {
+			((MsoToolState)state).load(this);
 			return true;
 		}
 		return false;
@@ -599,7 +550,7 @@ public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 	 * @author kennetgu
 	 *
 	 */
-	public class DiskoToolState implements IDiskoToolState {
+	public class MsoToolState implements IMapToolState {
 
 		// flags
 		protected boolean isActive;
@@ -607,37 +558,26 @@ public abstract class AbstractDiskoTool extends BaseTool implements IMapTool {
 		protected boolean showDialog;
 		protected boolean isDialogVisible;
 
-		// MSO objects and draw information
-		protected IMsoObjectIf msoOwner;
-		protected IMsoObjectIf msoObject;
-		protected IMsoManagerIf.MsoClassCode msoClassCode;
-		
 		// other objects
 		protected IToolPanel propertyPanel;
 		
 		// create state
-		public DiskoToolState(AbstractDiskoTool tool) {
+		public MsoToolState(AbstractMapTool tool) {
 			save(tool);
 		}
 		
-		public void save(AbstractDiskoTool tool) {
+		public void save(AbstractMapTool tool) {
 			this.isActive = tool.isActive;
 			this.showDirect = tool.showDirect;
 			this.showDialog = tool.showDialog;
-			this.msoClassCode = tool.msoCode;
-			this.msoObject = tool.msoObject;
-			this.msoOwner = tool.msoOwner;
 			this.propertyPanel = tool.toolPanel;
 			this.isDialogVisible = tool.dialog!=null ? tool.dialog.isVisible() : false;
 		}
 		
-		public void load(AbstractDiskoTool tool) {
+		public void load(AbstractMapTool tool) {
 			tool.isActive = this.isActive;
 			tool.showDirect = this.showDirect;
 			tool.showDialog = this.showDialog;
-			tool.msoCode = this.msoClassCode;
-			tool.msoObject = this.msoObject;
-			tool.msoOwner = this.msoOwner;
 			tool.toolPanel = this.propertyPanel;
 			if(tool.toolPanel!=null)
 				tool.toolPanel.update();

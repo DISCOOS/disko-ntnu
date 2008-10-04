@@ -28,8 +28,8 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.DTGAttribute;
-import org.redcross.sar.gui.field.TextFieldAttribute;
+import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -61,12 +61,14 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private JPanel m_estimatorPanel;
 	private BasePanel m_controlPanel;
 	private FieldsPanel m_estAttribsPanel;
-	private DTGAttribute m_startedTimeAttr;
-	private TextFieldAttribute m_effortTimeAttr;
-	private TextFieldAttribute m_avgEstTimeAttr;
-	private TextFieldAttribute m_maxEstTimeAttr;
-	private TextFieldAttribute m_utilEstTimeAttr;
-	private TextFieldAttribute m_catalogAttr;
+	private DTGField m_startedTimeAttr;
+	private TextLineField m_effortTimeAttr;
+	private TextLineField m_avgEstTimeAttr;
+	private TextLineField m_maxEstTimeAttr;
+	private TextLineField m_utilEstTimeAttr;
+	private TextLineField m_catalogAttr;
+	private JButton m_loadButton;
+	private JButton m_saveButton;
 	private JButton m_resumeButton;
 	private JButton m_suspendButton;
 	private JButton m_stopButton;
@@ -228,6 +230,8 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         {
         	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Stoppet"),ButtonSize.SMALL);
         	m_controlPanel.setPreferredSize(new Dimension(400,235));
+        	m_controlPanel.addButton(getLoadButton(), "load");
+        	m_controlPanel.addButton(getSaveButton(), "save");
         	m_controlPanel.addButton(getResumeButton(), "resume");
         	m_controlPanel.addButton(getSuspendButton(), "suspend");		
         	m_controlPanel.addButton(getStopButton(), "stop");		
@@ -238,7 +242,13 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     				// prepare
     				String cmd = e.getActionCommand();
     				// translate
-    				if("resume".equals(cmd)) {
+    				if("load".equals(cmd)) {
+    					load();
+    				}
+    				else if("save".equals(cmd)) {
+    					save();
+    				}
+    				else if("resume".equals(cmd)) {
     					resume();
     				}
     				else if("suspend".equals(cmd)) {
@@ -258,6 +268,20 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         return m_controlPanel;
     }
     
+    private JButton getLoadButton() {
+		if(m_loadButton==null) {
+			m_loadButton = DiskoButtonFactory.createButton("GENERAL.OPEN", ButtonSize.SMALL);
+		}
+		return m_loadButton;
+	}
+	
+	private JButton getSaveButton() {
+		if(m_saveButton==null) {
+			m_saveButton = DiskoButtonFactory.createButton("GENERAL.SAVE", ButtonSize.SMALL);
+		}
+		return m_saveButton;
+	}
+	
     private JButton getResumeButton() {
 		if(m_resumeButton==null) {
 			m_resumeButton = DiskoButtonFactory.createButton("GENERAL.PLAY", ButtonSize.SMALL);
@@ -297,75 +321,69 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         return m_estAttribsPanel;
     }
 	
-	private DTGAttribute getStartedTimeAttr()
+	private DTGField getStartedTimeAttr()
     {
         if (m_startedTimeAttr == null)
         {
-        	m_startedTimeAttr = new DTGAttribute("startedtime","Startet kl", 
+        	m_startedTimeAttr = new DTGField("startedtime","Startet kl", 
         			false, 130, 25, Calendar.getInstance());
         	
         }        
         return m_startedTimeAttr;
     }
 	
-	private TextFieldAttribute getEffortTimeAttr()
+	private TextLineField getEffortTimeAttr()
     {
         if (m_effortTimeAttr == null)
         {
-        	m_effortTimeAttr = new TextFieldAttribute("efforttime","Innsatstid", false, 130, 25, 0);
+        	m_effortTimeAttr = new TextLineField("efforttime","Innsatstid", false, 130, 25, 0);
         	
         }        
         return m_effortTimeAttr;
     }
 	
-	private TextFieldAttribute getAvgEstTimeAttr()
+	private TextLineField getAvgEstTimeAttr()
     {
         if (m_avgEstTimeAttr == null)
         {
-        	m_avgEstTimeAttr = new TextFieldAttribute("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
+        	m_avgEstTimeAttr = new TextLineField("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
         	
         }        
         return m_avgEstTimeAttr;
     }
 	
-	private TextFieldAttribute getMaxEstTimeAttr()
+	private TextLineField getMaxEstTimeAttr()
     {
         if (m_maxEstTimeAttr == null)
         {
-        	m_maxEstTimeAttr = new TextFieldAttribute("maxtime","Arbeidstid (max)", false, 130, 25, 0);
+        	m_maxEstTimeAttr = new TextLineField("maxtime","Arbeidstid (max)", false, 130, 25, 0);
         	
         }        
         return m_maxEstTimeAttr;
     }
 	
-	private TextFieldAttribute getUtilEstTimeAttr()
+	private TextLineField getUtilEstTimeAttr()
     {
         if (m_utilEstTimeAttr == null)
         {
-        	m_utilEstTimeAttr = new TextFieldAttribute("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
+        	m_utilEstTimeAttr = new TextLineField("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
         	
         }        
         return m_utilEstTimeAttr;
     }
 	
-	private TextFieldAttribute getCatalogAttr() {
+	private TextLineField getCatalogAttr() {
 		if (m_catalogAttr==null) {
-			m_catalogAttr = new TextFieldAttribute("Catalog","Katalog",false,130,25,AppProps.getText("DS.ETE.LOGGING.path"));
+			m_catalogAttr = new TextLineField("Catalog","Katalog",false,130,25,AppProps.getText("DS.ETE.LOGGING.path"));
 			m_catalogAttr.setButtonVisible(true);
 			m_catalogAttr.setButtonEnabled(true);
 			m_catalogAttr.addButtonActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					/*
 					DirectoryChooserDialog dirChooser = new DirectoryChooserDialog();
 					File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
-					dirChooser.setRoot(FileTreeModel.COMPUTER);
-					*/
-					FileExplorerDialog dirChooser = new FileExplorerDialog();
-					File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
-					dirChooser.setRoot(FileTreeModel.COMPUTER);
-					
+					dirChooser.setRoot(FileTreeModel.COMPUTER);					
 					String msg = "Velg katalog";
 					Icon icon = UIManager.getIcon("OptionPane.informationIcon");					
 					Object selected = dirChooser.select(file.toString(), msg, icon);
@@ -471,6 +489,23 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     	m_estimator.load();
     }
     
+    private void load() {
+    	File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
+    	if(file.exists()) {
+    		m_estimator.importSamples(file.toString());
+    	}
+    	else {
+    		Utils.showWarning("Advarsel","Loggfil " + AppProps.getText("DS.ETE.LOGGING.path") + " finnes ikke");
+    	}
+    }
+    
+    private void save() {
+		String file = m_estimator.exportSamples(AppProps.getText("DS.ETE.LOGGING.path"));
+		getCatalogAttr().setValue(file);
+		Utils.showMessage("Bekreftelse","Loggfilen " + file + " er opprettet" +
+				"");
+    }
+
     private void resume() {
     	// forward
     	doWork(1);

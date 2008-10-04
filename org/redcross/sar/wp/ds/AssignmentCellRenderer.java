@@ -5,6 +5,8 @@ import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 public class AssignmentCellRenderer extends JLabel implements TableCellRenderer {
@@ -24,17 +26,33 @@ public class AssignmentCellRenderer extends JLabel implements TableCellRenderer 
 		row = table.convertRowIndexToModel(row);
 		col = table.convertColumnIndexToModel(col);
 		
+		// initialize
+		Border b = null;
+		
 		// has row and col?
 		if(row!=-1 && col!=-1) {
 		
 			// set text
 			setText(converter.toString(table.getModel(),row,col));
 			
+			// set alignment
+			switch(col) {
+			case AssignmentTableModel.NAME_INDEX:				
+			case AssignmentTableModel.UNIT_INDEX:
+			case AssignmentTableModel.STATUS_INDEX:
+				setHorizontalAlignment(SwingConstants.LEFT);
+				b = BorderFactory.createEmptyBorder(0, 5, 0, 0);
+				break;
+			default:
+				setHorizontalAlignment(SwingConstants.RIGHT);
+				b = BorderFactory.createEmptyBorder(0, 0, 0, 2);
+			}
+			
 		}
 		
 		// set border
 		if(getIcon()==null) 
-			setBorder(BorderFactory.createEmptyBorder(0,2,0,0));
+			setBorder(b);
 		else
 			setBorder(BorderFactory.createEmptyBorder());
 			

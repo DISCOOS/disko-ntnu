@@ -24,7 +24,7 @@ import org.redcross.sar.util.Utils;
  * @author kennetgu
  *
  */
-public class EnumAttribute extends AbstractDiskoAttribute {
+public class EnumField extends AbstractField {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -38,21 +38,21 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	 *================================================================== 
 	 */
 	
-	public EnumAttribute(String name, String caption, boolean isEditable) {
+	public EnumField(String name, String caption, boolean isEditable) {
 		// forward
 		super(name,caption,false);
 		// forward
 		initialize(null,isEditable);
 	}
 	
-	public EnumAttribute(String name, String caption, boolean isEditable, Enum<?>[] values) {
+	public EnumField(String name, String caption, boolean isEditable, Enum<?>[] values) {
 		// forward
 		super(name,caption,false);
 		// forward
 		initialize(values,isEditable);
 	}
 	
-	public EnumAttribute(String name, String caption, boolean isEditable, int width, int height) {
+	public EnumField(String name, String caption, boolean isEditable, int width, int height) {
 		// forward
 		super(name,caption,false,width,height,null);
 		// forward
@@ -60,21 +60,21 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 	}
 	
 	
-	public EnumAttribute(String name, String caption, boolean isEditable, int width, int height, Enum<?> value, Enum<?>[] values) {
+	public EnumField(String name, String caption, boolean isEditable, int width, int height, Enum<?> value, Enum<?>[] values) {
 		// forward
 		super(name,caption,false,width,height,null);
 		// forward
 		initialize(values,isEditable);
 	}
 	
-	public EnumAttribute(MsoEnum<?> attribute, String caption, boolean isEditable) {
+	public EnumField(MsoEnum<?> attribute, String caption, boolean isEditable) {
 		// forward
 		super(attribute, caption, false);
 		// forward
 		initialize(getAllEnumValues(attribute),isEditable);
 	}
 
-	public EnumAttribute(MsoEnum<?> attribute, String caption, Enum<?>[] values,
+	public EnumField(MsoEnum<?> attribute, String caption, Enum<?>[] values,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, false);
@@ -82,7 +82,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		initialize(values,isEditable);
 	}
 	
-	public EnumAttribute(MsoEnum<?> attribute, String caption, 
+	public EnumField(MsoEnum<?> attribute, String caption, 
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, false, width, height);
@@ -90,7 +90,7 @@ public class EnumAttribute extends AbstractDiskoAttribute {
 		initialize(getAllEnumValues(attribute),isEditable);
 	}
 	
-	public EnumAttribute(MsoEnum<?> attribute, String caption, 
+	public EnumField(MsoEnum<?> attribute, String caption, 
 			boolean isEditable, int width, int height, Enum<?>[] values) {
 		// forward
 		super(attribute, caption, false, width, height);

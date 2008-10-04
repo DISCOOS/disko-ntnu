@@ -141,7 +141,7 @@ public class DiskoModuleManager {
 						else throw new Exception("Unsupported class was found");
 					} catch (Exception e) { /* NOP */
 						// TODO: Handle failed load of work modules
-						//Utils.showError("Feil i arbeidsprosess", "Følgende feil funnet i "+ className + ":",e);						
+						Utils.showError("Feil i arbeidsprosess", "Følgende feil funnet i "+ className + ":",e);						
 						System.out.println("Error"+e.getMessage());
 						e.printStackTrace();
 					}
