@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object id="00000000063" name="Briefing" objectType="test" pos="6">
-<fact comp="n" edit="y" id="00000000064" label="Active" pos1="999" pos2="999" relTo="00000000063" version="1">
+<object id="00000000052" name="Briefing" objectType="test" pos="6">
+<fact comp="n" edit="y" id="00000000053" label="Active" pos1="999" pos2="999" relTo="00000000052" version="1">
 <num_fact antdec="0" max="1.0" min="0.0"/>
 </fact>
-<fact comp="n" edit="y" id="00000000065" label="Channel1" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000054" label="Channel1" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000066" label="Channel2" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000055" label="Channel2" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000067" label="Closure" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000056" label="Closure" pos1="999" pos2="999" relTo="00000000052" version="1">
 <date_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000068" label="CommsProcedure" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000057" label="CommsProcedure" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000069" label="FindingsProcedure" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000058" label="FindingsProcedure" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000070" label="ImportantClues" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000059" label="ImportantClues" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000071" label="MediaProcedure" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000060" label="MediaProcedure" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000072" label="Other" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000061" label="Other" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000073" label="Others" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000062" label="Others" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000074" label="OverallStrategy" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000063" label="OverallStrategy" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000075" label="Repeaters" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000064" label="Repeaters" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000076" label="Supplies" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000065" label="Supplies" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000077" label="Telephones" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000066" label="Telephones" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
-<fact comp="n" edit="y" id="00000000078" label="TransportProcedure" pos1="999" pos2="999" relTo="00000000063" version="1">
+<fact comp="n" edit="y" id="00000000067" label="TransportProcedure" pos1="999" pos2="999" relTo="00000000052" version="1">
 <str_fact/>
 </fact>
 </object>
