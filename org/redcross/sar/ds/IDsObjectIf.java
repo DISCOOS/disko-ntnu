@@ -1,8 +1,10 @@
 package org.redcross.sar.ds;
 
-public interface IDsObjectIf {
+import org.redcross.sar.data.IDataIf;
+
+public interface IDsObjectIf extends IDataIf {
 	
-	public Object getId();
+	public IDataIf getId();
 	
 	public String getAttrName(int index);
 	public int getAttrIndex(String name);

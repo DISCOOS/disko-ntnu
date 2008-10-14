@@ -1,10 +1,10 @@
 package org.redcross.sar.ds.ete;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
-
-import no.cmr.common.util.SimpleDecimalFormat;
 
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.mso.GeoPos;
@@ -671,7 +671,7 @@ public class LightInfoPoint {
 		printTime("CALENDAR","00:00:00",getTime(),local);
 		System.out.println("TIME ZONE OFFSET: " + (m_offset>=0 ? "+" : "-") + m_offset + " UTC");
 		
-		SimpleDecimalFormat f1 = new SimpleDecimalFormat(3,4);
+		NumberFormat f1 = new DecimalFormat("#.#");
         System.out.println("Horizon:"+(f1.format(m_horizon))+" degree");
         System.out.println("Azimuth:"+f1.format(m_azimuth)+" degree");
         

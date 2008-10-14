@@ -35,6 +35,12 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         super(anObjectId, aNumber);
     }
 
+    public SearchImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, SearchSubType aSubType)
+    {
+        super(anObjectId, aNumber);
+        m_subType.setValue(aSubType);
+    }
+
     @Override
     protected void defineAttributes()
     {
@@ -90,11 +96,19 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
 
     public void setSubType(SearchSubType aSubType)
     {
+    	// update number?
+        if(m_owningMainList!=null) {
+        	setNumber(m_owningMainList.makeSerialNumber(aSubType));
+        }
         m_subType.setValue(aSubType);
     }
 
     public void setSubType(String aSubType)
     {
+    	// update number?
+        if(m_owningMainList!=null) {
+        	setNumber(m_owningMainList.makeSerialNumber(SearchSubType.valueOf(aSubType)));
+        }
         m_subType.setValue(aSubType);
     }
 
@@ -389,7 +403,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
     @Override
     public String getDefaultName()
     {
-        return (m_subType.getAttrValue()==null ? 
+        return (m_subType.getAttrValue()==null ?
         		getInternationalTypeName() : getInternationalSubTypeName()) + " " + getNumber();
     }
 

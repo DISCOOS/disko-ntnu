@@ -10,6 +10,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.panel.PositionPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -29,48 +30,48 @@ public class PositionTool extends AbstractMsoDrawTool {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * If true, geoPos will be logged to Track 
+	 * If true, geoPos will be logged to Track
 	 * If track is <code>null</code>, a track will be created
 	 */
 	private boolean logPosition = false;
 
 	/**
-	 * If a TimePos is given, geoPos will update the 
-	 * TimePos position. Time stamp is unchanged. 
+	 * If a TimePos is given, geoPos will update the
+	 * TimePos position. Time stamp is unchanged.
 	 * If track is <code>null</code>, a track will be created
 	 */
 	private TimePos updateTrackPosition = null;
-	
+
 	/**
 	 * If a Calendar value is given, this will be used when
 	 * logging a position, else, current time will be used
-	 */	
+	 */
 	private Calendar logTimeStamp = null;
-	
+
 	/**
 	 * Constructs the DrawTool
 	 */
-	public PositionTool(IToolCollection dialog) throws IOException {
+	public PositionTool(IMsoModelIf model, IToolCollection dialog) throws IOException {
 
 		// forward
-		super(true,FeatureType.FEATURE_POINT);
-		
+		super(model, true,FeatureType.FEATURE_POINT);
+
 		// prepare abstract class BasicTool
-		cursorPath = "cursors/create.cur"; 
-		caption = "Posisjon"; 
-		category = "Commands"; 
-		message = "Setter posisjon til valgt enhet"; 
-		name = "CustomCommands_Position"; 
-		toolTip = "Posisjon"; 
+		cursorPath = "cursors/create.cur";
+		caption = "Posisjon";
+		category = "Commands";
+		message = "Setter posisjon til valgt enhet";
+		name = "CustomCommands_Position";
+		toolTip = "Posisjon";
 		enabled = true;
-		
+
 		// set tool type
-		type = MapToolType.POSITION_TOOL;		
+		type = MapToolType.POSITION_TOOL;
 
 		// map draw operation
 		onMouseDownAction = DrawAction.ACTION_BEGIN;
 		onMouseUpAction = DrawAction.ACTION_FINISH;
-		
+
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
@@ -78,37 +79,37 @@ public class PositionTool extends AbstractMsoDrawTool {
 		p = new Point();
 		p.setX(0);
 		p.setY(0);
-		
+
 		// save dialog
 		this.dialog = (DefaultDialog)dialog;
-		
+
 		// create default property panel
 		toolPanel = addToolPanel();
-		
+
 		// register me in dialog
 		dialog.register(this);
-		
+
 	}
-	
+
 	@Override
 	public boolean onFinish(int button, int shift, int x, int y) {
-		
+
 		try {
-						
+
 			// validate
 			if(validate()) {
 
 				// forward
-				updateGeometry();				
-				
+				updateGeometry();
+
 				// finished
 				return true;
 			}
-			
+
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		// failed
 		return false;
 	}
@@ -118,26 +119,26 @@ public class PositionTool extends AbstractMsoDrawTool {
 		// validate
 		if(validate()) {
 			// forward
-			return super.finish();			
+			return super.finish();
 		}
 		// failure
 		return false;
 	}
-	
+
 	private boolean validate() {
-		
+
 		// initialize
 		boolean bDoWork = true;
-		
+
 		// add new point?
 		if(msoObject==null) {
 			//
 			Utils.showWarning("Enhet er ikke oppgitt");
 			// do not add point
-			bDoWork = false;				
+			bDoWork = false;
 		}
 		else {
-		
+
 			// dispatch type
 			if (msoCode != IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT) {
 				Utils.showWarning("Kun enhet kan endre posisjon");
@@ -145,10 +146,10 @@ public class PositionTool extends AbstractMsoDrawTool {
 				bDoWork = false;
 			}
 		}
-				
+
 		// return state
 		return bDoWork;
-		
+
 	}
 
 	public IUnitIf getUnit() {
@@ -157,40 +158,40 @@ public class PositionTool extends AbstractMsoDrawTool {
 		else
 			return null;
 	}
-	
+
 	public void setUnit(IUnitIf msoUnit) {
 		// forward
 		setMsoData(msoOwner,msoUnit,msoCode);
 	}
-	
+
 	public Calendar getLogTimeStamp() {
-		return (Calendar)getAttribute("LOGTIMESTAMP");		
+		return (Calendar)getAttribute("LOGTIMESTAMP");
 	}
-	
+
 	public void setLogTimeStamp(Calendar time) {
-		setAttribute(time,"LOGTIMESTAMP");		
+		setAttribute(time,"LOGTIMESTAMP");
 	}
-	
+
 	@Override
 	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoCode) {
-		
+
 		// forward
 		super.setMsoData(msoOwner, msoObject, msoCode);
-		
+
 		// forward
 		getPositionPanel().setMsoObject(msoObject);
-			
+
 	}
-	
+
 	public PositionPanel getPositionPanel() {
 		return (PositionPanel)toolPanel;
 	}
-	
+
 	@Override
 	public IToolPanel addToolPanel() {
 		// create panel list?
 		if(panels==null)
-			panels = new ArrayList<IToolPanel>(1);			
+			panels = new ArrayList<IToolPanel>(1);
 		// create panel
 		IToolPanel panel = new PositionPanel(this);
 		// try to add
@@ -199,20 +200,20 @@ public class PositionTool extends AbstractMsoDrawTool {
 		}
 		return null;
 	}
-	
+
 	private void updateGeometry() throws IOException, AutomationException {
 
 		// has new line been found?
 		if (p!=null && isDrawing()) {
-		
-			// update 
+
+			// update
 			geoPoint = p;
-			
+
 			// forward
 			setDirty(true);
-		}		
-	}		
-	
+		}
+	}
+
 	@Override
 	public Object getAttribute(String attribute) {
 		if("LOGTIMESTAMP".equalsIgnoreCase(attribute)) {
@@ -242,14 +243,14 @@ public class PositionTool extends AbstractMsoDrawTool {
 			updateTrackPosition = (TimePos)value;
 			return;
 		}
-	}	
-	
+	}
+
 	@Override
 	public IMapToolState save() {
 		// get new state
 		return new PositionToolState(this);
 	}
-	
+
 	@Override
 	public boolean load(IMapToolState state) {
 		// valid state?
@@ -264,7 +265,7 @@ public class PositionTool extends AbstractMsoDrawTool {
 	 * Inner classes
 	 * ==================================================
 	 */
-	
+
 	public class PositionToolState extends AbstractMsoDrawTool.DrawToolState {
 
 		private IUnitIf unit = null;
@@ -272,12 +273,12 @@ public class PositionTool extends AbstractMsoDrawTool {
 		private boolean logPosition = false;
 		private Calendar logTimeStamp = null;
 		private TimePos updateTrackPosition = null;
-		
+
 		// create state
 		public PositionToolState(PositionTool tool) {
 			super((AbstractMsoDrawTool)tool);
 			save(tool);
-		}		
+		}
 		public void save(PositionTool tool) {
 			super.save((AbstractMapTool)tool);
 			this.logPosition = tool.logPosition;
@@ -286,7 +287,7 @@ public class PositionTool extends AbstractMsoDrawTool {
 			this.unit = tool.getPositionPanel().getUnit();
 			this.isDirty = tool.getPositionPanel().isDirty();
 		}
-		
+
 		public void load(PositionTool tool) {
 			tool.logPosition = this.logPosition;
 			tool.logTimeStamp = this.logTimeStamp;

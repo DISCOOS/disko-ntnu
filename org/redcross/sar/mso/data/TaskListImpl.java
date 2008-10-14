@@ -7,12 +7,12 @@ public class TaskListImpl extends MsoListImpl<ITaskIf> implements ITaskListIf
 
     public TaskListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(ITaskIf.class, anOwner, theName, isMain);
     }
 
     public TaskListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(ITaskIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public ITaskIf createTask(Calendar aCalendar)

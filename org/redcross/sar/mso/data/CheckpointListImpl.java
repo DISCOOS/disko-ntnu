@@ -1,18 +1,16 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
-
 public class CheckpointListImpl extends MsoListImpl<ICheckpointIf> implements ICheckpointListIf
 {
 
     public CheckpointListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(ICheckpointIf.class, anOwner, theName, isMain);
     }
 
     public CheckpointListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(ICheckpointIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public ICheckpointIf createCheckpoint()

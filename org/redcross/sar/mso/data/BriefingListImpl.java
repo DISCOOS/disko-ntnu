@@ -1,18 +1,16 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
-
 public class BriefingListImpl extends MsoListImpl<IBriefingIf> implements IBriefingListIf
 {
 
     public BriefingListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IBriefingIf.class, anOwner, theName, isMain);
     }
 
     public BriefingListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IBriefingIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IBriefingIf createBriefing()

@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
 
 /**
@@ -84,7 +85,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute();
 
-    
+
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
@@ -154,7 +155,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     *-------------------------------------------------------------------------------------------*/
 
 	public String getDefaultName();
-    
+
     public Calendar getTime(Enum<?> aStatus);
 
     public boolean isNotReady();
@@ -166,23 +167,24 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     public boolean hasBeenStarted();
 
     public boolean hasBeenFinished();
-    
+
     public boolean hasBeenAborted();
-    
+
     public boolean hasBeenReported();
 
     /**
      * Often uses status sets
-     */    
+     */
+    public static final EnumSet<AssignmentStatus> PENDING_SET = EnumSet.range(AssignmentStatus.DRAFT, AssignmentStatus.ALLOCATED);
     public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> WORKING_SET = EnumSet.of(AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> FINISHED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED);
     public static final EnumSet<AssignmentStatus> FINISHED_AND_REPORTED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED, AssignmentStatus.REPORTED);
     public static final EnumSet<AssignmentStatus> DELETABLE_SET = EnumSet.range(AssignmentStatus.EMPTY, AssignmentStatus.ALLOCATED);
-    
+
     /**
      * Often uses selectors
-     */       
+     */
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> READY_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.READY);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> QUEUED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.QUEUED);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ALLOCATED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.ALLOCATED);
@@ -191,24 +193,45 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     /**
      * Often used comparators
-     */    
-    
-	public static final Comparator<IAssignmentIf> ASSIGNMENT_COMPERATOR = new Comparator<IAssignmentIf>()
+     */
+
+	public static final Comparator<IAssignmentIf> ASSIGNMENT_TYPE_NUMBER_COMPERATOR = new Comparator<IAssignmentIf>()
 	{
 		public int compare(IAssignmentIf a1, IAssignmentIf a2)
 		{
-			if(a1.getType() == a2.getType())
+			Enum<?> e1 = MsoUtils.getType(a1, true);
+			Enum<?> e2 = MsoUtils.getType(a2, true);
+			if(e2 == e1)
 			{
 				return a1.getNumber() - a2.getNumber();
 			}
 			else
 			{
-				return a1.getType().ordinal() - a2.getType().ordinal();
+				return e1.ordinal() - e2.ordinal();
 			}
 		}
 	};
-	
-    
+
+	public static final Comparator<IAssignmentIf> ASSIGNMENT_NAME_NUMBER_COMPERATOR = new Comparator<IAssignmentIf>()
+	{
+		public int compare(IAssignmentIf a1, IAssignmentIf a2)
+		{
+			Enum<?> e1 = MsoUtils.getType(a1, true);
+			Enum<?> e2 = MsoUtils.getType(a2, true);
+			if(e2 == e1)
+			{
+				return a1.getNumber() - a2.getNumber();
+			}
+			else
+			{
+				String s1 = MsoUtils.getAssignmentName(a1, 0);
+				String s2 = MsoUtils.getAssignmentName(a2, 0);
+				return s1.compareTo(s2);
+			}
+		}
+	};
+
+
     public static final Comparator<IAssignmentIf> PRIORITY_SEQUENCE_COMPARATOR = new Comparator<IAssignmentIf>()
     {
         public int compare(IAssignmentIf o1, IAssignmentIf o2)
@@ -249,5 +272,5 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     public Set<IMessageLineIf> getReferringMessageLines();
 
     public Set<IMessageLineIf> getReferringMessageLines(Collection<IMessageLineIf> aCollection);
-    
+
 }

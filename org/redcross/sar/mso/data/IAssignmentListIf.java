@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
+import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
 /**
  *
@@ -13,9 +13,16 @@ public interface IAssignmentListIf extends IMsoListIf<IAssignmentIf>
 
     public ISearchIf createSearch();
 
+    public ISearchIf createSearch(SearchSubType type);
+
     public ISearchIf createSearch(IMsoObjectIf.IObjectIdIf anObjectId);
 
     public IAssistanceIf createAssistance();
 
     public IAssistanceIf createAssistance(IMsoObjectIf.IObjectIdIf anObjectId);
+
+    public int makeSerialNumber();
+
+    public int makeSerialNumber(Enum<?> type);
+
 }

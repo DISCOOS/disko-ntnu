@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.event.MsoLayerEventStack;
@@ -22,7 +23,6 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.util.mso.Selector;
 
 import com.esri.arcgis.carto.ILayerGeneralProperties;
 import com.esri.arcgis.carto.esriViewDrawPhase;
@@ -735,6 +735,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		}		
 	}
 
+	@Override
 	public void setVisibleFeatures(List<IMsoObjectIf> msoObjs, boolean match, boolean others) {
 
 		try {

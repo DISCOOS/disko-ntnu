@@ -23,7 +23,7 @@ public class MsoRenderer extends JLabel {
 	}
 
 	protected Component getRenderer(Object value) {
-		
+
 		// initialize
 		String text = "<Tom>";
 
@@ -39,7 +39,7 @@ public class MsoRenderer extends JLabel {
 				text = MsoUtils.getMsoObjectName(msoObject, options);
 
 		}
-		else if(value instanceof Enum) { 
+		else if(value instanceof Enum) {
 			text = DiskoEnumFactory.getText((Enum<?>)value);
 		}
 
@@ -47,8 +47,39 @@ public class MsoRenderer extends JLabel {
 		setText(text);
 
 		// finished
-		return this;		
-	}	
+		return this;
+	}
+
+	/* =======================================================
+	 * Increased performance (See DefaultTableCellRenderer).
+	 * ======================================================= */
+
+	@Override
+	public void firePropertyChange(String propertyName, boolean oldValue,
+			boolean newValue) { /* NOP */ }
+
+	@Override
+	public void firePropertyChange(String propertyName, char oldValue,
+			char newValue) { /* NOP */ }
+
+	@Override
+	public void firePropertyChange(String propertyName, int oldValue,
+			int newValue) { /* NOP */ }
+
+	@Override
+	public void revalidate() { /* NOP */ }
+
+	@Override
+	public void repaint() { /* NOP */ }
+
+	@Override
+	public void repaint(int x, int y, int width, int height) { /* NOP */ }
+
+	@Override
+	public void repaint(long tm) { /* NOP */ }
+
+	@Override
+	public void validate() { /* NOP */ }
 
 }
 

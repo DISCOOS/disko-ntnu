@@ -1,8 +1,10 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
+import java.util.Comparator;
 
 /**
  *
@@ -11,6 +13,30 @@ public interface IPersonnelIf extends IPersonIf
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Personnel";
 
+    /**
+     * Often used selectors
+     */
+    
+    public static Selector<IPersonnelIf> ACTIVE_SELECTOR = new Selector<IPersonnelIf>()
+	{
+		public boolean select(IPersonnelIf personnel)
+		{
+			return personnel.getNextOccurence() == null;
+		}
+	};
+    
+	/**
+	 * Often used comparators
+	 */
+    public static final Comparator<IPersonnelIf> PERSONNEL_NAME_COMPARATOR = new Comparator<IPersonnelIf>()
+	{
+		public int compare(IPersonnelIf p1, IPersonnelIf p2)
+		{
+			int res = p1.getFirstName().compareTo(p2.getFirstName());
+			return res == 0 ? p1.getLastName().compareTo(p2.getLastName()) : res;
+		}
+	};    
+    
     public enum PersonnelStatus
     {
         IDLE,
@@ -155,5 +181,8 @@ public interface IPersonnelIf extends IPersonIf
     public IMsoModelIf.ModificationState getNextOccurenceState();
 
     public IMsoReferenceIf<IPersonnelIf> getNextOccurenceAttribute();
+    
+    public IUnitIf getOwningUnit();
+    
 
 }

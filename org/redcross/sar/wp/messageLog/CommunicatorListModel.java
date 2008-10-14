@@ -9,6 +9,7 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -22,7 +23,6 @@ import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.mso.Selector;
 
 public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 

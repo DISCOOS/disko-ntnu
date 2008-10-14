@@ -5,17 +5,19 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.redcross.sar.data.IDataIf;
+
 public abstract class AbstractDsObject implements IDsObjectIf {
 
 	private final List<Object[]> m_samples = new ArrayList<Object[]>(1);						
 	
-	private Object m_id;
+	private IDataIf m_id;
 	
 	/* =============================================================
 	 * Constructors
 	 * ============================================================= */
 	
-	public AbstractDsObject(Object id) {
+	public AbstractDsObject(IDataIf id) {
 		m_id = id;
 	}
 	
@@ -23,7 +25,7 @@ public abstract class AbstractDsObject implements IDsObjectIf {
 	 * Public methods
 	 * ============================================================= */
 	
-	public Object getId() {
+	public IDataIf getId() {
 		return m_id;
 	}
 

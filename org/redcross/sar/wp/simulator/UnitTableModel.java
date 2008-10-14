@@ -1,86 +1,68 @@
 package org.redcross.sar.wp.simulator;
 
-import java.util.Comparator;
-
-import org.redcross.sar.gui.model.MsoObjectTableModel;
+import org.redcross.sar.data.Selector;
+import org.redcross.sar.gui.model.MsoTableModel;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.util.mso.Selector;
 
-public class UnitTableModel extends MsoObjectTableModel<IUnitIf> {
+public class UnitTableModel extends MsoTableModel<IUnitIf> {
 
 	private static final long serialVersionUID = 1L;
-	private static final String MSO_OBJECT = "Unit";	
-	private static final String[] ATTRIBUTES = new String[]{MSO_OBJECT};
+	private static final String UNIT = "Unit";
+	private static final String[] NAMES = new String[]{UNIT};
 	private static final String[] CAPTIONS = new String[]{"Enhet"};
 
-	private final Selector<IUnitIf> m_unitSelector = new Selector<IUnitIf>()
+	private final Selector<IUnitIf> m_selector = new Selector<IUnitIf>()
 	{
 		public boolean select(IUnitIf anObject)
 		{
 			// get history flag
 			boolean isHistory = anObject.isReleased();
 			// finished
-			return m_archived ? isHistory : !isHistory;	
+			return m_archived ? isHistory : !isHistory;
 		}
 	};
 
-	private static final Comparator<IMsoObjectIf> m_unitComparator = new Comparator<IMsoObjectIf>()
-	{
-		public int compare(IMsoObjectIf o1, IMsoObjectIf o2)
-		{
-			IUnitIf u1 = (IUnitIf)o1;
-			IUnitIf u2 = (IUnitIf)o2;
-			if(u1.getType() == u2.getType())
-			{
-				return u1.getNumber() - u2.getNumber();
-			}
-			else
-			{
-				return u1.getType().ordinal() - u2.getType().ordinal();
-			}
-		}
-	};
-	
 	private boolean m_archived;
-	
+
+	/* =========================================================
+	 * Constructors
+	 * ========================================================= */
+
 	public UnitTableModel(IMsoModelIf model,boolean archived) {
 		// forward
-		super(model, MsoClassCode.CLASSCODE_UNIT, ATTRIBUTES, CAPTIONS);
+		super(IUnitIf.class, NAMES, CAPTIONS, false);
 		// prepare
 		m_archived = archived;
-		// get command post
-		ICmdPostIf cmdPost = model.getMsoManager().getCmdPost();
-		// load data?
-		if(cmdPost!=null) {
-			load(cmdPost.getUnitList());
-		}
+		// forward
+		connect(model,m_selector,IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+		// load data
+		load(model.getMsoManager().getCmdPost().getUnitList().getItems());
 	}
 
-	protected Object getMsoValue(IMsoObjectIf msoObj, String name) {
-		if(MSO_OBJECT.equals(name)) {
-			return (IUnitIf)msoObj;
+	/* =========================================================
+	 * MsoTableModel implementation
+	 * ========================================================= */
+
+	@Override
+	protected Object getCellValue(int row, String column) {
+		if(UNIT.equals(column)) {
+			return getId(row);
 		}
-		// failed
 		return null;
 	}
 
-	@Override
-	public boolean select(IUnitIf msoObj) {
-		return m_unitSelector.select(msoObj);	
-	}
-	
-	@Override
-	public void sort() {
-		sort(m_unitComparator);
-	}
+	/* =========================================================
+	 * Public methods
+	 * ========================================================= */
 
 	public IUnitIf getUnit(int iRow) {
-		return (IUnitIf)getValueAt(iRow, 0);
+		return getId(iRow);
 	}
+
+	/* =========================================================
+	 * Helper methods
+	 * ========================================================= */
 
 
 }

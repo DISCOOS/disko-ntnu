@@ -20,13 +20,13 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
-import org.redcross.sar.util.mso.Selector;
 
 /**
  * Dialog containing a list of all units in command post communicator list

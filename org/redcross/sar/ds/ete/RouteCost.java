@@ -5,6 +5,7 @@ import java.lang.Math;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import java.awt.geom.Point2D;
@@ -65,6 +66,25 @@ public class RouteCost extends AbstractDsObject {
 		Double.class,  Double.class,   Double.class, Double.class, Double.class, Double.class
 	};
 	
+    /**
+     * Often used comparators
+     */        
+	public static final Comparator<RouteCost> ASSIGNMENT_COMPERATOR = new Comparator<RouteCost>()
+	{
+		public int compare(RouteCost r1, RouteCost r2)
+		{
+			IAssignmentIf a1 = r1.getId();
+			IAssignmentIf a2 = r2.getId();
+			if(a1.getType() == a2.getType())
+			{
+				return a1.getNumber() - a2.getNumber();
+			}
+			else
+			{
+				return a1.getType().ordinal() - a2.getType().ordinal();
+			}
+		}
+	};
 	
 	
 	/**
@@ -291,11 +311,8 @@ public class RouteCost extends AbstractDsObject {
 	 *  @return Returns the position count of the densified route
 	 */		
 	public int getPositionCount() {
-		if(!m_isSpatialChanged)
-			// get count
-			return m_positions!=null ? m_positions.size() : 0;
-		else
-			return -1;		
+		// get count
+		return m_positions!=null ? m_positions.size() : 0;
 	}			
 	
 	/**
@@ -380,10 +397,11 @@ public class RouteCost extends AbstractDsObject {
 	 */
 	public boolean setStartTime(Calendar t0) {
 		if(!equal(m_startTime,t0)) {
-			if(getMillis(m_startTime,t0)>ESTIMATE_TIME_TOLERANCE)
-				m_isSpatialChanged = true;
+			TimePos p = lkp();
+			if(p!=null && getMillis(m_startTime,t0)>ESTIMATE_TIME_TOLERANCE)
+				m_isSpatialChanged = true;			
 			m_startTime = t0;
-			m_isTemporalChanged = true;
+			if(p!=null) m_isTemporalChanged = true;
 			return true;
 		}
 		return false;
@@ -438,13 +456,12 @@ public class RouteCost extends AbstractDsObject {
 	/**
 	 * Indicates if progress is possible to estimate
 	 * 
-	 * @return <code>true</code> if at least on leg exists in estimated track 
+	 * @return <code>true</code> if at least one leg exists in estimated track 
 	 * (<code>et</code>) and at least one position exits in measured track (<code>mt</code>).</p> 
 	 * <code>estimate()</code> will create <code>et</code>.</p>
-	 * <code>setLastKnownPosition(*)</code> will add a point to <code>mt</code>.
 	 */
 	public boolean canProgress() {
-		return !(m_et.size()==0 || m_mt.size()==0);
+		return m_et.size()>0 && m_mt.size()>0;
 	}
 	
 	/**
@@ -614,7 +631,7 @@ public class RouteCost extends AbstractDsObject {
 			return (Integer)getAttrValue("ete", getSampleCount()-1);
 		}
 		else {
-			if (!(m_eta==null || m_isSpatialChanged)) {
+			if (m_eta!=null) {
 				if(m_current!=null)
 					return (int)(m_eta.getTimeInMillis() - m_current.t.getTimeInMillis())/1000;
 				else
@@ -635,7 +652,7 @@ public class RouteCost extends AbstractDsObject {
 			return (Calendar)getAttrValue("eta", getSampleCount()-1);
 		}
 		else {
-			if (!(m_eta==null || m_isSpatialChanged)) {
+			if (m_eta!=null) {
 				return (Calendar)m_eta.clone();
 			}
 			// failure
@@ -653,7 +670,7 @@ public class RouteCost extends AbstractDsObject {
 			return (Double)getAttrValue("ede", getSampleCount()-1);
 		}
 		else {
-			if (!m_isSpatialChanged) {
+			if (m_current!=null) {
 				// get estimated current position
 				GeoPos ecp = ecp();
 				// has estimated point?
@@ -693,14 +710,10 @@ public class RouteCost extends AbstractDsObject {
 			return (Double)getAttrValue("eda", getSampleCount()-1);
 		}
 		else {
-			if (!m_isSpatialChanged) {
-				int count = getSampleCount();
-				// get previous eda (sample)
-				double sda = count>0 ? (Double)getAttrValue("eda", count-1) : 0.0;
-				return sda + m_et.getDistance();
-			}
-			// failure
-			return 0.0;
+			int count = getSampleCount();
+			// get previous eda (sample)
+			double sda = count>0 ? (Double)getAttrValue("eda", count-1) : 0.0;
+			return sda + m_et.getDistance();
 		}
 	}	
 	
@@ -729,18 +742,14 @@ public class RouteCost extends AbstractDsObject {
 			return (Double)getAttrValue("esa", getSampleCount()-1);
 		}
 		else {
-			if (!m_isSpatialChanged) {
-				int count = getSampleCount();
-				// get previous esa (sample)
-				double ssa = count>0 ? (Double)getAttrValue("esa", 0) : 0.0;
-				// get current ese (estimate)
-				double ese = ese();
-				// recursively calculate estimated average speed from 
-				// first known position to destination
-				return (ssa + ese)/2;
-			}
-			// failure
-			return 0.0;
+			int count = getSampleCount();
+			// get previous esa (sample)
+			double ssa = count>0 ? (Double)getAttrValue("esa", 0) : 0.0;
+			// get current ese (estimate)
+			double ese = ese();
+			// recursively calculate estimated average speed from 
+			// first known position to destination
+			return (ssa + ese)/2;
 		}
 	}
 	
@@ -754,7 +763,7 @@ public class RouteCost extends AbstractDsObject {
 			return (TimePos)getAttrValue("ecp", getSampleCount()-1);
 		}
 		else {
-			if (!(m_isSpatialChanged || m_current==null)) {
+			if (m_current!=null) {
 				return new TimePos(m_current.pd[1],m_current.t);
 			}
 			// failure

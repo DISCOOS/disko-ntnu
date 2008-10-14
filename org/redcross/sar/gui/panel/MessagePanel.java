@@ -14,6 +14,7 @@ import java.text.AttributedString;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.util.Utils;
 
 public class MessagePanel extends DefaultPanel {
@@ -48,6 +49,7 @@ public class MessagePanel extends DefaultPanel {
 	private JEditorPane getMessagePane() {
 		if(m_msgPane == null) {
 			m_msgPane = new JEditorPane();
+			m_msgPane.setFont(UIFactory.DEFAULT_PLAIN_MEDIUM_FONT);
 			m_msgPane.setContentType("text/html");
 			m_msgPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 			m_msgPane.setEditable(false);
@@ -103,7 +105,7 @@ public class MessagePanel extends DefaultPanel {
     {
     	if(m_isAutoFit) 
     	{
-			Graphics2D g2d = (Graphics2D)getGraphics();
+			Graphics2D g2d = (Graphics2D)getMessagePane().getGraphics();
 			if(g2d!=null) {
 				Dimension size = calcSize(g2d, m_maxWidth);
 				getMessagePane().setPreferredSize(size);
@@ -134,7 +136,7 @@ public class MessagePanel extends DefaultPanel {
               float max = 0;
               while (lbm.getPosition() < aci.getEndIndex())
               {
-                    TextLayout textLayout = lbm.nextLayout(600);
+                    TextLayout textLayout = lbm.nextLayout(m_maxWidth);
                     if (g != null)
                         textLayout.draw(g, x, y + textLayout.getAscent());
                     y += textLayout.getDescent() + textLayout.getLeading() + textLayout.getAscent();

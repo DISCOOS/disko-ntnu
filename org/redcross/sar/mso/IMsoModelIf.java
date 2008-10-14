@@ -11,17 +11,19 @@ package org.redcross.sar.mso;
 
 import java.util.List;
 
+import org.redcross.sar.data.IDataSourceIf;
 import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 
 
 /**
  * Interface for singleton class for accessing the MSO model
  */
-public interface IMsoModelIf
+public interface IMsoModelIf extends IDataSourceIf<MsoEvent.Update>
 {
     /**
      * Update modes, to be used when updating local data in order to inform the GUI how data have been updated.
@@ -95,12 +97,12 @@ public interface IMsoModelIf
 
     /**
      * Query update mode
-     * 
+     *
      * @param mode
      * @return
-     */    
+     */
     public boolean isUpdateMode(UpdateMode mode);
-    
+
     /**
      * Perform commit.
      * <p/>
@@ -110,14 +112,14 @@ public interface IMsoModelIf
 
     /**
      * Perform a partial commit. <p/>Only possible to perform on
-     * objects that are created and modified. Object and list references 
-     * are not affected, only the marked attributes. See 
+     * objects that are created and modified. Object and list references
+     * are not affected, only the marked attributes. See
      * {@link org.redcross.sar.mso.committer.IUpdateHolderIf} for more information.
-     * 
+     *
      * @param List<UpdateHolder> updates - holder for updates.
-     * 
+     *
      */
-    public void commit(List<IUpdateHolderIf> updates);    
+    public void commit(List<IUpdateHolderIf> updates);
 
     /**
      * Perform rollback.
@@ -129,11 +131,11 @@ public interface IMsoModelIf
     public boolean hasUncommitedChanges();
 
     public boolean hasUncommitedChanges(MsoClassCode code);
-    
+
     public boolean hasUncommitedChanges(IMsoObjectIf msoObj);
-    
+
     public void suspendClientUpdate();
 
     public void resumeClientUpdate();
-    
+
 }

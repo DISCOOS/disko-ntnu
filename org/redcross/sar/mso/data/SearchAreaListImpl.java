@@ -1,18 +1,16 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
-
 public class SearchAreaListImpl extends MsoListImpl<ISearchAreaIf> implements ISearchAreaListIf
 {
 
     public SearchAreaListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(ISearchAreaIf.class, anOwner, theName, isMain);
     }
 
     public SearchAreaListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(ISearchAreaIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public ISearchAreaIf createSearchArea()

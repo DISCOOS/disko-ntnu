@@ -4,7 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
-import org.redcross.sar.gui.model.MsoObjectTableModel;
+import org.redcross.sar.gui.model.MsoTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -69,8 +69,8 @@ public class AssignmentsPanel extends BasePanel {
 		IAssignmentIf assignment = null;
 		int row = getTable().getSelectedRow();
 		if(row>-1) {
-			assignment = (IAssignmentIf)((MsoObjectTableModel<?>)
-					getTable().getModel()).getMsoObject(row);
+			assignment = (IAssignmentIf)((MsoTableModel<?>)
+					getTable().getModel()).getObject(row);
 		}
 		return assignment;	
 	}

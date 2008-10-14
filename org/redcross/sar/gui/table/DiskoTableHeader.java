@@ -35,7 +35,6 @@ import javax.swing.table.TableModel;
 import org.redcross.sar.gui.PopupManager;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.model.DiskoTableColumnModel;
 import org.redcross.sar.gui.model.IDiskoTableModel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.renderer.TableHeaderRenderer;
@@ -51,11 +50,11 @@ public class DiskoTableHeader extends JTableHeader {
 
 	private TableHeaderRenderer m_renderer;
 	private TableHeaderRenderer m_editor;
-	
+
 	private int m_editColumn;
 	private int m_mouseColumn;
 	private int m_fixedHeight;
-	
+
 	/* ===================================================================
 	 * Constructors
 	 * =================================================================== */
@@ -63,7 +62,7 @@ public class DiskoTableHeader extends JTableHeader {
 	public DiskoTableHeader() {
 		this(false);
 	}
-		
+
 	public DiskoTableHeader(boolean drawVerticalLine) {
 
 		// forward
@@ -72,7 +71,7 @@ public class DiskoTableHeader extends JTableHeader {
 		// create default renderers
 		m_renderer = new DefaultHeaderRenderer(drawVerticalLine);
 		m_editor = new DefaultHeaderRenderer(drawVerticalLine);
-		
+
 		// set header renderer
 		setDefaultRenderer(m_renderer);
 
@@ -89,7 +88,7 @@ public class DiskoTableHeader extends JTableHeader {
 				fireActionPerformed(e);
 			}
 
-		});		
+		});
 
 		// set default header size
 		setFixedHeight(ButtonSize.SMALL);
@@ -105,7 +104,7 @@ public class DiskoTableHeader extends JTableHeader {
 		setUI(new EditableHeaderUI());
 		resizeAndRepaint();
 		invalidate();
-	}	
+	}
 
 	@Override
 	public String getToolTipText(MouseEvent e) {
@@ -119,59 +118,59 @@ public class DiskoTableHeader extends JTableHeader {
 
 	/**
 	 * Paints a arrow above or below current header text of sort column
-	 *  
+	 *
 	 */
 
 	@Override
 	public void paintComponent(Graphics g)  {
-				
-		/* =================================================================== 
-		 * This solution is described in Java Bug ID 4473075. It solves the 
-		 * problem with garbled paint of headers in JScrollPane when 
-		 * scrolling horizontally. 
-		 * =================================================================== */	
+
+		/* ===================================================================
+		 * This solution is described in Java Bug ID 4473075. It solves the
+		 * problem with garbled paint of headers in JScrollPane when
+		 * scrolling horizontally.
+		 * =================================================================== */
 		if(getTable()!=null && getParent() instanceof JViewport) {
 			setPreferredSize(new Dimension(getTable().getWidth(),getPreferredSize().height));
 		}
-		
+
 		// forward
 		super.paintComponent(g);
-		
+
 		// get row sorter
 		RowSorter<?> sorter = getRowSorter();
-		
+
 		// has row sorter and header is high enough?
 		if(sorter!=null && getHeight()>24) {
-			
+
 			// get key count
 			int count = sorter.getSortKeys().size();
-			
+
 			// update according to sort orders
 			for(int i = 0; i < count; i++) {
-				
+
 				// get root sort column
 				int column = sorter.getSortKeys().get(i).getColumn();
-				
+
+				// get alignment
+				int alignment = SwingConstants.LEFT;
+				if(table.getModel() instanceof IDiskoTableModel) {
+					IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+					alignment = model.getColumnAlignment(column);
+				}
+
 				// convert to view
 				column = getTable().convertColumnIndexToView(column);
-				
+
 				// get width of column
 				int w = getRendererWidth(g,column);
 
 				// get rectangle of column header
 				Rectangle rc = getHeaderRect(column);
-									
-				// get alignment
-				int alignment = SwingConstants.LEFT;
-				if(table.getColumnModel() instanceof DiskoTableColumnModel) {
-					DiskoTableColumnModel model = (DiskoTableColumnModel)table.getColumnModel();
-					alignment = model.getColumnAlignment(model.getColumn(column,false));
-				}
-				
+
 				// get center of arrow
 				int xCenter = rc.x + (alignment==SwingConstants.LEFT ? w/2 + 3 : rc.width - w/2 - 5);
 				int yCenter = rc.y + 2;
-				
+
 				// get direction
 				switch(sorter.getSortKeys().get(i).getSortOrder()) {
 				case ASCENDING:
@@ -181,12 +180,12 @@ public class DiskoTableHeader extends JTableHeader {
 					drawArrow((Graphics2D)g,xCenter,yCenter,xCenter,yCenter+7,2,count>1 ? i+1 : -1);
 					break;
 				}
-				
-			}			
+
+			}
 		}
-		
+
 	}
-	
+
 	@Override
 	public void setDefaultRenderer(TableCellRenderer defaultRenderer) {
 		if(defaultRenderer instanceof TableHeaderRenderer)
@@ -196,7 +195,7 @@ public class DiskoTableHeader extends JTableHeader {
 		// forward
 		super.setDefaultRenderer(defaultRenderer);
 	}
-	
+
 	/* ===================================================================
 	 * Public methods
 	 * =================================================================== */
@@ -204,11 +203,11 @@ public class DiskoTableHeader extends JTableHeader {
 	public boolean isEditorInstalled() {
 		return (m_editor!=null);
 	}
-	
+
 	public void setDefaultEditor(TableCellRenderer defaultRenderer) {
 		// unregister current?
 		if(m_editor!=null) {
-			m_editor.removeActionListener(m_popupMananger);		
+			m_editor.removeActionListener(m_popupMananger);
 		}
 		// register new=
 		if(defaultRenderer instanceof TableHeaderRenderer) {
@@ -218,7 +217,7 @@ public class DiskoTableHeader extends JTableHeader {
 		else
 			m_editor = null;
 	}
-	
+
 	public boolean isFixedHeight() {
 		return m_fixedHeight>-1;
 	}
@@ -229,15 +228,15 @@ public class DiskoTableHeader extends JTableHeader {
 
 	public void setFixedHeight(ButtonSize size) {
 		Dimension d = DiskoButtonFactory.getButtonSize(size);
-		setFixedHeight(d.height);		
+		setFixedHeight(d.height);
 	}
 
-	public void setFixedHeight(int height) {		
+	public void setFixedHeight(int height) {
 		m_fixedHeight = height;
 		if(height>-1)
 			Utils.setFixedHeight(this, m_fixedHeight);
 		else {
-			Utils.setAnySize(this, getWidth(), m_renderer!=null ? m_renderer.getDefaultHeight() : 35);			
+			Utils.setAnySize(this, getWidth(), m_renderer!=null ? m_renderer.getDefaultHeight() : 35);
 		}
 	}
 
@@ -285,7 +284,7 @@ public class DiskoTableHeader extends JTableHeader {
 			column = getTable().convertColumnIndexToModel(column);
 			((IDiskoTableModel)model).setHeaderEditable(column,isEditable);
 		}
-	}	
+	}
 
 	public boolean editAt(int column){
 		if (m_editor!=null && isEditable(column)) {
@@ -297,21 +296,21 @@ public class DiskoTableHeader extends JTableHeader {
 	}
 
 	public void addActionListener(ActionListener listener) {
-		m_listeners.add(ActionListener.class, listener);		
+		m_listeners.add(ActionListener.class, listener);
 	}
 
 	public void removeActionListener(ActionListener listener) {
-		m_listeners.remove(ActionListener.class, listener);		
+		m_listeners.remove(ActionListener.class, listener);
 	}
-	
+
 	public String getEditor() {
 		return m_editor!=null ? m_editor.getEditor() : null;
 	}
-	
+
 	public void setEditor(String name) {
 		if (m_editor!=null) m_editor.setEditor(name);
-	}	
-	
+	}
+
 	/* ===============================================================
 	 * PopupManager implementation (wrapper)
 	 * =============================================================== */
@@ -323,10 +322,10 @@ public class DiskoTableHeader extends JTableHeader {
 	public boolean installHeaderPopup(String menu) {
 		boolean bFlag = false;
 		bFlag = installPopup(menu,this,true);
-		if(m_editor!=null) bFlag |= installPopup(menu,m_editor.getComponent(),true); 
+		if(m_editor!=null) bFlag |= installPopup(menu,m_editor.getComponent(),true);
 		return bFlag;
 	}
-	
+
 	public boolean installEditorPopup(String menu, String editor) {
 		if(m_editor!=null) {
 			// get button
@@ -339,16 +338,16 @@ public class DiskoTableHeader extends JTableHeader {
 	}
 
 	public boolean installPopup(String menu, JComponent component, boolean onMouseAction) {
-		return m_popupMananger.installPopup(menu, component, onMouseAction);		
+		return m_popupMananger.installPopup(menu, component, onMouseAction);
 	}
 
 	public JPopupMenu getPopupMenu(String name) {
-		return m_popupMananger.getPopupMenu(name);		
-	}	
+		return m_popupMananger.getPopupMenu(name);
+	}
 
 	public JPopupMenu getPopupMenu(JComponent component) {
-		return m_popupMananger.getPopupMenu(component);		
-	}	
+		return m_popupMananger.getPopupMenu(component);
+	}
 
 	public JPopupMenu getEditorPopupMenu(String editor) {
 		if(m_editor!=null) {
@@ -359,23 +358,23 @@ public class DiskoTableHeader extends JTableHeader {
 			}
 		}
 		return null;
-	}	
+	}
 
 	public List<JComponent> getInstalledPopups(String menu) {
-		return m_popupMananger.getInstalledPopups(menu);		
-	}	
+		return m_popupMananger.getInstalledPopups(menu);
+	}
 
 	public boolean addMenuItem(
-			String menu, 
-			String caption, 
+			String menu,
+			String caption,
 			String name) {
 		return m_popupMananger.addMenuItem(menu, caption, name);
 	}
 
 	public boolean addMenuItem(
-			String menu, 
-			String caption, 
-			String icon, 
+			String menu,
+			String caption,
+			String icon,
 			String catalog,
 			String name) {
 		return m_popupMananger.addMenuItem(menu, caption, icon, catalog, name);
@@ -415,25 +414,25 @@ public class DiskoTableHeader extends JTableHeader {
 
 	public int getMouseColumn() {
 		return m_mouseColumn;
-	}		
-	
+	}
+
 	/* ===============================================================
 	 * Helper methods
-	 * =============================================================== */	
+	 * =============================================================== */
 
 	protected RowSorter<?> getRowSorter() {
 		// unregister?
-		if(getTable()!=null) { 
+		if(getTable()!=null) {
 			return getTable().getRowSorter();
 		}
 		return null;
 	}
-	
+
 	protected void fireActionPerformed(ActionEvent e) {
 		ActionListener[] list = m_listeners.getListeners(ActionListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].actionPerformed(e);
-		}		
+		}
 	}
 
 	protected void setEditColumn(int column){
@@ -461,7 +460,7 @@ public class DiskoTableHeader extends JTableHeader {
 				m_editColumn = column;
 			}
 		}
-	}	
+	}
 
 	protected void setMouseColumn(int column) {
 		m_mouseColumn = column;
@@ -475,12 +474,12 @@ public class DiskoTableHeader extends JTableHeader {
 	}
 
 	private static void drawArrow(Graphics2D g2d, int xCenter, int yCenter, int x, int y, float stroke, int seq) {
-		
+
 		// get current state
 		Stroke oldStroke = g2d.getStroke();
 		Color oldColor = g2d.getColor();
 		Font oldFont = g2d.getFont();
-		
+
 		// update draw state
 		g2d.setStroke(new BasicStroke(1f));
 		g2d.setColor(Color.WHITE);
@@ -488,21 +487,21 @@ public class DiskoTableHeader extends JTableHeader {
 
 		// get direction
 		double aDir=Math.atan2(xCenter-x,yCenter-y);
-		
+
 		//g2d.drawLine(x,y,xCenter,yCenter);
-		
-		// make the arrow head solid even if dash pattern has been specified		
+
+		// make the arrow head solid even if dash pattern has been specified
 		Polygon tmpPoly=new Polygon();
 		int i1=4+(int)(stroke*1.5);
 		// make the arrow head the same size regardless of the length length
-		int i2=4+(int)stroke;							
+		int i2=4+(int)stroke;
 		// arrow tip
-		tmpPoly.addPoint(x,y);							
+		tmpPoly.addPoint(x,y);
 		tmpPoly.addPoint(x+xCor(i1,aDir+2.0),y+yCor(i1,aDir+.25));
 		tmpPoly.addPoint(x+xCor(i2,aDir),y+yCor(i2,aDir));
 		tmpPoly.addPoint(x+xCor(i1,aDir-2.0),y+yCor(i1,aDir-.25));
 		// arrow tip
-		tmpPoly.addPoint(x,y);							
+		tmpPoly.addPoint(x,y);
 		g2d.drawPolygon(tmpPoly);
 		// remove this line to leave arrow head unpainted
 		g2d.fillPolygon(tmpPoly);
@@ -511,7 +510,7 @@ public class DiskoTableHeader extends JTableHeader {
 			String text = String.valueOf(seq);
 			int w = g2d.getFontMetrics().stringWidth(text);
 			x -= Math.ceil(w/2)-1;
-			y = yCenter-y >= 0 ? y + 6 : y-1;			
+			y = yCenter-y >= 0 ? y + 6 : y-1;
 			g2d.setColor(Color.GRAY);
 			g2d.drawString(String.valueOf(seq), x, y);
 		}
@@ -540,7 +539,7 @@ public class DiskoTableHeader extends JTableHeader {
 			if (column != m_current) {
 				DiskoTableHeader.super.setToolTipText(getToolTipText(column));
 				m_current = column;
-			}        	
+			}
 
 		}
 
@@ -552,11 +551,11 @@ public class DiskoTableHeader extends JTableHeader {
 
 	/**
 	 * This class is used to hook mouse events in BasicTableHeaderUI
-	 * 
+	 *
 	 * @author Nobuo Tamemas, edited by Kenneth Gulbrandsøy
-	 * 
+	 *
 	 * @see http://www.esus.com/javaindex/j2se/jdk1.2/javaxswing/editableatomiccontrols/jtable/jtableeditableheader.html
-	 * 
+	 *
 	 * @version 1.0 08/21/99, 1.1 13/09/08
 	 */
 	private class EditableHeaderUI extends BasicTableHeaderUI {
@@ -594,8 +593,8 @@ public class DiskoTableHeader extends JTableHeader {
 					if (col != -1) {
 						if (m_header.isEditable(col)) {
 							setEditColumn(col);
-							setHook(e);  
-							repostEvent(e); 						
+							setHook(e);
+							repostEvent(e);
 							// refresh?
 							if(m_editor!=null) m_editor.validate();
 						}
@@ -609,7 +608,7 @@ public class DiskoTableHeader extends JTableHeader {
 					setEditColumn(-1);
 					m_editor=null;
 				}
-				super.mouseMoved(e);					
+				super.mouseMoved(e);
 			}
 
 			@Override
@@ -634,13 +633,13 @@ public class DiskoTableHeader extends JTableHeader {
 			public void mouseReleased(MouseEvent e) {
 				setMouseColumn(getColumn(e));
 				if(!repostEvent(e)) super.mouseReleased(e);
-			}			
+			}
 
 			/* =========================================================
 			 * Helper methods
 			 * ========================================================= */
 
-			private void setHook(MouseEvent e) { 
+			private void setHook(MouseEvent e) {
 				if(m_header.m_editor!=null) {
 					Point p = e.getPoint();
 					Component editor = m_header.m_editor.getComponent();
@@ -649,16 +648,16 @@ public class DiskoTableHeader extends JTableHeader {
 				}
 			}
 
-			private boolean repostEvent(MouseEvent e) { 
+			private boolean repostEvent(MouseEvent e) {
 				if(m_editor != null) {
 					MouseEvent e2 = SwingUtilities.convertMouseEvent(m_header,e,m_editor);
-					m_editor.dispatchEvent(e2); 
+					m_editor.dispatchEvent(e2);
 					return true;
 				}
 				return false;
 			}
 
-		} 
-	}	
+		}
+	}
 
 }

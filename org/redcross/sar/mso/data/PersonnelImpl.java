@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.except.MsoCastException;
 
 import java.util.Calendar;
@@ -390,6 +391,22 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 	{
 		return (getFirstName() + " " + getLastName());
 	}
+	
+    public IUnitIf getOwningUnit()
+    {
+        owningUnitSelector.setSelfObject(this);
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        return cmdPost != null ? cmdPost.getUnitList().selectSingleItem(owningUnitSelector) : null;
+    }
     
+    private final static SelfSelector<IPersonnelIf, IUnitIf> owningUnitSelector = new SelfSelector<IPersonnelIf, IUnitIf>()
+    {
+        public boolean select(IUnitIf anObject)
+        {
+        	if(IUnitIf.ACTIVE_UNIT_SELECTOR.select(anObject))
+        		return anObject.getUnitPersonnel().equals(m_object);
+        	return false;
+        }
+    };
 
 }

@@ -1,107 +1,58 @@
 package org.redcross.sar.gui.mso.model;
 
-import java.util.EnumSet;
-
-import org.redcross.sar.gui.model.DiskoTableModel;
-
-import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.gui.model.MsoTableModel;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.data.IAssignmentListIf;
 
-public class AssignmentTableModel extends DiskoTableModel implements
-		IMsoUpdateListenerIf {
+public class AssignmentTableModel extends MsoTableModel<IAssignmentIf> {
 
 	private static final long serialVersionUID = 1L;
-	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
-	private Object[] rows = null;
-	private IMsoModelIf msoModel = null;
 
-	public AssignmentTableModel(IMsoModelIf msoModel) {
-		// prepare
-		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
-		this.msoModel = msoModel;
-		// add listeners
-		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
-		msoEventManager.addClientUpdateListener(this);
-		// update table
-		if(msoModel.getMsoManager().operationExists()) {
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			update(cmdPost.getAssignmentListItems().toArray());
-		}
-	}
+	public static final String CHECK = "check";
+	public static final String NAME = "name";
+	public static final String STATUS = "edit";
 
-	public void handleMsoUpdateEvent(Update e) {
-		int mask = e.getEventTypeMask();
-		
-        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-		
-        if(clearAll) {
-        	update(null);
-        }
-        else if (createdObject || modifiedObject || deletedObject ) {
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			update((cmdPost!=null ? cmdPost.getAssignmentListItems().toArray() : null));
-		}
-		
-	}
-	
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return myInterests.contains(aMsoObject.getMsoClassCode());
-	}
-	
-	private void update(Object[] data) {
-		if(data!=null) {
-			rows = new Object[data.length];
-			for (int i = 0; i < data.length; i++) {
-				IAssignmentIf assignment = (IAssignmentIf)data[i];
-				Object[] row = new Object[3];
-				row[0] = new Boolean(false);
-				row[1] = assignment;
-				row[2] = assignment;
-				rows[i] = row;
-			}
-		}
-		else {
-			rows = null;
-		}
-		super.fireTableDataChanged();
+	public static final String[] NAMES = new String[] { CHECK, NAME, STATUS };
+	public static final String[] CAPTIONS = new String[] { "Velg", "Oppdrag", "Status" };
+
+	/* ============================================================
+	 * Constructors
+	 * ============================================================ */
+
+	public AssignmentTableModel(IMsoModelIf model) {
+		// forward
+		super(IAssignmentIf.class,NAMES,CAPTIONS,false);
+		// install model
+		IAssignmentListIf list = model.getMsoManager().getCmdPost().getAssignmentList();
+		connect(model,list,IAssignmentIf.ASSIGNMENT_TYPE_NUMBER_COMPERATOR);
+		load(list);
 	}
 
-	public int getColumnCount() {
-		return 3;
+	/* ================================================================
+	 *  MsoTableModel implementation
+	 * ================================================================ */
+
+	protected Object getCellValue(int row, String column) {
+
+		// translate
+		if(CHECK.equals(column))
+			return new Boolean(false);
+		else if(NAME.equals(column))
+			return getId(row);
+		else if(STATUS.equals(column))
+			return getId(row);
+
+		// not supported
+		return null;
+
 	}
 
-	public int getRowCount() {
-		return (rows!=null ? rows.length : 0);
-	}
 
-	public Object getValueAt(int rowIndex, int columnIndex) {
-    	// invalid index?
-    	if(rows==null || !(rowIndex<rows.length)) return null;
-		Object[] row = (Object[]) rows[rowIndex];
-		return row[columnIndex];
-	}
-	
-    public void setValueAt(Object value, int rowIndex, int columnIndex) {
-    	if(rows==null) return;
-		Object[] row = (Object[]) rows[rowIndex];
-		row[columnIndex] = value;
-        fireTableCellUpdated(rowIndex, columnIndex);
-    }
+	/* ================================================================
+	 *  AbstractTableModel implementation
+	 * ================================================================ */
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
@@ -118,25 +69,11 @@ public class AssignmentTableModel extends DiskoTableModel implements
 	}
 
 	@Override
-	public String getColumnName(int column) {
-		switch (column) {
-		case 0:
-			return "Velg";
-		case 1:
-			return "Oppdrag";
-		case 2:
-			return "Status";
-		default:
-			return null;
-		}
-	}
-
-	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		if (columnIndex == 0) {
 			return true;
 		}
 		return false;
 	}
-	
+
 }

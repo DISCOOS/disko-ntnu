@@ -2,7 +2,6 @@ package org.redcross.sar.app;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -129,7 +128,7 @@ public class DiskoModuleManager {
 				else {
 					// load module
 					try {
-						Class cls = classLoader.loadClass(className);
+						Class<?> cls = classLoader.loadClass(className);
 						String message = DiskoStringFactory.getText(Utils.getPackageName(cls));
 						message = String.format(DiskoStringFactory.getText("PROGRESS_LOADING_CLASS"),message);
 						DiskoProgressMonitor.getInstance().setNote(message);

@@ -1,5 +1,5 @@
 package org.redcross.sar.map.tool;
- 
+
 import java.awt.Event;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -14,6 +14,7 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -78,28 +79,28 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		ACTION_CANCEL,
 		ACTION_DISCARD
 	}
-	
+
 	// private flags
 	private boolean isDrawing = false;			// true:=drawing in progress
 	private boolean isMoving = false;			// true:=traced mouse move in progress
 	private boolean isRubberInUse = false;		// true:=rubber geometry is active
 	private boolean isConstrainMode = true;		// true:=limit line length to [min,max]
 	private boolean isWorkPoolMode = true;		// true:=execute work in work pool
-	
+
 	// temporary flags
 	private boolean doSnapTo = false;			// true:=force a snap operation on active draw geometry
-	private boolean isBatchUpdate = true;		// true:=a batch is executing, this inhibit setGeometries 
+	private boolean isBatchUpdate = true;		// true:=a batch is executing, this inhibit setGeometries
 	private boolean isMouseOverIcon = false;	// true:=mouse is over icon
 	private boolean isSnapToMode = false;		// true:=if snapping is available, snapping is enabled every time the tool is activated
 
-	
+
 	// protected flags
 	protected boolean isShowDrawFrame = false;	// true:= an draw frame is shown
 	protected boolean isContinued = false;		// true:= continue on finished object
 
 	// state
 	protected DrawMode drawMode = DrawMode.MODE_CREATE;
-	
+
 	// constrain attributes
 	protected int minStep = 10;
 	protected int maxStep = 100;
@@ -107,56 +108,56 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	// gesture constants
 	protected DrawAction onMouseDownAction;
 	protected DrawAction onMouseMoveAction;
-	protected DrawAction onMouseUpAction;	
-	protected DrawAction onClickAction;	
-	protected DrawAction onDblClickAction;	
-	
+	protected DrawAction onMouseUpAction;
+	protected DrawAction onClickAction;
+	protected DrawAction onDblClickAction;
+
 	// draw feature constant
 	protected FeatureType featureType = null;
-	
+
 	// counters
 	protected int moveCount = 0;
 	protected long previous = 0;
-	
+
 	// point buffers
 	protected Point p = null;
-		
+
 	// holds draw geometry
 	protected Polyline geoPath;
 	protected Point geoPoint;
 	protected Polyline geoRubber;
 	protected IGeometry geoSnap;
-		
+
 	// adapters
 	protected MsoDrawAdapter drawAdapter;
 	protected SnapAdapter snapAdapter;
 	protected MapControlAdapter mapAdapter;
-	
-	// some draw information used to ensure that old draw 
+
+	// some draw information used to ensure that old draw
 	// geometries are removed from the screen
 	protected InvalidArea lastInvalidArea;
-	
+
 	// draw symbols
 	protected SimpleMarkerSymbol markerSymbol;
 	protected SimpleLineSymbol pathSymbol;
-	protected SimpleLineSymbol snapSymbol;	
+	protected SimpleLineSymbol snapSymbol;
 
 	// elements
-	protected DrawFrame drawFrame = null;	
-	
-	
+	protected DrawFrame drawFrame = null;
+
+
 	/**
 	 * Constructs the DrawTool
 	 */
-	public AbstractMsoDrawTool(boolean isRubberInUse, 
+	public AbstractMsoDrawTool(IMsoModelIf model, boolean isRubberInUse,
 			FeatureType featureType) throws IOException {
-		
+
 		// forward
-		super();
-		
+		super(model);
+
 		// set cursor
 		cursorPath = "cursors/create.cur";
-		
+
 		// create the symbol to draw with
 		markerSymbol = new SimpleMarkerSymbol();
 		RgbColor markerColor = new RgbColor();
@@ -165,7 +166,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		markerSymbol.setColor(markerColor);
 		markerSymbol.setStyle(esriSimpleMarkerStyle.esriSMSCross);
 		markerSymbol.setSize(FONT_SIZE);
-		
+
 		// create the symbol to draw with
 		pathSymbol = new SimpleLineSymbol();
 		RgbColor lineColor = new RgbColor();
@@ -188,14 +189,14 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		onMouseDownAction = DrawAction.ACTION_DISCARD;
 		onMouseMoveAction = DrawAction.ACTION_DISCARD;
 		onMouseUpAction = DrawAction.ACTION_DISCARD;
-		
+
 		// set draw type and rubber flag
 		this.isRubberInUse = isRubberInUse;
 		this.featureType = featureType;
-		
+
 		// set flags
 		this.showDirect = false;
-		
+
 		// create button
 		button = DiskoButtonFactory.createToggleButton(buttonSize);
 
@@ -211,49 +212,49 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 			public void mousePressed(MouseEvent e) {
 				// start show/hide
-				if(dialog!=null) dialog.delayedSetVisible(!dialog.isVisible(), 250);				
+				if(dialog!=null) dialog.delayedSetVisible(!dialog.isVisible(), 250);
 			}
 
 			public void mouseReleased(MouseEvent e) {
 				// stop show if not shown already
-				if(dialog!=null) dialog.cancelSetVisible();				
+				if(dialog!=null) dialog.cancelSetVisible();
 			}
-			
+
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
 
 		});
-				
+
 		// create map control adapter
 		mapAdapter = new MapControlAdapter();
-		
+
 	}
 
 	/* ==================================================
-	 * Public methods (override with care) 
+	 * Public methods (override with care)
 	 * ==================================================
 	 */
-	
+
 	public boolean isDrawing() {
 		return isDrawing;
 	}
-	
+
 	public Point getPoint() {
 		return geoPoint;
 	}
-	
+
 	public boolean setPoint(Point p) {
 		return setPoint(p,false);
 	}
-	
+
 	public boolean setPoint(Point p, boolean isDirty) {
 		try {
 			//System.out.println(p!=null ? MapUtil.getMGRSfromPoint(p) : "null");
 			// is valid?
 			if(p!=null && !p.isEmpty()) {
-				// update 
+				// update
 				this.p = p;
-				this.geoPoint = p;				
+				this.geoPoint = p;
 				// forward
 				setDirty(isDirty);
 				// forward?
@@ -265,29 +266,29 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			else {
 				// replace
 				this.p = null;
-				this.geoPoint = null;				
+				this.geoPoint = null;
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		// failed
 		return false;
 	}
-	
+
 	public boolean setPointFromMap() {
 		return setPointFromMap(false);
-	}	
-	
+	}
+
 	public boolean setPointFromMap(boolean isDirty) {
 		return setPoint(map.getClickPoint(),isDirty);
-	}	
-	
+	}
+
 	/* =========================================================
-	 * Overriden AbstractDiskoTool methods (override with care) 
+	 * Overriden AbstractDiskoTool methods (override with care)
 	 * =========================================================
 	 */
-	
+
 	@Override
 	public boolean load(IMapToolState state) {
 		// valid state?
@@ -297,7 +298,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Object getAttribute(String attribute) {
 		if("GETDRAWMODE".equalsIgnoreCase(attribute)) {
@@ -322,7 +323,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			// allowed?
 			if(flag) {
 				// update modes in panel
-				getToolPanel().update();		
+				getToolPanel().update();
 				// forward?
 				if(!isDirty()) setGeometries();
 				// turn on snapping?
@@ -343,16 +344,16 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// return state
 		return flag;
 	}
-	
+
 	@Override
 	public boolean deactivate(){
-		
+
 		// forward?
 		if(isHosted()) getHostTool().deactivate();
-		
+
 		// forward
 		super.deactivate();
-				
+
 		// forward
 		try {
 			refresh();
@@ -360,7 +361,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		// turn off snapping?
 		if(snapAdapter!=null) {
 			try {
@@ -374,80 +375,80 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				e.printStackTrace();
 			}
 		}
-		
-		// forward		
+
+		// forward
 		return true;
-		
+
 	}
-		
+
 	/* =========================================================
-	 * Overriden ICommand interface methods (override with care) 
+	 * Overriden ICommand interface methods (override with care)
 	 * =========================================================
 	 */
-	
+
 	@Override
 	public int getCursor() {
 		// show default?
 		if(isMouseOverIcon && !isDrawing())
 			return 0;
-		else 
+		else
 			return super.getCursor();
 	}
-	
+
 	public void onCreate(Object obj) {
-		
+
 		// is working?
 		if(isWorking()) return;
-		
+
 		try {
 
 			// only a DiskoMap object is accepted
-			if (obj instanceof DiskoMap) {	
-				
+			if (obj instanceof DiskoMap) {
+
 				// unregister?
 				if(map!=null) {
-					map.removeIMapControlEvents2Listener(mapAdapter);					
+					map.removeIMapControlEvents2Listener(mapAdapter);
 				}
-								
+
 				// initialize map object
 				map = (DiskoMap)obj;
-				
+
 				// register map in draw dialog?
 				if(dialog instanceof IDrawToolCollection && !isHosted()) {
 					((IDrawToolCollection)dialog).register(map);
 				}
-								
+
 				// set marked button
 				if(button!=null && button.getIcon() instanceof DiskoIcon) {
 					DiskoIcon icon = (DiskoIcon)button.getIcon();
 					icon.setMarked(true);
 				}
-				
+
 				// add listener to used to draw tool geometries
 				map.addIMapControlEvents2Listener(mapAdapter);
-				
+
 				// get edit support from map?
 				if(map.isEditSupportInstalled()) {
-				
+
 					// get draw frame
 					drawFrame = map.getDrawFrame();
-					
+
 					// get draw adapter
 					drawAdapter = map.getDrawAdapter();
-		
+
 					// get snap adapter
 					snapAdapter = map.getSnapAdapter();
-				
+
 				}
-								
+
 			}
-			
+
 			// reset flags
 			isMoving=false;
 
 			// forward
 			super.onCreate(obj);
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -462,16 +463,16 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	}
 
 	/* =========================================================
-	 * Overriden ITool interface methods (override with care) 
+	 * Overriden ITool interface methods (override with care)
 	 * =========================================================
 	 */
-	
+
 	@Override
 	public void onDblClick() {
 		// forward to extender
-		onAction(onDblClickAction);		
-	}	
-	
+		onAction(onDblClickAction);
+	}
+
 	@Override
 	public void onMouseDown(int button, int shift, int x, int y) {
 		try {
@@ -484,61 +485,61 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				// do snapping
 				p = snapTo(p);
 				// forward to extenders
-				onAction(onMouseDownAction, button, shift, x, y);			
+				onAction(onMouseDownAction, button, shift, x, y);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void onMouseMove(int button, int shift, int x, int y) {
 
 		moveCount++;
-		
+
 		if(moveCount<2) return;
-		
+
 		moveCount = 0;
-		
+
 		// is moving
 		isMoving = true;
-		
+
 		try {
-			
+
 			// get screen-to-map transformation and try to snap
 			p = toMapPoint(x,y);
-			
+
 			// get flag
-			isMouseOverIcon = isShowDrawFrame;			
-			if(isMouseOverIcon && drawFrame!=null && p!=null && !p.isEmpty()) { 
+			isMouseOverIcon = isShowDrawFrame;
+			if(isMouseOverIcon && drawFrame!=null && p!=null && !p.isEmpty()) {
 				isMouseOverIcon = drawFrame.hitIcon(p.getX(), p.getY(), 1)!=null;
 			}
-			
+
 			// get screen-to-map transformation and try to snap
 			p = snapTo(p);
-			
-			// only forward to extenders of this class if 
+
+			// only forward to extenders of this class if
 			// drawing or mouse not over draw frame icon
 			if(!isMouseOverIcon || isDrawing)
-				onAction(onMouseMoveAction,button,shift,x,y);		
+				onAction(onMouseMoveAction,button,shift,x,y);
 			else {
 				// force a refresh?
-				boolean bFlag = geoSnap != null; 
+				boolean bFlag = geoSnap != null;
 				// reset snap geometry
 				geoSnap = null;
 				// force a refresh?
 				if(bFlag || isSnapToMode()) refresh();
 			}
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		// is not moving any more
 		isMoving = false;
-		
+
 	}
 
 	@Override
@@ -562,27 +563,27 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void onKeyDown(int keyCode , int shift) {
-		
+
 		if(!isActive || isWorking()) return;
-		
+
 		// cancel drawing?
 		if(keyCode == Event.ESCAPE) {
 			onAction(DrawAction.ACTION_CANCEL, 0, 0, 0, 0);
 		}
 	}
-			
+
 	/* ==================================================
 	 * Implementation of IDrawTool (override with care)
 	 * ==================================================
 	 */
-	
+
 	public FeatureType getFeatureType() {
 		return featureType;
 	}
-	
+
 	public int getMaxStep() {
 		return maxStep;
 	}
@@ -608,7 +609,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// forward
 		setDirty(isDirty);
 	}
-		
+
 	public boolean isConstrainMode() {
 		return isConstrainMode;
 	}
@@ -634,7 +635,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			if(this.isShowDrawFrame != bFlag) {
 				// prepare
 				this.isShowDrawFrame = bFlag;
-				// update both draw frame and geometries? 
+				// update both draw frame and geometries?
 				if(isShowDrawFrame && drawAdapter!=null) {
 					// re-apply mso frame;
 					drawAdapter.setMsoFrame();
@@ -644,24 +645,24 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					drawAdapter.prepareFrame(true);
 				}
 				// draw geometries only
-				refresh();	
+				refresh();
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean isWorkPoolMode() {
 		return isWorkPoolMode;
 	}
 
 	public boolean setWorkPoolMode(boolean isWorkPoolMode) {
-		boolean bFlag = this.isWorkPoolMode; 
+		boolean bFlag = this.isWorkPoolMode;
 		this.isWorkPoolMode = isWorkPoolMode;
 		return bFlag;
 	}
-		
+
 	public void setSnapTolerance(double tolerance) throws IOException, AutomationException {
 		if(snapAdapter!=null)
 			snapAdapter.setSnapTolerance(tolerance);
@@ -674,19 +675,19 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	}
 
 	public void setMsoData(IMsoObjectIf msoOwn, IMsoObjectIf msoObj, MsoClassCode msoClassCode) {
-		
+
 		// is working?
 		if(isWorking()) return;
-		
+
 		// only IAreaIf is a valid owner
-		if(!(msoOwn instanceof IAreaIf)) msoOwn = null;			
-		
+		if(!(msoOwn instanceof IAreaIf)) msoOwn = null;
+
 		// is drawing point?
 		if(featureType==FeatureType.FEATURE_POINT) {
 			// get point flag
 			boolean supportsPoint = msoObj!=null &&
-				(MsoClassCode.CLASSCODE_POI.equals(msoObj.getMsoClassCode()) || 
-				 MsoClassCode.CLASSCODE_UNIT.equals(msoObj.getMsoClassCode())); 
+				(MsoClassCode.CLASSCODE_POI.equals(msoObj.getMsoClassCode()) ||
+				 MsoClassCode.CLASSCODE_UNIT.equals(msoObj.getMsoClassCode()));
 			// point not supported?
 			if(msoObj!=null && !supportsPoint) msoObj=null; // invalid object reference
 		}
@@ -695,7 +696,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			boolean supportsLine = msoObj!=null &&
 				(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObj.getMsoClassCode()) ||
 						MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObj.getMsoClassCode()) ||
-						MsoClassCode.CLASSCODE_ROUTE.equals(msoObj.getMsoClassCode())); 
+						MsoClassCode.CLASSCODE_ROUTE.equals(msoObj.getMsoClassCode()));
 			// point not supported?
 			if(msoObj!=null && !supportsLine) msoObj=null; // invalid object reference
 		}
@@ -712,27 +713,27 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	public SnapAdapter getSnapAdapter() {
 		return snapAdapter;
 	}
-	
+
 	public boolean doSnapTo() {
-		
+
 		// is not allowed?
 		if(snapAdapter==null) return false;
 
 		// get geometries from mso?
 		if(geoPath==null) setGeometries();
-					
+
 		// set flags
 		doSnapTo = geoPath!=null;
-		
+
 		// forward
 		return finish(doSnapTo);
-			
+
 	}
-	
+
 	public boolean isBatchUpdate() {
 		return isBatchUpdate;
 	}
-	
+
 	public void setBatchUpdate(boolean isBatchUpdate) {
 		// any change?
 		if(this.isBatchUpdate != isBatchUpdate) {
@@ -742,46 +743,46 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			if(!(isBatchUpdate || isWorking())) setGeometries();
 		}
 	}
-	
+
 	public MsoDrawAdapter getDrawAdapter() {
 		return drawAdapter;
 	}
-	
+
 	/**
 	 * Get the geometry from current mso geodata object
 	 *
-	 */	
+	 */
 	private boolean setGeometries() {
-			
+
 		// initialize flag
 		boolean isDirty = (geoPath!=null || geoPoint!=null);
-			
+
 		try {
-			
+
 			// continue on existing geometries?
 			if(isActive) {
-				
+
 				// update drawings?
-				if(isDirty) refresh(); 
-			
+				if(isDirty) refresh();
+
 				// reset flag
 				isContinued = false;
-				
+
 				// reset current draw geometries
 				p = null;
 				geoPath = null;
 				geoPoint = null;
 				geoSnap = null;
 				geoRubber = null;
-			
+
 				// has been deleted?
-				if(msoObject!=null && msoObject.hasBeenDeleted()) 
+				if(msoObject!=null && msoObject.hasBeenDeleted())
 					doMsoInit();
-				
+
 				// continue on existing geometries?
 				if(isContinueMode()) {
 					// is type defined?
-					if(featureType!=null){ 
+					if(featureType!=null){
 						// do work depending on type of feature
 						if(FeatureType.FEATURE_POLYGON.equals(featureType))
 							isDirty = setPolygon();
@@ -794,44 +795,44 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					}
 				}
 			}
-		
+
 			// update drawings?
-			if(isDirty) refresh(); 
+			if(isDirty) refresh();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-				
+
 		// failed
 		return isDirty;
 	}
-	
+
 	private boolean setPolyline() {
 		try {
-							
+
             // mso object exist?
-			if(msoObject!=null) {			
+			if(msoObject!=null) {
 				// parse type
-				if (MsoClassCode.CLASSCODE_ROUTE.equals(msoObject.getMsoClassCode())) {						
+				if (MsoClassCode.CLASSCODE_ROUTE.equals(msoObject.getMsoClassCode())) {
 					// get polyline
 					geoPath = MapUtil.getEsriPolyline(((IRouteIf)msoObject).getGeodata(),map.getSpatialReference());
 				}
 				// set flag
 				return (geoPath!=null);
 			}
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 		// failed
 		return false;
-		
+
 	}
 
 	private boolean setPolygon() {
 		try {
-							
+
             // get polygon?
 			if(msoObject!=null) {
 				// dispatch the mso draw data
@@ -855,25 +856,25 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				if(isRubberInUse) geoRubber = geoPath;
 				// set flag
 				return (geoPath!=null);
-			}			
+			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 		// failed
 		return false;
-		
+
 	}
-	
+
 	private boolean setPoint() {
 		try {
-							
+
             // get polygon?
 			if(msoObject!=null) {
 				// parse data
 				if (MsoClassCode.CLASSCODE_POI.equals(msoObject.getMsoClassCode())) {
 					// cast to IPOIIf
-					IPOIIf msoPoi = (IPOIIf)msoObject;	
+					IPOIIf msoPoi = (IPOIIf)msoObject;
 					// get polyline
 					p = MapUtil.getEsriPoint(msoPoi.getPosition().getGeoPos(),map.getSpatialReference());
 				}
@@ -886,18 +887,18 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				// update geometry point
 				geoPoint = p;
 				// set flag
-				return (p!=null);							
+				return (p!=null);
 			}
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 		// failed
 		return false;
-		
-	}	
-	
+
+	}
+
 	@Override
 	public IMapToolState save() {
 		// get new state
@@ -927,15 +928,15 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-	}	
-	
+	}
+
 	public boolean finish(boolean force) {
 		// set flag
 		setDirty(isDirty || force && (geoPath!=null));
 		// forward
 		return finish();
-	}	
-	
+	}
+
 	public boolean finish() {
 		// forward
 		boolean bFlag = doFinishWork();
@@ -946,7 +947,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// finish
 		return bFlag;
 	}
-	
+
 	/**
 	 * This method will cancel a started drawing procedure. If edit support is
 	 * installed, this will affect all registered draw tools.
@@ -959,10 +960,10 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			if(map.isEditSupportInstalled()) {
 				// forward
 				if(drawAdapter.cancel()) {
-					// refresh any changes 
-					drawAdapter.refreshFrame();				
+					// refresh any changes
+					drawAdapter.refreshFrame();
 				}
-				// any change? 
+				// any change?
 				bFlag = (bFlag != isDirty);
 			}
 			else if(bFlag) {
@@ -978,7 +979,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// finished
 		return bFlag;
 	}
-		
+
 	public DrawMode getDrawMode() {
 		return drawMode;
 	}
@@ -987,30 +988,30 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// prepare
 		drawMode = mode;
 	}
-		
+
 	public boolean isInterchangable(FeatureType type) {
 		if(isDrawingLines(type) && isDrawingLines(featureType))
 			return true;
 		else if(isDrawingPoints(type) && isDrawingPoints(featureType))
 			return true;
 		// not supported
-		return false;		
+		return false;
 	}
-	
+
 	private boolean isDrawingLines(FeatureType type) {
-		
-		return FeatureType.FEATURE_POLYLINE.equals(type) 
+
+		return FeatureType.FEATURE_POLYLINE.equals(type)
 				|| FeatureType.FEATURE_POLYGON.equals(type);
 	}
-	
+
 	public boolean isDrawingPoints(FeatureType type) {
 		return FeatureType.FEATURE_POINT.equals(type);
 	}
-	
+
 	public boolean isCreateMode() {
 		return DrawMode.MODE_CREATE.equals(drawMode);
 	}
-	
+
 	public boolean isReplaceMode() {
 		return DrawMode.MODE_REPLACE.equals(drawMode);
 	}
@@ -1018,13 +1019,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	public boolean isAppendMode() {
 		return DrawMode.MODE_APPEND.equals(drawMode);
 	}
-	
+
 	public boolean isContinueMode() {
 		return DrawMode.MODE_CONTINUE.equals(drawMode);
 	}
-	
+
 	public boolean isSnapToMode() {
-		return isSnapToMode; 
+		return isSnapToMode;
 	}
 
 	public void setSnapToMode(boolean isSnapToMode) {
@@ -1042,31 +1043,31 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}			
+			}
 		}
-	}	
-	
+	}
+
 	/* ==================================================
-	 * Protected methods intended for extending classes 
+	 * Protected methods intended for extending classes
 	 * ==================================================
 	 */
 
 	/**
-	 * This method is rised from either onClick(*) or 
+	 * This method is rised from either onClick(*) or
 	 * onDblClick(*)
-	 *  
+	 *
 	 * @param keycode
 	 * @param shift
-	 * @return True if begin is a success 
-	 */	
+	 * @return True if begin is a success
+	 */
 	protected boolean onBegin() {
 		return true;
 	}
 
 	/**
-	 * This method is rised from either onMouseDown(*), 
+	 * This method is rised from either onMouseDown(*),
 	 * onMouseMove(*) or onMouseDown(*)
-	 * 
+	 *
 	 * @param button
 	 * @param shift
 	 * @param x
@@ -1076,23 +1077,23 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected boolean onBegin(int button, int shift, int x, int y) {
 		return true;
 	}
-	
+
 	/**
-	 * This method is rised from either onClick(*) or 
+	 * This method is rised from either onClick(*) or
 	 * onDblClick(*)
-	 *  
+	 *
 	 * @param keycode
 	 * @param shift
-	 * @return True if change is a success 
-	 */	
+	 * @return True if change is a success
+	 */
 	protected boolean onChange() {
 		return true;
 	}
-	
+
 	/**
-	 * This method is rised from either onMouseDown(*), 
+	 * This method is rised from either onMouseDown(*),
 	 * onMouseMove(*) or onMouseDown(*)
-	 * 
+	 *
 	 * @param button
 	 * @param shift
 	 * @param x
@@ -1102,23 +1103,23 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected boolean onChange(int button, int shift, int x, int y) {
 		return true;
 	}
-	
+
 	/**
-	 * This method is rised from either onClick(*) or 
+	 * This method is rised from either onClick(*) or
 	 * onDblClick(*)
-	 *  
+	 *
 	 * @param keycode
 	 * @param shift
-	 * @return True of finish is a success 
-	 */	
+	 * @return True of finish is a success
+	 */
 	protected boolean onFinish() {
 		return true;
 	}
-	
+
 	/**
-	 * This method is rised from either onMouseDown(*), 
+	 * This method is rised from either onMouseDown(*),
 	 * onMouseMove(*) or onMouseDown(*)
-	 * 
+	 *
 	 * @param button
 	 * @param shift
 	 * @param x
@@ -1128,10 +1129,10 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected boolean onFinish(int button, int shift, int x, int y) {
 		return true;
 	}
-	
+
 	/**
 	 * This method is rised when user has pressed the ESC button
-	 * 
+	 *
 	 * @param button
 	 * @param shift
 	 * @param x
@@ -1141,32 +1142,32 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected boolean onCancel() {
 		return true;
 	}
-	
+
 	/**
-	 * This method clears current mso objects and 
+	 * This method clears current mso objects and
 	 * then calls the doPrepare() method
-	 * 
+	 *
 	 */
 	protected void doMsoInit() {
 		// reset
 		msoOwner = null;
 		msoObject = null;
 		// forward
-		doPrepare(null,false);		
+		doPrepare(null,false);
 	}
-	
-	
+
+
 	/**
-	 * This method is rised after doFinish() is returned with true. 
-	 * Mso object updates before finished is completed should be 
+	 * This method is rised after doFinish() is returned with true.
+	 * Mso object updates before finished is completed should be
 	 * done in this method.
-	 * 
+	 *
 	 * @param IMsoObjectIf msoObj The mso object to prepare for update
-	 * @param boolean isDefined Indicates that this prepare is 
+	 * @param boolean isDefined Indicates that this prepare is
 	 * defined in AbstractDrawTool
-	 * 
+	 *
 	 * @return True if prepare is a success
-	 * 
+	 *
 	 */
 	protected boolean doPrepare(IMsoObjectIf msoObj, boolean isDefined) {
 		try {
@@ -1187,40 +1188,40 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		}
 		// failure
 		return false;
-	}		
-	
+	}
+
 	/**
 	 * Set drawing state flag
-	 * 
-	 */	
+	 *
+	 */
 	protected void setIsDrawing(boolean isDrawing) {
 		// set flag
 		this.isDrawing = isDrawing;
 		// update panel
-		getToolPanel().update();		
+		getToolPanel().update();
 	}
-	
-	
+
+
 	/**
 	 * Snap to point
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws AutomationException
-	 */	
+	 */
 	protected Point snapTo(Point p) throws IOException, AutomationException {
 		// try to snap?
-		if(snapAdapter!=null && snapAdapter.isSnapToMode()) {	
+		if(snapAdapter!=null && snapAdapter.isSnapToMode()) {
 			// forward
 			p = snapAdapter.doSnapTo(p);
 			// update snap geometry
-			geoSnap = snapAdapter.getSnapGeometry();			
-		}	
+			geoSnap = snapAdapter.getSnapGeometry();
+		}
 		return p;
 	}
-		
+
 	/**
 	 * Draws the geometry on screen
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws AutomationException
 	 */
@@ -1229,8 +1230,8 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			boolean bdirty = false;
 			InvalidArea invalidArea = new InvalidArea();
 			// is type defined?
-			if(featureType!=null){ 
-				
+			if(featureType!=null){
+
 				// do work depending on type of feature
 				if(featureType==FeatureType.FEATURE_POINT) {
 					if (geoPoint != null && !isMoving) {
@@ -1253,13 +1254,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					}
 				}
 			}
-			 
+
 			// refresh old area?
 			if(lastInvalidArea!=null) {
 				lastInvalidArea.setDisplayByRef(map.getActiveView().getScreenDisplay());
 				lastInvalidArea.invalidate((short) esriScreenCache.esriNoScreenCache);
-			}			
-			
+			}
+
 			// refresh new area?
 			if(bdirty) {
 				invalidArea.setDisplayByRef(map.getActiveView().getScreenDisplay());
@@ -1275,16 +1276,16 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected Point getNearestPoint(Polyline pline, Point point)
 			throws IOException, AutomationException {
 		// forward
-		return (Point)pline.returnNearestPoint(point, 
+		return (Point)pline.returnNearestPoint(point,
 				esriSegmentExtension.esriNoExtension);
 	}
-	
+
 	protected boolean isGeometriesDrawn() {
-		boolean bFlag = (featureType!=null) 
-			&& (isActive || 
-					(isShowDrawFrame 
-							&& map.isEditSupportInstalled() 
-							&& drawFrame.isActive() 
+		boolean bFlag = (featureType!=null)
+			&& (isActive ||
+					(isShowDrawFrame
+							&& map.isEditSupportInstalled()
+							&& drawFrame.isActive()
 							&& this == drawAdapter.getSelectedDrawTool()
 					)
 				);
@@ -1295,12 +1296,12 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	 * Private methods intended internal use
 	 * ==================================================
 	 */
-	
+
 	private void draw() throws IOException, AutomationException {
-		
+
 		// draw geometries?
 		if (isGeometriesDrawn()) {
-			
+
 			// do work depending on type of feature
 			if(featureType==FeatureType.FEATURE_POINT) {
 				// forward
@@ -1309,32 +1310,32 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			else {
 				drawLine();
 			}
-			
+
 		}
-		
+
 	}
-	
+
 	private void drawPoint() throws IOException, AutomationException {
-		
+
 		// draw in screen display
 		if (geoPoint != null && !isMoving) {
-			
+
 			// get screen display and start drawing on it
 			IScreenDisplay screenDisplay = map.getActiveView().getScreenDisplay();
 			screenDisplay.startDrawing(screenDisplay.getHDC(),(short) esriScreenCache.esriNoScreenCache);
 
 			screenDisplay.setSymbol(markerSymbol);
 			screenDisplay.drawPoint(geoPoint);
-			
+
 			// notify that drawing is finished
 			screenDisplay.finishDrawing();
 		}
 
-		
+
 	}
 
 	private void drawLine() throws IOException, AutomationException {
-		
+
 		// get screen display and start drawing on it
 		IScreenDisplay screenDisplay = map.getActiveView().getScreenDisplay();
 		screenDisplay.startDrawing(screenDisplay.getHDC(),(short) esriScreenCache.esriNoScreenCache);
@@ -1342,15 +1343,15 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// get current lines
 		Polyline path = geoPath!=null ? (Polyline)geoPath.esri_clone() : null;
 		Polyline rubber = geoRubber!=null ? (Polyline)geoRubber.esri_clone() : null;
-		
+
 		// create polygon?
-		if(featureType == FeatureType.FEATURE_POLYGON && !isDrawing) {				
+		if(featureType == FeatureType.FEATURE_POLYGON && !isDrawing) {
 			if(path!=null && rubber!=null) {
 				Point from = (Point)path.getFromPoint();
 				path.addPoint((IPoint)from.esri_clone(), null, null);
 			}
 		}
-		
+
 		// draw in screen display
 		if(!isMoving) {
 			if (path != null) {
@@ -1376,10 +1377,10 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 		// notify that drawing is finished
 		screenDisplay.finishDrawing();
-		
-	}	
-	
-	private void onAction(DrawAction action, 
+
+	}
+
+	private void onAction(DrawAction action,
 			int button, int shift, int x, int y) {
 		if(action.equals(DrawAction.ACTION_BEGIN)) {
 			if(beforeBegin()) {
@@ -1412,7 +1413,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			}
 		}
 	}
-	
+
 	private void onAction(DrawAction action) {
 		if(action.equals(DrawAction.ACTION_BEGIN)) {
 			if(beforeBegin()) {
@@ -1422,7 +1423,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		else if(action.equals(DrawAction.ACTION_CHANGE)) {
 			if(beforeChange()){
 				afterChange(onChange());
-			} 
+			}
 		}
 		else if(action.equals(DrawAction.ACTION_CANCEL)) {
 			if(beforeCancel()) {
@@ -1436,12 +1437,12 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			}
 		}
 	}
-		
+
 	private boolean beforeBegin() {
 
 		// valid operation?
 		if(!isActive || isWorking()) return false;
-				
+
 		// valid zoom?
 		if(!map.isDrawAllowed())  {
 			Utils.showWarning("Tegning er kun mulig fra skala 1:" + ((int)map.getMaxDrawScale()) + " og lavere");
@@ -1464,16 +1465,16 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			SwingUtilities.invokeLater(r);
 			return false;
 		}
-		
+
 		// set as working (prevents reentry)
 		setIsWorking();
-		
+
 		// notify
-		fireToolEvent(ToolEventType.BEGIN_EVENT, 0);		
-		
+		fireToolEvent(ToolEventType.BEGIN_EVENT, 0);
+
 		// valid
 		return true;
-			
+
 	}
 
 	private void afterBegin(boolean success) {
@@ -1482,13 +1483,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		if(success) {
 
 			try {
-	
+
 				// update tool drawings
 				refresh();
-						
+
 				// is drawing
 				setIsDrawing(true);
-		
+
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -1499,18 +1500,18 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		// reset work flag
 		setIsNotWorking();
 	}
-	
+
 	private boolean beforeChange() {
 
 		// valid operation?
 		if(!isActive || !isDrawing || isWorking()) return false;
-		
+
 		// set working flag
 		setIsWorking();
-		
+
 		// notify
-		fireToolEvent(ToolEventType.CHANGE_EVENT, 0);		
-		
+		fireToolEvent(ToolEventType.CHANGE_EVENT, 0);
+
 		// valid
 		return true;
 	}
@@ -1518,8 +1519,8 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	private void afterChange(boolean success) {
 		// was operation successful?
 		if(success) {
-			try {				
-				// draw the geometries on map 
+			try {
+				// draw the geometries on map
 				refresh();
 			}
 			catch (Exception e) {
@@ -1528,24 +1529,24 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			// notify
 			fireOnWorkChange(this, msoObject);
 			// notify
-			fireToolEvent(ToolEventType.CHANGE_EVENT, 1);		
+			fireToolEvent(ToolEventType.CHANGE_EVENT, 1);
 		}
 		// reset working flag
-		setIsNotWorking();		
+		setIsNotWorking();
 	}
-	
-	
+
+
 	private boolean beforeCancel() {
 		// valid operation?
 		if(!isActive || !isDrawing) return false;
 		// set working flag
 		setIsWorking();
 		// notify
-		fireToolEvent(ToolEventType.CANCEL_EVENT, 0);		
+		fireToolEvent(ToolEventType.CANCEL_EVENT, 0);
 		// is valid
 		return true;
 	}
-	
+
 	private void afterCancel(boolean success) {
 		// was cancel operation successful?
 		if(success) {
@@ -1560,60 +1561,60 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			// notify
 			fireOnWorkCancel(this,msoObject);
 			// notify
-			fireToolEvent(ToolEventType.CANCEL_EVENT, 1);		
+			fireToolEvent(ToolEventType.CANCEL_EVENT, 1);
 		}
 		// reset working flag
 		setIsNotWorking();
-	}	
-	
+	}
+
 	private boolean beforeFinish() {
 		// valid operation?
 		if(!isActive || !isDrawing || isWorking()) return false;
 		// set working flag
 		setIsWorking();
 		// notify
-		fireToolEvent(ToolEventType.FINISH_EVENT, 0);		
+		fireToolEvent(ToolEventType.FINISH_EVENT, 0);
 		// valid
 		return true;
 	}
-	
+
 	private void afterFinish(boolean success) {
-		
+
 		// was finish operation successful?
 		if(success) {
-			
+
 			try {
-				
+
 				// set flags
 				setIsDrawing(false);
-				
+
 				// forward?
-				if(isDirty) 
+				if(isDirty)
 					prepareDrawFrame();
 				else
 					reset();
-				
+
 				// draw geometries only
-				refresh();	
-				
+				refresh();
+
 				// reset last invalid area
 				lastInvalidArea = null;
-				
+
 				// notify
-				fireToolEvent(ToolEventType.FINISH_EVENT, 1);		
-				
+				fireToolEvent(ToolEventType.FINISH_EVENT, 1);
+
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// reset working flag
 		setIsNotWorking();
 	}
-	
+
 	protected boolean prepareDrawFrame() throws AutomationException, IOException {
-		// update both draw frame and geometries? 
+		// update both draw frame and geometries?
 		if(isShowDrawFrame && drawAdapter!=null) {
 			// re-apply MSO frame;
 			drawAdapter.setMsoFrame();
@@ -1623,10 +1624,10 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			drawAdapter.prepareFrame(true);
 			// finished
 			return true;
-		}		
+		}
 		return false;
 	}
-	
+
 	private IEnvelope getGeoEnvelope() throws AutomationException, IOException {
 		if(geoPath!=null) {
 			return MapUtil.getConstrainExtent(geoPath.getEnvelope(),map);
@@ -1636,13 +1637,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		}
 		// failure
 		return null;
-	}	
-	
+	}
+
 	/* ==================================================
 	 * Inner classes
 	 * ==================================================
 	 */
-	
+
 	protected boolean doFinishWork() {
 		try {
 			// has work pending?
@@ -1669,13 +1670,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		}
 		return false;
 	}
-		
+
 	/**
 	 * Class implementing the IMapControlEvents2Adapter intefaces
-	 * 
-	 * Is used to catch events that is used to draw the tool 
+	 *
+	 * Is used to catch events that is used to draw the tool
 	 * geometries on the map
-	 * 
+	 *
 	 *
 	 */
 	class MapControlAdapter extends IMapControlEvents2Adapter {
@@ -1693,12 +1694,12 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 	/**
 	 * DiskoWork class for scheduling work in the disko woork pool.
-	 * 
+	 *
 	 * The work is converting tool geometry to map features and Mso data
-	 * 
+	 *
 	 * @author kennetgu
 	 *
-	 * The class is extending the class AbstractToolWork 
+	 * The class is extending the class AbstractToolWork
 	 *
 	 */
 	class DrawWork extends AbstractToolWork<Boolean> {
@@ -1707,28 +1708,28 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			// notify progress monitor
 			super(true);
 		}
-		
+
 		/**
-		 * Worker 
-		 * 
+		 * Worker
+		 *
 		 * Executed on the WORKER thread in the disko work pool
-		 * 
-		 * Does the actual convertion of draw geometry to mso model data. The 
+		 *
+		 * Does the actual convertion of draw geometry to mso model data. The
 		 * mso update events will in turn update the appropriate IMsoFeature
 		 * layers
-		 */	   
+		 */
 		@Override
 		public Boolean doWork() {
-			
+
 			// does model exists?
-			if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {		
-			
+			if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+
 				// has been deleted?
-				if(msoObject!=null && msoObject.hasBeenDeleted()) 
+				if(msoObject!=null && msoObject.hasBeenDeleted())
 					doMsoInit();
-				
+
 				// is type defined?
-				if(featureType!=null){ 
+				if(featureType!=null){
 					// do work depending on type of feature
 					if(featureType==
 							FeatureType.FEATURE_POLYLINE) {
@@ -1744,7 +1745,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 							==FeatureType.FEATURE_POLYGON) {
 						// forward
 						return doPolygonWork();
-					}			
+					}
 				}
 			}
 			// failed
@@ -1752,38 +1753,38 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		}
 
 		private boolean doPolygonWork() {
-			
+
 			// assume success
 			boolean workDone = true;
-			
+
 			try {
-				
+
 				// nothing to do?
 				if(geoPath==null) return false;
-				
+
 				// reset current mso object?
 				if(isCreateMode() && !doSnapTo)
 					doMsoInit();
-				
+
 				// get current path
 				Polyline polyline = geoPath;
 				polyline.setSpatialReferenceByRef(map.getSpatialReference());
-				
+
 				// in constrain mode?
 				if(isConstrainMode)
-					polyline = MapUtil.densify(polyline, minStep, maxStep);				
-				
+					polyline = MapUtil.densify(polyline, minStep, maxStep);
+
 				// do snapping?
 				if(snapAdapter!=null && doSnapTo) {
 					polyline = snapAdapter.doSnapTo(polyline);
 				}
-				
+
 				// cast to polygon
 				Polygon polygon = MapUtil.getPolygon(polyline);
-				
+
 				// get command post
 				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
-	
+
 				// dispatch the mso draw data
 				if (msoCode == MsoClassCode.CLASSCODE_OPERATIONAREA) {
 					// create or update operation area?
@@ -1791,7 +1792,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 						// create new operation area
 						IOperationAreaListIf opAreaList = cmdPost.getOperationAreaList();
 						msoObject = opAreaList.createOperationArea();
-					}			
+					}
 					// update the operation area geodata
 					((IOperationAreaIf)msoObject).setGeodata(MapUtil.getMsoPolygon(polygon));
 				}
@@ -1801,7 +1802,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 						// create search area
 						ISearchAreaListIf searchAreaList = cmdPost.getSearchAreaList();
 						msoObject = searchAreaList.createSearchArea();
-					}			
+					}
 					// update search area geodata
 					((ISearchAreaIf)msoObject).setGeodata(MapUtil.getMsoPolygon(polygon));
 				}
@@ -1810,7 +1811,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					if(msoOwner == null || isCreateMode()) {
 						// create owner area
 						IAreaListIf areaList = cmdPost.getAreaList();
-						msoOwner = areaList.createArea(true);				
+						msoOwner = areaList.createArea(true);
 						// create search object
 						IAssignmentListIf assignmentList = cmdPost.getAssignmentList();
 						ISearchIf search = assignmentList.createSearch();
@@ -1854,48 +1855,48 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				if(msoOwner!=null) doPrepare(msoOwner,false);
 				if(msoObject!=null) doPrepare(msoObject,false);
 			}
-			
+
 			// finished
 			return workDone;
-			
+
 		}
-		
+
 		private boolean doPolylineWork() {
-			
+
 			boolean workDone = true;
-			
+
 			try {
-				
+
 				// nothing to do?
 				if(geoPath==null) return false;
-				
+
 				// reset current mso object?
 				if(isCreateMode() && !doSnapTo)
 					doMsoInit();
-				
+
 				// get current path
 				Polyline polyline = geoPath;
 				polyline.setSpatialReferenceByRef(map.getSpatialReference());
-				
+
 				// in constrain mode?
 				if(isConstrainMode)
 					polyline = MapUtil.densify(polyline, minStep, maxStep);
-				
+
 				// do snapping?
 				if(snapAdapter!=null && doSnapTo) {
 					polyline = snapAdapter.doSnapTo(polyline);
 				}
-				
+
 				// get command post
 				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
-	
+
 				// only route is polyline
 				if (msoCode == MsoClassCode.CLASSCODE_ROUTE) {
 					// create or update area
 					if(msoOwner == null || isCreateMode()) {
 						// create owner area
 						IAreaListIf areaList = cmdPost.getAreaList();
-						msoOwner = areaList.createArea(true);				
+						msoOwner = areaList.createArea(true);
 						IAssignmentListIf assignmentList = cmdPost.getAssignmentList();
 						ISearchIf search = assignmentList.createSearch();
 						doPrepare(search,true);
@@ -1920,7 +1921,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 						((IRouteIf)msoObject).setGeodata(route);
 					}
 		            // update start and stop poi of the owner area
-		            MsoUtils.updateAreaPOIs(map,area); 
+		            MsoUtils.updateAreaPOIs(map,area);
 				}
 				else {
 					// mso draw data is not supported
@@ -1938,23 +1939,23 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				if(msoOwner!=null) doPrepare(msoOwner,false);
 				if(msoObject!=null) doPrepare(msoObject,false);
 			}
-			
+
 			// finished
 			return workDone;
-			
-		}		
-		
+
+		}
+
 		private boolean doPointWork() {
-			
+
 			try {
 
 				// nothing to do?
 				if(geoPoint==null) return false;
-				
+
 				// reset current MSO object?
 				if(isCreateMode() && !doSnapTo)
 					doMsoInit();
-				
+
 				// do snapping?
 				if(snapAdapter!=null && doSnapTo) {
 					boolean flag = snapAdapter.isSnapToMode();
@@ -1962,47 +1963,47 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					geoPoint = snapAdapter.doSnapTo(geoPoint);
 					snapAdapter.setSnapToMode(flag);
 				}
-				
+
 				// move or add?
 				if(msoObject==null || isCreateMode()) {
-					
+
 					// dispatch the MSO draw data
-					if (msoCode == MsoClassCode.CLASSCODE_ROUTE 
+					if (msoCode == MsoClassCode.CLASSCODE_ROUTE
 							|| msoCode == MsoClassCode.CLASSCODE_POI) {
-					
+
 						// get command post
 						ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
-						
+
 						// get POI list
 						IPOIListIf poiList = cmdPost.getPOIList();
-						
+
 						// add to global list
 						msoObject = poiList.createPOI();
-						
+
 						// prepare
 						doPrepare(msoObject, false);
-						
+
 						// cast to IPOIIf
 						IPOIIf poi = (IPOIIf)msoObject;
-						
+
 						// update
 						poi.setPosition(MapUtil.getMsoPosistion(geoPoint));
-						
+
 						// initialize update flag
 						boolean bUpdateSeqNum = true;
-						
+
 						// is drawing an area?
 						if (msoCode == MsoClassCode.CLASSCODE_ROUTE) {
-							
+
 							// get POI type
 							POIType poiType = poi.getType();
-							
+
 							// get flag
 							boolean isAreaPOI = IPOIIf.AREA_SET.contains(poiType);
-							
+
 							//is an area POI type?
-							if(isAreaPOI) {									
-								
+							if(isAreaPOI) {
+
 								// create owner?
 								if(msoOwner==null || isCreateMode()) {
 									IAreaListIf areaList = cmdPost.getAreaList();
@@ -2015,19 +2016,19 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 								// get area
 								IAreaIf area = (IAreaIf)msoOwner;
 								area.getAreaPOIs().add(poi);
-								// use local sequence number set by area 
+								// use local sequence number set by area
 								bUpdateSeqNum = false;
 							}
 						}
-						
+
 						// update area sequence number?
 						if(bUpdateSeqNum) {
 							poi.setAreaSequenceNumber(cmdPost.getPOIList().getNextSequenceNumber(poi.getType()));
 						}
-						
+
 						// forward?
 						if(msoOwner!=null) doPrepare(msoOwner,false);
-						
+
 						// success
 						return true;
 					}
@@ -2037,12 +2038,12 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					// dispatch the MSO draw data
 					if (msoCode != MsoClassCode.CLASSCODE_UNIT) {
 						// cast to IPOIIf
-						IPOIIf poi = (IPOIIf)msoObject;	
-						// update 
+						IPOIIf poi = (IPOIIf)msoObject;
+						// update
 						poi.setPosition(MapUtil.getMsoPosistion(geoPoint));
 					}
 					else {
-						
+
 						// get attributes
 						Calendar logTimeStamp = (Calendar)
 								getAttribute("LOGTIMESTAMP");
@@ -2050,13 +2051,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 								getAttribute("LOGPOSITION").toString());
 						TimePos timePos = (TimePos)
 								getAttribute("UPDATETRACKPOSITION");
-																	
+
 						// cast to unit
 						IUnitIf msoUnit = (IUnitIf)msoObject;
-						
+
 						// get track
 						ITrackIf track = msoUnit.getTrack();
-						
+
 						// create track?
 						if(track==null && (bLogPosition || timePos!=null)) {
 							// get command post
@@ -2069,13 +2070,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 							// set track reference in unit
 							msoUnit.setTrack(track);
 						}
-						
+
 						// get position
 						Position p = MapUtil.getMsoPosistion(geoPoint);
-													
+
 						// initialize update flag
 						boolean bUpdatePosition = true;
-						
+
 						// update track point?
 						if(timePos!=null) {
 							// try to find position
@@ -2093,23 +2094,23 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 								System.out.println("Error! Did not find required track point in log");
 							}
 						}
-						
+
 						// update unit position?
 						if(bUpdatePosition)
 							msoUnit.setPosition(p);
-						
+
 						// log position?
 						if(bLogPosition)
 							msoUnit.logPosition(logTimeStamp);
-												
+
 					}
-					
+
 					// forward
 					doPrepare(msoObject,false);
 
 					// success
 					return true;
-					
+
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -2117,30 +2118,30 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			// failed
 			return false;
 		}
-				
+
 		private String getLayout(boolean isPolygon) throws AutomationException, IOException {
 			String layout = "";
 			layout = "isPolygon="+isPolygon+"&";
 			return layout;
 		}
-			
+
 		/**
-		 * done 
-		 * 
+		 * done
+		 *
 		 * Executed on the Event Dispatch Thread
-		 * 
+		 *
 		 */
 		@Override
-		public void afterDone() {		
-			
+		public void afterDone() {
+
 			// get result
 			boolean isDone = (Boolean)get();
-			
+
 			// reset tool
 			reset();
-			
+
 			// is type defined?
-			if(featureType!=null){ 
+			if(featureType!=null){
 				// do work depending on type of feature
 				if(featureType==
 						FeatureType.FEATURE_POLYLINE) {
@@ -2158,56 +2159,56 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					polygonWorkDone();
 				}
 			}
-			
+
 			// forward
 			super.afterDone();
-			
+
 			// notify?
 			if(isDone) fireOnWorkFinish(AbstractMsoDrawTool.this,msoObject);
-			
-		}		
-		
+
+		}
+
 		private void polylineWorkDone() {
 			try{
 
 				// work clean up
 				refresh();
-				
+
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}						
+			}
 		}
-		
+
 		private void polygonWorkDone() {
 			try{
-				
-				// work clean up
-				refresh();				
-				
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}						
-		}
-		
-		private void pointWorkDone() {
-			
-			try {
-				
+
 				// work clean up
 				refresh();
-				
+
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}						
+			}
+		}
+
+		private void pointWorkDone() {
+
+			try {
+
+				// work clean up
+				refresh();
+
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
-	
+
 	/**
 	 * Abstract tool state class
-	 * 
+	 *
 	 * @author kennetgu
 	 *
 	 */
@@ -2224,7 +2225,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 		// state
 		private DrawMode drawMode = null;
-		
+
 		// constrain attributes
 		private int minStep = 10;
 		private int maxStep = 100;
@@ -2240,15 +2241,15 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 		// last invalid area
 		InvalidArea lastInvalidArea = null;
-		
+
 		// create state
 		public DrawToolState(AbstractMsoDrawTool tool) {
 			super((AbstractMsoTool)tool);
 			save(tool);
 		}
-		
+
 		public void save(AbstractMsoDrawTool tool) {
-			super.save((AbstractMsoTool)tool);			
+			super.save((AbstractMsoTool)tool);
 			this.isDrawing = tool.isDrawing;
 			this.isMoving = tool.isMoving;
 			this.isShowDrawFrame = tool.isShowDrawFrame;
@@ -2266,7 +2267,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			this.geoSnap = tool.geoSnap;
 			this.lastInvalidArea = tool.lastInvalidArea;
 		}
-		
+
 		public void load(AbstractMsoDrawTool tool) {
 			tool.isMoving = this.isMoving;
 			tool.isShowDrawFrame = this.isShowDrawFrame;
@@ -2286,5 +2287,5 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 			tool.setIsDrawing(this.isDrawing);
 			super.load((AbstractMsoTool)tool);
 		}
-	}	
+	}
 }

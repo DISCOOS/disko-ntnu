@@ -4,7 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -27,7 +31,7 @@ public class SubMenuPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private IDiskoApplication app = null;
 	private JPanel menuPanel = null;
-	private ButtonGroup bgroup = new ButtonGroup();  //  @jve:decl-index=0:
+	private ButtonGroup bgroup = new ButtonGroup();
 	private Hashtable<String, JPanel> panels = null;
 	private JButton rollbackButton = null;
 	private JButton commitButton = null;
@@ -166,4 +170,5 @@ public class SubMenuPanel extends JPanel {
 		}
 		return commitButton;
 	}
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"

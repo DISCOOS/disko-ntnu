@@ -55,7 +55,6 @@ import org.redcross.sar.util.mso.Track;
 import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
-import com.esri.arcgis.geometry.IUnit;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
@@ -1136,6 +1135,5 @@ public class MsoUtils {
 		// failed
 		return false;
 	}		
-		
 	
 }

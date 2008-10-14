@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
-import org.redcross.sar.util.mso.Selector;
 
 /**
  * Command, control and communication center (command post)

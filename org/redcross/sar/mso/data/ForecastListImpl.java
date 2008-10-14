@@ -6,12 +6,12 @@ public class ForecastListImpl extends MsoListImpl<IForecastIf> implements IForec
 {
     public ForecastListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IForecastIf.class, anOwner, theName, isMain);
     }
 
     public ForecastListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IForecastIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IForecastIf createForecast(Calendar aCalendar, String aText)

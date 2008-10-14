@@ -1468,7 +1468,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				drawDialog.setAttribute(MapToolType.POI_TOOL, null,"POITYPES");
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(true, "DRAWPOLYGON");
-				drawDialog.setAttribute(null, "SEARCHSUBTYPE");
+				drawDialog.setAttribute(null, "SUBTYPE");
 				// get mso object
 				IMsoObjectIf msoObj = (IMsoObjectIf) attributes[1];
 				// initialize
@@ -1491,7 +1491,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				drawDialog.setAttribute(MapToolType.POI_TOOL, null, "POITYPES");
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(true, "DRAWPOLYGON");
-				drawDialog.setAttribute(null, "SEARCHSUBTYPE");
+				drawDialog.setAttribute(null, "SUBTYPE");
 				// get mso object
 				IMsoObjectIf msoObj = (IMsoObjectIf) attributes[1];
 				// initialize
@@ -1520,7 +1520,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 						"POITYPES");
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(attributes[1], "DRAWPOLYGON");
-				drawDialog.setAttribute(attributes[2], "SEARCHSUBTYPE");				
+				drawDialog.setAttribute(attributes[2], "SUBTYPE");				
 
 				// select enabled tools
 				EnumSet<FeatureType> features = EnumSet.allOf(FeatureType.class);
@@ -1583,7 +1583,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(MapToolType.POI_TOOL, poiTypes,"POITYPES");
 				drawDialog.setAttribute(false, "DRAWPOLYGON");
-				drawDialog.setAttribute(searchSubType, "SEARCHSUBTYPE");
+				drawDialog.setAttribute(searchSubType, "SUBTYPE");
 				// limit tool selection
 				drawDialog.enableToolTypes(features);
 				// set mso draw data
@@ -1593,7 +1593,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				// set attibutes
 				drawDialog.setAttribute(attributes[0], "SETDRAWMODE");
 				drawDialog.setAttribute(false, "DRAWPOLYGON");
-				drawDialog.setAttribute(null, "SEARCHSUBTYPE");
+				drawDialog.setAttribute(null, "SUBTYPE");
 				drawDialog.setAttribute(MapToolType.POI_TOOL, null,"POITYPES");
 				// get mso object
 				IMsoObjectIf msoObj = (IMsoObjectIf) attributes[1];

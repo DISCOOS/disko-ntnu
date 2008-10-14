@@ -1,21 +1,21 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.data.IMsoObjectIf.IObjectIdIf;
-import org.redcross.sar.util.mso.Selector;
 
 public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
 {
     public UnitListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IUnitIf.class, anOwner, theName, isMain);
     }
 
     public UnitListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IUnitIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
-    private int makeUnitSerialNumber(Class aClass)
+    private int makeUnitSerialNumber(Class<?> aClass)
     {
         int retVal = 0;
         for (IUnitIf item : getItems())
@@ -28,7 +28,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
         return retVal + 1;
     }
 
-    void rearrangeUnitSerialNumber(Class aClass)
+    void rearrangeUnitSerialNumber(Class<?> aClass)
     {
         // todo make code
         for (IUnitIf item : getItems())

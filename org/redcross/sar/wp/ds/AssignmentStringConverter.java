@@ -1,11 +1,11 @@
 package org.redcross.sar.wp.ds;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Calendar;
 
 import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
-
-import no.cmr.common.util.SimpleDecimalFormat;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.MapUtil;
@@ -19,8 +19,8 @@ import org.redcross.sar.util.mso.TimePos;
 
 public class AssignmentStringConverter extends TableStringConverter {
 
-	private static final SimpleDecimalFormat f11 = new SimpleDecimalFormat(1,1);
-	
+	private static final NumberFormat f11 = new DecimalFormat("#.0");
+
 	public String toString(TableModel m, int row, int column) {
 		// not filtered?
 		if(m instanceof AssignmentTableModel && row!=-1 && column!=-1) {
@@ -34,7 +34,7 @@ public class AssignmentStringConverter extends TableStringConverter {
 				return assignment!=null ? MsoUtils.getAssignmentName(assignment,1) : "";
 			case AssignmentTableModel.UNIT_INDEX:
 				IUnitIf unit = (IUnitIf)value;
-				return unit!=null ? MsoUtils.getUnitName(unit,true) : "";
+				return unit!=null ? MsoUtils.getUnitName(unit,false) : "";
 			case AssignmentTableModel.STATUS_INDEX:
 				return value!=null ? DiskoEnumFactory.getText((AssignmentStatus)value) : "";
 			case AssignmentTableModel.ETE_INDEX:
@@ -52,17 +52,17 @@ public class AssignmentStringConverter extends TableStringConverter {
 			case AssignmentTableModel.MDA_INDEX:
 			case AssignmentTableModel.XDE_INDEX:
 			case AssignmentTableModel.XDA_INDEX:
-				return value instanceof Double ? Math.round((Double)value) + " m" : "0 m";
+				return value instanceof Double ? Math.round((Double)value) + " m" : "";
 			case AssignmentTableModel.ESE_INDEX:
 			case AssignmentTableModel.ESA_INDEX:
 			case AssignmentTableModel.MSE_INDEX:
 			case AssignmentTableModel.MSA_INDEX:
 			case AssignmentTableModel.XSE_INDEX:
 			case AssignmentTableModel.XSA_INDEX:
-				return value instanceof Double ? f11.format(((Double)value)* 3.6) + " km/t" : "0 km/t";
+				return value instanceof Double ? f11.format(((Double)value)* 3.6) + " km/t" : "";
 			case AssignmentTableModel.ECP_INDEX:
 				String position = "";
-				if(value instanceof TimePos) { 
+				if(value instanceof TimePos) {
 					try {
 						MapUtil.getMGRSfromPosition(((TimePos)value).getPosition(), 5);
 					} catch (Exception e) {
@@ -76,7 +76,7 @@ public class AssignmentStringConverter extends TableStringConverter {
 			}
 		}
 		return "";
-		
+
 	}
-	
+
 }

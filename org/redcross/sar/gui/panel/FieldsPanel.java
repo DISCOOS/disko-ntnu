@@ -243,7 +243,7 @@ public class FieldsPanel extends DefaultPanel {
 		for(IDiskoField it: m_attributes.values()) {
 			it.cancel();
 		}
-		super.afterFinish();		
+		super.afterCancel();		
 	}
 	
 	@Override

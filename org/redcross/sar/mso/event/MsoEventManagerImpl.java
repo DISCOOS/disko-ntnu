@@ -109,14 +109,22 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
-        
-        for (IMsoUpdateListenerIf listener : theListeners)
+		
+		// get array to prevent concurrent modification
+		IMsoUpdateListenerIf[] list = new IMsoUpdateListenerIf[theListeners.size()];
+		theListeners.toArray(list);
+		
+		// get number of listeners
+		int count = list.length;
+		
+		// loop over all listeners
+        for (int i=0; i< count; i++)
         {
+        	// get listener
+        	IMsoUpdateListenerIf listener = list[i];
+        	// notify?
             if (clearAll || listener.hasInterestIn(aSource,mode))
             {
-            	
-            	//if(listener instanceof PositionPanel)
-            	//	System.out.println("PositionPanel");
             	
                 try
                 {
@@ -125,6 +133,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
                 }
                 catch (Exception ex)
                 {
+                	ex.printStackTrace();
                     Log.printStackTrace("Exception in fireUpdate, listener: " + listener.toString(),ex);
                 }
                 

@@ -14,6 +14,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -35,20 +36,23 @@ public class SplitTool extends AbstractMsoTool {
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 200;
 	private Point p = null;
-	
+
 	/**
 	 * Constructs the DrawTool
 	 */
-	public SplitTool() throws IOException {
-		
+	public SplitTool(IMsoModelIf model) throws IOException {
+
+		// forward
+		super(model);
+
 		// create point
 		p = new Point();
 		p.setX(0);
 		p.setY(0);
-		
+
 		// set tool type
-		type = MapToolType.SPLIT_TOOL;		
-		
+		type = MapToolType.SPLIT_TOOL;
+
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
@@ -66,25 +70,25 @@ public class SplitTool extends AbstractMsoTool {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		// forward
 		super.onCreate(obj);
 	}
 
 	public void onMouseDown(int button, int shift, int x, int y) {
-		
+
 		// is working?
 		if(isWorking()) return;
 
 		try {
-			// transform to map coordinates 
+			// transform to map coordinates
 			p.setX(x);
 			p.setY(y);
 			transform(p);
-	
+
 			// schedule work in disko work pool
 			doSplitWork();
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -112,13 +116,13 @@ public class SplitTool extends AbstractMsoTool {
 		Toolkit.getDefaultToolkit().beep();
 		return result;
 	}
-	
+
 	@Override
 	public IMapToolState save() {
 		// get new state
 		return new SplitToolState(this);
 	}
-	
+
 	@Override
 	public boolean load(IMapToolState state) {
 		// valid state?
@@ -135,7 +139,7 @@ public class SplitTool extends AbstractMsoTool {
 	 */
 
 	private boolean doSplitWork() {
-		
+
 		try {
 			DiskoWorkPool.getInstance().schedule(new SplitWork(map,p));
 			return true;
@@ -145,19 +149,19 @@ public class SplitTool extends AbstractMsoTool {
 		}
 		return false;
 	}
-	
+
 	class SplitWork extends AbstractToolWork<Boolean> {
 
 		private Point p = null;
 		private DiskoMap map = null;
-		
-		SplitWork(DiskoMap map,Point p) 
+
+		SplitWork(DiskoMap map,Point p)
 					throws Exception {
 			super(true);
 			this.map = map;
 			this.p = p;
 		}
-		
+
 		@Override
 		public Boolean doWork() {
 
@@ -195,9 +199,9 @@ public class SplitTool extends AbstractMsoTool {
 						return true;
 					}
 					else {
-						
+
 						//TODO: error handling
-						
+
 						// failed
 						return false;
 					}
@@ -206,56 +210,56 @@ public class SplitTool extends AbstractMsoTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			// failed
 			return false;
 		}
-	
+
 		/**
-		 * done 
-		 * 
+		 * done
+		 *
 		 * Executed on the Event Dispatch Thread
-		 * 
+		 *
 		 */
 		public void afterDone() {
-			
+
 			// forward
 			super.afterDone();
-			
+
 			try {
-				
+
 				// get result
 				boolean workDone = (Boolean)get();
-				
+
 				// notify listeners?
 				if(workDone)
 					fireOnWorkFinish(this,msoObject);
-				
+
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}			
+			}
 		}
 	}
-		
+
 	public class SplitToolState extends MsoToolState {
 
 		private Point p = null;
-		
+
 		// create state
 		public SplitToolState(SplitTool tool) {
 			super((AbstractMsoTool)tool);
 			save(tool);
-		}		
+		}
 		public void save(SplitTool tool) {
 			super.save((AbstractMsoTool)tool);
 			this.p = tool.p;
 		}
-		
+
 		public void load(SplitTool tool) {
 			tool.p = this.p;
 			super.load((AbstractMsoTool)tool);
 		}
-	}			
-	
+	}
+
 }

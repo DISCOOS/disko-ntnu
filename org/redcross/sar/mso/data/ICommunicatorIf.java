@@ -7,7 +7,12 @@ import java.util.Comparator;
  */
 public interface ICommunicatorIf extends IMsoObjectIf
 {
-    public static final Comparator<ICommunicatorIf> COMMUNICATOR_COMPARATOR = new Comparator<ICommunicatorIf>()
+    
+	/**
+	 * Often used comparators
+	 */
+	
+	public static final Comparator<ICommunicatorIf> COMMUNICATOR_COMPARATOR = new Comparator<ICommunicatorIf>()
     {
         public int compare(ICommunicatorIf c1, ICommunicatorIf c2)
         {

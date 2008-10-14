@@ -24,7 +24,7 @@ import javax.swing.event.TableModelListener;
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -37,7 +37,7 @@ import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 public class ListDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private DefaultPanel contentPanel;
 	private JButton printButton;
 	private JButton makeReadyButton;
@@ -45,16 +45,16 @@ public class ListDialog extends DefaultDialog {
 	private JLabel statusLabel;
 	private JComboBox statusComboBox;
 	private JLabel scaleLabel;
-	private JComboBox scaleComboBox;	
+	private JComboBox scaleComboBox;
 	private JPanel centerPanel;
-	private JPanel optionsPanel; 
+	private JPanel optionsPanel;
 
 	private IDiskoWpModule wp;
 	private IDiskoApplication app;
 	private AssignmentTable assignmentTable;
-	
-	private DiskoReportManager report = null;
-	
+
+	private DiskoReportManager report;
+
 	public ListDialog(IDiskoWpModule wp) {
 		// forward
 		super(wp.getApplication().getFrame());
@@ -68,7 +68,7 @@ public class ListDialog extends DefaultDialog {
 
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 */
 	private void initialize() {
 		try {
@@ -80,11 +80,11 @@ public class ListDialog extends DefaultDialog {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * This method initializes contentPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes contentPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
@@ -93,6 +93,7 @@ public class ListDialog extends DefaultDialog {
 				contentPanel.setBodyComponent(getCenterPanel());
 				contentPanel.setPreferredBodySize(new Dimension(400, 350));
 				contentPanel.setNotScrollBars();
+				contentPanel.setFitBodyOnResize(true);
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
 				contentPanel.insertButton("finish",getPrintButton(), "print");
 				contentPanel.insertButton("finish",getMakeDraftButton(), "draft");
@@ -101,19 +102,19 @@ public class ListDialog extends DefaultDialog {
 
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
-						if("print".equalsIgnoreCase(cmd)) 
+						if("print".equalsIgnoreCase(cmd))
 							print();
-						else if("draft".equalsIgnoreCase(cmd)) 
+						else if("draft".equalsIgnoreCase(cmd))
 							change(AssignmentStatus.DRAFT);
-						else if("ready".equalsIgnoreCase(cmd)) 
+						else if("ready".equalsIgnoreCase(cmd))
 							change(AssignmentStatus.READY);
-						
+
 					}
-					
+
 				});
-				
-				
-				
+
+
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -122,9 +123,9 @@ public class ListDialog extends DefaultDialog {
 	}
 
 	/**
-	 * This method initializes makeDraftButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes makeDraftButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getMakeDraftButton() {
 		if (makeDraftButton == null) {
@@ -139,11 +140,11 @@ public class ListDialog extends DefaultDialog {
 		}
 		return makeDraftButton;
 	}
-	
+
 	/**
-	 * This method initializes makeReadyButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes makeReadyButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
@@ -158,12 +159,12 @@ public class ListDialog extends DefaultDialog {
 		}
 		return makeReadyButton;
 	}
-	
-	
+
+
 	/**
-	 * This method initializes printButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes printButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getPrintButton() {
 		if (printButton == null) {
@@ -178,20 +179,21 @@ public class ListDialog extends DefaultDialog {
 		}
 		return printButton;
 	}
-	
+
 	private JPanel getCenterPanel() {
 		if(centerPanel==null) {
 			BorderLayout bl = new BorderLayout();
 			centerPanel = new JPanel(bl);
 			centerPanel.add(getOptionsPanel(),BorderLayout.NORTH);
-			centerPanel.add(new JScrollPane(getAssignmentTable(), 
+			JScrollPane pane = UIFactory.createScrollPane(
+					getAssignmentTable(),false,
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),BorderLayout.CENTER);
-			centerPanel.setPreferredSize(new Dimension(400,300));
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			centerPanel.add(pane,BorderLayout.CENTER);
 		}
 		return centerPanel;
 	}
-	
+
 	private JPanel getOptionsPanel() {
 		if(optionsPanel ==null) {
 			optionsPanel = new JPanel();
@@ -212,27 +214,28 @@ public class ListDialog extends DefaultDialog {
 			optionsPanel.add(scaleLabel);
 			optionsPanel.add(Box.createHorizontalStrut(5));
 			optionsPanel.add(getScaleComboBox());
-			optionsPanel.add(Box.createHorizontalGlue());			
+			optionsPanel.add(Box.createHorizontalGlue());
 		}
 		return optionsPanel;
 	}
 
 	/**
-	 * This method initializes assignmentTable	
-	 * 	
-	 * @return javax.swing.JTable	
+	 * This method initializes assignmentTable
+	 *
+	 * @return javax.swing.JTable
 	 */
 	private AssignmentTable getAssignmentTable() {
 		if (assignmentTable == null) {
 			try {
 				assignmentTable = new AssignmentTable(wp.getMsoModel());
+				assignmentTable.setPreferredSize(new Dimension(100,10));
 				assignmentTable.getModel().addTableModelListener(new TableModelListener() {
 
 					public void tableChanged(TableModelEvent e) {
 						// forward
 						enableButtons();
 					}
-					
+
 				});
 
 			} catch (java.lang.Throwable e) {
@@ -243,9 +246,9 @@ public class ListDialog extends DefaultDialog {
 	}
 
 	/**
-	 * This method initializes statusComboBox	
-	 * 	
-	 * @return javax.swing.JComboBox	
+	 * This method initializes statusComboBox
+	 *
+	 * @return javax.swing.JComboBox
 	 */
 	private JComboBox getStatusComboBox() {
 		if (statusComboBox == null) {
@@ -271,9 +274,9 @@ public class ListDialog extends DefaultDialog {
 	}
 
 	/**
-	 * This method initializes scaleComboBox	
-	 * 	
-	 * @return javax.swing.JComboBox	
+	 * This method initializes scaleComboBox
+	 *
+	 * @return javax.swing.JComboBox
 	 */
 	private JComboBox getScaleComboBox() {
 		if (scaleComboBox == null) {
@@ -292,7 +295,7 @@ public class ListDialog extends DefaultDialog {
 		}
 		return scaleComboBox;
 	}
-	
+
 	private void change(AssignmentStatus status) {
 		try {
 			app.getMsoModel().suspendClientUpdate();
@@ -302,11 +305,11 @@ public class ListDialog extends DefaultDialog {
 				if ((Boolean)table.getValueAt(i,0)) {
 					IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
 					if(!status.equals(assignment.getStatus())) {
-						assignment.setStatus(status);				
+						assignment.setStatus(status);
 						fireOnWorkChange(assignment);
 					}
 				}
-			}	
+			}
 			setDirty(false);
 			app.getMsoModel().resumeClientUpdate();
 		} catch (IllegalOperationException e1) {
@@ -314,7 +317,7 @@ public class ListDialog extends DefaultDialog {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public boolean print() {
 		// initialize
 		JTable table = getAssignmentTable();
@@ -324,15 +327,15 @@ public class ListDialog extends DefaultDialog {
 			// selected?
 			if (true == (Boolean)table.getValueAt(i,0)) {
 				IAssignmentIf assignment = (IAssignmentIf)table.getValueAt(i,1);
-				assignments.add(assignment);	
+				assignments.add(assignment);
 			}
-		}		
+		}
 		// forward
 		report.printAssignments(assignments,getUserScale(),false);
 		// finished
 		return true;
 	}
-	
+
 	public void setUserScale(double scale) {
 		if(scale>50000) {
 			scale = 50000;
@@ -340,7 +343,7 @@ public class ListDialog extends DefaultDialog {
 		DecimalFormat format = new DecimalFormat("00000");
 		getScaleComboBox().setSelectedItem("1:"+format.format(Math.round(scale)));
 	}
-	
+
 	public double getUserScale() {
 		String value = (String)getScaleComboBox().getSelectedItem();
 		if(value!=null && !value.isEmpty()) {
@@ -351,7 +354,7 @@ public class ListDialog extends DefaultDialog {
 		}
 		return -1;
 	}
-	
+
 	public void enableButtons() {
 		// initialize
 		boolean enable = false;
@@ -360,12 +363,12 @@ public class ListDialog extends DefaultDialog {
 			// selected?
 			if (true == (Boolean)assignmentTable.getValueAt(i,0)) {
 				enable = true; break;
-			}				
-		}		
+			}
+		}
 		getMakeDraftButton().setEnabled(enable);
 		getMakeReadyButton().setEnabled(enable);
 		getPrintButton().setEnabled(enable);
 	}
-	
+
 
 }  //  @jve:decl-index=0:visual-constraint="10,2"

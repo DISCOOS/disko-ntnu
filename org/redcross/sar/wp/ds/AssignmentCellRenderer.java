@@ -1,72 +1,45 @@
 package org.redcross.sar.wp.ds;
 
-import java.awt.Component;
-
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.border.Border;
-import javax.swing.table.TableCellRenderer;
 
-public class AssignmentCellRenderer extends JLabel implements TableCellRenderer {
-	
+import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
+
+public class AssignmentCellRenderer extends DiskoTableCellRenderer {
+
 	private static final long serialVersionUID = 1L;
-	
-	private static final AssignmentStringConverter converter = new AssignmentStringConverter(); 
 
-	public AssignmentCellRenderer() {
-		super.setOpaque(true);
-	}
+	private static final AssignmentStringConverter converter = new AssignmentStringConverter();
 
-	public Component getTableCellRendererComponent(JTable table, Object value, 
+	/* ==================================================
+	 * TableCellRenderer implementation
+	 * ================================================== */
+
+	public JLabel getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int col) {
 
-		// convert indexes to model
-		row = table.convertRowIndexToModel(row);
-		col = table.convertColumnIndexToModel(col);
-		
 		// initialize
-		Border b = null;
-		
-		// has row and col?
-		if(row!=-1 && col!=-1) {
-		
-			// set text
-			setText(converter.toString(table.getModel(),row,col));
-			
-			// set alignment
-			switch(col) {
-			case AssignmentTableModel.NAME_INDEX:				
-			case AssignmentTableModel.UNIT_INDEX:
-			case AssignmentTableModel.STATUS_INDEX:
-				setHorizontalAlignment(SwingConstants.LEFT);
-				b = BorderFactory.createEmptyBorder(0, 5, 0, 0);
-				break;
-			default:
-				setHorizontalAlignment(SwingConstants.RIGHT);
-				b = BorderFactory.createEmptyBorder(0, 0, 0, 2);
-			}
-			
+		String text = "";
+
+		// get model info
+		super.initialize(table, row, col);
+
+		// convert value to text?
+		if(m_rowInModel!=-1 && m_colInModel!=-1) {
+
+			text = converter.toString(m_model,m_rowInModel,m_colInModel);
+
 		}
-		
-		// set border
-		if(getIcon()==null) 
-			setBorder(b);
-		else
-			setBorder(BorderFactory.createEmptyBorder());
-			
-		// update selection state
-		if (isSelected){
-			setBackground(table.getSelectionBackground());
-			setForeground(table.getSelectionForeground());
-		} 
-		else {
-			setBackground(table.getBackground());
-			setForeground(table.getForeground());
-		}
-		
+
+		// forward
+		JLabel renderer = super.prepare(table, text, isSelected, hasFocus, row, col, false, false);
+
+		// update alignment and borders
+		update(renderer,renderer.getIcon());
+
+
 		// finished
-		return this;
+		return renderer;
 	}
+
 }

@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.EnumSet;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.ToggableTabPane;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -18,7 +19,6 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.mso.Selector;
 
 /**
  * @author kennetgu

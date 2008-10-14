@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,6 +16,7 @@ import java.util.Vector;
 
 import no.cmr.tools.Log;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -37,6 +37,7 @@ import org.redcross.sar.util.mso.*;
  * Base class for all data objects in the MSO data model.
  * Has double bookkeeping of all attributes, both in a HashMap (for name lookup) and an ArrayList (for indexing)
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractMsoObject implements IMsoObjectIf
 {
     /**
@@ -48,6 +49,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      * Reference to common EventImpl Manager.
      */
     protected final IMsoEventManagerIf m_eventManager;
+
+    /**
+     * Hook to the main list owning this object
+     */
+    protected MsoListImpl m_owningMainList;
 
     /**
      * Map of attributes for name lookup.
@@ -70,7 +76,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private final Map<String, MsoReferenceImpl> m_referenceObjects = new LinkedHashMap<String, MsoReferenceImpl>();
 
     /**
-     * Mask for suspended client update events 
+     * Mask for suspended client update events
      */
     private int m_clientUpdateMask = 0;
 
@@ -81,9 +87,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     /**
      * Change tracking counter
-     */    
+     */
     private int m_changeCount = 0;
-    
+
     /**
      * Indicator that tells if {@link #m_attributeList} is sorted
      */
@@ -115,19 +121,14 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private boolean m_hasBeenDeleted;
 
     /**
-     * Hook to the main list owning this object
-     */    
-    private MsoListImpl m_owningMainList;
-    
-    /**
      * List of status changes since creation
-     */        
+     */
     private final EnumHistory<Enum<?>> m_statusHistory = new EnumHistory<Enum<?>>();
 
 	/*-------------------------------------------------------------------------------------------
 	 * Constructors
 	 *-------------------------------------------------------------------------------------------*/
-    
+
     /**
      * Constructor
      *
@@ -150,14 +151,14 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	/*-------------------------------------------------------------------------------------------
 	 * Initializing methods
 	 *-------------------------------------------------------------------------------------------*/
-    
+
     /**
-     * This method MUST be called after creation of IMsoObjectIf objects. 
-     * 
+     * This method MUST be called after creation of IMsoObjectIf objects.
+     *
      * If not, no MSO attributes, lists or references will be created. If this
-     * is created by a MsoListImpl, the list will invoke the method 
+     * is created by a MsoListImpl, the list will invoke the method
      * automatically.
-     *  
+     *
      */
     public void setup()
     {
@@ -173,25 +174,25 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
     /**
-     * This empty method should contain all IAttributeIf defining actions 
-     * 
+     * This empty method should contain all IAttributeIf defining actions
+     *
      * The method must be implemented by extending object
      */
     protected abstract void defineAttributes();
 
     /**
-     * This empty method should contain all IMsoListIf defining actions 
-     * 
+     * This empty method should contain all IMsoListIf defining actions
+     *
      * This method must be implemented by extending object
      */
     protected abstract void defineLists();
 
     /**
-     * This empty method should contain all IMsoReferenceIf defining actions 
-     * 
+     * This empty method should contain all IMsoReferenceIf defining actions
+     *
      * This method must be implemented by extending object
      */
-    protected abstract void defineReferences();   
+    protected abstract void defineReferences();
 
     /**
      * Add a list reference to a given object in a given reference list
@@ -212,7 +213,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     /*-------------------------------------------------------------------------------------------
 	 * Public methods
 	 *-------------------------------------------------------------------------------------------*/
-    
+
     public String getObjectId()
     {
         return m_MsoObjectId.getId();
@@ -222,7 +223,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
         return m_MsoObjectId.getCreatedTime();
     }
-    
+
     /**
      * Sets created state
      *
@@ -230,17 +231,17 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     public void setCreated(Date time) {
     	m_MsoObjectId.setCreated(time);
     }
-    
+
     public boolean isCreated()
     {
         return m_MsoObjectId.isCreated();
     }
-    
+
     public int getChangeCount()
     {
         return m_changeCount;
     }
-    
+
     public String shortDescriptor()
     {
         return toString();
@@ -256,7 +257,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	// only add once
     	if(!m_objectHolders.contains(aHolder))
     		m_objectHolders.add(aHolder);
-    	
+
         //System.out.println("Add delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
     }
 
@@ -298,9 +299,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
     public boolean canDelete()
-    {      
+    {
 
-    	// In LOOPBACK and SERVER MODE, delete is always allowed. Only in 
+    	// In LOOPBACK and SERVER MODE, delete is always allowed. Only in
     	// LOCAL mode are delete operations validated.
     	if (!MsoModelImpl.getInstance().isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
         {
@@ -315,21 +316,21 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         // all object holders allow a deletion
         return true;
     }
-    
+
     public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy()
-    {        
+    {
     	// create list
-    	List<IMsoObjectHolderIf<IMsoObjectIf>> list = 
+    	List<IMsoObjectHolderIf<IMsoObjectIf>> list =
     		new ArrayList<IMsoObjectHolderIf<IMsoObjectIf>>(m_objectHolders.size());
     	// all object holders must allow their relation to this object to be deleted.
         for (IMsoObjectHolderIf holder : this.m_objectHolders)
         {
             if(!holder.canDeleteReference(this)) list.add(holder);
         }
-    	
+
         // finished
         return list;
-    }    
+    }
 
     public boolean hasBeenDeleted()
     {
@@ -338,16 +339,16 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     /**
      * This method is intended for internal use only!<p>
-     *  
+     *
      * The method only performs a delete on the object and
      * notifies any object holders (lists) of this delete. It does not
-     * delete owned objects (in lists), or references from this object to 
-     * other objects explicitly (recursive delete is not executed). 
+     * delete owned objects (in lists), or references from this object to
+     * other objects explicitly (recursive delete is not executed).
      * The result is a memory leak because objects in lists and
-     * and any object references may still point to this object. Hence, 
+     * and any object references may still point to this object. Hence,
      * the object will not be garbage collected.<p>
      * Use <code>delete()</code> to delete a object.
-     */    
+     */
     @SuppressWarnings("unchecked")
 	public void doDelete()
     {
@@ -368,19 +369,41 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_isSetup;
     }
 
+    @SuppressWarnings("unchecked")
     public Map getAttributes()
     {
         return m_attributeMap;
     }
 
-    public Map getReferenceObjects()
+    @SuppressWarnings("unchecked")
+	public Map getReferenceObjects()
     {
         return m_referenceObjects;
     }
 
+    @SuppressWarnings("unchecked")
     public Map getReferenceLists()
     {
         return m_referenceLists;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map getReferenceLists(Class<?> c, boolean isEqual)
+    {
+    	Map<String,MsoListImpl> map = new LinkedHashMap<String, MsoListImpl>();
+    	if(isEqual) {
+	    	for(String it : m_referenceLists.keySet()) {
+	    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
+	    		if(list.getItemClass().equals(c)) map.put(it,list);
+	    	}
+    	}
+    	else {
+	    	for(String it : m_referenceLists.keySet()) {
+	    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
+	    		if(list.getItemClass().isAssignableFrom(c)) map.put(it,list);
+	    	}
+    	}
+        return map;
     }
 
     public IAttributeIf.IMsoBooleanIf getBooleanAttribute(int anIndex) throws UnknownAttributeException
@@ -623,6 +646,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
+    @SuppressWarnings("unchecked")
     public IAttributeIf.IMsoEnumIf getEnumAttribute(int anIndex) throws UnknownAttributeException
     {
         try
@@ -635,6 +659,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
+    @SuppressWarnings("unchecked")
     public IAttributeIf.IMsoEnumIf getEnumAttribute(String aName) throws UnknownAttributeException
     {
         try
@@ -647,6 +672,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void rearrangeAttribute(AttributeImpl anAttr, int anIndexNo)
     {
         if (!m_listSorted)
@@ -678,12 +704,14 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         arrangeList();
     }
 
+    @SuppressWarnings("unchecked")
     public void setAttribute(String aName, Object aValue) throws UnknownAttributeException
     {
         AttributeImpl attr = getAttribute(aName);
         attr.set(aValue);
     }
 
+    @SuppressWarnings("unchecked")
     public void setAttribute(int anIndex, Object aValue) throws UnknownAttributeException
     {
         AttributeImpl attr = getAttribute(anIndex);
@@ -694,6 +722,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      * Rollback local changes.
      * Generates client update event.
      */
+    @SuppressWarnings("unchecked")
     public void rollback()
     {
         m_hasBeenDeleted = false;
@@ -722,6 +751,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      * Post process commit of local changes.
      * Generates client update event.
      */
+    @SuppressWarnings("unchecked")
     public void postProcessCommit()
     {
         boolean dataModified = false;
@@ -786,29 +816,29 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
     public Object validate() {
-        
+
     	for (IAttributeIf<?> it : m_attributeList)
         {
             if(!it.validate()) return it;
         }
-        
+
         for (MsoListImpl list : m_referenceLists.values())
         {
-        	Object retVal = list.validate(); 
+        	Object retVal = list.validate();
             if(!isTrue(retVal)) return retVal;
         }
-        
+
         for (MsoReferenceImpl reference : m_referenceObjects.values())
         {
-        	Object retVal = reference.validate(); 
+        	Object retVal = reference.validate();
             if(!isTrue(retVal)) return retVal;
         }
-        
-        
+
+
         // is valid
         return true;
     }
-    
+
     public Collection<ICommittableIf.ICommitReferenceIf> getCommittableAttributeRelations()
     {
         Vector<ICommittableIf.ICommitReferenceIf> retVal = new Vector<ICommittableIf.ICommitReferenceIf>();
@@ -835,9 +865,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	/*-------------------------------------------------------------------------------------------
 	 * Protected methods
 	 *-------------------------------------------------------------------------------------------*/
-    
+
     /**
-     * This method is called by the owning IMsoListIf object 
+     * This method is called by the owning IMsoListIf object
      * when this is created.
      */
     protected void setOwningMainList(MsoListImpl aList)
@@ -864,32 +894,32 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     	// update
         serial.setValue(aNumber);
-        
+
     	/* ==============================================================
     	 * Renumbering of duplicates is required because serial number
-    	 * is locally incremented in each MSO model instance. Hence, 
-    	 * serial numbers are not generated globally by the server. 
-    	 * Hence, when  a new serial number is created, this only 
-    	 * applies locally. The same serial number may exist in another 
+    	 * is locally incremented in each MSO model instance. Hence,
+    	 * serial numbers are not generated globally by the server.
+    	 * Hence, when  a new serial number is created, this only
+    	 * applies locally. The same serial number may exist in another
     	 * MSO model, but this is not known before it is committed. When
     	 * committed the duplicate serial number is detected by searching
-    	 * for other objects in the main list with the same serial number 
+    	 * for other objects in the main list with the same serial number
     	 * as this object. If a different object with same serial number is
-    	 * found, the first created serial number is kept (the serial number 
-    	 * of this object). Every object with equal or greater serial number 
+    	 * found, the first created serial number is kept (the serial number
+    	 * of this object). Every object with equal or greater serial number
     	 * than the serial number of this object is incremented. Any
     	 * changes objects are returned as a list of IUpdateHolderIf, which
     	 * MUST BE COMMITTED TO THE SERVER DIRECTLY! This ensures that
-    	 * conflict are resolved quickly without any user commit dependence. 
-    	 * If user commit is required, the resolved conflict may not become 
+    	 * conflict are resolved quickly without any user commit dependence.
+    	 * If user commit is required, the resolved conflict may not become
     	 * visible in some time. During this time, the serial number may
-    	 * be used. When the resolved conflict is committed at a later state, 
-    	 * the changed serial number may confuse the user. 
-    	 * 
+    	 * be used. When the resolved conflict is committed at a later state,
+    	 * the changed serial number may confuse the user.
+    	 *
     	 * The resolved conflict should produce cues visible to the user!
-    	 *  
+    	 *
     	 * ============================================================== */
-    	
+
         // Only validate in REMOTE mode (server update)
     	if(MsoModelImpl.getInstance().isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
 	        if (m_owningMainList != null)
@@ -906,11 +936,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     					IUpdateHolderIf holder = committer.getUpdates(it);
     					// has updates?
     					if(holder!=null) {
-    						// try to set partial and to updates if succeeded	
+    						// try to set partial and to updates if succeeded
     						if(holder.setPartial(it.getNumberAttribute().getName())) {
     							updates.add(holder);
     						}
-    					}	                                        	
+    					}
                     }
 	            	// commit changes (this will not affect any other local changes)
                     if(updates.size()>0) {
@@ -923,31 +953,31 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     /**
      * Add a status change to status history
-     * 
+     *
      * @param aStatus
      * @param time
-     */    
-    protected void registerStatus(Enum<?> aStatus, Calendar time) 
+     */
+    protected void registerStatus(Enum<?> aStatus, Calendar time)
     {
     	m_statusHistory.add(aStatus,time);
     }
-    
+
     /**
      * Get status history
-     * 
+     *
      * @param aStatus - the status to get history of
-     */    
-    protected List<Calendar> getStatusHistory(Enum<?> aStatus) 
+     */
+    protected List<Calendar> getStatusHistory(Enum<?> aStatus)
     {
     	return m_statusHistory.getHistory(aStatus);
     }
 
     /**
      * Add a new attribute. </p>
-     * 
-     * Maintains the double bookkeeping under the following conditions:  
-     * 1) do not accept duplicated names, 2) duplicated numbers are accepted. </p> 
-     * 
+     *
+     * Maintains the double bookkeeping under the following conditions:
+     * 1) do not accept duplicated names, 2) duplicated numbers are accepted. </p>
+     *
      * The extending object should call this method from <code>defineAttributes</code>
      *
      * @param anAttribute - Attribute to add
@@ -973,10 +1003,10 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     /**
      * Add a one-to-many reference (a MSO list of references from this to other IMsoObjectIf)</p>
-     * 
-     * The extending object should call 
+     *
+     * The extending object should call
      * this method from <code>defineLists</code>
-     * 
+     *
      * @param aList - the list to add
      */
     protected void addList(MsoListImpl aList)
@@ -992,10 +1022,10 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
     /**
      * Add a one-to-one object reference (from this to another IMsoObjectIf)</p>
-     * 
+     *
      * The extending object should call this method from <code>defineReference</code>
-     * 
-     * @param aReference - the reference to add 
+     *
+     * @param aReference - the reference to add
      */
     protected void addReference(MsoReferenceImpl aReference)
     {
@@ -1007,8 +1037,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             Log.error("Error in setup: " + this + ": Try to add null reference");
         }
     }
-    
-    
+
+
     protected void incrementChangeCount() {
     	m_changeCount++;
     }
@@ -1060,7 +1090,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
         registerUpdate(MsoEvent.MsoEventType.MODIFIED_DATA_EVENT, true);
     }
-    
+
     /**
      * Notify server listeners
      *
@@ -1108,17 +1138,17 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         m_suspendDerivedUpdate = false;
         notifyDerivedUpdate();
     }
-    
+
     /*-------------------------------------------------------------------------------------------
 	 * Helper methods
 	 *-------------------------------------------------------------------------------------------*/
 
     private void registerUpdate(MsoEvent.MsoEventType anEventType, boolean updateServer)
     {
-        
+
     	// track change
     	incrementChangeCount();
-        
+
     	// get update mode
     	IMsoModelIf.UpdateMode anUpdateMode = MsoModelImpl.getInstance().getUpdateMode();
         int clientEventTypeMask = anEventType.maskValue();
@@ -1131,7 +1161,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 
         m_clientUpdateMask |= clientEventTypeMask;
-        
+
         if (!(m_suspendClientUpdate || MsoModelImpl.getInstance().isUpdateSuspended()))
         {
             notifyClientUpdate();
@@ -1139,13 +1169,13 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
         notifyServerUpdate(serverEventTypeMask);
     }
-        
+
     private boolean isTrue(Object value) {
     	if(value instanceof Boolean)
     		return (Boolean)value;
     	return false;
-    }    
-    
+    }
+
     private UnknownAttributeException attributeCast(String aName, Class aClass)
     {
         return new UnknownAttributeException("Unknown attribute name '" + aName + "' of class " + aClass.toString() + " in " + this.getClass().toString());
@@ -1179,7 +1209,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         throw new UnknownAttributeException("Unknown attribute index " + anIndex + " in " + this.getClass().toString());
     }
-    
+
     private AttributeImpl getAttribute(String aName) throws UnknownAttributeException
     {
         AttributeImpl retVal = m_attributeMap.get(aName.toLowerCase());
@@ -1210,12 +1240,12 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         {
             throw new MsoNullPointerException("Trying to assign value to null attribute");
         }
-    }	
-    
+    }
+
     /*-------------------------------------------------------------------------------------------
 	 * Inner classes
 	 *-------------------------------------------------------------------------------------------*/
-    
+
     /**
      * Class for holding Object ID Strings
      * <p/>
@@ -1240,15 +1270,15 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 		public Calendar getCreatedTime() {
 			return m_created;
 		}
-		
+
 		public void setCreated(Date time) {
 			m_created = convert(time);
 		}
-		
+
 		public boolean isCreated() {
 			return m_created!=null;
 		}
-		
+
 		private Calendar convert(Date date) {
             if(date!=null) {
 	            Calendar cal = Calendar.getInstance();
@@ -1352,8 +1382,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             return m_valueSet.contains(anObject.getStatus());
         }
     }
-    
-    
+
+
 
 
 }

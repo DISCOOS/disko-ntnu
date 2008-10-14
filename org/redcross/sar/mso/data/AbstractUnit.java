@@ -4,6 +4,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
@@ -44,7 +45,14 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		public boolean select(IMessageIf anObject)
 		{
-			return (m_object.equals(anObject.getReceiver()) || m_object.equals(anObject.getSender()));
+			if(m_object.equals(anObject.getReceiver()) || m_object.equals(anObject.getSender())) {
+				return true;
+			}
+			for(IMessageLineIf it : anObject.getMessageLineItems()) {
+				if(m_object!=null && m_object==it.getLineUnit())
+					return true;
+			}
+			return false;
 		}
 	};
 	
@@ -126,7 +134,8 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		if (anObject instanceof IPersonIf)
 		{
 			m_unitPersonnel.add((IPersonnelIf) anObject);
-			m_status.set(getAutoStatus());
+			if(MsoModelImpl.getInstance().isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
+				m_status.set(getAutoStatus());
 			return true;
 		}
 		return false;

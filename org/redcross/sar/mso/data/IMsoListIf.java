@@ -4,10 +4,8 @@ package org.redcross.sar.mso.data;
  *
  */
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
-import org.redcross.sar.util.except.DuplicateIdException;
-import org.redcross.sar.util.mso.Selector;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -23,6 +21,9 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      */
     public String getName();
 
+    /**
+     * The list owner 
+     */
     public IMsoObjectIf getOwner();
 
     /**
@@ -77,7 +78,7 @@ public interface IMsoListIf<M extends IMsoObjectIf>
    /** 
     * Generate an List of selected items from the list.
     *
-    * @param aSelector A {@link org.redcross.sar.util.mso.Selector} that is used for selecting items.
+    * @param aSelector A {@link org.redcross.sar.data.Selector} that is used for selecting items.
     * @return The generated list
     */
    public Set<M> selectItems(Selector<M> aSelector);
@@ -85,7 +86,7 @@ public interface IMsoListIf<M extends IMsoObjectIf>
     /**
      * Generate an List of selected items from the list.
      *
-     * @param aSelector A {@link org.redcross.sar.util.mso.Selector} that is used for selecting items.
+     * @param aSelector A {@link org.redcross.sar.data.Selector} that is used for selecting items.
      * @param aComparator {@link java.util.Comparator} that is used for determining the ordering the items, if <code>null</code>, no ordering will be done.
      * @return The generated list
      */
@@ -94,7 +95,7 @@ public interface IMsoListIf<M extends IMsoObjectIf>
     /**
      * Find an item in the list.
      *
-     * @param aSelector A {@link org.redcross.sar.util.mso.Selector} that is used for selecting items.
+     * @param aSelector A {@link org.redcross.sar.data.Selector} that is used for selecting items.
      * @return The found item, or null if not found;
      */
     public M selectSingleItem(Selector<M> aSelector);
@@ -143,7 +144,7 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * Check if the list contains a specific object, regardless of state (exists either locally or remotely, or deleted locally).
      *
      * @param anObject The object to match
-     * @return <code>true</code> if the specific object is contained in the list. Same as <code>exists():=isRemote()||isLocal()||isDeleted()</code>
+     * @return <code>true</code> if the specific object is contained in the list. Same as <code>isRemote()||isLocal()||isDeleted()</code>
      */
     public boolean contains(M anObject);
     
@@ -191,7 +192,14 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      */
     public Object validate();
     
+    /**
+     * The number of changes since last commit 
+     */
+    public int getChangeCount();
     
-    public int getChangeCount();    
+    /**
+     * Get the item class
+     */
+    public Class<M> getItemClass();
 
 }

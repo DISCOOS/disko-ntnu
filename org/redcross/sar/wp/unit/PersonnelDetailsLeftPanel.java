@@ -53,6 +53,7 @@ import javax.swing.JTextField;
 public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListenerIf, ITickEventListenerIf
 {
     private static final long serialVersionUID = 1L;
+    
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
     private IPersonnelIf m_currentPersonnel = null;

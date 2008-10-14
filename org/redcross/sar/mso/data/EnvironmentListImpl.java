@@ -7,12 +7,12 @@ public class EnvironmentListImpl extends MsoListImpl<IEnvironmentIf> implements 
 
     public EnvironmentListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IEnvironmentIf.class, anOwner, theName, isMain);
     }
 
     public EnvironmentListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IEnvironmentIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IEnvironmentIf createEnvironment(Calendar aCalendar, String aText)

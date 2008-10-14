@@ -1,26 +1,12 @@
 package org.redcross.sar.wp.tasks;
 
-import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.AbstractPopupHandler;
-import org.redcross.sar.gui.PopupAdapter;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.ITaskIf;
-import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
-import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
-import org.redcross.sar.mso.data.ITaskListIf;
-import org.redcross.sar.mso.data.TaskImpl;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
-import org.redcross.sar.gui.model.DiskoTableModel;
+import org.redcross.sar.gui.model.MsoTableModel;
+
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
@@ -37,20 +23,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.gui.AbstractPopupHandler;
+import org.redcross.sar.gui.PopupAdapter;
+import org.redcross.sar.mso.data.ITaskIf;
+import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
+import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
+import org.redcross.sar.mso.data.TaskImpl;
+import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
  * Provides task table with data. Updates contents on MSO taks update. Also contains nested classes for
  * sorting and filtering.
  *
- * @author thomasl
+ * @author thomasl, kennetgu
  *
  */
 @SuppressWarnings("unchecked")
-public class TaskTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
+public class TaskTableModel extends MsoTableModel<ITaskIf>
 {
 	private final static long serialVersionUID = 1L;
 
-//	protected ITaskListIf m_tasks;
 	protected IDiskoWpTasks m_wpTasks;
 
 	protected JTable m_table;
@@ -70,8 +63,135 @@ public class TaskTableModel extends DiskoTableModel implements IMsoUpdateListene
 
 	protected static Set<String> m_responsibleRoleFilter = new HashSet<String>();
 
-	protected HashMap<JCheckBoxMenuItem, Enum> m_menuItemEnumMap = null;
+	protected final HashMap<JCheckBoxMenuItem, Enum> m_menuItemEnumMap = new HashMap<JCheckBoxMenuItem, Enum>();
 
+	/* ============================================================
+	 * Constructors 
+	 * ============================================================ */
+	
+	public TaskTableModel(IDiskoWpTasks wp, JTable table)
+	{
+		// forward
+		super(ITaskIf.class,getNames("A", 6),getCaptions(wp, 6),false);
+		
+		// prepare
+		m_wpTasks = wp;
+		m_table = table;
+		
+		// setup row sorter
+		m_rowSorter = new TaskTableRowSorter(this);
+		m_rowSorter.setSortsOnUpdates(true);
+		m_table.setRowSorter(m_rowSorter);
+		
+	}
+
+	/* ================================================================
+	 *  MsoTableModel implementation
+	 * ================================================================ */
+
+	protected Object getCellValue(int row, String column) {
+		// because default update algorithm is overridden, this method is never called
+		return null;
+	}		
+	
+	@Override
+	protected Object[] update(ITaskIf id, ITaskIf obj, Object[] data) {
+		// get column count
+		int count = getColumnCount();		
+		// loop over all columns
+		for(int i=0; i<count; i++) {
+			// translate
+			switch(i)
+			{
+			case 0:
+				data[i] = id.getNumber();
+				break;
+			case 1:
+				data[i] = id.getPriority();
+				break;
+			case 2:
+				data[i] = id.getTaskText();
+				break;
+			case 3:
+				data[i] = id.getResponsibleRole();
+				break;
+			case 4:
+				data[i] = id.getDueTime();
+				break;
+			case 5:
+				data[i] = id.getStatus();
+				break;
+			default:
+				data[i] = null;
+				break;
+			}		
+		}
+		// get row index
+		return data;
+	}
+
+	/* ============================================================
+	 * Public methods
+	 * ============================================================ */
+	
+	public TaskTableRowSorter getRowSorter()
+	{
+		return m_rowSorter;
+	}
+
+	public void setRole(IDiskoRole role) {
+		// get header
+        JTableHeader tableHeader = m_table.getTableHeader();
+		// remove?
+		if(m_popupListener!=null)
+			tableHeader.removeMouseListener(m_popupListener);
+		// add new listener?
+		if(role!=null) {
+			m_popupListener = new PopupAdapter(new HeaderPopupHandler(role, this, m_table));
+			tableHeader.addMouseListener(m_popupListener);
+		}
+	}
+
+	/**
+	 * @param taskNr
+	 * @return Reference to task with given number
+	 */
+	public ITaskIf getTask(int taskNr)
+	{
+		for(ITaskIf task : getObjects())
+		{
+			if(taskNr == task.getNumber())
+			{
+				return task;
+			}
+		}
+		return null;
+	}
+	
+	/* ============================================================
+	 * Helper methods
+	 * ============================================================ */
+	
+    private static String[] getNames(String prefix, int count) {
+    	String[] names = new String[count];
+    	for(int i=0;i<count;i++) {
+    		names[i] = prefix + i;
+    	}
+    	return names;    	
+    }
+    
+    private static String[] getCaptions(IDiskoWpModule wp, int count) {
+    	String[] captions = new String[count];
+    	for(int i=0;i<count;i++) {
+    		captions[i] = wp.getBundleText("TableHeader" + i + ".text");
+    	}
+    	return captions;
+    }
+    
+	/* ============================================================
+	 * Anonymous classes
+	 * ============================================================ */
+	
 	/**
 	 * Compares task numbers
 	 */
@@ -109,95 +229,11 @@ public class TaskTableModel extends DiskoTableModel implements IMsoUpdateListene
 			return o1.ordinal() - o2.ordinal();
 		}
 	};
-
-	public TaskTableModel(IDiskoWpTasks wp, JTable table)
-	{
-		m_wpTasks = wp;
-		m_table = table;
-
-		wp.getMsoEventManager().addClientUpdateListener(this);
-
-		m_menuItemEnumMap = new HashMap<JCheckBoxMenuItem, Enum>();
-
-		m_rowSorter = new TaskTableRowSorter(this);
-		m_rowSorter.setSortsOnUpdates(true);
-		m_table.setRowSorter(m_rowSorter);
-	}
-
-	public TaskTableRowSorter getRowSorter()
-	{
-		return m_rowSorter;
-	}
-
-	public int getColumnCount()
-	{
-		return 6;
-	}
-
-	public int getRowCount()
-	{
-		if(m_wpTasks.getMsoManager().operationExists()) {
-			ICmdPostIf cmdPost = m_wpTasks.getCmdPost();
-			return cmdPost!=null ? m_wpTasks.getCmdPost().getTaskList().size() : null;
-		}
-		return 0;
-	}
-
-    @Override
-    public String getColumnName(int column)
-    {
-    	return m_wpTasks.getBundleText("TableHeader" + column + ".text");
-    }
-
-	public Object getValueAt(int row, int column)
-	{
-		
-		ITaskListIf taskList = m_wpTasks.getCmdPost().getTaskList();
-		
-		if(row >= taskList.size())
-		{
-			return null;
-		}
-
-		ITaskIf task = (ITaskIf)taskList.getItems().toArray()[row];
-		switch(column)
-		{
-		case 0:
-			return task.getNumber();
-		case 1:
-			return task.getPriority();
-		case 2:
-			return task.getTaskText();
-		case 3:
-			return task.getResponsibleRole();
-		case 4:
-			return task.getDueTime();
-		case 5:
-			return task.getStatus();
-		}
-
-		return null;
-	}
-
-	public void handleMsoUpdateEvent(Update e)
-	{
-		// Values has changed
-		fireTableDataChanged();
-	}
-
-	private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of
-	(
-    		IMsoManagerIf.MsoClassCode.CLASSCODE_TASK
-    );
 	
-	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return myInterests.contains(msoObject.getMsoClassCode());
-	}
-
+	/* ============================================================
+	 * Inner classes
+	 * ============================================================ */
+	
 	/**
 	 * Sorts and filters table
 	 *
@@ -262,7 +298,7 @@ public class TaskTableModel extends DiskoTableModel implements IMsoUpdateListene
 			m_statusFilter.contains(status);
 		}
 	}
-
+	
 	/**
 	 * Pop-up menu for table header. Pop-up menus sets row sorter and task selection filters
 	 *
@@ -459,35 +495,6 @@ public class TaskTableModel extends DiskoTableModel implements IMsoUpdateListene
             return m_menus[realIndex];
 		}
 		
-    }
+    }	
 	
-	public void setRole(IDiskoRole role) {
-		// get header
-        JTableHeader tableHeader = m_table.getTableHeader();
-		// remove?
-		if(m_popupListener!=null)
-			tableHeader.removeMouseListener(m_popupListener);
-		// add new listener?
-		if(role!=null) {
-			m_popupListener = new PopupAdapter(new HeaderPopupHandler(role, this, m_table));
-			tableHeader.addMouseListener(m_popupListener);
-		}
-	}
-
-	/**
-	 * @param taskNr
-	 * @return Reference to task with given number
-	 */
-	public ITaskIf getTask(int taskNr)
-	{
-		ITaskListIf tasks = m_wpTasks.getCmdPost().getTaskList();
-		for(ITaskIf task : tasks.getItems())
-		{
-			if(taskNr == task.getNumber())
-			{
-				return task;
-			}
-		}
-		return null;
-	}
 }

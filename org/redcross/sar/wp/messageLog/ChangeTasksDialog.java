@@ -4,6 +4,7 @@ import no.cmr.tools.Log;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.dialog.TaskDialog;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -49,7 +50,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 {
 	private static final long serialVersionUID = 1L;
 
-	protected static IDiskoWpMessageLog m_wpMessageLog;
+	protected static IDiskoWpMessageLog m_wp;
 
 	protected JPanel m_contentsPanel;
 
@@ -94,7 +95,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	{
 		super(wp.getApplication().getFrame());
 
-		m_wpMessageLog = wp;
+		m_wp = wp;
 		wp.getMsoEventManager().addClientUpdateListener(this);
 
 		m_buttonMap = new HashMap<JToggleButton, JButton>();
@@ -172,7 +173,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		if(button.isSelected())
 		{
 			// Button is selected, add task
-			ITaskIf task = m_wpMessageLog.getMsoManager().createTask(Calendar.getInstance());
+			ITaskIf task = m_wp.getMsoManager().createTask(Calendar.getInstance());
 			initTaskValues(task, type);
 			message.addMessageTask(task);
 
@@ -181,7 +182,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		}
 		else
 		{
-			int ans = JOptionPane.showConfirmDialog(m_wpMessageLog.getApplication().getFrame(),
+			int ans = JOptionPane.showConfirmDialog(m_wp.getApplication().getFrame(),
 					"Du er i ferd med å slette valgt oppgave. Vil du fortsette?","Bekreftelse",JOptionPane.YES_NO_OPTION);
 			// prompt user
 			if(ans == JOptionPane.YES_OPTION) {
@@ -189,7 +190,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 				// Button is deselected, remove task
 				for(ITaskIf task : message.getMessageTasksItems())
 				{
-					if(getSubType(task) == type)
+					if(MessageTableModel.getSubType(task) == type)
 					{
 						if(!task.delete())
 						{
@@ -222,14 +223,13 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 
 		if(type == TaskSubType.FINDING)
 		{
-			String taskText = String.format(m_wpMessageLog.getBundleText("TaskSubType.FINDING.text"),
-					m_wpMessageLog.getBundleText("Finding.text"));
+			String taskText = String.format(DiskoEnumFactory.getText(type),
+					m_wp.getBundleText("Finding.text"));
 			task.setTaskText(taskText);
-			//task.getSourceClassText()
 		}
 		else
 		{
-			task.setTaskText(m_wpMessageLog.getBundleText("TaskSubType." + type.name() + ".text"));
+			task.setTaskText(DiskoEnumFactory.getText(type));
 		}
 
 		switch(type)
@@ -285,7 +285,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		task.setResponsibleRole(null);
 
 		// WP
-		task.setCreatingWorkProcess(m_wpMessageLog.getName());
+		task.setCreatingWorkProcess(m_wp.getName());
 
 		// Object
 		if(message != null)
@@ -319,7 +319,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	 */
 	private void showEditTaskDialog()
 	{
-		TaskDialog taskDialog = m_wpMessageLog.getApplication().getUIFactory().getTaskDialog();
+		TaskDialog taskDialog = m_wp.getApplication().getUIFactory().getTaskDialog();
 		Point location = getLocationOnScreen();
 		location.y -= (taskDialog.getHeight() - getHeight());
 		location.x -= (taskDialog.getWidth() - getWidth());
@@ -333,7 +333,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	public void hideEditor()
 	{
 		this.setVisible(false);
-		TaskDialog taskDialog = m_wpMessageLog.getApplication().getUIFactory().getTaskDialog();
+		TaskDialog taskDialog = m_wp.getApplication().getUIFactory().getTaskDialog();
 		taskDialog.setVisible(false);
 	}
 
@@ -347,7 +347,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		List<TaskSubType> taskTypes = new LinkedList<TaskSubType>();
 		for(ITaskIf messageTask : messageTasks)
 		{
-			taskTypes.add(getSubType(messageTask));
+			taskTypes.add(MessageTableModel.getSubType(messageTask));
 		}
 
 		for(TaskSubType type : TaskSubType.values())
@@ -396,9 +396,9 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 				IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 				for(ITaskIf task : message.getMessageTasksItems())
 				{
-					if(getSubType(task) == type)
+					if(MessageTableModel.getSubType(task) == type)
 					{
-						TaskDialog taskDialog = m_wpMessageLog.getApplication().getUIFactory().getTaskDialog();
+						TaskDialog taskDialog = m_wp.getApplication().getUIFactory().getTaskDialog();
 						taskDialog.setTask(task);
 						break;
 					}
@@ -419,12 +419,12 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		String buttonText = null;
 		if(type == TaskSubType.FINDING)
 		{
-			String findingType = m_wpMessageLog.getBundleText("Finding.text");
-			buttonText = String.format(m_wpMessageLog.getBundleText("TaskSubType.FINDING.text"), findingType);
+			String findingType = m_wp.getBundleText("Finding.text");
+			buttonText = String.format(DiskoEnumFactory.getText(type), findingType);
 		}
 		else
 		{
-			buttonText = m_wpMessageLog.getBundleText("TaskSubType." + type.name() + ".text");
+			buttonText = DiskoEnumFactory.getText(type);
 		}
 		JToggleButton button = 	DiskoButtonFactory.createToggleButton(
 				buttonText,buttonText,null,ButtonSize.LONG, 50,0);
@@ -437,51 +437,6 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		});
 
 		return button;
-	}
-
-	/**
-	 * Used to identify which of the tasks in this dialog, if any, a specific task is. General types
-	 * does not provide sufficient information to determine that
-	 * @param task
-	 * @return
-	 */
-	public static TaskSubType getSubType(ITaskIf task)
-	{
-		TaskType taskType = task.getType();
-		String taskText = task.getTaskText();
-		switch(taskType)
-		{
-		case TRANSPORT:
-			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.SEND_TRANSPORT.text")))
-			{
-				return TaskSubType.SEND_TRANSPORT;
-			}
-		case RESOURCE:
-			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.GET_TEAM.text")))
-			{
-				return TaskSubType.GET_TEAM;
-			}
-			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.CREATE_ASSIGNMENT.text")))
-			{
-				return TaskSubType.CREATE_ASSIGNMENT;
-			}
-		case INTELLIGENCE:
-			if(taskText.equals(m_wpMessageLog.getBundleText("TaskSubType.CONFIRM_INTELLIGENCE.text")))
-			{
-				return TaskSubType.CONFIRM_INTELLIGENCE;
-			}
-			try
-			{
-				if(taskText.split(":")[0].equals(m_wpMessageLog.getBundleText("TaskSubType.FINDING.text").split(":")[0]))
-				{
-					return TaskSubType.FINDING;
-				}
-			}catch(Exception e){}
-		case GENERAL:
-			return TaskSubType.GENERAL;
-		}
-
-		return null;
 	}
 
 	/**
@@ -520,7 +475,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		{
 			for(ITaskIf task : message.getMessageTasksItems())
 			{
-				TaskSubType type = getSubType(task);
+				TaskSubType type = MessageTableModel.getSubType(task);
 				if(type == TaskSubType.FINDING)
 				{
 					m_findingButton.setText(task.getTaskText());

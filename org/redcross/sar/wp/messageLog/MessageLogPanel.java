@@ -45,7 +45,7 @@ public class MessageLogPanel
     private static final String MAP_ID = "MAP";
     private static final String LOG_ID = "LOG";
 
-    private JPanel WorkspacePanel;
+    private JPanel m_contentPanel;
     private static String m_current = LOG_ID;
     private MessageLogBottomPanel m_messagePanel;
     private static JSplitPane m_splitter1;
@@ -64,8 +64,8 @@ public class MessageLogPanel
         m_wpModule = aWp;
         m_map = m_wpModule.getMap();
 
-        WorkspacePanel = new JPanel();
-        WorkspacePanel.setLayout(new BorderLayout(0, 0));
+        m_contentPanel = new JPanel();
+        m_contentPanel.setLayout(new BorderLayout(0, 0));
 
         m_splitter1 = new JSplitPane();
         m_splitter1.setContinuousLayout(false);
@@ -73,7 +73,7 @@ public class MessageLogPanel
         m_splitter1.setOrientation(0);
         m_splitter1.setBorder(BorderFactory.createEmptyBorder());
 
-        WorkspacePanel.add(m_splitter1, BorderLayout.CENTER);
+        m_contentPanel.add(m_splitter1, BorderLayout.CENTER);
 
         // get nav button
         JToggleButton navButton = aWp.getApplication().getUIFactory()
@@ -319,15 +319,7 @@ public class MessageLogPanel
      */
     public JPanel getPanel()
     {
-        setTableData();
-        return WorkspacePanel;
-    }
-
-    public static void setTableData()
-    {
-        MessageTableModel ltm = (MessageTableModel) m_logTable.getModel();
-        ltm.buildTable(null);
-        ltm.fireTableDataChanged();
+        return m_contentPanel;
     }
 
     /**

@@ -1,33 +1,5 @@
 package org.redcross.sar.wp.logistics;
 
-import org.redcross.sar.gui.AbstractPopupHandler;
-import org.redcross.sar.gui.PopupAdapter;
-import org.redcross.sar.gui.dnd.AssignmentTransferable;
-import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
-import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
-import org.redcross.sar.gui.dnd.IconDragGestureListener;
-import org.redcross.sar.gui.model.DiskoTableModel;
-import org.redcross.sar.gui.renderer.IconRenderer;
-import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
-import org.redcross.sar.gui.renderer.IconRenderer.IconActionHandler;
-import org.redcross.sar.gui.renderer.IconRenderer.UnitIcon;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IUnitListIf;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.util.AssignmentTransferUtilities;
-import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.mso.Selector;
-import org.redcross.sar.wp.IDiskoWpModule;
-
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -37,6 +9,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.table.JTableHeader;
@@ -58,7 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
@@ -66,6 +38,28 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
+
+import org.redcross.sar.data.IDataBinderIf;
+import org.redcross.sar.gui.AbstractPopupHandler;
+import org.redcross.sar.gui.PopupAdapter;
+import org.redcross.sar.gui.dnd.AssignmentTransferable;
+import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
+import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
+import org.redcross.sar.gui.dnd.IconDragGestureListener;
+import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
+import org.redcross.sar.gui.renderer.IconRenderer.IconActionHandler;
+import org.redcross.sar.gui.renderer.IconRenderer.UnitIcon;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
+import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.Utils;
+import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
  * Created by IntelliJ IDEA.
@@ -77,18 +71,14 @@ import java.util.Vector;
 /**
  * Table model for unit table in logistics WP
  */
-public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
+public class UnitTableModel extends MsoTableModel<IUnitIf>
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	private static DataFlavor m_flavor = null;
-	
+
 	private final JTable m_table;
-	
-    private IMsoEventManagerIf m_eventManager;
-    private IUnitListIf m_unitList;
-    private ArrayList<Icon[]> m_iconRows = new ArrayList<Icon[]>();
-    private int m_actualUnitCount;
+
     private int m_selectedRow = -1;
     private int m_selectedCol = -1;
     private int m_dropRow = -1;
@@ -98,14 +88,11 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     private IDiskoWpLogistics m_wpModule;
     private IconActionHandler m_actionHandler;
     private boolean consume = false;
-    
-    private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT, IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
 
     /* ===========================================================
      * Constructors
      * ===========================================================*/
-    
-    
+
     /**
      * Creator
      *
@@ -114,22 +101,31 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
      * @param aUnitList       Reference to the list of units.
      * @param anActionHandler The handler of icon actions.
      */
-    public UnitTableModel(JTable aTable, IDiskoWpLogistics aWp, 
-    		IUnitListIf aUnitList, IconRenderer.IconActionHandler anActionHandler)
+    @SuppressWarnings("unchecked")
+	public UnitTableModel(JTable aTable, IDiskoWpLogistics aWp, IconRenderer.IconActionHandler anActionHandler)
     {
 
     	// forward
-    	super(getNames("A",6),getCaptions(aWp, 6),getTooltips(aWp, 6));
-    	
+    	super(IUnitIf.class, getNames("A",6),getCaptions(aWp, 6),getTooltips(aWp, 6),false);
+
 		// initialize
     	m_table = aTable;
         m_wpModule = aWp;
-        m_eventManager = aWp.getMsoEventManager();
-        m_eventManager.addClientUpdateListener(this);
-        m_unitList = aUnitList;
         m_actionHandler = anActionHandler;
-        m_actualUnitCount = 0;
         m_unitTypeSelection = EnumSet.allOf(IUnitIf.UnitType.class);
+
+        // install mso model
+        connect(aWp.getMsoModel(), IUnitIf.ACTIVE_UNIT_SELECTOR, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+        load(aWp.getMsoModel().getMsoManager().getCmdPost().getUnitList());
+
+        /* -------------------------------------------------
+         * Add co-class
+         * -------------------------------------------------
+         * This ensures that the table is updated every
+         * time a assignment is changed
+         * ------------------------------------------------- */
+        IDataBinderIf binder = getBinders().iterator().next();
+        binder.addCoClass(IAssignmentIf.class,null);
 
         // initialize sorting
         setRowSorter();
@@ -139,15 +135,15 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         header.addMouseListener(new PopupAdapter(new UnitTableModel.HeaderPopupHandler(this, m_table)));
         setHeaderEditable(5, true);
         setHeaderEditor(5,"button");
-        
+
     	// create gesture recognizer
     	DragSource ds = DragSource.getDefaultDragSource();
-    	ds.createDefaultDragGestureRecognizer(m_table, DnDConstants.ACTION_MOVE, 
+    	ds.createDefaultDragGestureRecognizer(m_table, DnDConstants.ACTION_MOVE,
     			new IconDragGestureListener(new UnitTableDragSourceListener()));
-    	
+
     	// create drop target
     	m_table.setDropTarget(new DropTarget(m_table, new UnitTableDropTargetListener()));
-    	
+
     	try {
 	    	// create flavor
 	    	m_flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=org.redcross.sar.mso.data.IAssignmentIf");
@@ -160,13 +156,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 
     /* ===========================================================
      * TableModel implementation
-     * ===========================================================*/    
-
-    @Override
-    public String getColumnName(int column)
-    {
-        return m_wpModule.getBundleText(MessageFormat.format("UnitTable_hdr_{0}.text", column));
-    }
+     * ===========================================================*/
 
     @Override
     public Class<?> getColumnClass(int columnIndex)
@@ -187,35 +177,50 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     public boolean isCellEditable(int row, int column)
     {
         return true;
-    }    
-    
-    @Override
-    public int getRowCount()
-    {
-        return m_actualUnitCount;
-    }
-    
-    @Override
-    public int getColumnCount()
-    {
-        return 6;
     }
 
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex)
-    {
-        if (rowIndex < 0 || rowIndex >= m_iconRows.size() || columnIndex < 0 || columnIndex > 5)
-        {
-            return null;
-        }
-        Icon[] buttons = m_iconRows.get(rowIndex);
-        return buttons[columnIndex];
-    }    
-    
+    /* ===========================================================
+     * MsoTableModel implementation
+     * ===========================================================*/
+
+	@Override
+	protected Object[] create(IUnitIf id, IUnitIf obj, int size) {
+		/* -------------------------------------------
+		 * create icons
+		 * ------------------------------------------- */
+		return createIcons(obj);
+	}
+
+	protected Object getCellValue(int row, String column) {
+		// Since update algorithm is overridden, this method is never called.
+		return null;
+	}
+
+	/**
+	 * Update algorithm in MsoTableModel is overridden
+	 */
+	@Override
+	protected Object[] update(IUnitIf id, IUnitIf obj, Object[] data) {
+		// get row index
+		int row = findRowFromId(id);
+		if(row!=-1) {
+			data = updateIcons(row, id,(Icon[])data);
+		}
+		return data;
+	}
+
     /* ===========================================================
      * Public methods
      * ===========================================================*/
-    
+
+	public int getDrowRow() {
+		return m_dropRow;
+	}
+
+	public int getDrowColumn() {
+		return m_dropCol;
+	}
+
     public UnitTableRowSorter getRowSorter()
     {
         return m_rowSorter;
@@ -225,26 +230,8 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     {
         m_rowSorter = new UnitTableRowSorter(this);
         m_rowSorter.setMaxSortKeys(1);
+        m_rowSorter.setRowFilter(m_rowFilter);
         m_table.setRowSorter(m_rowSorter);
-    }
-    
-    public void handleMsoUpdateEvent(MsoEvent.Update e)
-    {
-    	if(e.isClearAllEvent()) {
-    		m_iconRows.clear();
-    	}
-    	else {
-	        buildTable();
-    	}
-        fireTableDataChanged();
-    }
-
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return myInterests.contains(aMsoObject.getMsoClassCode());
     }
 
     public void scrollToTableCellPosition(int aRowNumber)
@@ -318,11 +305,11 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     			else if(icon instanceof AssignmentIcon) {
     				AssignmentIcon assignmentIcon = (AssignmentIcon)icon;
     				if(assignmentIcon.isSingleAssigmentIcon() && assignmentIcon.getAssignment()==msoObject) {
-    					setSelection(i,j);    					
+    					setSelection(i,j);
     					return true;
     				}
     				if(assignmentIcon.getAssignmentList().contains(msoObject)) {
-    					setSelection(i,j);    					
+    					setSelection(i,j);
         				return true;
     				}
     			}
@@ -330,7 +317,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     	}
     	return false;
     }
-    
+
     public void setSelectedCell(int aRow, int aColumn, boolean isSelected)
     {
         if (consume || aRow < 0 || aRow >= getRowCount() || aColumn < 0 || aColumn >= getColumnCount())
@@ -345,7 +332,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
             // any change?
             if(m_selectedRow != row || m_selectedCol != col)  {
                 m_selectedRow = row;
-                m_selectedCol = col;                	
+                m_selectedCol = col;
                 if(isSelected) {
 	                Object value = getValueAt(m_selectedRow, m_selectedCol);
 	                if (value instanceof IconRenderer)
@@ -384,8 +371,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         {
             m_unitTypeSelection.remove(aType);
         }
-        buildTable();
-        fireTableDataChanged();
+        m_rowSorter.sort();
     }
 
     public void setTypeSelections(IUnitIf.UnitType[] theTypes, boolean aFlag)
@@ -400,54 +386,26 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
                 m_unitTypeSelection.remove(t);
             }
         }
-        buildTable();
-        fireTableDataChanged();
+        m_rowSorter.sort();
     }
 
     public IUnitIf getUnitAt(int aRow)
     {
-        return ((IconRenderer.UnitIcon) m_iconRows.get(aRow)[0]).getUnit();
-    }    
-    
-    /* ===========================================================
-     * Protected methods
-     * ===========================================================*/
-    
-    protected void buildTable()
-    {
-        m_actualUnitCount = 0;
-        for (IUnitIf unit : m_unitList.selectItems(m_unitSelector, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR))
-        {
-            m_actualUnitCount++;
-            if (m_iconRows.size() < m_actualUnitCount)
-            {
-                m_iconRows.add(newIconRow(unit));
-            } else
-            {
-                assignIconRow(m_actualUnitCount - 1, unit);
-            }
-        }
+        return getId(aRow);
     }
-
-    protected void reInitModel(IUnitListIf aUnitList)
-    {
-        m_unitList = aUnitList;
-        buildTable();
-        fireTableDataChanged();
-    }    
 
     /* ===========================================================
      * Private methods
      * ===========================================================*/
-    
+
     private static String[] getNames(String prefix, int count) {
     	String[] names = new String[count];
     	for(int i=0;i<count;i++) {
     		names[i] = prefix + i;
     	}
-    	return names;    	
+    	return names;
     }
-    
+
     private static String[] getCaptions(IDiskoWpLogistics wp, int count) {
     	String[] captions = new String[count];
     	for(int i=0;i<count;i++) {
@@ -455,7 +413,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     	}
     	return captions;
     }
-    
+
     private static String[] getTooltips(IDiskoWpLogistics wp, int count) {
     	String[] captions = new String[count];
     	for(int i=0;i<count;i++) {
@@ -463,17 +421,8 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     	}
     	return captions;
     }
-    
-    private final Selector<IUnitIf> m_unitSelector = new Selector<IUnitIf>()
-    {
-        public boolean select(IUnitIf aUnit)
-        {
-            return (IUnitIf.ACTIVE_RANGE.contains(aUnit.getStatus()) &&
-                    m_unitTypeSelection.contains(aUnit.getType()));
-        }
-    };
 
-    private Icon[] newIconRow(IUnitIf aUnit)
+    private Icon[] createIcons(IUnitIf aUnit)
     {
         Icon[] retVal = new Icon[6];
         retVal[0] = createUnitIcon(aUnit);
@@ -485,15 +434,15 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         return retVal;
     }
 
-    private void assignIconRow(int i, IUnitIf aUnit)
+    private Icon[] updateIcons(int i, IUnitIf aUnit,Icon[] icons)
     {
-        Icon[] icons = m_iconRows.get(i);
         ((IconRenderer.UnitIcon) icons[0]).setUnit(aUnit);
         ((IconRenderer.AssignmentIcon) icons[1]).setAssignments(aUnit, 0);
         ((IconRenderer.AssignmentIcon) icons[2]).setAssignments(aUnit, 1);
         ((IconRenderer.AssignmentIcon) icons[3]).setAssignments(aUnit, 2);
         ((IconRenderer.AssignmentIcon) icons[4]).setAssignments(aUnit, 3);
         ((IconRenderer.InfoIcon) icons[5]).setInfo(aUnit.getRemarks());  // todo getInfo
+        return icons;
     }
 
     private IconRenderer.UnitIcon createUnitIcon(IUnitIf aUnit)
@@ -524,8 +473,17 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     /* ===========================================================
      * Anonymous classes
      * ===========================================================*/
-    
-    public static final Comparator<IconRenderer.AssignmentIcon> ListLengthComparator = new Comparator<IconRenderer.AssignmentIcon>()
+
+    private final RowFilter<UnitTableModel,Integer> m_rowFilter = new RowFilter<UnitTableModel,Integer>() {
+    	public boolean include(Entry<? extends UnitTableModel, ? extends Integer> entry) {
+    		UnitTableModel model = entry.getModel();
+    		IUnitIf unit = model.getId(entry.getIdentifier());
+            return (IUnitIf.ACTIVE_RANGE.contains(unit.getStatus()) &&
+                    m_unitTypeSelection.contains(unit.getType()));
+    	}
+    };
+
+    public static final Comparator<IconRenderer.AssignmentIcon> LIST_LENGTH_COMPARATOR = new Comparator<IconRenderer.AssignmentIcon>()
     {
         public int compare(IconRenderer.AssignmentIcon o1, IconRenderer.AssignmentIcon o2)
         {
@@ -535,7 +493,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final Comparator<IconRenderer.AssignmentIcon> PriorityComparator = new Comparator<IconRenderer.AssignmentIcon>()
+    public static final Comparator<IconRenderer.AssignmentIcon> PRIORITY_COMPARATOR = new Comparator<IconRenderer.AssignmentIcon>()
     {
         public int compare(IconRenderer.AssignmentIcon o1, IconRenderer.AssignmentIcon o2)
         {
@@ -585,7 +543,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         protected abstract Calendar getCompareTime(Collection<IAssignmentIf> aCollection);
     }
 
-    public static final TimeComparator AssignmentTimeComparator = new TimeComparator()
+    public static final TimeComparator ALLOCATED_TIME_COMPARATOR = new TimeComparator()
     {
         protected Calendar getCompareTime(Collection<IAssignmentIf> aCollection)
         {
@@ -597,7 +555,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final TimeComparator StartTimeComparator = new TimeComparator()
+    public static final TimeComparator START_TIME_COMPARATOR = new TimeComparator()
     {
         protected Calendar getCompareTime(Collection<IAssignmentIf> aCollection)
         {
@@ -609,7 +567,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final TimeComparator EstimatedEndTimeComparator = new TimeComparator()
+    public static final TimeComparator ETA_TIME_COMPARATOR = new TimeComparator()
     {
         protected Calendar getCompareTime(Collection<IAssignmentIf> aCollection)
         {
@@ -621,25 +579,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UnitTypeAndNumberComparator = new Comparator<IconRenderer.UnitIcon>()
-    {
-        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
-        {
-            IUnitIf u1 = o1.getUnit();
-            IUnitIf u2 = o2.getUnit();
-            int i1 = u1.getNumberPrefix();
-            int i2 = u2.getNumberPrefix();
-            if (i1 == i2)
-            {
-                return u1.getNumber() - u2.getNumber();
-            } else
-            {
-                return i1 - i2;
-            }
-        }
-    };
-
-    public static final Comparator<IconRenderer.UnitIcon> UnitSpeedComparator = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<IconRenderer.UnitIcon> UNIT_SPEED_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
     {
         public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
         {
@@ -647,7 +587,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UnitPauseTimeComparator = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<IconRenderer.UnitIcon> UNIT_PAUSE_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
     {
         public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
         {
@@ -656,7 +596,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UnitWorkTimeComparator = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<IconRenderer.UnitIcon> UNIT_WORKTIME_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
     {
         public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
         {
@@ -665,7 +605,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UnitIdleTimeComparator = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<IconRenderer.UnitIcon> UNIT_IDLETIME_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
     {
         public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
         {
@@ -677,7 +617,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
     /* ===========================================================
      * Inner classes
      * ===========================================================*/
-    
+
     public static class UnitTableRowSorter extends TableRowSorter<UnitTableModel>
     {
         int[] m_sortKeys = new int[]{0, 1, 2, 2, 2, 0}; // default initial values
@@ -695,15 +635,15 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
                     switch (m_sortKeys[column])
                     {
                         case 2:
-                            return UnitSpeedComparator;
+                            return UNIT_SPEED_COMPARATOR;
                         case 3:
-                            return UnitPauseTimeComparator;
+                            return UNIT_PAUSE_COMPARATOR;
                         case 4:
-                            return UnitWorkTimeComparator;
+                            return UNIT_WORKTIME_COMPARATOR;
                         case 5:
-                            return UnitIdleTimeComparator;
+                            return UNIT_IDLETIME_COMPARATOR;
                         default:
-                            return UnitTypeAndNumberComparator;
+                            return IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR;
                     }
                 case 1:
                 case 2:
@@ -712,15 +652,15 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
                     switch (m_sortKeys[column])
                     {
                         case 1:
-                            return ListLengthComparator;
+                            return LIST_LENGTH_COMPARATOR;
                         case 3:
-                            return AssignmentTimeComparator;
+                            return ALLOCATED_TIME_COMPARATOR;
                         case 4:
-                            return StartTimeComparator;
+                            return START_TIME_COMPARATOR;
                         case 5:
-                            return EstimatedEndTimeComparator;
+                            return ETA_TIME_COMPARATOR;
                         default:
-                            return PriorityComparator;
+                            return PRIORITY_COMPARATOR;
                     }
                 default:
                     return null;
@@ -768,7 +708,8 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
         }
     }
 
-    public class HeaderPopupHandler extends AbstractPopupHandler implements ActionListener
+    @SuppressWarnings("unchecked")
+	public class HeaderPopupHandler extends AbstractPopupHandler implements ActionListener
     {
         private final TableColumnModel m_columnModel;
         private final JPopupMenu[] m_menus = new JPopupMenu[6];
@@ -850,7 +791,9 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
             String labelText = m_wpModule.getBundleText(aText);
             AbstractAction action = new AbstractAction(labelText)
             {
-                public void actionPerformed(ActionEvent e)
+				private static final long serialVersionUID = 1L;
+
+				public void actionPerformed(ActionEvent e)
                 {
                     getRowSorter().setSortKey(aColumn, aKeyIndex);
                 }
@@ -968,7 +911,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 	        // nothing to drag
 	    	return null;
 		}
-		
+
 		@Override
 		public Icon getIcon() {
 	        int row = m_table.getSelectedRow();
@@ -986,9 +929,9 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 	        // nothing to drag
 	    	return null;
 		}
-		
+
 	}
-	
+
 	class UnitTableDropTargetListener extends DiskoDropTargetAdapter {
 
 		@Override
@@ -1015,7 +958,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 	            // anything selected?
 	            if (row <getRowCount() && row>=0 && col<getColumnCount() && col>=0){
 	            	// get value
-	                Object value = getValueAt(row, col);	        
+	                Object value = getValueAt(row, col);
 	                // check value
 	                if (value instanceof AssignmentIcon){
 	                	// try to transfer data to source
@@ -1027,7 +970,7 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 	                	}
 	                }
 	            }
-				
+
 			}
 			// reset
 			m_dropRow = -1;
@@ -1035,20 +978,20 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 			// reject request
 			e.rejectDrop();
 		}
-		
+
 		private boolean transfer(Transferable data, int dropRow, int dropCol) {
 			// get data
 			try{
             	// validate transfer
             	if(canTransfer(data,dropRow,dropCol)) {
     				// get assignment
-    				IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);    				
+    				IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
         			// update
         			m_dropRow = dropRow;
         			m_dropCol = dropCol;
     				// do the transfer
-    		        return m_wpModule.transfer(assignment, 
-    		        		getSelectedAssignmentStatus(dropCol - 1), getUnitAt(dropRow));                	
+    		        return m_wpModule.transfer(assignment,
+    		        		getSelectedAssignmentStatus(dropCol - 1), getUnitAt(dropRow));
                 }
 			}
 			catch(UnsupportedFlavorException e) {
@@ -1058,50 +1001,50 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 				e.printStackTrace();
 			}
 			// can not transfer
-			return false;    	
-		}		
-		
+			return false;
+		}
+
 		private boolean canTransfer(Transferable data, int dropRow, int dropCol) {
-			
+
 			// get data
 			try{
-				
+
 				// valid row?
 		        if (!(dropCol == 0 || dropCol == 5))
 		        {
 					// try to get assignment
 					IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
-					
+
 					// valid assignment?
 					if(assignment!=null) {
-						
+
 			        	// get unit
 				        IUnitIf unit = getUnitAt(dropRow);
-				        
+
 				        // get assignment status
 				        AssignmentStatus newStatus = UnitTableModel.getSelectedAssignmentStatus(dropCol - 1);
-				        
+
 						// validate
 				    	Object[] ans = AssignmentTransferUtilities.verifyMove(assignment, unit, newStatus);
-				    	
+
 				    	// get action
 				    	int action = Integer.valueOf(ans[0].toString());
-				    	
+
 				    	// can move to status?
 				        if (action>=0)
 				        {
 				        	// only change should result in a transfer
 				        	return action==0 ? false : true;
 				        }
-				        	
-						
+
+
 						// notify reason
 						Utils.showWarning(ans[1].toString());
-						
+
 					}
 		        }
 		        else
-		        	Utils.showWarning("Du kan ikke flytte oppdrag hit");			        
+		        	Utils.showWarning("Du kan ikke flytte oppdrag hit");
 			}
 			catch(UnsupportedFlavorException e) {
 				Utils.showWarning("Mottatt objekt er ikke et oppdrag");
@@ -1110,7 +1053,8 @@ public class UnitTableModel extends DiskoTableModel implements IMsoUpdateListene
 				e.printStackTrace();
 			}
 			// can not transfer
-			return false;    	
-		}		
-	}	
+			return false;
+		}
+	}
+
 }

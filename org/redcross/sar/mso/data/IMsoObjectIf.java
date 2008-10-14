@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IDataIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.util.except.UnknownAttributeException;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * Interface for MSO object
  */
-public interface IMsoObjectIf
+public interface IMsoObjectIf extends IDataIf
 {
     /**
      * Get Object ID
@@ -150,6 +151,17 @@ public interface IMsoObjectIf
      */
     public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists();
 
+    /**
+     * Get a map of the reference lists for the object containing a given type of mso object
+     * 
+     * @param Class c - The item class
+     * @param boolean isEqual - It <code>true</code>, only lists with item classes that are equal to passed 
+     * class is returned. Else, match all items that are assignable onto passed item class. 
+     * 
+     * @return The reference lists that match passed arguments
+     */
+    public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists(Class<?> c, boolean isEqual);
+    
     /**
      * Add a reference to an IMsoObjectIf object.
      *
@@ -468,7 +480,7 @@ public interface IMsoObjectIf
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoEnumIf getEnumAttribute(int anIndex) throws UnknownAttributeException;
+    public IAttributeIf.IMsoEnumIf<?> getEnumAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
      * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPolygonIf}  attribute with the given name.
@@ -478,7 +490,7 @@ public interface IMsoObjectIf
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoEnumIf getEnumAttribute(String aName) throws UnknownAttributeException;
+    public IAttributeIf.IMsoEnumIf<?> getEnumAttribute(String aName) throws UnknownAttributeException;
 
     public Collection<ICommittableIf.ICommitReferenceIf> getCommittableAttributeRelations();
 

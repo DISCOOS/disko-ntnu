@@ -51,4 +51,35 @@ public class BundleListCellRenderer extends JLabel implements ListCellRenderer
         }
         return this;
     }
+
+	/* =======================================================
+	 * Increased performance (See DefaultTableCellRenderer).
+	 * ======================================================= */
+
+	@Override
+	public void firePropertyChange(String propertyName, boolean oldValue,
+			boolean newValue) { /* NOP */ }
+
+	@Override
+	public void firePropertyChange(String propertyName, char oldValue,
+			char newValue) { /* NOP */ }
+
+	@Override
+	public void firePropertyChange(String propertyName, int oldValue,
+			int newValue) { /* NOP */ }
+
+	@Override
+	public void revalidate() { /* NOP */ }
+
+	@Override
+	public void repaint() { /* NOP */ }
+
+	@Override
+	public void repaint(int x, int y, int width, int height) { /* NOP */ }
+
+	@Override
+	public void repaint(long tm) { /* NOP */ }
+
+	@Override
+	public void validate() { /* NOP */ }
 }

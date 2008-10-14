@@ -11,18 +11,27 @@ package org.redcross.sar.mso;
 
 import no.cmr.tools.Log;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.redcross.sar.data.DataSourceImpl;
+import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.modeldriver.ModelDriver;
 import org.redcross.sar.modeldriver.SarModelDriver;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
+import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
+import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
@@ -30,20 +39,23 @@ import org.redcross.sar.util.except.CommitException;
 /**
  * Singleton class for accessing the MSO model
  */
-public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
+public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
+							implements IMsoModelIf, ICommitManagerIf
 {
     private static MsoModelImpl ourInstance = new MsoModelImpl();
+
+    private final IModelDriverIf m_modelDriver;
     private final MsoManagerImpl m_msoManager;
     private final MsoEventManagerImpl m_msoEventManager;
     private final CommitManager m_commitManager;
+    private final IMsoUpdateListenerIf m_updateRepeater;
 
-    private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
-    private final IModelDriverIf m_modelDriver;
-    
     private final Object updateLock = new Object();
-    
+    private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
 
     private int m_suspendClientUpdate = 0;
+
+
 
 
     /**
@@ -68,8 +80,28 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         m_commitManager = new CommitManager(this);
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
-        m_modelDriver = AppProps.getText("integrate.sara").equalsIgnoreCase("true") ?
-                new SarModelDriver() : new ModelDriver();
+        boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
+        m_modelDriver = integrate ? new SarModelDriver() : new ModelDriver();
+        // create update event repeater
+        m_updateRepeater = new IMsoUpdateListenerIf() {
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public void handleMsoUpdateEvent(Update e) {
+				// forward
+				fireSourceChanged(
+						new SourceEvent<MsoEvent.Update>(MsoModelImpl.this,e));
+			}
+
+			@Override
+			public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) {
+				// consume loopback updates
+				return !UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode);
+			}
+
+        };
+        // connect repeater to client update events
+        m_msoEventManager.addClientUpdateListener(m_updateRepeater);
     }
 
     public IMsoManagerIf getMsoManager()
@@ -125,7 +157,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
      */
     public synchronized void restoreUpdateMode()
     {
-    	// ensure that stack is never empty 
+    	// ensure that stack is never empty
     	// (preserves the initial condition)
         if (m_updateModeStack.size() > 1)
         {
@@ -134,8 +166,8 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
     }
 
     /**
-     * This method is thread safe 
-     */    
+     * This method is thread safe
+     */
     public void suspendClientUpdate()
     {
     	// increment
@@ -150,14 +182,14 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         //System.out.println("suspendClientUpdate:="+m_suspendClientUpdate);
     }
 
-    
+
     /**
-     * This method is thread safe 
-     */    
+     * This method is thread safe
+     */
     public void resumeClientUpdate()
     {
     	synchronized(updateLock) {
-    		if(m_suspendClientUpdate>0) 
+    		if(m_suspendClientUpdate>0)
 	        	m_suspendClientUpdate--;
     	}
         if(m_suspendClientUpdate==0)
@@ -168,7 +200,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
     {
         return (m_suspendClientUpdate>0);
     }
-    
+
     /**
      * Get current update mode.
      */
@@ -177,24 +209,24 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         return m_updateModeStack.peek();
     }
 
-    public boolean isUpdateMode(UpdateMode mode) 
+    public boolean isUpdateMode(UpdateMode mode)
     {
         return getUpdateMode().equals(mode);
     }
-    
+
     public boolean hasUncommitedChanges()
     {
         return m_commitManager.hasUncommitedChanges();
     }
-    
+
     public boolean hasUncommitedChanges(MsoClassCode code) {
     	return m_commitManager.hasUncommitedChanges(code);
     }
-    
+
     public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
-    	return m_commitManager.hasUncommitedChanges(msoObj);    	
-    }    
-    
+    	return m_commitManager.hasUncommitedChanges(msoObj);
+    }
+
 	public List<IUpdateHolderIf> getUpdates() {
 		return m_commitManager.getUpdates();
 	}
@@ -208,24 +240,24 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
 	}
 
 	public IUpdateHolderIf getUpdates(IMsoObjectIf of) {
-		return m_commitManager.getUpdates(of);	
+		return m_commitManager.getUpdates(of);
 	}
-	
+
 	public List<IUpdateHolderIf> getUpdates(List<IMsoObjectIf> of) {
 		return m_commitManager.getUpdates(of);
 	}
-    
+
     /**
      * Perform a partial commit. <p/>Only possible to perform on
-     * objects that are created and modified. Object and list references 
-     * are not affected, only the marked attributes. See 
+     * objects that are created and modified. Object and list references
+     * are not affected, only the marked attributes. See
      * {@link org.redcross.sar.mso.committer.IUpdateHolderIf} for more information.
-     * 
+     *
      * @param List<UpdateHolder> updates - holder for updates.
-     * 
+     *
      */
     public synchronized void commit(List<IUpdateHolderIf> updates)
-    { 
+    {
         try
         {
             m_commitManager.commit(updates);
@@ -238,7 +270,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         }
         /* ========================================================================
          * postProcessCommit() is not used any more because only server updates
-         * should update the model 
+         * should update the model
          * ======================================================================== */
         /*
         suspendClientUpdate();
@@ -263,7 +295,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         }
         /* ========================================================================
          * postProcessCommit() is not used any more because only server updates
-         * should update the model 
+         * should update the model
          * ======================================================================== */
         /*
         suspendClientUpdate();
@@ -273,7 +305,7 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         resumeClientUpdate();
         */
     }
-        
+
     public synchronized void rollback()
     {
         suspendClientUpdate();
@@ -283,5 +315,31 @@ public class MsoModelImpl implements IMsoModelIf, ICommitManagerIf
         restoreUpdateMode();
         resumeClientUpdate();
     }
+
+    /* ====================================================================
+     * IDataSourceIf Implementation
+     * ==================================================================== */
+
+	@SuppressWarnings("unchecked")
+	public Collection<IMsoObjectIf> getItems(Class<?> c) {
+		// allowed?
+		if(getMsoManager().operationExists()) {
+			List list = new ArrayList(100);
+			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getReferenceLists(c, true);
+			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
+				list.addAll(it.getItems());
+			}
+			// success
+			return list;
+		}
+		// failed
+		return null;
+	}
+
+	@Override
+	public boolean isSupported(Class<?> dataClass) {
+		// supports all classes that implement IMsoObjectIf
+		return IMsoObjectIf.class.isAssignableFrom(dataClass);
+	}
 
 }

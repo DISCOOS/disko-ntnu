@@ -3,12 +3,12 @@ package org.redcross.sar.map.layer;
 import java.io.IOException;
 import java.util.List;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.util.mso.Selector;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.geometry.IEnvelope;

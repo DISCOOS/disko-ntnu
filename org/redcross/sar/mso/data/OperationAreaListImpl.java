@@ -1,18 +1,16 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
-
 public class OperationAreaListImpl extends MsoListImpl<IOperationAreaIf> implements IOperationAreaListIf
 {
 
     public OperationAreaListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IOperationAreaIf.class, anOwner, theName, isMain);
     }
 
     public OperationAreaListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IOperationAreaIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IOperationAreaIf createOperationArea()

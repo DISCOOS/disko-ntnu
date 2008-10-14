@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import org.redcross.sar.app.IDiskoApplication;
@@ -20,21 +21,21 @@ import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
-public class DraftListDialog extends DefaultDialog {
+public class PromptDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	
-	private IDiskoWpModule wp = null;
-	private DefaultPanel contentPanel = null;
-	private JButton makeReadyButton = null;
-	private AssignmentTable assignmentTable = null;
-	
+
+	private IDiskoWpModule wp;
+	private DefaultPanel contentPanel;
+	private JButton makeReadyButton;
+	private AssignmentTable assignmentTable;
+
 	private IDiskoApplication app = null;
-	
+
 	private int changeCount = 0;
 	private boolean isCancel = false;
-	
-	public DraftListDialog(IDiskoWpModule wp) {
+
+	public PromptDialog(IDiskoWpModule wp) {
 		// forward
 		super(wp.getApplication().getFrame());
 		// prepare
@@ -48,7 +49,7 @@ public class DraftListDialog extends DefaultDialog {
 
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 */
 	private void initialize() {
 		try {
@@ -60,11 +61,11 @@ public class DraftListDialog extends DefaultDialog {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * This method initializes contentPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes contentPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
@@ -78,11 +79,15 @@ public class DraftListDialog extends DefaultDialog {
 						// set flag
 						isCancel = true;
 						// success
-						return true; 
+						return true;
 					}
 
 				};
 				contentPanel.setBodyComponent(getAssignmentTable());
+				contentPanel.setFitBodyOnResize(true);
+				contentPanel.setScrollBarPolicies(
+						JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
 				contentPanel.insertButton("finish",getMakeReadyButton(),"change");
 				contentPanel.addActionListener(new ActionListener() {
@@ -90,25 +95,25 @@ public class DraftListDialog extends DefaultDialog {
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
 						// translate
-						if("change".equalsIgnoreCase(cmd)) 
-							change();						
+						if("change".equalsIgnoreCase(cmd))
+							change();
 					}
-					
+
 				});
 				contentPanel.addDiskoWorkListener((IDiskoWorkListener)wp);
-				
-				
+
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return contentPanel;
 	}
-	
+
 	/**
-	 * This method initializes makeReadyButton	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes makeReadyButton
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getMakeReadyButton() {
 		if (makeReadyButton == null) {
@@ -124,36 +129,37 @@ public class DraftListDialog extends DefaultDialog {
 	}
 
 	/**
-	 * This method initializes assignmentTable	
-	 * 	
-	 * @return javax.swing.JTable	
+	 * This method initializes assignmentTable
+	 *
+	 * @return javax.swing.JTable
 	 */
 	private AssignmentTable getAssignmentTable() {
 		if (assignmentTable == null) {
 			try {
 				assignmentTable = new AssignmentTable(wp.getMsoModel());
 				assignmentTable.showOnly(AssignmentStatus.DRAFT);
+				assignmentTable.setPreferredSize(new Dimension(380,300));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return assignmentTable;
-	}	
-	
+	}
+
 	public int prompt() {
 		// reset flag
 		isCancel = false;
 		// initialize
-		changeCount = 0;		
+		changeCount = 0;
 		// anything to show?
 		if(getAssignmentTable().getRowSorter().getViewRowCount()>0) {
 			// show me
 			setVisible(true);
 		}
 		// return state
-		return isCancel ? -1 : changeCount;		
+		return isCancel ? -1 : changeCount;
 	}
-	
+
 	private void change() {
 		try {
 			// initialize
@@ -181,7 +187,7 @@ public class DraftListDialog extends DefaultDialog {
 			e1.printStackTrace();
 		}
 		// hide me
-		setVisible(false);		
+		setVisible(false);
 	}
 
 }  //  @jve:decl-index=0:visual-constraint="10,2"

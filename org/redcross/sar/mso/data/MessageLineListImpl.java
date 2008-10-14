@@ -13,12 +13,12 @@ public class MessageLineListImpl extends MsoListImpl<IMessageLineIf> implements 
 {
     public MessageLineListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IMessageLineIf.class, anOwner, theName, isMain);
     }
 
     public MessageLineListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IMessageLineIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IMessageLineIf createMessageLine()

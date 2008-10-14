@@ -1,184 +1,155 @@
 package org.redcross.sar.wp.messageLog;
 
-
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.util.Collection;
-import java.util.EnumSet;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JTable;
-import org.redcross.sar.gui.model.DiskoTableModel;
 
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.model.MsoTableModel;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
-import org.redcross.sar.mso.data.IMessageLogIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.util.mso.Selector;
+import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
  * Table model providing log table with data
  */
-public class MessageTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
+public class MessageTableModel extends MsoTableModel<IMessageIf>
 {
     private static final long serialVersionUID = 1L;
 
     private JTable m_table;
-    private List<IMessageIf> m_messageList;
+    private IDiskoWpMessageLog m_wp;
 
-    private IDiskoWpMessageLog m_wpModule;
-    //private IMsoEventManagerIf m_eventManager;
+    private final HashMap<String, Boolean> m_toggleMap = new HashMap<String, Boolean>();
 
-    private HashMap<String, Boolean> m_rowExpandedMap;
+	/* ================================================================
+	 *  Constructors
+	 * ================================================================ */
 
-    /**
-     * @param aTable   Log table
-     * @param aModule  Message log work process
-     * @param listener Selection listener
-     */
-    public MessageTableModel(JTable aTable, IDiskoWpMessageLog aModule)
+    public MessageTableModel(JTable aTable, IDiskoWpMessageLog aWp)
     {
+    	// forward
+    	super(IMessageIf.class,getNames("A",7),getCaptions(aWp, 7),false);
+    	// prepare
         m_table = aTable;
-        m_wpModule = aModule;
-        aModule.getMsoEventManager().addClientUpdateListener(this);
-        m_rowExpandedMap = new HashMap<String, Boolean>();
+        m_wp = aWp;
+        // forward
+        connect(aWp.getMsoModel(),aWp.getMsoManager().getCmdPost().getMessageLog(),IMessageIf.MESSAGE_NUMBER_COMPARATOR);
+        // add co-classes
+        getMsoBinder().addCoClass(IMessageLineIf.class,null);
+        getMsoBinder().addCoClass(IUnitIf.class,null);
+        getMsoBinder().addCoClass(IAssignmentIf.class,null);
+        getMsoBinder().addCoClass(IPOIIf.class,null);
+        // load data
+        load(aWp.getMsoModel().getMsoManager().getCmdPost().getMessageLog());
     }
 
-    /**
-     *
-     */
-    public int getRowCount()
-    {
-        return m_messageList.size();
-    }
+	/* =============================================================
+	 * MsoTableModel implementation
+	 * ============================================================= */
 
-    /**
-     *
-     */
-    public int getColumnCount()
-    {
-        return 7;
-    }
+	protected Object getCellValue(int row, String column) {
+		// Since update algorithm is overridden, this method is never called.
+		return null;
+	}
 
-    /**
-     * Get messages, update expanded hash map
-     */
-    void buildTable(IMessageIf exclude)
-    {
-    	// get command post
-    	ICmdPostIf cmdPost = m_wpModule.getCmdPost();
-    	// has command post?
-    	if(cmdPost!=null) {
-	    	// get message log
-	        IMessageLogIf messageLog = m_wpModule.getCmdPost().getMessageLog();
-	        // exclude message when selection
-	        m_messageSelector.exclude(null);//MessageLogBottomPanel.isNewMessage() ? null : exclude);
-	        // select messages
-	        m_messageList = messageLog.selectItems(m_messageSelector, IMessageIf.MESSAGE_NUMBER_COMPARATOR);        
-	        // Update hash map
-	        HashMap<String, Boolean> tempMap = new HashMap<String, Boolean>(m_rowExpandedMap);
-	        m_rowExpandedMap.clear();
-	        int numMessages = m_messageList.size();
-	        for (int i = 0; i < numMessages; i++)
+	/**
+	 * Update algorithm in MsoTableModel is overridden
+	 */
+	@Override
+	protected Object[] update(IMessageIf id, IMessageIf obj, Object[] data) {
+
+		// get row index
+		int i = findRowFromId(id);
+
+		// get message
+        IMessageIf message = getId(i);
+
+        // get column count
+		int jCount= getColumnCount();
+
+		// loop over all columns
+		for(int j=0; j<jCount; j++) {
+
+			// translate
+	        switch (j)
 	        {
-	        	IMessageIf message = m_messageList.get(i);
-	            String messageId = message.getObjectId();
-	            Boolean expanded = tempMap.get(messageId);
-	            if (expanded != null)
-	            {
-	                m_rowExpandedMap.put(messageId, expanded);
-	            } else
-	            {
-	                m_rowExpandedMap.put(messageId, false);
-	            }
-	        }
-    	}
-    }
+            case 0:
+            	data[j] = message;
+                break;
 
-    /**
-     * Get value of message field
-     *
-     * @param rowIndex    Message number
-     * @param columnIndex Index of field
-     */
-    public Object getValueAt(int rowIndex, int columnIndex)
-    {
-    	// invalid index?
-    	if(rowIndex>=m_messageList.size() || m_wpModule.getApplication().isLoading()) return null;
-    	
-    	// get message
-        IMessageIf message = m_messageList.get(rowIndex);
+            case 1:
+            	data[j] = DTG.CalToDTG(message.getTimeStamp());
+                break;
 
-        switch (columnIndex)
-        {
-            case 0: return message;
-            
-            case 1: return DTG.CalToDTG(message.getTimeStamp());
-            
-            case 2: 
-            	
+            case 2:
+
                 ICommunicatorIf sender = message.getSender();
                 if (sender == null)
                 {
-                	sender = (ICommunicatorIf) m_wpModule.getCmdPost();
+                	sender = (ICommunicatorIf) m_wp.getCmdPost();
                 }
-                return sender;
-                     
+                data[j] = sender;
+                break;
+
             case 3:
-            	
+
                 if (message.isBroadcast())
                 {
     				int unconfirmed = message.getUnconfirmedReceivers().size();
     				int count = unconfirmed + message.getConfirmedReceivers().size();
-                    return new Integer[]{count-unconfirmed,count};
+                    data[j] = new Integer[]{count-unconfirmed,count};
                 } else
                 {
                     ICommunicatorIf receiver = message.getReceiver();
                     if (receiver == null)
                     {
-                        receiver = (ICommunicatorIf) m_wpModule.getCmdPost();
+                        receiver = (ICommunicatorIf) m_wp.getCmdPost();
                     }
-                    return receiver;
-                }                                
-                
+                    data[j] = receiver;
+                }
+                break;
+
             case 4:
-            	
+
             	// initialize
             	StringBuilder stringBuilder = new StringBuilder();
 
             	// get message lines
             	IMessageLineListIf lines = message.getMessageLines();
-            	
+
             	// loop over all lines
             	for(IMessageLineIf line : lines.getItems())
             	{
                      stringBuilder.append(line.toString() + "LINEEND");
                 }
-                return stringBuilder.toString().split("LINEEND");
-                
+                data[j] = stringBuilder.toString().split("LINEEND");
+                break;
+
             case 5:
-            	
+
                 StringBuilder taskBuilder = new StringBuilder();
                 for (ITaskIf task : message.getMessageTasksItems())
                 {
-                    if (ChangeTasksDialog.getSubType(task) == TaskSubType.FINDING)
+                    if (getSubType(task) == TaskSubType.FINDING)
                     {
                         String taskString = null;
                         IMessageLineIf line = message.findMessageLine(MessageLineType.POI, false);
@@ -188,18 +159,18 @@ public class MessageTableModel extends DiskoTableModel implements IMsoUpdateList
                             IPOIIf poi = line.getLinePOI();
                             if (poi != null && poi.getType() == POIType.SILENT_WITNESS)
                             {
-                                taskString = String.format(m_wpModule.getBundleText("TaskSubType.FINDING.text"),
-                                        m_wpModule.getBundleText("SilentWitness.text"));
+                                taskString = String.format(DiskoEnumFactory.getText(TaskSubType.FINDING),
+                                        m_wp.getBundleText("SilentWitness.text"));
                             } else
                             {
-                                taskString = String.format(m_wpModule.getBundleText("TaskSubType.FINDING.text"),
-                                        m_wpModule.getBundleText("Finding.text"));
+                                taskString = String.format(DiskoEnumFactory.getText(TaskSubType.FINDING),
+                                        m_wp.getBundleText("Finding.text"));
                             }
                         } else
                         {
                             // Set task finding to finding if no message line added
-                            taskString = String.format(m_wpModule.getBundleText("TaskSubType.FINDING.text"),
-                                    m_wpModule.getBundleText("Finding.text"));
+                            taskString = String.format(DiskoEnumFactory.getText(TaskSubType.FINDING),
+                                    m_wp.getBundleText("Finding.text"));
                         }
                         taskBuilder.append(taskString);
                     } else
@@ -208,211 +179,121 @@ public class MessageTableModel extends DiskoTableModel implements IMsoUpdateList
                     }
 
                     taskBuilder.append("\n");
-                }                
-                return taskBuilder.toString().split("\\n");
-                
-            case 6: return message.getStatus();
-            
-            case 7: return message;
-            
-            default: return null;
-            
-        }
-    }
+                }
+                data[j] = taskBuilder.toString().split("\\n");
+                break;
 
-    @Override
-    public String getColumnName(int column)
-    {
-        switch (column)
-        {
-            case 0:
-                return m_wpModule.getBundleText("Number.text");
-            case 1:
-                return m_wpModule.getBundleText("DTG.text");
-            case 2:
-                return m_wpModule.getBundleText("From.text");
-            case 3:
-                return m_wpModule.getBundleText("To.text");
-            case 4:
-                return m_wpModule.getBundleText("MessageLines.text");
-            case 5:
-                return m_wpModule.getBundleText("Tasks.text");
             case 6:
-                return m_wpModule.getBundleText("Status.text");
-        }
-        return null;
-    }
+            	data[j] = message.getStatus();
+                break;
 
-    /**
-     * Rebuild table data model when MSO changes
-     */
-    public void handleMsoUpdateEvent(Update e)
-    {
-        if(e.isClearAllEvent()) {
-        	m_messageList.clear();
-        	fireTableDataChanged();        	
-        }
-        else {
-        	boolean bFlag = false;
-            Object source = e.getSource();
-	        if (source instanceof IMessageIf)
-	        {
-	        	bFlag = handleMessageEvent((IMessageIf) source, e);
-	        } else if (source instanceof IMessageLineIf)
-	        {
-	        	bFlag = handleMessageLineEvent((IMessageLineIf) source);
-	        } else if (source instanceof IUnitIf)
-	        {
-	        	bFlag = handleUnitEvent((IUnitIf) source);
-	        } else if (source instanceof IPOIIf)
-	        {
-	        	bFlag = handlePOIEvent((IPOIIf) source);
-	        } else if (source instanceof IAssignmentIf)
-	        {
-	            bFlag = handleAssignmentEvent((IAssignmentIf) source);
+            case 7:
+            	data[j] = message;
+            	break;
+
+            default:
+            	data[j] = null;
+            	break;
 	        }
-	        if(bFlag) 
-	        	updateRowHeights();
+		}
+		// finished
+		return data;
+	}
 
-        }
-    }
+	/* ================================================================
+	 *  DiskoTableModel implementation
+	 * ================================================================ */
 
-    private boolean handleMessageEvent(IMessageIf aMessage, Update e)
-    {
-        if (e.isCreateObjectEvent() || e.isDeleteObjectEvent())
-        {
-            rebuildTable(aMessage);
-            return true;
-        } else
-        {
-            return messageChanged(aMessage);           
-        }
-    }
+	@Override
+	protected IMessageIf[] translate(IDataIf[] data) {
+		if(data!=null) {
+			List<IMessageIf> list = new ArrayList<IMessageIf>(data.length);
+			List<IMessageIf> found = new ArrayList<IMessageIf>(data.length);
+			for(int i=0; i<data.length; i++) {
+				found.clear();
+				IDataIf item = data[i];
+				if(item instanceof IMessageIf){
+					found.add((IMessageIf)item);
+				}
+				else if(item instanceof IMessageLineIf){
+					found.add(((IMessageLineIf)item).getOwningMessage());
+				}
+				else if (item instanceof IUnitIf) {
+					IUnitIf unit = (IUnitIf)item;
+					found.addAll(unit.getReferringMessages(getIds()));
+				}
+				else if (item instanceof IPOIIf) {
+					IPOIIf poi = (IPOIIf)item;
+					for(IMessageIf it : getIds()) {
+						if(poi.getReferringMessageLines(it.getMessageLineItems()).size()>0) {
+							found.add(it);
+						}
+					}
+				}
+				else if (item instanceof IAssignmentIf) {
+					IAssignmentIf assignment = (IAssignmentIf)item;
+					for(IMessageIf it : getIds()) {
+						if(assignment.getReferringMessageLines(it.getMessageLineItems()).size()>0) {
+							found.add(it);
+						}
+					}
+				}
+				// search for messages
+				for(IMessageIf it : found) {
+					if(findRowFromId(it)!=-1) {
+						list.add(it);
+					}
+				}
+			}
+			// any found?
+			if(list.size()>0) {
+				IMessageIf[] idx = new IMessageIf[list.size()];
+				list.toArray(idx);
+				return idx;
+			}
+		}
+		// default action
+		return super.translate(data);
+	}
 
-    private void rebuildTable(IMessageIf aMessage)
-    {
-        buildTable(aMessage);
-        fireTableDataChanged();
-    }
+	/* ================================================================
+	 *  AbstractTableModel implementation
+	 * ================================================================ */
 
-    private boolean messageChanged(IMessageIf aMessage)
-    {
-        int messageIndex = m_messageList.indexOf(aMessage);
-        if (messageIndex >= 0)
-        {
-            fireTableRowsUpdated(messageIndex, messageIndex);
-            return true;
-        }
-        return false;
-    }
+	@Override
+	public void fireTableDataChanged() {
+		updateToggleMap();
+	}
 
-    private boolean messagesChanged(Collection<IMessageIf> theMessages)
-    {
-    	int count = 0;
-        for (IMessageIf m : theMessages)
-        {
-            if(messageChanged(m)) count++;
-        }
-        return count>0;
-    }
-
-    private boolean handleMessageLineEvent(IMessageLineIf aLine)
-    {
-        return messageChanged(aLine.getOwningMessage());
-    }
-
-    private boolean handleUnitEvent(IUnitIf aUnit)
-    {
-        return messagesChanged(aUnit.getReferringMessages(m_messageList));
-    }
-
-    private boolean handlePOIEvent(IPOIIf aPoi)
-    {
-    	int count = 0;
-        for (IMessageIf m : m_messageList)
-        {
-            if (aPoi.getReferringMessageLines(m.getMessageLineItems()).size() > 0)
-            {
-                if(messageChanged(m)) count++;
-            }
-        }
-        return count>0;
-    }
-
-    private boolean handleAssignmentEvent(IAssignmentIf anAssignment)
-    {
-    	int count = 0;
-        for (IMessageIf m : m_messageList)
-        {
-            if (anAssignment.getReferringMessageLines(m.getMessageLineItems()).size() > 0)
-            {
-                if(messageChanged(m)) count++;
-            }
-        }
-        return count>0;
-    }
-
-
-    private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(
-            IMsoManagerIf.MsoClassCode.CLASSCODE_MESSAGE,
-            IMsoManagerIf.MsoClassCode.CLASSCODE_MESSAGELINE,
-            IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT,
-            IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT,
-            IMsoManagerIf.MsoClassCode.CLASSCODE_POI);
-
-    /**
-     * Interested in when messages, message lines, assignments, unit and POI updates.
-     */
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return myInterests.contains(aMsoObject.getMsoClassCode());
-    }
-
-    private final MessageSelector m_messageSelector = new MessageSelector();
-    
-    private class MessageSelector implements Selector<IMessageIf>
-    {
-    	
-    	private IMessageIf m_exclude = null;
-    	
-        public boolean select(IMessageIf aMessage)
-        {
-            return m_exclude==null || !m_exclude.equals(aMessage);
-        }
-        
-        public void exclude(IMessageIf aMessage) {
-        	m_exclude = aMessage;
-        }               
-        
-    };
+	/* ================================================================
+	 *  Public methods
+	 * ================================================================ */
 
     public IMessageIf getMessage(int row)
     {
-        return m_messageList.get(row);
+        return getId(row);
     }
-    
+
     /**
      * @param messageId
      * @return Whether or not the message is extended in the message log table, i.e. display entire message in log
      */
     public Boolean isMessageExpanded(String messageId)
     {
-        return m_rowExpandedMap.get(messageId);
+        return m_toggleMap.get(messageId);
     }
 
-    public int findRow(String messageId) 
+    public int findRow(String messageId)
     {
-    	for(int i=0;i<m_messageList.size();i++) {
-    		if(m_messageList.get(i).getObjectId().equals(messageId))
+    	int count = getRowCount();
+    	for(int i=0;i<count;i++) {
+    		if(getId(i).getObjectId().equals(messageId))
     			return i;
     	}
     	return -1;
-    	
+
     }
-    
+
     /**
      * Sets whether the message is extended in log view or not
      *
@@ -420,23 +301,24 @@ public class MessageTableModel extends DiskoTableModel implements IMsoUpdateList
      * @param expanded
      */
     public void setMessageExpanded(String messageId, Boolean expanded)
-    {    	
+    {
     	int row = findRow(messageId);
     	if(row!=-1) {
     		if(numRows(row)>1)
-    			m_rowExpandedMap.put(messageId, expanded);
+    			m_toggleMap.put(messageId, expanded);
     		else
-    			m_rowExpandedMap.put(messageId, false);
+    			m_toggleMap.put(messageId, false);
     	}
-        
+
     }
 
     public void updateRowHeights()
     {
-        for (int i = 0; i < m_messageList.size(); i++)
+    	int count = getRowCount();
+    	for(int i=0;i<count;i++)
         {
-            IMessageIf message = m_messageList.get(i);
-            Boolean expanded = m_rowExpandedMap.get(message.getObjectId());
+            IMessageIf message = getId(i);
+            Boolean expanded = m_toggleMap.get(message.getObjectId());
 
             if (expanded)
             {
@@ -494,7 +376,7 @@ public class MessageTableModel extends DiskoTableModel implements IMsoUpdateList
 	            numMessageLines += (lineWidth / columnWidth + 1);
 	        }
         }
-	
+
         // Tasks
         columnWidth = m_table.getColumnModel().getColumn(5).getWidth();
         int numTaskLines = 0;
@@ -509,21 +391,113 @@ public class MessageTableModel extends DiskoTableModel implements IMsoUpdateList
 
         return Math.max(numMessageLines, numTaskLines);
     }
-    
+
     public String getBundleText(String aKey) {
-    	return m_wpModule.getBundleText(aKey);    	
+    	return m_wp.getBundleText(aKey);
     }
-    
+
     public boolean isRowCurrentMessage(int row) {
-        IMessageIf rowMessage = m_messageList.get(row);
+        IMessageIf rowMessage = getId(row);
         IMessageIf selectedMessage = MessageLogBottomPanel.getCurrentMessage(false);
-        return (selectedMessage != null && selectedMessage.equals(rowMessage));    	
+        return (selectedMessage != null && selectedMessage.equals(rowMessage));
     }
-    
+
     public MessageStatus getMessageStatus(int row) {
-        IMessageIf message = m_messageList.get(row);
+        IMessageIf message = getId(row);
         return message.getStatus();
     }
-    
-    
+
+	/* ================================================================
+	 *  Helper methods
+	 * ================================================================ */
+
+    private static String[] getNames(String prefix, int count) {
+    	String[] names = new String[count];
+    	for(int i=0;i<count;i++) {
+    		names[i] = prefix + i;
+    	}
+    	return names;
+    }
+
+    private static String[] getCaptions(IDiskoWpModule wp, int count) {
+    	String[] captions = new String[count];
+    	for(int i=0;i<count;i++) {
+    		captions[i] = wp.getBundleText(MessageFormat.format("MessageTable_hdr_{0}.text", i));
+    	}
+    	return captions;
+    }
+
+    /**
+     * Get messages, update expanded hash map
+     */
+    private void updateToggleMap()
+    {
+        // save current map
+        HashMap<String, Boolean> tempMap = new HashMap<String, Boolean>(m_toggleMap);
+        // clear current
+        m_toggleMap.clear();
+        // loop over all messages
+        for (IMessageIf it : getIds())
+        {
+            String messageId = it.getObjectId();
+            Boolean expanded = tempMap.get(messageId);
+            if (expanded != null)
+            {
+                m_toggleMap.put(messageId, expanded);
+            } else
+            {
+                m_toggleMap.put(messageId, false);
+            }
+        }
+    }
+
+	/**
+	 * Used to identify which of the tasks in this dialog, if any, a specific task is. General types
+	 * does not provide sufficient information to determine that
+	 * @param task
+	 * @return
+	 */
+	public static TaskSubType getSubType(ITaskIf task)
+	{
+		TaskType taskType = task.getType();
+		String taskText = task.getTaskText();
+		switch(taskType)
+		{
+		case TRANSPORT:
+			if(taskText.equals(DiskoEnumFactory.getText("TaskSubType.SEND_TRANSPORT.text",null)))
+			{
+				return TaskSubType.SEND_TRANSPORT;
+			}
+		case RESOURCE:
+			if(taskText.equals(DiskoEnumFactory.getText("TaskSubType.GET_TEAM.text",null)))
+			{
+				return TaskSubType.GET_TEAM;
+			}
+			if(taskText.equals(DiskoEnumFactory.getText("TaskSubType.CREATE_ASSIGNMENT.text",null)))
+			{
+				return TaskSubType.CREATE_ASSIGNMENT;
+			}
+		case INTELLIGENCE:
+			if(taskText.equals(DiskoEnumFactory.getText("TaskSubType.CONFIRM_INTELLIGENCE.text",null)))
+			{
+				return TaskSubType.CONFIRM_INTELLIGENCE;
+			}
+			try
+			{
+				if(taskText.split(":")[0].equals(DiskoEnumFactory.getText("TaskSubType.FINDING.text",null).split(":")[0]))
+				{
+					return TaskSubType.FINDING;
+				}
+			}catch(Exception e){}
+		case GENERAL:
+			if(taskText.equals(DiskoEnumFactory.getText("TaskSubType.GENERAL.text",null)))
+			{
+				return TaskSubType.GENERAL;
+			}
+		}
+		// not identified
+		return null;
+	}
+
+
 }

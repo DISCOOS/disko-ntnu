@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -399,6 +400,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	TableColumn column = header.getColumnModel().getColumn(0);    	
         m_nrPanel = createPanel(column.getMinWidth() - dx,column.getMaxWidth() - dx, h);
         m_nrLabel = new JLabel();
+        m_nrLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_nrPanel.add(m_nrLabel, position);
         m_nrPanel.add(Box.createRigidArea(DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL)), BorderLayout.SOUTH);
         columns.add(m_nrPanel);
@@ -408,6 +410,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
         column = header.getColumnModel().getColumn(1);
         m_dtgPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_dtgLabel = new JLabel();
+        m_dtgLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_dtgPanel.add(m_dtgLabel, position);
         m_dtgPanel.add(m_changeDTGButton, BorderLayout.SOUTH);
         columns.add(m_dtgPanel);
@@ -417,6 +420,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
         column = header.getColumnModel().getColumn(2);
         m_fromPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_fromLabel = new JLabel();
+        m_fromLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_fromPanel.add(m_fromLabel, position);
         m_fromPanel.add(m_changeFromButton, BorderLayout.SOUTH);
         columns.add(m_fromPanel);
@@ -426,6 +430,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
         column = header.getColumnModel().getColumn(3);
         m_toPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_toLabel = new JLabel();
+        m_toLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_toPanel.add(m_toLabel, position);
         m_toPanel.add(m_changeToButton, BorderLayout.SOUTH);
         columns.add(m_toPanel);
@@ -457,6 +462,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
         column = header.getColumnModel().getColumn(5);
         m_taskPanel = createPanel(column.getMinWidth() - dx*2,column.getMaxWidth() - dx*2, h);
         m_taskLabel = new JLabel();
+        m_taskLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_taskPanel.add(m_taskLabel, position);
         JPanel taskButtonPanel = new JPanel();
         taskButtonPanel.setLayout(new BoxLayout(taskButtonPanel, BoxLayout.PAGE_AXIS));
@@ -470,6 +476,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
         column = header.getColumnModel().getColumn(6);
         m_statusPanel = createPanel(column.getMinWidth() - dx*2 + 25,column.getMaxWidth() - dx*2 + 25, h);
         m_statusLabel = new JLabel();
+        m_statusLabel .setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_statusPanel.add(m_statusLabel,position);
         JPanel actionButtonPanel = new JPanel();
         actionButtonPanel.setLayout(new BoxLayout(actionButtonPanel, BoxLayout.PAGE_AXIS));

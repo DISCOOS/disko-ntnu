@@ -22,7 +22,6 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -31,6 +30,7 @@ import javax.swing.SwingUtilities;
 
 import no.cmr.tools.Log;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
@@ -49,9 +49,6 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.except.IllegalMsoArgumentException;
-import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.util.mso.Selector;
 
 import com.esri.arcgis.interop.AutomationException;
 

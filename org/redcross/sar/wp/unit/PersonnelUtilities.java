@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
@@ -19,13 +20,6 @@ import javax.swing.JOptionPane;
 public class PersonnelUtilities
 {
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
-
-	private static IMsoManagerIf m_msoManager = null;
-
-	public static void setMsoManager(IMsoManagerIf manager)
-	{
-		m_msoManager = manager;
-	}
 
 	/**
 	 * Creates new personnel history instance.
@@ -46,7 +40,7 @@ public class PersonnelUtilities
 		if(nextOccurence.getStatus() == PersonnelStatus.RELEASED)
 		{
 			// Reinstate resource
-			IPersonnelIf newPersonnel = m_msoManager.createPersonnel();
+			IPersonnelIf newPersonnel = MsoModelImpl.getInstance().getMsoManager().createPersonnel();
 			newPersonnel.suspendClientUpdate();
 
 			// Copy fields
@@ -182,9 +176,12 @@ public class PersonnelUtilities
 			return false;
 		}
 
-		if(m_msoManager.operationExists()) {
-			// Personnel can only be Allocated to ONE unit                          // todo replace with more general method
-			for(IUnitIf unit : m_msoManager.getCmdPost().getUnitList().getItems())
+		IMsoManagerIf manager = MsoModelImpl.getInstance().getMsoManager();
+		
+		if(manager.operationExists()) {
+			// TODO: replace with more general method
+			// Personnel can only be Allocated to ONE unit                          
+			for(IUnitIf unit : manager.getCmdPost().getUnitList().getItems())
 			{
 				for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())
 				{

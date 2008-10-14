@@ -133,8 +133,8 @@ public class PersonnelTransferHandler extends TransferHandler
 				try
 				{
 					IPersonnelIf personnel = (IPersonnelIf)transferable.getTransferData(m_personnelFlavor);
-					IPersonnelListIf personnelList = unitModel.getPersonnel();
-					if(personnelList.exists(personnel))
+					IPersonnelListIf personnelList = unitModel.getPersonnelList();
+					if(personnelList==null || personnelList.exists(personnel))
 					{
 						// Dont't import if already in list
 						return false;
@@ -190,7 +190,7 @@ public class PersonnelTransferHandler extends TransferHandler
 				try
 				{
 					IPersonnelIf personnel = (IPersonnelIf)data.getTransferData(m_personnelFlavor);
-					unitModel.getPersonnel().remove(personnel);
+					unitModel.getPersonnelList().remove(personnel);
 					unitModel.fireTableDataChanged();
 				}
 				catch (UnsupportedFlavorException e)

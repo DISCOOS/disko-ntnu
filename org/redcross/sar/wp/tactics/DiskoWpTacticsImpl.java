@@ -79,7 +79,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private RequirementDialog requirementDialog = null;
 	private EstimateDialog estimateDialog = null;
 	private ListDialog listDialog = null;
-	private DraftListDialog draftListDialog = null;
+	private PromptDialog draftListDialog = null;
 	private DescriptionDialog descriptionDialog = null;
 	private boolean inferNextElement = false;
 	
@@ -545,9 +545,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return listDialog;
 	}
 
-	private DraftListDialog getDraftListDialog() {
+	private PromptDialog getDraftListDialog() {
 		if (draftListDialog == null) {
-			draftListDialog = new DraftListDialog(this);
+			draftListDialog = new PromptDialog(this);
 			draftListDialog.setLocationRelativeTo((DiskoMap)getMap(),DefaultDialog.POS_CENTER, false, true);
 			dialogs.add(draftListDialog);
 		}

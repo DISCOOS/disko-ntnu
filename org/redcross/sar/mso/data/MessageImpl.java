@@ -1,12 +1,12 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.except.MsoRuntimeException;
-import org.redcross.sar.util.mso.Selector;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,9 +29,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     private final AttributeImpl.MsoInteger m_number = new AttributeImpl.MsoInteger(this, "Number",true);
     private final AttributeImpl.MsoEnum<MessageStatus> m_status = new AttributeImpl.MsoEnum<MessageStatus>(this, "Status", 1, MessageStatus.UNCONFIRMED);
 
-    private final MsoListImpl<ICommunicatorIf> m_confirmedReceivers = new MsoListImpl<ICommunicatorIf>(this, CONFIRMED_RECEIVERS_NAME, false);
+    private final MsoListImpl<ICommunicatorIf> m_confirmedReceivers = new MsoListImpl<ICommunicatorIf>(ICommunicatorIf.class, this, CONFIRMED_RECEIVERS_NAME, false);
     private final TaskListImpl m_messageTasks = new TaskListImpl(this, "MessageTasks", false);
-    private final MsoListImpl<ICommunicatorIf> m_unconfirmedReceivers = new MsoListImpl<ICommunicatorIf>(this, UNCONFIRMED_RECEIVERS_NAME, false);
+    private final MsoListImpl<ICommunicatorIf> m_unconfirmedReceivers = new MsoListImpl<ICommunicatorIf>(ICommunicatorIf.class, this, UNCONFIRMED_RECEIVERS_NAME, false);
 
     private final MessageLineListImpl m_messageLines = new MessageLineListImpl(this, "MessageLines", false);
 

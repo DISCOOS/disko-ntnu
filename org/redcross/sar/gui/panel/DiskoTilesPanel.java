@@ -239,7 +239,7 @@ public class DiskoTilesPanel extends BasePanel
             myDimension.height = newHeight;
             setPreferredSize(myDimension);
         }
-        invalidate();
+        validate();
         repaint();
     }
 

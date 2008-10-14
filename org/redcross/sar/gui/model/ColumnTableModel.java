@@ -9,21 +9,31 @@ public class ColumnTableModel extends DiskoTableModel {
 	private Boolean[] m_rows;
 	private DiskoTableColumnModel m_model;
 	
+	public static final String CHECK = "check";
+	public static final String NAME = "name";
 	
+	public static final String[] NAMES = new String[] { CHECK, NAME };
+	public static final String[] CAPTIONS = new String[] { "", "Kolonner" };
+	
+	/* =====================================================
+	 * Constructors
+	 * ===================================================== */
 	
 	public ColumnTableModel() {
 		// forward
-		super();
+		super(NAMES,CAPTIONS);
 	}
 
-	public int getColumnCount() {
-		return 2;
-	}
-
+	/* =====================================================
+	 * AbstractTableModel implementations
+	 * ===================================================== */
+	
+	@Override
 	public int getRowCount() {
 		return m_model!=null ? m_model.getColumnCount() : 0;
 	}
 
+	@Override
 	public Object getValueAt(int row, int col) {
     	// invalid index?
     	if(!(row<getRowCount())) return null;
@@ -39,6 +49,16 @@ public class ColumnTableModel extends DiskoTableModel {
 				return null;
 		default: 
 			return null;
+		}
+	}
+
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+    	// invalid index?
+    	if(!(row<getRowCount())) return;
+		switch (col) {
+		case 0: 
+			m_rows[row] = (Boolean)value;
 		}
 	}
 
@@ -65,16 +85,10 @@ public class ColumnTableModel extends DiskoTableModel {
 		return col==0;
 	}
 
-	@Override
-	public void setValueAt(Object value, int row, int col) {
-    	// invalid index?
-    	if(!(row<getRowCount())) return;
-		switch (col) {
-		case 0: 
-			m_rows[row] = (Boolean)value;
-		}
-	}
-
+	/* =====================================================
+	 * Public methods
+	 * ===================================================== */
+	
 	public void load(DiskoTableColumnModel model) {
 		m_model = model;
 		m_rows = (model!=null ? new Boolean[model.getColumnCount()] : null);

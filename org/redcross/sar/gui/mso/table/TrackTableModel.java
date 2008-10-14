@@ -3,12 +3,12 @@
  */
 package org.redcross.sar.gui.mso.table;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.redcross.sar.gui.model.DiskoTableModel;
-
-import no.cmr.common.util.SimpleDecimalFormat;
+import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.Utils;
@@ -19,7 +19,7 @@ import org.redcross.sar.util.mso.Track;
  * @author kennetgu
  *
  */
-public class TrackTableModel extends DiskoTableModel {
+public class TrackTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -37,9 +37,17 @@ public class TrackTableModel extends DiskoTableModel {
 	private Track m_track;
 	private List<Object[]> m_rows;
 	
+	/* =======================================================
+	 * Constructors
+	 * ======================================================= */
+	
 	public TrackTableModel() {
 		m_rows = new ArrayList<Object[]>();
 	}
+	
+	/* =======================================================
+	 * AbstractTableModel implementation
+	 * ======================================================= */
 	
 	public int getColumnCount() {
 		return COLUMNS.length;
@@ -76,6 +84,27 @@ public class TrackTableModel extends DiskoTableModel {
     	return COLUMNS[nCol];
 	}
 	
+	@Override
+	public Class<?> getColumnClass(int col) {
+		switch(col) {
+		case 0: return Integer.class;
+		case 1: return Double.class;
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9: return String.class;
+		default: return Object.class;
+		}
+	}
+	
+	/* =======================================================
+	 * Public methods
+	 * ======================================================= */
+	
 	public void load(Track track) {
 		// forward
 		clear();
@@ -91,8 +120,8 @@ public class TrackTableModel extends DiskoTableModel {
 				double ead = 0.0;
 				double h1 = track.get(0).getAltitude();
 				// initialize decimal formats
-				SimpleDecimalFormat f10 = new SimpleDecimalFormat(1,0);
-				SimpleDecimalFormat f11 = new SimpleDecimalFormat(1,1);
+				NumberFormat f10 = new DecimalFormat("#");
+				NumberFormat f11 = new DecimalFormat("#.#");
 				// calculate
 				for(int i=1;i<count;i++) {
 					// get next point
@@ -138,22 +167,5 @@ public class TrackTableModel extends DiskoTableModel {
 		return m_track;
 	}
 
-	@Override
-	public Class<?> getColumnClass(int col) {
-		switch(col) {
-		case 0: return Integer.class;
-		case 1: return Double.class;
-		case 2:
-		case 3:
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-		case 8:
-		case 9: return String.class;
-		default: return Object.class;
-		}
-	}
-	
 }
 

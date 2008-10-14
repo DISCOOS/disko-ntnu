@@ -170,7 +170,11 @@ public class DiskoGlassPane extends JPanel implements AWTEventListener {
         if (rootPane != null) {
             // it is important to call print() instead of paint() here
             // because print() doesn't affect the frame's double buffer
-            rootPane.getLayeredPane().print(g);
+            try {
+				rootPane.getLayeredPane().print(g);
+			} catch (RuntimeException e) {
+				// consume
+			}
         }
         if(m_isLocked && false) {
 	        Graphics2D g2 = (Graphics2D) g.create();

@@ -8,7 +8,6 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.panel.MainPanel;
 import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.gui.panel.NavBarPanel.NavState;
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
@@ -483,7 +482,7 @@ public abstract class AbstractDiskoWpModule
         return Internationalization.getString(wpBundle,aKey);
     }
 
-    protected void assignWpBundle(Class aClass)
+    protected void assignWpBundle(Class<?> aClass)
     {
         wpBundle = Internationalization.getBundle(aClass);
     }

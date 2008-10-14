@@ -1,18 +1,17 @@
 package org.redcross.sar.wp.tasks;
 
-import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
-import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
-import org.redcross.sar.mso.data.TaskImpl;
-import org.redcross.sar.util.mso.DTG;
-
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.table.TableCellRenderer;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.util.Calendar;
+
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
+import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
+import org.redcross.sar.util.mso.DTG;
+
 
 /**
  * Renders task table
@@ -21,7 +20,7 @@ import java.util.Calendar;
  *
  * @author thomasl
  */
-public class TaskTableRenderer extends JLabel implements TableCellRenderer
+public class TaskTableRenderer extends DiskoTableCellRenderer
 {
 	private static final long serialVersionUID = 1L;
 
@@ -32,90 +31,69 @@ public class TaskTableRenderer extends JLabel implements TableCellRenderer
 		this.setOpaque(true);
 	}
 
-	public Component getTableCellRendererComponent(JTable table, Object value,
-			boolean isSelected, boolean hasFocus, int row, int column)
+	public JLabel getTableCellRendererComponent(JTable table, Object value,
+			boolean isSelected, boolean hasFocus, int row, int col)
 	{
-		TaskStatus taskStatus = (TaskStatus)table.getValueAt(row, 5);
-		Calendar dueTime = (Calendar)table.getValueAt(row, 4);
+		// initialize
+		String text = "";
+		Color fg = isSelected ? table.getSelectionForeground() : table.getForeground();
+		Color bg = isSelected ? table.getSelectionBackground() : table.getBackground();
 
-		String cellText = null;
-		switch(column)
-		{
-		case 0:
-			cellText = String.valueOf(table.getValueAt(row, 0));
-			break;
-		case 1:
-			TaskPriority priority = (TaskPriority)table.getValueAt(row, 1);
-			if(priority != null)
-			{
-				cellText = TaskImpl.getEnumText(priority);
-			}
-			break;
-		case 2:
-			cellText = (String)table.getValueAt(row, 2);
-			break;
-		case 3:
-			cellText = (String)table.getValueAt(row, column);
-			break;
-		case 4:
-			if(dueTime != null)
-			{
-				cellText = DTG.CalToDTG(dueTime);
-			}
-			break;
-		case 5:
-			if(taskStatus != null)
-			{
-				cellText = TaskImpl.getEnumText(taskStatus);
-			}
-			break;
-		}
+		// get information about task expiration
+		Calendar dueTime = (Calendar)table.getModel().getValueAt(m_rowInModel, 4);
+		TaskStatus status = (TaskStatus)table.getModel().getValueAt(m_rowInModel, 5);
 
-		// Set background to pink for expired tasks
-		if(isSelected)
-		{
-			this.setBackground(table.getSelectionBackground());
-		}
-		else
-		{
+		// get model info
+		super.initialize(table, row, col);
 
-			if(taskStatus != TaskStatus.FINISHED && dueTime != null &&
-					dueTime.before(Calendar.getInstance()))
+		// translate
+		if(value!=null) {
+			switch(m_colInModel)
 			{
-				this.setBackground(Color.pink);
-			}
-			else
-			{
-				this.setBackground(table.getBackground());
+			case 0:
+				text = value.toString();
+				break;
+			case 1:
+				text = DiskoEnumFactory.getText((Enum<?>)value);
+				break;
+			case 2:
+				text = value.toString();
+				break;
+			case 3:
+				text = value.toString();
+				break;
+			case 4:
+				text = DTG.CalToDTG((Calendar)value);
+				break;
+			case 5:
+				text = DiskoEnumFactory.getText(status);
+				if(TaskStatus.UNPROCESSED.equals(status))
+				{
+					text = "<html><b>" + text + "</b></html>";
+				}
+				break;
 			}
 		}
 
-		// Set bold text for unprocessed tasks
-		if(value != null)
+		// mark as expired?
+		if(!TaskStatus.FINISHED.equals(status))
 		{
-			if(isSelected)
-			{
-				this.setForeground(table.getSelectionForeground());
-			}
-			else
-			{
-				this.setForeground(table.getForeground());
+			// expired?
+			if(dueTime != null && Calendar.getInstance().after(dueTime)) {
+				bg = Color.PINK;
 			}
 
-			if(taskStatus == TaskStatus.UNPROCESSED)
-			{
-				this.setText("<html><b>" + cellText + "</b></html>");
-			}
-			else
-			{
-				this.setText(cellText);
-			}
-		}
-		else
-		{
-			this.setText("");
 		}
 
-		return this;
+		// get renderer
+		JLabel renderer = super.prepare(table, text, isSelected, hasFocus, row, col, false, true);
+
+		// update colors
+		renderer.setForeground(fg);
+		renderer.setBackground(bg);
+
+		// finished
+		return renderer;
+
 	}
 }

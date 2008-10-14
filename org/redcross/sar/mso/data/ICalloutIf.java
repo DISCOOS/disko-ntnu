@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 
 import org.redcross.sar.mso.IMsoModelIf;
 
@@ -12,6 +13,17 @@ public interface ICalloutIf extends IMsoObjectIf
 		USM_VB,
 		FILE
 	}
+	
+	/**
+	 * Often used comparators
+	 */
+    public static final Comparator<ICalloutIf> CALLOUT_COMPARATOR = new Comparator<ICalloutIf>()
+	{
+		public int compare(ICalloutIf c1, ICalloutIf c2)
+		{
+			return c1.getCreated().compareTo(c2.getCreated());
+		}
+	};    
 	
 	/*-------------------------------------------------------------------------------------------
 	 * Methods for attributes

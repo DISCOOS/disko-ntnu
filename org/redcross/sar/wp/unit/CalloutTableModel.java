@@ -1,104 +1,80 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.ICalloutListIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.wp.IDiskoWpModule;
-
-import org.redcross.sar.gui.model.DiskoTableModel;
-import java.util.EnumSet;
+import org.redcross.sar.gui.model.MsoTableModel;
 
 /**
  * Provides contents for call-out table in overview mode
  *
  * @author thomasl
  */
-public class CalloutTableModel extends DiskoTableModel implements IMsoUpdateListenerIf
+public class CalloutTableModel extends MsoTableModel<ICalloutIf>
 {
 	private static final long serialVersionUID = 1L;
 
-	private IDiskoWpModule m_wpModule;
+	private static final String DTG = "dtg";
+	private static final String TITLE = "title";
 
-	public CalloutTableModel(IDiskoWpUnit wp)
+	/* ===============================================================
+	 * Constructors
+	 * =============================================================== */
+
+	public CalloutTableModel(IMsoModelIf model)
 	{
-		m_wpModule = wp;
-		wp.getMsoModel().getEventManager().addClientUpdateListener(this);
+		// forward
+		super(ICalloutIf.class,false);
+		// create table
+		create(getNames(),getCaptions());
+		// get list
+		ICalloutListIf list = model.getMsoManager().getCmdPost().getCalloutList();
+		// forward
+		connect(model, list, ICalloutIf.CALLOUT_COMPARATOR);
+		load(list);
 	}
 
-	public void handleMsoUpdateEvent(Update e)
-	{
-		fireTableDataChanged();
-	}
+	/* ===============================================================
+	 * MsoTableModel implementation
+	 * =============================================================== */
 
-	EnumSet<IMsoManagerIf.MsoClassCode> interestedIn =
-		EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_CALLOUT);
-	
-	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return interestedIn.contains(msoObject.getMsoClassCode());
-	}
-
-	@Override
-	public String getColumnName(int column) {
-		switch (column) {
-		case 0:
-			return "Varsling";
-		case 1:
-			return "DTG";
-		default:
-			return null;
-		}
-	}
-
-	public int getColumnCount()
-	{
-		return 2;
-	}
-
-	public int getRowCount()
-	{
-		ICmdPostIf cmdPost = m_wpModule.getCmdPost();
-		return (cmdPost!=null ? cmdPost.getCalloutList().size() : 0);
-	}
-
-	public Object getValueAt(int rowIndex, int columnIndex)
-	{
-		ICmdPostIf cmdPost = m_wpModule.getCmdPost();
-		if(cmdPost==null) return null;
-		ICalloutListIf callouts = m_wpModule.getCmdPost().getCalloutList();
-		Object[] data = (Object[])callouts.getItems().toArray();
-		if(data==null || data.length<=rowIndex) return null;
-		ICalloutIf callout = (ICalloutIf)data[rowIndex];
-		switch(columnIndex)
-		{
-		case 0:
-			return DTG.CalToDTG(callout.getCreated());
-		case 1:
+	protected Object getCellValue(int row, String column) {
+		// get personnel
+		ICalloutIf callout = getId(row);
+		// translate
+		if(DTG.equals(column))
+            return callout.getCreatedTime();
+		else if(TITLE.equals(column))
 			return callout.getTitle();
-		case 2:
-			return callout;
-		default:
-			return null;
-		}
+		// not found
+		return null;
 	}
+
+	/* ===============================================================
+	 * Public methods
+	 * =============================================================== */
 
 	/**
 	 * @param index Index of call-out
-	 * @return Call-out at given index
+	 *
+	 * @return Call-out at given row index
 	 */
-	public ICalloutIf getCallout(int index)
+	public ICalloutIf getCallout(int row)
 	{
-		ICmdPostIf cmdPost = m_wpModule.getCmdPost();		
-		return (cmdPost!=null ? (ICalloutIf)cmdPost.getCalloutList().getItems().toArray()[index] : null);
+		return getId(row);
 	}
+
+	/* ===============================================================
+	 * Helper methods
+	 * =============================================================== */
+
+	public String[] getNames() {
+		return new String[] {TITLE, DTG};
+	}
+
+	public String[] getCaptions() {
+		return new String[] {"DTG", "Tittel"};
+	}
+
 
 }

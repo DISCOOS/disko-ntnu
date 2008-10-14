@@ -1,9 +1,9 @@
 package org.redcross.sar.wp.messageLog;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
-import org.redcross.sar.util.mso.Selector;
 
 import java.util.LinkedList;
 import java.util.List;

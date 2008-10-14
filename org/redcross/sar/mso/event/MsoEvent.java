@@ -96,17 +96,9 @@ public class MsoEvent extends java.util.EventObject
 
     public boolean isChangeReferenceEvent()
     {
-    	/*
-    	return (m_eventTypeMask & 
-                (EventType.MODIFIED_REFERENCE_EVENT.maskValue()) |
-                EventType.ADDED_REFERENCE_EVENT.maskValue() |
-                EventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
-        */
-    	/**/
     	return (m_eventTypeMask & MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0 
 		|| (m_eventTypeMask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())!=0
 		||  (m_eventTypeMask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
-    	/**/
     }
 
     public boolean isModifiedReferenceEvent()

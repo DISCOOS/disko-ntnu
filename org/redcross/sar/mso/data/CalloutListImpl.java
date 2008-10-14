@@ -4,12 +4,12 @@ public class CalloutListImpl extends MsoListImpl<ICalloutIf> implements ICallout
 {
     public CalloutListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(ICalloutIf.class, anOwner, theName, isMain);
     }
 
     public CalloutListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(ICalloutIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public ICalloutIf createCallout()

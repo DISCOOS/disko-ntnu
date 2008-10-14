@@ -32,7 +32,7 @@ import org.redcross.sar.gui.panel.MainPanel;
 import org.redcross.sar.gui.panel.SubMenuPanel;
 
 public class UIFactory {
-	
+
 	public final static String DEFAULT_FONT_NAME = "Tahoma";
 	public final static String DIALOG_FONT = "Dialog";
 	public final static int FRONT_SIZE_MEDIUM = 14;
@@ -41,7 +41,7 @@ public class UIFactory {
 	public final static Font DEFAULT_PLAIN_MEDIUM_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, FRONT_SIZE_MEDIUM);
 	public final static Font DEFAULT_PLAIN_LARGE_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, FONT_SIZE_LARGE);
 	public final static Font DIALOG_PLAIN_MEDIUM_FONT = new Font(DIALOG_FONT, Font.PLAIN, FRONT_SIZE_MEDIUM);
-	
+
 	private IDiskoApplication app = null;
 	private JPanel contentPanel = null;
 	private DiskoGlassPane glassPane = null;
@@ -54,29 +54,29 @@ public class UIFactory {
 	private NumPadDialog numPadDialog = null;
 	private MapOptionDialog mapOptionDialog = null;
 	private TaskDialog taskDialog = null;
-	
-	private final List<Component> components = new ArrayList<Component>(); 
-	private final Map<Component,Boolean> states = new HashMap<Component,Boolean>(); 
-	
+
+	private final List<Component> components = new ArrayList<Component>();
+	private final Map<Component,Boolean> states = new HashMap<Component,Boolean>();
+
 	public UIFactory(IDiskoApplication app) {
 		// prepare
-		this.app = app;		
+		this.app = app;
 		// initialize content panel
 		getContentPanel();
 		// hide this
 		hideAll();
 	}
-	
+
 	/* =================================================================
 	 * Public static methods
 	 * =================================================================*/
-	
+
 	public static void initLookAndFeel()
 	{
 		try
 		{
-		
-			// use system look and feel 
+
+			// use system look and feel
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 			// set DISKO defaults
@@ -122,18 +122,17 @@ public class UIFactory {
 			UIManager.put("Viewport.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("ScrollBar.width", 25);
 			UIManager.put("ScrollBar.height", 25);
-			UIManager.put("EditorPane.font", DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());
-			
-			// Because DISCO and ArcGIS Objects are mixing heavyweight (AWT.*) 
+
+			// Because DISCO and ArcGIS Objects are mixing heavyweight (AWT.*)
 			// and lightweight (Swing.*) component, default lightweight behaviors
 			// must be turned off. If not, components JPopup and JTooltips
-			// will be shown below ArcGIS AWT components (MapBean etc.		
+			// will be shown below ArcGIS AWT components (MapBean etc.
 			// IMPORTANT: Do not put ArcGIS components which is implemented using
-			// AWT in a JScrollPane. This will not work correctly. Instead, 
+			// AWT in a JScrollPane. This will not work correctly. Instead,
 			// use an AWT ScrollPane.
-			JPopupMenu.setDefaultLightWeightPopupEnabled(false);			
-			ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);						
+			JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+			ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
 		}
 		catch (Exception e)
@@ -145,52 +144,59 @@ public class UIFactory {
 	public static DiskoBorder createBorder() {
 		return new DiskoBorder();
 	}
-	
+
 	public static DiskoBorder createBorder(int top, int left, int bottom, int right) {
 		return new DiskoBorder(top,left,bottom,right);
 	}
-	
+
 	public static DiskoBorder createBorder(int top, int left, int bottom, int right, Color color) {
 		return new DiskoBorder(top,left,bottom,right,color);
 	}
-	
+
 	public static DiskoRoundBorder createRoundBorder(int thickness, int diameter, boolean isDouble) {
 		return new DiskoRoundBorder(thickness,diameter,isDouble);
 	}
-	
+
 	public static DiskoCorner createCorner() {
 		DiskoCorner c = new DiskoCorner();
 		c.setPreferredSize(new Dimension(25,32));
 		return c;
 	}
-	
+
 	public static JScrollPane createScrollPane(Component view) {
 		return createScrollPane(view,false);
 	}
 
 	public static JScrollPane createScrollPane(Component view, boolean hasBorder) {
+		return createScrollPane(view,hasBorder,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	}
+
+	public static JScrollPane createScrollPane(Component view, boolean hasBorder, int vScroll, int hScroll) {
 		JScrollPane scrollPane = new JScrollPane(view);
 		scrollPane.setOpaque(true);
 		scrollPane.setBorder(hasBorder ? new DiskoBorder() : BorderFactory.createEmptyBorder());
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, UIFactory.createCorner());
 		scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, UIFactory.createCorner());
-		return scrollPane;		
+		scrollPane.setVerticalScrollBarPolicy(vScroll);
+		scrollPane.setHorizontalScrollBarPolicy(hScroll);
+		return scrollPane;
 	}
-	
-	
+
 	/* =================================================================
 	 * Public methods
 	 * =================================================================*/
-	
+
 	public NumPadDialog getNumPadDialog(){
 		if (numPadDialog == null) {
 			numPadDialog = new NumPadDialog(app.getFrame());
 			register(numPadDialog);
 		}
-		return numPadDialog;						
+		return numPadDialog;
 	}
-	
+
 	public LoginDialog getLoginDialog() {
 		if (loginDialog == null) {
 			loginDialog = new LoginDialog(app.getFrame());
@@ -201,7 +207,7 @@ public class UIFactory {
 		loginDialog.load();
 		return loginDialog;
 	}
-	
+
 	public OperationDialog getOperationDialog() {
 		if (operationDialog == null) {
 			operationDialog= new OperationDialog(app.getFrame());
@@ -210,7 +216,7 @@ public class UIFactory {
 		operationDialog.load();
 		return operationDialog;
 	}
-	
+
 	public MapOptionDialog getMapOptionDialog(){
 		if (mapOptionDialog == null) {
 			mapOptionDialog = new MapOptionDialog(app);
@@ -219,7 +225,7 @@ public class UIFactory {
 		mapOptionDialog.setLocation(200, 200);
 		return mapOptionDialog;
 	}
-	
+
 	public TaskDialog getTaskDialog(){
 		if(taskDialog == null){
 			taskDialog = new TaskDialog(app.getFrame());
@@ -227,30 +233,30 @@ public class UIFactory {
 		}
 		return taskDialog;
 	}
-	
-	
-	
+
+
+
 	/**
-	 * This method initializes glassPane	
-	 * 	
+	 * This method initializes glassPane
+	 *
 	 * @return org.redcross.sar.gui.DiskoGlassPane
 	 */
 	public DiskoGlassPane getGlassPane() {
 		if (glassPane == null) {
 			try {
 				glassPane = new DiskoGlassPane(app.getFrame());
-				
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return glassPane;
 	}
-	
+
 	/**
-	 * This method initializes contentPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes contentPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	public JPanel getContentPanel() {
 		if (contentPanel == null) {
@@ -266,7 +272,7 @@ public class UIFactory {
 		}
 		return contentPanel;
 	}
-	
+
 	public JPanel getMenuPanel() {
 		if (menuPanel == null) {
 			menuPanel = new JPanel();
@@ -276,28 +282,28 @@ public class UIFactory {
 		}
 		return menuPanel;
 	}
-	
+
 	public MainMenuPanel getMainMenuPanel() {
 		if (mainMenuPanel == null) {
 			mainMenuPanel = new MainMenuPanel(app);
 		}
 		return mainMenuPanel;
 	}
-	
+
 	public SubMenuPanel getSubMenuPanel() {
 		if (subMenuPanel == null) {
 			subMenuPanel = new SubMenuPanel(app);
 		}
 		return subMenuPanel;
 	}
-	
+
 	public MainPanel getMainPanel() {
 		if (mainPanel == null) {
 			mainPanel = new MainPanel(app);
 		}
 		return mainPanel;
 	}
-	
+
 	public void hideAll() {
 		getContentPanel().setVisible(false);
 		for(Component c: components) {
@@ -305,14 +311,14 @@ public class UIFactory {
 			c.setVisible(false);
 		}
 	}
-	
+
 	public void showAgain() {
 		getContentPanel().setVisible(true);
 		for(Component c: components) {
 			c.setVisible(states.get(c));
-		}		
+		}
 	}
-	
+
 	private void register(Component c) {
 		components.add(c);
 		states.put(c, c.isVisible());

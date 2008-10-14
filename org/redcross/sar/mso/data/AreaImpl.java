@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -13,7 +14,6 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.IGeodataIf;
-import org.redcross.sar.util.mso.Selector;
 
 /**
  * Strip of field to search
@@ -22,7 +22,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 {
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
     private final POIListImpl m_areaPOIs = new POIListImpl(this, "AreaPOIs", false, 2, 2);
-    private final MsoListImpl<IMsoObjectIf> m_areaGeodata = new MsoListImpl<IMsoObjectIf>(this, "AreaGeodata", false);
+    private final MsoListImpl<IMsoObjectIf> m_areaGeodata = new MsoListImpl<IMsoObjectIf>(IMsoObjectIf.class, this, "AreaGeodata", false);
 
     private final boolean m_hostile;
     

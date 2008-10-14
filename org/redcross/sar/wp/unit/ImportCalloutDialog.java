@@ -1,21 +1,5 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.table.DiskoTable;
-import org.redcross.sar.mso.data.ICalloutIf;
-import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.data.IPersonnelIf.PersonnelImportStatus;
-import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
-import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.except.IllegalMsoArgumentException;
-import org.redcross.sar.util.mso.DTG;
-
 import javax.swing.AbstractCellEditor;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -29,7 +13,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import org.redcross.sar.gui.model.DiskoTableModel;
+
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -52,6 +37,22 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.table.DiskoTable;
+import org.redcross.sar.mso.data.ICalloutIf;
+import org.redcross.sar.mso.data.IPersonnelIf;
+import org.redcross.sar.mso.data.IPersonnelIf.PersonnelImportStatus;
+import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
+import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.util.Utils;
+import org.redcross.sar.util.except.IllegalMsoArgumentException;
+import org.redcross.sar.util.mso.DTG;
 
 /**
  * Dialog handling import of new call-outs
@@ -675,11 +676,11 @@ public class ImportCalloutDialog extends DefaultDialog
 	}
 	
 	/**
-	 * Table data for personnel about to be imported
+	 * Table data for personnel about to be imported from
 	 * 
 	 * @author thomasl
 	 */
-	private class ImportPersonnelTableModel extends DiskoTableModel
+	private class ImportPersonnelTableModel extends AbstractTableModel
 	{
 		private static final long serialVersionUID = 1L;
 

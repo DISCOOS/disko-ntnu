@@ -23,7 +23,6 @@ import javax.swing.table.TableColumnModel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -59,18 +58,18 @@ import org.redcross.sar.wp.logistics.UnitTableModel.UnitTableRowSorter;
 public class LogisticsPanel implements IMsoLayerEventListener
 {
 
-	final private Icon checked = DiskoIconFactory.getIcon("GENERAL.FINISH", 
+	final private Icon checked = DiskoIconFactory.getIcon("GENERAL.FINISH",
 			DiskoButtonFactory.getCatalog(ButtonSize.TINY));
-	final private Icon unchecked = DiskoIconFactory.getIcon("GENERAL.EMPTY", 
+	final private Icon unchecked = DiskoIconFactory.getIcon("GENERAL.EMPTY",
 		 	DiskoButtonFactory.getCatalog(ButtonSize.TINY));
 
 	private JPanel m_contentPanel;
     private JSplitPane m_mainSplitter;
-    
+
     private JSplitPane m_leftSplitter;
     private MapPanel m_mapPanel;
     private JPanel m_infoPanel;
-    
+
     private JPanel m_rightPanel;
     private AssignmentTilesPanel m_selectableAssignmentsPanel;
     private AssignmentTilesPanel m_priAssignmentsPanel;
@@ -79,10 +78,10 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     private IDiskoMap m_map;
     private IDiskoWpLogistics m_wpModule;
-    
+
     private IUnitListIf m_unitList;
     private IAssignmentListIf m_assignmentList;
-    
+
     private IUnitIf m_mapSelectedUnit;
     private IAssignmentIf m_mapSelectedAssignment;
 
@@ -108,7 +107,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
         defineSubpanelActionHandlers();
 
         initialize();
-        
+
         addToListeners();
 
         /*
@@ -147,7 +146,8 @@ public class LogisticsPanel implements IMsoLayerEventListener
          m_unitList = m_wpModule.getCmdPost().getUnitList();
          m_assignmentList = m_wpModule.getCmdPost().getAssignmentList();
          m_unitTableModel = (UnitTableModel) m_unitTable.getModel();
-         m_unitTableModel.reInitModel(m_unitList);
+         m_unitTableModel.getMsoBinder().setSelector(m_unitList);
+         m_unitTableModel.load(m_unitList);
          m_assignmentDisplayModel.reInitModel(m_assignmentList);
      }
 
@@ -215,10 +215,10 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
         setSelectedAssignmentInPanels(null);
         getInfoPanelHandler().setUnit(anUnit,true);
-        
+
 		// show progress
 		m_map.showProgressor(true);
-		
+
         // select later
         SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -226,7 +226,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
 					// consume selection events
 					m_mapSelectedByButton = true;
-					
+
 					// suspend events
 					m_map.suspendNotify();
 
@@ -242,16 +242,16 @@ public class LogisticsPanel implements IMsoLayerEventListener
 						m_map.setSelected(m_mapSelectedUnit, true);
 						m_map.zoomToMsoObject(m_mapSelectedUnit);
 					}
-					
-					// resume events 
+
+					// resume events
 					m_map.resumeNotify();
 
 					// hide progress
 					m_map.hideProgressor();
-					
+
 					// listen for selection events
 					m_mapSelectedByButton = false;
-					
+
 
 				} catch (AutomationException e) {
 					e.printStackTrace();
@@ -260,18 +260,18 @@ public class LogisticsPanel implements IMsoLayerEventListener
 				}
 			}
 		});
-    }    
-    
+    }
+
     private void singelAssignmentClick(final IAssignmentIf anAssignment, boolean calledFromListPanel)
     {
-    	
-    	setSelectedAssignmentInPanels(anAssignment);        
+
+    	setSelectedAssignmentInPanels(anAssignment);
         getInfoPanelHandler().setAssignment(anAssignment, calledFromListPanel);
 		getInfoPanelHandler().setUnit(anAssignment.getOwningUnit(),false);
-        
+
 		// show progress
 		m_map.showProgressor(true);
-		
+
         // select later
         SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -279,7 +279,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
 					// consume selection events
 					m_mapSelectedByButton = true;
-					
+
 					// suspend events
 					m_map.suspendNotify();
 
@@ -298,15 +298,15 @@ public class LogisticsPanel implements IMsoLayerEventListener
 						m_map.resumeNotify();
 					}
 
-					// resume events 
+					// resume events
 					m_map.resumeNotify();
 
 					// hide progress dialog
 					m_map.hideProgressor();
-					
+
 					// handle selection events
 					m_mapSelectedByButton = false;
-					
+
 				} catch (AutomationException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -324,7 +324,9 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     private void initUnitTable()
     {
-        m_unitTableModel = new UnitTableModel(m_unitTable, m_wpModule, m_unitList, m_iconActionHandler);
+        m_unitTableModel = new UnitTableModel(m_unitTable, m_wpModule, m_iconActionHandler);
+        m_unitTableModel.getMsoBinder().setSelector(m_unitList);
+        m_unitTableModel.load(m_unitList);
         m_unitTable.setModel(m_unitTableModel);
         m_unitTable.setAutoCreateColumnsFromModel(true);
         m_unitTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -343,36 +345,36 @@ public class LogisticsPanel implements IMsoLayerEventListener
         DiskoTable.setColumnWidth(columns.getColumn(3), 66, true, true, true);
         DiskoTable.setColumnWidth(columns.getColumn(4), 66, true, true, true);
         DiskoTable.setColumnWidth(columns.getColumn(5), 66, true, true, false);
-        
+
         final DiskoTableHeader header = m_unitTable.getDiskoTableHeader();
         header.setResizingAllowed(false);
         header.setReorderingAllowed(false);
         header.setFixedHeight(40);
         header.createPopupMenu("actions");
-        
-		// install popup menu		
+
+		// install popup menu
 		header.createPopupMenu("actions");
 		header.installEditorPopup("actions","button");
-		header.addMenuItem("actions", "Fjern sortering", 
-				"GENERAL.CANCEL",DiskoButtonFactory.getCatalog(ButtonSize.TINY), 
+		header.addMenuItem("actions", "Fjern sortering",
+				"GENERAL.CANCEL",DiskoButtonFactory.getCatalog(ButtonSize.TINY),
 				"actions.edit.sorting");
-		header.addMenuItem("actions",  "Sorter kun en kolonne", 
-				"GENERAL.FINISH", DiskoButtonFactory.getCatalog(ButtonSize.TINY), 
+		header.addMenuItem("actions",  "Sorter kun en kolonne",
+				"GENERAL.FINISH", DiskoButtonFactory.getCatalog(ButtonSize.TINY),
 				"actions.edit.togglemaxsort");
-		
+
 		// listen to editor actions
 		header.addActionListener(new ActionListener() {
-				
+
 			public void actionPerformed(ActionEvent e) {
-				
+
 				// get row sorter
 				UnitTableRowSorter tableRowSorter = m_unitTableModel.getRowSorter();
-				
+
 				// get action command
 				String cmd = e.getActionCommand();
-				
+
 				// translate
-				if("actions.edit.sorting".equals(cmd)) {			
+				if("actions.edit.sorting".equals(cmd)) {
 					tableRowSorter.setSortKeys(null);
 				}
 				else if("actions.edit.togglemaxsort".equals(cmd)) {
@@ -381,7 +383,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 					if(tableRowSorter.getMaxSortKeys()>1) {
 						int count = tableRowSorter.getSortKeys().size();
 						int column = count > 1 && !tableRowSorter.getSortKeys().get(0)
-							.getSortOrder().equals(SortOrder.UNSORTED) ?  tableRowSorter.getSortKeys().get(0).getColumn() : -1; 
+							.getSortOrder().equals(SortOrder.UNSORTED) ?  tableRowSorter.getSortKeys().get(0).getColumn() : -1;
 						tableRowSorter.setMaxSortKeys(1);
 						// reapply sort?
 						if(column!=-1) {
@@ -395,12 +397,12 @@ public class LogisticsPanel implements IMsoLayerEventListener
 						cb.setIcon(unchecked);
 					}
 				}
-				
+
 			}
-				
+
 		});
-        
-        
+
+
 
         ListSelectionListener l = new ListSelectionListener()
         {
@@ -430,7 +432,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     public JPanel getPanel()
     {
-        setTableData();
         return m_contentPanel;
     }
 
@@ -447,12 +448,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
     public JTable getUnitTable()
     {
         return m_unitTable;
-    }
-
-    private void setTableData()
-    {
-        UnitTableModel utm = (UnitTableModel) m_unitTable.getModel();
-        utm.buildTable();
     }
 
     public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException
@@ -487,7 +482,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
                     m_unitTableModel.setSelected(msoObject, MsoLayerEventType.SELECTED_EVENT.equals(e.getEventType()));
                 	m_map.zoomToMsoObject(msoObject);
                 }
-            }            
+            }
         }
         else {
         	m_mapSelectedAssignment = null;
@@ -501,12 +496,12 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     private void initialize()
     {
-    	
+
     	// create content panel
         m_contentPanel = new JPanel();
         m_contentPanel.setLayout(new BorderLayout(0, 0));
         m_contentPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        
+
         // create main splitter (map and info on left, assignments and units on the right)
         m_mainSplitter = new JSplitPane();
         m_mainSplitter.setBorder(BorderFactory.createEmptyBorder());
@@ -514,7 +509,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_mainSplitter.setContinuousLayout(false);
         m_mainSplitter.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         m_contentPanel.add(m_mainSplitter, BorderLayout.CENTER);
-        
+
         // create left splitter
         m_leftSplitter = new JSplitPane();
         m_leftSplitter.setBorder(BorderFactory.createEmptyBorder());
@@ -522,7 +517,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_leftSplitter.setContinuousLayout(false);
         m_leftSplitter.setOrientation(JSplitPane.VERTICAL_SPLIT);
         m_mainSplitter.setLeftComponent(m_leftSplitter);
-        
+
         // create north part of left side of main split
 		m_mapPanel = new MapPanel(m_map,true);
 		m_mapPanel.setMinimumSize(new Dimension(325, 200));
@@ -530,7 +525,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 		m_mapPanel.setNorthBarVisible(true);
 		m_mapPanel.setSouthBarVisible(true);
         m_leftSplitter.setTopComponent(m_mapPanel);
-        
+
         // create south part of left side of main split
         m_infoPanel = new JPanel();
         m_infoPanel.setMinimumSize(new Dimension(325, 400));
@@ -538,13 +533,13 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_infoPanel.setLayout(new CardLayout(0, 0));
         m_leftSplitter.setBottomComponent(m_infoPanel);
         m_infoPanelHandler = new InfoPanelHandler(m_infoPanel, m_wpModule, m_listPanelActionHandler);
-        
+
         // create right side panel of main split
         m_rightPanel = new JPanel();
         m_rightPanel.setBorder(null);
         m_rightPanel.setLayout(new BoxLayout(m_rightPanel,BoxLayout.X_AXIS));
         m_mainSplitter.setRightComponent(m_rightPanel);
-        
+
     	// prepare right content
         JPanel assignments = new JPanel();
         assignments.setLayout(new BoxLayout(assignments,BoxLayout.X_AXIS));
@@ -563,16 +558,16 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_priAssignmentsPanel.setPreferredSize(new Dimension(62, 100));
         m_priAssignmentsPanel.setMaximumSize(new Dimension(62, Integer.MAX_VALUE));
         m_priAssignmentsPanel.setNotScrollBars();
-        
+
         // create east part of right side of main split
         assignments.add(m_selectableAssignmentsPanel);
         assignments.add(Box.createHorizontalStrut(5));
         assignments.add(m_priAssignmentsPanel);
-        
-        m_rightPanel.add(assignments);               
+
+        m_rightPanel.add(assignments);
         m_rightPanel.add(Box.createHorizontalStrut(5));
-        
-        // create west part of right side of main split                        
+
+        // create west part of right side of main split
         m_unitTable = new DiskoTable(true);
         m_unitTable.setFocusCycleRoot(true);
         m_unitsScrollPane = UIFactory.createScrollPane(m_unitTable);
@@ -582,20 +577,20 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_unitsScrollPane.setOpaque(false);
         Utils.setFixedWidth(m_unitsScrollPane, 400);
         m_rightPanel.add(m_unitsScrollPane);
-        
+
     	// prepare table
         initUnitTable();
 
         // prepare display model
         m_assignmentDisplayModel = new AssignmentDisplayModel(m_selectableAssignmentsPanel, m_priAssignmentsPanel, m_wpModule.getMsoEventManager(), m_assignmentList);
         m_rightPanel.addComponentListener(m_assignmentDisplayModel);
-        
+
         // reset splitter divider locations
         m_mainSplitter.resetToPreferredSizes();
         m_leftSplitter.resetToPreferredSizes();
-        
-        
-        
+
+
+
     }
 
 }

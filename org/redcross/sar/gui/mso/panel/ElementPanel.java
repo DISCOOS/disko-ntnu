@@ -24,6 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -43,7 +44,6 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.mso.Selector;
 
 public class ElementPanel extends DefaultPanel {
 	

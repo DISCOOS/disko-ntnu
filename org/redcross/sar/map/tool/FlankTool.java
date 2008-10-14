@@ -18,6 +18,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.FlankFeature;
 import org.redcross.sar.map.feature.MsoFeatureClass;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
@@ -28,7 +29,7 @@ import org.redcross.sar.util.mso.Route;
 
 /**
  * A custom flank draw tool
- * 
+ *
  * @author geira
  *
  */
@@ -40,41 +41,41 @@ public class FlankTool extends AbstractMsoTool {
 	// current mouse position
 	private Point p = null;
 
-	// free hand properties panel 
-	private FlankPanel flankPanel = null; 
+	// free hand properties panel
+	private FlankPanel flankPanel = null;
 
 	/**
 	 * Constructs the FlankTool
 	 */
-	public FlankTool(IToolCollection dialog) throws IOException, AutomationException {
+	public FlankTool(IMsoModelIf model, IToolCollection dialog) throws IOException, AutomationException {
 
 		// forward
-		super();
-		
+		super(model);
+
 		// set tool type
 		type = MapToolType.FLANK_TOOL;
-		
+
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		
+
 		// save dialog
 		this.dialog = (DefaultDialog)dialog;
-		
+
 		// create flank panel
 		flankPanel = new FlankPanel(Utils.getApp(), this);
-		
+
 		// registrate me in dialog
 		//dialog.register((IDrawTool)this, (JPanel)flankPanel);
-		
+
 		// create point
 		p = new Point();
 		p.setX(0);
 		p.setY(0);
-		
+
 	}
 
 	public void onCreate(Object obj) {
-		
+
 		// is working?
 		if(isWorking()) return;
 
@@ -87,26 +88,26 @@ public class FlankTool extends AbstractMsoTool {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		// forward
 		super.onCreate(obj);
 	}
 
 	public void onMouseDown(int button, int shift, int x, int y) {
-		
+
 		// is working?
 		if(isWorking()) return;
 
 		try {
-			
+
 			// get point in map coordinates
 			p.setX(x);
 			p.setY(y);
 			transform(p);
-			
+
 			// schedule work in disko work pool
 			doFlankWork();
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -119,7 +120,7 @@ public class FlankTool extends AbstractMsoTool {
 		// get new state
 		return new FlankToolState(this);
 	}
-	
+
 	@Override
 	public boolean load(IMapToolState state) {
 		// valid state?
@@ -134,9 +135,9 @@ public class FlankTool extends AbstractMsoTool {
 	 * Inner classes
 	 * ==================================================
 	 */
-		
+
 	private boolean doFlankWork() {
-		
+
 		try {
 			DiskoWorkPool.getInstance().schedule(new FlankWork(map,p));
 			return true;
@@ -146,24 +147,24 @@ public class FlankTool extends AbstractMsoTool {
 		}
 		return false;
 	}
-	
+
 	class FlankWork extends AbstractToolWork<Boolean> {
 
 		private Point p = null;
 		private DiskoMap map = null;
-		
-		FlankWork(DiskoMap map,Point p) 
+
+		FlankWork(DiskoMap map,Point p)
 					throws Exception {
 			super(true);
 			this.map = map;
 			this.p = p;
 		}
-		
+
 		@Override
 		public Boolean doWork() {
 
 			try {
-				
+
 				// get maximum deviation from point
 				double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
 				// apply flanks
@@ -185,23 +186,23 @@ public class FlankTool extends AbstractMsoTool {
 			                    Route route = ((IRouteIf)msoObject).getGeodata();
 			                    if (route != null) {
 				    				route.setLayout(getLayout());
-					    			flankFeature.msoChanged();		
+					    			flankFeature.msoChanged();
 							    }
 			                }
 						}
 		            }
-				}				
+				}
 				// finished
 				return true;
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			// failed
 			return false;
 		}
-		
+
 		private String getLayout() throws AutomationException, IOException {
 			String layout = "";
 			if (flankPanel.getLeftCheckBox().isSelected()) {
@@ -220,51 +221,51 @@ public class FlankTool extends AbstractMsoTool {
 			}*/
 			return layout;
 		}
-		
+
 		/**
-		 * done 
-		 * 
+		 * done
+		 *
 		 * Executed on the Event Dispatch Thread
-		 * 
+		 *
 		 */
 		public void afterDone() {
-			
+
 			// forward
 			super.afterDone();
-			
+
 			try {
-				
+
 				// get result
 				boolean workDone = (Boolean)get();
-				
+
 				// notify disko work listeners?
 				if(workDone)
 					fireOnWorkFinish(this,msoObject);
-				
+
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}			
+			}
 		}
 	}
-	
+
 	public class FlankToolState extends AbstractMsoTool.MsoToolState {
 		private Point p = null;
-		
+
 		// create state
 		public FlankToolState(FlankTool tool) {
 			super((AbstractMsoTool)tool);
 			save(tool);
-		}		
+		}
 		public void save(FlankTool tool) {
 			super.save((AbstractMsoTool)tool);
 			this.p = tool.p;
 		}
-		
+
 		public void load(FlankTool tool) {
 			super.load((AbstractMsoTool)tool);
-			tool.p = this.p; 			
+			tool.p = this.p;
 		}
-	}	
-	
+	}
+
 }

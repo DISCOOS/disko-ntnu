@@ -15,6 +15,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
@@ -25,7 +26,6 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.mso.Selector;
 
 /**
  *  Model used for the Assignment Display part of the Logistics Panel

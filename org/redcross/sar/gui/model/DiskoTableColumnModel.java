@@ -36,11 +36,10 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 *  Holds all column objects, regardless of their visibility
 	 */
 	protected Vector<TableColumn> allTableColumns = new Vector<TableColumn>();
-	
+
 	/** Map of TableColumn and corresponding horizontal alignment in this model.
 	 */
-	protected Map<TableColumn,Integer> allColumnAlignments = new HashMap<TableColumn,Integer>();	
-	
+	protected Map<TableColumn,Integer> allColumnAlignments = new HashMap<TableColumn,Integer>();
 
 	/**
 	 * Creates an extended table column model.
@@ -60,7 +59,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 */
 	// listeners will receive columnAdded()/columnRemoved() event
 	public void setColumnVisible(TableColumn column, boolean visible) {
-		
+
 		if(!visible) {
 			super.removeColumn(column);
 		}
@@ -94,14 +93,14 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 * Makes all columns in this model invisible
 	 */
 	public void setNoneColumnsVisible() {
-		
+
 		int noColumns  = allTableColumns.size();
 
-		for(int columnIndex = 0; columnIndex < noColumns; ++columnIndex) {			
+		for(int columnIndex = 0; columnIndex < noColumns; ++columnIndex) {
 			TableColumn column = (TableColumn)allTableColumns.get(columnIndex);
 			super.removeColumn(column);
 		}
-		
+
 	}
 
 	/**
@@ -120,7 +119,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 			}
 		}
 	}
-	
+
 	/**
 	 * Maps the index of the column in the table model at
 	 * <code>modelColumnIndex</code> to the TableColumn object.
@@ -138,11 +137,11 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 		}
 		return null;
 	}
-		
+
 	/** Checks wether the specified column is currently visible.
 	 * @param aColumn column to check
 	 * @return visibility of specified column (false if there is no such column at all. [It's not visible, right?])
-	 */    
+	 */
 	public boolean isColumnVisible(TableColumn aColumn) {
 		return (tableColumns.indexOf(aColumn) >= 0);
 	}
@@ -152,7 +151,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 * @param column The column to be added
 	 * @see #removeColumn
 	 * @exception IllegalArgumentException if <code>column</code> is <code>null</code>
-	 */    
+	 */
 	public void addColumn(TableColumn column) {
 		allTableColumns.addElement(column);
 		allColumnAlignments.put(column,SwingConstants.LEFT);
@@ -164,7 +163,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 * Will do nothing if the column is not in this model.
 	 * @param column the column to be added
 	 * @see #addColumn
-	 */    
+	 */
 	public void removeColumn(TableColumn column) {
 		int allColumnsIndex = allTableColumns.indexOf(column);
 		if(allColumnsIndex != -1) {
@@ -226,7 +225,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 
 		return columns.elements();
 	}
-	
+
 	/**
 	 * Returns the position of the first column whose identifier equals <code>identifier</code>.
 	 * Position is the the index in all visible columns if <code>onlyVisible</code> is true or
@@ -245,7 +244,7 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 * @see		#getColumn
 	 */
 	public int getColumnIndex(Object identifier, boolean onlyVisible) {
-		
+
 		if (identifier == null) {
 			throw new IllegalArgumentException("Identifier is null");
 		}
@@ -276,18 +275,8 @@ public class DiskoTableColumnModel extends DefaultTableColumnModel {
 	 *				at <code>columnIndex</code>
 	 */
 	public TableColumn getColumn(int columnIndex, boolean onlyVisible) {
-		return onlyVisible ? (TableColumn)tableColumns.elementAt(columnIndex) : 
+		return onlyVisible ? (TableColumn)tableColumns.elementAt(columnIndex) :
 			(TableColumn)allTableColumns.elementAt(columnIndex);
 	}
-	
-	
-	public int getColumnAlignment(TableColumn aColumn) {
-		return allColumnAlignments.get(aColumn);
-	}
-	
-	public void setColumnAlignment(TableColumn aColumn, int alignment) {
-		allColumnAlignments.put(aColumn,alignment);
-	}
-	
-	
+
 }

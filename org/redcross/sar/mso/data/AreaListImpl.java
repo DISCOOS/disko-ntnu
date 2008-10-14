@@ -4,12 +4,12 @@ public class AreaListImpl extends MsoListImpl<IAreaIf> implements IAreaListIf
 {
     public AreaListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IAreaIf.class, anOwner, theName, isMain);
     }
 
     public AreaListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IAreaIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IAreaIf createArea(boolean hostile)

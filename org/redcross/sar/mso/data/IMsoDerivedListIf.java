@@ -1,10 +1,10 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.mso.Selector;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+
+import org.redcross.sar.data.Selector;
 
 /**
  *

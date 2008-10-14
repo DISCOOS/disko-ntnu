@@ -219,7 +219,7 @@ public class DiskoTable extends JTable {
 	
 	/**
 	 * Show/hide array of columns
-	 * @param idx - array of column indexes.
+	 * @param ids - array of column indexes.
 	 * @param isVisible - show or hide column
 	 */
 	public void setVisibleColumns(String[] names, boolean isVisible) {

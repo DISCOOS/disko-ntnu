@@ -1,71 +1,60 @@
 package org.redcross.sar.wp.simulator;
 
-import java.awt.Component;
-
-import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.simulator.AssignmentStringConverter;
 
-public class AssignmentCellRenderer extends JLabel implements TableCellRenderer {
-	
+public class AssignmentCellRenderer extends DiskoTableCellRenderer {
+
 	private static final long serialVersionUID = 1L;
 
 	private static final AssignmentStringConverter converter = new AssignmentStringConverter();
-	
+
 	public AssignmentCellRenderer() {
 		super.setOpaque(true);
 	}
 
-	public Component getTableCellRendererComponent(JTable table, Object value, 
+	public JLabel getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int col) {
-		
-		// convert indexes to model
-		row = table.convertRowIndexToModel(row);
-		col = table.convertColumnIndexToModel(col);
-		
-		// has row and col?
-		if(row!=-1 && col!=-1) {
-			// set icon
+
+		// initialize
+		String text = "";
+		Icon icon = null;
+
+		// get model info
+		super.initialize(table, row, col);
+
+		// convert value to text?
+		if(m_rowInModel!=-1 && m_colInModel!=-1) {
+
+			// get icon
 			if (col == 0) {
 				IAssignmentIf assignment = (IAssignmentIf)value;
 				Enum<?> type = MsoUtils.getType(assignment,true);
-				setIcon(DiskoIconFactory.getIcon(
-							DiskoEnumFactory.getIcon(type),"32x32"));
+				icon = DiskoIconFactory.getIcon(
+							DiskoEnumFactory.getIcon(type),"32x32");
 			}
-			else {
-				setIcon(null);
-			}
-			
-			// set text
-			setText(converter.toString(table.getModel(),row,col));
-			
+
+			// get text
+			text = converter.toString(m_model,m_rowInModel,m_colInModel);
+
 		}
-		
-		// set border
-		if(getIcon()==null) 
-			setBorder(BorderFactory.createEmptyBorder(0,2,0,0));
-		else
-			setBorder(BorderFactory.createEmptyBorder());
-			
-		// update selection state
-		if (isSelected){
-			setBackground(table.getSelectionBackground());
-			setForeground(table.getSelectionForeground());
-		} 
-		else {
-			setBackground(table.getBackground());
-			setForeground(table.getForeground());
-		}
-		
+
+		// get renderer
+		JLabel renderer = super.prepare(table, text, isSelected, hasFocus, row, col, false, false);
+
+		// update
+		update(renderer,icon);
+
 		// finished
-		return this;	
-		
+		return renderer;
+
 	}
 }

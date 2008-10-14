@@ -23,7 +23,7 @@ public class AssignmentStringConverter extends TableStringConverter {
 			return MsoUtils.getAssignmentName(assignment,1);
 		case 1:	// unit
 			IUnitIf unit = (IUnitIf)value;
-			return unit!=null ? MsoUtils.getUnitName(unit,true) : "";
+			return unit!=null ? MsoUtils.getUnitName(unit,false) : "";
 		case 2:
 			return DTG.CalToDTG((Calendar)value);
 		case 3:

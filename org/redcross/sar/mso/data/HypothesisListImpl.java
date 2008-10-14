@@ -5,12 +5,12 @@ public class HypothesisListImpl extends MsoListImpl<IHypothesisIf> implements IH
 
     public HypothesisListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IHypothesisIf.class, anOwner, theName, isMain);
     }
 
     public HypothesisListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IHypothesisIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IHypothesisIf createHypothesis()

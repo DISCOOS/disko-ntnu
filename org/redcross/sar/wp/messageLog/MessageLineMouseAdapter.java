@@ -14,7 +14,7 @@ import org.redcross.sar.mso.data.IMessageLineIf;
  */
 public class MessageLineMouseAdapter extends DiskoMouseAdapter
 {
-	protected MessageLineTableModel m_tableModel;
+	protected MessageLineTableModel m_model;
 	
 	/**
 	 * @param listTableModel Line table model {@link MessageLineTableModel}
@@ -24,7 +24,7 @@ public class MessageLineMouseAdapter extends DiskoMouseAdapter
 		// forward
 		super();
 		// prepare
-		m_tableModel = listTableModel;
+		m_model = listTableModel;
 	}
 	
 
@@ -58,7 +58,7 @@ public class MessageLineMouseAdapter extends DiskoMouseAdapter
 			// is row selected?
 			if(rowIndex > -1)
 			{
-				IMessageLineIf line = m_tableModel.getMessageLine(rowIndex);
+				IMessageLineIf line = m_model.getMessageLine(rowIndex);
 				
 				switch(line.getLineType())
 				{

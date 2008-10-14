@@ -1,9 +1,9 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.util.mso.Selector;
 import org.redcross.sar.util.mso.TimePos;
 
 import java.util.Calendar;
@@ -20,9 +20,15 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Unit";
     
+    /**
+     * Often used status ranges
+     */    
     public static final EnumSet<UnitStatus> ACTIVE_RANGE = EnumSet.range(UnitStatus.READY, UnitStatus.PAUSED);
     public static final EnumSet<UnitStatus> MANAGED_RANGE = ACTIVE_RANGE.clone();    
     
+    /**
+     * Often used selectors
+     */    
     public static final Selector<IUnitIf> ACTIVE_UNIT_SELECTOR = new Selector<IUnitIf>()
     {
         public boolean select(IUnitIf aUnit)
@@ -32,6 +38,9 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     };
 	    
 
+    /**
+     * Often used comparators
+     */    
     public static final Comparator<IUnitIf> UNIT_TYPE_AND_NUMBER_COMPARATOR = new Comparator<IUnitIf>()
     {
         public int compare(IUnitIf u1, IUnitIf u2)

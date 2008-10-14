@@ -10,7 +10,8 @@ public class DsEvent extends java.util.EventObject {
     {
     	ADDED_EVENT,
     	MODIFIED_EVENT,
-    	REMOVED_EVENT
+    	REMOVED_EVENT,
+    	CLEAR_ALL_EVENT
     }
 	
     private int m_flags;

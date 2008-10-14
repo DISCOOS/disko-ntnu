@@ -1,14 +1,13 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.util.mso.Track;
-import org.redcross.sar.util.except.DuplicateIdException;
 
 public class TrackListImpl extends MsoListImpl<ITrackIf> implements ITrackListIf
 {
 
     public TrackListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(ITrackIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public ITrackIf createTrack()

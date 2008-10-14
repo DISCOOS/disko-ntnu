@@ -1,18 +1,16 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.DuplicateIdException;
-
 public class PersonnelListImpl extends MsoListImpl<IPersonnelIf> implements IPersonnelListIf
 {
 
     public PersonnelListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(IPersonnelIf.class, anOwner, theName, isMain);
     }
 
     public PersonnelListImpl(IMsoObjectIf anOwner, String theName, boolean isMain, int aSize)
     {
-        super(anOwner, theName, isMain, 0, aSize);
+        super(IPersonnelIf.class, anOwner, theName, isMain, 0, aSize);
     }
 
     public IPersonnelIf createPersonnel()

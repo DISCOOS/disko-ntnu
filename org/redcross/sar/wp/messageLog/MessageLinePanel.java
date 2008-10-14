@@ -12,7 +12,6 @@ import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
-import org.redcross.sar.util.mso.Selector;
 
 /**
  * Panel displaying message lines in the currently selected message
@@ -23,18 +22,14 @@ public class MessageLinePanel extends JPanel implements IEditorIf
 {
 	private final static long serialVersionUID = 1L;
 
-	private JTable m_messageListTable;
-	private MessageLineTableModel m_messageTableModel;
+	private JTable m_table;
+	private MessageLineTableModel m_model;
 	private JScrollPane m_textScrollPane;
-	private IDiskoWpMessageLog m_wpMessageLog;
+	private IDiskoWpMessageLog m_wp;
 
-	private Selector<IMessageLineIf> m_messageLineSelector = new Selector<IMessageLineIf>()
-	{
-		public boolean select(IMessageLineIf anObject)
-		{
-			return true;
-		}
-	};
+	/* =========================================================
+	 * Constructors
+	 * ========================================================= */
 
 	/**
 	 * @param wp Message log work process
@@ -43,54 +38,56 @@ public class MessageLinePanel extends JPanel implements IEditorIf
 	{
 		// forward
 		super();
-		
+
 		// prepare
-		m_wpMessageLog = wp;
+		m_wp = wp;
 
 		// add empty border
-		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));		
-		
+		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
 		// set border layout
 		setLayout(new BorderLayout());
-		
-		// create table
-		m_messageTableModel = new MessageLineTableModel(m_wpMessageLog);
-		m_messageListTable = new JTable(m_messageTableModel);
-		m_messageListTable.setBorder(null);
-		m_messageListTable.setDefaultRenderer(IMessageLineIf.class, new MessageLineTableRenderer());
-		m_messageListTable.setTableHeader(null);
-		m_messageListTable.setRowHeight(32);
-		m_textScrollPane = new JScrollPane(m_messageListTable);
-		m_textScrollPane.setBorder(new DiskoBorder());
-		m_messageListTable.setFillsViewportHeight(true);
-		m_messageListTable.setColumnSelectionAllowed(false);
-		m_messageListTable.setRowSelectionAllowed(true);
-		m_messageListTable.setShowVerticalLines(false);
-		m_messageListTable.setShowHorizontalLines(true);
 
-		m_messageListTable.addMouseListener(new MessageLineMouseAdapter(m_messageTableModel));
+		// create table
+		m_model = new MessageLineTableModel();
+		m_table = new JTable(m_model);
+		m_table.setBorder(null);
+		m_table.setDefaultRenderer(IMessageLineIf.class, new MessageLineTableRenderer());
+		m_table.setTableHeader(null);
+		m_table.setRowHeight(32);
+		m_textScrollPane = new JScrollPane(m_table);
+		m_textScrollPane.setBorder(new DiskoBorder());
+		m_table.setFillsViewportHeight(true);
+		m_table.setColumnSelectionAllowed(false);
+		m_table.setRowSelectionAllowed(true);
+		m_table.setShowVerticalLines(false);
+		m_table.setShowHorizontalLines(true);
+
+		m_table.addMouseListener(new MessageLineMouseAdapter(m_model));
 
 		add(m_textScrollPane, BorderLayout.CENTER);
 	}
+
+	/* =========================================================
+	 * IEditorIf implementation
+	 * ========================================================= */
 
 	/**
 	 * Updates message line list model with message lines in message
 	 */
 	public void setMessage(IMessageIf message)
 	{
-		m_messageTableModel.clearMessageLines();
-		IMessageLineListIf messageLines = message.getMessageLines();
+		IMessageLineListIf list = message.getMessageLines();
 
-		if(messageLines == null || messageLines.size() == 0)
+		if(list == null)
 		{
-			return;
+			m_model.disconnectAll();
+			m_model.clear();
 		}
-
-		for(IMessageLineIf messageLine : messageLines.selectItems(m_messageLineSelector, IMessageLineIf.LINE_NUMBER_COMPARATOR))
-		{
-			m_messageTableModel.addMessageLine(messageLine);
+		else {
+			m_model.connect(m_wp.getMsoModel(),list,IMessageLineIf.LINE_NUMBER_COMPARATOR);
+			m_model.load(list);
 		}
-		m_messageTableModel.fireTableDataChanged();
 	}
 
 	/**
@@ -114,14 +111,14 @@ public class MessageLinePanel extends JPanel implements IEditorIf
 	 */
 	public void reset()
 	{
-		m_messageTableModel.clearMessageLines();
+		m_model.clear();
 	}
-	
+
 	public MessageLineType getSelectedMessageLineType() {
-		int row = m_messageListTable.getSelectedRow();
-		int col = m_messageListTable.getSelectedColumn();
+		int row = m_table.getSelectedRow();
+		int col = m_table.getSelectedColumn();
 		if(row!=-1 && col!=-1) {
-			IMessageLineIf line = (IMessageLineIf)m_messageTableModel.getValueAt(row, col);
+			IMessageLineIf line = (IMessageLineIf)m_model.getValueAt(row, col);
 			return line!=null ? line.getLineType() : null;
 		}
 		return null;

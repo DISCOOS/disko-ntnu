@@ -7,7 +7,7 @@ public class CmdPostListImpl extends MsoListImpl<ICmdPostIf> implements ICmdPost
 
     public CmdPostListImpl(IMsoObjectIf anOwner, String theName, boolean isMain)
     {
-        super(anOwner, theName, isMain);
+        super(ICmdPostIf.class, anOwner, theName, isMain);
     }
 
     public ICmdPostIf createCmdPost()

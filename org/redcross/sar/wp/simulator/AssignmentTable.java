@@ -5,6 +5,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.wp.simulator.AssignmentTableModel;
 import org.redcross.sar.wp.simulator.AssignmentStringConverter;
 
@@ -29,6 +30,8 @@ public class AssignmentTable extends DiskoTable {
 		// add row sorter
 		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
 		tableRowSorter.setStringConverter(new AssignmentStringConverter());
+		tableRowSorter.setComparator(0, IAssignmentIf.ASSIGNMENT_TYPE_NUMBER_COMPERATOR);
+		tableRowSorter.setMaxSortKeys(1);
 		setRowSorter(tableRowSorter);
 		        
         // set default renderer

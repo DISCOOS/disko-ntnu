@@ -35,12 +35,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	private boolean requestHideOnFinish = true;
 	private boolean requestHideOnCancel = true;
 	
-	protected IMsoModelIf msoModel = null;
+	protected IMsoModelIf msoModel;
 	
 	protected IMsoObjectIf msoObject = null;
 	
-	protected EnumSet<LayerCode> msoLayers = null;
-	protected EnumSet<MsoClassCode> msoInterests = null;
+	protected EnumSet<LayerCode> msoLayers;
+	protected EnumSet<MsoClassCode> msoInterests;
 	
 	/* ===========================================
 	 * Constructors
