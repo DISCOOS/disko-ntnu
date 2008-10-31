@@ -20,14 +20,14 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
     private final MsoReferenceImpl<ISubjectIf> m_intelligenceSubject = new MsoReferenceImpl<ISubjectIf>(this, "IntelligenceSubject", 0, true);
     private final MsoReferenceImpl<ITrackIf> m_intelligenceTrack = new MsoReferenceImpl<ITrackIf>(this, "IntelligenceTrack", 0, true);
 
-    public IntelligenceImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public IntelligenceImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
-    public IntelligenceImpl(IMsoObjectIf.IObjectIdIf anObjectId, IPOIIf aPoi, ISubjectIf aSubject, IRouteIf aRoute, ITrackIf aTrack) throws MsoCastException
+    public IntelligenceImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, IPOIIf aPoi, ISubjectIf aSubject, IRouteIf aRoute, ITrackIf aTrack) throws MsoCastException
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         setIntelligencePOI(aPoi);
         setIntelligenceSubject(aSubject);
         setIntelligenceRoute(aRoute);

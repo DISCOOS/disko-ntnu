@@ -1,160 +1,124 @@
 package org.redcross.sar.wp.sc;
 
-import java.awt.Dimension;
+import java.awt.Color;
 
 import javax.swing.JScrollPane;
 import javax.swing.JPanel;
-import javax.swing.JButton;
 import javax.swing.BorderFactory;
-import javax.swing.border.*;
 import javax.swing.BoxLayout;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
-import java.awt.event.ComponentListener;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ActionEvent;
+import org.redcross.sar.gui.panel.LevelPanel;
+import org.redcross.sar.gui.panel.TimeLinePanel;
+import org.redcross.sar.util.Utils;
 
-import java.util.Calendar;
-import java.util.logging.Logger;
+public class States extends JScrollPane {
 
-import org.redcross.sar.util.mso.Route;
-
-//import java.util.Random;
-
-public class States extends JScrollPane implements ComponentListener, ActionListener {
-
-	// Logger for this object
-	private static final Logger LOGGER = Logger.getLogger(
-			"org.redcross.sar.wp.states");
-	
 	private static final long serialVersionUID = 1L;
-	private JPanel StateList = null;
-	private JPanel Resources = null;
-	private StateBar ProdState = null;
-	private JButton b1 = null;
-	private DiskoWpScImpl wp;
+	private JPanel m_stateList;
+	private LevelPanel m_state;
+	private LevelPanel m_progress;
+	private TimeLinePanel m_timeLine;
 
 	/**
 	 * This is the default constructor
 	 */
-	public States(DiskoWpScImpl wp) {
+	public States() {
 		super();
-		this.wp = wp;
 		initialize();
 	}
 
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 * @return void
 	 */
-	private void initialize() 
+	private void initialize()
 	{
-		this.setSize(470, 295);
 		this.setViewportView(getStateList());
 	}
 
 	/**
-	 * This method initializes StateList	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes StateList
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getStateList() {
-		if (StateList == null) {
-			StateList = new JPanel();
-			StateList.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
-			StateList.setLayout(new BoxLayout(getStateList(), BoxLayout.Y_AXIS));
-			StateList.add(getProdState(), null);
-			StateList.add(getResources(), null);
-			getProdState().addComponentListener(this);
-			getResources().addComponentListener(this);
+		if (m_stateList == null) {
+			m_stateList = new JPanel();
+			m_stateList.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+			m_stateList.setLayout(new BoxLayout(m_stateList, BoxLayout.Y_AXIS));
+			m_stateList.add(getState());
+			m_stateList.add(getUnits());
+			m_stateList.add(getTimeLine());
 		}
-		return StateList;
+		return m_stateList;
 	}
 
 	/**
-	 * This method initializes ProdState	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes State
+	 *
+	 * @return javax.swing.JPanel
 	 */
-	private StateBar getProdState() {
-		if (ProdState == null) {
-			ProdState = new StateBar(20,35);
-			ProdState.setLimits(100,30,50);
+	private LevelPanel getState() {
+		if (m_state == null) {
+			m_state = new LevelPanel(20,30,1);
 			Border etched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-			TitledBorder title = BorderFactory.createTitledBorder(etched, "Antall klare oppdrag");
-			ProdState.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5), title));			
+			TitledBorder title = BorderFactory.createTitledBorder(etched, "Tilstand");
+			m_state.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5), title));
+			m_state.setUnitName("oppdrag");
+			m_state.setDrawLevelLabel(false);
+			m_state.setBackground(Color.WHITE);
+			m_state.setRange(0, 100);
+			m_state.addLimit(0, "", new Color(255,102,0), false);
+			m_state.addLimit(30, "Marginalt", new Color(51,102,255), false);
+			m_state.addLimit(60, "Optimalt", new Color(255,204,0), false);
+			Utils.setFixedHeight(m_state, 130);
 		}
-		return ProdState;
+		return m_state;
 	}
-	
+
 	/**
-	 * This method initializes Resources	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes Units
+	 *
+	 * @return javax.swing.JPanel
 	 */
-	private JPanel getResources() {
-		if (Resources == null) {
-			Resources = new JPanel();
-			Resources.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5), BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)));
-			b1 = new JButton("Run");
-			Resources.add(b1);
-	        b1.addActionListener(this);
+	private LevelPanel getUnits() {
+		if (m_progress == null) {
+			m_progress = new LevelPanel(20,30,2);
+			Border etched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+			TitledBorder title = BorderFactory.createTitledBorder(etched, "Fremdrift");
+			m_progress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5), title));
+			m_progress.setUnitName("min");
+			m_progress.setDrawLevelLabel(true);
+			m_progress.setBackground(Color.WHITE);
+			m_progress.setRange(0, 100);
+			m_progress.addLimit(0, "", new Color(51,102,255), false);
+			m_progress.addLimit(30, "Snart ledig", new Color(255,204,0), false);
+			m_progress.addLimit(60, "Ledig", new Color(255,102,0), false);
+			Utils.setFixedHeight(m_progress, 400);
 		}
-		return Resources;
+		return m_progress;
 	}
-	
-	public void componentResized(ComponentEvent e) 
-	{
-		Dimension size = StateList.getSize();
-		size.height = 130;
-		e.getComponent().setMinimumSize(size);
-		e.getComponent().setPreferredSize(size);
-		e.getComponent().setMaximumSize(size);
-		StateList.invalidate();
-	}
-	public void componentMoved(ComponentEvent e) {}
-	public void componentShown(ComponentEvent e) {}
-	public void componentHidden(ComponentEvent e) {}
 
-	public void actionPerformed(ActionEvent e) {
-
-		if(e.getSource() == b1) {
-  
-			// initialize
-			double cost = 0;
-			
-			// create new route
-	    	Route r = new Route("1","Test",100);
-	    	for(int i = 0;i<100;i++){
-	        	// add positions
-	        	r.add(i, i);        		
-	    	}
-	    	
-	    	// get new time instance
-	    	Calendar t = Calendar.getInstance();
-	    	
-	    	// get first tic
-	    	long tic1 = t.getTimeInMillis();
-	    	
-	    	/*
-	    	// create estimator
-	    	RouteCost rce = new RouteCost(r,2);
-	    	
-	    	// run the route cost estimator n times
-	    	for(int i = 0; i < 100 ;i++) {
-	    		cost += rce.ete();    		
-	    	}
-	    	*/
-	    	
-	    	// get calendar
-	    	t = Calendar.getInstance();
-	    	
-	    	// get last tic
-	    	long tic2 = t.getTimeInMillis();
-	    	
-	    	// logg result
-	    	LOGGER.info("ete:=" + (int)cost + " sec calulcated in " + (tic2 - tic1) + "ms");
+	/**
+	 * This method initializes Resources
+	 *
+	 * @return javax.swing.JPanel
+	 */
+	private TimeLinePanel getTimeLine() {
+		if (m_timeLine == null) {
+			m_timeLine = new TimeLinePanel();
+			m_timeLine.setSteps(5, 10);
+			m_timeLine.setRange(1,40);
+			Border etched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+			TitledBorder title = BorderFactory.createTitledBorder(etched, "Tidslinje");
+			m_timeLine.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5), title));
+			Utils.setFixedHeight(m_timeLine, 150);
 		}
+		return m_timeLine;
 	}
+
 }  //  @jve:decl-index=0:visual-constraint="10,-2"

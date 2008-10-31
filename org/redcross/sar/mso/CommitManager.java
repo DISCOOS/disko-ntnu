@@ -1,7 +1,6 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.CommitWrapper;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
@@ -11,6 +10,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
+import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.util.except.CommitException;
 
 import java.util.ArrayList;
@@ -40,10 +40,10 @@ public class CommitManager implements ICommitManagerIf
     /**
      * Reference to the owning MsoModel
      */
-    private final IMsoModelIf m_ownerModel;
+    private final IMsoModelIf m_msoModel;
 
     /**
-     * Vector for accumulating {@link UpdateHolder} objects that tell which objects that shall be commited, and their update types.
+     * Vector for accumulating {@link UpdateHolder} objects that is updated.
      */
     private final Vector<IUpdateHolderIf> m_updates = new Vector<IUpdateHolderIf>(50);
 
@@ -52,25 +52,24 @@ public class CommitManager implements ICommitManagerIf
      */
     public CommitManager(IMsoModelIf theModel)
     {
-        m_ownerModel = theModel;
-        m_ownerModel.getEventManager().addServerUpdateListener(new IMsoUpdateListenerIf()
+        m_msoModel = theModel;
+        m_msoModel.getEventManager().addServerUpdateListener(new IMsoUpdateListenerIf()
         {
-            public void handleMsoUpdateEvent(MsoEvent.Update e)
-            {
-                registerUpdate((AbstractMsoObject) e.getSource(), e.getEventTypeMask());
-            }
 
-        	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-        	{
-                return true;
+			public EnumSet<MsoClassCode> getInterests()
+			{
+				return EnumSet.allOf(MsoClassCode.class);
+			}
+
+			public void handleMsoUpdateEvent(UpdateList events)
+            {
+				for(MsoEvent.Update e : events.getEvents())
+				{
+					registerUpdate((AbstractMsoObject) e.getSource(), e.getEventTypeMask());
+				}
             }
 
         });
-    }
-
-    public IMsoModelIf getMsoModel()
-    {
-        return m_ownerModel;
     }
 
     private void registerUpdate(AbstractMsoObject anObject, int aMask)
@@ -96,7 +95,7 @@ public class CommitManager implements ICommitManagerIf
      */
     public void commit() throws CommitException
     {
-        m_ownerModel.getEventManager().notifyCommit(createCommit(m_updates));
+        m_msoModel.getEventManager().notifyCommit(createCommit(m_updates));
     }
 
     /**
@@ -106,10 +105,10 @@ public class CommitManager implements ICommitManagerIf
      * @throws org.redcross.sar.util.except.CommitException when the commit fails
      */
     public void commit(List<IUpdateHolderIf> updates) throws CommitException
-    {    	
-        m_ownerModel.getEventManager().notifyCommit(createCommit(updates));
+    {
+        m_msoModel.getEventManager().notifyCommit(createCommit(updates));
     }
-    
+
     /**
      * Returns pending updates
      * <p/>
@@ -118,7 +117,7 @@ public class CommitManager implements ICommitManagerIf
     {
     	return new ArrayList<IUpdateHolderIf>(m_updates);
     }
-    
+
     /**
      * Returns pending updates of specific class
      * <p/>
@@ -126,7 +125,7 @@ public class CommitManager implements ICommitManagerIf
     public List<IUpdateHolderIf> getUpdates(MsoClassCode of) {
     	return getUpdates(EnumSet.of(of));
     }
-    
+
     /**
      * Returns pending updates of specific classes
      * <p/>
@@ -141,9 +140,9 @@ public class CommitManager implements ICommitManagerIf
     		}
         }
         // finished
-        return updates;    	
+        return updates;
     }
-    
+
     /**
      * Returns pending updates of specific object
      * <p/>
@@ -154,7 +153,7 @@ public class CommitManager implements ICommitManagerIf
     	List<IUpdateHolderIf> updates = getUpdates(list);
     	return updates.size()>0 ? updates.get(0) : null;
     }
-    
+
     /**
      * Returns pending updates of specific objects
      * <p/>
@@ -169,12 +168,12 @@ public class CommitManager implements ICommitManagerIf
     		if(of.contains(it.getMsoObject())) {
     			updates.add(it);
     		}
-    		
+
         }
         // finished
-        return updates;    	
+        return updates;
     }
-    
+
     private ICommitWrapperIf createCommit(List<IUpdateHolderIf> updates)
     {
     	List<IUpdateHolderIf> buffer = new ArrayList<IUpdateHolderIf>(updates.size());
@@ -191,7 +190,7 @@ public class CommitManager implements ICommitManagerIf
         // ready to commit
         return wrapper;
     }
-    
+
     /**
      * Perform rollback.
      * <p/>
@@ -215,21 +214,21 @@ public class CommitManager implements ICommitManagerIf
     public boolean hasUncommitedChanges(MsoClassCode code) {
     	return getUpdates(code).size()>0;
     }
-    
+
     public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
-    	return getUpdates(msoObj)!=null;    	
-    }        
-    
+    	return getUpdates(msoObj)!=null;
+    }
+
     class UpdateHolder implements IUpdateHolderIf
     {
-        
+
     	private final IMsoObjectIf m_object;
     	private final List<IAttributeIf> m_partial =  new ArrayList<IAttributeIf>(1);
 
         private int m_mask;
-        
+
         UpdateHolder(IMsoObjectIf anObject, int aMask)
-        {        	
+        {
         	// prepare
             m_object = anObject;
             m_mask = aMask;
@@ -241,39 +240,39 @@ public class CommitManager implements ICommitManagerIf
 
 		public IMsoObjectIf getMsoObject() {
 			return m_object;
-		}        		
-		
+		}
+
         void applyMask(int aMask)
         {
             m_mask |= aMask;
         }
-        
+
         public boolean isPartial() {
         	return m_partial!=null && m_partial.size()>0;
         }
-        
+
         public List<IAttributeIf> getPartial() {
         	return m_partial;
         }
-        
+
         public boolean addPartial(String attribute) {
-        	
+
         	// only allowed for an object that is
         	// A) Already created
         	// B) Is modified
-        	
+
         	if(!isCreated() && isModified()) {
 	        	String name = attribute.toLowerCase();
 	        	if(m_object.getAttributes().containsKey(name)) {
 	        		IAttributeIf item = m_object.getAttributes().get(name);
-	        		if(!m_partial.contains(item)) {        			
+	        		if(!m_partial.contains(item)) {
 	        			return m_partial.add(item);
 	        		}
 	        	}
         	}
         	return false;
         }
-        
+
         public boolean removePartial(String attribute) {
         	String name = attribute.toLowerCase();
         	IAttributeIf found = null;
@@ -288,28 +287,28 @@ public class CommitManager implements ICommitManagerIf
         	}
         	return false;
         }
-        
+
         public void clearPartial() {
         	m_partial.clear();
         }
-        
+
         public boolean setPartial(String attribute)
         {
         	clearPartial();
         	return addPartial(attribute);
         }
-        
+
         public int setPartial(List<String> attributes)
         {
         	int count = 0;
-        	
+
             // forward
         	for(String name : attributes) {
-        		if(addPartial(name)) count++;    		
+        		if(addPartial(name)) count++;
         	}
             return count;
         }
-		
+
 	    public boolean isDeleted()
 	    {
 	    	return (m_mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
@@ -327,12 +326,12 @@ public class CommitManager implements ICommitManagerIf
 
 	    public boolean isReferenceChanged()
 	    {
-	    	return (m_mask & 
+	    	return (m_mask &
 	                (MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue()) |
 	                MsoEventType.ADDED_REFERENCE_EVENT.maskValue() |
 	                MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
-	    }		
+	    }
 
     }
-    
+
 }

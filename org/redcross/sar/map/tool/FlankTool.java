@@ -16,14 +16,14 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.FlankFeature;
-import org.redcross.sar.map.feature.MsoFeatureClass;
+import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Route;
 
@@ -139,7 +139,7 @@ public class FlankTool extends AbstractMsoTool {
 	private boolean doFlankWork() {
 
 		try {
-			DiskoWorkPool.getInstance().schedule(new FlankWork(map,p));
+			WorkPool.getInstance().schedule(new FlankWork(map,p));
 			return true;
 		}
 		catch(Exception e) {
@@ -169,7 +169,7 @@ public class FlankTool extends AbstractMsoTool {
 				double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
 				// apply flanks
 				IMsoFeatureLayer editLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.FLANK_LAYER);
-				MsoFeatureClass featureClass = (MsoFeatureClass)editLayer.getFeatureClass();
+				MsoFeatureModel featureClass = (MsoFeatureModel)editLayer.getFeatureClass();
 				IFeatureCursor c =  MapUtil.search(featureClass, p,max);
 				IFeature feature = c.nextFeature();
 				if (feature != null && feature instanceof FlankFeature) {
@@ -186,7 +186,7 @@ public class FlankTool extends AbstractMsoTool {
 			                    Route route = ((IRouteIf)msoObject).getGeodata();
 			                    if (route != null) {
 				    				route.setLayout(getLayout());
-					    			flankFeature.msoChanged();
+					    			flankFeature.create();
 							    }
 			                }
 						}

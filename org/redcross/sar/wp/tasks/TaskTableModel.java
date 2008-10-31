@@ -5,7 +5,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
@@ -40,7 +40,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
  *
  */
 @SuppressWarnings("unchecked")
-public class TaskTableModel extends MsoTableModel<ITaskIf>
+public class TaskTableModel extends AbstractMsoTableModel<ITaskIf>
 {
 	private final static long serialVersionUID = 1L;
 

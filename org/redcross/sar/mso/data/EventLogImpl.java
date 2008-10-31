@@ -18,13 +18,13 @@ public class EventLogImpl extends MsoListImpl<IEventIf> implements IEventLogIf
     public IEventIf createEvent(Calendar aCalendar)
     {
         checkCreateOp();
-        return createdUniqueItem(new EventImpl(makeUniqueId(), makeSerialNumber(), aCalendar));
+        return createdUniqueItem(new EventImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(), aCalendar));
     }
 
     public IEventIf createEvent(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IEventIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new EventImpl(anObjectId, -1));
+        return retVal != null ? retVal : createdItem(new EventImpl(getOwner().getModel(), anObjectId, -1));
     }
 }

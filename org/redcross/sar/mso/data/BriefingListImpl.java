@@ -16,13 +16,13 @@ public class BriefingListImpl extends MsoListImpl<IBriefingIf> implements IBrief
     public IBriefingIf createBriefing()
     {
         checkCreateOp();
-        return createdUniqueItem(new BriefingImpl(makeUniqueId()));
+        return createdUniqueItem(new BriefingImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IBriefingIf createBriefing(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IBriefingIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new BriefingImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new BriefingImpl(getOwner().getModel(), anObjectId));
     }
 }

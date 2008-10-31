@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -26,10 +27,12 @@ import org.redcross.sar.gui.dialog.LoginDialog;
 import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.dialog.OperationDialog;
+import org.redcross.sar.gui.menu.MainMenu;
+import org.redcross.sar.gui.menu.NavMenu;
+import org.redcross.sar.gui.menu.SubMenu;
+import org.redcross.sar.gui.menu.SysMenu;
 import org.redcross.sar.gui.mso.dialog.TaskDialog;
-import org.redcross.sar.gui.panel.MainMenuPanel;
 import org.redcross.sar.gui.panel.MainPanel;
-import org.redcross.sar.gui.panel.SubMenuPanel;
 
 public class UIFactory {
 
@@ -42,21 +45,27 @@ public class UIFactory {
 	public final static Font DEFAULT_PLAIN_LARGE_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, FONT_SIZE_LARGE);
 	public final static Font DIALOG_PLAIN_MEDIUM_FONT = new Font(DIALOG_FONT, Font.PLAIN, FRONT_SIZE_MEDIUM);
 
-	private IDiskoApplication app = null;
-	private JPanel contentPanel = null;
-	private DiskoGlassPane glassPane = null;
-	private MainMenuPanel mainMenuPanel = null;
-	private SubMenuPanel subMenuPanel = null;
-	private MainPanel mainPanel = null;
-	private JPanel menuPanel = null;
-	private LoginDialog loginDialog = null;
-	private OperationDialog operationDialog = null;
-	private NumPadDialog numPadDialog = null;
-	private MapOptionDialog mapOptionDialog = null;
-	private TaskDialog taskDialog = null;
+	private IDiskoApplication app;
+	private JPanel contentPanel;
+	private DiskoGlassPane glassPane;
+	private MainMenu mainMenu;
+	private SubMenu subMenu;
+	private NavMenu navMenuPanel;
+	private SysMenu sysMenu;
+	private MainPanel mainPanel;
+	private JPanel menuPanel;
+	private LoginDialog loginDialog;
+	private OperationDialog operationDialog;
+	private NumPadDialog numPadDialog;
+	private MapOptionDialog mapOptionDialog;
+	private TaskDialog taskDialog;
 
 	private final List<Component> components = new ArrayList<Component>();
 	private final Map<Component,Boolean> states = new HashMap<Component,Boolean>();
+
+	/* =================================================================
+	 * Constructors
+	 * =================================================================*/
 
 	public UIFactory(IDiskoApplication app) {
 		// prepare
@@ -189,6 +198,27 @@ public class UIFactory {
 	 * Public methods
 	 * =================================================================*/
 
+	/**
+	 * Save current system and navigation menu states.
+	 *
+	 * @return State
+	 */
+	public State save() {
+		return new State();
+	}
+
+	/**
+	 * Load saved system and navigation button states
+	 *
+	 * @return State
+	 */
+	public void load(State state) {
+		if(state!=null) {
+			state.load();
+		}
+	}
+
+
 	public NumPadDialog getNumPadDialog(){
 		if (numPadDialog == null) {
 			numPadDialog = new NumPadDialog(app.getFrame());
@@ -264,8 +294,8 @@ public class UIFactory {
 				contentPanel = new JPanel();
 				contentPanel.setPreferredSize(new Dimension(1024,764));
 				contentPanel.setLayout(new BorderLayout());
-				contentPanel.add(getMainPanel(), BorderLayout.CENTER);
 				contentPanel.add(getMenuPanel(), BorderLayout.EAST);
+				contentPanel.add(getMainPanel(), BorderLayout.CENTER);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -273,33 +303,47 @@ public class UIFactory {
 		return contentPanel;
 	}
 
-	public JPanel getMenuPanel() {
+	private JPanel getMenuPanel() {
 		if (menuPanel == null) {
 			menuPanel = new JPanel();
 			menuPanel.setLayout(new BorderLayout());
-			menuPanel.add(getSubMenuPanel(), BorderLayout.WEST);
-			menuPanel.add(getMainMenuPanel(), BorderLayout.EAST);
+			menuPanel.add(getSubMenu(), BorderLayout.WEST);
+			menuPanel.add(getMainMenu(), BorderLayout.EAST);
 		}
 		return menuPanel;
 	}
 
-	public MainMenuPanel getMainMenuPanel() {
-		if (mainMenuPanel == null) {
-			mainMenuPanel = new MainMenuPanel(app);
+	public MainMenu getMainMenu() {
+		if (mainMenu == null) {
+			mainMenu = new MainMenu(this);
 		}
-		return mainMenuPanel;
+		return mainMenu;
 	}
 
-	public SubMenuPanel getSubMenuPanel() {
-		if (subMenuPanel == null) {
-			subMenuPanel = new SubMenuPanel(app);
+	public SubMenu getSubMenu() {
+		if (subMenu == null) {
+			subMenu = new SubMenu();
 		}
-		return subMenuPanel;
+		return subMenu;
+	}
+
+	public NavMenu getNavMenu() {
+		if (navMenuPanel == null) {
+			navMenuPanel = new NavMenu(this,getMainMenu());
+		}
+		return navMenuPanel;
+	}
+
+	public SysMenu getSysMenu() {
+		if (sysMenu == null) {
+			sysMenu = new SysMenu(this,getMainMenu());
+		}
+		return sysMenu;
 	}
 
 	public MainPanel getMainPanel() {
 		if (mainPanel == null) {
-			mainPanel = new MainPanel(app);
+			mainPanel = new MainPanel(getNavMenu(),getSysMenu());
 		}
 		return mainPanel;
 	}
@@ -312,16 +356,83 @@ public class UIFactory {
 		}
 	}
 
-	public void showAgain() {
+	public void showAll() {
 		getContentPanel().setVisible(true);
 		for(Component c: components) {
 			c.setVisible(states.get(c));
 		}
 	}
 
-	private void register(Component c) {
-		components.add(c);
-		states.put(c, c.isVisible());
+	public void showDialogs() {
+		getContentPanel().setVisible(true);
+		for(Component c: components) {
+			if(c instanceof JDialog)
+				c.setVisible(states.get(c));
+		}
 	}
+
+	public void hideDialogs() {
+		for(Component c: components) {
+			if(c instanceof JDialog) {
+				states.put(c, c.isVisible());
+				c.setVisible(false);
+			}
+		}
+	}
+
+	public void register(JDialog c) {
+		if(!components.contains(c)) {
+			components.add(c);
+			states.put(c, c.isVisible());
+		}
+	}
+
+	public boolean isNavMenuVisible() {
+		return getNavMenu().isVisible();
+	}
+
+	public void setNavMenuVisible(boolean isVisible) {
+		getNavMenu().setVisible(isVisible);
+	}
+
+
+	public boolean isSysMenuVisible() {
+		return getSysMenu().isVisible();
+	}
+
+	public void setSysMenuVisible(boolean isVisible) {
+		getSysMenu().setVisible(isVisible);
+	}
+
+	public class State {
+
+		private MainMenu.State m_mainMenuState;
+		private SubMenu.State m_subMenuState;
+		private NavMenu.State m_navMenuState;
+		//private SysMenuPanel.State m_sysMenuState;
+
+		public State() {
+			// forward
+			save();
+		}
+
+		public void save() {
+			// save states
+			m_mainMenuState = getMainMenu().save();
+			m_subMenuState = getSubMenu().save();
+			m_navMenuState = getNavMenu().save();
+			//m_sysMenuState = getSysMenuPanel().save();
+		}
+
+		public void load() {
+			// load states
+			getMainMenu().load(m_mainMenuState);
+			getSubMenu().load(m_subMenuState);
+			getNavMenu().load(m_navMenuState);
+			//getSysMenuPanel().load(m_sysMenuState);
+		}
+
+
+	};
 
 }

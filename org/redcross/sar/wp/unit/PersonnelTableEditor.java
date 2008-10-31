@@ -118,13 +118,13 @@ public class PersonnelTableEditor
 				// Get personnel at row
 				PersonnelTableModel model = (PersonnelTableModel)table.getModel();
 				row = table.convertRowIndexToModel(row);
-				if(row!=-1) 
+				if(row!=-1)
 				{
 					IPersonnelIf rowPersonnel = model.getPersonnel(row);
-		
+
 					// Get personnel in personnel details panel
 					IPersonnelIf editingPersonnel = m_wpUnit.getEditingPersonnel();
-		
+
 					m_editButton.setSelected(editingPersonnel == rowPersonnel);
 				}
 			}
@@ -168,9 +168,9 @@ public class PersonnelTableEditor
 			{
 				public void actionPerformed(ActionEvent ae)
 				{
-					
+
 					m_wpUnit.getMsoModel().suspendClientUpdate();
-					
+
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					PersonnelUtilities.callOutPersonnel(personnel);
@@ -179,9 +179,9 @@ public class PersonnelTableEditor
 					{
 						m_wpUnit.getMsoModel().commit();
 					}
-					
-					m_wpUnit.getMsoModel().resumeClientUpdate();
-					
+
+					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+
 				}
 			});
 			m_panel.add(m_calloutButton);
@@ -204,7 +204,7 @@ public class PersonnelTableEditor
 						m_wpUnit.getMsoModel().commit();
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate();
+					m_wpUnit.getMsoModel().resumeClientUpdate(true);
 
 				}
 			});
@@ -228,7 +228,7 @@ public class PersonnelTableEditor
 						m_wpUnit.getMsoModel().commit();
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate();
+					m_wpUnit.getMsoModel().resumeClientUpdate(true);
 
 				}
 			});

@@ -1,8 +1,10 @@
 package org.redcross.sar.map.feature;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.util.mso.IGeodataIf;
 
 import com.esri.arcgis.geodatabase.IFields;
 import com.esri.arcgis.geodatabase.IObjectClass;
@@ -14,21 +16,22 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.IClone;
 
 public abstract class AbstractMsoFeature implements IMsoFeature {
-	
+
 	private static final long serialVersionUID = 1L;
 
+	protected IMsoObjectIf msoObject;
+	protected IGeometry geometry;
+	protected ISpatialReference srs;
+
 	protected String caption = "";
-	protected IMsoObjectIf msoObject = null;
-	protected IGeometry geometry = null;
-	protected ISpatialReference srs = null;
-	
+
 	protected boolean isSelected = false;
-	protected boolean isVisible = true; 
+	protected boolean isVisible = true;
 	protected boolean isEditing = false;
 	protected boolean isDirty = false;
-	
+
 	public AbstractMsoFeature() {}
-	
+
 	public Object getID() {
 		return msoObject.getObjectId();
 	}
@@ -42,36 +45,36 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 			// update
 			this.msoObject = msoObject;
 			// forward
-			if (msoObject != null)
-				msoChanged();
-			else
-				isDirty = true;
+			setDirty(true);
 		}
 	}
-	
+
 	/**
 	 * Override this!
 	 */
-	
+
 	public boolean isMsoChanged(IMsoObjectIf msoObj) {
 		return false;
 	}
 
-	public void msoChanged() throws IOException, AutomationException {
-		isDirty = (getShape()!=null);
+	public boolean create() throws IOException, AutomationException {
+		if(srs!=null && msoObject!=null && !msoObject.hasBeenDeleted()) {
+			return true;
+		}
+		return false;
 	}
-	
+
 	public void setSelected(boolean isSelected) {
 		if(this.isSelected!=isSelected) {
 			this.isSelected = isSelected;
-			isDirty = true;
+			setDirty(true);
 		}
 	}
-	
+
 	public boolean isSelected() {
 		return isSelected;
 	}
-	
+
 	public boolean isVisible() {
 		return isVisible;
 	}
@@ -79,14 +82,14 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	public void setVisible(boolean isVisible) {
 		if(this.isVisible!=isVisible) {
 			this.isVisible=isVisible;
-			isDirty = true;
+			setDirty(true);
 		}
 	}
-	
+
 	public Object getGeodata() {
 		return null;
 	}
-	
+
 	public int getGeodataCount() {
 		return 0;
 	}
@@ -101,13 +104,13 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	public IGeometry getShape() throws IOException, AutomationException {
 		return geometry;
 	}
-	
+
 	public IGeometry getShapeCopy() throws IOException, AutomationException {
 		return (IGeometry)((IClone)geometry).esri_clone();
 	}
 
 	public void setShapeByRef(IGeometry geom) throws IOException, AutomationException {
-		isDirty = true;
+		setDirty(true);
 	}
 
 	public int getFeatureType() throws IOException, AutomationException {
@@ -155,38 +158,48 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	public void setValue(int arg0, Object arg1) throws IOException, AutomationException {
 		// TODO Auto-generated method stub
 	}
-	
+
 	public void setSpatialReference(ISpatialReference srs) throws IOException, AutomationException {
 		if(this.srs!=srs) {
 			this.srs = srs;
-			if (msoObject != null)
-				msoChanged();
-			else
-				isDirty = true;
+			//setDirty(true);
 		}
 	}
 
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException {
 		return srs;
 	}
-	
+
 	public boolean isDirty() {
 		return isDirty;
 	}
-	
+
 	public void setDirty(boolean isDirty) {
-		this.isDirty = isDirty;
+		if(this.isDirty!=isDirty) {
+			this.isDirty = isDirty;
+			/*
+			if(this instanceof RouteFeature)
+				System.out.println(isDirty+"#"+this);
+			*/
+		}
 	}
-	
+
 	public String getCaption() {
 		return this.caption;
 	}
-	
+
 	public void setCaption(String caption) {
 		this.caption = caption;
 	}
-	
-	
+
+	protected boolean isGeodataChanged(IGeodataIf geodata, List<Integer> changeList, int index) {
+		// get count
+		int changeCount = geodata.getChangeCount();
+		// changed?
+		return (changeList.size()<=changeCount || !changeList.get(index).equals(changeCount));
+	}
+
+
 }
 
 

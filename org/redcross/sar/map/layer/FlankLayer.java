@@ -2,15 +2,14 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 import java.util.List;
 
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.FlankFeature;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
-import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IDisplay;
@@ -19,6 +18,7 @@ import com.esri.arcgis.display.RgbColor;
 import com.esri.arcgis.display.SimpleLineSymbol;
 import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.ISpatialReference;
+import com.esri.arcgis.geometry.Polygon;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
@@ -28,26 +28,25 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 	private static final long serialVersionUID = 1L;
 	private LineFillSymbol blueFill = null;
 	private LineFillSymbol redFill  = null;
-	
-	public FlankLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
-		super(IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE,
-				LayerCode.FLANK_LAYER, msoModel, srs, 
-				esriGeometryType.esriGeometryPolygon,eventStack);
+
+	public FlankLayer(ISpatialReference srs,
+			MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 		super(esriGeometryType.esriGeometryPolygon,
+ 				MsoClassCode.CLASSCODE_ROUTE,
+ 				EnumSet.of(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_ASSIGNMENT),
+ 				LayerCode.FLANK_LAYER, srs, eventStack, manager);
+ 		// forward
 		createSymbols();
-		if(msoModel.getMsoManager().operationExists()) {
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			loadObjects(cmdPost.getAreaListItems().toArray());
-		}
 	}
-	
-	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 
+
+	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)
 			throws IOException, AutomationException {
 		IMsoFeature msoFeature = new FlankFeature();
 		msoFeature.setSpatialReference(srs);
 		msoFeature.setMsoObject(msoObject);
 		return msoFeature;
 	}
-	
+
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
@@ -57,20 +56,20 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				FlankFeature feature = (FlankFeature)featureClass.getFeature(i);
 				if(select(feature) && feature.isVisible()) {
-					List leftFlanks  = feature.getLeftFlanks();
+					List<Polygon> leftFlanks  = feature.getLeftFlanks();
 					for (int j = 0; j < leftFlanks.size(); j++) {
 						display.setSymbol(redFill);
 						display.drawPolygon((IPolygon)leftFlanks.get(j));
 					}
-					List rightFlanks  = feature.getRightFlanks();
+					List<Polygon> rightFlanks  = feature.getRightFlanks();
 					for (int j = 0; j < rightFlanks.size(); j++) {
 						display.setSymbol(blueFill);
 						display.drawPolygon((IPolygon)rightFlanks.get(j));
 					}
-					feature.setDirty(false);					
 				}
+				feature.setDirty(false);
 			}
-			isDirty = false;
+			setDirty(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

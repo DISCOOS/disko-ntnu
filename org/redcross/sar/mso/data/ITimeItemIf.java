@@ -4,7 +4,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 
-public interface ITimeItemIf extends Comparable<ITimeItemIf>, IMsoObjectIf
+public interface ITimeItemIf extends IMsoObjectIf
 {
     public Calendar getTimeStamp();
 

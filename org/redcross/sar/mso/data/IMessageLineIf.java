@@ -1,10 +1,12 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.mso.Position;
 
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.EnumSet;
 
 /**
  * User: vinjar
@@ -27,14 +29,45 @@ public interface IMessageLineIf extends IMsoObjectIf
         STARTED,
         COMPLETED,
         ABORTED,
-        RELEASED
+        RECALLED
     }
+
+    /**
+     * Often used sets
+     */
+
+    public static final EnumSet<MessageLineType> ASSIGNMENT_CHANGE_SET
+    		= EnumSet.range(MessageLineType.ALLOCATED, MessageLineType.RECALLED);
+
+    /**
+     * Often used selectors
+     */
+
+    public static final Selector<IMessageLineIf> ALL_SELECTOR = new Selector<IMessageLineIf>()
+	{
+		public boolean select(IMessageLineIf anObject)
+		{
+			return true;
+		}
+	};
+
+    public static final Selector<IMessageLineIf> ASSIGNMENT_CHANGE_SELECTOR = new Selector<IMessageLineIf>()
+	{
+		public boolean select(IMessageLineIf anObject)
+		{
+			return ASSIGNMENT_CHANGE_SET.contains(anObject.getLineType());
+		}
+	};
+
+    /**
+     * Often used comparators
+     */
 
     public static final Comparator<IMessageLineIf> MESSAGE_LINE_TIME_COMPARATOR = new Comparator<IMessageLineIf>()
     {
         public int compare(IMessageLineIf o1, IMessageLineIf o2)
         {
-            return o2.getOperationTime().compareTo(o1.getOperationTime()); // Sort according to latest time
+            return o2.getLineTime().compareTo(o1.getLineTime()); // Sort according to latest time
         }
     };
 
@@ -46,6 +79,13 @@ public interface IMessageLineIf extends IMsoObjectIf
         }
     };
 
+    public static final Comparator<IMessageLineIf> LINE_TYPE_COMPARATOR = new Comparator<IMessageLineIf>()
+    {
+        public int compare(IMessageLineIf m1, IMessageLineIf m2)
+        {
+            return m1.getLineType().compareTo(m2.getLineType());
+        }
+    };
 
     /*-------------------------------------------------------------------------------------------
     * Methods for ENUM attributes
@@ -83,22 +123,22 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IAttributeIf.IMsoStringIf getLineTextAttribute();
 
-    public void setOperationTime(Calendar anOperationTime);
+    public void setLineTime(Calendar anOperationTime);
 
-    public Calendar getOperationTime();
+    public Calendar getLineTime();
 
-    public IMsoModelIf.ModificationState getOperationTimeState();
+    public IMsoModelIf.ModificationState getLineTimeState();
 
-    public IAttributeIf.IMsoCalendarIf getOperationTimeAttribute();
+    public IAttributeIf.IMsoCalendarIf getLineTimeAttribute();
 
     public void setLinePosition(Position aPosition);
-    
+
     public Position getLinePosition();
 
     public IMsoModelIf.ModificationState getLinePositionState();
-    
+
     public IAttributeIf.IMsoPositionIf getLinePositionAttribute();
-    
+
     /*-------------------------------------------------------------------------------------------
     * Methods for references
     *-------------------------------------------------------------------------------------------*/
@@ -112,13 +152,13 @@ public interface IMessageLineIf extends IMsoObjectIf
     public IMsoReferenceIf<IPOIIf> getLinePOIAttribute();
 
     public void setLineUnit(IUnitIf aUnit);
-    
+
     public IUnitIf getLineUnit();
 
     public IMsoModelIf.ModificationState getLineUnitState();
-    
+
     public IMsoReferenceIf<IUnitIf> getLineUnitAttribute();
-    
+
     public void setLineAssignment(IAssignmentIf anAssignment);
 
     public IAssignmentIf getLineAssignment();

@@ -16,7 +16,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 {
 
 	private final AttributeImpl.MsoEnum<EventStatus> m_status = new AttributeImpl.MsoEnum<EventStatus>(this, "Status", 1, EventStatus.UNCONFIRMED);
-	
+
     private final AttributeImpl.MsoInteger m_number = new AttributeImpl.MsoInteger(this, "Number",true);
     private final AttributeImpl.MsoString m_name = new AttributeImpl.MsoString(this, "Name");
     private final AttributeImpl.MsoString m_description = new AttributeImpl.MsoString(this, "Description");
@@ -27,24 +27,24 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 
     /*-------------------------------------------------------------------------------------------
      * Constructors
-     *-------------------------------------------------------------------------------------------*/    
-    
-    public EventImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+     *-------------------------------------------------------------------------------------------*/
+
+    public EventImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         setNumber(aNumber);
     }
 
-    public EventImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, Calendar aCalendar)
+    public EventImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, Calendar aCalendar)
     {
-        super(anObjectId, aCalendar);
+        super(theMsoModel, anObjectId, aCalendar);
         setNumber(aNumber);
     }
 
     /*-------------------------------------------------------------------------------------------
      * Methods that must be implemented
      *-------------------------------------------------------------------------------------------*/
-    
+
     @Override
     protected void defineAttributes()
     {
@@ -54,8 +54,8 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
         addAttribute(m_name);
         addAttribute(m_description);
         addAttribute(m_level);
-        addAttribute(m_priority);        
-        
+        addAttribute(m_priority);
+
     }
 
     @Override
@@ -120,14 +120,14 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 	}
 
 	public void setStatus(EventStatus status) {
-		m_status.setAttrValue(status);		
+		m_status.setAttrValue(status);
 	}
-	
+
 	public void setStatus(String status) {
 		m_status.setValue(status);
-		
+
 	}
-	
+
 	public IMsoEnumIf<EventStatus> getStatusAttribute() {
 		return m_status;
 	}
@@ -135,12 +135,12 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 	public ModificationState getStatusState() {
 		return m_status.getState();
 	}
-    
-    
+
+
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
     *-------------------------------------------------------------------------------------------*/
-    
+
 	// From ISerialNumberedIf
     public void setNumber(int aNumber)
     {
@@ -160,7 +160,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
     {
         return m_number;
     }
-    
+
 	public String getName() {
 		return m_name.getAttrValue();
 	}
@@ -174,7 +174,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 	}
 
 	public void setName(String text) {
-		m_name.setAttrValue(text);		
+		m_name.setAttrValue(text);
 	}
 
 	public String getDescription() {
@@ -192,7 +192,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 	public void setDescription(String text) {
 		m_description.setAttrValue(text);
 	}
-	
+
 	public int getLevel() {
 		return m_level.getAttrValue();
 	}
@@ -206,9 +206,9 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 	}
 
 	public void setLevel(int level) {
-		m_level.setAttrValue(level);	
+		m_level.setAttrValue(level);
 	}
-	
+
 	public int getPriority() {
 		return m_priority.getAttrValue();
 	}
@@ -223,14 +223,14 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 
 	public void setPriority(int priority) {
 		m_priority.setAttrValue(priority);
-	}	
-	
+	}
+
     /*-------------------------------------------------------------------------------------------
      * Methods for references
      *-------------------------------------------------------------------------------------------*/
-    
-    
-    
+
+
+
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/

@@ -9,18 +9,18 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
  * Implements the DiskoWpStates interface
- * 
+ *
  * @author kengu
- * 
+ *
  */
-public class DiskoWpScImpl extends AbstractDiskoWpModule 
+public class DiskoWpScImpl extends AbstractDiskoWpModule
 		implements IDiskoWpSc {
 
     private States m_states;
 
 	/**
 	 * Constructs a DiskoWpStatesImpl
-	 * 
+	 *
 	 */
 	public DiskoWpScImpl() throws IllegalClassFormatException {
 		super();
@@ -28,7 +28,7 @@ public class DiskoWpScImpl extends AbstractDiskoWpModule
 	}
 
 	private void initialize() {
-        m_states = new States(this);
+        m_states = new States();
         layoutComponent(m_states);
 	}
 
@@ -37,21 +37,21 @@ public class DiskoWpScImpl extends AbstractDiskoWpModule
 	}
 
 	public void activate(IDiskoRole role) {
-		
+
 		// forward
 		super.activate(role);
 
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
+		if(isNavMenuSetupNeeded()) {
 			// forward
-			setupNavBar(Utils.getListNoneOf(MapToolType.class),false);
-		}				
+			setupNavMenu(Utils.getListNoneOf(MapToolType.class),false);
+		}
 	}
-	
+
 	public void deactivate() {
 		super.deactivate();
 	}
-	
+
 	public boolean rollback() {
 		// TODO Auto-generated method stub
 		return false;
@@ -60,5 +60,5 @@ public class DiskoWpScImpl extends AbstractDiskoWpModule
 	public boolean commit() {
 		// TODO Auto-generated method stub
 		return false;
-	}	
+	}
 }

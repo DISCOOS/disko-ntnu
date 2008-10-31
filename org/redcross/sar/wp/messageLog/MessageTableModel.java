@@ -4,19 +4,19 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JTable;
 
-import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.IMessageLineListIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -31,7 +31,7 @@ import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 /**
  * Table model providing log table with data
  */
-public class MessageTableModel extends MsoTableModel<IMessageIf>
+public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
 {
     private static final long serialVersionUID = 1L;
 
@@ -51,6 +51,8 @@ public class MessageTableModel extends MsoTableModel<IMessageIf>
     	// prepare
         m_table = aTable;
         m_wp = aWp;
+        // add to head of list
+        setAddToTail(false);
         // forward
         connect(aWp.getMsoModel(),aWp.getMsoManager().getCmdPost().getMessageLog(),IMessageIf.MESSAGE_NUMBER_COMPARATOR);
         // add co-classes
@@ -134,10 +136,11 @@ public class MessageTableModel extends MsoTableModel<IMessageIf>
             	StringBuilder stringBuilder = new StringBuilder();
 
             	// get message lines
-            	IMessageLineListIf lines = message.getMessageLines();
+            	Collection<IMessageLineIf> lines = message.getMessageLines().selectItems(
+            			IMessageLineIf.ALL_SELECTOR,IMessageLineIf.LINE_NUMBER_COMPARATOR);
 
             	// loop over all lines
-            	for(IMessageLineIf line : lines.getItems())
+            	for(IMessageLineIf line : lines)
             	{
                      stringBuilder.append(line.toString() + "LINEEND");
                 }
@@ -205,13 +208,13 @@ public class MessageTableModel extends MsoTableModel<IMessageIf>
 	 * ================================================================ */
 
 	@Override
-	protected IMessageIf[] translate(IDataIf[] data) {
+	protected IMessageIf[] translate(IData[] data) {
 		if(data!=null) {
 			List<IMessageIf> list = new ArrayList<IMessageIf>(data.length);
 			List<IMessageIf> found = new ArrayList<IMessageIf>(data.length);
 			for(int i=0; i<data.length; i++) {
 				found.clear();
-				IDataIf item = data[i];
+				IData item = data[i];
 				if(item instanceof IMessageIf){
 					found.add((IMessageIf)item);
 				}
@@ -245,12 +248,14 @@ public class MessageTableModel extends MsoTableModel<IMessageIf>
 					}
 				}
 			}
+
 			// any found?
 			if(list.size()>0) {
 				IMessageIf[] idx = new IMessageIf[list.size()];
 				list.toArray(idx);
 				return idx;
 			}
+
 		}
 		// default action
 		return super.translate(data);

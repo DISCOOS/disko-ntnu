@@ -16,14 +16,14 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
     private final AttributeImpl.MsoInteger m_visibility = new AttributeImpl.MsoInteger(this, "Visibility");
     private final AttributeImpl.MsoEnum<AircraftSubType> m_subType = new AttributeImpl.MsoEnum<AircraftSubType>(this, "SubType", 1, AircraftSubType.LIGHT_AIRCRAFT);
 
-    public AircraftImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
+    public AircraftImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
     {
-        super(anObjectId, aNumber, anIdentifier);
+        super(theMsoModel, anObjectId, aNumber, anIdentifier);
     }
 
-    public AircraftImpl(IMsoObjectIf.IObjectIdIf objectId, int number)
+    public AircraftImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf objectId, int number)
     {
-    	super(objectId, number);
+    	super(theMsoModel, objectId, number);
     }
 
     @Override

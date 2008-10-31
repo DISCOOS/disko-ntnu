@@ -15,16 +15,16 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
     /*-------------------------------------------------------------------------------------------
      * Constructors
      *-------------------------------------------------------------------------------------------*/
-    
-    public SystemImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+
+    public SystemImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     /*-------------------------------------------------------------------------------------------
      * Methods that must be implemented
      *-------------------------------------------------------------------------------------------*/
-     
+
 	@Override
 	protected void defineAttributes() { /* NOP */ }
 

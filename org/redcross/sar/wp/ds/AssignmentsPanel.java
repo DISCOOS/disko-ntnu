@@ -70,7 +70,7 @@ public class AssignmentsPanel extends BasePanel {
 		binder.load(model.getMsoManager().getCmdPost().getAssignmentList());
 	}
 
-	public void install(RouteCostEstimator model) {
+	public void connect(RouteCostEstimator model) {
 		switch(m_buffer) {
 		case 0:
 			m_data.connect(model, createDsSelector(IAssignmentIf.PENDING_SET), RouteCost.ASSIGNMENT_COMPERATOR);

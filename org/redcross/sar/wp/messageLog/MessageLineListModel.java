@@ -58,7 +58,7 @@ public class MessageLineListModel extends AbstractListModel
 					return (anObject!=null && anObject.getLineType().equals(m_lineType));
 				}
 			};
-			m_messageLines.addAll(message.getMessageLines().selectItems(lineSelector));
+			m_messageLines.addAll(message.getMessageLines().selectItems(lineSelector,IMessageLineIf.LINE_NUMBER_COMPARATOR));
 			fireContentsChanged(this, 0, m_messageLines.size()-1);
 		}
 	}

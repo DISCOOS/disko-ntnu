@@ -177,7 +177,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
      */
     public static final EnumSet<AssignmentStatus> PENDING_SET = EnumSet.range(AssignmentStatus.DRAFT, AssignmentStatus.ALLOCATED);
     public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
-    public static final EnumSet<AssignmentStatus> WORKING_SET = EnumSet.of(AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
+    public static final EnumSet<AssignmentStatus> WORKING_SET = EnumSet.of(AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> FINISHED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED);
     public static final EnumSet<AssignmentStatus> FINISHED_AND_REPORTED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED, AssignmentStatus.REPORTED);
     public static final EnumSet<AssignmentStatus> DELETABLE_SET = EnumSet.range(AssignmentStatus.EMPTY, AssignmentStatus.ALLOCATED);

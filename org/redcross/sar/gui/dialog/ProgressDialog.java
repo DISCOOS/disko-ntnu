@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.dialog;
 
@@ -15,25 +15,25 @@ import java.awt.event.ActionListener;
  * @author kennetgu
  *
  */
-public class ProgressDialog extends DefaultDialog { // implements ActionListener {
+public class ProgressDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	
-	private DiskoProgressPanel m_progressPanel = null;
+
+	private DiskoProgressPanel m_progressPanel;
 
 	/**
-	 * 
+	 *
 	 */
 	public ProgressDialog(JFrame frame, boolean cancel) {
 		// forward
-		super(frame);		
+		super(frame);
 		// initialize GUI
 		initialize(frame,cancel);
 	}
-	
+
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 * @return void
 	 */
 	private void initialize(JFrame frame, boolean cancel) {
@@ -41,18 +41,19 @@ public class ProgressDialog extends DefaultDialog { // implements ActionListener
 		this.setTitle("");
 		this.setUndecorated(true);
 		this.setResizable(false);
+		this.setFocusable(false);
 		this.setContentPane(getProgressPanel());
 		this.setPreferredSize(new Dimension(100,45));
 		this.setLocationRelativeTo(frame.getLayeredPane(), DefaultDialog.POS_CENTER, false, true);
 		// set cancel button status
 		getProgressPanel().setButtonVisible(cancel);
 		// apply layout
-		this.pack();		
+		this.pack();
 	}
 
 	/**
 	 * This method initializes DiskoProgressPanel
-	 * 
+	 *
 	 * @return DiskoProgressPanel
 	 */
 	public DiskoProgressPanel getProgressPanel() {
@@ -65,7 +66,7 @@ public class ProgressDialog extends DefaultDialog { // implements ActionListener
 					// forward
 					setVisible(false);
 				}
-				
+
 			});
 		}
 		return m_progressPanel;

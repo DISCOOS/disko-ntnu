@@ -16,13 +16,13 @@ import org.redcross.sar.gui.panel.NumPadPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 
 /**
  * Creates the dialog for changing DTG in message log edit mode.
- * 
+ *
  * @author thomasl
  */
 public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
@@ -36,24 +36,24 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	private NumPadPanel m_numPadPanel;
 	private DTGField m_createdAttr;
 	private DTGField m_timeAttr;
-	
+
 	private IDiskoWpMessageLog m_wp;
 
 	/* ==========================================================
 	 * Constructors
 	 * ==========================================================*/
-	
+
 	public ChangeDTGDialog(IDiskoWpMessageLog wp)
 	{
 		// forward
 		super();
-		
+
 		// prepare
 		m_wp = wp;
 
 		// initialize GUI
 		initialize();
-		
+
 	}
 
 	/* ==========================================================
@@ -62,7 +62,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 
 	/**
 	 * Get time stamp
-	 * 
+	 *
 	 * @return Calendar time stamp
 	 */
 	public Calendar getTime()
@@ -75,7 +75,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	 * @param created
 	 */
 	public void setCreated(Calendar created)
-	{		
+	{
 		getCreatedAttr().setValue(created);
 	}
 
@@ -88,11 +88,11 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		time = (time==null) ? Calendar.getInstance() : time;
 		getTimeAttr().setValue(time);
 	}
-	
+
 	/* ==========================================================
 	 * Overridden methods
 	 * ==========================================================*/
-	
+
 	@Override
 	public boolean isFocusable()
 	{
@@ -106,27 +106,30 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	public void setMessage(IMessageIf message)
 	{
 
-		// forward 
+		// forward
 		getContentPanel().setMsoObject(message);
-		
+
 	}
 
 	public void showEditor()
 	{
-		
+
 		// show input?
 		getNumPadPanel().setVisible(m_isTabletMode);
-		
+
+		// forward
+		load();
+
 		// fit to current content
 		this.pack();
-		
+
 		// show me
 		this.setVisible(true);
-		
+
 		// request focus on input field
 		getTimeAttr().getTextField().requestFocusInWindow();
 
-		
+
 	}
 
 	public void hideEditor()
@@ -138,11 +141,11 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	{
 		getContentPanel().setMsoObject(null);
 	}
-	
+
 	/* ==========================================================
 	 * Helper methods
 	 * ==========================================================*/
-	
+
 	private void initialize()
 	{
 		// prepare
@@ -155,46 +158,46 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	private DefaultPanel getContentPanel()
 	{
 		if(m_contentPanel==null) {
-			
+
 			// extend default panel
 			m_contentPanel = new DefaultPanel("<b>Endre DTG for melding</b>",true,true,ButtonSize.NORMAL) {
-				
+
 				private static final long serialVersionUID = 1L;
 
 				@Override
 				protected boolean beforeFinish() {
-					
+
 					// allowed?
 					if(getTime()!=null) return true;
-					
+
 					// notify
-					Utils.showWarning(m_wp.getBundleText("InvalidDTG.header"), 
+					Utils.showWarning(m_wp.getBundleText("InvalidDTG.header"),
 							m_wp.getBundleText("InvalidDTG.details"));
-					
+
 					// not allowed
 					return false;
-					
+
 				}
-							
+
 				@Override
 				public void setMsoObject(IMsoObjectIf msoObj) {
-					
+
 					// forward
 					super.setMsoObject(msoObj);
-					
+
 					// consume?
 					if(!isChangeable()) return;
-					
+
 					// forward
 					load();
-					
+
 				}
 
 				@Override
 				protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
 					load();
 				}
-				
+
 			};
 			m_contentPanel.setRequestHideOnCancel(true);
 			m_contentPanel.setRequestHideOnFinish(true);
@@ -202,24 +205,24 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_contentPanel.setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			m_contentPanel.addBodyChild(getAttributesPanel(),BorderLayout.CENTER);
 			m_contentPanel.addBodyChild(getNumPadPanel(),BorderLayout.EAST);
-			m_contentPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+			m_contentPanel.addWorkListener(new IWorkListener() {
 
 				@Override
-				public void onWorkPerformed(DiskoWorkEvent e) {
-					
+				public void onWorkPerformed(WorkEvent e) {
+
 					// forward?
-					if(e.isFinish()) 
+					if(e.isFinish())
 						change();
-					
+
 				}
-				
+
 			});
 			m_contentPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_MESSAGE));
-			
+
 		}
 		return m_contentPanel;
 	}
-	
+
 	private FieldsPanel getAttributesPanel()
 	{
 		if (m_attributesPanel == null) {
@@ -227,12 +230,12 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_attributesPanel = new FieldsPanel("Dato-Tid-Gruppe","Ingen egenskaper definert",false,false);
 			m_attributesPanel.setHeaderVisible(false);
 			m_attributesPanel.setPreferredSize(new Dimension(180,250));
-			m_attributesPanel.setNotScrollBars();			
+			m_attributesPanel.setNotScrollBars();
 			// add attributes
-			m_attributesPanel.addAttribute(getCreatedAttr());
-			m_attributesPanel.addAttribute(getTimeAttr());
+			m_attributesPanel.addField(getCreatedAttr());
+			m_attributesPanel.addField(getTimeAttr());
 			// add listeners
-			m_attributesPanel.addDiskoWorkListener(getContentPanel());
+			m_attributesPanel.addWorkListener(getContentPanel());
 		}
 		return m_attributesPanel;
 	}
@@ -243,57 +246,56 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		}
 		return m_createdAttr;
 	}
-	
+
 	private DTGField getTimeAttr() {
 		if(m_timeAttr==null) {
 			m_timeAttr = new DTGField("time",m_wp.getBundleText("ChangeDTGDialogTime.text"),true);
-			Utils.setFixedHeight(m_timeAttr, 35);			
+			Utils.setFixedHeight(m_timeAttr, 35);
 		}
 		return m_timeAttr;
 	}
-		
+
 	private NumPadPanel getNumPadPanel() {
 		if(m_numPadPanel==null) {
 			m_numPadPanel = new NumPadPanel("Tastatur",false,false);
 			m_numPadPanel.setHeaderVisible(false);
 			m_numPadPanel.setInputVisible(false);
 			m_numPadPanel.setInputField(getTimeAttr().getTextField(), false);
-			m_numPadPanel.addDiskoWorkListener(getContentPanel());
+			m_numPadPanel.addWorkListener(getContentPanel());
 		}
 		return m_numPadPanel;
 	}
-	
+
 	private void load() {
-		
+
 		// disable listeners
 		setChangeable(false);
-		
+
 		// get message
 		IMessageIf message = (IMessageIf)getContentPanel().getMsoObject();
-		
+
 		// has message?
 		if(message!=null) {
 	    	// forward
-			setCreated(message.getCreated());
+			setCreated(message.getCreatedTime());
 			setTime(message.getTimeStamp());
 		}
 		else {
 			// initialize
-			Calendar time = Calendar.getInstance();
-			setCreated(time);
-			setTime(time);
-		}					
-		
+			setCreated(null);
+			setTime(Calendar.getInstance());
+		}
+
 		// enable listeners
-		setChangeable(true);				
+		setChangeable(true);
 	}
-	
+
 	private void change()
 	{
 		// get current message, create new if not exists
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 		// update time stamp
 		message.setTimeStamp(getTime());
-	}	
+	}
 
 }

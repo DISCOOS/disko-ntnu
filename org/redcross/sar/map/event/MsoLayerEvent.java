@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -23,30 +24,30 @@ public class MsoLayerEvent extends EventObject {
 	private boolean isFinal;
 	private MsoLayerEventType eventType;
 	private List<IMsoFeatureLayer> msoLayers;
-	
+
 	public MsoLayerEvent(Object source, MsoLayerEventType type) {
 		super(source);
 		this.isFinal = true;
 		this.eventType = type;
 		this.msoLayers = new ArrayList<IMsoFeatureLayer>();
 	}
-	
+
 	public boolean isFinal() {
 		return isFinal;
 	}
-	
+
 	public void setFinal(boolean isFinal) {
 		this.isFinal = isFinal;
 	}
-	
+
 	public MsoLayerEventType getEventType() {
 		return eventType;
 	}
-	
+
 	public List<IMsoFeatureLayer> getList() {
 		return msoLayers;
 	}
-	
+
 	public boolean add(IMsoFeatureLayer layer) {
 		if(layer!=null) {
 			if(!msoLayers.contains(layer))
@@ -54,53 +55,53 @@ public class MsoLayerEvent extends EventObject {
 		}
 		return false;
 	}
-	
+
 	public boolean contains(IMsoFeatureLayer layer) {
 		return msoLayers.contains(layer);
 	}
-	
-	public boolean contains(IMsoFeatureLayer.LayerCode code) {
+
+	public boolean contains(LayerCode code) {
 		for(IMsoFeatureLayer it: msoLayers) {
 			if(it.getLayerCode().equals(code)) return true;
 		}
 		return false;
 	}
-	
+
 	public boolean remove(IMsoFeatureLayer layer) {
 		if(layer!=null) {
 			if(msoLayers.contains(layer))
 					return msoLayers.remove(layer);
 		}
-		return false;		
+		return false;
 	}
-	
+
 	public List<IMsoFeature> getSelected() throws AutomationException, IOException {
 		List<IMsoFeature> list = null;
 		// loop over all layers
 		for(IMsoFeatureLayer it: msoLayers) {
 			// initialize?
 			if(list==null)
-				list = it.getSelected();
+				list = it.getSelectedFeatures();
 			else
-				list.addAll(it.getSelected());
+				list.addAll(it.getSelectedFeatures());
 		}
 		// finished
 		return list;
 	}
-	
+
 	public List<IMsoObjectIf> getSelectedMsoObjects() throws AutomationException, IOException {
 		List<IMsoObjectIf> list = null;
 		// loop over all layers
 		for(IMsoFeatureLayer it: msoLayers) {
 			// initialize?
 			if(list==null)
-				list = it.getSelectedMsoObjects();
+				list = (List<IMsoObjectIf>)it.getSelectedMsoObjects();
 			else
 				list.addAll(it.getSelectedMsoObjects());
 		}
 		// finished
 		return list;
-		
+
 	}
-	
+
 }

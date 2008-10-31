@@ -13,6 +13,7 @@ import no.cmr.tools.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,10 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.work.IMsoWork;
+import org.redcross.sar.thread.WorkLoop;
+import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
@@ -39,45 +43,75 @@ import org.redcross.sar.util.except.CommitException;
 /**
  * Singleton class for accessing the MSO model
  */
-public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
+public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
 							implements IMsoModelIf, ICommitManagerIf
 {
-    private static MsoModelImpl ourInstance = new MsoModelImpl();
+    private static MsoModelImpl m_this;
 
+    private final WorkLoop m_workLoop;
     private final IModelDriverIf m_modelDriver;
     private final MsoManagerImpl m_msoManager;
     private final MsoEventManagerImpl m_msoEventManager;
     private final CommitManager m_commitManager;
     private final IMsoUpdateListenerIf m_updateRepeater;
 
-    private final Object updateLock = new Object();
+    private final Object m_lock = new Object();
     private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
 
     private int m_suspendClientUpdate = 0;
 
+  	/*========================================================
+  	 * The singleton code
+  	 *======================================================== */
 
+	/**
+	 * Get singleton instance of class
+	 *
+	 * @return Returns singleton instance of class
+	 */
+    public static MsoModelImpl getInstance() {
+  		if (m_this == null) {
+  			try {
+  	  			// it's ok, we can call this constructor
+				m_this = new MsoModelImpl();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+  		}
+  		return m_this;
+  	}
 
+	/**
+	 * Method overridden to protect singleton
+	 *
+	 * @throws CloneNotSupportedException
+	 * @return Returns nothing. Method overridden to protect singleton
+	 */
+  	public Object clone() throws CloneNotSupportedException{
+  		throw new CloneNotSupportedException();
+  		// that'll teach 'em
+  	}
 
-    /**
-     * Get the singleton instance object of this class.
-     *
-     * @return The singleton object
-     */
-    public static MsoModelImpl getInstance()
-    {
-        return ourInstance;
-    }
+  	/*========================================================
+  	 * Constructors
+  	 *======================================================== */
 
     /**
      * Constructor.
      * <p/>
      * Initializes other classes that are accessed via this object..
+     * @throws Exception
      */
-    private MsoModelImpl()
+    private MsoModelImpl() throws Exception
     {
+    	// create objects
         m_msoEventManager = new MsoEventManagerImpl();
-        m_msoManager = new MsoManagerImpl(m_msoEventManager);
+        m_msoManager = new MsoManagerImpl(this,m_msoEventManager);
         m_commitManager = new CommitManager(this);
+        // create a MSO work loop and register it as deamon thread in work pool
+        m_workLoop = new WorkLoop(500,5000);
+        WorkPool.getInstance().add(m_workLoop);
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
         boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
@@ -85,24 +119,26 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
         // create update event repeater
         m_updateRepeater = new IMsoUpdateListenerIf() {
 
-			@Override
-			@SuppressWarnings("unchecked")
-			public void handleMsoUpdateEvent(Update e) {
-				// forward
-				fireSourceChanged(
-						new SourceEvent<MsoEvent.Update>(MsoModelImpl.this,e));
+			public EnumSet<MsoClassCode> getInterests()
+			{
+				return EnumSet.allOf(MsoClassCode.class);
 			}
 
-			@Override
-			public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) {
-				// consume loopback updates
-				return !UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode);
-			}
+			public void handleMsoUpdateEvent(UpdateList events)
+            {
+				// forward
+				fireSourceChanged(new SourceEvent<MsoEvent.UpdateList>(MsoModelImpl.this,events));
+            }
+
 
         };
         // connect repeater to client update events
         m_msoEventManager.addClientUpdateListener(m_updateRepeater);
     }
+
+    /* ====================================================================
+     * IMsoModelIf Implementation
+     * ==================================================================== */
 
     public IMsoManagerIf getMsoManager()
     {
@@ -171,7 +207,7 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
     public void suspendClientUpdate()
     {
     	// increment
-    	synchronized(updateLock) {
+    	synchronized(m_lock) {
 	        m_suspendClientUpdate++;
     	}
         // notify of irregular operation
@@ -186,14 +222,14 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
     /**
      * This method is thread safe
      */
-    public void resumeClientUpdate()
+    public void resumeClientUpdate(boolean all)
     {
-    	synchronized(updateLock) {
+    	synchronized(m_lock) {
     		if(m_suspendClientUpdate>0)
 	        	m_suspendClientUpdate--;
     	}
         if(m_suspendClientUpdate==0)
-        	m_msoManager.resumeClientUpdate();
+        	m_msoManager.resumeClientUpdate(all);
     }
 
     public synchronized boolean isUpdateSuspended()
@@ -213,6 +249,10 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
     {
         return getUpdateMode().equals(mode);
     }
+
+    /* ====================================================================
+     * ICommitManagerIf Implementation
+     * ==================================================================== */
 
     public boolean hasUncommitedChanges()
     {
@@ -246,6 +286,31 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
 	public List<IUpdateHolderIf> getUpdates(List<IMsoObjectIf> of) {
 		return m_commitManager.getUpdates(of);
 	}
+
+    public synchronized void commit()
+    {
+        try
+        {
+            m_commitManager.commit();
+        }
+        catch (CommitException e)
+        {
+        	Utils.showError(e.getMessage());
+            rollback();
+            return;
+        }
+        /* ========================================================================
+         * postProcessCommit() is not used any more because only server updates
+         * should update the model
+         * ======================================================================== */
+        /*
+        suspendClientUpdate();
+        setLoopbackUpdateMode();
+        m_msoManager.postProcessCommit();
+        restoreUpdateMode();
+        resumeClientUpdate();
+        */
+    }
 
     /**
      * Perform a partial commit. <p/>Only possible to perform on
@@ -281,31 +346,6 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
         */
     }
 
-    public synchronized void commit()
-    {
-        try
-        {
-            m_commitManager.commit();
-        }
-        catch (CommitException e)
-        {
-        	Utils.showError(e.getMessage());
-            rollback();
-            return;
-        }
-        /* ========================================================================
-         * postProcessCommit() is not used any more because only server updates
-         * should update the model
-         * ======================================================================== */
-        /*
-        suspendClientUpdate();
-        setLoopbackUpdateMode();
-        m_msoManager.postProcessCommit();
-        restoreUpdateMode();
-        resumeClientUpdate();
-        */
-    }
-
     public synchronized void rollback()
     {
         suspendClientUpdate();
@@ -313,7 +353,7 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
         m_commitManager.rollback();
         m_msoManager.rollback();
         restoreUpdateMode();
-        resumeClientUpdate();
+        resumeClientUpdate(true);
     }
 
     /* ====================================================================
@@ -340,6 +380,18 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.Update>
 	public boolean isSupported(Class<?> dataClass) {
 		// supports all classes that implement IMsoObjectIf
 		return IMsoObjectIf.class.isAssignableFrom(dataClass);
+	}
+
+    /* ====================================================================
+     *	Work pool
+     * ==================================================================== */
+
+	public long getLoopID() {
+		return m_workLoop.getID();
+	}
+
+	public long schedule(IMsoWork work) {
+		return m_workLoop.schedule(work);
 	}
 
 }

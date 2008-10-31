@@ -1,6 +1,6 @@
 
 package org.redcross.sar.gui.panel;
- 
+
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -19,22 +19,22 @@ import org.redcross.sar.util.Utils;
 
 public class MessagePanel extends DefaultPanel {
 
-	private static final long serialVersionUID = 1L;	
-	
+	private static final long serialVersionUID = 1L;
+
 	private JEditorPane m_msgPane;
-	
+
 	private int m_maxWidth = 1024;
     private boolean m_isAutoFit = true;
     private boolean m_isJustified = false;
     private Insets m_margin = new Insets(5,5,5,5);
-	
+
 	public MessagePanel() {
 		// forward
 		super();
 		// initialize GUI
 		initialize();
 	}
-	
+
 	/**
 	 * Initialize this
 	 */
@@ -42,9 +42,9 @@ public class MessagePanel extends DefaultPanel {
 		// set table
 		setBodyComponent(getMessagePane());
 	}
-	
+
 	/**
-	 * Initialize the message pane 
+	 * Initialize the message pane
 	 */
 	private JEditorPane getMessagePane() {
 		if(m_msgPane == null) {
@@ -57,67 +57,67 @@ public class MessagePanel extends DefaultPanel {
 		}
 		return m_msgPane;
 	}
-	
+
 	public String getMessage() {
 		return getMessagePane().getText();
 	}
-	
+
 	public void setMessage(String msg) {
 		getMessagePane().setText("<html>"+Utils.trimHtml(msg)+"</html>");
 		calcSize();
 	}
-	
+
 	public int getMaxWidth()
     {
         return m_maxWidth;
     }
- 
+
     public void setMaxWidth(int width)
     {
         if (m_maxWidth <= 0) throw new IllegalArgumentException();
         m_maxWidth = width;
         calcSize();
     }
- 
+
     public boolean isJustified()
     {
         return m_isJustified;
     }
- 
+
     public void setJustified(boolean isJustified)
     {
         m_isJustified = isJustified;
         calcSize();
     }
-    
+
     public boolean isAutoFit()
     {
         return m_isAutoFit;
     }
- 
+
     public void setAutoFit(boolean isAutoFit)
     {
     	m_isAutoFit = isAutoFit;
     	calcSize();
     }
-    
-    private void calcSize() 
+
+    private void calcSize()
     {
-    	if(m_isAutoFit) 
+    	if(m_isAutoFit)
     	{
 			Graphics2D g2d = (Graphics2D)getMessagePane().getGraphics();
 			if(g2d!=null) {
 				Dimension size = calcSize(g2d, m_maxWidth);
 				getMessagePane().setPreferredSize(size);
-				if(getManager()!=null) {			
+				if(getManager()!=null) {
 					int h = size.height + getHeaderPanel().getHeight()+10;
 					getManager().requestResize(size.width,(h > 300 ? 300 : h));
 				}
-				
+
 			}
     	}
     }
-    
+
 	private Dimension calcSize(Graphics2D g, int width)
     {
 		String text = Utils.stripHtml(getMessage());
@@ -125,7 +125,7 @@ public class MessagePanel extends DefaultPanel {
         width -= insets.left + insets.right + m_margin.left + m_margin.right;
         float w = insets.left + insets.right + m_margin.left + m_margin.right;
         float x = insets.left + m_margin.left, y=insets.top + m_margin.top;
- 
+
         if (width > 0 && text != null && text.length() > 0)
         {
               AttributedString as = new AttributedString(text);
@@ -144,9 +144,9 @@ public class MessagePanel extends DefaultPanel {
               }
               w += max;
         }
- 
+
         return new Dimension((int)Math.ceil(w), (int)Math.ceil(y) + insets.bottom + m_margin.bottom);
-        
-    }	
-	
+
+    }
+
 }

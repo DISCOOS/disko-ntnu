@@ -16,7 +16,7 @@ import java.util.Calendar;
 
 /**
  * Created by IntelliJ IDEA.
- * User: vinjar
+ * User: vinjar, kennetgu
  * Date: 25.jun.2007
  * To change this template use File | Settings | File Templates.
  */
@@ -46,9 +46,9 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineType.getInternationalName();
     }
 
-    public MessageLineImpl(IObjectIdIf anObjectId)
+    public MessageLineImpl(IMsoModelIf theMsoModel, IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()
@@ -173,22 +173,22 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineText;
     }
 
-    public void setOperationTime(Calendar anOperationTime)
+    public void setLineTime(Calendar anOperationTime)
     {
         m_operationTime.setValue(anOperationTime);
     }
 
-    public Calendar getOperationTime()
+    public Calendar getLineTime()
     {
         return m_operationTime.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getOperationTimeState()
+    public IMsoModelIf.ModificationState getLineTimeState()
     {
         return m_operationTime.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getOperationTimeAttribute()
+    public IAttributeIf.IMsoCalendarIf getLineTimeAttribute()
     {
         return m_operationTime;
     }
@@ -197,7 +197,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     {
     	m_linePosition.setValue(aPosition);
     }
-    
+
 	public Position getLinePosition() {
 		return m_linePosition.getPosition();
 	}
@@ -205,12 +205,12 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 	public ModificationState getLinePositionState() {
 		return m_linePosition.getState();
 	}
-	
+
     public IAttributeIf.IMsoPositionIf getLinePositionAttribute()
     {
         return m_linePosition;
     }
-    
+
     /*-------------------------------------------------------------------------------------------
     * Methods for references
     *-------------------------------------------------------------------------------------------*/
@@ -236,21 +236,21 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     }
 
 	public void setLineUnit(IUnitIf aUnit) {
-		m_lineUnit.setReference(aUnit);	
+		m_lineUnit.setReference(aUnit);
 	}
-	
+
 	public IUnitIf getLineUnit() {
 		return m_lineUnit.getReference();
 	}
 
 	public ModificationState getLineUnitState() {
 		return m_lineUnit.getState();
-	}    
-	
+	}
+
 	public IMsoReferenceIf<IUnitIf> getLineUnitAttribute() {
 		return m_lineUnit;
 	}
-	
+
     public void setLineAssignment(IAssignmentIf anAssignment)
     {
         m_lineAssignment.setReference(anAssignment);
@@ -278,23 +278,23 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         {
             return "";
         }
-        
+
         // get line type
         MessageLineType type = getLineType();
-        
+
         // get text template
         String template = getText(BasicDiskoFactory.getKey(type,"text"));
-        
+
         // translate type to text
         switch (type)
         {
         case TEXT:
 			return String.format(template,getLineText());
         case POSITION:
-        	
+
 			// get position
 			Position p = getLinePosition();
-			
+
 			if(p != null)
 			{
 				// get unit name
@@ -309,7 +309,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 					String x = coords[0];
 					String y = coords[1];
 					// get text
-					return String.format(template, unit, zone, square, x, y, DTG.CalToDTG(getOperationTime()));
+					return String.format(template, unit, zone, square, x, y, DTG.CalToDTG(getLineTime()));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -344,8 +344,10 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         case ALLOCATED:
         case STARTED:
         case COMPLETED:
-			return String.format(template, 
-					MsoUtils.getAssignmentName(getLineAssignment(),1), DTG.CalToDTG(getOperationTime()));
+        case ABORTED:
+        case RECALLED:
+			return String.format(template,
+					MsoUtils.getAssignmentName(getLineAssignment(),1), DTG.CalToDTG(getLineTime()));
         }
         // failure
         return null;
@@ -362,7 +364,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     public IMessageIf getOwningMessage()
     {
         owningMessageSelector.setSelfObject(this);
-        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
         return cmdPost != null ? cmdPost.getMessageLog().selectSingleItem(owningMessageSelector) : null;
     }
 

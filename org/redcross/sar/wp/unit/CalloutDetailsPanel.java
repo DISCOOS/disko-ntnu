@@ -2,7 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -204,7 +204,7 @@ public class CalloutDetailsPanel extends JPanel
 			m_callout.setOrganization(m_organizationTextField.getText());
 			m_callout.setDepartment(m_departmentTextField.getText());
 
-			m_callout.resumeClientUpdate();
+			m_callout.resumeClientUpdate(true);
 		}
 		// success!
 		return true;
@@ -215,7 +215,7 @@ public class CalloutDetailsPanel extends JPanel
 	 *
 	 * @author thomasl, kennetgu
 	 */
-	private class CallOutPersonnelTableModel extends MsoTableModel<IPersonnelIf>
+	private class CallOutPersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
 	{
 		private static final long serialVersionUID = 1L;
 

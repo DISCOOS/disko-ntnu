@@ -16,13 +16,13 @@ public class PersonnelListImpl extends MsoListImpl<IPersonnelIf> implements IPer
     public IPersonnelIf createPersonnel()
     {
         checkCreateOp();
-        return createdUniqueItem(new PersonnelImpl(makeUniqueId()));
+        return createdUniqueItem(new PersonnelImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IPersonnelIf createPersonnel(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IPersonnelIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new PersonnelImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new PersonnelImpl(getOwner().getModel(), anObjectId));
     }
 }

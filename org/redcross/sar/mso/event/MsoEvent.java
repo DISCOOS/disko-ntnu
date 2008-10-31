@@ -1,6 +1,14 @@
 package org.redcross.sar.mso.event;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -70,6 +78,10 @@ public class MsoEvent extends java.util.EventObject
     }
 
     /**
+     * Cast source to
+     */
+
+    /**
      * Get EventImpl type maskValue
      *
      * @return The sum of {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType} values for this event.
@@ -96,7 +108,7 @@ public class MsoEvent extends java.util.EventObject
 
     public boolean isChangeReferenceEvent()
     {
-    	return (m_eventTypeMask & MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0 
+    	return (m_eventTypeMask & MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0
 		|| (m_eventTypeMask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())!=0
 		||  (m_eventTypeMask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
     }
@@ -105,12 +117,12 @@ public class MsoEvent extends java.util.EventObject
     {
     	return (m_eventTypeMask & MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue())!=0;
     }
-    
+
     public boolean isRemovedReferenceEvent()
     {
     	return (m_eventTypeMask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())!=0;
     }
-    
+
     public boolean isAddedReferenceEvent()
     {
     	return (m_eventTypeMask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue())!=0;
@@ -120,7 +132,7 @@ public class MsoEvent extends java.util.EventObject
     {
     	return (m_eventTypeMask & MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
     }
-    
+
     public UpdateMode getUpdateMode() {
     	return MsoModelImpl.getInstance().getUpdateMode();
     }
@@ -147,9 +159,9 @@ public class MsoEvent extends java.util.EventObject
 		}
 		// no change
 		return false;
-    	
+
     }
-    
+
     /**
      * Event that triggers an update of the user interface and/or the server handler.
      */
@@ -157,10 +169,14 @@ public class MsoEvent extends java.util.EventObject
     {
 		private static final long serialVersionUID = 1L;
 
-		public Update(Object aSource, int anEventTypeMask)
+		public Update(IMsoObjectIf aSource, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
         }
+
+		public IMsoObjectIf getSource() {
+			return (IMsoObjectIf)super.getSource();
+		}
     }
 
     /**
@@ -169,7 +185,7 @@ public class MsoEvent extends java.util.EventObject
     public static class Commit extends MsoEvent
     {
 		private static final long serialVersionUID = 1L;
-		
+
         public Commit(ICommitWrapperIf aSource, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
@@ -188,5 +204,64 @@ public class MsoEvent extends java.util.EventObject
             super(aSource, anEventTypeMask);
         }
     }
-    
+
+    public static class UpdateList
+    {
+		private static final long serialVersionUID = 1L;
+
+		private final boolean m_isClearAll;
+
+		private final List<MsoEvent.Update> m_events =
+			new ArrayList<MsoEvent.Update>();
+
+		private final Map<MsoClassCode, List<MsoEvent.Update>> m_map =
+			new HashMap<MsoClassCode, List<MsoEvent.Update>>();
+
+		public UpdateList(Collection<MsoEvent.Update> items, boolean isClearAll) {
+			// initialize
+			List<MsoEvent.Update> list;
+			// get all classes
+			for(MsoEvent.Update it : items) {
+				MsoClassCode classCode = it.getSource().getMsoClassCode();
+				list = m_map.get(classCode);
+				if(list==null) {
+					list = new ArrayList<Update>();
+					m_map.put(classCode, list);
+				}
+				list.add(it);
+			}
+			// prepare
+			m_events.addAll(items);
+			m_isClearAll = isClearAll;
+		}
+
+		public boolean isClearAllEvent() {
+			return m_isClearAll;
+		}
+
+		public void contains(MsoClassCode classCode) {
+			m_map.containsKey(classCode);
+		}
+
+		public List<MsoEvent.Update> getEvents() {
+			return m_events;
+		}
+
+		public List<MsoEvent.Update> getEvents(MsoClassCode classCode) {
+			List<MsoEvent.Update> list = new ArrayList<Update>();
+			list.addAll(m_map.get(classCode));
+			return list;
+		}
+
+		public List<MsoEvent.Update> getEvents(EnumSet<MsoClassCode> classCodes) {
+			List<MsoEvent.Update> list = new ArrayList<Update>();
+			for(MsoClassCode it : classCodes) {
+				List<MsoEvent.Update> found =  m_map.get(it);
+				if(found!=null) list.addAll(m_map.get(it));
+			}
+			return list;
+		}
+
+    }
+
 }

@@ -19,30 +19,30 @@ public class PositionElement extends AbstractDiskoFeature {
 
 	private IPoint point = null;
 	private double radius = 50.0; // in meters
-	private MarkerElement markerElement = null;
-	private CircleElement circleElement = null;
-	
+	private MarkerElement markerElement;
+	private CircleElement circleElement;
+
 	public PositionElement() throws IOException, UnknownHostException {
 
 		// forward
 		super();
-		
+
 		// initialize elements
 		initialize();
-		
+
 	}
-	
+
 	private void initialize() throws UnknownHostException, IOException {
-		
+
 		// initialize point
 		point = MapUtil.createPoint();
-		
+
 		// add elements to group element
 		addElement(getMarkerElement());
 		addElement(getCircleElement());
-		
+
 	}
-	
+
 	private CircleElement getCircleElement() throws UnknownHostException, IOException  {
 		if(circleElement==null) {
 			// create frame element
@@ -54,7 +54,7 @@ public class PositionElement extends AbstractDiskoFeature {
 		}
 		return circleElement;
 	}
-	
+
 	private MarkerElement getMarkerElement() throws UnknownHostException, IOException  {
 		if(markerElement==null) {
 			// create frame element
@@ -66,11 +66,11 @@ public class PositionElement extends AbstractDiskoFeature {
 		}
 		return markerElement;
 	}
-	
+
 	public double getRadius() {
 		return radius;
 	}
-	
+
 	public void setRadius(double r) {
 		radius = r;
 		try {
@@ -86,11 +86,11 @@ public class PositionElement extends AbstractDiskoFeature {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public IPoint getPoint() {
 		return point;
 	}
-	
+
 	public void setPoint(IPoint p) {
 		point = p;
 		try {

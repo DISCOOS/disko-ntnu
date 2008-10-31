@@ -1,13 +1,15 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IMsoModelIf;
+
 /**
  *
  */
 public class DogImpl extends AbstractUnit implements IDogIf
 {
-    public DogImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public DogImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class DogImpl extends AbstractUnit implements IDogIf
     {
         return IUnitIf.UnitType.DOG; // todo expand
     }
-    
+
     public String getSubTypeName()
     {
         return "CAR"; // todo expand

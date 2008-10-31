@@ -11,7 +11,6 @@ public interface IDiskoWpLogistics extends IDiskoWpModule
     public boolean confirmTransfer(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus aTargetStatus, IUnitIf aTargetUnit);
 
     public boolean transfer(IAssignmentIf anAssignment, IAssignmentIf.AssignmentStatus aTargetStatus, IUnitIf aTargetUnit);
-    
-    public void showTransferWarning();
+
 
 }

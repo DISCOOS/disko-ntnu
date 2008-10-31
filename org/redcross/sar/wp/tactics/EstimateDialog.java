@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import org.redcross.sar.ds.DiskoDecisionSupport;
+import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -135,7 +135,7 @@ public class EstimateDialog extends DefaultDialog {
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.setPreferredSize(new Dimension(400,100));
 				contentPanel.setFitBodyOnResize(true);
-				contentPanel.addAttribute(getEtaAttribute());
+				contentPanel.addField(getEtaAttribute());
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -171,7 +171,7 @@ public class EstimateDialog extends DefaultDialog {
 							try {
 								IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
 								String oprID = Utils.getApp().getMsoModel().getModelDriver().getActiveOperationID();
-								RouteCostEstimator estimator = (RouteCostEstimator)DiskoDecisionSupport.getInstance().getEstimator(RouteCostEstimator.class, oprID);
+								RouteCostEstimator estimator = (RouteCostEstimator)DsPool.getInstance().getItem(RouteCostEstimator.class, oprID);
 								getTrackDialog().load(wp.getMap(),assignment,estimator.getCost(assignment).getEstimatedTrack());
 								getTrackDialog().setVisible(true);
 							} catch (Exception ex) {

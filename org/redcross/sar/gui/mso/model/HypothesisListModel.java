@@ -6,26 +6,24 @@ import javax.swing.AbstractListModel;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
 
 public class HypothesisListModel extends AbstractListModel implements
 		IMsoUpdateListenerIf {
 
 	private static final long serialVersionUID = 1L;
-	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests = null;
+	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests;
 	private IMsoModelIf msoModel = null;
 	private Object[] data = null;
 
 	public HypothesisListModel(IMsoModelIf msoModel) {
 		// prepare
-		this.myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS);
+		this.myInterests = EnumSet.of(MsoClassCode.CLASSCODE_HYPOTHESIS);
 		this.msoModel = msoModel;
 		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
@@ -38,32 +36,39 @@ public class HypothesisListModel extends AbstractListModel implements
 		}
 	}
 
-	public void handleMsoUpdateEvent(Update e) {
-		int mask = e.getEventTypeMask();
-
-        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-		
-        if(clearAll) {
-        	int max = data!=null ? data.length-1: 0;
-        	data = null;
-			super.fireContentsChanged(this, 0, max);
-        }
-        else if (createdObject || modifiedObject || deletedObject ) {
-			// get data
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			data = (cmdPost!=null ? cmdPost.getHypothesisListItems().toArray() : null);
-			super.fireContentsChanged(this, 0, data!=null ? data.length-1: 0);
-		}
+	public EnumSet<MsoClassCode> getInterests() {
+		return myInterests;
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return myInterests.contains(aMsoObject.getMsoClassCode());
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		// loop over all events
+		for(MsoEvent.Update e : events.getEvents(myInterests)) {
+
+			// consume loopback updates
+			if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+
+				int mask = e.getEventTypeMask();
+
+		        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+		        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+		        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+		        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+
+		        if(clearAll) {
+		        	int max = data!=null ? data.length-1: 0;
+		        	data = null;
+					super.fireContentsChanged(this, 0, max);
+		        }
+		        else if (createdObject || modifiedObject || deletedObject ) {
+					// get data
+					ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
+					data = (cmdPost!=null ? cmdPost.getHypothesisListItems().toArray() : null);
+					super.fireContentsChanged(this, 0, data!=null ? data.length-1: 0);
+				}
+
+			}
+		}
 	}
 
 	public Object getElementAt(int index) {

@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 
@@ -8,14 +9,14 @@ public class EnvironmentImpl extends AbstractTimeItem implements IEnvironmentIf
 {
     private final AttributeImpl.MsoString m_someText = new AttributeImpl.MsoString(this, "someText");
 
-    public EnvironmentImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public EnvironmentImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
-    public EnvironmentImpl(IMsoObjectIf.IObjectIdIf anObjectId,Calendar aCalendar, String aText)
+    public EnvironmentImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId,Calendar aCalendar, String aText)
     {
-        super(anObjectId,aCalendar);
+        super(theMsoModel, anObjectId,aCalendar);
         setText(aText);
     }
 

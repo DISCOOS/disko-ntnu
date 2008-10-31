@@ -22,14 +22,14 @@ import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.BaseToolPanel;
 import org.redcross.sar.gui.panel.IPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 
 public class DefaultDialog extends JDialog implements IDialog {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private static int PAUSE_MILLIS = 100;
 	private static int MILLIS_TO_SHOW = 1000;
 
@@ -38,7 +38,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	public static final int POS_EAST   = 3;
 	public static final int POS_SOUTH  = 4;
 	public static final int POS_CENTER = 5;
-	
+
 	private int policy = POS_CENTER;
 	private boolean sizeToFit = false;
 	private boolean snapToInside = true;
@@ -47,15 +47,15 @@ public class DefaultDialog extends JDialog implements IDialog {
 	private int height = -1;
 
 	private Component snapToComponent;
-	
+
 	private boolean isMoveable = true;
 	private boolean isEscapeable = true;
-	
+
 	private final DialogWorker m_worker = new DialogWorker(MILLIS_TO_SHOW);
-	
+
 	final private ComponentListener listener = new ComponentListener() {
 		public void componentHidden(ComponentEvent e) {
-			setVisible(false);		
+			setVisible(false);
 		}
 		public void componentMoved(ComponentEvent e) {
 			snapTo(false);
@@ -67,20 +67,20 @@ public class DefaultDialog extends JDialog implements IDialog {
 			snapTo(false);
 		}
 	};
-	
+
 	/* ==========================================================
 	 *  Constructors
 	 * ========================================================== */
-	
+
 	public DefaultDialog() {
 		this(Utils.getApp().getFrame());
 	}
-	
+
 	public DefaultDialog(Frame owner) {
-		
+
 		// forward
 		super(owner);
-		
+
 		// add global key-event listener
 		Utils.getApp().getKeyEventDispatcher().addKeyListener(
 				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
@@ -92,44 +92,44 @@ public class DefaultDialog extends JDialog implements IDialog {
 					e.consume();
 					cancel();
 				}
-				
+
 			}
 		});
-		        
+
 		// initialize GUI
 		initialize();
-		
+
 		// set default location
 		setLocationRelativeTo(owner,POS_CENTER,false,false);
-		
+
 	}
-	
+
 	/* ==========================================================
 	 *  Private methods
 	 * ========================================================== */
-	
+
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 * @return void
 	 */
 	private void initialize() {
 		// prepare
 		this.setUndecorated(true);
 	}
-	
-	
+
+
 	private void snapTo(boolean update) {
-		
+
 		// position not defined?
 		if (snapToComponent == null || !snapToComponent.isShowing()) return;
-		
+
 		// initialize size?
 		if (update || width == -1 || height == -1) {
 			width  = getWidth() !=0 ? getWidth() : -1;
 			height = getHeight() !=0 ? getHeight() : -1;
 		}
-		
+
 		// initialize
 		int offset = 2;
 		int x = snapToComponent.getLocationOnScreen().x;
@@ -140,7 +140,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 		int bh = snapToComponent.getHeight();
 		// get position data
 		switch (policy) {
-			case POS_WEST:	
+			case POS_WEST:
 				w = snapToInside ? (width > bw - 2*offset ? bw - 2*offset : width) : bw;
 				h = snapToInside ? h = bh - 2*offset : bh;
 				x += snapToInside ? offset : - w - offset;
@@ -171,22 +171,24 @@ public class DefaultDialog extends JDialog implements IDialog {
 				y += (bh - h) / 2;
 				break;
 		}
-		
+
 		// size to fit?
-		if (sizeToFit && w > 0 && h > 0)
+		if (sizeToFit && w > 0 && h > 0) {
 			Utils.setFixedSize(this, w, h);
+			this.pack();
+		}
 		// get screen size
 		Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 		// ensure visible in both directions
-		x = (x + w > screen.width) ? screen.width - w : x; 
-		y = (y + h > screen.height) ? screen.height - h : y; 
+		x = (x + w > screen.width) ? screen.width - w : x;
+		y = (y + h > screen.height) ? screen.height - h : y;
 		// update location
 		super.setLocation(x, y);
 		// apply location change
 		this.validate();
 	}
-	
-	private void registerSnapToComponent(Component c) {		
+
+	private void registerSnapToComponent(Component c) {
 		// register?
 		if(c!=null) {
 			// prepare
@@ -197,20 +199,20 @@ public class DefaultDialog extends JDialog implements IDialog {
 			if(isVisible()) snapTo(true);
 		}
 	}
-	
+
 	private void unregisterSnapToComponent() {
 		// unregister?
 		if(snapToComponent!=null) {
 			// remove listener
-			snapToComponent.removeComponentListener(listener);			
+			snapToComponent.removeComponentListener(listener);
 		}
 		snapToComponent = null;
 	}
-	
+
 	/* ==========================================================
 	 *  Public methods
 	 * ========================================================== */
-	
+
 	@Override
 	public void setContentPane(Container c) {
 		// get current
@@ -227,10 +229,10 @@ public class DefaultDialog extends JDialog implements IDialog {
 			IPanel p = (IPanel)c;
 			p.setManager(this);
 		}
-			
-	}	
-	
-	@Override 
+
+	}
+
+	@Override
 	public void setVisible(boolean isVisible) {
 		// update?
 		if(isVisible) {
@@ -243,7 +245,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 		// forward
 		super.setVisible(isVisible);
 	}
-	
+
 	/* ==========================================================
 	 *  IDialog interface implementation
 	 * ========================================================== */
@@ -258,7 +260,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 	}
 
 	public void setEscapeable(boolean isEscapeable) {
-		this.isEscapeable = isEscapeable;		
+		this.isEscapeable = isEscapeable;
 	}
 
 	public boolean isEscapeable() {
@@ -274,13 +276,13 @@ public class DefaultDialog extends JDialog implements IDialog {
 	}
 
 	public void setMoveable(boolean isMoveable) {
-		this.isMoveable = isMoveable;		
+		this.isMoveable = isMoveable;
 	}
-	
+
 	public void cancelSetVisible() {
 		m_worker.cancel();
 	}
-	
+
 	public void delayedSetVisible(boolean isVisible, int millisToShow) {
 		// any change?
 		if(isVisible!=this.isVisible()) {
@@ -288,7 +290,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 			m_worker.start(isVisible,millisToShow);
 		}
 	}
-			
+
 	@Override
 	public void setLocationByPlatform(boolean locationByPlatform) {
 		// NOT ALLOWED
@@ -319,10 +321,10 @@ public class DefaultDialog extends JDialog implements IDialog {
 	}
 
 	public void setLocationRelativeTo(Component c, int policy, boolean sizeToFit, boolean snapToInside) {
-		
+
 		// unregister
 		unregisterSnapToComponent();
-		
+
 		// prepare
 		this.policy = policy;
 		this.sizeToFit = sizeToFit;
@@ -331,83 +333,83 @@ public class DefaultDialog extends JDialog implements IDialog {
 		// forward
 		registerSnapToComponent(c);
 	}
-	
+
 	public boolean isWorkSupported() {
 		return getContentPane() instanceof IChangeable;
 	}
-	
+
 	/* ==========================================================
 	 *  IDialog interface implementation
 	 * ========================================================== */
-	
+
 	public boolean isDirty() {
 		if(isWorkSupported()) {
 			return ((IPanel)getContentPane()).isDirty();
 		}
 		return false;
-		
+
 	}
-	
+
 	public void setDirty(boolean isDirty) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).setDirty(isDirty);		
+			((IPanel)getContentPane()).setDirty(isDirty);
 	}
-		
+
 	public boolean isChangeable() {
 		if(isWorkSupported()) {
 			return ((IPanel)getContentPane()).isChangeable();
 		}
 		return false;
-		
+
 	}
-	
+
 	public void setChangeable(boolean isChangeable) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).setChangeable(isChangeable);		
+			((IPanel)getContentPane()).setChangeable(isChangeable);
 	}
-	
+
 	public IMsoObjectIf getMsoObject() {
 		if(isWorkSupported()) {
 			return ((IMsoHolder)getContentPane()).getMsoObject();
 		}
 		return null;
 	}
-	
+
 	public void setMsoObject(IMsoObjectIf msoObj) {
 		if(isWorkSupported())
 			((IMsoHolder)getContentPane()).setMsoObject(msoObj);
 	}
-	
+
 	public void reset() {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).reset();		
+			((IPanel)getContentPane()).reset();
 	}
-		
+
 	public boolean finish() {
 		if(isWorkSupported()) {
 			return ((IPanel)getContentPane()).finish();
 		}
 		return false;
-		
+
 	}
-	
+
 	public boolean cancel() {
 		if(isWorkSupported()) {
 			return ((IPanel)getContentPane()).cancel();
 		}
-		return false;		
-	}	
-	
-	public void addDiskoWorkListener(IDiskoWorkListener listener) {
-		if(isWorkSupported())
-			((IPanel)getContentPane()).addDiskoWorkListener(listener);
+		return false;
 	}
 
-	public void removeDiskoWorkListener(IDiskoWorkListener listener) {
+	public void addWorkListener(IWorkListener listener) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).removeDiskoWorkListener(listener);
-	}	
-	
+			((IPanel)getContentPane()).addWorkListener(listener);
+	}
+
+	public void removeWorkListener(IWorkListener listener) {
+		if(isWorkSupported())
+			((IPanel)getContentPane()).removeWorkListener(listener);
+	}
+
 	/* ==========================================================
 	 *  IPanelManager interface implementation
 	 * ========================================================== */
@@ -426,66 +428,67 @@ public class DefaultDialog extends JDialog implements IDialog {
 		if(isResizable() && !sizeToFit) {
 			setSize(w, h);
 			snapTo();
+			pack();
 			return true;
 		}
 		return false;
-			
+
 	}
 
 	public boolean requestShow() {
 		if(isDisplayable()) {
 			setVisible(true);
 			return true;
-		}		
+		}
 		return false;
 	}
-	
+
 	public boolean requestHide() {
 		// important!
 		setVisible(false);
 		// finished
 		return !isVisible();
-	}  	
-	
+	}
+
 	/* ===========================================
 	 * Protected methods
 	 * ===========================================
 	 */
-			
+
 	protected void fireOnWorkFinish(Object source, Object data) {
-		fireOnWorkPerformed(new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_FINISH));
+		fireOnWorkPerformed(new WorkEvent(source,data,WorkEvent.EVENT_FINISH));
     }
-    
+
 	protected void fireOnWorkCancel(Object source, Object data) {
-		fireOnWorkPerformed(new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_CANCEL));
+		fireOnWorkPerformed(new WorkEvent(source,data,WorkEvent.EVENT_CANCEL));
     }
-    
+
 	protected void fireOnWorkChange(Object data) {
-		fireOnWorkPerformed(new DiskoWorkEvent(this,data,DiskoWorkEvent.EVENT_CHANGE));
+		fireOnWorkPerformed(new WorkEvent(this,data,WorkEvent.EVENT_CHANGE));
     }
-    
+
 	protected void fireOnWorkChange(Object source, Object data) {
-		fireOnWorkPerformed(new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_CHANGE));
+		fireOnWorkPerformed(new WorkEvent(source,data,WorkEvent.EVENT_CHANGE));
 	}
-    
-	protected void fireOnWorkPerformed(DiskoWorkEvent e) {
+
+	protected void fireOnWorkPerformed(WorkEvent e) {
 		if(isWorkSupported())
 			((IPanel)getContentPane()).onWorkPerformed(e);
     }
-	
+
 	/*========================================================
   	 * Inner classes
   	 *========================================================
   	 */
-  	
+
 	class DialogWorker implements ActionListener {
-		
+
 		private long m_start = 0;
 		private long m_millisToShow = 0;
 		private Timer m_timer = null;
 		private boolean m_isVisible = false;
 		private boolean m_isCancelled = false;
-		
+
 		public DialogWorker(long millisToShow) {
 			// save decision delay
 			m_millisToShow = millisToShow;
@@ -509,9 +512,9 @@ public class DefaultDialog extends JDialog implements IDialog {
 				return true;
 			}
 			// invalid
-			return false;			
+			return false;
 		}
-		
+
 		public boolean cancel() {
 			// is running?
 			if(m_timer.isRunning()) {
@@ -523,20 +526,20 @@ public class DefaultDialog extends JDialog implements IDialog {
 				return true;
 			}
 			// invalid
-			return false;			
+			return false;
 		}
-		
+
 		public boolean isRunning() {
 			return m_timer.isRunning();
 		}
-							
+
 		/**
-		 * Worker 
-		 * 
+		 * Worker
+		 *
 		 * Executed on the Event Dispatch Thread
-		 * 
+		 *
 		 */
-		@Override		
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			// has no progress?
 			if(!m_isCancelled && System.currentTimeMillis()- m_start > m_millisToShow) {
@@ -545,6 +548,6 @@ public class DefaultDialog extends JDialog implements IDialog {
 				// show me!
 				setVisible(m_isVisible);
 			}
-		}			
+		}
 	}
 }

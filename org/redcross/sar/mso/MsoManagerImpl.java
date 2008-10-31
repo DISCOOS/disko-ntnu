@@ -1,10 +1,10 @@
 package org.redcross.sar.mso;
 
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.DuplicateIdException;
@@ -15,13 +15,15 @@ import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 
 /**
  * An implementation of {@link IMsoManagerIf} interface
  */
 public class MsoManagerImpl implements IMsoManagerIf
 {
-    OperationImpl m_operation = null;
+	IMsoModelIf m_msoModel;
+    OperationImpl m_operation;
 
     public static String getClasscodeText(MsoClassCode aClassCode)
     {
@@ -31,41 +33,50 @@ public class MsoManagerImpl implements IMsoManagerIf
     private void eventLogg(String aText, MsoEvent.Update e)
     {
         Object o = e.getSource();
-        MsoClassCode classcode = MsoClassCode.CLASSCODE_NOCLASS;
+        MsoClassCode classCode = MsoClassCode.CLASSCODE_NOCLASS;
         if (o instanceof IMsoObjectIf)
         {
-            classcode = ((IMsoObjectIf) o).getMsoClassCode();
+            classCode = ((IMsoObjectIf) o).getMsoClassCode();
         }
     }
 
-    public MsoManagerImpl(IMsoEventManagerIf anEventManager)
+    public MsoManagerImpl(IMsoModelIf theMsoModel, IMsoEventManagerIf anEventManager)
     {
-        anEventManager.addServerUpdateListener(new IMsoUpdateListenerIf()
+        m_msoModel = theMsoModel;
+
+    	anEventManager.addServerUpdateListener(new IMsoUpdateListenerIf()
         {
-            public void handleMsoUpdateEvent(MsoEvent.Update e)
+			public EnumSet<MsoClassCode> getInterests()
+			{
+				return EnumSet.allOf(MsoClassCode.class);
+			}
+
+			public void handleMsoUpdateEvent(UpdateList events)
             {
-                //To change body of implemented methods use File | Settings | File Templates.
-                eventLogg("ServerUpdateListener", e);
+				for(MsoEvent.Update e : events.getEvents())
+				{
+	                eventLogg("ServerUpdateListener", e);
+				}
             }
 
-        	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-        	{
-                return true;
-            }
-        });
+		});
 
         anEventManager.addClientUpdateListener(new IMsoUpdateListenerIf()
         {
-            public void handleMsoUpdateEvent(MsoEvent.Update e)
+
+			public EnumSet<MsoClassCode> getInterests()
+			{
+				return EnumSet.allOf(MsoClassCode.class);
+			}
+
+			public void handleMsoUpdateEvent(UpdateList events)
             {
-                //To change body of implemented methods use File | Settings | File Templates.
-                eventLogg("ClientUpdateListener", e);
+				for(MsoEvent.Update e : events.getEvents())
+				{
+	                eventLogg("ClientUpdateListener", e);
+				}
             }
 
-        	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-        	{
-                return true;
-            }
         });
     }
 
@@ -75,7 +86,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new DuplicateIdException("An operation already exists");
         }
-        IMsoObjectIf.IObjectIdIf operationId = MsoModelImpl.getInstance().getModelDriver().makeObjectId();
+        IMsoObjectIf.IObjectIdIf operationId = m_msoModel.getModelDriver().makeObjectId();
         return createOperation(aNumberPrefix, aNumber, operationId);
     }
 
@@ -85,32 +96,31 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new DuplicateIdException("An operation already exists");
         }
-        m_operation = new OperationImpl(operationId, aNumberPrefix, aNumber);
-        m_operation.setup();
-        m_operation.resumeClientUpdate();
+        m_operation = new OperationImpl(m_msoModel,operationId, aNumberPrefix, aNumber);
+        m_operation.setup(true);
         return m_operation;
     }
 
     /**
      * Test if an operation exists
      *
-     * @return <code>true</code> if an operation exists, <code>false</code> otherwise 
+     * @return <code>true</code> if an operation exists, <code>false</code> otherwise
      */
     public boolean operationExists() {
     	return m_operation!=null && !(isOperationDeleted());
     }
-    
+
     /**
      * Test if an operation is deleted
      *
-     * @return <code>true</code> if operation is deleted, <code>false</code> otherwise 
+     * @return <code>true</code> if operation is deleted, <code>false</code> otherwise
      */
     public boolean isOperationDeleted() {
     	return m_operation!=null && m_operation.hasBeenDeleted();
     }
-        
+
     public IOperationIf getOperation()
-    {    	
+    {
         return getExistingOperation();
     }
 
@@ -122,7 +132,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         	throw new MsoRuntimeException("Operation is deleted.");
     	return m_operation;
     }
-    
+
     public ISystemIf getSystem()
     {
         return getExistingSystem();
@@ -133,16 +143,16 @@ public class MsoManagerImpl implements IMsoManagerIf
         ISystemIf system = getExistingOperation().getSystem();
         if (system == null)
         {
-            
+
         	//System.out.println("CMDPOST:=null");
-            
+
         	throw new MsoRuntimeException("No System exists.");
-        	
+
         }
         return system;
     }
-    
-    
+
+
     public ICmdPostIf getCmdPost()
     {
         return getExistingCmdPost();
@@ -153,11 +163,11 @@ public class MsoManagerImpl implements IMsoManagerIf
         ICmdPostIf cmdPost = getExistingOperation().getCmdPostList().getItem();
         if (cmdPost == null)
         {
-            
+
         	//System.out.println("CMDPOST:=null");
-            
+
         	throw new MsoRuntimeException("No CmdPost exists.");
-        	
+
         }
         return cmdPost;
     }
@@ -184,36 +194,36 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new MsoNullPointerException("Tried to delete a null object");
         }
-        
+
         if (aMsoObject instanceof IOperationIf)
         {
             throw new MsoException("Mso object of type IOperationIf can not be removed");
         }
-                
+
         return aMsoObject.delete();
-        
+
     }
-    
+
     protected boolean clearOperation() {
-    	
+
     	if(operationExists()) {
     		// forward
-    		MsoModelImpl.getInstance().suspendClientUpdate();    		
+    		m_msoModel.suspendClientUpdate();
     		// remove operation
     		try {
-	                
+
 	        	/* ==============================================================
-                 * FIX: This methods fails if non-deleteable references exists in the 
+                 * FIX: This methods fails if non-deleteable references exists in the
                  * model. This should not happend!
                  * ============================================================== */
                 boolean ret = m_operation.delete();
-            	
+
             	// remove reference
                 m_operation = null;
-                
+
     	    	// do garbage collection
     	    	Runtime.getRuntime().gc();
-	                
+
 			} catch (Exception e) {
 				e.printStackTrace();
 	        	Utils.showError(e.getMessage());
@@ -221,18 +231,18 @@ public class MsoManagerImpl implements IMsoManagerIf
 	            return false;
 			}
     		// forward
-    		MsoModelImpl.getInstance().resumeClientUpdate();
+    		m_msoModel.resumeClientUpdate(true);
     		// finished
     		return true;
     	}
     	// nothing changed
-    	return false;    		
+    	return false;
     }
 
-    public void resumeClientUpdate()
+    public void resumeClientUpdate(boolean all)
     {
     	if(operationExists())
-    		getExistingOperation().resumeClientUpdates();
+    		getExistingOperation().resumeClientUpdate(all);
     }
 
     public void postProcessCommit()
@@ -330,15 +340,15 @@ public class MsoManagerImpl implements IMsoManagerIf
     {
         OperationImpl opr = (OperationImpl)getExistingOperation();
         return opr.createSystem(anObjectId);
-    }    
-    
+    }
+
     public ICmdPostIf createCmdPost()
     {
         if (getExistingCmdPost() != null)
         {
             throw new DuplicateIdException("An command post already exists");
         }
-        
+
         return getExistingOperation().getCmdPostList().createCmdPost();
     }
 

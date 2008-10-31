@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
@@ -9,19 +10,19 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
     protected final AttributeImpl.MsoCalendar m_timeStamp = new AttributeImpl.MsoCalendar(this, "TimeStamp");
     protected final AttributeImpl.MsoBoolean m_visible = new AttributeImpl.MsoBoolean(this, "Visible");
 
-    public AbstractTimeItem(IMsoObjectIf.IObjectIdIf anObjectId)
+    public AbstractTimeItem(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        this(anObjectId, null, true);
+        this(theMsoModel, anObjectId, null, true);
     }
 
-    public AbstractTimeItem(IMsoObjectIf.IObjectIdIf anObjectId, Calendar aCalendar)
+    public AbstractTimeItem(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, Calendar aCalendar)
     {
-        this(anObjectId, aCalendar, true);
+        this(theMsoModel, anObjectId, aCalendar, true);
     }
 
-    public AbstractTimeItem(IMsoObjectIf.IObjectIdIf anObjectId, Calendar aCalendar, boolean aVisible)
+    public AbstractTimeItem(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, Calendar aCalendar, boolean aVisible)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         m_timeStamp.setValue(aCalendar);
         setVisible(aVisible);
     }
@@ -78,10 +79,11 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
      * @param aTimeObject The object to compare.
      * @return As {@link Comparable#compareTo(Object)}
      */
-    public int compareTo(ITimeItemIf aTimeObject)
+    public int compareTo(IData data)
     {
-        if (aTimeObject != null)
+    	if(data instanceof ITimeItemIf)
         {
+    		ITimeItemIf aTimeObject = (ITimeItemIf)data;
             if (getTimeStamp() != null && aTimeObject.getTimeStamp() != null)
             {
                 return getTimeStamp().compareTo(aTimeObject.getTimeStamp());

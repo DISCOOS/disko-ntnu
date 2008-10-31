@@ -663,17 +663,17 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     }
 
 
-    public void resumeClientUpdates()
+    public void resumeClientUpdate(boolean all)
     {
         if (m_isMain)
         {
             for (M object : getItems())
             {
-                object.resumeClientUpdates();
+                object.resumeClientUpdate(all);
             }
             for (M object : m_pending.values())
             {
-                object.resumeClientUpdates();
+                object.resumeClientUpdate(all);
             }
             m_pending.clear();
         }
@@ -788,12 +788,10 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     protected M createdItem(M anObject)
     {
-        //MsoModelImpl.getInstance().suspendClientUpdate();
-    	((AbstractMsoObject) anObject).setup();
+    	((AbstractMsoObject) anObject).setup(false);
         ((AbstractMsoObject) anObject).setOwningMainList(this);
         add(anObject);
-        anObject.resumeClientUpdate();
-    	//MsoModelImpl.getInstance().resumeClientUpdate();
+        anObject.resumeClientUpdate(false);
         return anObject;
     }
 

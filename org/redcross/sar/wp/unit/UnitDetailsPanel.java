@@ -11,7 +11,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -38,12 +38,11 @@ import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.table.DiskoTable;
-import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -51,7 +50,6 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.output.DiskoReportManager;
@@ -401,59 +399,57 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         return m_currentUnit;
     }
 
-	public void handleMsoUpdateEvent(Update e) {
-
-		// get mask
-		int mask = e.getEventTypeMask();
-
-        // get flag
-        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-
-        // clear all?
-        if(clearAll) {
-    		m_currentUnit = null;
-            updateContents();
-        }
-        else {
-        	// get flags
-	        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-	        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-	        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-	        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
-
-	        // get unit
-	        IUnitIf unit = (IUnitIf)e.getSource();
-
-			// is object modified?
-			if (modifiedObject) {
-				updateFieldContents();
-			}
-			if (addedReference || removedReference) {
-				updateUnitPersonnel();
-			}
-
-			// delete object?
-			if (deletedObject && unit == m_currentUnit) {
-	    		m_currentUnit = null;
-	            updateContents();
-			}
-	}
-
+	public EnumSet<MsoClassCode> getInterests() {
+		return EnumSet.of(MsoClassCode.CLASSCODE_UNIT);
 	}
 
     /**
-     * Interested in unit updates
+     * Update field contents if MSO object changes
      */
-    EnumSet<IMsoManagerIf.MsoClassCode> interestedIn = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT);
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
 
-	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode)
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return interestedIn.contains(msoObject.getMsoClassCode());
-    }
+		if(events.isClearAllEvent()) {
+    		m_currentUnit = null;
+            updateContents();
+		}
+		else
+		{
+			// loop over all events
+			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_UNIT))
+			{
+				// consume loopback updates
+				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+				{
 
+					// get mask
+					int mask = e.getEventTypeMask();
+
+		        	// get flags
+			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+			        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+
+			        // get unit
+			        IUnitIf unit = (IUnitIf)e.getSource();
+
+					// is object modified?
+					if (modifiedObject) {
+						updateFieldContents();
+					}
+					if (addedReference || removedReference) {
+						updateUnitPersonnel();
+					}
+
+					// delete object?
+					if (deletedObject && unit == m_currentUnit) {
+			    		m_currentUnit = null;
+			            updateContents();
+					}
+				}
+			}
+		}
+	}
 
     /**
      * Single click displays all personnel details in bottom panel.
@@ -534,7 +530,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
      *
      * @author thomasl
      */
-    public class UnitPersonnelTableModel extends MsoTableModel<IPersonnelIf>
+    public class UnitPersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
     {
         private static final long serialVersionUID = 1L;
 
@@ -747,7 +743,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_currentUnit.setToneID(toneId);
             m_currentUnit.setCallSign(callSign);
 
-            m_currentUnit.resumeClientUpdate();
+            m_currentUnit.resumeClientUpdate(true);
         }
         // success!
     	return true;

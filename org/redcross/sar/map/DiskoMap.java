@@ -9,6 +9,7 @@ import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -44,11 +45,12 @@ import com.esri.arcgis.systemUI.ITool;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
+import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.mso.dialog.ElementDialog;
-import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.map.event.IMapDataListener;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.feature.MsoFeatureClass;
+import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.*;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.MsoDrawAdapter;
@@ -57,192 +59,197 @@ import org.redcross.sar.map.tool.IDrawTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.thread.DiskoMapProgressor;
-import org.redcross.sar.thread.DiskoProgressMonitor;
-import org.redcross.sar.thread.event.DiskoWorkRepeater;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.ProgressMonitor;
+import org.redcross.sar.thread.event.WorkEventRepeater;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
-import org.redcross.sar.util.mso.Position;
 
 /**
  * This calls extends MapBean to provide user interface for map rendering
  * @author geira
  *
  */
-public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateListenerIf {
+public final class DiskoMap extends MapBean implements IDiskoMap {
 
-	//private static final double pixelSize = 0.000377; //meter
-	
 	private static final long serialVersionUID = 1L;
-	
+
 	// static constants
 	private static final double DPI = Toolkit.getDefaultToolkit().getScreenResolution();
 	private static final double PIXEL_SIZE = 0.00254/DPI; // pixels per meter
 	private static final double ZOOM_RATIO = 1.25;
 	private static final double MAX_SNAP_SCALE = 50000;
-	private static final double MAX_DRAW_SCALE = 75000;	
-	
+	private static final double MAX_DRAW_SCALE = 75000;
+
 	// properties
-	private String mxdDoc = null;
-	private IMsoModelIf msoModel = null;
-	private IDiskoMapManager mapManager = null;
-	private IMapTool activeTool = null;
+	private String mxdDoc;
 	private int supressDrawing = 0;
 	private int notifySuspended = 0;
 	private int currentBase = 0;
 	private boolean isCacheChanged = false;
 	private boolean isEditSupportInstalled = false;
-	
+
 	// lists
-	private MsoLayerSelectionModel msoLayerSelectionModel = null;
-	private WmsLayerSelectionModel wmsLayerSelectionModel = null;
-	private MapLayerSelectionModel mapLayerSelectionModel = null;
-	private EnumSet<LayerCode> layerCodes = null;
-	private EnumSet<MsoClassCode> classCodes = null;
-	private Map<MsoClassCode,EnumSet<MsoClassCode>> coClassCodes = null;
-	private List<IMsoFeatureLayer> msoLayers = null;
-	private List<IDiskoLayer> diskoLayers = null;
-	private List<IDiskoMapListener> mapListeners = null;
-	
-	// components
-	private DrawDialog drawDialog = null;
-	private ElementDialog elementDialog = null;
-	private SnapDialog snapDialog = null;
+	private MsoLayerSelectionModel msoLayerSelectionModel;
+	private WmsLayerSelectionModel wmsLayerSelectionModel;
+	private MapLayerSelectionModel mapLayerSelectionModel;
+	private EnumSet<LayerCode> layerCodes;
+	private EnumSet<MsoClassCode> classCodes;
+	private Map<MsoClassCode,EnumSet<MsoClassCode>> coClassCodes;
+	private List<IMsoFeatureLayer> msoLayers;
+	private List<IDiskoLayer> diskoLayers;
+	private final List<IDiskoMapListener> mapListeners = new ArrayList<IDiskoMapListener>();;
+
+	// GUI components
+	private DrawDialog drawDialog;
+	private ElementDialog elementDialog;
+	private SnapDialog snapDialog;
 
 	// stacks
-	private HashMap<String,Runnable> refreshStack = null;
-	private MsoLayerEventStack msoLayerEventStack = null;
-	
+	private HashMap<String,Runnable> refreshStack;
+	private final MsoLayerEventStack msoLayerEventStack = new MsoLayerEventStack();;
+
 	// progress monitoring
-	private DiskoMapProgressor progressor = null;
-	
+	private Progressor progressor;
+
 	// adapters
-	private MsoDrawAdapter drawAdapter = null;
-	private SnapAdapter snapAdapter = null;
-	private DiskoWorkRepeater workRepeater = null;
-	private ControlEventsAdapter ctrlAdapter = null;
-	private MapCompEventsAdapter compAdapter = null;
-	
-	// elements
-	private DrawFrame drawFrame = null;
-	
+	private MsoDrawAdapter drawAdapter;
+	private SnapAdapter snapAdapter;
+	private final WorkEventRepeater workRepeater = new WorkEventRepeater();
+	private final ControlEventsAdapter ctrlAdapter = new ControlEventsAdapter();
+	private final MapCompEventsAdapter compAdapter = new MapCompEventsAdapter();
+
+	// Map elements
+	private DrawFrame drawFrame;
+
+	// Map objects
+	private IMapTool activeTool;
+	private IMsoModelIf msoModel;
+	private IDiskoMapManager mapManager;
+	private MsoDataBinder binder;
+
 	// flags
 	private boolean isInitMode = true;
-	
-	// mouse tracking
-	private long previous = 0;		
-	private Point movePoint = null;
-	private Point clickPoint = null;
 
-	// refresh info 
+	// mouse tracking
+	private long previous = 0;
+	private Point movePoint;
+	private Point clickPoint;
+
+	// refresh info
 	private int refreshCount = 0;
-	private IMsoFeatureLayer refreshLayer = null;
+	private IMsoFeatureLayer refreshLayer;
 
 	/**
 	 * Default constructor
 	 */
-	public DiskoMap(IDiskoMapManager mapManager, 
+	protected DiskoMap(IDiskoMapManager mapManager,
 			IMsoModelIf msoModel, EnumSet<LayerCode> myLayers)
 			throws IOException, AutomationException {
-		
+
 		// prepare
 		this.mapManager = mapManager;
 		this.msoModel = msoModel;
 		this.layerCodes = myLayers;
-		this.msoLayerEventStack = new MsoLayerEventStack();
-		this.mapListeners = new ArrayList<IDiskoMapListener>();
-		
-		// adapters
-		this.ctrlAdapter = new ControlEventsAdapter();
-		this.compAdapter = new MapCompEventsAdapter();
-		this.workRepeater = new DiskoWorkRepeater();		
-		
+		this.binder = new MsoDataBinder(mapManager);
+		this.binder.addMapDataListener(new MapDataListener());
+
+		// connect to MSO model
+		connect(msoModel);
+
 		// initialize GUI
 		initialize();
-		
+
 		// load map
-		loadMxdDoc(mapManager.getMxdDoc(),true);		
+		loadMxdDoc(mapManager.getMxdDoc(),true);
+
+	}
+
+	public boolean connect(IMsoModelIf model) {
+
+		// disconnect first
+		binder.disconnect();
+
+		// forward
+		return binder.connect(msoModel, false);
+
+	}
+
+	public MsoDataBinder getMsoBinder() {
+		return binder;
 	}
 
 	private void initialize() throws IOException, AutomationException {
-		
+
 		// prepare
 		setName("diskoMap");
 		setBorder(null); // BorderFactory.createBevelBorder(BevelBorder.LOWERED)
 		setBorderStyle(esriControlsBorderStyle.esriNoBorder);
 		setShowScrollbars(false);
-		suppressResizeDrawing(true, 0);		
+		suppressResizeDrawing(true, 0);
 
 		// set disko map progress
 		getTrackCancel().setCheckTime(250);
 		getTrackCancel().setProgressor(getProgressor());
-		
+
 		// listen to do actions when the map is loaded
 		addIMapControlEvents2Listener(ctrlAdapter);
 
 		// listen for component events
 		addComponentListener(compAdapter);
-		
+
 		// create refresh stack
 		refreshStack = new HashMap<String,Runnable>();
-		
+
 		// create points for last click and move events
 		movePoint = new Point();
 		clickPoint = new Point();
-		
+
 	}
-	
-	private void initLayers(boolean initMSO) throws java.io.IOException, AutomationException {
-		
+
+	private void initLayers(boolean initMSO) throws Exception {
+
 		// forward
 		if(!isMxdDocLoaded()) return;
-		
+
 		// get hooks
 		IMap focusMap = getActiveView().getFocusMap();
 		ISpatialReference srs = getSpatialReference();
-		
+
 		// initialize layers?
 		if(initMSO) {
-			
-	        // remove listen to MSO client event update listener
-			msoModel.getEventManager().removeClientUpdateListener(this);
-	                
+
 			// add MSO layers
 			msoLayers = new ArrayList<IMsoFeatureLayer>();
 			diskoLayers = new ArrayList<IDiskoLayer>();
-			
+
 			// get interests as
 			ArrayList<LayerCode> list = new ArrayList<LayerCode>(layerCodes);
-			
+
 			// initialize
 			classCodes = EnumSet.noneOf(MsoClassCode.class);
 			coClassCodes = new HashMap<MsoClassCode, EnumSet<MsoClassCode>>();
-			
+
 			// loop over my layers
 			for(int i=0;i<list.size();i++){
 				LayerCode layerCode = list.get(i);
 				if(layerCode == LayerCode.SEARCH_AREA_LAYER) {
-					addDiskoLayer(new SearchAreaLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new SearchAreaLayer(srs,msoLayerEventStack,mapManager),true);
 					addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
 				}
 				else if(layerCode == LayerCode.OPERATION_AREA_LAYER) {
-					addDiskoLayer(new OperationAreaLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new OperationAreaLayer(srs,msoLayerEventStack,mapManager),true);
 					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
 				}
 				else if(layerCode == LayerCode.OPERATION_AREA_MASK_LAYER) {
-					addDiskoLayer(new OperationAreaMaskLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new OperationAreaMaskLayer(srs,msoLayerEventStack,mapManager),true);
 					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
 				}
 				else if(layerCode == LayerCode.AREA_LAYER) {
-					addDiskoLayer(new AreaLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new AreaLayer(srs,msoLayerEventStack,mapManager),true);
 					if(addClass(MsoClassCode.CLASSCODE_AREA)) {
 						addCoClass(MsoClassCode.CLASSCODE_POI,MsoClassCode.CLASSCODE_AREA);
 						addCoClass(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_AREA);
@@ -250,65 +257,57 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					}
 				}
 				else if(layerCode == LayerCode.ROUTE_LAYER) {
-					addDiskoLayer(new RouteLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new RouteLayer(srs,msoLayerEventStack,mapManager),true);
 					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
 						addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
 						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
 					}
 				}
 				else if(layerCode == LayerCode.POI_LAYER) {
-					addDiskoLayer(new POILayer(msoModel,srs,msoLayerEventStack),true);				
-					if(addClass(MsoClassCode.CLASSCODE_POI)) { 
+					addDiskoLayer(new POILayer(srs,msoLayerEventStack,mapManager),true);
+					if(addClass(MsoClassCode.CLASSCODE_POI)) {
 						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
 					}
 				}
 				else if(layerCode == LayerCode.FLANK_LAYER) {
-					addDiskoLayer(new FlankLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new FlankLayer(srs,msoLayerEventStack,mapManager),true);
 					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
 						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
 					}
 				}
 				else if(layerCode == LayerCode.UNIT_LAYER) {
-					addDiskoLayer(new UnitLayer(msoModel,srs,msoLayerEventStack),true);
+					addDiskoLayer(new UnitLayer(srs,msoLayerEventStack,mapManager),true);
 					addClass(MsoClassCode.CLASSCODE_UNIT);
 				}
 				else if(layerCode == LayerCode.ESTIMATED_POSITION_LAYER) {
 					addDiskoLayer(new EstimatedPositionLayer(srs),false);
 				}
 			}
-			
-			// add co-classes that affects registered classes 
+
+			// add co-classes that affects registered classes
 			for(MsoClassCode code : coClassCodes.keySet()) {
-				addClass(code);	
+				addClass(code);
 			}
-			
-			/* =====================================================
-			 * 
-			 * It is important that the map receives handleMsoChange()
-			 * AFTER all layers has received it. this ensures that
-			 * all affected layers is updated before the map handles the event
-			 * 
-			 * ===================================================== */
-			
-	        // add listen to MSO client event update events. 
-			msoModel.getEventManager().addClientUpdateListener(this);
-			
+
 			// create a the MSO group layer
 			GroupLayer diskoGroup = new GroupLayer();
 			diskoGroup.setName("DISKO_GROUP_LAYER");
 			diskoGroup.setCached(true);
-			
-			// add to focus map
-			focusMap.addLayer(diskoGroup);
 
-			// add disko layers
+			// add DISKO layers to layer group
 			for (IDiskoLayer it : diskoLayers) {
 				diskoGroup.add((ILayer)it);
 			}
-			
+
+			// add to focus map
+			focusMap.addLayer(diskoGroup);
+
+			// connect layers and MSO data
+			binder.setLayers(msoLayers);
+
 		}
 		else {
-			// update spatial references 
+			// update spatial references
 			for (IDiskoLayer it : diskoLayers) {
 				((ILayer)it).setSpatialReferenceByRef(srs);
 			}
@@ -318,17 +317,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		for (int i = 0; i < focusMap.getLayerCount(); i++) {
 			prepareLayer(focusMap.getLayer(i));
 		}
-		
+
+		// load MSO data into layers
+		binder.load();
+
 		// initialize MSO selection model
 		setMsoLayerSelectionModel();
-		
-	}	
-	
+
+	}
+
 	private void addDiskoLayer(IDiskoLayer layer, boolean isMSO) {
 		diskoLayers.add(layer);
-		if(isMSO) msoLayers.add((IMsoFeatureLayer)layer);		
+		if(isMSO) msoLayers.add((IMsoFeatureLayer)layer);
 	}
-	
+
 	private void prepareLayer(ILayer l) throws AutomationException, IOException {
 		if (l instanceof IFeatureLayer) {
 			IFeatureLayer f = (IFeatureLayer)l;
@@ -343,23 +345,23 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			for (int i = 0; i < g.getCount(); i++) {
 				prepareLayer(g.getLayer(i));
 			}
-			
+
 		}
 		// register step progressor?
 		if(l instanceof ILayerStatus) {
 			// add the disko step processor to this layer
 			((ILayerStatus)l).setStepProgressor(getProgressor());
-		}		
+		}
 	}
-	
+
 	private boolean addClass(MsoClassCode code) {
 		if(!classCodes.contains(code)) {
 			return classCodes.add(code);
 		}
 		return false;
-		
+
 	}
-	
+
 	private boolean addCoClass(MsoClassCode from, MsoClassCode to) {
 		EnumSet<MsoClassCode> list = null;
 		if(!coClassCodes.containsKey(from)) {
@@ -375,78 +377,48 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return false;
 	}
-	
-	public void handleMsoUpdateEvent(Update e) {
-		
-		try {
-			
-			// get mask
-			int mask = e.getEventTypeMask();
-			
-	        // get mso object
-	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-	        
-	        // get flag
-	        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-			
-			// initialize
-			int count = 0;
-			IMsoFeatureLayer msoLayer = null;
-			
-	        // clear all?
-	        if(clearAll) {
-	        	count = msoLayers.size();
-	        }
-	        else {
-	        	
-	        	// get layers
-	        	List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
 
-				// loop over layers
-				for (IMsoFeatureLayer it : layers) {
-					if (it.isVisible() && it.isDirty()) {
-						count++;
-						msoLayer = it;
-					}
-				}
-	        }
-
-	        // save refresh information
-			refreshCount += count;
-			refreshLayer = msoLayer;
-	        
-			// refresh layers later?
-			if (!super.isShowing() || isDrawingSupressed()) {
-				return; 
-			}
-			
-			// forward
-			decideRefresh();
-			
-						
-		} catch (AutomationException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
-	}
-	
 	private void decideRefresh() throws AutomationException, IOException {
-		
+
 		// refresh layer(s)
-		if(refreshCount==1)
+		if(isInitMode) {
+			// reset flag
+			setInitMode(false);
+			// initialize
+			IEnvelope e = MapUtil.getOperationExtent(this);
+			// set extent?
+			if(e!=null && !e.isEmpty()) {
+				setExtent(MapUtil.expand(1.25,e));
+    			//refreshGeography(null, getExtent());
+        	}
+		}
+		else if(refreshCount==1)
 			refreshGraphics(refreshLayer, getExtent());
 		else if(refreshCount > 1)
 			refreshGraphics(null, getExtent());
-		else 
+		else
 			refreshDrawFrame();
-		
+
 		// reset info
 		refreshCount = 0;
 		refreshLayer = null;
-		
-		
+
+	}
+
+	public boolean isActive() {
+		return binder.isActive();
+	}
+
+	public boolean activate() {
+		return binder.activate(isShowing());
+	}
+
+	public boolean deactivate() {
+		return binder.deactivate();
+	}
+
+	public boolean execute(boolean showProgress) {
+		return binder.execute(showProgress);
 	}
 
 	public void setMsoLayersVisible(MsoClassCode classCode, boolean value) throws IOException {
@@ -457,11 +429,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			}
 		}
 	}
-	
+
 	public List<IDiskoLayer> getDiskoLayers() {
 		return new ArrayList<IDiskoLayer>(diskoLayers);
 	}
-	
+
 	public IDiskoLayer getDiskoLayer(LayerCode layerCode) {
 		for (IDiskoLayer it : diskoLayers) {
 			if (it.getLayerCode() == layerCode) {
@@ -470,11 +442,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return null;
 	}
-	
+
 	public List<IMsoFeatureLayer> getMsoLayers() {
 		return new ArrayList<IMsoFeatureLayer>(msoLayers);
 	}
-	
+
 	public EnumSet<LayerCode> getSupportedLayers() {
 		return layerCodes;
 	}
@@ -493,7 +465,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			for(MsoClassCode c : relations) {
 				List<IMsoFeatureLayer> list = getMsoLayers(c);
 				for(IMsoFeatureLayer it:list) {
-					if(!result.contains(it)) result.add(it);					
+					if(!result.contains(it)) result.add(it);
 				}
 			}
 		}
@@ -513,7 +485,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	public boolean isDrawingSupressed() {
 		return supressDrawing>0;
 	}
-	
+
 	public void setSupressDrawing(boolean supress) {
 		if(supress)
 			supressDrawing++;
@@ -521,13 +493,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			supressDrawing--;
 	}
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return classCodes.contains(aMsoObject.getMsoClassCode());
-	}
-	
+
 	@Override
 	public ITool getCurrentTool() throws IOException, AutomationException {
 		return (ITool)activeTool;
@@ -546,15 +512,15 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 	@Override
 	public IMapTool getActiveTool() {
 		return activeTool;
-	}	
-	
+	}
+
 	public boolean setActiveTool(IMapTool tool, int options)
 			throws IOException, AutomationException {
 		// no change?
 		if(activeTool==tool) return true;
 		// update locals
 		if (activeTool != null && !activeTool.deactivate()) {
-			Utils.showError("Verktøy " + tool.getCaption() 
+			Utils.showError("Verktøy " + tool.getCaption()
 					+ " kan ikke deaktiveres");
 				return false;
 		}
@@ -564,31 +530,31 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					+ tool.getCaption() + " kan ikke velges");
 			return false;
 		}
-		
+
 		// unregister work listener?
 		if(activeTool!=null) {
 			activeTool.removeDiskoEventListener(workRepeater);
 		}
-		
+
 		// forward
 		super.setCurrentToolByRef(tool);
-		
+
 		// save tool
 		activeTool = tool;
-		
+
 		// register?
 		if(activeTool!=null) {
-			
+
 			// register work listener
-			activeTool.addDiskoWorkListener(workRepeater);
-			
+			activeTool.addWorkListener(workRepeater);
+
 			// get button
-			AbstractButton button = activeTool.getButton(); 
-			
+			AbstractButton button = activeTool.getButton();
+
 			// has button?
 			if(button!=null) {
 				button.setSelected(true);
-				button.requestFocus();			
+				button.requestFocus();
 			}
 			// is hosted?
 			if(activeTool.isHosted()) {
@@ -604,7 +570,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// success
 		return true;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
@@ -688,9 +654,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				}
 				catch(Exception e) {
 					// consume remoteobject exception on IMsoFeatureLayers
-				}				
+				}
 			}
-			List<IMsoFeatureLayer> layers = getMsoLayers();			
+			List<IMsoFeatureLayer> layers = getMsoLayers();
 			for(int i=0;i<layers.size();i++) {
 				// get mso feature layer
 				IMsoFeatureLayer layer = (IMsoFeatureLayer)layers.get(i);
@@ -703,7 +669,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				}
 			}
 		}
-		
+
 		return selection;
 	}
 
@@ -714,7 +680,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		ArrayList<IMsoFeature> selection = new ArrayList<IMsoFeature>();
 		int count = getMsoSelectionCount(true);
 		if (count > 0) {
-			List<IMsoFeatureLayer> layers = getMsoLayers();			
+			List<IMsoFeatureLayer> layers = getMsoLayers();
 			for(int i=0;i<layers.size();i++) {
 				// get mso feature layer
 				IMsoFeatureLayer layer = (IMsoFeatureLayer)layers.get(i);
@@ -727,10 +693,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				}
 			}
 		}
-		
+
 		return selection;
 	}
-	
+
 	public IEnvelope getSelectionExtent() throws IOException, AutomationException {
 		List<IFeature> selection = getSelection();
 		if (selection != null && selection.size() > 0) {
@@ -749,7 +715,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		if(!MapUtil.is2DEqual(p, p2))
 			super.centerAt(p);
 	}
-	
+
 	public void centerAtPosition(GeoPos p) throws IOException, AutomationException {
 		// get esri point
 		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
@@ -757,20 +723,20 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			centerAt(point);
 		}
 	}
-	
+
 	public void centerAtSelected() throws IOException, AutomationException {
 		IEnvelope env = getSelectionExtent();
 		if (env != null && !env.isEmpty()) {
 			centerAt(MapUtil.getCenter(env));
 		}
 	}
-	
+
 	public void centerAtFeature(IFeature feature) throws IOException, AutomationException {
 		if(feature!=null) {
 			IEnvelope env = feature.getExtent();
 			if(env!=null && !env.isEmpty()) {
 				centerAt(MapUtil.getCenter(env));
-			}			
+			}
 		}
 	}
 
@@ -794,11 +760,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void flashPoint(IPoint p) {
 		flashShape(p);
 	}
-	
+
 	public void flashPosition(GeoPos p) {
 		try {
 			// get esri point
@@ -812,9 +778,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 	}
-	
+
 	public void flashFeature(IFeature feature) {
 		// forward?
 		if(feature!=null) {
@@ -830,11 +796,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			}
 		}
 	}
-	
+
 	private IGeometry getFlashableGeometry(IGeometry geo, boolean extent) throws AutomationException, IOException {
 		IGeometry flashable = null;
 		if(geo!=null && !geo.isEmpty()) {
-			if(!extent) {				
+			if(!extent) {
 				if(geo instanceof GeometryBag)
 					return MapUtil.getPolyline((GeometryBag)geo);
 				else if(geo instanceof Polygon)
@@ -849,7 +815,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// finished
 		return flashable;
 	}
-	
+
 	public void flashMsoObject(IMsoObjectIf msoObj) {
 		try {
 			// forward?
@@ -858,7 +824,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
 				for (int i = 0; i < layers.size(); i++) {
 					IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
-					MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
+					MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
 					for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObj))
 						flashFeature(msoFC.getFeature(it.getObjectId()));
 				}
@@ -871,17 +837,17 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void flashEnvelope(IEnvelope extent) {
 		flashShape(extent);
 	}
-	
+
 	public void flashPolygon(IPolygon p) {
-		flashShape(p);		
+		flashShape(p);
 	}
-	
+
 	public void flashPolyline(IPolyline p) {
-		flashShape(p);				
+		flashShape(p);
 	}
 
 	private void flashShape(IGeometry shape) {
@@ -895,7 +861,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void setExtent(IEnvelope extent) throws IOException, AutomationException {
 		/*
@@ -904,7 +870,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		boolean contained ((Envelope)getExtent()).contains(extent);
 		// any change?
 		if(!MapUtil.is2DEqual(p1, p2) || contained) {
-			
+
 		}
 		*/
 		/*
@@ -913,12 +879,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		*/
 		super.setExtent(extent);
 	}
-	
+
 	public void zoomTo(IGeometry geom, double ratio) throws IOException, AutomationException {
 		// forward
-		setExtent(MapUtil.expand(ratio,geom.getEnvelope()));		
+		setExtent(MapUtil.expand(ratio,geom.getEnvelope()));
 	}
-	
+
 	public void zoomToPosition(GeoPos p, double ratio) throws IOException, AutomationException {
 		// get esri point
 		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
@@ -926,7 +892,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			zoomTo(point,ratio);
 		}
 	}
-	
+
 	public void zoomToSelected() throws IOException, AutomationException {
 		zoomToSelected(ZOOM_RATIO);
 	}
@@ -937,9 +903,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			setExtent(MapUtil.expand(ratio,env));
 		}
 	}
-	
+
 	public void zoomToFeature(IFeature feature) throws IOException, AutomationException {
-		zoomToFeature(feature,ZOOM_RATIO); 
+		zoomToFeature(feature,ZOOM_RATIO);
 	}
 
 	public void zoomToFeature(IFeature feature, double ratio) throws IOException, AutomationException {
@@ -947,14 +913,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			IEnvelope env = feature.getExtent();
 			if(env!=null) {
 				setExtent(MapUtil.expand(ratio,env));
-			}			
+			}
 		}
 	}
 
 	public void zoomToMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
 		zoomToMsoObject(msoObject,ZOOM_RATIO);
 	}
-	
+
 	public void zoomToMsoObject(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException {
 		// is poi?
 		if(msoObject instanceof IPOIIf) {
@@ -964,14 +930,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			IEnvelope env = getMsoObjectExtent(msoObject);
 			if(env!=null && !env.isEmpty()) {
 				zoomTo(env,ratio);
-			}			
+			}
 		}
 	}
 
 	public IEnvelope getMsoObjectExtent(IMsoObjectIf msoObj) throws IOException, AutomationException {
 		return MapUtil.getMsoExtent(getGeodataMsoObject(msoObj), this, true);
 	}
-	
+
 	public void zoomToPrintMapExtent(IMsoObjectIf msoObject, double scale, int pixHeigth, int pixWidth) throws IOException, AutomationException {
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
@@ -979,40 +945,40 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
-				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
+				MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
 				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
 					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
 					IEnvelope extent = msoFeature.getExtent();
-					
+
 					// calculate extent from scale
 					double xMax = extent.getXMax();
 					double yMax = extent.getYMax();
 					double xMin = extent.getXMin();
 					double yMin = extent.getYMin();
-					
+
 					//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
-					
+
 					// calulate delta values
 					double deltaX = (pixWidth*PIXEL_SIZE)*scale;
 					double deltaY = (pixWidth*PIXEL_SIZE)*scale;
 					double centerX = xMin + (xMax-xMin)/2;
 					double centerY = yMin + (yMax-yMin)/2;
-					
+
 					//System.out.println("deltaX: "+deltaX + ", deltaY: "+deltaY);
-					
+
 					// set extent
 					extent.setXMax(centerX+deltaX/2);
 					extent.setXMin(centerX-deltaX/2);
 					extent.setYMax(centerY+deltaY/2);
 					extent.setYMin(centerY-deltaY/2);
-					
+
 					//System.out.println("extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
-	
+
 					// append
 					if (extent != null) {
 						if (env == null)
 							env = extent.getEnvelope();
-						else 
+						else
 							env.union(extent);
 					}
 				}
@@ -1031,40 +997,40 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 
 			for (int i = 0; i < layers.size(); i++) {
-				
+
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
-				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
+				MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
 				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
 					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
 					IEnvelope extent = msoFeature.getExtent();
-					
+
 					if (extent != null) {
-						
-						//må kalkulere et extent som gir gitt skala				
-						//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());				
+
+						//må kalkulere et extent som gir gitt skala
+						//System.out.println("looper "+i+", extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
 						double centerX = extent.getXMin() + (extent.getXMax()-extent.getXMin())/2;
 						double centerY = extent.getYMin() + (extent.getYMax()-extent.getYMin())/2;
-						
-						
+
+
 						double deltaX = mapPrintWidthSize * scale;
 						double deltaY = mapPrintHeigthSize * scale;
-						
+
 						// System.out.println("deltaX: "+deltaX + ", deltaY: "+deltaY);
-						
+
 						// set extent
 						extent.setXMax(centerX+deltaX/2);
 						extent.setXMin(centerX-deltaX/2);
 						extent.setYMax(centerY+deltaY/2);
 						extent.setYMin(centerY-deltaY/2);
-						
+
 						//System.out.println("extent.getXMax(): "+extent.getXMax() + ", extent.getYMax(): "+extent.getYMax() + ", extent.getXMin(): "+extent.getXMin() + "extent.getYMin(): "+extent.getYMin());
-						
+
 						// append
 						if (env == null)
 							env = extent.getEnvelope();
-						else 
+						else
 							env.union(extent);
-						
+
 					}
 				}
 			}
@@ -1083,12 +1049,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
-				MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
 				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
 					boolean bDirty = false;
-					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
+					IMsoFeature msoFeature = flayer.getFeature(it);
 					if(msoFeature!=null) {
-						flayer.setSelected(msoFeature, selected);
+						flayer.setSelected(flayer.getFeature(it), selected);
 						bDirty = flayer.isDirty();
 					}
 					if(bDirty)
@@ -1136,14 +1101,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 	}
 
-	public List<IMsoFeatureLayer> clearSelected() 
+	public List<IMsoFeatureLayer> clearSelected()
 		throws IOException, AutomationException {
 		suspendNotify();
 		List<IMsoFeatureLayer> msoLayers = getMsoLayers();
 		List<IMsoFeatureLayer> cleared = new ArrayList<IMsoFeatureLayer>();
 		for (int i = 0; i < msoLayers.size(); i++) {
 			IMsoFeatureLayer msoLayer = (IMsoFeatureLayer)msoLayers.get(i);
-			if (msoLayer.getSelected().size() > 0) {
+			if (msoLayer.getSelectedFeatures().size() > 0) {
 				msoLayer.clearSelected();
 				cleared.add(msoLayer);
 			}
@@ -1152,7 +1117,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		resumeNotify();
 		return cleared;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getFeatureLayer(java.lang.String)
 	 */
@@ -1173,11 +1138,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				// found?
 				if(found!=null) return found;
 			}
-			
+
 		}
 		return null;
 	}
-	
+
 	private IFeatureLayer getFeatureLayerInGroupLayer(String name, GroupLayer group) throws AutomationException, IOException {
 		// get layer count
 		int count = group.getCount();
@@ -1188,7 +1153,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			if (l instanceof FeatureLayer) {
 				return (IFeatureLayer)l;
 			}
-		}	
+		}
 		return null;
 	}
 
@@ -1206,13 +1171,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// is not drawing
 		return false;
 	}
-	
-	
+
+
 	public void refreshMapBase() throws IOException, AutomationException {
 		// forward
 		refresh(esriViewDrawPhase.esriViewGeography, null, getExtent());
 	}
-	
+
 	public void refreshMapBase(IEnvelope extent)  throws IOException, AutomationException {
 		// forward
 		if(isCacheChanged) {
@@ -1231,7 +1196,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 							e.printStackTrace();
 						}
 					}
-				});				
+				});
 			}
 			else {
 				// force full refresh
@@ -1244,23 +1209,23 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			refresh(esriViewDrawPhase.esriViewGeography, null, extent);
 		}
 	}
-	
+
 	public void refreshMsoLayers() throws IOException, AutomationException {
 		// forward
 		refreshMsoLayers(getExtent());
 	}
-	
-	public void refreshMsoLayers(IEnvelope extent) 
+
+	public void refreshMsoLayers(IEnvelope extent)
 		throws IOException, AutomationException {
 		// forward
 		refreshMsoLayers(msoLayers,extent);
 	}
-	
+
 	public void refreshMsoLayers(MsoClassCode classCode) throws IOException,
 		AutomationException {
 		// forward
 		refreshMsoLayers(classCode, getExtent());
-		
+
 	}
 	public void refreshMsoLayers(MsoClassCode classCode, IEnvelope extent) throws IOException,
 		AutomationException {
@@ -1269,15 +1234,15 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// forward
 		refreshMsoLayers(layers,extent);
 	}
-	
-	private void refreshMsoLayers(List<IMsoFeatureLayer> layers, IEnvelope extent) 
+
+	private void refreshMsoLayers(List<IMsoFeatureLayer> layers, IEnvelope extent)
 		throws IOException, AutomationException {
-		
+
 		// initialise
 		int count = 0;
 		boolean isDirtyExtent = (extent == null);
 		IMsoFeatureLayer msoLayer = null;
-		
+
 		// loop over layers
 		for (IMsoFeatureLayer it : layers) {
 			if (it.isVisible() && it.isDirty()) {
@@ -1289,34 +1254,38 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						extent = msoLayer.getDirtyExtent();
 					else
 						extent.union(msoLayer.getDirtyExtent());
-	
+
 				}
 			}
 		}
-		
+
 		// refresh layer(s)
 		if(count==1)
 			refreshGraphics(msoLayer, extent);
 		else if(count > 1)
 			refreshGraphics(null, extent);
 		else
-			refreshDrawFrame();			
-	
+			refreshDrawFrame();
+
+		// reset
+		refreshCount = 0;
+		refreshLayer = null;
+
 	}
 
-	
-	
+
+
 	public void refresh() throws IOException, AutomationException {
-		
+
 		// consume?
 		if(isDrawing() || isDrawingSupressed()) return;
-		
+
 		// create object
 		Runnable r = new Runnable() {
 			public void run() {
 				try {
 					// trace event
-					//System.out.println(getProgressor().toString() + "::refresh(ALL)::started");						
+					//System.out.println(getProgressor().toString() + "::refresh(ALL)::started");
 					// forward
 					showProgressor(false);
 					// hide
@@ -1328,7 +1297,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					// forward
 					hideProgressor();
 					// trace event
-					//System.out.println(getProgressor().toString() + "::refresh(ALL)::finished");						
+					//System.out.println(getProgressor().toString() + "::refresh(ALL)::finished");
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1342,61 +1311,63 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// forward
 		refresh(esriViewDrawPhase.esriViewGeography,data,extent);
 	}
-	
+
 	public void refreshGraphics(final Object data, final IEnvelope extent) {
 		// forward
 		refresh(esriViewDrawPhase.esriViewGraphics,data,extent);
 	}
-	
+
 	private void refresh(final int phase, final Object data, final IEnvelope extent) {
 		// consume?
 		if(isDrawing() || isDrawingSupressed()) return;
-		// get key
-		String key = phase + "." + String.valueOf(data);
-		// not in stack?
-		if (!refreshStack.containsKey(key)) {
-			// create object
-			Runnable r = new Runnable() {
-				public void run() {
-					try {				
-						// trace event
-						//System.out.println(getProgressor().toString() + "::refresh(DATA)::started");		
-						// forward
-						showProgressor(false); // setTrackID(TRACK_PROGRESS, true);
-						// get key
-						String key = phase + "." + String.valueOf(data);
-						// refresh view
-						//Map map = (Map)getActiveView().getFocusMap();
-						//map.animationRefresh(phase, data, extent);
-						getActiveView().partialRefresh(phase, data, extent);
-						// remove from stack
-						refreshStack.remove(key);
-						// forward
-						hideProgressor();
-						// trace event
-						//System.out.println(getProgressor().toString() + "::refresh(DATA)::finished");						
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+		// do directly?
+		if(SwingUtilities.isEventDispatchThread()) {
+			try {
+				// forward
+				showProgressor(false);
+				// get key
+				String key = phase + "." + String.valueOf(data);
+				// refresh view
+				//Map map = (Map)getActiveView().getFocusMap();
+				//map.animationRefresh(phase, data, extent);
+				getActiveView().partialRefresh(phase, data, extent);
+				// remove from stack
+				refreshStack.remove(key);
+				// forward
+				hideProgressor();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else {
+			// get key
+			String key = phase + "." + String.valueOf(data);
+			// not in stack?
+			if (!refreshStack.containsKey(key)) {
+				// create object
+				Runnable r = new Runnable() {
+					public void run() {
+						refresh(phase, data, extent);
 					}
-				}
-			};
-			refreshStack.put(key, r);
-			SwingUtilities.invokeLater(r);
+				};
+				refreshStack.put(key, r);
+				SwingUtilities.invokeLater(r);
+			}
 		}
 	}
-	
+
 	private void refreshDrawFrame() {
 		// is draw frame enabled?
 		if(isEditSupportInstalled()) {
 			drawFrame.refresh();
-		}		
+		}
 	}
 
 	public boolean isRefreshPending() {
 		return (refreshStack.size()>0);
 	}
-	
+
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException {
 		List<IMsoFeature> features = new ArrayList<IMsoFeature>();
 		if(msoObj!=null) {
@@ -1405,7 +1376,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				IMsoFeatureLayer flayer = layers.get(i);
 				if (flayer!=null) {
 		 			// try to get feature
-					MsoFeatureClass msoFC = (MsoFeatureClass)flayer.getFeatureClass();
+					MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
 					for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObj)) {
 						IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
 						// found?
@@ -1418,7 +1389,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return features;
 	}
-	
+
 	public int isSelected(IMsoObjectIf msoObj) throws AutomationException, IOException {
 		if(msoObj==null) return -1;
 		int count = 0;
@@ -1429,12 +1400,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return count;
 	}
-	
+
 	private IMsoObjectIf getGeodataMsoObject(IMsoObjectIf msoObject) {
 		if (msoObject instanceof IAssignmentIf) {
 			IAssignmentIf assignment = (IAssignmentIf)msoObject;
 			msoObject = assignment.getPlannedArea();
-		} 
+		}
 		return msoObject;
 	}
 
@@ -1479,7 +1450,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		if(notifySuspended>1)
 			notifySuspended--;
 	}
-	
+
 	public void consumeNotify() {
 		// only resume on last decrement
 		if(notifySuspended==1){
@@ -1490,13 +1461,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		if(notifySuspended==1)
 			notifySuspended--;
 	}
-	
+
 	public int getSelectionCount(boolean update) throws IOException, AutomationException {
 		int count = getMsoSelectionCount(update);
 		// return selection count
 		return getMap().getSelectionCount()+count;
 	}
-	
+
 	public int getMsoSelectionCount(boolean update) throws IOException, AutomationException {
 		int count = 0;
 		for (int i = 0; i < msoLayers.size(); i++) {
@@ -1506,21 +1477,21 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// return selection count
 		return count;
 	}
-	
+
 	public double getScale() {
 		try {
 			return getScale((IBasicMap)getActiveView().getFocusMap());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
 		return 0;
 	}
-	
+
 	public double getMaxDrawScale() {
 		return MAX_DRAW_SCALE;
 	}
-	
+
 	public boolean isDrawAllowed() {
 		try {
 			return (getScale()<=MAX_DRAW_SCALE);
@@ -1531,11 +1502,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// failed
 		return false;
 	}
-	
+
 	public double getMaxSnapScale() {
 		return MAX_SNAP_SCALE;
 	}
-	
+
 	public boolean isSnapAllowed() {
 		try {
 			return (getScale()<=MAX_SNAP_SCALE);
@@ -1551,7 +1522,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		IMap focusMap = getActiveView().getFocusMap();
 		double scale = getScale((IBasicMap)focusMap);
 		ArrayList<IFeatureLayer> layers = new ArrayList<IFeatureLayer>();
-		// for scales beyond MAX_SNAP_SCALE, allowing for snapping does not make sence because 
+		// for scales beyond MAX_SNAP_SCALE, allowing for snapping does not make sence because
 		// drawing is typically done at much lower scales. furthermore, allowing scales beyond
 		// MAX_SNAP_SCALE will reduce system performance because of a very large number of indexes features
 		// must be buffered. Ultimately, the application may become unresponsive for a very long time
@@ -1579,7 +1550,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return layers;
 	}
-	
+
 	private void getSnappableInGroupLayer(ArrayList<IFeatureLayer> layers, GroupLayer layer, double scale) throws IOException, AutomationException {
 		// get layer count
 		int count = layer.getCount();
@@ -1599,17 +1570,17 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 				GroupLayer glayer = (GroupLayer) l;
 				// forward
 				getSnappableInGroupLayer(layers, glayer, scale);
-			}			
+			}
 		}
 	}
-	
+
 	private boolean isSnappable(IFeatureLayer layer, double scale) throws IOException, AutomationException {
 		int shapeType = layer.getFeatureClass().getShapeType();
 		if (shapeType == esriGeometryType.esriGeometryPolyline ||
 				shapeType == esriGeometryType.esriGeometryPolygon  ||
 				shapeType == esriGeometryType.esriGeometryBag) {
-			
-			if (	layer.isVisible() && 
+
+			if (	layer.isVisible() &&
 					scale > layer.getMaximumScale() &&
 					scale < layer.getMinimumScale()) {
 				return true;
@@ -1617,11 +1588,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return false;
 	}
-	
-	private DiskoMapProgressor getProgressor() {
+
+	private Progressor getProgressor() {
 		if(progressor==null) {
-			progressor = new DiskoMapProgressor();
-			
+			progressor = new Progressor();
+
 			/*
 			progressor.addListener(new DiskoMapProgressor.ProgressorListener() {
 
@@ -1652,8 +1623,8 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return progressor;
 	}
-	
-	
+
+
 	public Point getClickPoint() {
 		try {
 			return clickPoint!=null && !clickPoint.isEmpty() ? clickPoint : getCenterPoint();
@@ -1692,13 +1663,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;			
+		return null;
 	}
-	
+
 	public boolean isEditSupportInstalled() {
 		return isEditSupportInstalled;
 	}
-	
+
 	public void installEditSupport() {
 		// install?
 		if(!isEditSupportInstalled) {
@@ -1709,7 +1680,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			getSnapAdapter();
 		}
 	}
-	
+
 	public DrawFrame getDrawFrame() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
@@ -1721,53 +1692,53 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}			
+			}
 		}
 		return drawFrame;
 	}
-	
+
 	public MsoDrawAdapter getDrawAdapter() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
 		// initialize?
 		if(drawAdapter == null) {
 			// create draw adapter
-			drawAdapter = new MsoDrawAdapter(Utils.getApp());
+			drawAdapter = new MsoDrawAdapter();
 			// register objects
 			drawAdapter.register(this);
 		}
 		return drawAdapter;
 	}
-	
+
 	public DrawDialog getDrawDialog() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
 		// initialize?
 		if(drawDialog == null) {
-			
+
 			// get draw dialog
-	        NavBarPanel navBar = Utils.getApp().getNavBar();
+	        NavMenu navBar = Utils.getApp().getNavMenu();
 			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
 			drawDialog.setLocationRelativeTo(this,DefaultDialog.POS_WEST, true, true);
 
 		}
 		return drawDialog;
 	}
-	
+
 	public ElementDialog getElementDialog() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
 		// initialize?
 		if (elementDialog == null) {
-			
+
 			// create
 			elementDialog = new ElementDialog(Utils.getApp().getFrame());
 			elementDialog.setLocationRelativeTo(this,DefaultDialog.POS_EAST, false, true);
 
 		}
 		return elementDialog;
-	}	
-	
+	}
+
 	public SnapAdapter getSnapAdapter() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
@@ -1783,13 +1754,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return snapAdapter;
 	}
-	
+
 	public SnapDialog getSnapDialog() {
 		// not supported?
 		if(!isEditSupportInstalled) return null;
 		// initialize?
 		if(snapDialog == null) {
-			
+
 			// create new snap dialog
 	        snapDialog = new SnapDialog(Utils.getApp().getFrame());
 	        snapDialog.setLocationRelativeTo(this,DefaultDialog.POS_WEST, true, true);
@@ -1797,18 +1768,18 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return snapDialog;
 	}
-	
-	
-	
+
+
+
 	public boolean isInitMode() {
 		return isInitMode;
 	}
-	
+
 	public void setInitMode(boolean isInitMode) {
 		this.isInitMode = isInitMode;
 	}
-	
-    
+
+
     public IEnvelope getDirtyExtent() {
     	IEnvelope extent = null;
 		try {
@@ -1833,7 +1804,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}   
+		}
 		return extent;
     }
 
@@ -1854,27 +1825,27 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// failed!
 		return null;
 	}
-	
+
 	public int getMapBaseCount() {
 		return getMapManager().getMapBaseCount();
 	}
 
 	/**
 	 * Set base map layer
-	 * 
+	 *
 	 * @param index 1-based base map layer index.
 	 */
-	
+
 	public int setMapBase(int index) {
-		
+
 		// get current base layer count
 		int count = getMapBaseCount();
-		
+
 		// not allowed?
 		if(count==0 || getMapBaseIndex()==index) return 0;
 
 		try {
-			
+
 			// loop over all map base layers
 			for(int i=0; i<count;i++) {
 				// get next base layer
@@ -1890,16 +1861,16 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					l.setVisible(i==(index-1));
 				}
 			}
-			
+
 			// update current index
 			currentBase = index;
-			
+
 			// update map layer selection model
 			setMapLayerSelectionModel();
-			
+
 			// return next base layer index
 			return index;
-			
+
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1917,7 +1888,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// forward
 		return setMapBase(index);
 	}
-	
+
 	private ILayer getLayer(String name)
 			throws IOException, AutomationException {
 		// get map in focus
@@ -1930,7 +1901,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		}
 		return null;
 	}
-	
+
 	public boolean isMxdDocLoaded() {
 		try {
 			return getDocumentFilename()!=null && !getDocumentFilename().isEmpty();
@@ -1941,7 +1912,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 		// failed
 		return false;
 	}
-	
+
 	@Override
 	public void setVisible(boolean isVisible) {
 		// only show map if a document is loaded
@@ -1972,17 +1943,17 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 
 		// initialize flag
 		boolean bFlag = false;
-		
+
 		try {
-			
+
 			// allowed?
-			if(isVisible() || force) {
-			
+			if(isActive() || force) {
+
 				// hide map
 				setVisible(false);
-				
+
 				// load document?
-				if(!getDocumentFilename().equals(mxdDoc)) { 
+				if(!getDocumentFilename().equals(mxdDoc)) {
 					// validate document
 					if(checkMxFile(mxdDoc)) {
 						// load document
@@ -1999,66 +1970,63 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						// initialize MSO and dynamic layers for the newly loaded map document
 						initLayers(true);
 						// forward
-						prepareGraphics();												
+						prepareGraphics();
 						// success
 						bFlag = true;
 					}
 				}
-				
+
 				// show again
 				setVisible(true);
-				
-			}			
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		// finished
-		return bFlag;
-		
-	}
-	
-	private boolean progressShown = false;
-	private boolean progressShownAutoCancel = false;
-	
-	public void showProgressor(boolean autocancel) {
-		try {
-			// show progress dialog?
-			if(!(DiskoProgressMonitor.getInstance().isInAction() || progressShown)) {
-				DiskoProgressMonitor.getInstance().setProgressLocationAt(this);
-				if(autocancel) {
-					progressShownAutoCancel = true;
-					DiskoProgressMonitor.getInstance().start("Laster kart",0,0,0,0,2000);
-				}
-				else {
-					progressShown = true;
-					DiskoProgressMonitor.getInstance().start("Laster kart");
-				}
-			}			
+
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}								
+		}
+
+		// finished
+		return bFlag;
+
 	}
-	
+
+	private boolean progressShown = false;
+	private boolean progressShownAutoCancel = false;
+
+	public void showProgressor(boolean autocancel) {
+		try {
+			// show progress dialog?
+			if(!(ProgressMonitor.getInstance().isInAction() || progressShown)) {
+				ProgressMonitor.getInstance().setProgressLocationAt(this);
+				if(autocancel) {
+					progressShownAutoCancel = true;
+					ProgressMonitor.getInstance().start("Laster kart",0,0,0,0,2000);
+				}
+				else {
+					progressShown = true;
+					ProgressMonitor.getInstance().start("Laster kart");
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public void hideProgressor() {
 		try {
 			// prepare to hide progress dialog?
 			if(progressShown || progressShownAutoCancel) {
 				progressShown = false;
 				progressShownAutoCancel = false;
-				DiskoProgressMonitor.getInstance().finish();
+				ProgressMonitor.getInstance().finish();
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}			
+		}
 	}
-	
+
 	private void prepareGraphics() throws IllegalArgumentException, AutomationException, IOException {
 		// forward
 		if(drawFrame!=null) drawFrame.setActiveView(getActiveView());
@@ -2069,50 +2037,88 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 			}
 		}
 	}
-	
-	/*==========================================================
-	 * IDiskoWorkListener methods
-	 *==========================================================*/		
 
-	public void addDiskoWorkListener(IDiskoWorkListener listener) {
-		workRepeater.addDiskoWorkListener(listener);
+	public boolean addDiskoMapListener(IDiskoMapListener listener) {
+		if(!mapListeners.contains(listener))
+			return mapListeners.add(listener);
+		return false;
 	}
-	
-	public void removeDiskoWorkEventListener(IDiskoWorkListener listener) {
-		workRepeater.removeDiskoWorkListener(listener);
+
+	public boolean removeDiskoMapListener(IDiskoMapListener listener) {
+		if(mapListeners.contains(listener))
+			return mapListeners.remove(listener);
+		return false;
 	}
-    
+
+	private void fireOnMouseClick() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onMouseClick();
+	}
+
+	private void fireOnMouseMove() {
+		//System.out.println("fireOnMouseMove:="+System.currentTimeMillis());
+		for(IDiskoMapListener it : mapListeners)
+			it.onMouseMove();
+	}
+
+	private void fireOnExtendChanged() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onExtentChanged();
+	}
+
+	private void fireOnMapReplaced() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onExtentChanged();
+	}
+
+	private void fireOnSelectionChanged() {
+		for(IDiskoMapListener it : mapListeners)
+			it.onSelectionChanged();
+	}
+
+	/*==========================================================
+	 * IWorkListener methods
+	 *==========================================================*/
+
+	public void addWorkListener(IWorkListener listener) {
+		workRepeater.addWorkListener(listener);
+	}
+
+	public void removeWorkEventListener(IWorkListener listener) {
+		workRepeater.removeWorkListener(listener);
+	}
+
 	/*==========================================================
 	 * Internal classes
 	 *==========================================================*/
-    
+
     class ControlEventsAdapter extends IMapControlEvents2Adapter {
 
 		private static final long serialVersionUID = 1L;
-		
+
 		@Override
 		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
-			
+
 			// update
 			clickPoint.setX(e.getMapX());
 			clickPoint.setY(e.getMapY());
-			
+
 			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					fireOnMouseClick();
 				}
-			});	
-			
+			});
+
 		}
-		
+
 		@Override
 		public void onMouseMove(IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
-			
+
 			// update
-			double x = e.getMapX(); 
+			double x = e.getMapX();
 			double y = e.getMapY();
-			
+
 			// get current tic
 			long tic = Calendar.getInstance().getTimeInMillis();
 			//System.out.println("onMouseMove:="+tic);
@@ -2127,18 +2133,18 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					public void run() {
 						fireOnMouseMove();
 					}
-				});	
+				});
 			}
-			
+
 		}
-		
+
 		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
                	throws java.io.IOException, AutomationException {
 
 			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					
+
 					try {
 						// set spatial references
 						movePoint.setSpatialReferenceByRef(getSpatialReference());
@@ -2148,10 +2154,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						setMsoLayerSelectionModel();
 						setMapLayerSelectionModel();
 						setWmsLayerSelectionModel();
-						
+
 						// forward
 						fireOnMapReplaced();
-						
+
 					} catch (AutomationException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -2162,29 +2168,31 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
+
 				}
-			});	
+			});
 		}
-		
+
 		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
     		throws java.io.IOException, AutomationException {
-			
+
 			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					fireOnExtendChanged();
 				}
-			});	
-			
+			});
+
 		}
-		
+
 	}
-	
+
 	class MapCompEventsAdapter extends ComponentAdapter {
 
 		@Override
-		public void componentShown(ComponentEvent arg0) {
+		public void componentShown(ComponentEvent e) {
+			// forward to binder
+			binder.setShowProgress(isShowing());
 			// load mxd document?
 			if(!mapManager.getMxdDoc().endsWith(mxdDoc)) {
 				// load default mxd document later
@@ -2192,119 +2200,124 @@ public final class DiskoMap extends MapBean implements IDiskoMap, IMsoUpdateList
 					public void run() {
 						loadMxdDoc();
 					}
-				});					
+				});
 			}
 			else if(refreshCount>0) {
 				try {
 					decideRefresh();
-				} catch (AutomationException e) {
+				} catch (AutomationException ex) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
+					ex.printStackTrace();
+				} catch (IOException ex) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ex.printStackTrace();
 				}
 			}
 		}
 
 		/* =============================================================
 		 * IMPORTANT: This is a critical hack, do not remove!
-		 * 
+		 *
 		 * Without this hack, the system will hang under certain
-		 * conditions. The problem is an deadlock and is located in 
+		 * conditions. The problem is an deadlock and is located in
 		 * ArcGIS Engine.
-		 * 
-		 * It can be reprodused in the following way: 
-		 * 
+		 *
+		 * It can be reprodused in the following way:
+		 *
 		 * 1. Comment out both occurences of suppressResizeDrawing() below
 		 * 2. Switch to the work prosess "MessageLog"
 		 * 3. Toggle NavButton on, the map is shown (cardlayout toggle)
 		 * 4. Toggle NavButton off, the map should no be hidden
-		 * 5. BUT: The system hangs with the map partial resized and still 
-		 * 	  shown. If the debug command "Run -> Suspend" is selected 
-		 * 	  and the AWT thread is inspected in debug view you will see 
-		 * 	  that the system hangs in call to a class i ArcGIS engine. 
-		 * 	  More spesific; during the creation of a ESRI Point. 
-		 * 
-		 * 		This Point creation is an result of a event sequence invoked 
-		 * 	  when preparing to draw the table which now should be known 
+		 * 5. BUT: The system hangs with the map partial resized and still
+		 * 	  shown. If the debug command "Run -> Suspend" is selected
+		 * 	  and the AWT thread is inspected in debug view you will see
+		 * 	  that the system hangs in call to a class i ArcGIS engine.
+		 * 	  More spesific; during the creation of a ESRI Point.
+		 *
+		 * 		This Point creation is an result of a event sequence invoked
+		 * 	  when preparing to draw the table which now should be known
 		 *    instead of the map.
-		 *    
+		 *
 		 * PROBABLE CAUSE: Then the NavButton is toggled, the NavBar is
-		 * hidden before the cardlayout is toggled. The reason for this: the 
+		 * hidden before the cardlayout is toggled. The reason for this: the
 		 * actionlistener registered on button NavButton by MainMenuPanel is
 		 * registered before the actionlistener used in MessageLogPanel to
-		 * toggle the cardlayout on m_tablePanel. Because the NavBar is hidden, 
-		 * a resize of the MapControl in DiskoMap is executed just before the 
+		 * toggle the cardlayout on m_tablePanel. Because the NavBar is hidden,
+		 * a resize of the MapControl in DiskoMap is executed just before the
 		 * cardlayout toggle (which hides the map). Since a resize results in a
-		 * repaint of the map, and resize operations on the MapBean is 
-		 * done on another thread than the event dispatch thread (EDT), an 
-		 * potential concurrency issue (deadlock) now waiting to happend. 
+		 * repaint of the map, and resize operations on the MapBean is
+		 * done on another thread than the event dispatch thread (EDT), an
+		 * potential concurrency issue (deadlock) now waiting to happend.
 		 * 		This is what probably happens: The combination of a resize
-		 * of the MapControl, and hidding it using cardlayout, which then 
-		 * invoces an asynchronous repaint in the MapControl, ultimately 
-		 * resulting in deadlock (a concurrency issue) when the new point 
-		 * is created on EDT. 
-		 * 		The solution below works probably because it changes the 
+		 * of the MapControl, and hidding it using cardlayout, which then
+		 * invoces an asynchronous repaint in the MapControl, ultimately
+		 * resulting in deadlock (a concurrency issue) when the new point
+		 * is created on EDT.
+		 * 		The solution below works probably because it changes the
 		 * order of events, compared to earlier, and thus prevents the deadlock.
-		 * 
+		 *
 		 * =============================================================
 		 */
-		
+
 		@Override
 		public void componentResized(ComponentEvent arg0) {
 			try {
 				if(isVisible()) {
 					// turn off
-					//suppressResizeDrawing(false, 0);
+					suppressResizeDrawing(false, 0);
 					// turn on
-					//suppressResizeDrawing(true, 0);
+					suppressResizeDrawing(true, 0);
 				}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 
 	}
 
-	public boolean addDiskoMapListener(IDiskoMapListener listener) {
-		if(!mapListeners.contains(listener))
-			return mapListeners.add(listener);
-		return false;
+	class MapDataListener implements IMapDataListener {
+
+		@Override
+		public void onDataChanged(Collection<IMsoFeatureLayer> layers) {
+
+			try {
+
+				// initialize
+				int count = 0;
+				IMsoFeatureLayer msoLayer = null;
+
+				// loop over layers
+				for (IMsoFeatureLayer it : layers) {
+					if (it.isVisible() && it.isDirty()) {
+						count++;
+						msoLayer = it;
+					}
+				}
+
+		        // save refresh information
+				refreshCount += count;
+				refreshLayer = msoLayer;
+
+
+				// refresh layers later?
+				if (!isActive() || !DiskoMap.super.isShowing() || isDrawingSupressed()) {
+					return;
+				}
+
+				// forward
+				decideRefresh();
+
+
+			} catch (AutomationException ex) {
+				ex.printStackTrace();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+
+		}
+
 	}
 
-	public boolean removeDiskoMapListener(IDiskoMapListener listener) {
-		if(mapListeners.contains(listener))
-			return mapListeners.remove(listener);
-		return false;
-	}
-	
-	private void fireOnMouseClick() {
-		for(IDiskoMapListener it : mapListeners)
-			it.onMouseClick();
-	}
-	
-	private void fireOnMouseMove() {
-		//System.out.println("fireOnMouseMove:="+System.currentTimeMillis());
-		for(IDiskoMapListener it : mapListeners)
-			it.onMouseMove();		
-	}
-	
-	private void fireOnExtendChanged() {
-		for(IDiskoMapListener it : mapListeners)
-			it.onExtentChanged();		
-	}
-	
-	private void fireOnMapReplaced() {
-		for(IDiskoMapListener it : mapListeners)
-			it.onExtentChanged();		
-	}
-	
-	private void fireOnSelectionChanged() {
-		for(IDiskoMapListener it : mapListeners)
-			it.onSelectionChanged();		
-	}
-	
 }

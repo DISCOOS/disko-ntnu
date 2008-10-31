@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author thomasl
  */
-public class MessageLineTableModel extends MsoTableModel<IMessageLineIf>
+public class MessageLineTableModel extends AbstractMsoTableModel<IMessageLineIf>
 {
 	private final static long serialVersionUID = 1L;
 

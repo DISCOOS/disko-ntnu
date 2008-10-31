@@ -5,7 +5,6 @@ import java.util.EnumSet;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.TableColumn;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -112,7 +111,7 @@ public class DescriptionDialog extends DefaultDialog {
 							getPOITableModel().connect(wp.getMsoModel(),area.getAreaPOIs(),IPOIIf.POI_COMPARATOR);
 							getPOITableModel().load(area.getAreaPOIs());
 						}
-						if(area!=null) {
+						else {
 							getPOITableModel().disconnectAll();
 							getPOITableModel().clear();
 						}
@@ -139,7 +138,7 @@ public class DescriptionDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
-				contentPanel.setBodyComponent(getPoiTable());
+				contentPanel.setBodyComponent(getPOITable());
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -161,7 +160,7 @@ public class DescriptionDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JTable
 	 */
-	private DiskoTable getPoiTable() {
+	private DiskoTable getPOITable() {
 		if (poiTable == null) {
 			try {
 				poiTable = new DiskoTable(getPOITableModel());
@@ -169,33 +168,13 @@ public class DescriptionDialog extends DefaultDialog {
 				poiTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 				poiTable.setColumnSelectionAllowed(false);
 				poiTable.setShowVerticalLines(false);
-				setColumnWidths();
+				poiTable.setAutoFitWidths(true);
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return poiTable;
-	}
-
-	private void setColumnWidths() {
-		for (int i = 0; i < 4; i++) {
-			TableColumn column = getPoiTable().getColumnModel().getColumn(i);
-			switch(i) {
-				case 0:
-					column.setPreferredWidth(15);
-					break;
-				case 1:
-					column.setPreferredWidth(25);
-					break;
-				case 2:
-					column.setPreferredWidth(50);
-					break;
-				case 3:
-					column.setPreferredWidth(500);
-					break;
-			}
-		}
 	}
 
 	private void setup() {
@@ -219,12 +198,12 @@ public class DescriptionDialog extends DefaultDialog {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"32x32"));
 			getContentPanel().setCaptionText("Stegvis beskrivelse av <b>" +
 					MsoUtils.getAssignmentName(assignment, 1).toLowerCase() + "</b>");
-			getPoiTable().setEnabled(true);
+			getPOITable().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 			getContentPanel().setCaptionText("Du må først velge et oppdrag");
-			getPoiTable().setEnabled(false);
+			getPOITable().setEnabled(false);
 		}
 
 		// resume changes

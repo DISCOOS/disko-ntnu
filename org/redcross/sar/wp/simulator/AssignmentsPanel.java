@@ -4,7 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -14,23 +14,23 @@ import org.redcross.sar.wp.IDiskoWpModule;
 public class AssignmentsPanel extends BasePanel {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private boolean m_archived;
 	private AssignmentTable m_table;
-	
+
 	public AssignmentsPanel(boolean archived) {
-		
+
 		// forward
 		super();
-		
+
 		// prepare
 		m_archived = archived;
-		
+
 		// initialize gui
 		initialize();
-		
+
 	}
-	
+
 	private void initialize() {
 		// prepare base panel
 		setHeaderVisible(false);
@@ -39,6 +39,10 @@ public class AssignmentsPanel extends BasePanel {
 		setMinimumSize(d);
 		// set body component
 		setBodyComponent(getTable());
+		// set scroll bar policies
+		setScrollBarPolicies(
+				BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
+				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 	}
 
 	private AssignmentTable getTable() {
@@ -63,23 +67,23 @@ public class AssignmentsPanel extends BasePanel {
 			});
 		}
 		return m_table;
-	}	
-	
+	}
+
 	private IAssignmentIf getSelected() {
 		IAssignmentIf assignment = null;
 		int row = getTable().getSelectedRow();
 		if(row>-1) {
-			assignment = (IAssignmentIf)((MsoTableModel<?>)
+			assignment = (IAssignmentIf)((AbstractMsoTableModel<?>)
 					getTable().getModel()).getObject(row);
 		}
-		return assignment;	
+		return assignment;
 	}
-	
+
 	private static void centerAtAssignment(IAssignmentIf assignment) {
 		// get installed map
 		IDiskoMap map = getInstalledMap();
 		// has map?
-		if(map!=null) {						
+		if(map!=null) {
 			try {
 				// center at position?
 				if(assignment!=null) {
@@ -98,9 +102,9 @@ public class AssignmentsPanel extends BasePanel {
 			}
 		}
 	}
-	
+
 	private static IDiskoMap getInstalledMap() {
-		// try to get map from current 
+		// try to get map from current
 		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
 		if(module!=null) {
 			if(module.isMapInstalled())
@@ -108,7 +112,7 @@ public class AssignmentsPanel extends BasePanel {
 		}
 		// no map available
 		return null;
-	}	
-	
-	
+	}
+
+
 }

@@ -45,29 +45,29 @@ import org.redcross.sar.util.Utils;
 public class FieldsPanel extends DefaultPanel {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private List<String> m_names;
-	private Map<String,IDiskoField> m_attributes;
-	
+	private Map<String,IDiskoField> m_fields;
+
 	private JLabel m_messageLabel;
-	
-	private float m_attribAlignX = Component.LEFT_ALIGNMENT;
-	private float m_attribAlignY = Component.CENTER_ALIGNMENT;
-	
+
+	private float m_fieldAlignX = Component.LEFT_ALIGNMENT;
+	private float m_fieldAlignY = Component.CENTER_ALIGNMENT;
+
 	private boolean m_isLayoutDirty = true;
 	private boolean m_isLayoutSuspended = true;
 	private boolean m_isMessageVisible = false;
-	
-	private int m_columns; 
-	
+
+	private int m_columns;
+
 	public FieldsPanel() {
 		this("Egenskaper");
 	}
-	
+
 	public FieldsPanel(String caption) {
 		this(caption,"Ingen egenskaper funnet",true,true);
 	}
-	
+
 	public FieldsPanel(String caption, String message, boolean finish, boolean cancel) {
 		this(caption,message,finish,cancel,ButtonSize.SMALL,1);
 	}
@@ -81,22 +81,22 @@ public class FieldsPanel extends DefaultPanel {
 		// prepare
 		m_columns = columns;
 		m_names = new ArrayList<String>();
-		m_attributes = new HashMap<String, IDiskoField>();		
+		m_fields = new HashMap<String, IDiskoField>();
 		// initialize GUI
 		initialize(message);
 	}
-	
+
 	private void initialize(String message) {
 		// prepare message label
-		getMessageLabel().setText(message);		
+		getMessageLabel().setText(message);
 		// show message (layout manager is set here)
 		createMessage();
 	}
-	
+
 	public int getColumns() {
 		return m_columns;
 	}
-	
+
 	public void setColumns(int columns) {
 		if(m_columns!=columns) {
 			m_columns = columns;
@@ -105,19 +105,19 @@ public class FieldsPanel extends DefaultPanel {
 			}
 		}
 	}
-	
+
 	public boolean isMessageVisible() {
 		return m_isMessageVisible;
 	}
-	
+
 	public void setMessageVisible(boolean isVisible)  {
 		// any change?
-		if(m_isMessageVisible!=isVisible) {			
+		if(m_isMessageVisible!=isVisible) {
 			m_isMessageVisible = isVisible;
 			validate();
 		}
 	}
-	
+
 	private JLabel getMessageLabel() {
 		if(m_messageLabel==null) {
 			m_messageLabel = new JLabel();
@@ -126,15 +126,15 @@ public class FieldsPanel extends DefaultPanel {
 		}
 		return m_messageLabel;
 	}
-	
+
 	public void setMessage(String text) {
 		getMessageLabel().setText("<html>"+Utils.trimHtml(text)+"</html>");
 	}
-	
+
 	public String getMessage() {
 		return Utils.trimHtml(getMessageLabel().getText());
 	}
-		
+
 	public void create(IMsoObjectIf msoObject, boolean isEditable) {
 		// invalid argument?
 		if(msoObject==null) throw new NullPointerException("MsoObject can not be null");
@@ -147,7 +147,7 @@ public class FieldsPanel extends DefaultPanel {
 		// forward
 		create(msoObject,attributes,attributes,isEditable,80,25,true);
 	}
-	
+
 	public void create(IMsoObjectIf msoObject, boolean isEditable, int width, int height) {
 		// invalid argument?
 		if(msoObject==null) throw new NullPointerException("MsoObject can not be null");
@@ -160,34 +160,34 @@ public class FieldsPanel extends DefaultPanel {
 		// forward
 		create(msoObject,attributes,attributes,isEditable,width,height,true);
 	}
-	
+
 	public int create(IMsoObjectIf msoObject, String[] attributes, String[] captions, boolean isEditable, int width, int height, boolean include) {
 		List<String> attrList = new ArrayList<String>();
 		List<String> capsList = new ArrayList<String>();
 		if(attributes!=null) {
 			for(int i=0;i<attributes.length;i++) {
 				attrList.add(attributes[i]);
-			}			
+			}
 		}
 		if(captions!=null) {
 			for(int i=0;i<captions.length;i++) {
 				capsList.add(captions[i]);
-			}			
+			}
 		}
 		return create(msoObject, attrList, capsList, isEditable, width, height, include);
 	}
-	
+
 	public int create(IMsoObjectIf msoObject, List<String> attributes, List<String> captions, boolean isEditable, int width, int height, boolean include) {
 
 		// initialize
 		int added = 0;
 		// remove old panels
-		clearAttributes();
+		clearFields();
 		// get all attributes
 		Map<String,IAttributeIf<?>> map = msoObject.getAttributes();
 		// select decision method
 		if(include) {
-			// insert only passed attributes 
+			// insert only passed attributes
 			for(int i=0;i<attributes.size();i++) {
 				String it = attributes.get(i);
 				// add to panel?
@@ -197,13 +197,13 @@ public class FieldsPanel extends DefaultPanel {
 					// is supported?
 					if(AbstractField.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
-						added += (addAttribute(attr,captions.get(i),isEditable,width,height)!=null ? 1 : 0);
+						added += (addField(attr,captions.get(i),isEditable,width,height)!=null ? 1 : 0);
 					}
 				}
-			}		
+			}
 		}
 		else {
-			// insert all attributes except passed attribues
+			// insert all attributes except passed attributes
 			for(String it: map.keySet()) {
 				// add to panel?
 				if(!attributes.contains(it)) {
@@ -212,59 +212,59 @@ public class FieldsPanel extends DefaultPanel {
 					// is supported?
 					if(AbstractField.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
-						added += (addAttribute(attr,attr.getName(),isEditable,width,height)!=null ? 1 : 0);
+						added += (addField(attr,attr.getName(),isEditable,width,height)!=null ? 1 : 0);
 					}
 				}
-			}					
+			}
 		}
 		// finished
 		return added;
 	}
-	
-	public int getAttributeCount() {
+
+	public int getFieldCount() {
 		return (m_names!=null ? m_names.size(): 0);
 	}
-	
+
 	public boolean doWork() {
 		return finish();
-	}	
-	
-	
+	}
+
+
 	@Override
 	protected void afterFinish() {
-		for(IDiskoField it: m_attributes.values()) {
+		for(IDiskoField it: m_fields.values()) {
 			it.finish();
 		}
-		super.afterFinish();		
+		super.afterFinish();
 	}
-		
+
 	@Override
 	protected void afterCancel() {
-		for(IDiskoField it: m_attributes.values()) {
+		for(IDiskoField it: m_fields.values()) {
 			it.cancel();
 		}
-		super.afterCancel();		
+		super.afterCancel();
 	}
-	
+
 	@Override
 	public void reset() {
 		// forward
 		super.reset();
 		// forward
-		for(IDiskoField it: m_attributes.values()) {
+		for(IDiskoField it: m_fields.values()) {
 			it.reset();
 		}
 	}
-	
-	public IDiskoField addAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
+
+	public IDiskoField addField(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
 		if(!m_names.contains(name)) {
 			// forward
-			IDiskoField attr = createAttribute(attribute,caption,isEditable,width,height);
+			IDiskoField attr = createField(attribute,caption,isEditable,width,height);
 			// forward
-			if(addAttribute(attr)) {
+			if(addField(attr)) {
 				// forward
 				update();
 				// return panel
@@ -273,24 +273,24 @@ public class FieldsPanel extends DefaultPanel {
 		}
 		return null;
 	}
-	
-	public boolean addAttribute(IDiskoField attribute)  {
+
+	public boolean addField(IDiskoField field)  {
 		// initialize flag
 		boolean bFlag = false;
 		// string get name
-		String name = attribute.getName();
+		String name = field.getName();
 		// valid attribute?
-		if(attribute instanceof JComponent && !m_names.contains(name)) {
+		if(field instanceof JComponent && !m_names.contains(name)) {
 			// get component
-			JComponent c = ((JComponent)attribute);
+			JComponent c = ((JComponent)field);
 			// apply current alignment
-			c.setAlignmentX(m_attribAlignX);
-			c.setAlignmentY(m_attribAlignY);
+			c.setAlignmentX(m_fieldAlignX);
+			c.setAlignmentY(m_fieldAlignY);
 			// add to list
-			m_names.add(name);			
-			m_attributes.put(name,attribute);			
+			m_names.add(name);
+			m_fields.put(name,field);
 			// add listener
-			attribute.addDiskoWorkListener(this);
+			field.addWorkListener(this);
 			// set layout dirty
 			m_isLayoutDirty = true;
 			if(!m_isLayoutSuspended) doLayout();
@@ -300,36 +300,36 @@ public class FieldsPanel extends DefaultPanel {
 		// failure
 		return bFlag;
 	}
-	
-	public IDiskoField getAttribute(String name) {
+
+	public IDiskoField getField(String name) {
 		// has mso object?
 		if(m_names!=null) {
 			// has attribute
 			if (m_names.contains(name)) {
 				// return panel
-				return m_attributes.get(name);
+				return m_fields.get(name);
 			}
 		}
 		// failure
 		return null;
 	}
 
-	public boolean removeAttribute(String name)  {
+	public boolean removeField(String name)  {
 		// get panel
-		Component attr = (Component)getAttribute(name);
+		Component attr = (Component)getField(name);
 		// has panel?
 		if(attr!=null) {
 			// remove
-			m_attributes.remove(name);
+			m_fields.remove(name);
 			m_names.remove(name);
 			// set layout dirty
-			m_isLayoutDirty = true;			
+			m_isLayoutDirty = true;
 		}
 		update();
 		// failure
 		return false;
 	}
-	
+
 	public boolean isLayoutDirty() {
 		return m_isLayoutDirty;
 	}
@@ -337,95 +337,95 @@ public class FieldsPanel extends DefaultPanel {
 	public boolean isLayoutSuspended() {
 		return m_isLayoutSuspended;
 	}
-	
+
 	public boolean suspendLayout() {
 		boolean bFlag = m_isLayoutSuspended;
 		m_isLayoutSuspended = true;
 		return bFlag;
 	}
-	
+
 	public boolean resumeLayout() {
 		boolean bFlag = m_isLayoutSuspended;
 		m_isLayoutSuspended = false;
 		if(bFlag && m_isLayoutDirty) doLayout();
 		return bFlag;
-	}	
-	
+	}
+
 	@Override
 	public void doLayout() {
 		// need to update view?
 		if(m_isLayoutDirty || true) {
-			if(m_isMessageVisible || getAttributeCount()==0)
+			if(m_isMessageVisible || getFieldCount()==0)
 				createMessage();
-			else			
+			else
 				createGrid();
 			m_isLayoutDirty = false;
 		}
 		// forward
 		super.doLayout();
 	}
-	
+
 	private void createMessage() {
 		JPanel panel = (JPanel)getBodyComponent();
 		panel.removeAll();
 		panel.setLayout(new GridLayout(5,5));
-		panel.add(getMessageLabel());		
+		panel.add(getMessageLabel());
 	}
-	
+
 	private void createGrid() {
-		// clear current 
+		// clear current
 		JPanel list = (JPanel)getBodyComponent();
 		list.removeAll();
-		list.setLayout(new SpringLayout());		
+		list.setLayout(new SpringLayout());
 		// add all attributes
 		for(String name : m_names) {
-			list.add((Component)m_attributes.get(name));
+			list.add((Component)m_fields.get(name));
 		}
-		// get number of attributes 
+		// get number of attributes
 		int count = m_names.size();
 		// calculate rows
-		int rows = count/m_columns;		
+		int rows = count/m_columns;
 		// forward
 		SpringUtilities.makeCompactGrid(list, rows, m_columns, 5, 5, 5, 5);
 	}
-	
-	public void clearAttributes()  {
+
+	public void clearFields()  {
 		// remove old panels?
-		if(m_attributes!=null) {
-			m_attributes.clear();
+		if(m_fields!=null) {
+			m_fields.clear();
 			m_names.clear();
 			// get list panel
 			JPanel list = (JPanel)getBodyComponent();
-			list.removeAll();			
-		}		
+			list.removeAll();
+		}
 	}
-	
-	public boolean containsAttribute(String name) {
-		return m_attributes.containsKey(name);
+
+	public boolean containsField(String name) {
+		return m_fields.containsKey(name);
 	}
-	
+
 	public double getCaptionWidth(String name) {
-		return m_attributes.get(name).getFixedCaptionWidth();
+		return m_fields.get(name).getFixedCaptionWidth();
 	}
 
 	public void setCaptionWidth(int width) {
-		for(IDiskoField it: m_attributes.values())
-			it.setFixedCaptionWidth(width);		
-	}	
-	
-	public void setCaptionWidth(String name, int width) {
-		m_attributes.get(name).setFixedCaptionWidth(width);		
-	}	
-	
-	public Object getValue(String name) {
-		return getAttribute(name).getValue();
+		for(IDiskoField it: m_fields.values())
+			it.setFixedCaptionWidth(width);
 	}
-	
+
+	public void setCaptionWidth(String name, int width) {
+		m_fields.get(name).setFixedCaptionWidth(width);
+	}
+
+	public Object getValue(String name) {
+		return getField(name).getValue();
+	}
+
 	public void setValue(String name, Object value) {
-		getAttribute(name).setValue(value);
-	}	
-	
-  	public static IDiskoField createAttribute(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
+		getField(name).setValue(value);
+	}
+
+  	public static IDiskoField createField(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
   		// initialize component
   		IDiskoField component = null;
 		try {
@@ -486,97 +486,97 @@ public class FieldsPanel extends DefaultPanel {
 		}
 		return component;
   	}
-  	
+
   	public void update() {
-  		
+
   		// calculate dirty bit
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
   			if(it.isDirty()) {
   				setDirty(true,false); break;
   			}
   		}
 
-  		// forward 
+  		// forward
   		super.update();
   	}
 
   	public void setAutoSave(boolean autoSave) {
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
 			it.setAutoSave(autoSave);
   		}
   	}
-  	
+
   	public int getAutoSave() {
   		int count = 0;
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
 			if(it.getAutoSave()) count++;
   		}
   		return count;
   	}
-  	
+
   	public void setEditable(boolean isEditable) {
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
 			it.setEditable(isEditable);
   		}
   	}
-  	
+
   	@Override
   	public void setEnabled(boolean isEnabled) {
   		super.setEnabled(isEnabled);
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
   			if(it instanceof Component)
   				((Component)it).setEnabled(isEnabled);
   		}
   	}
-  	
+
   	@Override
 	public void setChangeable(boolean isChangeable) {
   		// forward
   		super.setChangeable(isChangeable);
   		// loop over all attributes
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
   			it.setChangeable(isChangeable);
   		}
 	}
-  	  	  	
-	public void setAttributeAlignmentX(float position) {
+
+	public void setFieldAlignmentX(float position) {
 		// prepare
-		m_attribAlignX = position;
+		m_fieldAlignX = position;
   		// loop over all attributes
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
   		}
 	}
-  	
+
 
 	@Override
 	protected boolean beforeCancel() {
 		// forward
 		reset();
 		// success
-		return true; 
+		return true;
 	}
 
-	public void setAttributeAlignmentY(float position) {
+	public void setFieldAlignmentY(float position) {
 		// prepare
-		m_attribAlignY = position;
+		m_fieldAlignY = position;
   		// loop over all attributes
-  		for(IDiskoField it : m_attributes.values()) {
+  		for(IDiskoField it : m_fields.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
   		}
 	}
-	
+
 	@Override
 	protected void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
 		super.msoObjectCreated(msoObject, mask);
 		if(this.msoObject == msoObj) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoField it: m_attributes.values()) {				
+			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
 					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
 						it.reset();
@@ -585,27 +585,27 @@ public class FieldsPanel extends DefaultPanel {
 			}
 		}
 	}
-	
+
 
 	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-		
-		/* 
-		 * 
-		 * TODO: Implement server value change indication in
-		 * GUI including lookup of source information 
-		 * functionality. For example source name (person, module) and 
-		 * location (IP address, master name, logical unit) 
-		 * 
-		 * TODO: Implement server/local value conflict indication in 
-		 * GUI and functionality for resolving this conflict action 
+
+		/*
 		 *
-		 */ 
-		
+		 * TODO: Implement server value change indication in
+		 * GUI including lookup of source information
+		 * functionality. For example source name (person, module) and
+		 * location (IP address, master name, logical unit)
+		 *
+		 * TODO: Implement server/local value conflict indication in
+		 * GUI and functionality for resolving this conflict action
+		 *
+		 */
+
 		super.msoObjectChanged(msoObject, mask);
 		if(this.msoObject == msoObj) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoField it: m_attributes.values()) {
+			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
 					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
 						it.reset();
@@ -619,16 +619,16 @@ public class FieldsPanel extends DefaultPanel {
 	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
 
 		// TODO: Implement deleted attribute indication in GUI
-		
+
 		// forward
 		super.msoObjectDeleted(msoObject, mask);
-		
+
 		// only notify attributes belonging to this object
 		if(this.msoObject == msoObj) {
-			// TODO: Implement deleted attribute indication in GUI 
+			// TODO: Implement deleted attribute indication in GUI
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
-			for(IDiskoField it: m_attributes.values()) {
+			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
 					IMsoField field = ((IMsoField)it);
 					if(map.containsValue(field.getMsoAttribute())) {
@@ -639,22 +639,22 @@ public class FieldsPanel extends DefaultPanel {
 			}
 		}
 	}
-	
+
 	@Override
 	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
-		
-		// TODO: Implement deleted attribute indication in GUI 
+
+		// TODO: Implement deleted attribute indication in GUI
 
 		// forward
 		super.msoObjectClearAll(msoObject, mask);
 		// loop over attributes
-		for(IDiskoField it: m_attributes.values()) {
+		for(IDiskoField it: m_fields.values()) {
 			if(it instanceof IMsoField) {
 				IMsoField field = ((IMsoField)it);
 				field.setMsoAttribute(null);
 				it.reset();
 			}
 		}
-	}	
-	
+	}
+
 }

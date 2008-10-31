@@ -15,13 +15,13 @@ public class CalloutListImpl extends MsoListImpl<ICalloutIf> implements ICallout
     public ICalloutIf createCallout()
     {
         checkCreateOp();
-        return createdUniqueItem(new CalloutImpl(makeUniqueId()));
+        return createdUniqueItem(new CalloutImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public ICalloutIf createCallout(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         ICalloutIf retVal = (ICalloutIf) getLoopback(anObjectId);
-        return retVal != null ? retVal : (ICalloutIf) createdItem(new CalloutImpl(anObjectId));
+        return retVal != null ? retVal : (ICalloutIf) createdItem(new CalloutImpl(getOwner().getModel(), anObjectId));
     }
 }

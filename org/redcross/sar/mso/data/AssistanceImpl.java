@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.IllegalOperationException;
 
 /**
@@ -7,9 +8,9 @@ import org.redcross.sar.util.except.IllegalOperationException;
  */
 public class AssistanceImpl extends AssignmentImpl implements IAssistanceIf
 {
-    public AssistanceImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public AssistanceImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
     }
 
     @Override

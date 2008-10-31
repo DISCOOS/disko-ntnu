@@ -2,7 +2,7 @@ package org.redcross.sar.data.event;
 
 import java.util.EventObject;
 
-import org.redcross.sar.data.IDataSourceIf;
+import org.redcross.sar.data.IDataSource;
 
 public class SourceEvent<I> extends EventObject {
 
@@ -14,7 +14,7 @@ public class SourceEvent<I> extends EventObject {
 	 * Constructors
 	 * =========================================================== */
 
-	public SourceEvent(IDataSourceIf<I> source, I info) {
+	public SourceEvent(IDataSource<I> source, I info) {
 		// forward
 		super(source);
 		// prepare
@@ -27,8 +27,8 @@ public class SourceEvent<I> extends EventObject {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public IDataSourceIf<I> getSource() {
-		return (IDataSourceIf<I>)super.getSource();
+	public IDataSource<I> getSource() {
+		return (IDataSource<I>)super.getSource();
 	}
 
 	public I getInformation() {

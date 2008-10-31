@@ -12,9 +12,9 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
 
     private final AttributeImpl.MsoEnum<HypothesisStatus> m_status = new AttributeImpl.MsoEnum<HypothesisStatus>(this, "Status", 1, HypothesisStatus.ACTIVE);
 
-    public HypothesisImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public HypothesisImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         setNumber(aNumber);
     }
 

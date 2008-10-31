@@ -40,7 +40,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	private final MsoReferenceImpl<IHierarchicalUnitIf> m_superiorUnit = new MsoReferenceImpl<IHierarchicalUnitIf>(this, "SuperiorUnit", 0, false);
 	private final MsoReferenceImpl<IPersonnelIf> m_unitLeader = new MsoReferenceImpl<IPersonnelIf>(this, "UnitLeader", 0, true);
 	private final MsoReferenceImpl<ITrackIf> m_track = new MsoReferenceImpl<ITrackIf>(this, "Track", 0, true);
-	
+
 	private final static SelfSelector<IUnitIf, IMessageIf> simpleReferringMesssageSelector = new SelfSelector<IUnitIf, IMessageIf>()
 	{
 		public boolean select(IMessageIf anObject)
@@ -55,11 +55,11 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			return false;
 		}
 	};
-	
+
 	/*-------------------------------------------------------------------------------------------
 	 * Public Static Methods
 	 *-------------------------------------------------------------------------------------------*/
-	
+
 	public static String getText(String aKey)
 	{
 		return Internationalization.getString(Internationalization.getBundle(IUnitIf.class), aKey);
@@ -81,10 +81,10 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	 * Constructors
 	 *-------------------------------------------------------------------------------------------*/
 
-	
-	public AbstractUnit(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+
+	public AbstractUnit(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
 	{
-		super(anObjectId);
+		super(theMsoModel, anObjectId);
 		setNumber(aNumber);
 		setType(getTypeBySubclass());
 	}
@@ -159,7 +159,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	/*-------------------------------------------------------------------------------------------
 	 * Intercepted methods
 	 *-------------------------------------------------------------------------------------------*/
-	
+
 	/**
 	 * Local implementation of {@link AbstractMsoObject#registerModifiedData()}
 	 * Resets correct subclass in case of incorrect changes by application or others.
@@ -174,7 +174,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 		super.registerModifiedData(source);
 	}
-	
+
 	@Override
 	protected void registerRemovedReference(Object source, boolean updateServer) {
 		if (m_unitPersonnel == source)
@@ -182,13 +182,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			m_status.setValue(getAutoStatus());
 		}
 		super.registerRemovedReference(source,updateServer);
-		
+
 	}
 
 	/*-------------------------------------------------------------------------------------------
 	 * Abstract methods
 	 *-------------------------------------------------------------------------------------------*/
-	
+
 	protected abstract UnitType getTypeBySubclass();
 
 	/*-------------------------------------------------------------------------------------------
@@ -233,7 +233,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return m_status.getValue();
 	}
-	
+
 	public void setStatus(String aStatus) throws IllegalOperationException
 	{
 		setStatus(UnitStatus.valueOf(aStatus));
@@ -242,12 +242,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public void setStatus(UnitStatus aStatus) throws IllegalOperationException
 	{
 		// verify current status
-		if(UnitStatus.RELEASED.equals(m_status.getAttrValue())) 
+		if(UnitStatus.RELEASED.equals(m_status.getAttrValue()))
 		{
 			throw new IllegalOperationException(
 					"The unit is released, no status changed is allowed");
 		}
-		if(IUnitIf.MANAGED_RANGE.contains(aStatus)) 
+		if(IUnitIf.MANAGED_RANGE.contains(aStatus))
 		{
 			throw new IllegalOperationException(
 				"Status is managed by MSO model only");
@@ -299,7 +299,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     {
         return m_name;
     }
-    
+
 	public void setCallSign(String aCallSign)
 	{
 		m_callSign.setValue(aCallSign);
@@ -339,13 +339,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return m_toneId;
 	}
-	
+
 	public void setPosition(Position aPosition)
 	{
-		
+
 		// update position
 		m_position.setValue(aPosition);
-		
+
 	}
 
 	public Position getPosition()
@@ -427,7 +427,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		m_unitPersonnel.add(anPersonnel);
 		m_status.set(getAutoStatus());
-		
+
 	}
 
 	public IPersonnelListIf getUnitPersonnel()
@@ -557,7 +557,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return getEnumLetter(getType());
 	}
-	
+
 	public String getShortName()
 	{
 		return (getNumberPrefix() + " " + getNumber()).trim();
@@ -577,16 +577,16 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return getNumber();
 	}
-	
-	public String getCommunicatorShortName() 
+
+	public String getCommunicatorShortName()
 	{
-		return getShortName();	
-	}	
-	
+		return getShortName();
+	}
+
 	public boolean isReleased() {
 		return UnitStatus.RELEASED.equals(m_status.getAttrValue());
-	}	
-	
+	}
+
 	public boolean isPaused() {
 		return UnitStatus.PAUSED.equals(m_status.getAttrValue());
 	}
@@ -595,7 +595,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// get current status
 		UnitStatus status = getStatus();
 		// verify valid state
-		if(UnitStatus.EMPTY.equals(status) || 
+		if(UnitStatus.EMPTY.equals(status) ||
 				UnitStatus.RELEASED.equals(status)) {
 			throw new IllegalOperationException(
 					"Unit can not be paused if status is EMPTY or RELEASED");
@@ -615,8 +615,8 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 		// forward
 		m_status.set(getAutoStatus());
-	}	
-	
+	}
+
 	public IAssignmentIf getActiveAssignment()
 	{
 		IAssignmentIf retVal;
@@ -626,7 +626,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			return retVal;
 		}
 		return getExecutingAssigment();
-	}    	 
+	}
 
 	public IAssignmentIf releaseAssignment() throws IllegalOperationException {
 		// get allocated assignment
@@ -637,7 +637,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// finished
 		return released;
 	}
-	
+
 	public boolean releaseAssignment(IAssignmentIf anAssignment) throws IllegalOperationException {
 		IAssignmentIf released = null;
 		if(getAllocatedAssignment()==anAssignment)
@@ -649,13 +649,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			released.setOwningUnit(AssignmentStatus.READY, null);
 		// finished
 		return released!=null;
-	}	
-	
-	public boolean enqueueAssignment(IAssignmentIf anAssignment) throws IllegalOperationException 
+	}
+
+	public boolean enqueueAssignment(IAssignmentIf anAssignment) throws IllegalOperationException
 	{
 		return enqueueAssignment(anAssignment,null);
 	}
-	
+
 	public boolean enqueueAssignment(IAssignmentIf newAssignment, IAssignmentIf beforeAssignment) throws IllegalOperationException
 	{
 		if (newAssignment == beforeAssignment)
@@ -663,21 +663,21 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			return false;
 		}
 
-		/* 
+		/*
 		 * the assignment will be added by AssignmentImpl
-		 * with latest prioritySequence using helper method 
-		 * addUnitAssignment(). AssignmentImpl update its status 
-		 * accordingly.  
+		 * with latest prioritySequence using helper method
+		 * addUnitAssignment(). AssignmentImpl update its status
+		 * accordingly.
 		 */
-		newAssignment.setOwningUnit(AssignmentStatus.QUEUED, this); 
+		newAssignment.setOwningUnit(AssignmentStatus.QUEUED, this);
 
 		// check for update of priority sequence is required?
 		boolean bUpdate = ( beforeAssignment != null &&
 				beforeAssignment.getStatus() == AssignmentStatus.QUEUED &&
-				beforeAssignment.getOwningUnit() == this);        
+				beforeAssignment.getOwningUnit() == this);
 
-		// calculate the 
-		int newPrioritySequence = 
+		// calculate the
+		int newPrioritySequence =
 			bUpdate ? beforeAssignment.getPrioritySequence() : Integer.MAX_VALUE;
 
 			// move forwards in list if not last
@@ -714,44 +714,44 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			return false;
 		}
 
-		/* 
+		/*
 		 * the assignment will be removed by AssignmentImpl
 		 * using helper method removeUnitAssignment(). AssignmentImpl
-		 * will update its status accordingly. 
+		 * will update its status accordingly.
 		 */
 		anAssignment.setOwningUnit(AssignmentStatus.QUEUED, null);
-		
+
 		// success
 		return true;
 
-	}    
+	}
 
 	public List<IAssignmentIf> getEnqueuedAssignments()
 	{
 		return m_unitAssignments.selectItems(IAssignmentIf.QUEUED_SELECTOR, IAssignmentIf.PRIORITY_SEQUENCE_COMPARATOR);
 	}
-	
+
 	public IAssignmentIf allocateAssignment() throws IllegalOperationException {
 		return allocateAssignment(null);
 	}
-	
+
 	public IAssignmentIf allocateAssignment(IAssignmentIf anAssignment) throws IllegalOperationException {
 		// is available?
-		if(getActiveAssignment()==null) 
+		if(getActiveAssignment()==null)
 		{
 			// get first in queue?
 			if(anAssignment!=null) {
 				// get available assignments
 				List<IAssignmentIf> queue = getEnqueuedAssignments();
 				// has enqueued assignments?
-				if(queue.size()>0) 
+				if(queue.size()>0)
 				{
 					// get first assignment in queue
 					anAssignment = queue.get(0);
 				}
 			}
 			// forward?
-			if(anAssignment!=null) 
+			if(anAssignment!=null)
 			{
 				anAssignment.setOwningUnit(AssignmentStatus.ALLOCATED, this);
 			}
@@ -773,36 +773,36 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public IAssignmentIf startAssignment() throws IllegalOperationException {
 		return startAssignment(null);
 	}
-	
+
 	public IAssignmentIf startAssignment(IAssignmentIf anAssignment) throws IllegalOperationException {
-		
+
 		// initialize
 		IAssignmentIf start = null;
-		
+
 		// get valid assignment
-		if(getAllocatedAssignment()==anAssignment) 
+		if(getAllocatedAssignment()==anAssignment)
 		{
 			start = anAssignment;
 		}
-		else if(getAllocatedAssignment()==null && anAssignment!=null) 
+		else if(getAllocatedAssignment()==null && anAssignment!=null)
 		{
 			start = anAssignment;
 		}
-		else if(getAllocatedAssignment()!=null && anAssignment==null) 
+		else if(getAllocatedAssignment()!=null && anAssignment==null)
 		{
 			start = getAllocatedAssignment();
 		}
-		
+
 		// forward?
-		if(start!=null) 
+		if(start!=null)
 		{
 			start.setOwningUnit(AssignmentStatus.EXECUTING, this);
 		}
-		
+
 		// finished
 		return start;
 	}
-	
+
 	public IAssignmentIf getExecutingAssigment()
 	{
 		return m_unitAssignments.selectSingleItem(IAssignmentIf.EXECUTING_SELECTOR);
@@ -812,39 +812,39 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return m_unitAssignments.selectItems(IAssignmentIf.EXECUTING_SELECTOR);
 	}
-		
+
 	public IAssignmentIf finishAssignment() throws IllegalOperationException {
 		return finishAssignment(null);
 	}
-	
+
 	public IAssignmentIf finishAssignment(IAssignmentIf anAssignment) throws IllegalOperationException {
-		
+
 		// initialize
 		IAssignmentIf finish = null;
-		
+
 		// get valid assignment
 		if(getExecutingAssigment()==anAssignment) {
-			finish = anAssignment;			
+			finish = anAssignment;
 		}
-		else if(getExecutingAssigment()==null && anAssignment!=null) 
+		else if(getExecutingAssigment()==null && anAssignment!=null)
 		{
 			finish = anAssignment;
 		}
-		else if(getExecutingAssigment()!=null && anAssignment==null) 
+		else if(getExecutingAssigment()!=null && anAssignment==null)
 		{
 			finish = getExecutingAssigment();
 		}
-		
+
 		// forward?
-		if(finish!=null) 
+		if(finish!=null)
 		{
 			finish.setOwningUnit(AssignmentStatus.FINISHED, this);
 		}
-		
+
 		// finished
 		return finish;
 	}
-		
+
 	public Set<IAssignmentIf> getFinishedAssigments()
 	{
 		return m_unitAssignments.selectItems(IAssignmentIf.FINISHED_SELECTOR);
@@ -860,7 +860,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return "AbstractUnit" + " " + getObjectId();
 	}
-	
+
 	public boolean logPosition() {
 		return logPosition(Calendar.getInstance());
 	}
@@ -871,16 +871,16 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// create track?
-		if(msoTrack==null) {			
+		if(msoTrack==null) {
 			// get command post
-			ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();			
+			ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
 			// create new track
 			msoTrack = cmdPost.getTrackList().createTrack();
 			// set geodata
 			msoTrack.setGeodata(new Track(null, null, 1));
 			// set track reference in unit
 			m_track.setReference(msoTrack);
-		}    	
+		}
 		// is possible to log position?
 		if(msoTrack!=null) {
 			// get current position
@@ -914,12 +914,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 		// finished
 		return p;
-	}	
+	}
 
 	public Set<IMessageIf> getReferringMessages()
 	{
 		simpleReferringMesssageSelector.setSelfObject(this);
-		ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+		ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
 		return cmdPost != null ? cmdPost.getMessageLog().selectItems(simpleReferringMesssageSelector) : null;
 	}
 
@@ -928,14 +928,14 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		simpleReferringMesssageSelector.setSelfObject(this);
 		return MsoListImpl.selectItemsInCollection(simpleReferringMesssageSelector,aCollection);
 	}
-	
+
 
 	public double getBearing()
 	{
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// has track?
-		if(msoTrack!=null) {			
+		if(msoTrack!=null) {
         	// initialize
         	Track track = msoTrack.getGeodata();
         	int count = track.size();
@@ -944,7 +944,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         	{
         		// get current position
             	Position p = m_position.getPosition();
-            	if(p!=null) 
+            	if(p!=null)
             	{
             		// current bearing
             		return track.getStopPoint().bearing(p.getGeoPos());
@@ -953,11 +953,11 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
             	{
             		// current bearing is not known, use last known bearing
             		return track.getBearing(count-2,count-1);
-            	}            	
+            	}
         	}
         }
 		// failed
-        return 0.0;        
+        return 0.0;
 	}
 
 	public double getSpeed()
@@ -965,39 +965,39 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// has track?
-		if(msoTrack!=null) {			
+		if(msoTrack!=null) {
         	// initialize
         	Track track = msoTrack.getGeodata();
         	int count = track.size();
         	// has more than one point?
         	if(count>1)
         	{
-        		
+
         		// TODO: Implement decision between real time tracking information and logged track information
-        		
+
         		// current speed is not known, use last known leg speed
         		return track.getSpeed(count-2,count-1,false);
-        		
+
         	}
         }
 		// failed
 		return 0.0;
 	}
-	
+
 	public double getAverageSpeed()
 	{
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// has track?
-		if(msoTrack!=null) {			
+		if(msoTrack!=null) {
         	// initialize
         	Track track = msoTrack.getGeodata();
         	int count = track.size();
         	// has more than one point?
         	if(count>1)
-        	{        
+        	{
         		// get speed from start to finish
-        		return track.getSpeed(count-1);        		
+        		return track.getSpeed(count-1);
         	}
         }
 		// failed
@@ -1009,56 +1009,56 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// has track?
-		if(msoTrack!=null) {			
+		if(msoTrack!=null) {
         	// initialize
         	Track track = msoTrack.getGeodata();
         	int count = track.size();
         	// has more than one point?
         	if(count>1)
-        	{        
+        	{
         		// get speed from start to finish
-        		return track.getMaximumSpeed();        		
+        		return track.getMaximumSpeed();
         	}
         }
 		// failed
-		return 0.0;	
+		return 0.0;
 	}
-	
+
 	public double getMinimumSpeed()
 	{
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// has track?
-		if(msoTrack!=null) {			
+		if(msoTrack!=null) {
         	// initialize
         	Track track = msoTrack.getGeodata();
         	int count = track.size();
         	// has more than one point?
         	if(count>1)
-        	{        
+        	{
         		// get speed from start to finish
-        		return track.getMaximumSpeed();        		
+        		return track.getMaximumSpeed();
         	}
         }
 		// failed
-		return 0.0;	
+		return 0.0;
 	}
 
     /**
      * Get duration of given unit status. </p>
-     * 
-     * Current implementation do not contain the necessary 
-	 * information about all status changes. Only aStatus:=WORKING and 
+     *
+     * Current implementation do not contain the necessary
+	 * information about all status changes. Only aStatus:=WORKING and
 	 * total:=true is implemented. All other argument combinations return zero.
-     * 
+     *
      * @param aStatus - The status to get duration for
-     * @param total - If <code>true</code> the sum of all durations for a given status 
+     * @param total - If <code>true</code> the sum of all durations for a given status
      * is returned, the duration of the last occurrence otherwise.
-     * 
+     *
      * @return Duration (second)
      */
 	public double getDuration(UnitStatus aStatus, boolean total) {
-		
+
 		// initialize
 		double t = 0.0;
 		// translate
@@ -1068,7 +1068,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		case INITIALIZING:
 		case PAUSED:
 		case PENDING:
-		case RELEASED:			
+		case RELEASED:
 			break;
 		case WORKING:
 			// calculate total work time?
@@ -1076,15 +1076,15 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 				// get MSO track
 				ITrackIf msoTrack = m_track.getReference();
 				// has track?
-				if(msoTrack!=null) {			
+				if(msoTrack!=null) {
 		        	// initialize
 		        	Track track = msoTrack.getGeodata();
 		        	int count = track.size();
 		        	// has more than one point?
 		        	if(count>1)
-		        	{        
+		        	{
 		        		// get duration from start to finish
-		        		return track.getDuration();        		
+		        		return track.getDuration();
 		        	}
 		        }
 			}
@@ -1092,25 +1092,25 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// finished
 		return t;
 	}
-			
+
 	public double getDistance()
 	{
 		// get MSO track
 		ITrackIf msoTrack = m_track.getReference();
 		// has track?
-		if(msoTrack!=null) {			
+		if(msoTrack!=null) {
         	// initialize
         	Track track = msoTrack.getGeodata();
         	int count = track.size();
         	// has more than one point?
         	if(count>1)
-        	{        
+        	{
         		// get distance from start to finish
-        		return track.getDistance();        		
+        		return track.getDistance();
         	}
         }
 		// failed
-		return 0.0;	
+		return 0.0;
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -1140,39 +1140,39 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 		// initialize on current status
 		UnitStatus aStatus = getStatus();
-		
+
 		// is allowed?
-		if(!(isPaused() || isReleased())) { 
-			
+		if(!(isPaused() || isReleased())) {
+
 			if(getAllocatedAssignment()!=null) {
 				aStatus = UnitStatus.INITIALIZING;
 			}
 			else if(getExecutingAssigment()!=null) {
 				aStatus = UnitStatus.WORKING;
 			}
-			else 
+			else
 			{
 				aStatus = m_unitPersonnel.size()>0 ? UnitStatus.READY : UnitStatus.EMPTY;
 			}
-			
+
 		}
-		
+
 		// finished
 		return aStatus;
 
 	}
-	
+
 	private Position getAutoPosition(IAssignmentIf anAssignment) {
 
 		// initialize at current
 		Position p = getPosition();
-		
+
 		// is allowed?
 		if(!isReleased()) {
-			
+
 			// get status
 			AssignmentStatus aStatus = anAssignment.getStatus();
-	
+
 			// set position of unit automatically?
 			switch(aStatus) {
 			case EXECUTING:
@@ -1181,9 +1181,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			case FINISHED:
 				setPosition(MsoUtils.getStopPosition(anAssignment));
 			}
-			
+
 		}
-		
+
 		// finished
 		return p;
 
@@ -1195,7 +1195,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		m_position.set(getAutoPosition(anAssignment));
 		rearrangeAsgPrioritiesAfterStatusChange(anAssignment,oldStatus);
 	}
-	
+
 	private void rearrangeAsgPrioritiesAfterStatusChange(IAssignmentIf anAssignment, AssignmentStatus oldStatus)
 	{
 		if (anAssignment.getStatus() == AssignmentStatus.QUEUED || oldStatus == AssignmentStatus.QUEUED)
@@ -1223,7 +1223,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			}
 			actPriSe++;
 		}
-	}	 
+	}
 
 }
 

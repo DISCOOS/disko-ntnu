@@ -20,9 +20,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
 
     private final AttributeImpl.MsoEnum<PersonGender> m_gender = new AttributeImpl.MsoEnum<PersonGender>(this, "Gender", 1, PersonGender.UNKNOWN);
 
-    public AbstractPerson(IMsoObjectIf.IObjectIdIf anObjectId)
+    public AbstractPerson(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel,anObjectId);
     }
 
     protected void defineAttributes()

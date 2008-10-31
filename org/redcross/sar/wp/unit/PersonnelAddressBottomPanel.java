@@ -165,10 +165,10 @@ public class PersonnelAddressBottomPanel extends JPanel
 
 			m_currentPersonnel.setAddress(address);
 
-			m_currentPersonnel.resumeClientUpdate();
+			m_currentPersonnel.resumeClientUpdate(true);
 		}
 		// success!
 		return true;
 	}
-	
+
 }

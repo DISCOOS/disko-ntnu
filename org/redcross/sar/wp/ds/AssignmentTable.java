@@ -71,8 +71,8 @@ public class AssignmentTable extends DiskoTable {
 
 		// add row sorter
 		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
-		tableRowSorter.setStringConverter(getStringConverter());
 		tableRowSorter.setComparator(0, IAssignmentIf.ASSIGNMENT_TYPE_NUMBER_COMPERATOR);
+		tableRowSorter.setStringConverter(getStringConverter());
 		tableRowSorter.setMaxSortKeys(1);
 		tableRowSorter.setSortsOnUpdates(true);
 		setRowSorter(tableRowSorter);
@@ -244,7 +244,9 @@ public class AssignmentTable extends DiskoTable {
 			}
 			else if("actions.goto.ecp".equals(cmd)) {
 				TimePos p = (TimePos)model.getValueAt(row,AssignmentTableModel.ECP_INDEX);
-				centerAtPosition(p.getGeoPos());
+				if(p!=null) {
+					centerAtPosition(p.getGeoPos());
+				}
 			}
 		}
 	}

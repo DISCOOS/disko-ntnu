@@ -14,7 +14,7 @@ public class Route extends AbstractGeodata
 {
     private final Vector<GeoPos> m_route;
     private final Vector<Double> m_distance;
-    
+
     private int m_created = 0;
 
     /**
@@ -77,8 +77,8 @@ public class Route extends AbstractGeodata
     }
 
     /**
-     * Remove a point from track 
-     * 
+     * Remove a point from track
+     *
      * @param aTimePos
      * @return
      */
@@ -89,10 +89,10 @@ public class Route extends AbstractGeodata
     	}
     	return bFlag;
     }
-    
+
     /**
      * Finds the index of equal position in collection
-     * 
+     *
      * @param aGeoPos
      * @return index of found position, else -1
      */
@@ -108,14 +108,14 @@ public class Route extends AbstractGeodata
     	// found
     	return -1;
     }
-    
+
     /**
-     * Finds the index of the GeoPos nearest in distance to passed GeoPos. Time is not considered. 
-     * 
+     * Finds the index of the GeoPos nearest in distance to passed GeoPos. Time is not considered.
+     *
      * @param aGeoPos - the position to match
      * @param max - the maximum distance allowed from track.  Pass <code>-1</code> if no limit
-     * 
-     * @return The index of nearest position. If no position is located closer than 
+     *
+     * @return The index of nearest position. If no position is located closer than
      * <code>max</code> from <code>aGeoPos</code>, <code>-1</code> will be returned.
      */
     public int nearest(GeoPos aGeoPos, double max) {
@@ -137,11 +137,11 @@ public class Route extends AbstractGeodata
     	//System.out.println("nearest::stop(-1)");
     	// finished
     	return index;
-    }    
-    
+    }
+
     /**
      * Get position from index
-     * 
+     *
      * @param index
      * @return
      */
@@ -151,11 +151,11 @@ public class Route extends AbstractGeodata
 
     /**
      * Set position at index
-     * 
+     *
      * @param index
      * @param Point2D.Double aPosition - the new position
      * @return
-     */    
+     */
     public boolean set(int index,Point2D.Double aPosition) {
     	if(index>0 && index<m_route.size()) {
 	    	GeoPos p = m_route.get(index);
@@ -165,15 +165,15 @@ public class Route extends AbstractGeodata
     	}
     	return false;
     }
-    
+
     /**
-     * 
+     *
      * @return number of GeoPos
      */
     public int size() {
     	return m_route.size();
     }
-    
+
     /**
      * Get the collection of points in the route
      *
@@ -186,7 +186,7 @@ public class Route extends AbstractGeodata
 
    public boolean equals(Object o)
    {
-	      if (!super.equals(o)) return false;
+	  if (!super.equals(o)) return false;
 
       Route route = (Route) o;
 
@@ -214,29 +214,29 @@ public class Route extends AbstractGeodata
 
     @Override
     public Route clone() throws CloneNotSupportedException
-    {  
+    {
        Route retVal = new Route(m_id,m_name);
        retVal.setLayout(m_layout);
        retVal.m_route.addAll(m_route);
        return retVal;
     }
-    
+
     public void addAll(Route r) {
     	m_route.addAll(r.m_route);
         incrementChangeCount();
     }
-    
+
     public void removeAll(Route r) {
     	m_route.removeAll(r.m_route);
     	incrementChangeCount();
     }
-    
+
     public void removeRange(int from, int to) {
     	List<GeoPos> range = m_route.subList(from, to);
     	m_route.removeAll(range);
     	incrementChangeCount();
     }
-    
+
 	public GeoPos getStartPoint() {
 		return m_route.get(0);
 	}
@@ -244,38 +244,38 @@ public class Route extends AbstractGeodata
 	public GeoPos getStopPoint() {
 		return m_route.get(m_route.size()-1);
 	}
-	
+
 	public double getDistance() {
 		return getDistance(0,m_route.size()-1,false);
 	}
-	
+
 	public double getDistance(int index) {
 		return getDistance(0,index,false);
 	}
-	
+
 	public double getDistance(int from, int to, boolean direct) {
 		if(m_created!=m_changeCount) create();
 		int uBound = m_route.size()-1;
 		if(m_route.size()==0 || from>uBound || to>uBound)
 			return 0.0;
 		else if(direct){
-			return m_route.get(to).distance(m_route.get(from));			
+			return m_route.get(to).distance(m_route.get(from));
 		}
 		else {
 			return m_distance.get(to) - m_distance.get(from);
 		}
 	}
-	
+
 	public double getBearing() {
 		return getBearing(0,m_route.size()-1);
 	}
-	
+
 	public double getBearing(int index) {
 		return getBearing(0,index);
 	}
-	
+
 	/**
-	 * Bearing between two points 
+	 * Bearing between two points
 	 * @param from
 	 * @param to
 	 * @return - bearing (in degrees)
@@ -284,11 +284,11 @@ public class Route extends AbstractGeodata
 		int uBound = m_route.size()-1;
 		if(m_route.size()==0 || from>uBound || to>uBound)
 			return 0.0;
-		else 
+		else
 			return m_route.get(to).bearing(m_route.get(from));
-		
-	}	
-	
+
+	}
+
 	private void create() {
 		m_distance.clear();
 		m_distance.add(0.0);
@@ -306,5 +306,11 @@ public class Route extends AbstractGeodata
 		}
 		m_created = m_changeCount;
 	}
+
+	public void clear() {
+		m_route.clear();
+		m_distance.clear();
+	}
+
 
 }

@@ -18,15 +18,15 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
     private final AttributeImpl.MsoEnum<BoatSubType> m_subType = new AttributeImpl.MsoEnum<BoatSubType>(this, "SubType", 1, BoatSubType.SEARCH_AND_RESCUE);
 
 
-    public BoatImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public BoatImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
     }
 
 
-    public BoatImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
+    public BoatImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
     {
-        super(anObjectId, aNumber, anIdentifier);
+        super(theMsoModel, anObjectId, aNumber, anIdentifier);
     }
 
     @Override

@@ -18,7 +18,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.ds.DiskoDecisionSupport;
+import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
@@ -31,17 +31,17 @@ import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
-import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
-import org.redcross.sar.map.layer.EstimatedPositionLayer;
 import org.redcross.sar.map.layer.IDiskoLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.IWorkLoop;
+import org.redcross.sar.thread.WorkPool;
+import org.redcross.sar.thread.IWorkLoop.LoopState;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -58,7 +58,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private JSplitPane m_splitPane;
 	private MapPanel m_mapPanel;
 	private JPanel m_estimatorPanel;
-	private BasePanel m_controlPanel;
+	private TogglePanel m_controlPanel;
 	private FieldsPanel m_estAttribsPanel;
 	private DTGField m_startedTimeAttr;
 	private TextLineField m_effortTimeAttr;
@@ -76,7 +76,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private AssignmentsPanel m_activeAssignmentsPanel;
 	private AssignmentsPanel m_archivedAssignmentsPanel;
 
-	private DiskoDecisionSupport m_ds;
+	private DsPool m_ds;
 	private RouteCostEstimator m_estimator;
 
     public DiskoWpDsImpl() throws Exception
@@ -239,12 +239,13 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         return m_estimatorPanel;
     }
 
-    private BasePanel getControlPanel()
+    private TogglePanel getControlPanel()
     {
         if (m_controlPanel == null)
         {
-        	m_controlPanel = new BasePanel(String.format(CONTROL_CAPTION,"Stoppet"),ButtonSize.SMALL);
+        	m_controlPanel = new TogglePanel(String.format(CONTROL_CAPTION,"Stoppet"),false,false,ButtonSize.SMALL);
         	m_controlPanel.setPreferredSize(new Dimension(400,235));
+        	m_controlPanel.collapse();
         	m_controlPanel.addButton(getLoadButton(), "load");
         	m_controlPanel.addButton(getSaveButton(), "save");
         	m_controlPanel.addButton(getResumeButton(), "resume");
@@ -326,12 +327,12 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         	m_estAttribsPanel.setHeaderVisible(false);
         	m_estAttribsPanel.setBorderVisible(false);
         	m_estAttribsPanel.setNotScrollBars();
-        	m_estAttribsPanel.addAttribute(getStartedTimeAttr());
-        	m_estAttribsPanel.addAttribute(getEffortTimeAttr());
-        	m_estAttribsPanel.addAttribute(getAvgEstTimeAttr());
-        	m_estAttribsPanel.addAttribute(getMaxEstTimeAttr());
-        	m_estAttribsPanel.addAttribute(getUtilEstTimeAttr());
-        	m_estAttribsPanel.addAttribute(getCatalogAttr());
+        	m_estAttribsPanel.addField(getStartedTimeAttr());
+        	m_estAttribsPanel.addField(getEffortTimeAttr());
+        	m_estAttribsPanel.addField(getAvgEstTimeAttr());
+        	m_estAttribsPanel.addField(getMaxEstTimeAttr());
+        	m_estAttribsPanel.addField(getUtilEstTimeAttr());
+        	m_estAttribsPanel.addField(getCatalogAttr());
         }
         return m_estAttribsPanel;
     }
@@ -467,10 +468,13 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 			getEffortTimeAttr().setValue(Utils.getTime(seconds));
 		}
 		// get decision support statistics
-		if(m_estimator!=null && m_estimator.isWorking()) {
-			getAvgEstTimeAttr().setValue(m_estimator.getAverageWorkTime() + " ms");
-			getMaxEstTimeAttr().setValue(m_estimator.getMaxWorkTime() + " ms");
-			getUtilEstTimeAttr().setValue(Math.round(m_estimator.getUtilization()*100) + " %");
+		if(m_estimator!=null && !m_estimator.isLoopState(LoopState.PENDING)) {
+			// get work loop
+			IWorkLoop loop = m_estimator.getWorkLoop();
+			// update fields
+			getAvgEstTimeAttr().setValue(loop.getAverageWorkTime() + " ms");
+			getMaxEstTimeAttr().setValue(loop.getMaxWorkTime() + " ms");
+			getUtilEstTimeAttr().setValue(Math.round(loop.getUtilization()*100) + " %");
 		}
 	}
 
@@ -478,10 +482,10 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		return getBundleText("DS");
 	}
 
-    private DiskoDecisionSupport getDs() {
+    private DsPool getDs() {
     	if(m_ds==null) {
     		try {
-				m_ds = DiskoDecisionSupport.getInstance();
+				m_ds = DsPool.getInstance();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -495,13 +499,16 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     }
 
     private void install() {
+    	// get active operation
     	String oprID = getActiveOperationId();
+    	// install estimator
     	m_estimator = (RouteCostEstimator)getDs().install(RouteCostEstimator.class, oprID);
-    	EstimatedPositionLayer l = ((EstimatedPositionLayer)getMap().getDiskoLayer(LayerCode.ESTIMATED_POSITION_LAYER));
-    	l.setEstimator(m_estimator);
-    	getPendingAssignmentsPanel().install(m_estimator);
-    	getActiveAssignmentsPanel().install(m_estimator);
-    	getArchivedAssignmentsPanel().install(m_estimator);
+    	// connect to MSO model
+    	m_estimator.connect(MsoModelImpl.getInstance());
+    	// connect to estimator
+    	getPendingAssignmentsPanel().connect(m_estimator);
+    	getActiveAssignmentsPanel().connect(m_estimator);
+    	getArchivedAssignmentsPanel().connect(m_estimator);
     }
 
     private void load() {
@@ -529,13 +536,13 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 
     private void suspend() {
     	// forward
-    	getDs().suspend(getActiveOperationId());
+    	getDs().suspend(RouteCostEstimator.class, getActiveOperationId());
     	getControlPanel().setCaptionText(String.format(CONTROL_CAPTION,"Pause"));
     }
 
     private void stop() {
     	// forward
-    	getDs().stop(getActiveOperationId());
+    	getDs().stop(RouteCostEstimator.class, getActiveOperationId());
     	// forward
     	getControlPanel().setCaptionText(String.format(CONTROL_CAPTION,"Stoppet"));
     }
@@ -546,9 +553,9 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		super.activate(role);
 
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
+		if(isNavMenuSetupNeeded()) {
 			// get set of tools visible for this wp
-			setupNavBar(getDefaultNavBarButtons(),true);
+			setupNavMenu(getDefaultNavBarButtons(),true);
 		}
 
 		// forward
@@ -559,7 +566,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 	private boolean doWork(int task) {
 		try {
 			// forward work
-			DiskoWorkPool.getInstance().schedule(new DsWork(task));
+			WorkPool.getInstance().schedule(new DsWork(task));
 			// do work
 			return true;
 		}
@@ -569,7 +576,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		return false;
 	}
 
-	class DsWork extends ModuleWork<Boolean> {
+	class DsWork extends ModuleWork {
 
 		private int m_task = 0;
 
@@ -602,11 +609,16 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 
 		private void start() {
 			try{
-		    	// load?
-		    	if(!(m_estimator.isSuspended() || m_estimator.isWorking()))
+				// is suspended?
+				if(m_estimator.isLoopState(LoopState.SUSPENDED)) {
+					m_estimator.resume();
+				}
+				else {
+		    		// load data
 		    		m_estimator.load();
-		    	// forward
-		    	getDs().start(getActiveOperationId());
+		    		// forward
+		    		m_estimator.start();
+				}
 			}
 			catch(Exception e) {
 				e.printStackTrace();

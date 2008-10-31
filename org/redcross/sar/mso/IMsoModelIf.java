@@ -11,19 +11,20 @@ package org.redcross.sar.mso;
 
 import java.util.List;
 
-import org.redcross.sar.data.IDataSourceIf;
+import org.redcross.sar.data.IDataSource;
 import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.mso.work.IMsoWork;
 
 
 /**
  * Interface for singleton class for accessing the MSO model
  */
-public interface IMsoModelIf extends IDataSourceIf<MsoEvent.Update>
+public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
 {
     /**
      * Update modes, to be used when updating local data in order to inform the GUI how data have been updated.
@@ -136,6 +137,10 @@ public interface IMsoModelIf extends IDataSourceIf<MsoEvent.Update>
 
     public void suspendClientUpdate();
 
-    public void resumeClientUpdate();
+    public void resumeClientUpdate(boolean all);
+
+    public boolean isUpdateSuspended();
+
+    public long schedule(IMsoWork work);
 
 }

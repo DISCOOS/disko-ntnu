@@ -4,9 +4,9 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
-public class UnitTableModel extends MsoTableModel<IUnitIf>
+public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 {
 	private static final long serialVersionUID = 1L;
 

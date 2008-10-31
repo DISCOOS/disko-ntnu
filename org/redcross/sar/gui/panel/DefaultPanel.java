@@ -14,34 +14,33 @@ public class DefaultPanel extends BasePanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private JButton finishButton = null;
-	private JButton cancelButton = null;
-	private DiskoIcon finishIcon = null;
-	private DiskoIcon cancelIcon = null;
-	
+	private JButton finishButton;
+	private JButton cancelButton;
+	private DiskoIcon finishIcon;
+	private DiskoIcon cancelIcon;
+
 	/* ===========================================
 	 * Constructors
-	 * ===========================================
-	 */
-	
+	 * =========================================== */
+
 	public DefaultPanel() {
 		this("");
 	}
-	
+
 	public DefaultPanel(String caption) {
 		// forward
 		this(caption,true,true,ButtonSize.SMALL);
 	}
-	
+
 	public DefaultPanel(ButtonSize buttonSize) {
 		// forward
 		this("",true,true,buttonSize);
 	}
-	
+
 	public DefaultPanel(String caption, boolean finish, boolean cancel) {
 		this(caption,finish,cancel,ButtonSize.SMALL);
 	}
-	
+
 	public DefaultPanel(String caption, boolean finish, boolean cancel, ButtonSize buttonSize) {
 		// forward
 		super(caption,buttonSize);
@@ -51,18 +50,17 @@ public class DefaultPanel extends BasePanel {
 		setButtonVisible("finish", finish);
 		setButtonVisible("cancel", cancel);
 	}
-	
+
 	/* ===========================================
 	 * Private methods
-	 * ===========================================
-	 */
-	
+	 * =========================================== */
+
 	/**
 	 * This method initializes the panel
-	 * 	
+	 *
 	 */
 	private void initialize() {
-		
+
 		// add default buttons
 		addButton(getFinishButton(),"finish");
 		addButton(getCancelButton(),"cancel");
@@ -73,11 +71,11 @@ public class DefaultPanel extends BasePanel {
 				if("finish".equalsIgnoreCase(cmd)) finish();
 				else if("cancel".equalsIgnoreCase(cmd)) cancel();
 			}
-			
+
 		});
-		
+
 	}
-	
+
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {
@@ -90,7 +88,7 @@ public class DefaultPanel extends BasePanel {
 		}
 		return cancelButton;
 	}
-	
+
 	private JButton getFinishButton() {
 		if (finishButton == null) {
 			try {
@@ -103,21 +101,20 @@ public class DefaultPanel extends BasePanel {
 			}
 		}
 		return finishButton;
-	}	
+	}
 
 	/* ===========================================
 	 * IPanel interface implementation
-	 * ===========================================
-	 */
-	
-	public void update() { 
-		
+	 * =========================================== */
+
+	public void update() {
+
 		// update attributes
 		finishIcon.setColored(isDirty());
 		cancelIcon.setColored(isDirty());
 		finishButton.repaint();
 		cancelButton.repaint();
-			
+
 	}
-	
+
 }  //  @jve:decl-index=0:visual-constraint="10,10"

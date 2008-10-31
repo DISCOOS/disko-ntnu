@@ -10,20 +10,20 @@ import java.util.Map;
 
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.data.IDataBinderIf;
+import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.data.event.DataEvent;
-import org.redcross.sar.data.event.IDataListenerIf;
-import org.redcross.sar.data.event.ISourceListenerIf;
+import org.redcross.sar.data.event.BinderEvent;
+import org.redcross.sar.data.event.IBinderListener;
+import org.redcross.sar.data.event.ISourceListener;
 import org.redcross.sar.data.event.SourceEvent;
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractBinder<S,T extends IDataIf, I>
-										 implements IDataBinderIf<S,T,I>, ISourceListenerIf<I> {
+public abstract class AbstractBinder<S,T extends IData, I>
+										 implements IDataBinder<S,T,I>, ISourceListener<I> {
 
 	private static final long serialVersionUID = 1L;
 
-	protected IDataSourceIf<I> source;
+	protected IDataSource<I> source;
 	protected Class<T> dataClass;
 	protected Selector<T> selector;
 	protected Comparator<T> comparator;
@@ -45,14 +45,14 @@ public abstract class AbstractBinder<S,T extends IDataIf, I>
 	 * Public methods
 	 * ============================================================================= */
 
-	public boolean selectData(IDataIf obj) {
-		if(dataClass.isInstance(obj)) {
+	public boolean selectData(IData obj) {
+		if(isDataObject(obj)) {
 			return (selector!=null ? selector.select((T)obj) : true);
 		}
 		return false;
 	}
 
-	public boolean selectCoObject(IDataIf obj) {
+	public boolean selectCoObject(IData obj) {
 		if(isCoObject(obj)) {
 			Selector selector = coSelectorList.get(obj);
 			return (selector!=null ? selector.select(obj) : true);
@@ -66,7 +66,7 @@ public abstract class AbstractBinder<S,T extends IDataIf, I>
 
 	public abstract boolean load(Collection<T> objects);
 
-	public boolean connect(IDataSourceIf<I> source) {
+	public boolean connect(IDataSource<I> source) {
 		if(source!=null && this.source==null && source.isSupported(dataClass)) {
 			this.source = source;
 			this.source.addSourceListener(this);
@@ -96,15 +96,25 @@ public abstract class AbstractBinder<S,T extends IDataIf, I>
 		return dataClass;
 	}
 
-	public IDataSourceIf<I> getSource() {
+	public boolean isDataObject(IData obj) {
+		if(obj!=null) {
+			return (dataClass.isInstance(obj));
+		}
+		return false;
+	}
+
+	public IDataSource<I> getSource() {
 		return source;
 	}
 
 	public boolean isSupported(Class<?> dataClass) {
-		return this.dataClass.isAssignableFrom(dataClass);
+		if(dataClass!=null) {
+			return this.dataClass.isAssignableFrom(dataClass);
+		}
+		return false;
 	}
 
-	public boolean isCoObject(IDataIf obj) {
+	public boolean isCoObject(IData obj) {
 		if(obj!=null) {
 			return isCoClass(obj.getClass());
 			}
@@ -145,16 +155,17 @@ public abstract class AbstractBinder<S,T extends IDataIf, I>
 	public Comparator<T> getComparator() {
 		return comparator;
 	}
+
 	public void setComparator(Comparator<T> comparator) {
 		this.comparator = comparator;
 	}
 
-	public void addDataListener(IDataListenerIf<S> listener) {
-		listeners.add(IDataListenerIf.class, listener);
+	public void addBinderListener(IBinderListener<S> listener) {
+		listeners.add(IBinderListener.class, listener);
 	}
 
-	public void removeDataListener(IDataListenerIf<S> listener) {
-		listeners.remove(IDataListenerIf.class, listener);
+	public void removeBinderListener(IBinderListener<S> listener) {
+		listeners.remove(IBinderListener.class, listener);
 	}
 
 	/* =============================================================================
@@ -169,51 +180,70 @@ public abstract class AbstractBinder<S,T extends IDataIf, I>
 
 	protected List<T> sort(Collection<T> objs) {
 		List<T> list = new ArrayList(objs);
-		Collections.sort(list, getComparator());
+		Comparator<T> comparator = getComparator();
+		if(comparator==null)
+			Collections.sort(list, null);
+		else
+			Collections.sort(list, getComparator());
 		return list;
 	}
 
-	protected void fireDataLoaded(DataEvent<S> e) {
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireDataLoaded(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataCreated(e);
 		}
 	}
 
-	protected void fireDataCreated(DataEvent<S> e) {
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireDataCreated(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataCreated(e);
 		}
 	}
 
-	protected void fireDataChanged(DataEvent<S> e) {
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireDataChanged(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataChanged(e);
 		}
 	}
 
-	protected void fireDataDeleted(DataEvent<S> e) {
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireDataDeleted(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataDeleted(e);
 		}
 	}
 
-	protected void fireDataClearAll(DataEvent<S> e) {
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireDataUnselected(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
+		for(int i=0; i<list.length; i++) {
+			list[i].onDataUnselected(e);
+		}
+	}
+
+	protected void fireDataClearAll(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataClearAll(e);
 		}
 	}
 
-	protected void fireDataCoClassChanged(DataEvent<S> e) {
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireCoDataChanged(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
-			list[i].onDataCoClassChanged(e);
+			list[i].onCoDataChanged(e);
 		}
 	}
+
+	protected void fireCoDataUnselected(BinderEvent<S> e) {
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
+		for(int i=0; i<list.length; i++) {
+			list[i].onCoDataUnselected(e);
+		}
+	}
+
 
 
 }

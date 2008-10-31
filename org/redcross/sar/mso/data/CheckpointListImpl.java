@@ -16,14 +16,14 @@ public class CheckpointListImpl extends MsoListImpl<ICheckpointIf> implements IC
     public ICheckpointIf createCheckpoint()
     {
         checkCreateOp();
-        return createdUniqueItem(new CheckpointImpl(makeUniqueId()));
+        return createdUniqueItem(new CheckpointImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public ICheckpointIf createCheckpoint(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         ICheckpointIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new CheckpointImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new CheckpointImpl(getOwner().getModel(), anObjectId));
     }
 
 

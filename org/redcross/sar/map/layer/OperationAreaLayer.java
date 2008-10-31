@@ -2,14 +2,14 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IDisplay;
@@ -33,26 +33,22 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol defaultSymbol = null;
 	private SimpleFillSymbol disabledSymbol = null;
 	private SimpleFillSymbol selectionSymbol = null;
- 	
- 	public OperationAreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
- 		super(IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA, 
- 				LayerCode.OPERATION_AREA_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPolygon, eventStack);
+
+ 	public OperationAreaLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 		super(esriGeometryType.esriGeometryPolygon, MsoClassCode.CLASSCODE_OPERATIONAREA,
+ 				EnumSet.noneOf(MsoClassCode.class), LayerCode.OPERATION_AREA_LAYER,
+ 				srs, eventStack, manager);
  		createSymbols();
-		if(msoModel.getMsoManager().operationExists()) {
-	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			loadObjects(cmdPost.getOperationAreaListItems().toArray());
-		}
 	}
- 	
- 	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 
+
+ 	protected OperationAreaFeature createMsoFeature(IMsoObjectIf msoObject)
  			throws IOException, AutomationException {
- 		IMsoFeature msoFeature = new OperationAreaFeature();
+ 		OperationAreaFeature msoFeature = new OperationAreaFeature();
  		msoFeature.setSpatialReference(srs);
 		msoFeature.setMsoObject(msoObject);
 		return msoFeature;
 	}
-	
+
  	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
  			throws IOException, AutomationException {
  		try {
@@ -62,18 +58,18 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 
 			// get scale
 			double scale = display.getDisplayTransformation().getScaleRatio();
-			
+
 			// get zoom ratio
 			double zoomRatio = java.lang.Math.min(1.0,referenceScale / scale);
-			
+
 			// get line zoom width
 			double zoomLineWidth = java.lang.Math.min(lineWidth, lineWidth*zoomRatio);
-			
+
  			for (int i = 0; i < featureClass.featureCount(null); i++) {
- 				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+ 				IMsoFeature feature = getFeature(i);
  				if(select(feature) && feature.isVisible()){
  					Polygon polygon = (Polygon)feature.getShape();
- 	 				if (polygon != null) {	 		
+ 	 				if (polygon != null) {
 						// is enabled?
 						if(isEnabled) {
 							// is selected?
@@ -81,9 +77,9 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 		 	 					// update
 								ILineSymbol line = selectionSymbol.getOutline();
 								line.setWidth(zoomLineWidth);
-								selectionSymbol.setOutline(line);							
-								// select feature 
-								display.setSymbol(selectionSymbol);							
+								selectionSymbol.setOutline(line);
+								// select feature
+								display.setSymbol(selectionSymbol);
 							}
 	 	 					else {
 		 	 					// update
@@ -91,23 +87,23 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 								line.setWidth(zoomLineWidth);
 								defaultSymbol.setOutline(line);
 								// do no select feature
-								display.setSymbol(defaultSymbol);									
+								display.setSymbol(defaultSymbol);
 	 	 					}
 						}
 						else {
 							// update
 							ILineSymbol line = disabledSymbol.getOutline();
 							line.setWidth(zoomLineWidth);
-							disabledSymbol.setOutline(line);							
+							disabledSymbol.setOutline(line);
 							// disable all other features
-							display.setSymbol(disabledSymbol);							
+							display.setSymbol(disabledSymbol);
 						}
  	 					display.drawPolygon(polygon);
  	 				}
-					feature.setDirty(false);
  				}
+				feature.setDirty(false);
  			}
- 			isDirty = false;
+ 			setDirty(false);
  		} catch (Exception e) {
  			e.printStackTrace();
  		}
@@ -115,7 +111,7 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 
  	private void createSymbols() {
  		try {
- 			
+
  			// create default symbol
 			RgbColor c = new RgbColor();
 			c.setRed(255);
@@ -137,7 +133,7 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 			c.setGreen(255);
 			selectionSymbol = (SimpleFillSymbol)MapUtil.getFillSymbol(c, esriSimpleFillStyle.esriSFSNull, esriSimpleLineStyle.esriSLSSolid);
 			selectionSymbol.getOutline().setWidth(lineWidth);
-			
+
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -16,14 +16,14 @@ public class SubjectListImpl extends MsoListImpl<ISubjectIf> implements ISubject
     public ISubjectIf createSubject()
     {
         checkCreateOp();
-        return createdUniqueItem(new SubjectImpl(makeUniqueId()));
+        return createdUniqueItem(new SubjectImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public ISubjectIf createSubject(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         ISubjectIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new SubjectImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new SubjectImpl(getOwner().getModel(), anObjectId));
     }
 
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.field;
 
@@ -19,14 +19,14 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoString;
  *
  */
 public class ComboBoxField extends AbstractField {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	/*==================================================================
 	 * Constructors
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	public ComboBoxField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		super(name, caption, isEditable, width, height, value);
@@ -35,7 +35,7 @@ public class ComboBoxField extends AbstractField {
 	public ComboBoxField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 	}
-	
+
 	public ComboBoxField(MsoString attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
@@ -48,7 +48,7 @@ public class ComboBoxField extends AbstractField {
 
 	/*==================================================================
 	 * Public methods
-	 *================================================================== 
+	 *==================================================================
 	 */
 
 	public Component getComponent() {
@@ -59,28 +59,28 @@ public class ComboBoxField extends AbstractField {
 				public void itemStateChanged(ItemEvent e) {
 					if(!isChangeable()) return;
 					fireOnWorkChange();
-					
+
 				}
 			});
-			
+
 			// save the component
-			m_component = field;			
+			m_component = field;
 		}
 		return m_component;
 	}
-	
+
 	public JComboBox getComboBox() {
 		return (JComboBox)m_component;
 	}
-			
+
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}
-	
+
 	public boolean getAutoSave() {
 		return m_autoSave;
-	}	
-	
+	}
+
 	public boolean fill(Object values) {
 		try {
 			if(values instanceof Object[])
@@ -94,18 +94,18 @@ public class ComboBoxField extends AbstractField {
 		}
 		return false;
 	}
-	
+
 	public Object getValue() {
 		return ((JComboBox)m_component).getSelectedItem();
 	}
-	
+
 	public boolean setValue(Object value) {
 		// update
 		((JComboBox)m_component).setSelectedItem(value);
 		// success
 		return true;
 	}
-	
+
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
@@ -122,39 +122,39 @@ public class ComboBoxField extends AbstractField {
 		// failure
 		return false;
 	}
-	
+
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
-		getComboBox().setEditable(isEditable);		
+		getComboBox().setEditable(isEditable);
 	}
-	
-	
+
+
 	/*
 		private JLabel m_label;
-		
+
 		@Override
 		public Component getListCellRendererComponent(JList list,
 				Object value, int index, boolean isSelected, boolean hasFocus) {
-			
+
 			if(m_label==null) m_label = new JLabel();
-			
+
 			// translate
-			if(value instanceof Enum) {			
+			if(value instanceof Enum) {
 				m_label.setText(DiskoEnumFactory.getText((Enum)value));
 			}
 			else if (value!=null) {
 				m_label.setText(value.toString());
 			}
 			else {
-				m_label.setText("");				
+				m_label.setText("");
 			}
-			
+
 			// update selection state
 			if (isSelected){
 				m_label.setBackground(list.getSelectionBackground());
 				m_label.setForeground(list.getSelectionForeground());
-			} 
+			}
 			else {
 				m_label.setBackground(list.getBackground());
 				m_label.setForeground(list.getForeground());
@@ -162,7 +162,7 @@ public class ComboBoxField extends AbstractField {
 			// finished
 			return m_label;
 		}
-		
+
 	};
 	*/
 

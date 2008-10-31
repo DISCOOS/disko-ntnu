@@ -7,16 +7,14 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.dialog.TaskDialog;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 
 import java.awt.Color;
@@ -186,7 +184,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 					"Du er i ferd med å slette valgt oppgave. Vil du fortsette?","Bekreftelse",JOptionPane.YES_NO_OPTION);
 			// prompt user
 			if(ans == JOptionPane.YES_OPTION) {
-			
+
 				// Button is deselected, remove task
 				for(ITaskIf task : message.getMessageTasksItems())
 				{
@@ -198,7 +196,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 						}
 					}
 				}
-				
+
 				// Make corresponding change button inactive
 				changeButton.setEnabled(false);
 			}
@@ -252,7 +250,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		case GENERAL:
 			task.setType(TaskType.GENERAL);
 		}
-		
+
 		// set description
 		task.setDescription(MsoUtils.getMessageText(message));
 
@@ -464,34 +462,35 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		return null;
 	}
 
+	private final EnumSet<MsoClassCode> myInterests = EnumSet.of(MsoClassCode.CLASSCODE_TASK);
+
+	public EnumSet<MsoClassCode> getInterests() {
+		return myInterests;
+	}
+
 	/**
 	 * Update finding button to correct type if finding type has been changed
 	 * @param e
 	 */
-	public void handleMsoUpdateEvent(Update e)
-	{
-		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-		if(message != null)
-		{
-			for(ITaskIf task : message.getMessageTasksItems())
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		if(events.isClearAllEvent()) {
+			m_findingButton.setText("");
+		}
+		else {
+			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
+			if(message != null)
 			{
-				TaskSubType type = MessageTableModel.getSubType(task);
-				if(type == TaskSubType.FINDING)
+				for(ITaskIf task : message.getMessageTasksItems())
 				{
-					m_findingButton.setText(task.getTaskText());
+					TaskSubType type = MessageTableModel.getSubType(task);
+					if(type == TaskSubType.FINDING)
+					{
+						m_findingButton.setText(task.getTaskText());
+					}
 				}
 			}
 		}
 	}
 
-	private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(
-    		IMsoManagerIf.MsoClassCode.CLASSCODE_TASK);
-
-	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return myInterests.contains(msoObject.getMsoClassCode());
-	}
 }

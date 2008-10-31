@@ -53,11 +53,11 @@ public class FlankFeature extends AbstractMsoFeature {
 		return rightFlanks;
 	}
 
-	public boolean isMsoChanged(IMsoObjectIf msoObj) {
-		IAreaIf area = MsoUtils.getOwningArea(msoObj);
+	public boolean isMsoChanged() {
+		IAreaIf area = MsoUtils.getOwningArea(msoObject);
 		return isGeodataChanged(area.getAreaGeodata());
 	}
-	
+
 	private boolean isGeodataChanged(IMsoListIf<IMsoObjectIf> list) {
 		// check instance first
 		if(geoList==null || list==null || !geoList.equals(list)) return true;
@@ -66,45 +66,42 @@ public class FlankFeature extends AbstractMsoFeature {
 		for(IMsoObjectIf it : list.getItems()) {
 			// parse
 			if(it instanceof IRouteIf) {
-				// get geodata
-				IGeodataIf geodata = ((IRouteIf)it).getGeodata();
-				// changed?
-				if(!changeList.get(i).equals(geodata.getChangeCount())) return true;
+				return isGeodataChanged(((IRouteIf)it).getGeodata(),changeList,i);
 			}
 			else if(it instanceof ITrackIf) {
-				// get geodata
-				IGeodataIf geodata = ((ITrackIf)it).getGeodata();
-				// changed?
-				if(!changeList.get(i).equals(geodata.getChangeCount())) return true;	
-			}			
-		}   
-		return false;
-	}	
-
-	@Override
-	public void msoChanged() throws IOException, AutomationException {
-		if (srs == null) return;
-		IAreaIf area = MsoUtils.getOwningArea(msoObject);
-		if(area!=null) {
-			geoList = area.getAreaGeodata();
-			setChangeList();
-	        if (geoList != null && geoList.size() > 0) {
-				leftFlanks.clear();
-				rightFlanks.clear();
-				GeometryBag geomBag = new GeometryBag();
-				Iterator<IGeodataIf> iter = area.getAreaGeodataIterator();       // todo sjekk etter endring av GeoCollection
-				while (iter.hasNext()) {
-	                IGeodataIf geodata = iter.next();
-					if (geodata instanceof Route) {
-	                    IGeometry polyline = MapUtil.getEsriPolyline((Route)geodata, srs); // todo Denne er feil, MSO-modellen oppdateres ikke korrekt.
-						geomBag.addGeometry(polyline, null, null);
-						createFlankForRoute((Route)geodata);
-					}
-				}
-				geometry = geomBag;
+				return isGeodataChanged(((ITrackIf)it).getGeodata(),changeList,i);
 			}
 		}
-		super.msoChanged();		
+		return false;
+	}
+
+	@Override
+	public boolean create() throws IOException, AutomationException {
+    	if(super.create()) {
+			IAreaIf area = MsoUtils.getOwningArea(msoObject);
+			if(area!=null) {
+				geoList = area.getAreaGeodata();
+				setChangeList();
+		        if (geoList != null && geoList.size() > 0) {
+					leftFlanks.clear();
+					rightFlanks.clear();
+					GeometryBag geomBag = new GeometryBag();
+					Iterator<IGeodataIf> iter = area.getAreaGeodataIterator();
+					while (iter.hasNext()) {
+		                IGeodataIf geodata = iter.next();
+						if (geodata instanceof Route) {
+		                    IGeometry polyline = MapUtil.getEsriPolyline((Route)geodata, srs);
+							geomBag.addGeometry(polyline, null, null);
+							createFlankForRoute((Route)geodata);
+						}
+					}
+					geometry = geomBag;
+				}
+			}
+			setDirty(isDirty || (getShape()!=null));
+			return true;
+    	}
+	    return false;
 	}
 
     private void setChangeList() {
@@ -123,9 +120,9 @@ public class FlankFeature extends AbstractMsoFeature {
 				// add change count
 				changeList.add(geodata.getChangeCount());
 			}
-		}    
+		}
 	}
-    
+
 	public Object getGeodata() {
 		return geoList;
 	}
@@ -137,14 +134,14 @@ public class FlankFeature extends AbstractMsoFeature {
 		}
 		Polyline path = MapUtil.getEsriPolyline(route, srs);
 		if (!path.isEmpty())  {
-			Hashtable params = getParams(layout);
-			String leftDistParam     = (String)params.get("LeftDist");
-			String rightDistParam    = (String)params.get("RightDist");
-			String clipFeaturesParam = (String)params.get("ClipFeatures");
+			Hashtable<String,String> params = getParams(layout);
+			String leftDistParam     = params.get("LeftDist");
+			String rightDistParam    = params.get("RightDist");
+			String clipFeaturesParam = params.get("ClipFeatures");
 
 			int leftDist  = leftDistParam  != null ? Integer.parseInt(leftDistParam)  : 0;
 			int rightDist = rightDistParam != null ? Integer.parseInt(rightDistParam) : 0;
-			List clipFeatures = getClipFeatures(clipFeaturesParam);
+			List<IFeatureClass> clipFeatures = getClipFeatures(clipFeaturesParam);
 
 			if (leftDist > 0) {
 				try {
@@ -163,7 +160,7 @@ public class FlankFeature extends AbstractMsoFeature {
 		}
 	}
 
-	private void createFlank(Polyline path, double dist, List clipFeatures, int side)
+	private void createFlank(Polyline path, double dist, List<IFeatureClass> clipFeatures, int side)
 			throws IOException, AutomationException {
 		Line n1 = new Line();
 		Line n2 = new Line();
@@ -202,13 +199,13 @@ public class FlankFeature extends AbstractMsoFeature {
 		}
 	}
 
-	private Polygon clip(Polygon flank, List clipFeatures) throws IOException, AutomationException {
+	private Polygon clip(Polygon flank, List<IFeatureClass> clipFeatures) throws IOException, AutomationException {
 		if (clipFeatures == null || clipFeatures.size() < 1) {
 			return flank;
 		}
 		Polygon result = flank;
 		for (int i = 0; i < clipFeatures.size(); i++) {
-			IFeatureClass fclass = (IFeatureClass)clipFeatures.get(i);
+			IFeatureClass fclass = clipFeatures.get(i);
 			SpatialFilter spatialFilter = new SpatialFilter();
 			spatialFilter.setGeometryByRef(flank.getEnvelope());
 			spatialFilter.setGeometryField(fclass.getShapeFieldName());
@@ -223,7 +220,7 @@ public class FlankFeature extends AbstractMsoFeature {
 		return result;
 	}
 
-	private Hashtable getParams(String paramString) {
+	private Hashtable<String,String> getParams(String paramString) {
 		Hashtable<String, String> params = new Hashtable<String, String>();
 		StringTokenizer st1 = new StringTokenizer(paramString, "&");
 		while(st1.hasMoreTokens()) {
@@ -235,7 +232,7 @@ public class FlankFeature extends AbstractMsoFeature {
 		return params;
 	}
 
-	private ArrayList getClipFeatures(String param) throws AutomationException, IOException {
+	private List<IFeatureClass> getClipFeatures(String param) throws AutomationException, IOException {
 		if (param == null) {
 			return null;
 		}

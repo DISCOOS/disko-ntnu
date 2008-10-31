@@ -12,7 +12,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -22,30 +21,29 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
-import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.CompassPanel;
+import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.wp.IDiskoWpModule;
 
-public class UnitStatusPanel extends BasePanel {
+public class UnitStatusPanel extends TogglePanel {
 
 	private static final int FIXED_WIDTH = 420;
 	private static final int FIXED_HEIGHT = 185;
 	private static final long serialVersionUID = 1L;
 	private static final String[] ATTRIBUTES = new String[]{"averagespeed","maxspeed","position"};
 	private static final String[] CAPTIONS = new String[]{"Hastighet (snitt)","Hastighet (max)","Posisjon"};
-	
-	private IUnitIf m_unit = null;
-	
-	private JToggleButton m_viewButton;
+
+	private IUnitIf m_unit;
+
 	private JButton m_gotoButton;
 	private JButton m_playButton;
 	private JButton m_pauseButton;
@@ -55,10 +53,10 @@ public class UnitStatusPanel extends BasePanel {
 	private NumericField m_bearingAttr;
 	private TextLineField m_activeAttr;
 	private FieldsPanel m_attribsPanel;
-	
+
 	public UnitStatusPanel(IUnitIf unit) {
 		// forward
-		super(ButtonSize.SMALL);
+		super("",false,false,ButtonSize.SMALL);
 		// prepare
 		m_unit = unit;
 		// initialize gui
@@ -66,16 +64,15 @@ public class UnitStatusPanel extends BasePanel {
 		// set unit
 		setUnit(unit);
 	}
-	
+
 	private void initialize() {
 		// set alignment
 		setAlignmentX(Component.LEFT_ALIGNMENT);
 		setAlignmentY(Component.CENTER_ALIGNMENT);
 		// add actions
-		addButton(getViewButton(),"toggle");
 		addButton(getGotoButton(), "goto");
 		addButton(getPlayButton(), "play");
-		addButton(getPauseButton(), "pause");		
+		addButton(getPauseButton(), "pause");
 		addActionListener(new ActionListener() {
 
 			@Override
@@ -83,94 +80,60 @@ public class UnitStatusPanel extends BasePanel {
 				// prepare
 				IUnitIf unit = getUnit();
 				String cmd = e.getActionCommand();
-				// translate
-				if("toggle".equals(cmd)) {
-					setView();
-				}
-				else if("play".equals(cmd)) {
-					
+				if("play".equals(cmd)) {
+
 				}
 				else if("pause".equals(cmd)) {
-					
-				}	
+
+				}
 				else if("goto".equals(cmd)) {
 					 if(unit!=null) {
-						centerAtPosition(unit.getPosition());					
-					 }				
+						centerAtPosition(unit.getPosition());
+					 }
 				}
 			}
-			
+
 		});
 		// initialize panel body
     	setNotScrollBars();
-    	// forward
-		setPreferredBodySize(new Dimension(FIXED_WIDTH,FIXED_HEIGHT-37));
+    	// set resize behavior
+    	setFitBodyOnResize(true);
+		// ensure fixed size
+    	Utils.setFixedSize(this,FIXED_WIDTH,FIXED_HEIGHT);
 		// add bearing panel to the left side
 		addBodyChild(getBearingPanel(),BorderLayout.WEST);
-		// add attributes in the center of panel  
+		// add attributes in the center of panel
 		addBodyChild(getAttribsPanel(),BorderLayout.CENTER);
 		// forward
-		setView();
-		//getViewButton().doClick();
+		collapse();
 	}
-	
+
 	/**
-	 * This method initializes GotoButton	
-	 * 	
-	 * @return {@link JButton}
-	 */
-	private JToggleButton getViewButton() {
-		if (m_viewButton == null) {
-			m_viewButton = DiskoButtonFactory.createToggleButton(ButtonSize.SMALL);
-			m_viewButton.setIcon(DiskoIconFactory.getIcon("GENERAL.EXPAND", "32x32"));
-			m_viewButton.setSelectedIcon(DiskoIconFactory.getIcon("GENERAL.COLLAPSE", "32x32"));
-		}
-		return m_viewButton;
-	}
-	
-	private void setView() {
-		if(m_viewButton.isSelected()) {
-			// ensure fixed size
-	    	Utils.setFixedSize(this,FIXED_WIDTH,FIXED_HEIGHT);
-	    	// update tool tip text
-			m_viewButton.setToolTipText("Lukk");
-		}
-		else {
-			// ensure fixed size
-	    	Utils.setFixedSize(this,FIXED_WIDTH,getHeaderPanel().getPreferredSize().height+1);
-	    	// update tool tip text
-			m_viewButton.setToolTipText("Åpne");			
-		}
-		validate();		
-	}
-	
-	
-	/**
-	 * This method initializes GotoButton	
-	 * 	
+	 * This method initializes GotoButton
+	 *
 	 * @return {@link JButton}
 	 */
 	private JButton getGotoButton() {
 		if (m_gotoButton == null) {
-			m_gotoButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);			
+			m_gotoButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);
 		}
 		return m_gotoButton;
 	}
-		
+
 	private JButton getPlayButton() {
 		if(m_playButton==null) {
 			m_playButton = DiskoButtonFactory.createButton("GENERAL.PLAY", ButtonSize.SMALL);
 		}
 		return m_playButton;
 	}
-	
+
 	private JButton getPauseButton() {
 		if(m_pauseButton==null) {
 			m_pauseButton = DiskoButtonFactory.createButton("GENERAL.PAUSE", ButtonSize.SMALL);
 		}
 		return m_pauseButton;
 	}
-	
+
 	private JButton getCenterAtAssignmentButton() {
 		if(m_centerAtAssignmentButton==null) {
 			m_centerAtAssignmentButton = DiskoButtonFactory.createButton("MAP.CENTERAT", ButtonSize.SMALL);
@@ -178,14 +141,14 @@ public class UnitStatusPanel extends BasePanel {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					centerAtMsoObject(getUnitAssignment());					
+					centerAtMsoObject(getUnitAssignment());
 				}
-				
+
 			});
 		}
 		return m_centerAtAssignmentButton;
 	}
-	
+
 	private JPanel getBearingPanel()
     {
         if (m_bearingPanel == null)
@@ -198,20 +161,20 @@ public class UnitStatusPanel extends BasePanel {
         	m_bearingPanel.add(Box.createVerticalGlue());
         	m_bearingPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         	Utils.setFixedSize(m_bearingPanel,90,FIXED_HEIGHT-37);
-        }        
+        }
         return m_bearingPanel;
     }
-	
+
 	private CompassPanel getCompassPanel()
     {
         if (m_compassPanel == null)
         {
         	m_compassPanel = new CompassPanel(0,25);
         	m_compassPanel.setBorder(new DiskoBorder(1,1,1,1,Color.LIGHT_GRAY));
-        }        
+        }
         return m_compassPanel;
     }
-	
+
 	private NumericField getBearingAttr()
     {
         if (m_bearingAttr == null)
@@ -219,11 +182,11 @@ public class UnitStatusPanel extends BasePanel {
         	m_bearingAttr = new NumericField("Bearing","Grad", false, 30, 25, 0);
         	m_bearingAttr.setMaxDigits(3);
         	m_bearingAttr.setDecimalPrecision(0);
-        	m_bearingAttr.setAllowNegative(false);        	
-        }        
+        	m_bearingAttr.setAllowNegative(false);
+        }
         return m_bearingAttr;
     }
-	
+
 	private TextLineField getActiveAttr()
     {
         if (m_activeAttr == null)
@@ -231,10 +194,10 @@ public class UnitStatusPanel extends BasePanel {
         	m_activeAttr = new TextLineField("active","Aktivt oppdrag",false,100,25,"Ingen oppdrag");
         	m_activeAttr.installButton(getCenterAtAssignmentButton(), true);
         	getCenterAtAssignmentButton().setEnabled(true);
-        }        
+        }
         return m_activeAttr;
     }
-	
+
 	private FieldsPanel getAttribsPanel()
     {
         if (m_attribsPanel == null)
@@ -244,19 +207,19 @@ public class UnitStatusPanel extends BasePanel {
         	m_attribsPanel.setBorderVisible(false);
         	m_attribsPanel.setNotScrollBars();
         	m_attribsPanel.setPreferredBodySize(new Dimension(FIXED_WIDTH-90,FIXED_HEIGHT-37));
-        	m_attribsPanel.addDiskoWorkListener(this);
-        }        
+        	m_attribsPanel.addWorkListener(this);
+        }
         return m_attribsPanel;
     }
 
 	public IUnitIf getUnit() {
 		return m_unit;
 	}
-	
+
 	public double getCurrentBearing() {
 		return m_unit !=null ? m_unit.getBearing() : 0;
 	}
-	
+
 	public IAssignmentIf getUnitAssignment() {
 		IAssignmentIf assignment = null;
 		if(m_unit !=null) {
@@ -272,9 +235,9 @@ public class UnitStatusPanel extends BasePanel {
 			}
 		}
 		return assignment;
-		
+
 	}
-	
+
 	public String getActiveAssignmentText() {
 		String text = "Ingen registrert";
 		IAssignmentIf assignment = null;
@@ -295,57 +258,57 @@ public class UnitStatusPanel extends BasePanel {
 		}
 		return text;
 	}
-	
+
 	public void update() {
-		
+
 		// forward
 		super.update();
-		
+
 		// consume?
 		if(!isChangeable() || m_unit==null) return;
-		
+
 		// consume changes
 		setChangeable(false);
-				
+
 		// update caption
 		setCaptionIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(m_unit.getType()), "32x32"));
 		setCaptionText("Simulering - <b>"+MsoUtils.getUnitName(m_unit, true)+"</b>");
-		
+
 		// update attributes
 		getCompassPanel().setBearing((int)getCurrentBearing());
 		getBearingAttr().setValue((int)getCurrentBearing());
 		getAttribsPanel().reset();
 		getActiveAttr().setValue(getActiveAssignmentText());
-		
+
 		// resume changes
 		setChangeable(true);
-		
+
 	}
-	
+
 	public void setUnit(IUnitIf unit) {
-	
+
 		// save unit
 		m_unit = unit;
-		
+
 		// connect to attributes
 		getAttribsPanel().create(unit, ATTRIBUTES, CAPTIONS, true, 100, 25, true);
 		getAttribsPanel().setAutoSave(true);
-		getAttribsPanel().addAttribute(getActiveAttr());
-		
+		getAttribsPanel().addField(getActiveAttr());
+
 		// listener for changes in position
-		getAttribsPanel().getAttribute(
-				ATTRIBUTES[2]).addDiskoWorkListener(m_positionListener);
-		
+		getAttribsPanel().getField(
+				ATTRIBUTES[2]).addWorkListener(m_positionListener);
+
 		// forward
-		update();		
-		
+		update();
+
 	}
-	
+
 	private static void centerAtPosition(Position p) {
 		// get installed map
 		IDiskoMap map = getInstalledMap();
 		// has map?
-		if(map!=null) {						
+		if(map!=null) {
 			try {
 				// center at position?
 				if(p!=null) {
@@ -360,12 +323,12 @@ public class UnitStatusPanel extends BasePanel {
 			}
 		}
 	}
-	
+
 	private static void centerAtMsoObject(IMsoObjectIf msoObj) {
 		// get installed map
 		IDiskoMap map = getInstalledMap();
 		// has map?
-		if(map!=null) {						
+		if(map!=null) {
 			try {
 				// center at position?
 				if(msoObj!=null) {
@@ -379,10 +342,10 @@ public class UnitStatusPanel extends BasePanel {
 				ex.printStackTrace();
 			}
 		}
-	}	
-	
+	}
+
 	private static IDiskoMap getInstalledMap() {
-		// try to get map from current 
+		// try to get map from current
 		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
 		if(module!=null) {
 			if(module.isMapInstalled())
@@ -390,19 +353,19 @@ public class UnitStatusPanel extends BasePanel {
 		}
 		// no map available
 		return null;
-	}	
-	
-	private final IDiskoWorkListener m_positionListener = new IDiskoWorkListener() {
+	}
+
+	private final IWorkListener m_positionListener = new IWorkListener() {
 
 		@Override
-		public void onWorkPerformed(DiskoWorkEvent e) {
+		public void onWorkPerformed(WorkEvent e) {
 			// is position changed?
 			if(e.isFinish()) {
 				// log position
 				m_unit.logPosition();
 			}
 		}
-		
+
 	};
 
 }

@@ -3,8 +3,8 @@ package org.redcross.sar.gui.dialog;
 import java.awt.Frame;
 
 import org.redcross.sar.gui.panel.ListSelectorPanel;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 
 /**
@@ -33,10 +33,10 @@ public class ListSelectorDialog extends DefaultDialog  {
 		initialize();
 		
 		// add listener
-		addDiskoWorkListener(new IDiskoWorkListener() {
+		addWorkListener(new IWorkListener() {
 
 			@Override
-			public void onWorkPerformed(DiskoWorkEvent e) {
+			public void onWorkPerformed(WorkEvent e) {
 				if(e.isCancel()) m_cancel = true;				
 			}
 			

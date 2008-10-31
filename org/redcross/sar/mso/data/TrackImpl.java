@@ -17,14 +17,14 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
     private final AttributeImpl.MsoInteger m_areaSequenceNumber = new AttributeImpl.MsoInteger(this, "AreaSequenceNumber");
 
-    public TrackImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public TrackImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
-    public TrackImpl(IMsoObjectIf.IObjectIdIf anObjectId, Track aTrack)
+    public TrackImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, Track aTrack)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         setGeodata(aTrack);
     }
 
@@ -138,7 +138,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
     /*-------------------------------------------------------------------------------------------
      * Public methods
      *-------------------------------------------------------------------------------------------*/
-    
+
     public void addTrackPoint(TimePos aTimePos)
     {
         Track t = getGeodata();
@@ -153,7 +153,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
             Log.error("CloneNotSupportedException in addTrackPoint, no point added.");
         }
     }
-    
+
     public void removeTrackPoint(TimePos aTimePos)
     {
         Track t = getGeodata();
@@ -204,5 +204,5 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
 		}
 		return null;
 	}
-        
+
 }

@@ -11,14 +11,14 @@ public class IntelligenceListImpl extends MsoListImpl<IIntelligenceIf> implement
     public IIntelligenceIf createIntelligence()
     {
         checkCreateOp();
-        return createdUniqueItem(new IntelligenceImpl(makeUniqueId()));
+        return createdUniqueItem(new IntelligenceImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IIntelligenceIf createIntelligence(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IIntelligenceIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new IntelligenceImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new IntelligenceImpl(getOwner().getModel(), anObjectId));
     }
 
 }

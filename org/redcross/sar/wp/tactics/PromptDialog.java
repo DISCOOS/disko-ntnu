@@ -15,8 +15,8 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
@@ -100,7 +100,7 @@ public class PromptDialog extends DefaultDialog {
 					}
 
 				});
-				contentPanel.addDiskoWorkListener((IDiskoWorkListener)wp);
+				contentPanel.addWorkListener((IWorkListener)wp);
 
 
 			} catch (java.lang.Throwable e) {
@@ -175,13 +175,13 @@ public class PromptDialog extends DefaultDialog {
 					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
 						changeCount++;
 						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);
-						DiskoWorkEvent e = new DiskoWorkEvent(assignment,AssignmentStatus.READY,DiskoWorkEvent.EVENT_CHANGE);
+						WorkEvent e = new WorkEvent(assignment,AssignmentStatus.READY,WorkEvent.EVENT_CHANGE);
 						getContentPanel().onWorkPerformed(e);
 					}
 				}
 			}
 			// resume updates
-			app.getMsoModel().resumeClientUpdate();
+			app.getMsoModel().resumeClientUpdate(true);
 		} catch (IllegalOperationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

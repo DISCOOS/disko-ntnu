@@ -46,13 +46,13 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.event.MsoEvent.Commit;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.DiskoWorkPool;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.WorkPool;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
-  
+
 /**
  * Implements the DiskoApTaktikk interface
  *
@@ -82,28 +82,28 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PromptDialog draftListDialog = null;
 	private DescriptionDialog descriptionDialog = null;
 	private boolean inferNextElement = false;
-	
+
 	/**
 	 * Constructs a DiskoApTaktikkImpl
 	 * @param rolle A reference to the DiskoRolle
-	 * 
-	 * @throws IllegalClassFormatException 
+	 *
+	 * @throws IllegalClassFormatException
 	 */
 	public DiskoWpTacticsImpl() throws IllegalClassFormatException {
-		
+
 		// forward
 		super(getWpInterests(),getMapLayers());
-		
+
 		// initialize objects
 		dialogs = new ArrayList<DefaultDialog>();
-		
+
 		// init GUI
 		initialize();
 	}
 
 	private static EnumSet<MsoClassCode> getWpInterests() {
 		EnumSet<MsoClassCode> myInterests = EnumSet.of(MsoClassCode.CLASSCODE_OPERATION);
-    	myInterests.add(MsoClassCode.CLASSCODE_AREA);    	
+    	myInterests.add(MsoClassCode.CLASSCODE_AREA);
     	myInterests.add(MsoClassCode.CLASSCODE_ROUTE);
     	myInterests.add(MsoClassCode.CLASSCODE_POI);
     	myInterests.add(MsoClassCode.CLASSCODE_SEARCHAREA);
@@ -112,7 +112,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return myInterests;
 	}
 
-	private static EnumSet<IMsoFeatureLayer.LayerCode> getMapLayers() {	
+	private static EnumSet<IMsoFeatureLayer.LayerCode> getMapLayers() {
 		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
 		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
@@ -123,22 +123,22 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
 	    return myLayers;
 	}
-		
+
 	private void initialize() {
 
 		// get properties
 		assignWpBundle(IDiskoWpTactics.class);
-		
+
 		// forward
 		installMap();
-		
+
 		// set map as primary layout component
 		MapPanel panel = new MapPanel(getMap());
 		panel.setNorthBarVisible(true);
 		panel.setSouthBarVisible(true);
 		panel.setBorder(UIFactory.createBorder());
 		layoutComponent(panel);
-		
+
 		// add layout buttons on sub menu
 		layoutButton(getElementToggleButton(), true);
 		layoutButton(getListToggleButton(), true);
@@ -154,23 +154,23 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMissionTextDialog();
 		getHypothesesDialog();
 		getRequirementDialog();
-		
+
 		// install draw support
 		getMap().installEditSupport();
-		
+
 		// register listeners
+		getMap().getDrawAdapter().addWorkListener(this);
 		getMap().getDrawAdapter().addDrawAdapterListener(this);
-		getMap().getDrawAdapter().addDiskoWorkEventListener(this);
-		
+
 		// add map dialogs
 		dialogs.add(getMap().getDrawDialog());
 		dialogs.add(getMap().getElementDialog());
-		
+
 	}
-	
+
 	private List<Enum<?>> getDefaultNavBarButtons(boolean left, boolean right) {
 		List<Enum<?>> myButtons = Utils.getListNoneOf(MapToolType.class);
-		if(left){		
+		if(left){
 			myButtons.add(MapToolType.FREEHAND_TOOL);
 			myButtons.add(MapToolType.LINE_TOOL);
 			myButtons.add(MapToolType.POI_TOOL);
@@ -189,36 +189,36 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			myButtons.add(MapCommandType.TOC_COMMAND);
 			myButtons.add(MapCommandType.GOTO_COMMAND);
 		}
-		return myButtons;		
+		return myButtons;
 	}
-	
+
 	public String getCaption() {
 		return getBundleText("TACTICS");
 	}
 
 	public void activate(IDiskoRole role) {
-		
+
 		// forward
 		super.activate(role);
-		
+
 		// update title bar text
-		setFrameText("<" + getElementToggleButton().getToolTipText() + ">");	
-        
+		setFrameText("<" + getElementToggleButton().getToolTipText() + ">");
+
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
+		if(isNavMenuSetupNeeded()) {
 			// get set of tools visible for this wp
-			setupNavBar(getDefaultNavBarButtons(true,true),true);
+			setupNavMenu(getDefaultNavBarButtons(true,true),true);
 		}
-				
+
 		// set element if editing
 		if (!isChanged()) {
 			getMap().getDrawAdapter().nextElement();
 		}
-		
+
 	}
 
 	public boolean confirmDeactivate() {
-		
+
 		// prevent reentry
 		if(isWorking()) {
 			// notify
@@ -226,58 +226,58 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// do not allow to deactivate
 			return false;
 		}
-		
+
 		// validate data
 		if(isChanged()) {
-							
+
 			// prompt user
 			String[] options = {"Ferdig","Angre","Ikke bytt"};
 			int ans = JOptionPane.showOptionDialog(getApplication().getFrame(),
 		                "Det er gjort endringer som kan gå tapt. Velg et tiltak før du fortsetter",
-		                "Bekreft bytte", JOptionPane.YES_NO_CANCEL_OPTION, 
+		                "Bekreft bytte", JOptionPane.YES_NO_CANCEL_OPTION,
 		                JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
-			
+
 			// select action
 			switch(ans) {
 			case JOptionPane.OK_OPTION:
 				// validate data
 				if(validate()) {
 					//schedule the commit task to work pool
-					return doCommitWork(false);						
+					return doCommitWork(false);
 				}
 				// allow deactive
 				return true;
 			case JOptionPane.NO_OPTION:
 				//schedule the cancel task to work pool
-				return doRollbackWork(false);						
+				return doRollbackWork(false);
 			case JOptionPane.CANCEL_OPTION:
 				return false;
-			}			
-			
-		}		
+			}
+
+		}
 		// allow deactivate
 		return true;
 	}
-	
+
 	public void deactivate() {
 		// hide visible wp dialogs
 		hideDialogs(null);
 		// forward
 		super.deactivate();
 	}
-	
+
 	public boolean commit() {
-		
+
 		// drawing in progress?
 		if(getMap().getDrawAdapter().isWorkPending()) {
 			getMap().getDrawAdapter().finish(false);
 		}
-		
+
 		// validate data
 		if(validate()) {
 			//schedule the commit task to work pool
 			if(doCommitWork(false)) {
-				return super.commit();						
+				return super.commit();
 			}
 		}
 		// failed
@@ -285,13 +285,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 
 	private boolean validate() {
-		
+
 		// valid object count
 		int validCount = 0;
 
 		// has work pending?
 		if(isChanged()) {
-			
+
 			// loop over all changes
 			for(int i=0;i<changeStack.size();i++) {
 				// get mso object
@@ -312,7 +312,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
-							HypothesisDialog dialog = getHypothesesDialog(); 
+							HypothesisDialog dialog = getHypothesesDialog();
 							dialog.setLocationRelativeTo((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, true,true);
 							dialog.setVisible(true);
 							return false;
@@ -323,7 +323,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 					else {
 						boolean hasArea = false;
 						IAreaIf area = null;
-						if (msoObj instanceof IRouteIf) {				
+						if (msoObj instanceof IRouteIf) {
 							area = MsoUtils.getOwningArea((IRouteIf) msoObj);
 							hasArea = (area!=null);
 						}
@@ -343,13 +343,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 								IAssignmentIf assignment = area.getOwningAssignment();
 								// has no assignment?
 								if(assignment==null) {
-									Utils.showError("Mso modell er ikke konsistent. IAssignmentIf mangler for IAreaIf " + msoObj);						
+									Utils.showError("Mso modell er ikke konsistent. IAssignmentIf mangler for IAreaIf " + msoObj);
 									return false;
 								}
 							}
 						}
 					}
-				}		
+				}
 				// valid state
 				validCount++;
 			}
@@ -365,42 +365,42 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	public boolean rollback() {
 		if(rollback(false)) {
 			// forward
-			return super.rollback();		
+			return super.rollback();
 		}
 		return false;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see com.geodata.engine.disko.task.DiskoAp#cancel()
 	 */
 	private boolean rollback(boolean keep) {
-		
+
 		// validate data
 		if(isChanged()) {
-				
-			
+
+
 			// prompt user
 			int ans = Utils.showConfirm("Bekreft avbryt",
 						"Dette vil angre alle siste endringer. Vil du fortsette?",
 		                JOptionPane.YES_NO_OPTION);
-			
+
 			// do a rollback
 			if(ans == JOptionPane.OK_OPTION) {
 				//schedule the finish task to work pool
-				return doRollbackWork(keep);						
+				return doRollbackWork(keep);
 			}
 		}
-		else {			
+		else {
 			// notify
 			Utils.showMessage("Det er ingen endringer å angre");
 		}
-		
+
 		// failed
 		return false;
-		
+
 	}
-	
+
 	private void reset(boolean keep) {
 		try {
 			// hide all dialogs
@@ -419,7 +419,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 
 	private void clearSelected() {
 		try {
-			IDiskoMap map = getMap(); 
+			IDiskoMap map = getMap();
 			map.suspendNotify();
 			getMap().clearSelected();
 			getMap().refreshMsoLayers();
@@ -459,16 +459,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (missionTextDialog == null) {
 			missionTextDialog = new MissionTextDialog(this);
 			dialogs.add(missionTextDialog);
-			missionTextDialog.addDiskoWorkListener(new IDiskoWorkListener() {
+			missionTextDialog.addWorkListener(new IWorkListener() {
 
 				@Override
-				public void onWorkPerformed(DiskoWorkEvent e) {
+				public void onWorkPerformed(WorkEvent e) {
 					if(e.isFinish() && inferNextElement)
-						getMap().getDrawAdapter().nextElement();					
+						getMap().getDrawAdapter().nextElement();
 				}
-				
+
 			});
-			missionTextDialog.addDiskoWorkListener(this);
+			missionTextDialog.addWorkListener(this);
 		}
 		return missionTextDialog;
 	}
@@ -477,16 +477,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (hypothesesDialog == null) {
 			hypothesesDialog = new HypothesisDialog(this);
 			dialogs.add(hypothesesDialog);
-			hypothesesDialog.addDiskoWorkListener(new IDiskoWorkListener() {
+			hypothesesDialog.addWorkListener(new IWorkListener() {
 
 				@Override
-				public void onWorkPerformed(DiskoWorkEvent e) {
+				public void onWorkPerformed(WorkEvent e) {
 					if(e.isFinish() && inferNextElement)
 						getMap().getDrawAdapter().nextElement();
 				}
-				
+
 			});
-			hypothesesDialog.addDiskoWorkListener(this);
+			hypothesesDialog.addWorkListener(this);
 
 		}
 		return hypothesesDialog;
@@ -495,7 +495,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PriorityDialog getPriorityDialog() {
 		if (priorityDialog == null) {
 			priorityDialog = new PriorityDialog(this);
-			priorityDialog.addDiskoWorkListener(this);
+			priorityDialog.addWorkListener(this);
 			dialogs.add(priorityDialog);
 		}
 		return priorityDialog;
@@ -504,7 +504,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private RequirementDialog getRequirementDialog() {
 		if (requirementDialog == null) {
 			requirementDialog = new RequirementDialog(this);
-			requirementDialog.addDiskoWorkListener(this);
+			requirementDialog.addWorkListener(this);
 			dialogs.add(requirementDialog);
 		}
 		return requirementDialog;
@@ -514,7 +514,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (estimateDialog == null) {
 			estimateDialog = new EstimateDialog(this);
 			dialogs.add(estimateDialog);
-			estimateDialog.addDiskoWorkListener(this);
+			estimateDialog.addWorkListener(this);
 		}
 		return estimateDialog;
 	}
@@ -531,7 +531,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (unitSelectionDialog == null) {
 			unitSelectionDialog = new UnitSelectionDialog(this);
 			dialogs.add(unitSelectionDialog);
-			unitSelectionDialog.addDiskoWorkListener(this);
+			unitSelectionDialog.addWorkListener(this);
 		}
 		return unitSelectionDialog;
 	}
@@ -539,7 +539,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private ListDialog getListDialog() {
 		if (listDialog == null) {
 			listDialog = new ListDialog(this);
-			listDialog.addDiskoWorkListener(this);
+			listDialog.addWorkListener(this);
 			dialogs.add(listDialog);
 		}
 		return listDialog;
@@ -553,9 +553,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 		return draftListDialog;
 	}
-	
+
 	private void showOperationAreaButtons() {
-		
+
 		getListToggleButton().setVisible(true);
 		getMissionToggleButton().setVisible(true);
 		getHypotheseToggleButton().setVisible(false);
@@ -564,7 +564,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getEstimateToggleButton().setVisible(false);
 		getDescriptionToggleButton().setVisible(false);
 		getUnitToggleButton().setVisible(false);
-		
+
 	}
 
 	private void showSearchAreaButtons() {
@@ -589,7 +589,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getDescriptionToggleButton().setVisible(true);
 		getUnitToggleButton().setVisible(true);
 	}
-	
+
 	private JToggleButton getElementToggleButton() {
 		if (elementToggleButton == null) {
 			try {
@@ -606,7 +606,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							java.awt.Point p = elementToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
-							dialog.setVisible(true);							
+							dialog.setVisible(true);
 						}
 					}
 				});
@@ -622,7 +622,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 					}
 					public void componentShown(ComponentEvent arg0) {
 						update(false);
-					}					
+					}
 					private void update(boolean hidden) {
 						ElementDialog dialog = getMap().getElementDialog();
 						if (hidden) {
@@ -632,7 +632,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							java.awt.Point p = elementToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
-						}						
+						}
 					}
 				});
 
@@ -876,7 +876,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// forward
 		reset(false);
 		// update title bar text?
-		if(isActive()) setFrameText("<" + getElementToggleButton().getToolTipText() + ">");	
+		if(isActive()) setFrameText("<" + getElementToggleButton().getToolTipText() + ">");
 	}
 
 	public void handleMsoCommitEvent(Commit e) throws CommitException {
@@ -884,8 +884,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			//select next element
 			getMap().getDrawAdapter().nextElement();
 		}
-	}	
-	
+	}
+
 	public void onElementChange(Enum<?> element, IMsoObjectIf msoObject) {
 
 		// dispatch element
@@ -906,16 +906,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			else
 				showOperationAreaButtons();
 		}
-		else if(MsoClassCode.CLASSCODE_ROUTE.equals(element) || element instanceof SearchSubType){ 
-			
+		else if(MsoClassCode.CLASSCODE_ROUTE.equals(element) || element instanceof SearchSubType){
+
 			// setup buttons
 			showSearchButtons();
-			
-		}			
+
+		}
 		// update toggle button
 		AbstractButton b = getElementToggleButton();
 		DiskoButtonFactory.setIcon(b, element, "48x48");
-		// set tooltip 
+		// set tooltip
 		String name = DiskoEnumFactory.getText(element);
 		String tooltip = DiskoEnumFactory.getTooltip(TacticsActionType.MANAGE_ELEMENTS);
 		tooltip = String.format(tooltip,name);
@@ -946,17 +946,17 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			}
 		}
 	}
-	
+
 	public void onDrawModeChanged(DrawMode mode, DrawMode oldMode, IMsoObjectIf msoObject) { /* NOP */ }
 
 	private boolean doCommitWork(boolean keep) {
 		try {
 			// hide dialogs
 			hideDialogs(null);
-			// prompt user 
+			// prompt user
 			if(getDraftListDialog().prompt()!=-1) {
 				// forward work
-				DiskoWorkPool.getInstance().schedule(new TacticsWork(1,keep));
+				WorkPool.getInstance().schedule(new TacticsWork(1,keep));
 				// do work
 				return true;
 			}
@@ -968,10 +968,10 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 		return false;
 	}
-	
+
 	private boolean doRollbackWork(boolean keep) {
 		try {
-			DiskoWorkPool.getInstance().schedule(new TacticsWork(2,keep));
+			WorkPool.getInstance().schedule(new TacticsWork(2,keep));
 			return true;
 		}
 		catch(Exception e) {
@@ -979,24 +979,24 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 		return false;
 	}
-	
-	class TacticsWork extends ModuleWork<Boolean> {
+
+	class TacticsWork extends ModuleWork {
 
 		private int m_task = 0;
 		private boolean m_keep = false;
-		
+
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param task
 		 */
 		TacticsWork(int task, boolean keep) throws Exception {
 			super();
 			// prepare
 			m_task = task;
-			m_keep = keep;		
+			m_keep = keep;
 		}
-		
+
 		@Override
 		public Boolean doWork() {
 			try {
@@ -1014,7 +1014,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 
 		@Override
 		public void beforeDone() {
-			
+
 			try {
 				// dispatch task
 				switch(m_task) {
@@ -1022,13 +1022,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				case 2: fireOnWorkRollback(); break;
 				}
 				// cleanup
-				reset(m_keep);	
+				reset(m_keep);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}			
+			}
 		}
-		
+
 		private void commit() {
 			try{
 				getMsoModel().commit();
@@ -1037,7 +1037,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				e.printStackTrace();
 			}
 		}
-		
+
 		private void rollback() {
 			try{
 				getMsoModel().rollback();
@@ -1045,7 +1045,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-		}		
+		}
 	}
 
 

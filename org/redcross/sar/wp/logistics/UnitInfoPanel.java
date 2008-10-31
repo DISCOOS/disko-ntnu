@@ -62,14 +62,14 @@ public class UnitInfoPanel extends JPanel
 			IPersonnelIf leader = unit.getUnitLeader();
 			getInfoPanel().setValue("leader", leader!=null ? MsoUtils.getPersonnelName(unit.getUnitLeader(),false) : "");
 			IAssignmentIf assignment = unit.getActiveAssignment();
-			getInfoPanel().setValue("assignment", assignment!=null ? MsoUtils.getAssignmentName(unit.getActiveAssignment(),0) : "");
+			getInfoPanel().setValue("assignment", assignment!=null ? MsoUtils.getAssignmentName(unit.getActiveAssignment(),1) : "");
 			getInfoPanel().setValue("5-tone", unit.getToneID());
 			Calendar t0 = assignment!=null ? assignment.getTimeEstimatedFinished() : null;
 			Calendar t1 = Calendar.getInstance();
-			getInfoPanel().setValue("ete", t0!=null ? hoursSince(t1,t0): "00:00:00");		
+			getInfoPanel().setValue("ete", t0!=null ? hoursSince(t1,t0): "");
 			getInfoPanel().setValue("status", unit.getStatus());
 			t0 = unit.getCreatedTime();
-			getInfoPanel().setValue("worktime", t0!=null && t1!=null ? hoursSince(t0,t1) : "00:00:00");
+			getInfoPanel().setValue("worktime", t0!=null && t1!=null ? hoursSince(t0,t1) : "");
 			DefaultListModel model = new DefaultListModel();
             for (IPersonnelIf p : unit.getUnitPersonnelItems())
             {
@@ -90,7 +90,7 @@ public class UnitInfoPanel extends JPanel
 		}
 		getInfoPanel().setButtonEnabled(UNIT_CHANGE, unit!=null);
 		getInfoPanel().setButtonEnabled(UNIT_PRINT, unit!=null);
-	}	
+	}
 
 	/* ====================================================
 	 * Helper methods
@@ -102,25 +102,25 @@ public class UnitInfoPanel extends JPanel
 		// add panels
 		add(getInfoPanel());
 		add(Box.createVerticalStrut(5));
-		add(getMembersPanel());		
+		add(getMembersPanel());
 	}
 
 	private FieldsPanel getInfoPanel() {
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
 			m_infoPanel.setColumns(2);
-			m_infoPanel.addAttribute(createTextFieldAttribute("leader",0));
-			m_infoPanel.addAttribute(createTextFieldAttribute("assignment",1));
-			m_infoPanel.addAttribute(createTextFieldAttribute("5-tone",2));
-			m_infoPanel.addAttribute(createTextFieldAttribute("ete",3));			
-			m_infoPanel.addAttribute(createEnumAttribute("status",4));
-			m_infoPanel.addAttribute(createTextFieldAttribute("worktime",5));
+			m_infoPanel.addField(createTextField("leader",0));
+			m_infoPanel.addField(createTextField("assignment",1));
+			m_infoPanel.addField(createTextField("5-tone",2));
+			m_infoPanel.addField(createTextField("ete",3));
+			m_infoPanel.addField(createEnumField("status",4));
+			m_infoPanel.addField(createTextField("worktime",5));
 			m_infoPanel.addButton(DiskoButtonFactory.createButton("GENERAL.EDIT",m_infoPanel.getButtonSize()), UNIT_CHANGE);
 			m_infoPanel.addButton(DiskoButtonFactory.createButton("GENERAL.PRINT",m_infoPanel.getButtonSize()), UNIT_PRINT);
 			m_infoPanel.addActionListener(m_listener);
 		}
 		return m_infoPanel;
-		
+
 	}
 
 	private BasePanel getMembersPanel() {
@@ -129,7 +129,7 @@ public class UnitInfoPanel extends JPanel
 			m_membersPanel.setBodyComponent(getMembersList());
 			m_membersPanel.setFitBodyOnResize(true);
 			m_membersPanel.setScrollBarPolicies(
-					BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED, 
+					BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 					BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 		}
 		return m_membersPanel;
@@ -144,16 +144,16 @@ public class UnitInfoPanel extends JPanel
 		return m_membersList;
 	}
 
-	private IDiskoField createTextFieldAttribute(String name, int index) {
+	private IDiskoField createTextField(String name, int index) {
 		IDiskoField attr = new TextLineField(name,
-				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,100,25);
+				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
-	private IDiskoField createEnumAttribute(String name, int index) {
+	private IDiskoField createEnumField(String name, int index) {
 		IDiskoField attr = new EnumField(name,
-				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,100,25);
+				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);
 		return attr;

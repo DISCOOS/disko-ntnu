@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.field;
 
@@ -24,27 +24,27 @@ import org.redcross.sar.util.mso.DTG;
  *
  */
 public class DTGField extends AbstractField {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private int m_year;
 	private int m_month;
-	
+
 	/*==================================================================
 	 * Constructors
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	public DTGField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 		setOffset(Calendar.getInstance());
 	}
-		
+
 	public DTGField(String name, String caption, boolean isEditable, int width, int height) {
 		super(name, caption, isEditable, width, height, null);
 		setOffset(Calendar.getInstance());
 	}
-	
+
 	public DTGField(String name, String caption, boolean isEditable,
 			int width, int height, Calendar time) {
 		super(name, caption, isEditable, width, height, time);
@@ -62,17 +62,17 @@ public class DTGField extends AbstractField {
 		super(attribute, caption, isEditable, width, height);
 		setOffset(time);
 	}
-	
+
 	private void setOffset(Calendar t) {
 		m_year = t.get(Calendar.YEAR);
-		m_month = t.get(Calendar.MONTH);		
+		m_month = t.get(Calendar.MONTH);
 	}
-	
+
 	/*==================================================================
 	 * Public methods
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	public Component getComponent() {
 		if(m_component==null) {
 			// create
@@ -87,36 +87,36 @@ public class DTGField extends AbstractField {
 				public void insertUpdate(DocumentEvent e) { change(); }
 
 				public void removeUpdate(DocumentEvent e) { change(); }
-				
+
 				private void change() {
 					if(!isChangeable()) return;
 					fireOnWorkChange();
 				}
-				
+
 			});
 			// save the component
 			m_component = field;
-			
+
 		}
 		return m_component;
 	}
-			
+
 	public JFormattedTextField getTextField() {
 		return (JFormattedTextField)m_component;
 	}
-	
+
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}
-	
+
 	public boolean getAutoSave() {
 		return m_autoSave;
-	}	
-	
+	}
+
 	@Override
 	public Calendar getValue() {
 		// initialize to current attribute value
-		Calendar time = m_attribute!=null 
+		Calendar time = m_attribute!=null
 				? (Calendar)MsoUtils.getAttribValue(m_attribute) : null;
 		// try to get DTG from text field
 		try {
@@ -126,7 +126,7 @@ public class DTGField extends AbstractField {
 		}
 		return time;
 	}
-	
+
 	public boolean setValue(Object value) {
 		// validate data type
 		if(value instanceof Calendar) {
@@ -137,17 +137,20 @@ public class DTGField extends AbstractField {
 				 value instanceof Number) {
 			((JFormattedTextField)m_component).setText(String.valueOf(value));
 		}
+		else if(value==null) {
+			((JFormattedTextField)m_component).setText("");
+		}
 		else {
 			return false;
 		}
 		// success
 		return true;
 	}
-	
+
 	public String getDTG() {
 		return DTG.CalToDTG(getValue());
 	}
-	
+
 	public boolean setDTG(String aDTG) {
 		try {
 			setValue(DTG.DTGToCal(m_year, m_month, aDTG));
@@ -158,7 +161,7 @@ public class DTGField extends AbstractField {
 		}
 		return false;
 	}
-	
+
 	public boolean setDTG(int year, int month, String aDTG) {
 		try {
 			m_year = year;
@@ -171,7 +174,7 @@ public class DTGField extends AbstractField {
 		}
 		return false;
 	}
-	
+
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
@@ -187,19 +190,19 @@ public class DTGField extends AbstractField {
 		}
 		// failure
 		return false;
-	}	
-	
+	}
+
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
-		getTextField().setEditable(isEditable);		
+		getTextField().setEditable(isEditable);
 	}
-	
+
 	/*==================================================================
 	 * Inner classes
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	class DTGFormatterFactory extends JFormattedTextField.AbstractFormatterFactory {
 
 		@Override
@@ -210,10 +213,10 @@ public class DTGField extends AbstractField {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-			}			
+			}
 			return mf1;
 		}
-		
+
 	}
-	
+
 }

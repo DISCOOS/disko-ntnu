@@ -16,13 +16,13 @@ public class HypothesisListImpl extends MsoListImpl<IHypothesisIf> implements IH
     public IHypothesisIf createHypothesis()
     {
         checkCreateOp();
-        return createdUniqueItem(new HypothesisImpl(makeUniqueId(), makeSerialNumber()));
+        return createdUniqueItem(new HypothesisImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber()));
     }
 
     public IHypothesisIf createHypothesis(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IHypothesisIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new HypothesisImpl(anObjectId, -1));
+        return retVal != null ? retVal : createdItem(new HypothesisImpl(getOwner().getModel(), anObjectId, -1));
     }
 }

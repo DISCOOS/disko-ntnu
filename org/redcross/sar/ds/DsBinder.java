@@ -5,17 +5,17 @@ import java.util.Collection;
 import java.util.List;
 
 import org.redcross.sar.data.AbstractBinder;
-import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.data.event.DataEvent;
-import org.redcross.sar.data.event.IDataListenerIf;
+import org.redcross.sar.data.event.BinderEvent;
+import org.redcross.sar.data.event.IBinderListener;
 import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.ds.event.DsEvent;
 import org.redcross.sar.ds.event.DsEvent.DsEventType;
 import org.redcross.sar.ds.event.DsEvent.Update;
 
 @SuppressWarnings("unchecked")
-public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends AbstractBinder<S, T, DsEvent.Update> {
+public class DsBinder<S extends IData, T extends IDsObject> extends AbstractBinder<S, T, DsEvent.Update> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -33,9 +33,18 @@ public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends Abstract
 	 * ============================================================================= */
 
 	@Override
+	public IDs<T> getSource() {
+		return (IDs<T>)source;
+	}
+
+	public boolean connect(IDs<T> source) {
+		return super.connect(source);
+	}
+
+	@Override
 	public void addCoClass(Class<?> c, Selector<?> selector) {
-		if(!IDsObjectIf.class.isAssignableFrom(c))
-			throw new IllegalArgumentException("Only data a class of type " + IDsObjectIf.class.getName() + " is a valid co-class");
+		if(!IDsObject.class.isAssignableFrom(c))
+			throw new IllegalArgumentException("Only data a class of type " + IDsObject.class.getName() + " is a valid co-class");
 		super.addCoClass(c,selector);
 	}
 
@@ -45,7 +54,7 @@ public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends Abstract
 			// sort objects
 			List<T> list = sort(objects);
 			// get DS objects
-			IDsObjectIf[] objs = new IDsObjectIf[list.size()];
+			IDsObject[] objs = new IDsObject[list.size()];
 			list.toArray(objs);
 			// select objects
 			Object[] found = select(objs);
@@ -57,7 +66,7 @@ public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends Abstract
 	        }
 	        // any co-data selected?
 	        if(data.length>0) {
-	        	fireDataCoClassChanged(data, 0);
+	        	fireCoDataChanged(data, 0);
 	        }
 	        // success
 	        return true;
@@ -81,7 +90,7 @@ public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends Abstract
         // get data and co-classes
 		Object[] found = select(u.getData());
 
-		// get data
+		// get selected data
 		T[] data = (T[])found[0];
 
         // any selected?
@@ -118,42 +127,75 @@ public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends Abstract
 	        }
         }
 
-        // get data co-classes
-		IDsObjectIf[] coClass = (IDsObjectIf[])found[1];
+        // get selected co-data
+		IDsObject[] coData = (IDsObject[])found[1];
 
-		// has co-classes?
-        if(coClass.length>0) {
-        	fireDataCoClassChanged(coClass,flags);
+		// has co-data?
+        if(coData.length>0) {
+        	fireCoDataChanged(coData,flags);
         }
+
+		// get unselected data
+		data = (T[])found[2];
+
+		// has data?
+        if(data.length>0) {
+        	fireDataUnselected(data,flags);
+        }
+
+        // get unselected co-data
+		coData = (IDsObject[])found[3];
+
+		// has co-data?
+        if(coData.length>0) {
+        	fireCoDataUnselected(coData,flags);
+        }
+
 	}
 
 	/* =============================================================================
 	 * Helper methods
 	 * ============================================================================= */
 
-	protected Object[] select(IDsObjectIf[] data) {
-		List<IDsObjectIf> dsList = new ArrayList<IDsObjectIf>(data!=null ? data.length : 0);
-		List<IDsObjectIf> coList = new ArrayList<IDsObjectIf>(data!=null ? data.length : 0);
+	protected Object[] select(IDsObject[] data) {
+		List<IDsObject> dsList = new ArrayList<IDsObject>(data!=null ? data.length : 0);
+		List<IDsObject> nsList = new ArrayList<IDsObject>(data!=null ? data.length : 0);
+		List<IDsObject> coList = new ArrayList<IDsObject>(data!=null ? data.length : 0);
+		List<IDsObject> noList = new ArrayList<IDsObject>(data!=null ? data.length : 0);
 		for(int i=0; i<data.length; i++) {
-			IDsObjectIf dsObj = data[i];
+			IDsObject dsObj = data[i];
 			if(selectData(dsObj))
 				dsList.add(dsObj);
+			else if(isDataObject(dsObj))
+				nsList.add(dsObj);
 			if(selectCoObject(dsObj))
 				coList.add(dsObj);
+			else if(isCoObject(dsObj))
+				noList.add(dsObj);
 		}
-		data = new IDsObjectIf[dsList.size()];
+		// allocate memory
+		Object[] found = new Object[4];
+		// get selected data
+		data = new IDsObject[dsList.size()];
 		dsList.toArray(data);
-		IDsObjectIf[] coClass = new IDsObjectIf[coList.size()];
+		IDsObject[] coClass = new IDsObject[coList.size()];
 		coList.toArray(coClass);
-		Object[] found = new Object[2];
 		found[0] = data;
 		found[1] = coClass;
+		// get unselected data
+		data = new IDsObject[nsList.size()];
+		nsList.toArray(data);
+		coClass = new IDsObject[noList.size()];
+		noList.toArray(coClass);
+		found[2] = data;
+		found[3] = coClass;
+		// finished
 		return found;
 	}
 
-	protected S[] getIdx(IDsObjectIf[] data) {
+	protected S[] getIdx(IDsObject[] data) {
 		int count = data!=null ? data.length : 0;
-		IDataIf[] idx = new IDataIf[count];
+		IData[] idx = new IData[count];
 		for(int i=0; i<count;  i++) {
 			idx[i] = data[i].getId();
 		}
@@ -161,39 +203,55 @@ public class DsBinder<S extends IDataIf, T extends IDsObjectIf> extends Abstract
 	}
 
 	protected void fireDataCreated(T[] data, int mask) {
-		DataEvent<S> e = new DataEvent<S>(this,getIdx(data),(IDataIf[])data,mask);
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),(IData[])data,mask);
 		fireDataCreated(e);
 	}
 
 	protected void fireDataChanged(T[] data, int mask) {
-		DataEvent<S> e = new DataEvent<S>(this,getIdx(data),data,mask);
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),data,mask);
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataChanged(e);
 		}
 	}
 
 	protected void fireDataDeleted(T[] data, int mask) {
-		DataEvent<S> e = new DataEvent<S>(this,getIdx(data),data,mask);
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),data,mask);
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataDeleted(e);
 		}
 	}
 
+	protected void fireDataUnselected(T[] data, int mask) {
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),data,mask);
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
+		for(int i=0; i<list.length; i++) {
+			list[i].onDataUnselected(e);
+		}
+	}
+
 	protected void fireDataClearAll(T[] data, int mask) {
-		DataEvent<S> e = new DataEvent<S>(this,getIdx(data),data,mask);
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),data,mask);
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
 			list[i].onDataClearAll(e);
 		}
 	}
 
-	protected void fireDataCoClassChanged(IDsObjectIf[] data, int mask) {
-		DataEvent<S> e = new DataEvent<S>(this,getIdx(data),data,mask);
-		IDataListenerIf<S>[] list = listeners.getListeners(IDataListenerIf.class);
+	protected void fireCoDataChanged(IDsObject[] data, int mask) {
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),data,mask);
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
 		for(int i=0; i<list.length; i++) {
-			list[i].onDataCoClassChanged(e);
+			list[i].onCoDataChanged(e);
+		}
+	}
+
+	protected void fireCoDataUnselected(IDsObject[] data, int mask) {
+		BinderEvent<S> e = new BinderEvent<S>(this,getIdx(data),data,mask);
+		IBinderListener<S>[] list = listeners.getListeners(IBinderListener.class);
+		for(int i=0; i<list.length; i++) {
+			list[i].onCoDataUnselected(e);
 		}
 	}
 

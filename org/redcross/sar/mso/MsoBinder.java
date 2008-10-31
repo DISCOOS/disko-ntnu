@@ -6,15 +6,16 @@ import java.util.List;
 
 import org.redcross.sar.data.AbstractBinder;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.data.event.DataEvent;
+import org.redcross.sar.data.event.BinderEvent;
 import org.redcross.sar.data.event.SourceEvent;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 
 @SuppressWarnings("unchecked")
-public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update> {
+public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,UpdateList> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -44,6 +45,15 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	 * ============================================================================= */
 
 	@Override
+	public IMsoModelIf getSource() {
+		return (IMsoModelIf)source;
+	}
+
+	public boolean connect(IMsoModelIf source) {
+		return super.connect(source);
+	}
+
+	@Override
 	public void addCoClass(Class<?> c, Selector<?> selector) {
 		if(!IMsoObjectIf.class.isAssignableFrom(c))
 			throw new IllegalArgumentException("Only data a class of type " + IMsoObjectIf.class.getName() + " is a valid co-class");
@@ -68,8 +78,8 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	        	fireDataCreated(data, 0);
 	        }
 	        // any co-data selected?
-	        if(data.length>0) {
-	        	fireDataCoClassChanged(data, 0);
+	        if(data.length>0 && coClassList.size()>0) {
+	        	fireCoDataChanged(data, 0);
 	        }
 	        // success
 	        return true;
@@ -82,56 +92,71 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	 * ISourceListenerIf implementation
 	 * ============================================================================= */
 
-	public void onSourceChanged(SourceEvent<Update> e) {
+	public void onSourceChanged(SourceEvent<MsoEvent.UpdateList> e) {
 
 		// get MSO update event
-		Update u = e.getInformation();
+		UpdateList events = e.getInformation();
 
-		// get flags
-		int mask = u.getEventTypeMask();
+		// clear all event?
+		if(events.isClearAllEvent()) {
+			MsoEvent.Update it = events.getEvents().get(0);
+			IMsoObjectIf msoObj = it.getSource();
+			fireDataClearAll((T)msoObj,it.getEventTypeMask());
+		}
+		else {
 
-        // get MSO object
-        IMsoObjectIf msoObj = (IMsoObjectIf)u.getSource();
+			// loop over all events
+			for(MsoEvent.Update it : events.getEvents()) {
 
-        // is data object?
-        if(selectData(msoObj)) {
+				// consume loopback updates
+				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(it.getUpdateMode())) {
 
-        	// get id
-        	T id = (T)msoObj;
+					// get flags
+					int mask = it.getEventTypeMask();
 
-			// get flag
-	        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+			        // get MSO object
+			        IMsoObjectIf msoObj = (IMsoObjectIf)it.getSource();
 
-	        if(clearAll) {
-	        	fireDataClearAll(id, mask);
-	        }
-	        else {
+			        // is data object?
+			        if(selectData(msoObj)) {
 
-		        // add object?
-				if (u.isCreateObjectEvent()) {
+			        	// get id
+			        	T id = (T)msoObj;
 
-					fireDataCreated(id, mask);
+				        // add object?
+						if (it.isCreateObjectEvent()) {
 
+							fireDataCreated(id, mask);
+
+						}
+
+						// is object modified?
+						if (!it.isDeleteObjectEvent()  && (it.isModifyObjectEvent() || it.isChangeReferenceEvent())) {
+
+							fireDataChanged(id,mask);
+
+						}
+
+						// delete object?
+						if (it.isDeleteObjectEvent()) {
+
+							fireDataDeleted(id,mask);
+
+						}
+
+			        }
+			        else if(selectCoObject(msoObj)) {
+			        	fireCoDataChanged(msoObj, mask);
+			        }
+			        else if (isDataObject(msoObj)) {
+			        	fireDataUnselected((T)msoObj, mask);
+			        }
+			        else if (isCoObject(msoObj)) {
+			        	fireCoDataUnselected(msoObj, mask);
+			        }
 				}
-
-				// is object modified?
-				if (!u.isDeleteObjectEvent()  && (u.isModifyObjectEvent() || u.isChangeReferenceEvent())) {
-
-					fireDataChanged(id,mask);
-
-				}
-
-				// delete object?
-				if (u.isDeleteObjectEvent()) {
-
-					fireDataDeleted(id,mask);
-
-				}
-	        }
-        }
-        else if(selectCoObject(msoObj)) {
-        	fireDataCoClassChanged(msoObj, mask);
-        }
+			}
+		}
 	}
 
 	/* =============================================================================
@@ -169,31 +194,39 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	}
 
 	protected void fireDataCreated(T[] id, int mask) {
-		fireDataCreated(new DataEvent<T>(this,id,id,mask));
+		fireDataCreated(new BinderEvent<T>(this,id,id,mask));
 	}
 
 	protected void fireDataCreated(T id, int mask) {
-		fireDataCreated(new DataEvent<T>(this,getIdx(id),getData(id),mask));
+		fireDataCreated(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
 	}
 
 	protected void fireDataChanged(T id, int mask) {
-		fireDataChanged(new DataEvent<T>(this,getIdx(id),getData(id),mask));
+		fireDataChanged(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
 	}
 
 	protected void fireDataDeleted(T id, int mask) {
-		fireDataDeleted(new DataEvent<T>(this,getIdx(id),getData(id),mask));
+		fireDataDeleted(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
+	}
+
+	protected void fireDataUnselected(T id, int mask) {
+		fireDataUnselected(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
 	}
 
 	protected void fireDataClearAll(T id, int mask) {
-		fireDataClearAll(new DataEvent<T>(this,getIdx(id),getData(id),mask));
+		fireDataClearAll(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
 	}
 
-	protected void fireDataCoClassChanged(IMsoObjectIf data, int mask) {
-		fireDataCoClassChanged(new DataEvent<T>(this,null,new IMsoObjectIf[]{data},mask));
+	protected void fireCoDataChanged(IMsoObjectIf data, int mask) {
+		fireCoDataChanged(new BinderEvent<T>(this,null,new IMsoObjectIf[]{data},mask));
 	}
 
-	protected void fireDataCoClassChanged(IMsoObjectIf[] data, int mask) {
-		fireDataCoClassChanged(new DataEvent<T>(this,null,data,mask));
+	protected void fireCoDataChanged(IMsoObjectIf[] data, int mask) {
+		fireCoDataChanged(new BinderEvent<T>(this,null,data,mask));
+	}
+
+	protected void fireCoDataUnselected(IMsoObjectIf data, int mask) {
+		fireCoDataUnselected(new BinderEvent<T>(this,null,new IMsoObjectIf[]{data},mask));
 	}
 
 	private Selector<T> createListSelector(final IMsoListIf<T> list) {

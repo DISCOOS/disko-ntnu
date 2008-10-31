@@ -228,7 +228,6 @@ public class ListDialog extends DefaultDialog {
 		if (assignmentTable == null) {
 			try {
 				assignmentTable = new AssignmentTable(wp.getMsoModel());
-				assignmentTable.setPreferredSize(new Dimension(100,10));
 				assignmentTable.getModel().addTableModelListener(new TableModelListener() {
 
 					public void tableChanged(TableModelEvent e) {
@@ -311,7 +310,7 @@ public class ListDialog extends DefaultDialog {
 				}
 			}
 			setDirty(false);
-			app.getMsoModel().resumeClientUpdate();
+			app.getMsoModel().resumeClientUpdate(true);
 		} catch (IllegalOperationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

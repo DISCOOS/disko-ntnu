@@ -1,15 +1,17 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IMsoModelIf;
+
 public class VehicleImpl extends AbstractTransportUnit implements IVehicleIf
 {
-    public VehicleImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public VehicleImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
     }
 
-    public VehicleImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
+    public VehicleImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
     {
-        super(anObjectId, aNumber, anIdentifier);
+        super(theMsoModel, anObjectId, aNumber, anIdentifier);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class VehicleImpl extends AbstractTransportUnit implements IVehicleIf
     {
         return IUnitIf.UnitType.VEHICLE; // todo expand
     }
-    
+
     public String getSubTypeName()
     {
         return "VEHICLE"; // todo expand

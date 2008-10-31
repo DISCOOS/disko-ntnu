@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.redcross.sar.ds.AbstractMsoDs;
+import org.redcross.sar.ds.AbstractDsMso;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -24,7 +24,7 @@ import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
-public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
+public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 
 	/**
 	 * Route Comparator
@@ -37,6 +37,13 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 	private final Map<IAssignmentIf,List<IRouteIf>> m_routes =
 		new HashMap<IAssignmentIf,List<IRouteIf>>();
 
+	/**
+	 *
+	 *
+	 */
+	private final Map<IAssignmentIf,AssignmentStatus> m_states =
+		new HashMap<IAssignmentIf,AssignmentStatus>();
+
 	/* ============================================================
 	 * Constructors
 	 * ============================================================ */
@@ -44,9 +51,9 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 	public RouteCostEstimator(String oprID) throws Exception {
 
 		// forward
-		super(RouteCost.class, oprID,EnumSet.of(MsoClassCode.CLASSCODE_ASSIGNMENT,
+		super(RouteCost.class, oprID, EnumSet.of(MsoClassCode.CLASSCODE_ASSIGNMENT,
 				 MsoClassCode.CLASSCODE_ROUTE, MsoClassCode.CLASSCODE_UNIT),
-				 2000,getAttributes());
+				 1000,500,getAttributes());
 
 	}
 
@@ -190,13 +197,18 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 		return cost;
 	}
 
-	protected void execute(List<RouteCost> changed, long tic) {
+	protected void execute(List<RouteCost> changed, long tic, long timeOut) {
 
 		// calculate estimated based on changes
-		estimate(changed,tic);
+		estimate(changed, tic, timeOut);
 
-		// calculate progress
-		progress(changed,tic);
+		// ensure that the MAX_WORK_TIME is only exceeded once
+		if(System.currentTimeMillis()-tic<timeOut) {
+
+			// calculate progress
+			progress(changed, tic, timeOut);
+
+		}
 
 	}
 
@@ -204,11 +216,13 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 	 * Helper methods
 	 * =========================================== */
 
-	private static List<String> getAttributes() {
+	private static Map<MsoClassCode,List<String>> getAttributes() {
 		// prepare
-		List<String> attributes = new ArrayList<String>(1);
-		attributes.add("timeestimatedfinished");
-		return attributes;
+		Map<MsoClassCode,List<String>> map = new HashMap<MsoClassCode, List<String>>(1);
+		List<String> list = new ArrayList<String>(1);
+		list.add("timeestimatedfinished");
+		map.put(MsoClassCode.CLASSCODE_ASSIGNMENT, list);
+		return map;
 	}
 
 	private boolean updateArguments(IAssignmentIf assignment) {
@@ -231,6 +245,7 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 			bFlag = setOffset(assignment);
 
 			break;
+		case ABORTED:
 		case FINISHED:
 		case REPORTED:
 
@@ -269,7 +284,7 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 			}
 		}
 
-		// sort routes in ascending order after area sequence number
+		// sort routes in ascending order on area sequence number
 		Collections.sort(list,m_comparator);
 
 		// finished
@@ -320,7 +335,14 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 		if(assignment!=null) {
 			RouteCost cost = m_dsObjs.get(assignment);
 			if(cost!=null && !cost.isArchived()) {
+				// log last position?
+				IUnitIf msoUnit = assignment.getOwningUnit();
+				if(msoUnit!=null) {
+					cost.setLastKnownPosition(msoUnit.getLastKnownPosition());
+				}
+				// archive cost
 				cost.archive();
+				// save change
 				m_archived.put(assignment, cost);
 				m_added.remove(assignment);
 			}
@@ -420,24 +442,29 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 				// get status
 				AssignmentStatus status = assignment.getStatus();
 
+				// set dirty flag
+				bFlag = !status.equals(m_states.put(assignment, status));
+
 				// translate status change to action
 				switch(status) {
 				case DRAFT:
 				case READY:
 				case QUEUED:
 				case ALLOCATED:
-					// only set start time once
-					bFlag = cost.setStartTime(Calendar.getInstance());
+					// reset temporal and sample data?
+					if(bFlag) cost.clear(false,true,true);
+					// set start time
+					bFlag |= cost.setStartTime(Calendar.getInstance());
 					break;
 				case EXECUTING:
 					// set start time
-					bFlag = cost.setStartTime(assignment.getTime(AssignmentStatus.EXECUTING));
+					bFlag |= cost.setStartTime(assignment.getTime(AssignmentStatus.EXECUTING));
+					// set last known position
+					IUnitIf msoUnit = assignment.getOwningUnit();
+					if(msoUnit!=null) {
+						bFlag |= logPosition(msoUnit);
+					}
 					break;
-				}
-				// set last known position
-				IUnitIf msoUnit = assignment.getOwningUnit();
-				if(msoUnit!=null) {
-					bFlag |= logPosition(msoUnit);
 				}
 			}
 		}
@@ -457,15 +484,14 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 			if(p!=null) {
 				// get active assignment
 				IAssignmentIf assignment = msoUnit.getActiveAssignment();
-				// has active assignment?
-				if(assignment!=null) {
+				// is executing the active assignment?
+				if(assignment!=null && AssignmentStatus.EXECUTING.equals(assignment.getStatus())) {
 					// get current route cost
 					RouteCost cost = m_dsObjs.get(assignment);
 					// update offset position?
 					if(cost!=null) {
 						try {
-							cost.setLastKnownPosition(p);
-							bFlag = true;
+							bFlag = cost.setLastKnownPosition(p);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -483,25 +509,25 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 	 * Estimation implementation
 	 * ============================================================ */
 
-	private void estimate(List<RouteCost> changed, long tic) {
+	private void estimate(List<RouteCost> changed, long tic, long timeOut) {
 
 		// initialize heavy count
 		int heavyCount = 0;
 
-		// initialize local lists
-		List<RouteCost> heavySet = new ArrayList<RouteCost>(m_dsObjs.size());
-		List<RouteCost> estimated = new ArrayList<RouteCost>(m_dsObjs.size());
-		Map<IAssignmentIf,Object[]> estimates = new HashMap<IAssignmentIf, Object[]>(m_dsObjs.size());
-
 		// get current work set
 		List<RouteCost> workSet = getWorkSet(changed,false);
+
+		// initialize local lists
+		List<RouteCost> modified = new ArrayList<RouteCost>(workSet.size());
+		List<RouteCost> heavySet = new ArrayList<RouteCost>(workSet.size());
+		Map<IAssignmentIf,Object[]> estimates = new HashMap<IAssignmentIf, Object[]>(workSet.size());
 
 		// loop over costs in work set
 		for(RouteCost cost : workSet) {
 
 			// ensure that the MAX_WORK_TIME is only exceeded once
-			//if(System.currentTimeMillis()-tic>m_availableTime)
-			//	break;
+			if(System.currentTimeMillis()-tic>timeOut)
+				break;
 
 			// execute work cycle
 			try {
@@ -517,24 +543,27 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 					// forward
 					cost.estimate();
 
+					// add object to list
+					modified.add(cost);
+
 					// update assignment?
 					IAssignmentIf assignment = getAssignment(cost);
 					if(assignment!=null) {
-						// get estimates
-						Calendar eta = cost.eta();
-						// has estimate?
-						if(eta!=null) {
-							// get current
-							Calendar current = assignment.getTimeEstimatedFinished();
-							// update estimate?
-							if(!equal(eta,current)) {
+						// initialize
+						Calendar eta = null;
+						// is executing?
+						if(AssignmentStatus.EXECUTING.equals(assignment.getStatus())) {
+							// get estimates
+							eta = cost.eta();
+						}
+						// get current
+						Calendar current = assignment.getTimeEstimatedFinished();
+						// update estimate?
+						if(!equal(eta,current)) {
 
-								// add to updates
-								estimates.put(assignment, new Object[]{eta});
+							// add to updates
+							estimates.put(assignment, new Object[]{eta});
 
-							}
-							// add to estimated
-							estimated.add(cost);
 						}
 					}
 				}
@@ -545,20 +574,26 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 		}
 
 		// forward
-		commit(estimates);
+		schedule(estimates);
 
 		// remove estimated from work set
-		workSet.removeAll(estimated);
+		workSet.removeAll(modified);
 
 		// set remaining as next work set
-		setWorkResidue(workSet);
+		addToResidue(workSet);
 
 		// update heavy list
 		setHeavySet(heavySet);
 
+		// notify listeners
+		fireModified(modified,0);
+
 	}
 
-	private void progress(List<RouteCost> changed, long tic) {
+	private void progress(List<RouteCost> changed, long tic, long timeOut) {
+
+		// initialize lists
+		List<RouteCost> modified = new ArrayList<RouteCost>(changed.size());
 
 		// get current work set
 		List<RouteCost> workSet = getWorkSet(changed,true);
@@ -567,12 +602,14 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 		for(RouteCost cost : workSet) {
 
 			// ensure that the MAX_WORK_TIME is only exceeded once
-			if(System.currentTimeMillis()-tic>m_availableTime)
+			if(System.currentTimeMillis()-tic>timeOut)
 				break;
 
-			// forward
 			try {
+				// forward
 				cost.progress();
+				// add to calculated
+				modified.add(cost);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -580,8 +617,14 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 
 		}
 
+		// remove estimated from work set
+		workSet.removeAll(modified);
+
+		// set remaining as next work set
+		addToResidue(workSet);
+
 		// notify
-		fireModified(workSet,1);
+		fireModified(modified,1);
 
 	}
 
@@ -596,9 +639,16 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 
 		if(progress) {
 
+			// add the rest from last time to prevent
+			// starvation of costs in the back of m_dsObjs.values()
+			for(RouteCost it: m_residueSet) {
+				if(!it.isDirty() && it.canProgress() && !list.contains(it))
+					list.add(it);
+			}
+
 			// get costs ready to progress
 			for(RouteCost it: m_dsObjs.values()) {
-				if(!changed.contains(it)) {
+				if(!it.isDirty() && it.canProgress() && !changed.contains(it)) {
 					IAssignmentIf assignment = getAssignment(it);
 					if(!(assignment == null || it.isDirty() || it.isArchived())) {
 						IUnitIf unit = assignment.getOwningUnit();
@@ -615,14 +665,14 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 			// add the rest
 			for(RouteCost it: m_heavySet) {
 				// add to work list?
-				if(!(it.isSuspended() || it.isArchived() || list.contains(it)))
+				if(it.isDirty() && !(it.isSuspended() || it.isArchived() || list.contains(it)))
 					list.add(it);
 			}
 
 			// add the rest from last time to prevent
 			// starvation of costs in the back of m_dsObjs.values()
 			for(RouteCost it: m_residueSet) {
-				if(!list.contains(it))
+				if(it.isDirty() && !list.contains(it))
 					list.add(it);
 			}
 
@@ -633,8 +683,8 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 				if(!(it.isSuspended() || it.isArchived() || list.contains(it)))
 					list.add(it);
 
-				// remove archived costs
-				if(it.isArchived()) {
+				// remove misplaced costs
+				if(!it.isDirty() || it.isArchived()) {
 					if(list.contains(it))
 						list.remove(it);
 				}
@@ -642,6 +692,9 @@ public class RouteCostEstimator extends AbstractMsoDs<IAssignmentIf,RouteCost> {
 			}
 
 		}
+
+		// remove from residue
+		m_residueSet.removeAll(list);
 
 		// finished
 		return list;

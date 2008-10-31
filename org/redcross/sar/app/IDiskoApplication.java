@@ -4,8 +4,8 @@ import javax.swing.JFrame;
 
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.panel.NavBarPanel;
-import org.redcross.sar.gui.panel.SysBarPanel;
+import org.redcross.sar.gui.menu.NavMenu;
+import org.redcross.sar.gui.menu.SysMenu;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.modeldriver.IModelDriverListenerIf;
@@ -73,9 +73,9 @@ public interface IDiskoApplication extends IModelDriverListenerIf {
 	 */
 	public UIFactory getUIFactory();
 	
-	public NavBarPanel getNavBar();
+	public NavMenu getNavMenu();
 	
-	public SysBarPanel getSysBar();
+	public SysMenu getSysMenu();
 	
 	/**
 	 * Get a reference to the DiskoMapManager.

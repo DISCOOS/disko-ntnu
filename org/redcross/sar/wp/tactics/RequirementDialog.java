@@ -28,25 +28,25 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class RequirementDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private DefaultPanel contentPanel = null;
 	private JPanel requirementPanel = null;
 	private BasePanel remarksPanel = null;
 	private JTextArea remarksTextArea = null;
-	private FieldsPanel attribsPanel = null; 
+	private FieldsPanel attribsPanel = null;
 	private ComboBoxField accuracyCombo;
 	private ComboBoxField priorityCombo;
 	private ComboBoxField personnelCombo;
-	
+
 	private IDiskoWpModule wp = null;
-	
+
 	public RequirementDialog(IDiskoWpModule wp) {
 		// forward
 		super(wp.getApplication().getFrame());
@@ -74,18 +74,18 @@ public class RequirementDialog extends DefaultDialog {
 	}
 
 	private static EnumSet<IMsoManagerIf.MsoClassCode> getMyInterest() {
-		EnumSet<IMsoManagerIf.MsoClassCode> myInterests 
+		EnumSet<IMsoManagerIf.MsoClassCode> myInterests
 			= EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
 		return myInterests;
 	}
 
-	private static EnumSet<IMsoFeatureLayer.LayerCode> getMyLayers() {	
-		EnumSet<IMsoFeatureLayer.LayerCode> myLayers 
+	private static EnumSet<IMsoFeatureLayer.LayerCode> getMyLayers() {
+		EnumSet<IMsoFeatureLayer.LayerCode> myLayers
 			= EnumSet.of(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
 	    return myLayers;
 	}
-	
+
 	/**
 	 * This method initializes contentPanel
 	 *
@@ -104,11 +104,11 @@ public class RequirementDialog extends DefaultDialog {
 						setPersonnel(getPersonnel(),false,true);
 						setRemarks(getRemarks(),false,true);
 						setPriority(getPriority(), false, true);
-						setAccuracy(getAccuracy(),false,true);		
+						setAccuracy(getAccuracy(),false,true);
 						// finished
 						return true;
 					}
-					
+
 					@Override
 					public void setMsoObject(IMsoObjectIf msoObj) {
 						// consume changes
@@ -129,12 +129,12 @@ public class RequirementDialog extends DefaultDialog {
 							// has area?
 							if(area!=null) {
 								IAssignmentIf assignment = area.getOwningAssignment();
-								if (assignment instanceof ISearchIf) {		
-									search = (ISearchIf)assignment;	
+								if (assignment instanceof ISearchIf) {
+									search = (ISearchIf)assignment;
 								}
 							}
 						}
-						
+
 						// has search assignment?
 						if(search!=null) {
 							pri = search.getPriority();
@@ -152,24 +152,24 @@ public class RequirementDialog extends DefaultDialog {
 
 						// resume changes
 						setChangeable(true);
-						
+
 						// update
 						setDirty(false,false);
 						update();
-												
-					}	
-					
+
+					}
+
 					@Override
 					public void update() {
 						super.update();
 						setup();
-					}						
-					
+					}
+
 				};
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
-				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
+				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
-				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, 
+				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 								BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				contentPanel.setBodyComponent(getRequirementPanel());
 			} catch (java.lang.Throwable e) {
@@ -178,7 +178,7 @@ public class RequirementDialog extends DefaultDialog {
 		}
 		return contentPanel;
 	}
-	
+
 	/**
 	 * This method initializes requirementPanel
 	 *
@@ -191,7 +191,7 @@ public class RequirementDialog extends DefaultDialog {
 				requirementPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				BorderLayout bl = new BorderLayout();
 				bl.setHgap(5);
-				bl.setVgap(5);				
+				bl.setVgap(5);
 				requirementPanel.setLayout(bl);
 				requirementPanel.add(getRemarksPanel(),BorderLayout.CENTER);
 				requirementPanel.add(getAttribsPanel(),BorderLayout.EAST);
@@ -215,17 +215,17 @@ public class RequirementDialog extends DefaultDialog {
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
 				attribsPanel.setFitBodyOnResize(true);
-				attribsPanel.addAttribute(getPriorityCombo());
-				attribsPanel.addAttribute(getAccuracyCombo());
-				attribsPanel.addAttribute(getPersonnelCombo());
-				attribsPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+				attribsPanel.addField(getPriorityCombo());
+				attribsPanel.addField(getAccuracyCombo());
+				attribsPanel.addField(getPersonnelCombo());
+				attribsPanel.addWorkListener(new IWorkListener() {
 
 					@Override
-					public void onWorkPerformed(DiskoWorkEvent e) {
+					public void onWorkPerformed(WorkEvent e) {
 						if(e.isChange() || e.isFinish())
-							setDirty(true);						
+							setDirty(true);
 					}
-					
+
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -233,7 +233,7 @@ public class RequirementDialog extends DefaultDialog {
 		}
 		return attribsPanel;
 	}
-	
+
 	/**
 	 * This method initializes priorityCombo
 	 *
@@ -281,7 +281,7 @@ public class RequirementDialog extends DefaultDialog {
 			}
 		}
 		return accuracyCombo;
-	}	
+	}
 
 	/**
 	 * This method initializes personnelCombo
@@ -304,8 +304,8 @@ public class RequirementDialog extends DefaultDialog {
 			}
 		}
 		return personnelCombo;
-	}	
-	
+	}
+
 	/**
 	 * This method initializes requirementPanel
 	 *
@@ -315,7 +315,7 @@ public class RequirementDialog extends DefaultDialog {
 		if (remarksPanel == null) {
 			try {
 				remarksPanel = new BasePanel("Beskrivelse");
-				remarksPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED, 
+				remarksPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				remarksPanel.setBodyComponent(getRemarksTextArea());
 			} catch (java.lang.Throwable e) {
@@ -324,7 +324,7 @@ public class RequirementDialog extends DefaultDialog {
 		}
 		return remarksPanel;
 	}
-	
+
 	/**
 	 * This method initializes criticalQuestionsTextArea
 	 *
@@ -341,20 +341,20 @@ public class RequirementDialog extends DefaultDialog {
 					public void changedUpdate(DocumentEvent e) { change(); }
 					public void insertUpdate(DocumentEvent e) { change(); }
 					public void removeUpdate(DocumentEvent e) { change(); }
-					
+
 					private void change() {
 						// consume?
 						if(!isChangeable()) return;
 						setDirty(true);
 					}
-					
+
 				});
-				
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		return remarksTextArea;		
+		return remarksTextArea;
 	}
 
 	public int getAccuracy() {
@@ -392,12 +392,12 @@ public class RequirementDialog extends DefaultDialog {
 			}
 		}
 	}
-	
+
 	public void setPriority(AssignmentPriority priority) {
 		setPriority(priority,true,true);
 	}
 
-	private void setPriority(AssignmentPriority priority, boolean gui, boolean mso) {		
+	private void setPriority(AssignmentPriority priority, boolean gui, boolean mso) {
 		if(gui) {
 			getPriorityCombo().setValue(priority);
 		}
@@ -411,7 +411,7 @@ public class RequirementDialog extends DefaultDialog {
 			}
 		}
 	}
-	
+
 	public void setPersonnel(int number) {
 		setPersonnel(number,true,true);
 	}
@@ -429,7 +429,7 @@ public class RequirementDialog extends DefaultDialog {
 			}
 		}
 	}
-	
+
 	public void setRemarks(String remarks) {
 		setRemarks(remarks,true,true);
 	}
@@ -438,7 +438,7 @@ public class RequirementDialog extends DefaultDialog {
 		if(gui) {
 			getRemarksTextArea().setText(remarks);
 			// request focus
-			getRemarksTextArea().requestFocus();
+			getRemarksTextArea().requestFocusInWindow();
 		}
 		if(mso) {
 			ISearchIf search = (ISearchIf)getMsoObject();
@@ -448,44 +448,44 @@ public class RequirementDialog extends DefaultDialog {
 				}
 			}
 		}
-	}	
+	}
 
 	private void setup() {
 
 		// consume?
 		if(!isChangeable()) return;
-		
+
 		// consume changes
 		setChangeable(false);
-		
+
 		// try to get mso object?
-		if(getMsoObject()==null) 
+		if(getMsoObject()==null)
 			getContentPanel().setSelectedMsoFeature(wp.getMap());
-		
+
 		// get current assignment
 		ISearchIf search = (ISearchIf)getMsoObject();
-		
+
 		// update icon
 		if(search!=null) {
 			Enum<?> e = MsoUtils.getType(search,true);
 			getContentPanel().setCaptionIcon(
 					DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),"32x32"));
-			getContentPanel().setCaptionText("Krav til <b>" + 
+			getContentPanel().setCaptionText("Krav til <b>" +
 					MsoUtils.getAssignmentName(search, 1).toLowerCase() + "</b>");
 			getRemarksPanel().setEnabled(true);
 			getAttribsPanel().setEnabled(true);
 		}
 		else {
 			getContentPanel().setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
-			getContentPanel().setCaptionText("Du må først velge et oppdrag");			
+			getContentPanel().setCaptionText("Du må først velge et oppdrag");
 			getRemarksPanel().setEnabled(false);
 			getAttribsPanel().setEnabled(false);
-		}		
+		}
 		getAttribsPanel().update();
-		
+
 		// resume changes
 		setChangeable(true);
-		
+
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"
 

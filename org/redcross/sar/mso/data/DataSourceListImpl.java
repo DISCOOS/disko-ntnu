@@ -11,13 +11,13 @@ public class DataSourceListImpl extends MsoListImpl<IDataSourceIf> implements ID
     public IDataSourceIf createDataSource()
     {
         checkCreateOp();
-        return createdUniqueItem(new DataSourceImpl(makeUniqueId()));
+        return createdUniqueItem(new DataSourceImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IDataSourceIf createDataSource(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IDataSourceIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new DataSourceImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new DataSourceImpl(getOwner().getModel(), anObjectId));
     }
 }

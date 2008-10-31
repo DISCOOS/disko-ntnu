@@ -24,9 +24,9 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
 {
 
 	private final static long serialVersionUID = 1L;
+    private final static Dimension m_size = new Dimension(150, 50);
 	private final static Border m_border = new DiskoRoundBorder(2, 6, false);
-    private final static Dimension m_dimension = new Dimension(150, 50);
-    
+
     private boolean m_isSelected;
     private IAssignmentIf m_assignment;
     private AssignmentLabelActionHandler m_actionHandler;
@@ -80,17 +80,20 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
             setBorder(m_border);
             if (getIcon() == null)
             {
-                setMinimumSize(m_dimension);
+                setMinimumSize(m_size);
             }
-            setPreferredSize(m_dimension);
-            //setHorizontalAlignment(SwingConstants.LEFT);
+            setPreferredSize(m_size);
         }
+    }
+
+    public static Dimension getLabelSize() {
+    	return m_size;
     }
 
     public void setSelected(boolean isSelected)
     {
         // update state
-    	m_isSelected = isSelected;        
+    	m_isSelected = isSelected;
         // has no assignment?
         if (m_assignment == null){
         	// get icon
@@ -135,7 +138,7 @@ public class AssignmentLabel extends JLabel implements MouseListener, FocusListe
         {
             setText(MessageFormat.format("{0}: {1}", anAssignment.getPrioritySequence(), MsoUtils.getAssignmentName(anAssignment,1)));
         } else
-        {        	
+        {
             setText(MsoUtils.getAssignmentName(anAssignment,1));
         }
         setIcon(null);

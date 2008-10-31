@@ -24,13 +24,13 @@ public class MessageLineListImpl extends MsoListImpl<IMessageLineIf> implements 
     public IMessageLineIf createMessageLine()
     {
         checkCreateOp();
-        return createdUniqueItem(new MessageLineImpl(makeUniqueId()));
+        return createdUniqueItem(new MessageLineImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IMessageLineIf createMessageLine(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IMessageLineIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new MessageLineImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new MessageLineImpl(getOwner().getModel(), anObjectId));
     }
 }

@@ -26,9 +26,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     private final MsoReferenceImpl<IPersonnelIf> m_nextOccurence = new MsoReferenceImpl<IPersonnelIf>(this,"NextOccurence", 0, true);
 
-    public PersonnelImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public PersonnelImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     @Override
@@ -325,7 +325,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     {
         return m_type.getName();
     }
-    
+
     public String getInternationalTypeName()
     {
         return m_type.getInternationalName();
@@ -386,19 +386,19 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
     }
-    
+
 	public String getDefaultName()
 	{
 		return (getFirstName() + " " + getLastName());
 	}
-	
+
     public IUnitIf getOwningUnit()
     {
         owningUnitSelector.setSelfObject(this);
-        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
         return cmdPost != null ? cmdPost.getUnitList().selectSingleItem(owningUnitSelector) : null;
     }
-    
+
     private final static SelfSelector<IPersonnelIf, IUnitIf> owningUnitSelector = new SelfSelector<IPersonnelIf, IUnitIf>()
     {
         public boolean select(IUnitIf anObject)

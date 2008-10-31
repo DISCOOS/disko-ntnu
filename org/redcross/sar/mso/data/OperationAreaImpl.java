@@ -15,9 +15,9 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
     private final AttributeImpl.MsoPolygon m_geodata = new AttributeImpl.MsoPolygon(this, "Geodata");
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
 
-    public OperationAreaImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public OperationAreaImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()

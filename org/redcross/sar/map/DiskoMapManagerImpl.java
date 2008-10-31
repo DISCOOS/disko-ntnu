@@ -30,8 +30,10 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.redcross.sar.app.IDiskoApplication;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.thread.AbstractDiskoWork;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.map.work.IMapWork;
+import org.redcross.sar.thread.AbstractWork;
+import org.redcross.sar.thread.WorkLoop;
+import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.MapInfoComparator;
 import org.redcross.sar.util.mso.Position;
 import org.w3c.dom.Document;
@@ -50,31 +52,35 @@ import com.esri.arcgis.interop.AutomationException;
 
 public class DiskoMapManagerImpl implements IDiskoMapManager {
 
-	private IDiskoApplication app = null;
-	private IDiskoMap printMap = null;
-	private MapControl tmpMap = null;
-	private Document xmlDoc = null;
-	private File xmlFile = null;
-	
+
+	private IDiskoApplication app;
+	private IDiskoMap printMap;
+	private MapControl tmpMap;
+	private Document xmlDoc;
+	private File xmlFile;
+
 	private String mxdDoc = null;
 	private int isWorking = 0;
 	private boolean keepTmpMap = false;
-	
-	private final List<IDiskoMap> maps = new ArrayList<IDiskoMap>();	
+
+	private final List<IDiskoMap> maps = new ArrayList<IDiskoMap>();
 	private final Map<String,MapSourceInfo> mxdDocs = new HashMap<String,MapSourceInfo>();
-	
+	private final WorkLoop m_loop = new WorkLoop(500,2000);
+
 	public DiskoMapManagerImpl(IDiskoApplication app, File file)  throws Exception {
 		// prepare
 		this.app = app;
 		this.xmlFile = file;
 		// initialize
-		if(!loadXmlFile() || getMxdDocCount()==0) 
+		if(!loadXmlFile() || getMxdDocCount()==0)
 			installMxdDocs();
 		else
 			synchronizeMxdDocs();
+		// schedule deamon worker
+		WorkPool.getInstance().add(m_loop);
 	}
 
-	private EnumSet<IMsoFeatureLayer.LayerCode> getPrintMapLayers() {	
+	private EnumSet<IMsoFeatureLayer.LayerCode> getPrintMapLayers() {
 		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
 		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
@@ -82,7 +88,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		myLayers.add(IMsoFeatureLayer.LayerCode.AREA_LAYER);
 	    return myLayers;
 	}
-	
+
 	public IDiskoMap createMap(EnumSet<IMsoFeatureLayer.LayerCode> myLayers) {
 		DiskoMap map = null;
 		try {
@@ -101,7 +107,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		}
 		return map;
 	}
-	
+
 	public IDiskoMap getPrintMap(){
 		try {
 			if (printMap == null){
@@ -116,26 +122,26 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		}
 		return printMap;
 	}
-	
+
 	public boolean loadXmlFile(){
 		try {
-			
+
 			// notify
 			System.out.println("loadXmlFile()::started");
-			
+
 			// clear current
 			mxdDocs.clear();
-			
+
 			// keep temporary map between uses
 			setKeepTmpMap(true);
-			
+
 			// load xml document
 			FileInputStream instream = new FileInputStream(xmlFile);
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setNamespaceAware(true);
 			dbf.setValidating(false);
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			this.xmlDoc = db.parse(instream);			
+			this.xmlDoc = db.parse(instream);
 			// load map source data
 			NodeList elems = xmlDoc.getElementsByTagName("MxdDoc");
 			// locate and update
@@ -145,20 +151,20 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 				// created?
 				if(info!=null)
 					mxdDocs.put(info.getMxdDoc(),info);
-			}				
+			}
 
 			// anything loaded?
 			if(mxdDocs.size()>0) {
-				
+
 				// get current mxd document
 				String mxddoc = this.mxdDoc;
-				
+
 				// get from name from propertes?
 				mxddoc = (mxddoc==null) ? app.getProperty("MxdDocument.path") : mxddoc;
-	
+
 				// reset to allow for change
 				this.mxdDoc = null;
-	
+
 				// forward
 				if(!setMxdDoc(mxddoc)) {
 					// retry a last time?
@@ -174,15 +180,15 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 							System.out.println("Ingen mxd'er funnet!");
 						}
 					}
-				}			
+				}
 			}
-			
-			// clear temporary map 
+
+			// clear temporary map
 			setKeepTmpMap(false);
-			
+
 			// notify
 			System.out.println("loadXmlFile()::finished, antall mxd'er installert: " +  mxdDocs.size());
-			
+
 			return true;
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -198,9 +204,9 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			e.printStackTrace();
 		}
 		return false;
-		
+
 	}
-	
+
 	public boolean storeXmlFile() {
 		try {
 			TransformerFactory factory = TransformerFactory.newInstance();
@@ -221,38 +227,38 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			e.printStackTrace();
 		}
 		return false;
-	}	
-	
+	}
+
 	public IDiskoMap getCurrentMap() {
 		return app.getCurrentMap();
 	}
-	
+
 	public int getMxdDocCount() {
 		return mxdDocs.size();
 	}
-	
+
 	public boolean isMxdDocInstalled(String mxddoc) {
 		NodeList elems = xmlDoc.getElementsByTagName("MxdDoc");
 		for (int i = 0; i < elems.getLength(); i++) {
 			Element elem = (Element)elems.item(i);
 			if (mxddoc.equals(elem.getAttribute("name"))) return true;
-		}		
+		}
 		return false;
 	}
-	
+
 	/**
 	 * Searches for any changes in available mxd docs
 	 *
 	 */
 	public boolean isMxdDocsInSync() {
-		
+
 		// get mxd documents in catalog
 		List<String> files = getMxdDocsInCatalog(app.getProperty("MxdDocument.catalog.path"));
-		
+
 		// initialize
 		List<String> uninstalled = new ArrayList<String>();
 		List<String> missing = new ArrayList<String>();
-		
+
 		// compare available with installed
 		for (String filename : files){
 			if(!mxdDocs.containsKey(filename))
@@ -263,27 +269,27 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			if(!files.contains(filename))
 				missing.add(filename);
 		}
-		
+
 		// finished
 		return (uninstalled.size()==0 && missing.size()==0);
-		
+
 	}
-	
+
 	/**
 	 * Adds any available mxd documents, and removes missing mxd documents
-	 * 
-	 * @return <code>true</code> is installed mxd documents was changed, <code>false</code>. 
+	 *
+	 * @return <code>true</code> is installed mxd documents was changed, <code>false</code>.
 	 */
-	
+
 	public boolean synchronizeMxdDocs() {
-		
+
 		// get mxd documents in catalog
 		List<String> files = getMxdDocsInCatalog(app.getProperty("MxdDocument.catalog.path"));
-		
+
 		// initialize
 		List<String> uninstalled = new ArrayList<String>();
 		List<String> missing = new ArrayList<String>();
-		
+
 		// compare available with installed
 		for (String filename : files){
 			if(!mxdDocs.containsKey(filename))
@@ -294,7 +300,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			if(!files.contains(filename))
 				missing.add(filename);
 		}
-		
+
 		// has to be synchronized?
 		if(!(uninstalled.size()==0 && missing.size()==0)) {
 			// notify
@@ -303,7 +309,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			for(String file : missing)
 				uninstallMxdDoc(file);
 			// install uninstalled
-			for (String file : uninstalled){			
+			for (String file : uninstalled){
 				try{
 					installMxdDoc(file);
 				}catch (Exception e){
@@ -313,17 +319,17 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			// update changes
 			storeXmlFile();
 			// notify
-			System.out.println("synchronizeMxdDocs()::finished, " 
-					+ "antall mxd'er installert: " +  uninstalled.size() 
+			System.out.println("synchronizeMxdDocs()::finished, "
+					+ "antall mxd'er installert: " +  uninstalled.size()
 					+ ", antall mxd'er fjernet: " +  missing.size());
 			// is changed
 			return true;
 		}
-		
+
 		// no change
 		return false;
 	}
-	
+
 	/**
 	 * Installs all available mxd docs
 	 *
@@ -332,31 +338,31 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 
 		// notify
 		System.out.println("installMxdDocs()::started");
-		
+
 		// clear current
 		mxdDocs.clear();
-		
+
 		// keep temporary map between uses
 		setKeepTmpMap(true);
-		
+
 		// get available mxd documents in catalog
 		List<String> files = getMxdDocsInCatalog(app.getProperty("MxdDocument.catalog.path"));
-		
+
 		// loop over found file names
-		for (String file : files){			
+		for (String file : files){
 			try{
 				installMxdDoc(file);
 			}catch (Exception e){
 				e.printStackTrace();
 			}
 		}
-		
+
 		// update xml file?
 		if(mxdDocs.size()>0) storeXmlFile();
-		
+
 		// get current mxd document
 		String mxddoc = this.mxdDoc;
-		
+
 		// get from name from properties? If not found, use last loaded mxd document
 		mxddoc = (mxddoc==null) ? app.getProperty("MxdDocument.path") : mxddoc;
 
@@ -378,18 +384,18 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 					System.out.println("Ingen mxd'er funnet!");
 				}
 			}
-		}			
-		
-		// clear temporary map 
+		}
+
+		// clear temporary map
 		setKeepTmpMap(false);
-		
+
 		// notify
 		System.out.println("installMxdDocs()::finished, antall mxd'er installert: " +  mxdDocs.size());
-		
+
 		// finished
 		return mxdDocs.size();
 	}
-	
+
 	public boolean installMxdDoc(String mxddoc) {
 		// not already installed?
 		if(!isMxdDocInstalled(mxddoc)) {
@@ -411,9 +417,9 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// failed!
 		return false;
 	}
-	
+
 	private void addMapSourceInfo(MapSourceInfo info) {
-		
+
 		// initialize
 		Element it = null;
 		String mxddoc = info.getMxdDoc();
@@ -421,11 +427,11 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// locate and update
 		for (int i = 0; i < elems.getLength(); i++) {
 			Element e = (Element)elems.item(i);
-			if (mxddoc.equals(e.getAttribute("name"))) { 
+			if (mxddoc.equals(e.getAttribute("name"))) {
 				it = e; break;
 			}
-		}	
-		
+		}
+
 		// create?
 		if(it==null) {
 			// root node
@@ -433,11 +439,11 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			// found?
 			if(elems.getLength()>0) {
 				// get first element
-				Element disko = (Element)elems.item(0); 
+				Element disko = (Element)elems.item(0);
 				it = xmlDoc.createElement("MxdDoc");
 				disko.appendChild(it);
 			}
-		}		
+		}
 		// update
 		it.setAttribute("name", info.getMxdDoc());
 		// get MapBase children nodes
@@ -465,11 +471,11 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		rc.setAttribute("XMax", String.valueOf(info.getXMax()));
 		rc.setAttribute("YMin", String.valueOf(info.getYMin()));
 		rc.setAttribute("YMax", String.valueOf(info.getYMax()));
-					
+
 	}
-	
+
 	private void removeMapSourceInfo(MapSourceInfo info) {
-		
+
 		// initialize
 		Element it = null;
 		String mxddoc = info.getMxdDoc();
@@ -477,11 +483,11 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// locate and update
 		for (int i = 0; i < elems.getLength(); i++) {
 			Element e = (Element)elems.item(i);
-			if (mxddoc.equals(e.getAttribute("name"))) { 
+			if (mxddoc.equals(e.getAttribute("name"))) {
 				it = e; break;
 			}
-		}			
-		
+		}
+
 		// delete?
 		if(it!=null) {
 			// root node
@@ -489,11 +495,11 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			// found?
 			if(elems.getLength()>0) {
 				// get first element
-				Element disko = (Element)elems.item(0); 
+				Element disko = (Element)elems.item(0);
 				disko.removeChild(it);
 			}
-		}		
-					
+		}
+
 	}
 
 	/**
@@ -501,41 +507,41 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	 *
 	 */
 	public int uninstallMxdDocs(){
-		
+
 		// initialize
 		int count = 0;
-		
+
 		// loop over all maps an hide them
 		for(IDiskoMap map: maps)
 			map.setVisible(false);
-		
+
 		// loop over all mxd documents
 		for(MapSourceInfo it : mxdDocs.values()) {
 			if(uninstallMxdDoc(it.getMxdDoc())) count++;
 		}
-		
+
 		// update xml file?
 		if(count>0) storeXmlFile();
-		
+
 		// finished
 		return count;
- 
+
 	}
 
 	public boolean uninstallMxdDoc(String mxddoc) {
 		if(mxdDocs.containsKey(mxddoc)) {
 			MapSourceInfo info = mxdDocs.remove(mxddoc);
-			removeMapSourceInfo(info);			
+			removeMapSourceInfo(info);
 			return true;
 		}
 		return false;
 	}
-	
+
 	public boolean checkMxdDoc(String mxddoc, boolean keep) {
 		try {
 			// prepare map for checking?
 			if(tmpMap==null)
-				tmpMap = new MapControl();					
+				tmpMap = new MapControl();
 			// forward
 			boolean isValid = tmpMap.checkMxFile(mxddoc);
 			// clear?
@@ -550,9 +556,9 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			e.printStackTrace();
 		}
 		// failure
-		return false;		
+		return false;
 	}
-	
+
 	public MapControl getTmpMap(String mxddoc, boolean keep) {
 		try {
 			// get current
@@ -561,7 +567,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			if(!(keep || keepTmpMap)) tmpMap = null;
 			// prepare map for checking?
 			if(map==null)
-				map = new MapControl();					
+				map = new MapControl();
 			// forward
 			map.loadMxFile(mxddoc,null,null);
 			// keep?
@@ -576,52 +582,52 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			e.printStackTrace();
 		}
 		// failure
-		return null;		
+		return null;
 	}
-	
+
 	private void setKeepTmpMap(boolean keep) {
 		// update
 		keepTmpMap = keep;
 		// clear current?
 		if(!keep) tmpMap = null;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.redcross.sar.map.IDiskoMapManager#getMaps()
 	 */
 	public List<IDiskoMap> getMaps() {
 		return maps;
 	}
-	
+
 	public int getMapBaseCount() {
 		if(mxdDocs.containsKey((mxdDoc)))
 			return mxdDocs.get(mxdDoc).getMapBaseCount();
 		return 0;
 	}
-	
-	/** 
+
+	/**
 	 * Return name of base layer
-	 * 
+	 *
 	 * @param index 1-based base layer index
 	 */
-	
+
 	public String getMapBase(int index) {
 		if(mxdDocs.containsKey((mxdDoc)))
 			return mxdDocs.get(mxdDoc).getMapBase(index);
 		return null;
 	}
-	
+
 	public int toggleMapBase() {
-		
+
 		// not allowed?
 		if(isWorking() || getMapBaseCount()==0) return 0;
 
 		try {
 			// get current map
 			IDiskoMap map = app.getCurrentMap();
-			
+
 			// has map?
 			if(map!=null) {
 				// forward
@@ -636,12 +642,12 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		// failed
 		return 0;
-	}	
-	
-	
+	}
+
+
 	public String getMxdDoc() {
 		return this.mxdDoc;
 	}
@@ -652,7 +658,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			// valid file?
 			if(isMxdDocInstalled(mxddoc)) {
 				// prepare
-				this.mxdDoc = mxddoc;					
+				this.mxdDoc = mxddoc;
 				// update properties
 				app.setProperty("MxdDocument.path", mxddoc);
 				// changed
@@ -662,7 +668,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// not changed
 		return false;
 	}
-	
+
 	public boolean loadMxdDoc() {
 
 		// consume?
@@ -670,17 +676,17 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 
 		// prevent reentry
 		setIsWorking();
-		
+
 		// initialize counter
 		int count = 0;
-		
+
 		for(IDiskoMap map: maps) {
-		
+
 			// forward (only visible maps will be updated)
 			if (map.loadMxdDoc()) count++;
-			
+
 		}
-			
+
 		// Speed up the load process
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -688,49 +694,49 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 				getPrintMap().loadMxdDoc();
 			}
 		});
-		
+
 		// stop working
 		setIsNotWorking();
-		
+
 		// finished
 		return count>0;
-		
-	}	
-	
+
+	}
+
 	public MapSourceInfo getMapInfo(String mxdDoc) {
 		if(isMxdDocInstalled(mxdDoc)) {
 			return mxdDocs.get(mxdDoc);
 		}
 		return null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<MapSourceInfo> getMapInfoList() {
-		
+
 		// initialize
 		ArrayList<MapSourceInfo> maps = new ArrayList<MapSourceInfo>();
-		
+
 		// gather information
 		for (MapSourceInfo it : mxdDocs.values()){
 			it.setCurrent(it.getMxdDoc().equalsIgnoreCase(this.mxdDoc));
 			maps.add(it);
-		}	
-		
-		// sort list		
-		Collections.sort(maps, new MapInfoComparator()); 
-		
+		}
+
+		// sort list
+		Collections.sort(maps, new MapInfoComparator());
+
 		// return info list
 		return maps;
 	}
-	
+
 	private MapSourceInfo createMapSourceInfo(String mxddoc) {
 		try {
 			// valid file?
 			if(checkMxdDoc(mxddoc,false)) {
-				
+
 				// load document to read layers
 				MapControl map = getTmpMap(mxddoc,false);
-				
+
 				// has map?
 				if(map!=null) {
 					// get full extent
@@ -749,7 +755,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 					info.setXMax(p.getPosition().x);
 					info.setYMin(p.getPosition().y);
 					// get layer count
-					int count = map.getLayerCount(); 
+					int count = map.getLayerCount();
 					// loop over all layers and look for map base layers
 					for(int i=0;i<count;i++) {
 						// get map
@@ -775,7 +781,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// failed
 		return null;
 	}
-	
+
 	private MapSourceInfo createMapSourceInfo(Element e) {
 		try {
 			// create object
@@ -792,7 +798,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 				info.setYMax(Double.valueOf(extent.getAttribute("YMax")));
 			}
 			info.setType("DISKO Standard");
-			info.setStatus("OK");			
+			info.setStatus("OK");
 			// get MapBase children nodes
 			NodeList bases = e.getElementsByTagName("MapBase");
 			// add all
@@ -800,7 +806,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 				// add
 				Element base = (Element)bases.item(i);
 				info.addMapBase(base.getAttribute("name"));
-			}	
+			}
 			return info;
 		} catch (Exception ex) {
 			// TODO Auto-generated catch block
@@ -809,10 +815,10 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		// failed
 		return null;
 	}
-		
+
 	/*
 	public void initWMSLayers() throws IOException{
-		
+
 		// create a
 		DiskoWMSLayer wms = new DiskoWMSLayer();
 		DiskoMap map = (DiskoMap) app.getCurrentMap();
@@ -821,60 +827,60 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		try{
 			ILayer wmsLayer = (ILayer) wms.createWMSLayer();
 			wmsLayer.setVisible(true);
-			focusMap.addLayer(wmsLayer);			
+			focusMap.addLayer(wmsLayer);
 			System.out.println("WMS layer " + wmsLayer.getName() + " added");
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
 		map.getActiveView().refresh();
-		
+
 		System.out.println("Updated layer count:" + map.getLayerCount());
-		
+
 		for (int i = 0; i < focusMap.getLayerCount(); i++){
 			ILayer lay = focusMap.getLayer(i);
 			System.out.println(lay.getName());
-			
+
 		}
-		
+
 	}
 	*/
-	
+
 	private boolean isWorking() {
 		return (isWorking>0);
 	}
 
 	private int setIsWorking() {
 		isWorking++;
-		return isWorking; 
+		return isWorking;
 	}
-	
+
 	private int setIsNotWorking() {
 		if(isWorking>0) {
 			isWorking--;
 		}
-		return isWorking; 
+		return isWorking;
 	}
-	
+
 	/**
-	 * This method matches the active operation with a suitable map. <p>   
-	 * It is automatically called after the active operation is changed, by 
+	 * This method matches the active operation with a suitable map. <p>
+	 * It is automatically called after the active operation is changed, by
 	 * IDiskoApplication.<p>
 	 * @param autoselect - if <code>true</code> the map that covers the active
 	 * operation the most is selected, else an MapOptionDialog is shown allowing
 	 * the user to select a map manually.
-	 * @param useWorkPool - if <code>true</code> the work is done on the Disko Work
-	 * Pool and the method will not block, otherwise the method will block until
+	 * @param onWorkLoop - if <code>true</code> the work is done on the Map Work
+	 * loop and the method will not block, otherwise the method will block until
 	 * the selection processes is done.
-	 * 
+	 *
 	 */
-	public void selectMap(boolean autoselect, boolean useWorkPool) {
+	public void selectMap(boolean autoselect, boolean onWorkLoop) {
 
 		try {
 			// create work
 			SelectMapWork work = new SelectMapWork(autoselect);
 			// forward to work pool?
-			if(useWorkPool)
-				DiskoWorkPool.getInstance().schedule(work);
+			if(onWorkLoop)
+				schedule(work);
 			else {
 				work.doWork();
 			}
@@ -882,67 +888,84 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	public boolean isMap(Component c) {
 		return maps.contains(c);
 	}
-	
+
+	public void execute() {
+		for(IDiskoMap it : maps) {
+			it.execute(it.isShowing());
+		}
+	}
+
+	public void execute(IDiskoMap exclude) {
+		for(IDiskoMap it : maps) {
+			if(it!=exclude) it.execute(it.isVisible());
+		}
+	}
+
+
 	/* ===============================================================================
 	 * Helper methods
 	 * =============================================================================== */
-	
+
+	@Override
+	public void schedule(IMapWork work) {
+		m_loop.schedule(work);
+	}
+
 	private List<String> getMxdDocsInCatalog(String path) {
-		
+
 		// initialize
 		List<String> list = new ArrayList<String>();
-		
+
 		// load available mxd document file paths
 		File f = FileSystemView.getFileSystemView().createFileObject(path);
 		File[] files = FileSystemView.getFileSystemView().getFiles(f, true);
-		for (int i=0; i < files.length; i++){			
+		for (int i=0; i < files.length; i++){
 			String filename = files[i].getName();
 			if (filename.contains(".")){
 				if (filename.substring(filename.lastIndexOf(".")).equalsIgnoreCase(".mxd")){
 					list.add(path + "\\" + filename);
 				}
-			}			
+			}
 		}
-		
+
 		// finished
 		return list;
-		
+
 	}
-	
+
 	/* ===============================================================================
 	 * Internal classes
 	 * =============================================================================== */
-	
-	class SelectMapWork extends AbstractDiskoWork<Boolean> {
+
+	class SelectMapWork extends AbstractWork implements IMapWork {
 
 		private boolean m_autoSelect = false;
 
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param autoselect
 		 */
 		SelectMapWork(boolean autoselect) throws Exception {
 			// forward
-			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Velger kart",0,true,false,false,0);
+			super(false,true,ThreadType.WORK_ON_SAFE,"Velger kart",500,true,false);
 			// prepare
 			m_autoSelect = autoselect;
 		}
 
 		/**
 		 * Worker
-		 * 
-		 */	   
+		 *
+		 */
 		@Override
 		public Boolean doWork() {
-			
+
 			try {
 				// has maps?
 				if(mxdDocs.size()>0) {
@@ -950,7 +973,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 					Map<String,MapSourceInfo> maps = new HashMap<String,MapSourceInfo>();
 					// get map with mso data
 					IDiskoMap map = getPrintMap();
-					// get extent of operation 
+					// get extent of operation
 					Envelope extent = (Envelope)MapUtil.getOperationExtent(map);
 					// has no extent?
 					if(extent==null) {
@@ -997,7 +1020,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 							String name = maps.values().iterator().next().getMxdDoc();
 							// finished
 							return setMxdDoc(name);
-							
+
 						}
 						else {
 							// allow user to select a map
@@ -1017,9 +1040,14 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			return false;
 		}
 
+		@Override
+		public Boolean get() {
+			return (Boolean)super.get();
+		}
+
 		/**
-		 * done 
-		 * 
+		 * done
+		 *
 		 * Executed on the Event Dispatch Thread.
 		 */
 		@Override
@@ -1029,12 +1057,14 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			if(get() && m_autoSelect) {
 				// allow user to select map from list
 				app.getUIFactory().getMapOptionDialog()
-					.selectMap("Velg kart for operasjonsområdet", 
+					.selectMap("Velg kart for operasjonsområdet",
 							new ArrayList<MapSourceInfo>(mxdDocs.values()));
 			}
-	
-		}		
-		
-	}	
-	
+
+		}
+
+	}
+
+
+
 }

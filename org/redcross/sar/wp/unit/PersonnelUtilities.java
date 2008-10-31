@@ -76,7 +76,7 @@ public class PersonnelUtilities
 				newPersonnel.setArrived(Calendar.getInstance());
 			}
 
-			newPersonnel.resumeClientUpdate();
+			newPersonnel.resumeClientUpdate(true);
 
 			return newPersonnel;
 		}
@@ -177,10 +177,10 @@ public class PersonnelUtilities
 		}
 
 		IMsoManagerIf manager = MsoModelImpl.getInstance().getMsoManager();
-		
+
 		if(manager.operationExists()) {
 			// TODO: replace with more general method
-			// Personnel can only be Allocated to ONE unit                          
+			// Personnel can only be Allocated to ONE unit
 			for(IUnitIf unit : manager.getCmdPost().getUnitList().getItems())
 			{
 				for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())

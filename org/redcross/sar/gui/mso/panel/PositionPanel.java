@@ -28,7 +28,7 @@ import org.redcross.sar.gui.panel.DefaultToolPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.event.IToolListenerIf;
+import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
 import org.redcross.sar.map.tool.PositionTool;
@@ -39,8 +39,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
@@ -92,7 +92,7 @@ public class PositionPanel extends DefaultToolPanel {
 		initialize();
 						
 		// listen for changes in position
-		tool.addToolListener(new IToolListenerIf() {
+		tool.addToolListener(new IToolListener() {
 
 			@Override
 			public void onAction(ToolEvent e) {
@@ -145,9 +145,9 @@ public class PositionPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+			gotoPanel.addWorkListener(new IWorkListener() {
 
-				public void onWorkPerformed(DiskoWorkEvent e) {
+				public void onWorkPerformed(WorkEvent e) {
 					
 					// consume?
 					if(!isChangeable()) return;
@@ -249,11 +249,11 @@ public class PositionPanel extends DefaultToolPanel {
 			try {
 				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setPreferredSize(new Dimension(200,25));	
-				optionsPanel.addAttribute(getDTGAttr());
-				optionsPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+				optionsPanel.addField(getDTGAttr());
+				optionsPanel.addWorkListener(new IWorkListener() {
 
 					@Override
-					public void onWorkPerformed(DiskoWorkEvent e) {
+					public void onWorkPerformed(WorkEvent e) {
 
 						// consume?
 						if(!isChangeable()) return;

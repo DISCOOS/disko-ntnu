@@ -56,9 +56,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final TrackListImpl m_trackList = new TrackListImpl(this, "TrackList", true, 100);
     private final UnitListImpl m_unitList = new UnitListImpl(this, "UnitList", true, 100);
 
-    public CmdPostImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public CmdPostImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         m_status.setValue(CmdPostStatus.IDLE);
 
         m_communicatorList = createCommunicatorList();
@@ -746,11 +746,11 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 	public String getCommunicatorShortName() {
 		return getCommunicatorNumberPrefix() + " " + getCommunicatorNumber();
 	}
-	
+
     public ICommunicatorIf getCommunicator() {
     	return this;
     }
-    
+
     public ITimeLineIf getTimeLine()
     {
         return m_timeLine;

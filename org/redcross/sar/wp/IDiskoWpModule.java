@@ -10,7 +10,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.IWorkListener;
 
 /**
  * This interface provides access to properties and methods for
@@ -36,18 +36,18 @@ public interface IDiskoWpModule {
 	 * in the title bar of the JFrame
 	 * @return The caption of this IDiskoWpModule
 	 */
-	public String getCaption();	
-	
-	/** 
+	public String getCaption();
+
+	/**
 	 * @return True if map is installed
 	 */
 	public boolean isMapInstalled();
-	
+
 	/**
 	 * @return true if DiskoMap is different from null, false otherwise
 	 */
 	public boolean installMap();
-	
+
 	/**
 	 * Get a reference to the DiskoMap. If the implementing class has no map,
 	 * null should be returned
@@ -64,19 +64,19 @@ public interface IDiskoWpModule {
 	public IDiskoApplication getApplication();
 
 	public void setCallingWp(String name);
-	
+
 	public String getCallingWp();
 
 	/**
 	 * @return true if work process data is changed
 	 */
-	public boolean isChanged();	
-	
+	public boolean isChanged();
+
 	/**
 	 * @return true if work process is active
 	 */
-	public boolean isActive();	
-	
+	public boolean isActive();
+
 	/**
 	 * @return true if this IDiskoWpModule has sub menu, false otherwise
 	 */
@@ -84,7 +84,7 @@ public interface IDiskoWpModule {
 
 	/**
 	 * Called when this IDiskoWpModule is activated
-	 * 
+	 *
 	 * @param IDiskoRole role The role activating the module
 	 */
 	public void activate(IDiskoRole role);
@@ -93,20 +93,20 @@ public interface IDiskoWpModule {
 	 * Called when this IDiskoWpModule is deactivated
 	 */
 	public void deactivate();
-	
+
 	 /**
      * @return Returns whether or not WP module can be deactivated. E.g. if uncommitted data is stored.
      */
     public boolean confirmDeactivate();
 
-	public void addDiskoWorkListener(IDiskoWorkListener listener);
+	public void addWorkListener(IWorkListener listener);
 
-    public void removeDiskoWorkListener(IDiskoWorkListener listener);
+    public void removeWorkListener(IWorkListener listener);
 
     public void showWarning(String msg);
 
     public IMsoModelIf getMsoModel();
-    
+
     public ICmdPostIf getCmdPost();
 
     public IMsoManagerIf getMsoManager();
@@ -123,48 +123,48 @@ public interface IDiskoWpModule {
     public void addTickEventListener(ITickEventListenerIf listener);
 
     public void removeTickEventListener(ITickEventListenerIf listener);
-    
+
     /**
-     * Called before operation is changed, allows WP to suspend any 
+     * Called before operation is changed, allows WP to suspend any
      * updates for faster execution
      * lists should be updated.
      */
     public void beforeOperationChange();
-    
+
     /**
      * Called after operation is changed, allows WP to perform house-keeping. E.g. references to CmdPost
      * lists should be updated.
      */
     public void afterOperationChange();
-    
+
     /**
      * Setup of navbar
      */
-    public void setupNavBar(List<Enum<?>> buttons, boolean isSelected);
-    
+    public void setupNavMenu(List<Enum<?>> buttons, boolean isSelected);
+
     /**
      * Used to check if NavBar must be initiated
      */
-    public boolean isNavBarSetupNeeded();
-    
+    public boolean isNavMenuSetupNeeded();
+
     /**
      * Used to suspend map drawing and mso update events
      */
-    public void suspendUpdate(); 
-    
+    public void suspendUpdate();
+
     /**
      * Used to resume map drawing and mso update events
      */
     public void resumeUpdate();
 
-	
+
     public boolean isWorking();
 
 	public int isWorkingCount();
-	
+
 	public int setIsWorking();
-	
+
 	public int setIsNotWorking();
-    
-    
+
+
 }

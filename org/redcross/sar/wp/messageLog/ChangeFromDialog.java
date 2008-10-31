@@ -25,8 +25,8 @@ import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 
 /**
@@ -190,10 +190,10 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 			m_contentPanel.addBodyChild(getLeftPanel());
 			m_contentPanel.addBodyChild(Box.createHorizontalStrut(5));
 			m_contentPanel.addBodyChild(getSenderPanel());
-			m_contentPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+			m_contentPanel.addWorkListener(new IWorkListener() {
 
 				@Override
-				public void onWorkPerformed(DiskoWorkEvent e) {
+				public void onWorkPerformed(WorkEvent e) {
 					
 					// forward?
 					if(e.isFinish()) change();
@@ -243,12 +243,12 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 		if(m_typePanel==null) {			
 			m_typePanel = new UnitTypeInputPanel("Type",3);
 			m_typePanel.setHeaderVisible(false);
-			m_typePanel.addDiskoWorkListener(new IDiskoWorkListener() {
+			m_typePanel.addWorkListener(new IWorkListener() {
 
 				/**
 				 * Updates the type filter based on which buttons are pressed in the unit type selection pad
 				 */
-				public void onWorkPerformed(DiskoWorkEvent e) {
+				public void onWorkPerformed(WorkEvent e) {
 					// consume?
 					if(!isChangeable()) return;
 					// get type
@@ -268,10 +268,10 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 			m_numberPanel.setHeaderVisible(false);
 			m_numberPanel.setInputVisible(false);
 			m_numberPanel.setInputField(getUnitField(), false);
-			m_numberPanel.addDiskoWorkListener(new IDiskoWorkListener() {
+			m_numberPanel.addWorkListener(new IWorkListener() {
 
 				@Override
-				public void onWorkPerformed(DiskoWorkEvent e) {
+				public void onWorkPerformed(WorkEvent e) {
 					
 					// consume?
 					if(!isChangeable()) return;

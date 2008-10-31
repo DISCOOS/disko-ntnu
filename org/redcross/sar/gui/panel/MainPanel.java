@@ -3,7 +3,8 @@ package org.redcross.sar.gui.panel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.gui.menu.NavMenu;
+import org.redcross.sar.gui.menu.SysMenu;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -12,58 +13,53 @@ import java.util.Hashtable;
 public class MainPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	private IDiskoApplication app = null;
-	private JPanel centerPanel = null;
-	private NavBarPanel navBar = null;
-	private SysBarPanel sysBar = null;
-	private Hashtable<String, JComponent> components = null;
-	
-	/**
-	 * This is the default constructor
-	 */
-	public MainPanel() {
-		super(null);
-	}
-	
-	public MainPanel(IDiskoApplication app) {
-		super();
-		this.app = app;
+
+	private JPanel centerPanel;
+	private NavMenu navMenu;
+	private SysMenu sysMenu;
+
+	private final Hashtable<String, JComponent> components = new Hashtable<String, JComponent>();
+
+	public MainPanel(NavMenu navMenu, SysMenu sysMenu) {
+		// prepare
+		this.navMenu = navMenu;
+		this.sysMenu = sysMenu;
+		// initialize GUI
 		initialize();
 	}
 
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 * @return void
 	 */
 	private void initialize() {
-		components = new Hashtable<String, JComponent>();
 		this.setLayout(new BorderLayout());
 		this.add(getCenterPanel(), BorderLayout.CENTER);
-		this.add(getNavBar(), BorderLayout.NORTH);
-		this.add(getSysBar(), BorderLayout.SOUTH);
+		this.add(getNavMenu(), BorderLayout.NORTH);
+		this.add(getSysMenu(), BorderLayout.SOUTH);
 	}
-	
+
 	/**
 	 * Add a new component to this MainPanel. The component will added to a panel
 	 * in the CardLayout with the given name. If a component with the given
 	 * name allready exists, false will be returned, true otherwise.
-	 * 
+	 *
 	 * @param component The component to add
 	 * @param compName A name to identify a component in the CardLayout
-	 * @return false if a component with the given name allready exists, 
+	 * @return false if a component with the given name allready exists,
 	 * false will be returned, true otherwise
 	 */
 	public boolean addComponent(JComponent component, String compName) {
 		if (components.get(compName) != null) {
-			// component is allready added
+			// component is already added
 			return false;
 		}
 		getCenterPanel().add(component, compName);
 		components.put(compName, component);
 		return true;
 	}
-	
+
 	/**
 	 * Show a component in the CardLyout with the given name.
 	 * @param compName The name of the component.
@@ -74,9 +70,9 @@ public class MainPanel extends JPanel {
 	}
 
 	/**
-	 * This method initializes menuPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes menuPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	public JPanel getCenterPanel() {
 		if (centerPanel == null) {
@@ -90,21 +86,13 @@ public class MainPanel extends JPanel {
 		return centerPanel;
 	}
 
-	
-	public NavBarPanel getNavBar() {
-		if (navBar == null) {
-			navBar = new NavBarPanel(app);
-			navBar.setVisible(false);
-		}
-		return navBar;
+	private NavMenu getNavMenu() {
+		return navMenu;
 	}
 
-	public SysBarPanel getSysBar() {
-		if (sysBar == null) {
-			sysBar = new SysBarPanel(app);
-			sysBar.setVisible(false);
-		}
-		return sysBar;
+	private SysMenu getSysMenu() {
+		return sysMenu;
 	}
+
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -39,14 +39,14 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return getText(anEnum.getClass().getSimpleName() + "." + anEnum.name() + ".text");
     }
 
-    public TaskImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public TaskImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel,anObjectId);
     }
 
-    public TaskImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aSerialNumber, Calendar aCalendar)
+    public TaskImpl(IMsoModelIf theMsoModel,IMsoObjectIf.IObjectIdIf anObjectId, int aSerialNumber, Calendar aCalendar)
     {
-        super(anObjectId, aCalendar);
+        super(theMsoModel,anObjectId, aCalendar);
         setNumber(aSerialNumber);
     }
 
@@ -204,7 +204,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     {
         return m_type.getName();
    }
-    
+
     public String getInternationalTypeName()
     {
         return m_type.getInternationalName();
@@ -456,7 +456,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     public String getDefaultName() {
     	return getInternationalTypeName();
     }
-    
+
     public Calendar getDueTime()
     {
         return getTimeStamp();

@@ -9,8 +9,6 @@ import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.mso.Position;
 
-import java.util.Calendar;
-
 /**
  * Created by IntelliJ IDEA.
  * User: vinjar
@@ -227,22 +225,16 @@ public class BuildTestData
         IMessageLineIf messageLine;
 
         message = messageLog.createMessage();
-        message.setCreated(Calendar.getInstance());
-        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, null, true);
         messageLine.setLineText("Tekst Linje 1. Treng litt meir tekst for å sjekke om lina vert delt eller ikkje. Treng enda litt meir tekst for å sjekke dette");
 
         message = messageLog.createMessage();
-        message.setCreated(Calendar.getInstance());
-        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, null, true);
         messageLine.setLineText("Tekst Linje 2");
 
         message = messageLog.createMessage();
-        message.setCreated(Calendar.getInstance());
-        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, null, true);
         messageLine.setLineText("Tekst Linje 2. Test av ei enda lengre line. " +
@@ -256,8 +248,6 @@ public class BuildTestData
                 "Test av ei enda lengre line. Test av ei enda lengre line.");
 
         message = messageLog.createMessage();
-        message.setCreated(Calendar.getInstance());
-        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.POSITION, true);
         IPOIIf poi = aMsoModel.getMsoManager().createPOI();
@@ -267,8 +257,6 @@ public class BuildTestData
         messageLine.setLineText("Ei melding med eit faktisk POI objekt");
 
         message = messageLog.createMessage();
-        message.setCreated(Calendar.getInstance());
-        message.setTimeStamp(Calendar.getInstance());
         message.setStatus(IMessageIf.MessageStatus.UNCONFIRMED);
         messageLine = message.findMessageLine(MessageLineType.TEXT, true);
         messageLine.setLineText("Ei melding med eit funn");

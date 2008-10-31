@@ -1,11 +1,11 @@
 package org.redcross.sar.wp.simulator;
 
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 
-public class UnitTableModel extends MsoTableModel<IUnitIf> {
+public class UnitTableModel extends AbstractMsoTableModel<IUnitIf> {
 
 	private static final long serialVersionUID = 1L;
 	private static final String UNIT = "Unit";

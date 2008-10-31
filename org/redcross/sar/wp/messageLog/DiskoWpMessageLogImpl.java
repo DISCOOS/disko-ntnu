@@ -3,7 +3,7 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
@@ -24,43 +24,43 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
     {
         // initialize with spesific map interests
     	super();
-    	
+
     	// intialize GUI
         initialize();
     }
 
     private void initialize()
-    {        
+    {
         // load class resource bundle
         assignWpBundle(IDiskoWpMessageLog.class);
 
         // install map
         installMap();
-        
+
         // get message log panel. This panel implements the gui
         m_logPanel = new MessageLogPanel(this);
-        
+
         // add the panel as main wp component
         layoutComponent(m_logPanel.getPanel());
-        
-        // ensure tha wp spesific layers are selectable 
+
+        // ensure tha wp spesific layers are selectable
         m_logPanel.setSelectableLayers();
-        
-		// install draw support in map 
+
+		// install draw support in map
 		getMap().installEditSupport();
-		
+
 		// hide map
 		getMap().setVisible(false);
-        
+
     }
-	
+
     @Override
 	public void activate(IDiskoRole role) {
-		
+
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
-			// get tool set 
-	        List<Enum<?>> myButtons = new ArrayList<Enum<?>>();	  
+		if(isNavMenuSetupNeeded()) {
+			// get tool set
+	        List<Enum<?>> myButtons = new ArrayList<Enum<?>>();
 	        myButtons.add(MapToolType.ZOOM_IN_TOOL);
 	        myButtons.add(MapToolType.ZOOM_OUT_TOOL);
 	        myButtons.add(MapToolType.PAN_TOOL);
@@ -73,17 +73,17 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 	        myButtons.add(MapCommandType.GOTO_COMMAND);
 	        myButtons.add(MapToolType.SELECT_TOOL);
 			// forward
-			setupNavBar(myButtons,false);
-		}	
-		if(MessageLogPanel.isMapShown()) 
+			setupNavMenu(myButtons,false);
+		}
+		if(MessageLogPanel.isMapShown())
 			MessageLogPanel.showMap();
 		else
 			MessageLogPanel.hideMap();
 		// forward
 		super.activate(role);
 
-    }    	
-    	
+    }
+
     @Override
     public boolean confirmDeactivate()
     {
@@ -95,10 +95,10 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			// do not allow to deactivate
 			return false;
 		}
-		
+
 		// validate data
 		if(MessageLogBottomPanel.isMessageDirty()) {
-							
+
 			// prompt user
 			String[] options = {
 					getBundleText("DirtyMessageWarning.commit"),
@@ -106,10 +106,10 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 					getBundleText("DirtyMessageWarning.cancel")};
 			int ans = JOptionPane.showOptionDialog(getApplication().getFrame(),
 						getBundleText("DirtyMessageWarning.text"),
-						getBundleText("DirtyMessageWarning.header"), 
-						JOptionPane.YES_NO_CANCEL_OPTION, 
+						getBundleText("DirtyMessageWarning.header"),
+						JOptionPane.YES_NO_CANCEL_OPTION,
 		                JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
-			
+
 			// select action
 			switch(ans) {
 			case JOptionPane.OK_OPTION:
@@ -117,30 +117,30 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 				return MessageLogBottomPanel.apply(true);
 			case JOptionPane.NO_OPTION:
 				// forward
-				MessageLogBottomPanel.clearCurrentMessage();						
+				MessageLogBottomPanel.clearCurrentMessage();
 				// allow deactive
 				return true;
 			case JOptionPane.CANCEL_OPTION:
 				// do not deactivate
 				return false;
-			}						
-		}		
-		
+			}
+		}
+
 		// forward
 		m_logPanel.hidePanels();
-		
+
 		// allow deactivate
 		return true;
 
     }
-    
+
 	public void deactivate() {
 		// hide map
 		getMap().setVisible(false);
 		// forward
 		super.deactivate();
 	}
-    
+
 
     /* (non-Javadoc)
     * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
@@ -163,11 +163,11 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		return doRollbackWork();
 	}
 
-    
+
 	private boolean doCommitWork() {
 		try {
 			// forward work
-			DiskoWorkPool.getInstance().schedule(new MessageWork(1));
+			WorkPool.getInstance().schedule(new MessageWork(1));
 			// do work
 			return true;
 		}
@@ -176,25 +176,25 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		}
 		return false;
 	}
-	
+
 	private boolean doRollbackWork() {
 		try {
-			DiskoWorkPool.getInstance().schedule(new MessageWork(2));
+			WorkPool.getInstance().schedule(new MessageWork(2));
 			return true;
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 		return false;
-	}	
-	
-	private class MessageWork extends ModuleWork<Boolean> {
+	}
+
+	private class MessageWork extends ModuleWork {
 
 		private int m_task = 0;
-		
+
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param task
 		 */
 		MessageWork(int task) throws Exception {
@@ -202,7 +202,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			// prepare
 			m_task = task;
 		}
-		
+
 		@Override
 		public Boolean doWork() {
 			try {
@@ -217,11 +217,11 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			}
 			return false;
 		}
-		
+
 
 		@Override
 		public void beforeDone() {
-			
+
 			try {
 				// dispatch task
 				switch(m_task) {
@@ -231,9 +231,9 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}			
+			}
 		}
-		
+
 		private void commit() {
 			try{
 				getMsoModel().commit();
@@ -242,7 +242,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 				e.printStackTrace();
 			}
 		}
-		
+
 		private void rollback() {
 			try{
 				getMsoModel().rollback();
@@ -250,6 +250,6 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-		}		
-	}	
+		}
+	}
 }

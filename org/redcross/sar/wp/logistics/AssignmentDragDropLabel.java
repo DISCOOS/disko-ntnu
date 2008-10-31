@@ -31,9 +31,9 @@ public class AssignmentDragDropLabel extends AssignmentLabel
 {
 
 	private static final long serialVersionUID = 1L;
-	
-	private static DataFlavor m_flavor = null;
-	
+
+	private static DataFlavor m_flavor;
+
     public AssignmentDragDropLabel(IconRenderer.AssignmentIcon anIcon, AssignmentLabelActionHandler anActionHandler)
     {
         super(anIcon, anActionHandler);
@@ -57,22 +57,22 @@ public class AssignmentDragDropLabel extends AssignmentLabel
     	catch(Exception e) {
     		e.printStackTrace();
     	}
-    	
+
     	// create gesture recognizer
     	DragSource ds = DragSource.getDefaultDragSource();
-    	ds.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, 
+    	ds.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE,
     			new IconDragGestureListener(new AssignmentDragDropLabelDragSourceListener()));
-    	
+
     	// create drop target
     	setDropTarget(new DropTarget(this, new AssignmentDragDropLabelDropTargetListener()));
-    	
+
     }
-	
+
 	class AssignmentDragDropLabelDragSourceListener extends DiskoDragSourceAdapter {
 		public Component getComponent() {
 			return AssignmentDragDropLabel.this;
 		}
-	
+
 		public Transferable getTransferable() {
 			return new AssignmentTransferable(getAssignment());
 		}
@@ -83,7 +83,7 @@ public class AssignmentDragDropLabel extends AssignmentLabel
 	}
 
 	class AssignmentDragDropLabelDropTargetListener extends DiskoDropTargetAdapter {
-		
+
 		@Override
 		public void dragOver(DropTargetDragEvent e) {
 			// forward
@@ -99,9 +99,9 @@ public class AssignmentDragDropLabel extends AssignmentLabel
 		@Override
 		public void drop(DropTargetDropEvent e) {
 			// forward
-			transfer(e.getTransferable());			
+			transfer(e.getTransferable());
 		}
-		
+
 		public boolean transfer(Transferable data) {
 			// get data
 			try{
@@ -113,14 +113,14 @@ public class AssignmentDragDropLabel extends AssignmentLabel
         			IDiskoDropTarget target = (IDiskoDropTarget)comp;
         			// forward to source
 	        		return target.transfer(data);
-        		}	        		
+        		}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
 			// can not transfer
-			return false;    	
+			return false;
 		}
-		
+
 	}
 }

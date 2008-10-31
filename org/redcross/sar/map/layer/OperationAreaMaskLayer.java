@@ -2,13 +2,13 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaMaskFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IDisplay;
@@ -25,32 +25,28 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 	private static final long serialVersionUID = 1L;
 	private SimpleFillSymbol fill = null;
 	private TransparencyDisplayFilter filter = null;
-	
-	public OperationAreaMaskLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
-		super(IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA,
-				LayerCode.OPERATION_AREA_MASK_LAYER, msoModel, srs,
-				esriGeometryType.esriGeometryPolygon, eventStack);
+
+	public OperationAreaMaskLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+		super(esriGeometryType.esriGeometryPolygon, MsoClassCode.CLASSCODE_OPERATIONAREA,
+				EnumSet.noneOf(MsoClassCode.class), LayerCode.OPERATION_AREA_MASK_LAYER,
+				srs, eventStack, manager);
+
+		// prepare
+		isVisible = false;
+
+		// forward
 		createSymbols();
-		if(msoModel.getMsoManager().operationExists()) {
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			loadObjects(cmdPost.getOperationAreaListItems().toArray());
-		}
-		try {
-			setVisible(false);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
-	
-	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 
+
+	protected OperationAreaMaskFeature createMsoFeature(IMsoObjectIf msoObject)
 			throws IOException, AutomationException {
-		IMsoFeature msoFeature = new OperationAreaMaskFeature();
+		OperationAreaMaskFeature msoFeature = new OperationAreaMaskFeature();
 		msoFeature.setSpatialReference(srs);
 		msoFeature.setMsoObject(msoObject);
 		return msoFeature;
 	}
-	
+
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
@@ -58,7 +54,7 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
  				return;
  			}
  			for (int i = 0; i < featureClass.featureCount(null); i++) {
- 				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+ 				IMsoFeature feature = getFeature(i);
  				if(select(feature) && feature.isVisible()){
 	 				Polygon polygon = (Polygon)feature.getShape();
 	 				if (polygon != null) {
@@ -67,10 +63,10 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 	 					display.drawPolygon(polygon);
 	 					display.setFilterByRef(null);
 	 				}
-					feature.setDirty(false);
  				}
+				feature.setDirty(false);
  			}
- 			isDirty = false;
+ 			setDirty(false);
  		} catch (Exception e) {
  			e.printStackTrace();
  		}

@@ -30,28 +30,33 @@ public class DiskoTilesPanel extends BasePanel
 
     protected final int m_hgap;
     protected final int m_vgap;
-    
+
     protected final Insets m_tileInsets;
-    
+
     protected final Dimension m_tileSize = new Dimension();
     protected final Dimension m_defaultChildSize = new Dimension(10, 10);
-    
+
     protected final Vector<Component> m_tiles = new Vector<Component>();
-    
+
 	protected TileList m_tileList;
     protected LayoutManager m_layout;
-    
+
     protected int m_colCount = 0;
-    protected boolean m_tileSizeSet = false;    
-    protected boolean m_horizontalFlow = true;    
+    protected boolean m_tileSizeSet = false;
+    protected boolean m_horizontalFlow = true;
 
     /* ============================================================
      * Constructors
      * ============================================================*/
-    
+
     public DiskoTilesPanel(FlowLayout aLayoutManager)
     {
         this(aLayoutManager, aLayoutManager.getHgap(), aLayoutManager.getVgap(), true);
+    }
+
+    public DiskoTilesPanel(String caption, FlowLayout aLayoutManager)
+    {
+        this(caption,aLayoutManager, aLayoutManager.getHgap(), aLayoutManager.getVgap(), true);
     }
 
     public DiskoTilesPanel(GridLayout aLayoutManager)
@@ -59,25 +64,35 @@ public class DiskoTilesPanel extends BasePanel
         this(aLayoutManager, aLayoutManager.getHgap(), aLayoutManager.getVgap(), true);
     }
 
+    public DiskoTilesPanel(String caption, GridLayout aLayoutManager)
+    {
+        this(caption, aLayoutManager, aLayoutManager.getHgap(), aLayoutManager.getVgap(), true);
+    }
+
     public DiskoTilesPanel(LayoutManager aLayoutManager, int aHgap, int aVgap, boolean isHorizontalFlow)
     {
+    	this("", aLayoutManager, aHgap, aVgap, isHorizontalFlow);
+    }
+
+    public DiskoTilesPanel(String caption, LayoutManager aLayoutManager, int aHgap, int aVgap, boolean isHorizontalFlow)
+    {
     	// forward
-        super();
-        
+        super(caption);
+
         // prepare
         m_hgap = aHgap;
         m_vgap = aVgap;
-        m_layout = aLayoutManager;        
+        m_layout = aLayoutManager;
         m_horizontalFlow = isHorizontalFlow;
         m_tileInsets = new Insets(m_vgap, m_hgap, m_vgap, m_hgap);
-        
+
         // forward
         initialize();
     }
-    
-    private void initialize() 
+
+    private void initialize()
     {
-        
+
         // set body component
         setBodyComponent(getTileList());
 
@@ -94,13 +109,13 @@ public class DiskoTilesPanel extends BasePanel
             }
         };
         getBodyComponent().addComponentListener(resizeHandler);
-        
+
     }
 
     /* ============================================================
      * Public methods
      * ============================================================*/
-    
+
     public void setCols(int aColumnCount)
     {
         m_colCount = Math.max(aColumnCount, 0);
@@ -109,7 +124,7 @@ public class DiskoTilesPanel extends BasePanel
     public Component getTile(int index) {
     	return m_tiles.get(index);
     }
-    
+
     public Component addTile(Component aComponent)
     {
         m_tiles.add(aComponent);
@@ -123,18 +138,18 @@ public class DiskoTilesPanel extends BasePanel
         m_tileSizeSet = false;
         getTileList().remove(aComponent);
     }
-    
+
     public void removeAllTiles()
     {
         m_tileSizeSet = false;
         m_tiles.clear();
         getTileList().removeAll();
     }
-    
+
     public int getTileCount() {
     	return m_tiles.size();
     }
-    
+
     public int getMaxNonScrollItems(Dimension aDimension)
     {
         Dimension availableDim = getSize();
@@ -160,11 +175,11 @@ public class DiskoTilesPanel extends BasePanel
         getScrollPane().getCorner(JScrollPane.UPPER_LEFT_CORNER).addMouseListener(listener);
         getScrollPane().getCorner(JScrollPane.UPPER_RIGHT_CORNER).addMouseListener(listener);
     }
-    
+
     /* ============================================================
      * Protected methods
      * ============================================================*/
-    
+
     /**
      * Resize the panel according to width and max label size.
      *
@@ -239,7 +254,7 @@ public class DiskoTilesPanel extends BasePanel
             myDimension.height = newHeight;
             setPreferredSize(myDimension);
         }
-        validate();
+        //revalidate();
         repaint();
     }
 
@@ -249,11 +264,11 @@ public class DiskoTilesPanel extends BasePanel
     	}
     	return m_tileList;
     }
-    
+
     /* ============================================================
      * Helper methods
      * ============================================================*/
-    
+
     private void layoutGridBag(int rows, int cols)
     {
         GridBagLayout layout = (GridBagLayout) m_layout;
@@ -300,7 +315,7 @@ public class DiskoTilesPanel extends BasePanel
     {
     	// forward
     	SpringUtilities.makeCompactGrid(getTileList(), rows, cols, m_hgap, m_vgap, m_hgap, m_vgap);
-    	
+
     	/*
     	if(false) {
 	        SpringLayout layout = (SpringLayout) m_layout;
@@ -308,7 +323,7 @@ public class DiskoTilesPanel extends BasePanel
 	        Spring yPadSpring = Spring.constant(m_vgap);
 	        Spring initialXSpring = Spring.constant(0);
 	        Spring initialYSpring = Spring.constant(0);
-	
+
 	        SpringLayout.Constraints lastConstraint = null;
 	        SpringLayout.Constraints lastRowConstraint = null;
 	        SpringLayout.Constraints lastColumnConstraint = null;
@@ -321,7 +336,7 @@ public class DiskoTilesPanel extends BasePanel
 	            {
 	                lastColumnConstraint = lastConstraint;
 	            }
-	
+
 	            if (icol == 0)
 	            { //start of new row
 	                lastRowConstraint = lastConstraint;
@@ -333,15 +348,15 @@ public class DiskoTilesPanel extends BasePanel
 	            { //x position depends on previous column
 	                cons.setX(Spring.sum(lastColumnConstraint.getConstraint(SpringLayout.EAST), xPadSpring));
 	            }
-	
+
 	            if (m_colCount > 0)
 	            {
 	                Dimension cDim = c.getPreferredSize();
 	                cDim.width = ((aPanelWidth-5) / m_colCount);
 	                c.setPreferredSize(cDim);
 	            }
-	
-	
+
+
 	            if (irow == 0)
 	            { //first row
 	                lastColumnConstraint = lastConstraint;
@@ -362,7 +377,7 @@ public class DiskoTilesPanel extends BasePanel
 	                    icol = 0;
 	                    irow++;
 	                }
-	
+
 	            } else
 	            {
 	                irow++;
@@ -377,29 +392,29 @@ public class DiskoTilesPanel extends BasePanel
     	}
     	*/
     }
-   
+
     /* ============================================================
      * Inner classes
      * ============================================================*/
-    
-    private class TileList extends JComponent implements Scrollable 
+
+    private class TileList extends JComponent implements Scrollable
     {
-    	    	
+
 		private static final long serialVersionUID = 1L;
 
         /* ============================================================
          * Constructors
          * ============================================================*/
-    	
+
 		public TileList(LayoutManager manager) {
     		super();
     		setLayout(manager);
     	}
-    	
+
         /* ============================================================
          * Scrollable implementation
          * ============================================================*/
-        
+
         public Dimension getPreferredScrollableViewportSize()
         {
             return getPreferredSize();
@@ -441,7 +456,7 @@ public class DiskoTilesPanel extends BasePanel
         {
             return false;
         }
-    	
+
     }
 
 }

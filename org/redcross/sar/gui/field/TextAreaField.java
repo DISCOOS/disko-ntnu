@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.field;
 
@@ -19,16 +19,16 @@ import org.redcross.sar.mso.data.IAttributeIf;
  *
  */
 public class TextAreaField extends AbstractField {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private JTextArea m_textArea;
-	
+
 	/*==================================================================
 	 * Constructors
-	 *================================================================== 
-	 */	
-	
+	 *==================================================================
+	 */
+
 	public TextAreaField(IAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
@@ -54,12 +54,12 @@ public class TextAreaField extends AbstractField {
 
 	/*==================================================================
 	 * Public methods
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	public Component getComponent() {
 		if(m_component==null) {
-			JScrollPane scrollPane = UIFactory.createScrollPane(getTextArea(),true);
+			JScrollPane scrollPane = UIFactory.createScrollPane(getTextArea(),false);
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// save the component
@@ -67,7 +67,7 @@ public class TextAreaField extends AbstractField {
 		}
 		return m_component;
 	}
-			
+
 	public JTextArea getTextArea() {
 		if(m_textArea==null) {
 			m_textArea = new JTextArea();
@@ -79,43 +79,46 @@ public class TextAreaField extends AbstractField {
 				public void insertUpdate(DocumentEvent e) { change(); }
 
 				public void removeUpdate(DocumentEvent e) { change(); }
-				
+
 				private void change() {
 					if(!isChangeable()) return;
 					fireOnWorkChange();
 				}
-				
+
 			});
 			m_textArea.setRows(2);
 			m_textArea.setLineWrap(true);
-			m_textArea.setWrapStyleWord(true);			
+			m_textArea.setWrapStyleWord(true);
+			m_textArea.setBorder(UIFactory.createBorder());
+			m_textArea.setLineWrap(true);
+			m_textArea.setWrapStyleWord(true);
 		}
 		return m_textArea;
 	}
-	
+
 	public JScrollPane getScrollPane() {
 		return (JScrollPane)m_component;
 	}
-	
+
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}
-	
+
 	public boolean getAutoSave() {
 		return m_autoSave;
-	}	
-	
+	}
+
 	public String getValue() {
 		return getTextArea().getText();
 	}
-	
+
 	public boolean setValue(Object value) {
 		// update
 		getTextArea().setText(String.valueOf(value));
 		// success
 		return true;
 	}
-	
+
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
@@ -131,12 +134,12 @@ public class TextAreaField extends AbstractField {
 		}
 		// failure
 		return false;
-	}	
-	
+	}
+
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
-		getTextArea().setEditable(isEditable);		
+		getTextArea().setEditable(isEditable);
 	}
-	
+
 }

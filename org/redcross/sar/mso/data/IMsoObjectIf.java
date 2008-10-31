@@ -1,7 +1,9 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
@@ -14,7 +16,7 @@ import java.util.Map;
 /**
  * Interface for MSO object
  */
-public interface IMsoObjectIf extends IDataIf
+public interface IMsoObjectIf extends IData
 {
     /**
      * Get Object ID
@@ -29,34 +31,34 @@ public interface IMsoObjectIf extends IDataIf
      * @return The Object ID
      */
     public Calendar getCreatedTime();
-    
+
     /**
      * Sets created state
      *
      */
-    public void setCreated(Date time);
-    
+    public void setCreatedTime(Date time);
+
     /**
      * Get Object creation status
      *
      * @return True after successful commit on a created object
      */
-    public boolean isCreated();    
-    
+    public boolean isCreated();
+
     /**
      * Gets change count since construction. Use this counter when tracking
-     * changes executed on a object. The following changes are tracked, and 
+     * changes executed on a object. The following changes are tracked, and
      * thus will increment the change counter<p>
      * 1. Attribute changes<br>
      * 2. Relation changes<p>
-     * This property enables MSO Update listeners to track changes 
-     * without the need for local buffering of object states (attributes, 
+     * This property enables MSO Update listeners to track changes
+     * without the need for local buffering of object states (attributes,
      * relations and so on).
      *
      * @return The number of changes performed on the object since the construction.
      */
     public int getChangeCount();
-    
+
     /**
      * Get short descriptor of object.
      * @return Short description, default = toString(), can be overridden.
@@ -86,53 +88,32 @@ public interface IMsoObjectIf extends IDataIf
     public void setAttribute(int anIndex, Object aValue) throws UnknownAttributeException;
 
     /**
-     * Suspend notification of listeners.
-     * <p/>
-     * Is used when several updates of an object shall be sent to listeners as one event.
-     */
-    public void suspendClientUpdate();
-
-    /**
-     * Add a "listener" to MsoObject deleteObject.
-     *
-     * @param aHolder Listener to add.
-     */
-//    public void addDeleteListener(IMsoObjectHolderIf aHolder);
-
-    /**
-     * Remove a "listener" to MsoObject deleteObject.
-     *
-     * @param aHolder Listener to remove.
-     */
-//    public void removeDeleteListener(IMsoObjectHolderIf aHolder);
-
-    /**
      * Delete this object from the data structures
      *
      * @return <code>true</code> if object has been deleted, <code>false</code> otherwise.
      */
     public boolean delete();
-    
+
     /**
-     * Use this method to check if an object is deleteable. If the MSO model is in 
-     * REMOTE_UPDATE_MODE or in LOOPBACK_UPDATE_MODE, this method returns 
+     * Use this method to check if an object is deleteable. If the MSO model is in
+     * REMOTE_UPDATE_MODE or in LOOPBACK_UPDATE_MODE, this method returns
      * <code>true</code> by default. Otherwise, it will check if the Object is in an required
      * relation with another object or list. If so, the method will return <code>false</code>
      * which indicates that <code>delete()</code> will not succeed, preventing the object from
      * being deleted.<p>
-     *  
+     *
      * @return <code>true</code> if object can be deleted, <code>false</code> otherwise.
-     */    
+     */
     public boolean canDelete();
-    
+
     /**
-     * Use this method to get list over <code>IMsoObjectHolderIf</code> 
+     * Use this method to get list over <code>IMsoObjectHolderIf</code>
      * that prevents a deletion.<p>
-     *  
+     *
      * @return List of <code>IMsoObjectHolderIf</code> that prevents deletion
-     */    
+     */
     public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy();
-    
+
     /**
      * Get a map of the attributes for the object
      * @return The attributes
@@ -152,16 +133,26 @@ public interface IMsoObjectIf extends IDataIf
     public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists();
 
     /**
-     * Get a map of the reference lists for the object containing a given type of mso object
-     * 
+     * Get the reference lists that contains objects of a given class
+     *
      * @param Class c - The item class
-     * @param boolean isEqual - It <code>true</code>, only lists with item classes that are equal to passed 
-     * class is returned. Else, match all items that are assignable onto passed item class. 
-     * 
-     * @return The reference lists that match passed arguments
+     * @param boolean isEqual - It <code>true</code>, only lists with item classes that are equal to passed
+     * class is returned. Else, match all items that are assignable onto passed item class.
+     *
+     * @return The reference lists that match passed arguments.
      */
     public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists(Class<?> c, boolean isEqual);
-    
+
+    /**
+     * Get the reference lists that contains objects of a given MSO class class
+     *
+     * @param MsoClassCode c - The MSO class code to match
+     *
+     * @return The reference lists that match passed arguments. This method will
+     * only return lists with one or more items in it.
+     */
+    public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists(MsoClassCode c);
+
     /**
      * Add a reference to an IMsoObjectIf object.
      *
@@ -184,27 +175,30 @@ public interface IMsoObjectIf extends IDataIf
 
 
     /**
-     * Resume notification of listeners.
+     * Suspend update notifications to listeners.
      * <p/>
-     * Is used if notification has been suspended by {@link #suspendClientUpdate()}.
+     * Use this method to group all update notifications into one single event. This
+     * will greatly improve the event handling process when a large number of
+     * updates is pending.
      */
-    public void resumeClientUpdate();
+    public void suspendClientUpdate();
 
     /**
-     * Resume notification of listeners in all lists.
-     * <p/>
-     * Calls {@link MsoListImpl#resumeClientUpdates} for all defined lists.
+     * Resume pending update notification to listeners. <p/>
+     *
+     * @param boolean all - if <code>true</code>, resume is also forwarded to all
+     * referenced objects. Else, only this object is resumed.
      */
-    public void resumeClientUpdates();
+    public void resumeClientUpdate(boolean all);
 
     /**
      * Validates object states (cardinality of attributes and relations)
      * <p/>
-     * @return  <code>true<code> if the object state is valid, invalid 
+     * @return  <code>true<code> if the object state is valid, invalid
      * IMsoObjectIf, IAttributeIf or IRelationIf otherwise.
      */
     public Object validate();
-    
+
     /**
      * Tell if the object is to be deleted from the model.
      *
@@ -500,8 +494,12 @@ public interface IMsoObjectIf extends IDataIf
     {
         public String getId();
         public Calendar getCreatedTime();
-        public void setCreated(Date time);
+        public void setCreatedTime(Date time);
         public boolean isCreated();
     }
+
+    public IMsoModelIf getModel();
+
+    public int compareTo(IData data);
 
 }

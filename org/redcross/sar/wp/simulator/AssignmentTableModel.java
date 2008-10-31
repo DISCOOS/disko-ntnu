@@ -1,12 +1,12 @@
 package org.redcross.sar.wp.simulator;
 
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 
-public class AssignmentTableModel extends MsoTableModel<IAssignmentIf> {
+public class AssignmentTableModel extends AbstractMsoTableModel<IAssignmentIf> {
 
 	private static final long serialVersionUID = 1L;
 

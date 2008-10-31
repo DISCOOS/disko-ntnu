@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.gui.panel.NavBarPanel;
+import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -44,7 +44,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 		super.activate(role);
 
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
+		if(isNavMenuSetupNeeded()) {
 			// get tool set 
 	        List<Enum<?>> myButtons = new ArrayList<Enum<?>>();	  
 	        myButtons.add(MapToolType.ZOOM_IN_TOOL);
@@ -58,13 +58,13 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	        myButtons.add(MapCommandType.TOC_COMMAND);
 	        myButtons.add(MapToolType.SELECT_TOOL);
 			// forward
-			setupNavBar(myButtons,true);
+			setupNavMenu(myButtons,true);
 		}				
 	}
 	
 	public void deactivate() {
 		super.deactivate();
-		NavBarPanel navBar = getApplication().getNavBar();
+		NavMenu navBar = getApplication().getNavMenu();
 		navBar.hideDialogs();
 	}
 	

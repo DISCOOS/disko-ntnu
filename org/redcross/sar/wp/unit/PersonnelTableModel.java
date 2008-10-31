@@ -6,14 +6,14 @@ import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 /**
  * Table model for the personnel overview panel
  *
  * @author thomasl
  */
-public class PersonnelTableModel extends MsoTableModel<IPersonnelIf>
+public class PersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
 {
 	private static final long serialVersionUID = 1L;
 

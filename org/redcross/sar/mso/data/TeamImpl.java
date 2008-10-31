@@ -1,12 +1,14 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IMsoModelIf;
+
 public class TeamImpl extends AbstractUnit implements ITeamIf
 {
     private final AttributeImpl.MsoInteger m_speed = new AttributeImpl.MsoInteger(this, "speed");
 
-    public TeamImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public TeamImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class TeamImpl extends AbstractUnit implements ITeamIf
     {
         return IUnitIf.UnitType.TEAM; // todo expand
     }
-    
+
     public String getSubTypeName()
     {
         return "TEAM"; // todo expand

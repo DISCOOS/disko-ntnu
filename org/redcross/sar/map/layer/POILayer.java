@@ -6,15 +6,15 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
+
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.POIFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -24,6 +24,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -43,21 +44,17 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	private BalloonCallout textBackground = null;
 	private Hashtable<POIType, IDisplayName> symbols = null;
 
- 	public POILayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
- 		super(IMsoManagerIf.MsoClassCode.CLASSCODE_POI,
- 				LayerCode.POI_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPoint, eventStack);
+ 	public POILayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 		super(esriGeometryType.esriGeometryPoint, MsoClassCode.CLASSCODE_POI,
+ 				EnumSet.noneOf(MsoClassCode.class),  LayerCode.POI_LAYER,
+ 				srs, eventStack, manager);
  		symbols = new Hashtable<POIType, IDisplayName>();
  		createSymbols();
-		if(msoModel.getMsoManager().operationExists()) {
-	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			loadObjects(cmdPost.getPOIListItems().toArray());
-		}
 	}
 
- 	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)
+ 	protected POIFeature createMsoFeature(IMsoObjectIf msoObject)
  			throws IOException, AutomationException {
- 		IMsoFeature msoFeature = new POIFeature();
+ 		POIFeature msoFeature = new POIFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
  		System.out.println("Created POIFeature " + msoObject);
@@ -65,27 +62,27 @@ public class POILayer extends AbstractMsoFeatureLayer {
  	}
 
  	@Override
-	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
+	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObj) {
 		IAreaIf area = null;
-		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1); 		
-		if (msoObject instanceof IAssignmentIf) {
-			IAssignmentIf assignment = (IAssignmentIf)msoObject;
+		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
+		if (msoObj instanceof IAssignmentIf) {
+			IAssignmentIf assignment = (IAssignmentIf)msoObj;
 			area = assignment.getPlannedArea();
 		}
-		else if(msoObject instanceof IAreaIf) {
-			area = (IAreaIf)msoObject;
+		else if(msoObj instanceof IAreaIf) {
+			area = (IAreaIf)msoObj;
 		}
 		if(area!=null) {
 			// add all POIs
 			objects.addAll(area.getAreaPOIsItems());
 		}
-		else {
-			objects.add(msoObject);
+		else if (msoObj instanceof IPOIIf) {
+			objects.add(msoObj);
 		}
 		return objects;
 	}
- 	
- 	
+
+
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
@@ -95,23 +92,23 @@ public class POILayer extends AbstractMsoFeatureLayer {
 
 			// get scale
 			double scale = display.getDisplayTransformation().getScaleRatio();
-			
+
 			// get zoom ratio
 			double zoomRatio = java.lang.Math.min(1.0,referenceScale / scale);
-			
+
 			// get point zoom size
 			double zoomPointSize = java.lang.Math.min(pointSize, pointSize*zoomRatio);
-			
+
 			// get text zoom size and offset
 			double zoomFontSize = java.lang.Math.min(fontSize, fontSize*zoomRatio);
 			double zoomFontOffset = java.lang.Math.min(pointSize, zoomPointSize*zoomRatio);
-			
+
 			// update
 			textSymbol.setSize(zoomFontSize);
 			textSymbol.setYOffset(zoomFontOffset);
-			
+
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
-				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature feature = getFeature(i);
  				if(select(feature) && feature.isVisible()){
 					Point point = (Point)feature.getShape();
 					if (point != null) {
@@ -121,7 +118,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 							type = poi.getType();
 						IMarkerSymbol markerSymbol = (IMarkerSymbol)symbols.get(type);
 						IColor savePointColor = markerSymbol.getColor();
-						IColor saveTextColor = textSymbol.getColor();	
+						IColor saveTextColor = textSymbol.getColor();
 	 					// get assignment?
 	 					if(IPOIIf.AREA_SET.contains(type)) {
 							// initialize
@@ -133,29 +130,29 @@ public class POILayer extends AbstractMsoFeatureLayer {
 								color = executingColor;
 							}
 							else if(AssignmentStatus.FINISHED.equals(status)){
-								color = finishedColor;							
+								color = finishedColor;
 							}
 							// set color
 	 						markerSymbol.setColor(color);
 	 					}
-	 					
+
 	 					// get point size
 	 					double size = zoomPointSize;
-	 					
+
 	 					// increase size?
-	 					if(POIType.FINDING.equals(type) || POIType.SILENT_WITNESS.equals(type) 
+	 					if(POIType.FINDING.equals(type) || POIType.SILENT_WITNESS.equals(type)
 	 							|| POIType.INTELLIGENCE.equals(type)) {
 	 						// double the size
-	 						size = size*2; 
+	 						size = size*2;
 	 						textSymbol.setBackgroundByRef(textBackground);
 	 					}
-	 					
+
 	 					// show text background?
-	 					if(!IPOIIf.AREA_SET.contains(type)) 
+	 					if(!IPOIIf.AREA_SET.contains(type))
 	 						textSymbol.setBackgroundByRef(textBackground);
-	 					else	 						
+	 					else
 	 						textSymbol.setBackgroundByRef(null);
-	 						
+
 						// is enabled?
 						if(isEnabled) {
 							// is selected?
@@ -169,27 +166,27 @@ public class POILayer extends AbstractMsoFeatureLayer {
 							markerSymbol.setColor(disabledColor);
 							textSymbol.setColor(disabledColor);
 						}
-						
+
 						markerSymbol.setSize(size);
 						display.setSymbol((ISymbol)markerSymbol);
 						display.drawPoint(point);
-						
+
 						// draw label?
 						if(isTextShown) {
 							display.setSymbol(textSymbol);
 							String text = feature.getCaption();
 							display.drawText(point, text);
 						}
-						
+
 						// restore
 						markerSymbol.setColor(savePointColor);
 						textSymbol.setColor(saveTextColor);
-						
+
 					}
-					feature.setDirty(false);
  				}
+				feature.setDirty(false);
 			}
-			isDirty = false;
+			setDirty(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -198,12 +195,12 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	private void createSymbols() {
 		// colors
 		try {
-			
+
 			disabledColor = new RgbColor();
 			disabledColor.setBlue(110);
 			disabledColor.setGreen(110);
 			disabledColor.setRed(110);
-			
+
 			selectionColor = new RgbColor();
 			selectionColor.setBlue(255);
 			selectionColor.setGreen(255);
@@ -214,7 +211,7 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			executingColor = new RgbColor();
 			executingColor.setRed(255);
 			executingColor.setGreen(230);
-			
+
 			finishedColor = new RgbColor();
 			finishedColor.setGreen(155);
 
@@ -253,22 +250,22 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			SimpleMarkerSymbol blackDiamondSymbol = new SimpleMarkerSymbol();
 			blackDiamondSymbol.setStyle(esriSimpleMarkerStyle.esriSMSDiamond);
 			blackDiamondSymbol.setSize(pointSize);
-			
+
 			SimpleMarkerSymbol redDiamondSymbol = new SimpleMarkerSymbol();
 			redDiamondSymbol.setStyle(esriSimpleMarkerStyle.esriSMSDiamond);
 			redDiamondSymbol.setColor(redColor);
 			redDiamondSymbol.setSize(pointSize);
-			
+
 			SimpleMarkerSymbol greenDiamondSymbol = new SimpleMarkerSymbol();
 			greenDiamondSymbol.setStyle(esriSimpleMarkerStyle.esriSMSDiamond);
 			greenDiamondSymbol.setColor(greenColor);
 			greenDiamondSymbol.setSize(pointSize);
-			
+
 			SimpleMarkerSymbol cyanDiamondSymbol = new SimpleMarkerSymbol();
 			cyanDiamondSymbol.setStyle(esriSimpleMarkerStyle.esriSMSDiamond);
 			cyanDiamondSymbol.setColor(cyanColor);
 			cyanDiamondSymbol.setSize(pointSize);
-			
+
 			symbols.put(POIType.START, redRoundSymbol);
 			symbols.put(POIType.STOP, redRoundSymbol);
 			symbols.put(POIType.VIA, blueRoundSymbol);
@@ -283,17 +280,17 @@ public class POILayer extends AbstractMsoFeatureLayer {
 			textBackground.setTopMargin(1);
 			textBackground.setLeftMargin(1);
 			textBackground.setRightMargin(1);
-			textBackground.setStyle(esriBalloonCalloutStyle.esriBCSRoundedRectangle); 
+			textBackground.setStyle(esriBalloonCalloutStyle.esriBCSRoundedRectangle);
 			textBackground.setSymbolByRef(MapUtil.getFillSymbol(esriSimpleFillStyle.esriSFSSolid, esriSimpleLineStyle.esriSLSSolid));
-			
+
 			textSymbol = new TextSymbol();
 			textSymbol.setHorizontalAlignment(esriTextHorizontalAlignment.esriTHALeft);
 			textSymbol.setVerticalAlignment(esriTextHorizontalAlignment.esriTHACenter);
 			textSymbol.setXOffset(redRoundSymbol.getSize());
 			textSymbol.setBackgroundByRef(textBackground);
-			
-			
-			
+
+
+
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

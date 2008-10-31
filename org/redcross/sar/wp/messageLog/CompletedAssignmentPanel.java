@@ -1,14 +1,11 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 
@@ -33,9 +30,9 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	{
 		super(wp);
 
-		m_editAssignmentPanel.getAttribute("Time").setCaptionText(
-				 m_wpMessageLog.getBundleText("CompletedTimeLabel.text") + ": ");
-		
+		m_editAssignmentPanel.getField("Time").setCaptionText(
+				 m_aWp.getBundleText("CompletedTimeLabel.text") + ": ");
+
 	}
 
 	/**
@@ -68,32 +65,32 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 
 		// violation?
 		if(!MessageLogBottomPanel.isNewMessage()) {
-			
+
 			// notify reason
-			Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
-					m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
-			
+			Utils.showWarning(m_aWp.getBundleText("MessageTaskOperationError.header"),
+					m_aWp.getBundleText("MessageTaskOperationError.details"));
+
 			// finished
 			return;
-			
+
 		}
-		
+
 		if(unitHasCompletedAssignment()) {
-			
+
 			// notify reason
 			Utils.showWarning("Du kan ikke registrere mer enn ett utført oppdrag per melding");
-			
+
 			// finished
 			return;
-			
-		} 
-	
+
+		}
+
 		// get unit if exists
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		IUnitIf unit = getAvailableUnit(message);
 
 		if(unitHasAllocatedAssignment(unit) || unitHasStartedAssignment(unit)) {
-		
+
 			// get assignment status
 			IAssignmentIf Allocated = unit.getAllocatedAssignment();
 			IAssignmentIf executing = unit.getExecutingAssigment();
@@ -101,51 +98,51 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			// try not committed assignments?
 			if(Allocated==null) {
 				IMessageLineIf line = getAddedLine(MessageLineType.ALLOCATED);
-				Allocated = (line!=null) ? line.getLineAssignment() : null;				
-				
+				Allocated = (line!=null) ? line.getLineAssignment() : null;
+
 			}
 			if(executing==null) {
 				IMessageLineIf line = getAddedLine(MessageLineType.STARTED);
-				executing = (line!=null) ? line.getLineAssignment() : null;				
+				executing = (line!=null) ? line.getLineAssignment() : null;
 			}
 
 			// get assignment
 			IAssignmentIf assignment = executing == null ? Allocated : executing;
-			
+
 			// prompt user
-			Object[] options = {m_wpMessageLog.getBundleText("yes.text"), m_wpMessageLog.getBundleText("no.text")};
-			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
-					String.format(m_wpMessageLog.getBundleText("UnitCompletedAssignment.text"), 
+			Object[] options = {m_aWp.getBundleText("yes.text"), m_aWp.getBundleText("no.text")};
+			int n = JOptionPane.showOptionDialog(m_aWp.getApplication().getFrame(),
+					String.format(m_aWp.getBundleText("UnitCompletedAssignment.text"),
 							MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),
-					m_wpMessageLog.getBundleText("UnitCompletedAssignment.header"),
+					m_aWp.getBundleText("UnitCompletedAssignment.header"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
 					null,
 					options,
 					options[0]);
 
-			// 
+			//
 			if(n == JOptionPane.YES_OPTION)
 			{
 				if(executing == null)
 				{
 					// Adding both started and completed lines
-					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, 
+					AssignmentUtilities.createAssignmentChangeMessageLines(message,
 							MessageLineType.STARTED, MessageLineType.COMPLETED, Calendar.getInstance(), unit, assignment);
 					m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, assignment, false));
 					m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, assignment, false));
 				}
 				else
 				{
-					AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, 
+					AssignmentUtilities.createAssignmentChangeMessageLines(message,
 							MessageLineType.COMPLETED, MessageLineType.COMPLETED, Calendar.getInstance(), unit, assignment);
 				}
 
 				m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETED, assignment, false));
-				
+
 				MessageLogBottomPanel.showCompletePanel();
 			}
-			
+
 		}
 		else if(unitEnqueuedAssignment(unit))
 		{
@@ -163,7 +160,7 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 			return;
 		}
 		// success
-		m_assignmentUnit = unit;
+		m_owningUnit = unit;
 	}
 
 	/**
@@ -171,33 +168,33 @@ public class CompletedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	protected void addSelectedAssignment()
 	{
-		if(m_assignmentUnit!=null && m_selectedAssignment!=null)
+		if(m_owningUnit!=null && m_selectedAssignment!=null)
 		{
 
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-			
-			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
+
+			AssignmentUtilities.createAssignmentChangeMessageLines(message,
 					MessageLineType.ALLOCATED,
 					MessageLineType.COMPLETED,
 					Calendar.getInstance(),
-					m_assignmentUnit, m_selectedAssignment);
-			
+					m_owningUnit, m_selectedAssignment);
+
 			// add to lines
 			m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.COMPLETED, m_selectedAssignment, false));
-			
+
 		}
 
 		MessageLogBottomPanel.showCompletePanel();
 	}
-	
+
     public void showEditor()
     {
     	super.showEditor();
-    	
+
     	m_messageLinesPanel.setCaptionText("Utført oppdrag");
-        
+
     }
-	
+
 }

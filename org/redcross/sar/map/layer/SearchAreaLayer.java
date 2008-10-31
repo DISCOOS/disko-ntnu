@@ -2,13 +2,13 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.SearchAreaFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.display.IColor;
@@ -30,31 +30,27 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 	private static final double fontSize = 14;
 	private static final double lineWidth = 1.5;
 	private static final double referenceScale = 50000;
-	
+
  	private SimpleFillSymbol defaultSymbol = null;
- 	private SimpleFillSymbol disabledSymbol = null; 	
+ 	private SimpleFillSymbol disabledSymbol = null;
 	private SimpleFillSymbol selectionSymbol = null;
 	private TextSymbol textSymbol = null;
- 	
- 	public SearchAreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
- 		super(IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA, 
- 				LayerCode.SEARCH_AREA_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryPolygon, eventStack);
+
+ 	public SearchAreaLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 		super(esriGeometryType.esriGeometryPolygon, MsoClassCode.CLASSCODE_SEARCHAREA,
+ 				EnumSet.noneOf(MsoClassCode.class), LayerCode.SEARCH_AREA_LAYER,
+ 				srs, eventStack, manager);
  		createSymbols();
-		if(msoModel.getMsoManager().operationExists()) {
-	 		ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			loadObjects(cmdPost.getSearchAreaListItems().toArray());
-		}
 	}
- 	
- 	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject) 
+
+ 	protected SearchAreaFeature createMsoFeature(IMsoObjectIf msoObject)
  			throws IOException, AutomationException {
- 		IMsoFeature msoFeature = new SearchAreaFeature();
+ 		SearchAreaFeature msoFeature = new SearchAreaFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
  		return msoFeature;
  	}
-	
+
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
@@ -64,21 +60,21 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 
 			// get scale
 			double scale = display.getDisplayTransformation().getScaleRatio();
-			
+
 			// get zoom ratio
 			double zoomRatio = java.lang.Math.min(1.0,referenceScale / scale);
-			
+
 			// get text zoom size
 			double zoomFontSize = java.lang.Math.min(fontSize, fontSize*zoomRatio);
-			
+
 			// get line zoom width
 			double zoomLineWidth = java.lang.Math.min(lineWidth, lineWidth*zoomRatio);
-			
+
 			// update
 			textSymbol.setSize(zoomFontSize);
-			
+
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
-				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature feature = getFeature(i);
  				if(select(feature) && feature.isVisible()){
 					Polygon polygon = (Polygon)feature.getShape();
 					if (polygon != null) {
@@ -90,7 +86,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 		 	 					// update
 								ILineSymbol line = selectionSymbol.getOutline();
 								line.setWidth(zoomLineWidth);
-								selectionSymbol.setOutline(line);															
+								selectionSymbol.setOutline(line);
 	 	 						// select feature
 	 	 						display.setSymbol(selectionSymbol);
 								textSymbol.setColor(selectionSymbol.getOutline().getColor());
@@ -99,36 +95,36 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 		 	 					// update
 								ILineSymbol line = defaultSymbol.getOutline();
 								line.setWidth(zoomLineWidth);
-								defaultSymbol.setOutline(line);															
+								defaultSymbol.setOutline(line);
 	 	 						display.setSymbol(defaultSymbol);
-								textSymbol.setColor(saveTextColor);	 	 					
+								textSymbol.setColor(saveTextColor);
 	 	 					}
 						}
 						else {
 	 	 					// update
 							ILineSymbol line = disabledSymbol.getOutline();
 							line.setWidth(zoomLineWidth);
-							disabledSymbol.setOutline(line);															
+							disabledSymbol.setOutline(line);
 							// disable all features
-							display.setSymbol(disabledSymbol);							
+							display.setSymbol(disabledSymbol);
 							textSymbol.setColor(disabledSymbol.getOutline().getColor());
 						}
-						
-						// draw 
+
+						// draw
 						display.drawPolygon(polygon);
-						display.setSymbol(textSymbol);	
+						display.setSymbol(textSymbol);
 						if( isTextShown) {
 							display.drawText(polygon.getCentroid(), feature.getCaption());
 						}
-						
+
 						// restore
 						textSymbol.setColor(saveTextColor);
-						
+
 					}
-					feature.setDirty(false);
  				}
+				feature.setDirty(false);
 			}
-			isDirty = false;
+			setDirty(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -136,7 +132,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 
 	private void createSymbols() {
 		try {
-			
+
 			// create default symbol
 			defaultSymbol = new SimpleFillSymbol();
 			defaultSymbol.setStyle(com.esri.arcgis.display.esriSimpleFillStyle.esriSFSNull);
@@ -144,7 +140,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 			RgbColor color = new RgbColor();
 			color.setBlue(255);
 
-			SimpleLineSymbol outlineSymbol = new SimpleLineSymbol();	
+			SimpleLineSymbol outlineSymbol = new SimpleLineSymbol();
 			outlineSymbol.setWidth(lineWidth);
 			outlineSymbol.setColor(color);
 			defaultSymbol.setOutline(outlineSymbol);
@@ -157,11 +153,11 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 			disabledColor.setGreen(110);
 			disabledColor.setGreen(110);
 
-			SimpleLineSymbol disabledOutlineSymbol = new SimpleLineSymbol();	
+			SimpleLineSymbol disabledOutlineSymbol = new SimpleLineSymbol();
 			disabledOutlineSymbol.setWidth(lineWidth);
 			disabledOutlineSymbol.setColor(disabledColor);
 			disabledSymbol.setOutline(disabledOutlineSymbol);
-			
+
 			// create selection symbol
 			selectionSymbol = new SimpleFillSymbol();
 			selectionSymbol.setStyle(com.esri.arcgis.display.esriSimpleFillStyle.esriSFSNull);
@@ -169,7 +165,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 			selectionColor.setBlue(255);
 			selectionColor.setGreen(255);
 
-			SimpleLineSymbol selectedOutlineSymbol = new SimpleLineSymbol();	
+			SimpleLineSymbol selectedOutlineSymbol = new SimpleLineSymbol();
 			selectedOutlineSymbol.setWidth(lineWidth);
 			selectedOutlineSymbol.setColor(selectionColor);
 			selectionSymbol.setOutline(selectedOutlineSymbol);
@@ -177,7 +173,7 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 			// create text symbol
 			textSymbol = new TextSymbol();
 			textSymbol.setSize(fontSize);
-			
+
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

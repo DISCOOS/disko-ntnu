@@ -17,13 +17,13 @@ public class ForecastListImpl extends MsoListImpl<IForecastIf> implements IForec
     public IForecastIf createForecast(Calendar aCalendar, String aText)
     {
         checkCreateOp();
-        return createdUniqueItem(new ForecastImpl(makeUniqueId(), aCalendar, aText));
+        return createdUniqueItem(new ForecastImpl(getOwner().getModel(), makeUniqueId(), aCalendar, aText));
     }
 
     public IForecastIf createForecast(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IForecastIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new ForecastImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new ForecastImpl(getOwner().getModel(), anObjectId));
     }
 }

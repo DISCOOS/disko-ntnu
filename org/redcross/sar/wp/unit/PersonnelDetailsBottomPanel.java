@@ -1,24 +1,10 @@
 package org.redcross.sar.wp.unit;
 
-import org.redcross.sar.event.ITickEventListenerIf;
-import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.renderer.BundleListCellRenderer;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
-import org.redcross.sar.mso.data.IPersonnelIf.PersonnelType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.mso.DTG;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 import javax.swing.JComboBox;
@@ -27,6 +13,22 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+
+import org.redcross.sar.event.ITickEventListenerIf;
+import org.redcross.sar.event.TickEvent;
+import org.redcross.sar.gui.renderer.BundleListCellRenderer;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IPersonnelIf;
+import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
+import org.redcross.sar.mso.data.IPersonnelIf.PersonnelType;
+import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.mso.DTG;
+
+
 
 /**
  * Panel displaying personnel details at bottom of main panel
@@ -235,27 +237,37 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
         }
     }
 
+	public EnumSet<MsoClassCode> getInterests() {
+		return EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL);
+	}
+
     /**
-     * Update field contents if mso object changes
+     * Update field contents if MSO object changes
      */
-    public void handleMsoUpdateEvent(Update e)
-    {
-        IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ? 
-        		(IPersonnelIf) e.getSource() : null;
-        if (personnel == m_currentPersonnel)
-        {
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		if(events.isClearAllEvent()) {
+			m_currentPersonnel = null;
             updateFieldContents();
-        }
+		}
+		else
+		{
+			// loop over all events
+			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL))
+			{
+				// consume loopback updates
+				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+				{
+					IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ?
+	        		(IPersonnelIf) e.getSource() : null;
+			        if (personnel == m_currentPersonnel)
+			        {
+			            updateFieldContents();
+			        }
+				}
+			}
+		}
     }
-
-	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return msoObject.getMsoClassCode() == IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
-    }
-
 
     public long getInterval()
     {
@@ -278,7 +290,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 	        {
 	            return;
 	        }
-	
+
 	        updateEstimatedArrival();
     	}
     }

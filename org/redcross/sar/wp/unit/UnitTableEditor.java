@@ -120,14 +120,14 @@ public class UnitTableEditor
 		{
 			// Get unit at row
 			int index = m_table.convertRowIndexToModel(row);
-			if(index!=-1) 
+			if(index!=-1)
 			{
 				UnitTableModel model = (UnitTableModel)m_table.getModel();
 				IUnitIf rowUnit = model.getUnit(index);
-	
+
 				// Get editing unit
 				IUnitIf editingUnit = m_wpUnit.getEditingUnit();
-	
+
 				m_editButton.setSelected(editingUnit == rowUnit);
 			}
 
@@ -189,15 +189,15 @@ public class UnitTableEditor
 			});
 			m_panel.add(m_pauseButton);
 			*/
-			
+
 	        String text = m_resources.getString("DissolveButton.text");
-	        String letter = m_resources.getString("DissolveButton.letter");        
+	        String letter = m_resources.getString("DissolveButton.letter");
 	        m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 	        m_releaseButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					
+
 					// release unit
 					int index = m_table.convertRowIndexToModel(m_editingRow);
 					UnitTableModel model = (UnitTableModel)m_table.getModel();
@@ -214,7 +214,7 @@ public class UnitTableEditor
 								m_wpUnit.getMsoModel().commit();
 							}
 						}
-						
+
 					}
 					catch (IllegalOperationException e1)
 					{
@@ -222,8 +222,8 @@ public class UnitTableEditor
 								m_resources.getString("ReleaseUnitError.text"));
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate();
-					
+					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+
 					fireEditingStopped();
 				}
 			});
@@ -260,7 +260,7 @@ public class UnitTableEditor
 			// Update buttons
 			//m_pauseButton.setSelected(unit.getStatus() == UnitStatus.PAUSED);
 			m_releaseButton.setSelected(unit.getStatus() == UnitStatus.RELEASED);
-			
+
 		}
 	}
 }

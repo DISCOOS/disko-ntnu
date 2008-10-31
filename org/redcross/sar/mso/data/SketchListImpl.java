@@ -16,14 +16,14 @@ public class SketchListImpl extends MsoListImpl<ISketchIf> implements ISketchLis
     public ISketchIf createSketch()
     {
         checkCreateOp();
-        return createdUniqueItem(new SketchImpl(makeUniqueId()));
+        return createdUniqueItem(new SketchImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public ISketchIf createSketch(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         ISketchIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new SketchImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new SketchImpl(getOwner().getModel(), anObjectId));
     }
 
 }

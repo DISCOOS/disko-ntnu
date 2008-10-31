@@ -180,7 +180,7 @@ public class SarMsoMapper {
 
 
     private static List<TimePos> mapGeoPosListToSaraTimePos(Collection<GeoPos> route) {
-        List<TimePos> list = new ArrayList();
+        List<TimePos> list = new ArrayList<TimePos>();
         for (GeoPos geo : route) {
             TimePos lPos = new PositionOccurrence((float) geo.getPosition().getY(), (float) geo.getPosition().getX(), "");
             list.add(lPos);
@@ -189,7 +189,7 @@ public class SarMsoMapper {
     }
 
     private static List<TimePos> mapTimePosListToSaraTimePos(Collection<org.redcross.sar.util.mso.TimePos> track) {
-        List<TimePos> list = new ArrayList();
+        List<TimePos> list = new ArrayList<TimePos>();
         for (org.redcross.sar.util.mso.TimePos geo : track) {
             TimePos lPos = new PositionOccurrence((float) geo.getPosition().getY(), (float) geo.getPosition().getX(), geo.getTime().getTimeInMillis(), "");
             list.add(lPos);

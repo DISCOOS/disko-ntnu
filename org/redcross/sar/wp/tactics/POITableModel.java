@@ -1,11 +1,11 @@
 package org.redcross.sar.wp.tactics;
 
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.IPOIIf;
 
-public class POITableModel extends MsoTableModel<IPOIIf> {
+public class POITableModel extends AbstractMsoTableModel<IPOIIf> {
 
 	private static final long serialVersionUID = 1L;
 	

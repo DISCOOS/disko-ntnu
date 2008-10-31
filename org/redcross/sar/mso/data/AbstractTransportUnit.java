@@ -1,5 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IMsoModelIf;
+
 public abstract class AbstractTransportUnit extends AbstractUnit implements ITransportIf
 {
     public void setIdentifier(String aIdentifier)
@@ -10,14 +12,14 @@ public abstract class AbstractTransportUnit extends AbstractUnit implements ITra
     private AttributeImpl.MsoString m_identifier = new AttributeImpl.MsoString(this, "Identifier");
 
 
-    public AbstractTransportUnit(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public AbstractTransportUnit(IMsoModelIf theMsoModel,IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
     }
 
-    public AbstractTransportUnit(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
+    public AbstractTransportUnit(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, String anIdentifier)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
         m_identifier.setValue(anIdentifier);
     }
 

@@ -37,34 +37,34 @@ public class CommunicatorListPanel extends JPanel
 {
 	private static final long serialVersionUID = 1L;
 
-	public final static int COLUMN_WIDTH = 
+	public final static int COLUMN_WIDTH =
 		DiskoButtonFactory.getButtonSize(ButtonSize.LONG).width;
-	
-	public final static int CELL_HEIGHT = 
+
+	public final static int CELL_HEIGHT =
 		DiskoButtonFactory.getButtonSize(ButtonSize.LONG).height;
-	
-	private final Map<JToggleButton, ICommunicatorIf> 
+
+	private final Map<JToggleButton, ICommunicatorIf>
 		m_buttonMap = new HashMap<JToggleButton, ICommunicatorIf>();;
-	
-	private final Map<ICommunicatorIf, JToggleButton> 
+
+	private final Map<ICommunicatorIf, JToggleButton>
 		m_communicatorMap = new HashMap<ICommunicatorIf, JToggleButton>();
-	
+
 	private final EventListenerList m_listeners = new EventListenerList();
-	
+
 	private final Map<ICommunicatorIf,Boolean> m_selectedMap = new HashMap<ICommunicatorIf,Boolean>();
-	
+
 	private final CommunicatorListModel m_model = new CommunicatorListModel();
-	
-	private int m_rows;	
+
+	private int m_rows;
 	private int m_cols;
-	private IDiskoWpMessageLog m_wp;	
-	private boolean m_isSingleSelection;	
-	
-	
+	private IDiskoWpMessageLog m_wp;
+	private boolean m_isSingleSelection;
+
+
 	/* ==========================================================
 	 * Constructors
 	 * ==========================================================*/
-	
+
 	/**
 	 * @param wp Message log work process
 	 */
@@ -72,12 +72,12 @@ public class CommunicatorListPanel extends JPanel
 	{
 		this(wp,isSingleSelection,5,3);
 	}
-	
+
 	public CommunicatorListPanel(IDiskoWpMessageLog wp, boolean isSingleSelection, int rows, int cols)
-	{	
+	{
 		// forward
 		super();
-		
+
 		// prepare
 		m_wp = wp;
 		m_rows = rows;
@@ -86,7 +86,7 @@ public class CommunicatorListPanel extends JPanel
 
 		// add model as MSO update listener
 		m_wp.getMsoEventManager().addClientUpdateListener(m_model);
-		
+
 		// add list data listener
 		m_model.addListDataListener(new ListDataListener() {
 
@@ -104,82 +104,82 @@ public class CommunicatorListPanel extends JPanel
 			public void intervalRemoved(ListDataEvent e) {
 				build();
 			}
-			
+
 		});
-		
+
 		// forward
 		initialize();
-				
+
 	}
 
 	/* ==========================================================
 	 * Public methods
-	 * ==========================================================*/	
-	
+	 * ==========================================================*/
+
 	public int getRows() {
 		return m_rows;
 	}
-	
+
 	public void setRows(int rows) {
 		m_rows = rows;
 		build();
 	}
-	
+
 	public void setCols(int cols) {
 		m_cols = cols;
 		build();
 	}
-	
+
 	public int getCols() {
 		return m_cols;
 	}
-	
+
 	public void setMatrix(int rows, int cols) {
 		m_rows=rows;
 		m_cols=cols;
-		build();		
+		build();
 	}
-	
+
 	public boolean isSingleSelectionMode() {
 		return m_isSingleSelection;
 	}
-	
+
 	public void setSingleSelectionMode(boolean isSingleSelectionMode) {
 		m_isSingleSelection = isSingleSelectionMode;
 		m_selectedMap.clear();
 		renderSelection();
 	}
-	
+
 	public void load()
-	{		
+	{
 		m_model.load();
 	}
-		
-	public void load(UnitType type)  
+
+	public void load(UnitType type)
 	{
 		if(type==null)
 			m_model.load();
 		else
 			m_model.load(type);
-	}	
-	
-	public void load(String regex)  
+	}
+
+	public void load(String regex)
 	{
 		if(regex==null || regex.isEmpty())
 			m_model.load();
 		else
 			m_model.load(regex);
-	}	
-	
-	public void load(List<ICommunicatorIf> list) 
+	}
+
+	public void load(List<ICommunicatorIf> list)
 	{
 		if(list==null)
 			m_model.load();
 		else
 			m_model.load(list);
-	}	
-	
-	public void load(Selector<ICommunicatorIf> selector) 
+	}
+
+	public void load(Selector<ICommunicatorIf> selector)
 	{
 		if(selector==null)
 			m_model.load();
@@ -187,76 +187,76 @@ public class CommunicatorListPanel extends JPanel
 			m_model.load(selector);
 
 	}
-	
+
 	public ICommunicatorIf find(char prefix, int number) {
 		return m_model.find(prefix,number);
 	}
-	
+
 	public List<ICommunicatorIf> findAll(char prefix, int number) {
 
 		return m_model.findAll(prefix,number);
-		
+
 	}
-	
+
 	public ICommunicatorIf find(String regex) {
 
 		return m_model.find(regex);
-		
+
 	}
-	
+
 	public List<ICommunicatorIf> findAll(String regex) {
 
 		return m_model.findAll(regex);
-		
+
 	}
-	
+
 	public ICommunicatorIf find(UnitType type) {
 
 		return m_model.find(type);
-		
+
 	}
-	
+
 	public List<ICommunicatorIf> findAll(UnitType type) {
 
 		return m_model.findAll(type);
-		
-	}	
-	
+
+	}
+
 	public boolean isMarked(ICommunicatorIf c) {
 		JToggleButton b = getButton(c);
-		return (b!=null ? b.getBorder() instanceof DiskoBorder : false);		
+		return (b!=null ? b.getBorder() instanceof DiskoBorder : false);
 	}
-	
+
 	public void setMarked(ICommunicatorIf c, boolean isMarked, Color color) {
 		JToggleButton b = getButton(c);
 		if(b!=null) b.setBorder(isMarked?UIFactory.createBorder(2, 2, 2, 2, color):null);
 	}
-	
+
 	public void clearMarked() {
 		for(JToggleButton it : getButtons()) {
 			it.setBorder(null);
 		}
 	}
-	
+
 	public CommunicatorListModel getModel()
 	{
 		return m_model;
 	}
-	
+
 	public ICommunicatorIf getCommunicator(JToggleButton b)
 	{
 		return m_buttonMap.get(b);
 	}
-	
+
 	public List<ICommunicatorIf> getCommunicators()
 	{
 		return new ArrayList<ICommunicatorIf>(m_communicatorMap.keySet());
 	}
-	
+
 	public JToggleButton getButton(ICommunicatorIf c) {
 		return m_communicatorMap.get(c);
 	}
-	
+
 	public List<JToggleButton> getButtons()
 	{
 		return new ArrayList<JToggleButton>(m_communicatorMap.values());
@@ -271,7 +271,7 @@ public class CommunicatorListPanel extends JPanel
 		}
 		return selected;
 	}
-	
+
 	public void setSelected(ICommunicatorIf c, boolean isSelected) {
 		// is valid?
 		if(c!=null) {
@@ -287,13 +287,13 @@ public class CommunicatorListPanel extends JPanel
 			renderSelection();
 		}
 	}
-	
+
 	public void setSelected(List<ICommunicatorIf> list, boolean isSelected) {
 		// is valid?
 		if(list.size()>0) {
 			// only select first?
 			if(m_isSingleSelection) {
-				setSelected(list.get(0),isSelected);									
+				setSelected(list.get(0),isSelected);
 			}
 			else {
 				// select all in list
@@ -303,14 +303,14 @@ public class CommunicatorListPanel extends JPanel
 					// get change flag
 					boolean isChanged = (isSelected != (oldValue!=null ? oldValue : isSelected));
 					// forward?
-					if(isChanged) fireActionEvent(it);					
+					if(isChanged) fireActionEvent(it);
 				}
 				// forward
 				renderSelection();
 			}
 		}
 	}
-	
+
 	/**
 	 * Clear all select communicators
 	 */
@@ -319,15 +319,15 @@ public class CommunicatorListPanel extends JPanel
 		m_selectedMap.clear();
 		renderSelection();
 	}
-	
+
 	public void addActionListener(ActionListener listener) {
 		m_listeners.add(ActionListener.class, listener);
 	}
-	
+
 	public void removeActionListener(ActionListener listener) {
 		m_listeners.remove(ActionListener.class, listener);
 	}
-	
+
 	/* ==========================================================
 	 * Helper methods
 	 * ==========================================================*/
@@ -340,10 +340,10 @@ public class CommunicatorListPanel extends JPanel
 		setPreferredSize(new Dimension((COLUMN_WIDTH+5)*m_cols+5, CELL_HEIGHT*m_rows+10
 				+Integer.valueOf(UIManager.get("ScrollBar.height").toString())));
 	}
-	
+
 	private void build()
 	{
-		
+
 		// Clear previous list, brute force maintenance
 		removeAll();
 		m_buttonMap.clear();
@@ -353,7 +353,7 @@ public class CommunicatorListPanel extends JPanel
 		int i = 0;
 		int j = 0;
 		JPanel column = null;
-		
+
 		// loop over all active communicators
 		for(ICommunicatorIf it : m_model.getElements())
 		{
@@ -366,51 +366,51 @@ public class CommunicatorListPanel extends JPanel
 				column.setAlignmentY(Component.TOP_ALIGNMENT);
 				column.setPreferredSize(new Dimension(COLUMN_WIDTH, CELL_HEIGHT*m_rows));
 				column.setLayout(new BoxLayout(column, BoxLayout.Y_AXIS));
-				// add to list 
+				// add to list
 				add(column);
 				// increment column index
 				j++;
 				// add horizontal gap?
 				if(j<m_cols) add(Box.createHorizontalStrut(5));
-			}					
-			// add button to current column 
+			}
+			// add button to current column
 			addButton(it,column);
 			// increment index
 			i++;
 		}
 		// update size
-		setPreferredSize(new Dimension((COLUMN_WIDTH+5)*m_cols + 5, 
+		setPreferredSize(new Dimension((COLUMN_WIDTH+5)*m_cols + 5,
 				CELL_HEIGHT*m_rows + 10 + Integer.valueOf(UIManager.get("ScrollBar.height").toString())));
 		// apply selected communicators
 		renderSelection();
-	}	
+	}
 
 	private void renderSelection()
 	{
 		// initialize
 		int count = 0;
-		
+
 		// loop over all communicators
-		for(ICommunicatorIf it : m_communicatorMap.keySet()) 
+		for(ICommunicatorIf it : m_communicatorMap.keySet())
 		{
-	
+
 			// get button
 			JToggleButton button = m_communicatorMap.get(it);
-		
+
 			// update
 			Boolean value = m_selectedMap.get(it);
-			
+
 			// get selection flag
 			boolean isSelected = value!=null ? value : false;
-			
+
 			// selection found?
 			if(isSelected) count++;
-			
+
 			// selected?
 			button.setSelected(isSelected);
-			
+
 		}
-		
+
 		// update
 		revalidate();
 		repaint();
@@ -418,7 +418,7 @@ public class CommunicatorListPanel extends JPanel
 
 	private void addButton(final ICommunicatorIf c, JPanel column)
 	{
-		
+
 		// create button
 		JToggleButton button = DiskoButtonFactory.createToggleButton(c,ButtonSize.LONG);
 
@@ -427,11 +427,11 @@ public class CommunicatorListPanel extends JPanel
 
 		// add to column
 		column.add(button);
-		
+
 		// create mapping
 		m_buttonMap.put(button, c);
 		m_communicatorMap.put(c, button);
-		
+
 		// add action listener
 		button.addActionListener(new ActionListener()
 		{
@@ -439,25 +439,25 @@ public class CommunicatorListPanel extends JPanel
 			{
 				// get source button
 				JToggleButton b = (JToggleButton)e.getSource();
-								
+
 				// set selection state
 				setSelected(c,b.isSelected());
-				
+
 				// notify
 				fireActionEvent(e);
-				
+
 			}
 		});
 
 	}
-	
+
 	private void fireActionEvent(ICommunicatorIf c) {
 		JToggleButton b = m_communicatorMap.get(c);
 		if(b!=null) {
 			fireActionEvent(new ActionEvent(b,ActionEvent.ACTION_PERFORMED,b.getActionCommand()));
 		}
 	}
-	
+
 	private void fireActionEvent(ActionEvent e) {
 		ActionListener[] list = m_listeners.getListeners(ActionListener.class);
 		for(int i=0; i<list.length; i++) {

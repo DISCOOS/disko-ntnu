@@ -39,14 +39,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
 
-import org.redcross.sar.data.IDataBinderIf;
+import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupAdapter;
 import org.redcross.sar.gui.dnd.AssignmentTransferable;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
 import org.redcross.sar.gui.renderer.IconRenderer.IconActionHandler;
@@ -56,7 +56,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
-import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -71,7 +71,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 /**
  * Table model for unit table in logistics WP
  */
-public class UnitTableModel extends MsoTableModel<IUnitIf>
+public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -124,7 +124,7 @@ public class UnitTableModel extends MsoTableModel<IUnitIf>
          * This ensures that the table is updated every
          * time a assignment is changed
          * ------------------------------------------------- */
-        IDataBinderIf binder = getBinders().iterator().next();
+        IDataBinder binder = getBinders().iterator().next();
         binder.addCoClass(IAssignmentIf.class,null);
 
         // initialize sorting
@@ -229,7 +229,6 @@ public class UnitTableModel extends MsoTableModel<IUnitIf>
     public void setRowSorter()
     {
         m_rowSorter = new UnitTableRowSorter(this);
-        m_rowSorter.setMaxSortKeys(1);
         m_rowSorter.setRowFilter(m_rowFilter);
         m_table.setRowSorter(m_rowSorter);
     }
@@ -579,6 +578,14 @@ public class UnitTableModel extends MsoTableModel<IUnitIf>
         }
     };
 
+    public static final Comparator<IconRenderer.UnitIcon> UNIT_TYPE_AND_NUMBER_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
+    {
+        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
+        {
+            return IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR.compare(o1.getUnit(), o2.getUnit());
+        }
+    };
+
     public static final Comparator<IconRenderer.UnitIcon> UNIT_SPEED_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
     {
         public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
@@ -627,6 +634,16 @@ public class UnitTableModel extends MsoTableModel<IUnitIf>
             super(aModel);
         }
 
+        @Override
+        public void setMaxSortKeys(int count) {
+        	// forward
+            super.setMaxSortKeys(count);
+        }
+
+        public void clearSort() {
+        	super.setSortKeys(null);
+        }
+
         public Comparator<?> getComparator(int column)
         {
             switch (column)
@@ -643,7 +660,7 @@ public class UnitTableModel extends MsoTableModel<IUnitIf>
                         case 5:
                             return UNIT_IDLETIME_COMPARATOR;
                         default:
-                            return IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR;
+                            return UNIT_TYPE_AND_NUMBER_COMPARATOR;
                     }
                 case 1:
                 case 2:
@@ -1025,7 +1042,7 @@ public class UnitTableModel extends MsoTableModel<IUnitIf>
 				        AssignmentStatus newStatus = UnitTableModel.getSelectedAssignmentStatus(dropCol - 1);
 
 						// validate
-				    	Object[] ans = AssignmentTransferUtilities.verifyMove(assignment, unit, newStatus);
+				    	Object[] ans = AssignmentUtilities.verifyMove(assignment, unit, newStatus);
 
 				    	// get action
 				    	int action = Integer.valueOf(ans[0].toString());

@@ -78,10 +78,10 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 				
 				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
 				optionsPanel.setPreferredBodySize(new Dimension(200, 150));
-				optionsPanel.addAttribute(getSnapToAttr());
-				optionsPanel.addAttribute(getConstraintAttr());
-				optionsPanel.addAttribute(getMinStepAttr());
-				optionsPanel.addAttribute(getMaxStepAttr());
+				optionsPanel.addField(getSnapToAttr());
+				optionsPanel.addField(getConstraintAttr());
+				optionsPanel.addField(getMinStepAttr());
+				optionsPanel.addField(getMaxStepAttr());
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

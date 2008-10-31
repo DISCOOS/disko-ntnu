@@ -15,9 +15,9 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
 
     private final MsoReferenceImpl<IHypothesisIf> m_searchAreaHypothesis = new MsoReferenceImpl<IHypothesisIf>(this, "SearchAreaHypothesis", 1, false);
 
-    public SearchAreaImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public SearchAreaImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()

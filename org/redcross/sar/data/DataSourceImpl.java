@@ -4,10 +4,30 @@ import java.util.Collection;
 
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.data.event.ISourceListenerIf;
+import org.redcross.sar.data.event.ISourceListener;
 import org.redcross.sar.data.event.SourceEvent;
 
-public class DataSourceImpl<I> implements IDataSourceIf<I> {
+/**
+ * Abstract class for implementation of the IDataSource interface. IDataSource objects
+ * are the main data stores in DISKO. Examples are the IMsoModelIf and IDs model
+ * implementations. </p>
+ *
+ * When connecting IDataSource objects with views (GUI), us a IDataBinder implementation
+ * to map the subset in the view. This subset of data is also a model and is implemented using
+ * a IDataModel interface. Several generic classes are available for rapid implementation of
+ * views. For example, use a MsoBinder (IDataBinder) to connect the MSO model to a
+ * MsoTableModel (IDataModel). MsoTableModel implements the TableModel, which enables the use
+ * of a JTable. For DISKO look and feel, use DiskoTable which extends JTable. </p>
+ *
+ * This Model-View-Controller design pattern enables rapid integration of DISKO data with
+ * Java Swing components. When other GUI data model are required, extend the AbstractDataModel. </p>
+ *
+ * @author kennetgu
+ *
+ * @param <I> - The Source Event Data type. See {@link ISourceListener}.
+ */
+
+public class DataSourceImpl<I> implements IDataSource<I> {
 
     private final EventListenerList m_sourceListeners = new EventListenerList();
 
@@ -24,13 +44,13 @@ public class DataSourceImpl<I> implements IDataSourceIf<I> {
     	return null;
     }
 
-    public void addSourceListener(ISourceListenerIf<I> listener) {
-		m_sourceListeners.add(ISourceListenerIf.class,listener);
+    public void addSourceListener(ISourceListener<I> listener) {
+		m_sourceListeners.add(ISourceListener.class,listener);
 
 	}
 
-	public void removeSourceListener(ISourceListenerIf<I> listener) {
-		m_sourceListeners.remove(ISourceListenerIf.class,listener);
+	public void removeSourceListener(ISourceListener<I> listener) {
+		m_sourceListeners.remove(ISourceListener.class,listener);
 	}
 
     /* =================================================================================
@@ -40,7 +60,7 @@ public class DataSourceImpl<I> implements IDataSourceIf<I> {
 	@SuppressWarnings("unchecked")
 	public void fireSourceChanged(SourceEvent<I> e) {
 		// notify listeners
-		ISourceListenerIf[] listeners = m_sourceListeners.getListeners(ISourceListenerIf.class);
+		ISourceListener[] listeners = m_sourceListeners.getListeners(ISourceListener.class);
 		// loop over all listeners
 		for(int i=0; i<listeners.length; i++) {
 			listeners[i].onSourceChanged(e);

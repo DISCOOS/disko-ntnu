@@ -30,8 +30,8 @@ import javax.swing.JSplitPane;
 
 import org.redcross.sar.ds.ete.RouteCost;
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.panel.MapStatusPanel;
-import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;

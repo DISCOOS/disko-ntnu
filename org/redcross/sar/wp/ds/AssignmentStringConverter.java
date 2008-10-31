@@ -19,7 +19,8 @@ import org.redcross.sar.util.mso.TimePos;
 
 public class AssignmentStringConverter extends TableStringConverter {
 
-	private static final NumberFormat f11 = new DecimalFormat("#.0");
+	private static final String EMPTY = "";
+	private static final NumberFormat f11 = new DecimalFormat("0.0");
 
 	public String toString(TableModel m, int row, int column) {
 		// not filtered?
@@ -31,37 +32,36 @@ public class AssignmentStringConverter extends TableStringConverter {
 			switch(column) {
 			case AssignmentTableModel.NAME_INDEX:
 				IAssignmentIf assignment = (IAssignmentIf)value;
-				return assignment!=null ? MsoUtils.getAssignmentName(assignment,1) : "";
+				return assignment!=null ? MsoUtils.getAssignmentName(assignment,1) : EMPTY;
 			case AssignmentTableModel.UNIT_INDEX:
 				IUnitIf unit = (IUnitIf)value;
-				return unit!=null ? MsoUtils.getUnitName(unit,false) : "";
+				return unit!=null ? MsoUtils.getUnitName(unit,false) : EMPTY;
 			case AssignmentTableModel.STATUS_INDEX:
-				return value!=null ? DiskoEnumFactory.getText((AssignmentStatus)value) : "";
+				return value!=null ? DiskoEnumFactory.getText((AssignmentStatus)value) : EMPTY;
 			case AssignmentTableModel.ETE_INDEX:
 			case AssignmentTableModel.MTE_INDEX:
 			case AssignmentTableModel.XTE_INDEX:
-				String text = value instanceof Integer ? Utils.getTime(Integer.valueOf(value.toString())) : "00:00:00";
-				return model!=null ? (model.isActive(row) ? Utils.getHtml(Utils.getBold(text)) : text) : text;
+				return value instanceof Integer ? Utils.getTime(Integer.valueOf(value.toString())) : EMPTY;
 			case AssignmentTableModel.ETA_INDEX:
 			case AssignmentTableModel.MTA_INDEX:
 			case AssignmentTableModel.XTA_INDEX:
-				return value instanceof Calendar ? DTG.CalToDTG((Calendar)value) : null;
+				return value instanceof Calendar ? DTG.CalToDTG((Calendar)value) : EMPTY;
 			case AssignmentTableModel.EDE_INDEX:
 			case AssignmentTableModel.EDA_INDEX:
 			case AssignmentTableModel.MDE_INDEX:
 			case AssignmentTableModel.MDA_INDEX:
 			case AssignmentTableModel.XDE_INDEX:
 			case AssignmentTableModel.XDA_INDEX:
-				return value instanceof Double ? Math.round((Double)value) + " m" : "";
+				return value instanceof Double ? Math.round((Double)value) + " m" : EMPTY;
 			case AssignmentTableModel.ESE_INDEX:
 			case AssignmentTableModel.ESA_INDEX:
 			case AssignmentTableModel.MSE_INDEX:
 			case AssignmentTableModel.MSA_INDEX:
 			case AssignmentTableModel.XSE_INDEX:
 			case AssignmentTableModel.XSA_INDEX:
-				return value instanceof Double ? f11.format(((Double)value)* 3.6) + " km/t" : "";
+				return value instanceof Double ? f11.format(((Double)value)* 3.6) + " km/t" : EMPTY;
 			case AssignmentTableModel.ECP_INDEX:
-				String position = "";
+				String position = EMPTY;
 				if(value instanceof TimePos) {
 					try {
 						MapUtil.getMGRSfromPosition(((TimePos)value).getPosition(), 5);
@@ -72,10 +72,10 @@ public class AssignmentStringConverter extends TableStringConverter {
 				}
 				return position;
 			default:
-				return value!=null ? value.toString() : "";
+				return value!=null ? value.toString() : EMPTY;
 			}
 		}
-		return "";
+		return EMPTY;
 
 	}
 

@@ -3,14 +3,14 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.ICalloutListIf;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 /**
  * Provides contents for call-out table in overview mode
  *
  * @author thomasl
  */
-public class CalloutTableModel extends MsoTableModel<ICalloutIf>
+public class CalloutTableModel extends AbstractMsoTableModel<ICalloutIf>
 {
 	private static final long serialVersionUID = 1L;
 

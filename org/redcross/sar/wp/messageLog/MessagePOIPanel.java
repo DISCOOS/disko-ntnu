@@ -22,12 +22,12 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.AbstractField;
 import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.mso.panel.POIPanel;
 import org.redcross.sar.gui.mso.panel.POITypesPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.gui.panel.HeaderPanel;
-import org.redcross.sar.gui.panel.NavBarPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.POITool;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
@@ -43,13 +43,13 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
+import org.redcross.sar.thread.event.WorkEvent;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
- * Dialog used to update message poi lines when editing the message log. 
- * 
+ * Dialog used to update message poi lines when editing the message log.
+ *
  * @author thomasl
  */
 public class MessagePOIPanel extends BasePanel implements IEditorIf
@@ -67,12 +67,12 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	protected TextLineField m_nameAttr;
 
 	protected IDiskoWpMessageLog m_wp;
-	
+
 	protected POITool m_tool;
 	protected POIType[] m_types;
 	protected IMapToolState m_toolState;
 	protected HashMap<String,IUnitIf> m_units;
-	
+
 	/**
 	 * @param wp Message log work process
 	 * @param poiTypes Which POI types are valid in panel
@@ -81,12 +81,12 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	{
 		// forward
 		super(ButtonSize.SMALL);
-		
+
 		// prepare
 		m_wp = wp;
 		m_types = poiTypes;
-		m_tool = wp.getApplication().getNavBar().getPOITool();
-		
+		m_tool = wp.getApplication().getNavMenu().getPOITool();
+
 		// initialize gui
 		initialize();
 	}
@@ -99,16 +99,16 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		setPreferredSize(new Dimension(400,115));
 		setPreferredBodySize(new Dimension(400,115));
-		
+
 		// hide me
 		setVisible(false);
 
 		// hide map
-        MessageLogPanel.hideMap();		
-        
+        MessageLogPanel.hideMap();
+
 		// no scrollbars
 		setNotScrollBars();
-		
+
 		// create layout
 		JPanel inner = new JPanel();
 		inner.setLayout(new BoxLayout(inner,BoxLayout.X_AXIS));
@@ -122,10 +122,10 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		outer.add(inner);
 		setBodyLayout(new BorderLayout(5,5));
 		addBodyChild(outer,BorderLayout.CENTER);
-		addBodyChild(getActionsPanel(),BorderLayout.EAST);		
-		
+		addBodyChild(getActionsPanel(),BorderLayout.EAST);
+
 	}
-	
+
 	private JPanel getActionsPanel() {
 		if(m_actionsPanel==null) {
 			// create panel
@@ -139,9 +139,9 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			m_actionsPanel.add(Box.createVerticalGlue());
 		}
 		return m_actionsPanel;
-	
+
 	}
-	
+
 	private JButton getFinishButton() {
 		if(m_finishButton==null) {
 			// create button
@@ -149,16 +149,16 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 
 		}
 		return m_finishButton;
-	
+
 	}
-	
+
 	private JButton getCenterAtButton() {
 		if(m_centerAtButton==null) {
 			// create button
 			m_centerAtButton = (JButton)getPOIPanel().getButton("centerat");
 		}
 		return m_centerAtButton;
-	
+
 	}
 
 	private JButton getCancelButton() {
@@ -167,33 +167,33 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			m_cancelButton = (JButton)getPOIPanel().getButton("cancel");
 		}
 		return m_cancelButton;
-	
+
 	}
-	
+
 	/**
-	 * This method initializes POIPanel	
-	 * 	
+	 * This method initializes POIPanel
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private POIPanel getPOIPanel() {
 		if (m_poiPanel == null) {
 
 			// create a poi panel and register it with a tool
-			m_poiPanel = (POIPanel)m_tool.addToolPanel();		
+			m_poiPanel = (POIPanel)m_tool.addToolPanel();
 
 			// forward work to this
-			m_poiPanel.addDiskoWorkListener(this);			
-			
+			m_poiPanel.addWorkListener(this);
+
 
 		}
 		return m_poiPanel;
 	}
-	
+
 	@Override
-	public void onWorkPerformed(DiskoWorkEvent e) {
-		
+	public void onWorkPerformed(WorkEvent e) {
+
 		super.onWorkPerformed(e);
-		
+
 		if(e.isCancel()) {
 			// forward
 			hideEditor();
@@ -208,22 +208,22 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 				// forward
 				hideEditor();
 		        // show message line list
-				MessageLogBottomPanel.showListPanel();										
+				MessageLogBottomPanel.showListPanel();
 			}
 		}
 
 	}
-	
+
 	/**
-	 * This method initializes GotoPanel	
-	 * 	
+	 * This method initializes GotoPanel
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private GotoPanel getGotoPanel() {
 		if (m_gotoPanel == null) {
 			// get from position panel
 			m_gotoPanel = getPOIPanel().getGotoPanel();
-			// get hide goto button			
+			// get hide goto button
 			m_gotoPanel.setGotoButtonVisible(false);
 			// turn off vertical scrollbar
 			m_gotoPanel.setNotScrollBars();
@@ -232,25 +232,25 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		}
 		return m_gotoPanel;
 	}
-	
+
 	/**
-	 * This method initializes DTG attribute	
-	 * 	
+	 * This method initializes DTG attribute
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private TextLineField getNameAttr() {
 		if (m_nameAttr == null) {
 			// get from position panel
-			m_nameAttr = (TextLineField)getPOIPanel().getOptionsPanel().getAttribute("Name");
+			m_nameAttr = (TextLineField)getPOIPanel().getOptionsPanel().getField("Name");
 			m_nameAttr.setCaptionText("Navn i kart");
-			m_nameAttr.setFixedCaptionWidth(80);			
+			m_nameAttr.setFixedCaptionWidth(80);
 		}
 		return m_nameAttr;
 	}
-	
+
 	/**
-	 * This method initializes OptionsPanel	
-	 * 	
+	 * This method initializes OptionsPanel
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private HeaderPanel getOptionsPanel() {
@@ -266,14 +266,14 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			m_optionsPanel.addItem(attr);
 			// set preferred size of body component
 			Utils.setFixedHeight(m_optionsPanel, 35);
-			
+
 		}
 		return m_optionsPanel;
 	}
-	
+
 	/**
-	 * This method initializes TypesPanel	
-	 * 	
+	 * This method initializes TypesPanel
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private POITypesPanel getTypesPanel() {
@@ -282,11 +282,11 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			m_typesPanel = getPOIPanel().getPOITypesPanel();
 			// turn off vertical scrollbar
 			m_typesPanel.setScrollBarPolicies(
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// set preferred size of body component
 			m_typesPanel.setPreferredSize(new Dimension(100,115));
-			
+
 		}
 		return m_typesPanel;
 	}
@@ -295,12 +295,12 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	public boolean cancel() {
 		return getPOIPanel().cancel();
 	}
-	
+
 	@Override
 	public boolean finish() {
 		return getPOIPanel().finish();
 	}
-	
+
 	/**
 	 * Apply changes to message line
 	 */
@@ -309,83 +309,83 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 
 		/* ======================================================================
 		 * Apply changes to a new or existing message position line
-		 * 
-		 * IMPORTANT: Position and time stamp is updated by 
-		 * PositionPanel().finish(). Because PositionTool() is not in work 
+		 *
+		 * IMPORTANT: Position and time stamp is updated by
+		 * PositionPanel().finish(). Because PositionTool() is not in work
 		 * pool mode, the result is available at the invocation of this method.
 		 * ====================================================================== */
-		
+
 		// consume?
 		if(!isChangeable()) return false;
-		
+
 		// consume
 		setChangeable(false);
-		
+
 		// suspend update events
 		m_wp.getMsoModel().suspendClientUpdate();
-		
+
 		// get panel
 		POIPanel panel = getPOIPanel();
-		
+
 		// prevent changes in panel
 		panel.setChangeable(false);
-		
+
 		// initialize status flag
 		boolean bFlag = false;
-		
+
 		// get added or updated poi
 		IPOIIf poi = m_tool.getPOI();
-		
+
 		if(poi!=null && poi.getPosition()!=null) {
-		
+
 			// create message and message line
-			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);	
-			IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POI, true);							
-			
+			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
+			IMessageLineIf messageLine = message.findMessageLine(MessageLineType.POI, true);
+
 			// update line
-			messageLine.setLinePOI(poi);													
-			
+			messageLine.setLinePOI(poi);
+
 			// get flag
-			boolean isIntelligence = 
-				  (POIType.FINDING.equals(poi.getType()) 
+			boolean isIntelligence =
+				  (POIType.FINDING.equals(poi.getType())
 				|| POIType.SILENT_WITNESS.equals(poi.getType()));
-			
+
 			// update task?
 			if(poi!=null && isIntelligence)
 				// forward
 				schedule(message,poi,TaskType.INTELLIGENCE,TaskSubType.FINDING,TaskPriority.HIGH);
-			
+
 			// is dirty?
 			MessageLogBottomPanel.setIsDirty();
-			
+
 			// changed
 			bFlag = true;
-			
+
 		}
-		
+
 		// enable changes in panel
 		panel.setChangeable(true);
-		
+
 		// resume update
-		m_wp.getMsoModel().resumeClientUpdate();
-		
+		m_wp.getMsoModel().resumeClientUpdate(true);
+
 		// resume changes
 		setChangeable(true);
-		
+
 		// finished
 		return bFlag;
 	}
 
 	private boolean schedule(IMessageIf message, IPOIIf poi, TaskType type, TaskSubType subType, TaskPriority priority) {
-		
+
 		// initialize
 		boolean isDirty = false;
-		
+
 		// Need to add/update task
 		ITaskIf task = null;
-		
+
 		String match = m_wp.getBundleText("TaskSubType."+subType.toString()+".text");
-		
+
 		// Check for existing tasks
 		for(ITaskIf messageTask : message.getMessageTasksItems())
 		{
@@ -400,7 +400,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 				}
 			}
 		}
-		
+
 		// If message does not have a finding task, create new
 		if(task == null)
 		{
@@ -417,23 +417,23 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			message.addMessageTask(task);
 			// set flag
 			isDirty = true;
-			
+
 		}
 
 		// get task text
 		String text = String.format(match, DiskoEnumFactory.getText(poi.getType()));
-		
+
 		// any change?
 		isDirty = isDirty || (text!=null && !text.equals(task.getTaskText()));
-		
+
 		// Update task text
 		task.setTaskText(text);
-		
+
 		// return flag
 		return isDirty;
-		
+
 	}
-	
+
 	public void reset()
 	{
 		getPOIPanel().reset();
@@ -442,20 +442,20 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	public void showEditor()
 	{
 		try {
-			
+
 			// get current tool state
 			m_toolState = m_tool.save();
-			
+
 			// show poi in map
 			IPOIIf poi = centerAtPOI(true);
 			// show tool
 			setToolVisible(true);
-			
+
 			// prepare tool
-			m_tool.setShowDialog(false);				// do not show tool dialog 
-			m_tool.setWorkPoolMode(false);				// ensures that mso model is 
+			m_tool.setShowDialog(false);				// do not show tool dialog
+			m_tool.setWorkPoolMode(false);				// ensures that mso model is
 														// updated on this thread (in sync)
-			m_tool.setToolPanel(getPOIPanel());			// ensures that this position panel 
+			m_tool.setToolPanel(getPOIPanel());			// ensures that this position panel
 														// is used to apply change to mso model
 			m_tool.setShowDrawFrame(false);				// do not show draw frame
 			// get draw adapter
@@ -486,11 +486,11 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
     }
 
 	private void setToolVisible(boolean isVisible) {
-		NavBarPanel bar = m_wp.getApplication().getNavBar();
+		NavMenu bar = m_wp.getApplication().getNavMenu();
 		List<Enum<?>> types = Utils.getListOf(MapToolType.POI_TOOL);
-		bar.setVisibleButtons(types, isVisible, true);		
+		bar.setVisibleButtons(types, isVisible, true);
 	}
-	
+
 	private void update(IMessageIf message)
 	{
 		// create or get current fining message line
@@ -522,7 +522,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	{
 		// consume?
 		if(!isChangeable()) return;
-		
+
 		// Update dialog
 		update(message);
 	}
@@ -572,17 +572,17 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	{
 		// initialize
 		IPOIIf poi = null;
-		
+
 		// Get message, do not create if not exist
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
-		
+
 		// has message?
 		if(message != null)
 		{
-			
+
 			// get poi message line, do not create if not exist
 			IMessageLineIf line = message.findMessageLine(MessageLineType.POI, false);
-			
+
 			// has line
 			if(line != null)
 			{
@@ -597,8 +597,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
                 	IDiskoMap map = m_wp.getMap();
                 	map.suspendNotify();
 					map.setSelected(poi, isSelected);
-					if(isSelected) 
-						map.centerAtMsoObject(poi);
+					if(isSelected) map.centerAtMsoObject(poi);
 					map.refreshMsoLayers();
                 	map.resumeNotify();
 				}
@@ -614,5 +613,5 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		}
 		// return current poi
 		return poi;
-	}	
+	}
 }

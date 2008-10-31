@@ -23,6 +23,7 @@ import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
@@ -47,7 +48,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private final static String UNIT_CHANGE = "UnitChange";
 
     private IDiskoWpLogistics m_wpModule;
-    
+
     private JPanel m_infoPanel;
     private UnitInfoPanel m_unitInfoPanel;
     private AssignmentInfoPanel m_assignmentInfoPanel;
@@ -66,7 +67,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private static final long m_timeInterval = 60 * 1000; // once every minute.
 
     private long m_timeCounter;
-    
+
     private DiskoReportManager m_report = null;
 
     public InfoPanelHandler(JPanel anInfoPanel, IDiskoWpLogistics aWpModule, AssignmentLabelActionHandler anActionHandler)
@@ -92,39 +93,44 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
             IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT,
             IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL);
 
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return myInterests.contains(aMsoObject.getMsoClassCode());
-    }
+	public EnumSet<MsoClassCode> getInterests() {
+		return myInterests;
+	}
 
-    public void handleMsoUpdateEvent(MsoEvent.Update e)
-    {
-        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
-        {
-            if (e.getSource() == m_displayedAssignment)
-            {
-                if (e.isClearAllEvent() || e.isDeleteObjectEvent())
-                {
-                    m_displayedAssignment = null;
-                }
-                renderAssignment();
-            }
-        } else if (ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME.equals(m_displayedPanelName))
-        {
-            renderAssignmentList();
-        } else if (UNIT_PANEL_NAME.equals(m_displayedPanelName))
-        {
-            if (e.getSource() == m_displayedUnit)
-            {
-                if (e.isClearAllEvent() || e.isDeleteObjectEvent())
-                {
-                    m_displayedUnit = null;
-                }
-                renderUnit();
-            }
-        }
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		// loop over all events
+		for(MsoEvent.Update e : events.getEvents(myInterests))
+		{
+			// consume loopback updates
+			if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+			{
+		        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
+		        {
+		            if (e.getSource() == m_displayedAssignment)
+		            {
+		                if (e.isClearAllEvent() || e.isDeleteObjectEvent())
+		                {
+		                    m_displayedAssignment = null;
+		                }
+		                renderAssignment();
+		            }
+		        } else if (ASSIGNMENT_SHOW_ASSIGNMENT_LIST_PANEL_NAME.equals(m_displayedPanelName))
+		        {
+		            renderAssignmentList();
+		        } else if (UNIT_PANEL_NAME.equals(m_displayedPanelName))
+		        {
+		            if (e.getSource() == m_displayedUnit)
+		            {
+		                if (e.isClearAllEvent() || e.isDeleteObjectEvent())
+		                {
+		                    m_displayedUnit = null;
+		                }
+		                renderUnit();
+		            }
+		        }
+			}
+		}
     }
 
 
@@ -158,7 +164,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 	        {
 	            return;
 	        }
-	
+
 	        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
 	        {
 	            renderAssignment();
@@ -245,7 +251,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     }
 
     void renderUnit()
-    {    
+    {
     	m_unitInfoPanel.setUnit(m_displayedUnit);
     }
 

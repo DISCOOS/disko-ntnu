@@ -12,7 +12,7 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.feature.MsoFeatureClass;
+import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -21,7 +21,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.WorkPool;
 
 import java.awt.*;
 import java.io.IOException;
@@ -141,7 +141,7 @@ public class SplitTool extends AbstractMsoTool {
 	private boolean doSplitWork() {
 
 		try {
-			DiskoWorkPool.getInstance().schedule(new SplitWork(map,p));
+			WorkPool.getInstance().schedule(new SplitWork(map,p));
 			return true;
 		}
 		catch(Exception e) {
@@ -169,7 +169,7 @@ public class SplitTool extends AbstractMsoTool {
 				// get maximum deviation from point
 				double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
 				IMsoFeatureLayer editLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
-				MsoFeatureClass featureClass = (MsoFeatureClass)editLayer.getFeatureClass();
+				MsoFeatureModel featureClass = (MsoFeatureModel)editLayer.getFeatureClass();
 				IFeatureCursor c =  MapUtil.search(featureClass, p,max);
 				IFeature feature = c.nextFeature();
 				if (feature != null && feature instanceof IMsoFeature) {

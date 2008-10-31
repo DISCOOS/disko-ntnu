@@ -1,12 +1,13 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
 
 public class DataSourceImpl extends AbstractMsoObject implements IDataSourceIf
 {
-    public DataSourceImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public DataSourceImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()

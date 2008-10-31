@@ -8,8 +8,8 @@ import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.gui.panel.MapFilterPanel;
 import org.redcross.sar.gui.panel.MapStatusPanel;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -187,7 +187,7 @@ public class MapPanel extends AbstractPanel {
 	}
 
 	@Override
-	public void addDiskoWorkListener(IDiskoWorkListener listener) {
+	public void addWorkListener(IWorkListener listener) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -223,7 +223,7 @@ public class MapPanel extends AbstractPanel {
 	}
 
 	@Override
-	protected void fireOnWorkPerformed(DiskoWorkEvent e) {
+	protected void fireOnWorkPerformed(WorkEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -241,7 +241,7 @@ public class MapPanel extends AbstractPanel {
 	}
 
 	@Override
-	public void removeDiskoWorkListener(IDiskoWorkListener listener) {
+	public void removeWorkListener(IWorkListener listener) {
 		// TODO Auto-generated method stub
 		
 	}

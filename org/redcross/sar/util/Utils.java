@@ -9,20 +9,15 @@ import java.awt.Window;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.geom.Point2D;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Reader;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -35,7 +30,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
-import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.app.IDiskoApplication;
@@ -45,7 +39,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.DiskoProgressMonitor;
+import org.redcross.sar.thread.ProgressMonitor;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.TimePos;
 
@@ -57,40 +51,9 @@ import org.redcross.sar.util.mso.TimePos;
 public class Utils {
 
 	public final static String DATA_STRING_FORMAT = "yyyy.MM.dd HH:mm:ss Z";
-	
+
 	private static MessageDialog messageDialog = null;
-	private static ProgressMonitor progressMonitor = null;
 	private static IDiskoApplication diskoApp = null;
-	
-	public static ProgressMonitor startProgress(Frame owner, 
-			Object message, String note, int min, int max,
-			boolean intermediate) {
-		// is finished with last?
-		if(progressMonitor!=null) {
-			// create new monitor			
-			progressMonitor = new ProgressMonitor(owner,message,note,min,max);
-		}
-		return progressMonitor;
-	}
-
-	public static boolean notifyProgress(int progress, String msg, int min, int max) {
-		if(progressMonitor!=null) {
-			if(progressMonitor.isCanceled()) {
-				progressMonitor.close();
-				return false;
-			} 
-			else {				
-				progressMonitor.setNote(msg);
-				progressMonitor.setProgress(progress);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static void stopProgress(int value, int min, int max) {
-
-	}
 
 	public static void setApp(IDiskoApplication app) {
 		diskoApp = app;
@@ -110,45 +73,45 @@ public class Utils {
 		// reset dialog
 		messageDialog = null;
 		// finished
-		return ans;		
-		
+		return ans;
+
 	}
-	
+
 	public static void showMessage(String msg) {
 		showMessage(DiskoStringFactory.getText("MESSAGE_HEADER_DEFAULT"),msg);
 	}
 
 	public static void showMessage(String title, String msg) {
-		showMessage(title,msg,MessageDialog.INFORMATION_MESSAGE);		
+		showMessage(title,msg,MessageDialog.INFORMATION_MESSAGE);
 	}
-	
+
 	public static void showWarning(String msg) {
 		showWarning(DiskoStringFactory.getText("WARNING_HEADER_DEFAULT"),msg);
 	}
 
 	public static void showWarning(String title, String msg) {
-		showMessage(title,msg,MessageDialog.WARNING_MESSAGE);		
+		showMessage(title,msg,MessageDialog.WARNING_MESSAGE);
 	}
-	
+
 	public static void showError(String msg) {
 		showError(DiskoStringFactory.getText("ERROR_HEADER_DEFAULT"),msg);
 	}
 
 	public static void showError(String title, String msg) {
-		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);		
+		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);
 	}
-	
+
 	public static void showError(String title, String msg, Exception e) {
-		
+
 		try {
-			
+
 			// build exception string
 			File file = File.createTempFile("error", "txt");
 			PrintStream out = new PrintStream(file);
 			e.printStackTrace(out);
 			out.close();
 			FileReader in = new FileReader(file);
-			BufferedReader read = new BufferedReader(in);		
+			BufferedReader read = new BufferedReader(in);
 			String line = "";
 			String newLine = "<br>";
 			msg = msg.concat("</p>");
@@ -161,25 +124,25 @@ public class Utils {
 		} catch (Exception ex) {
 			// notify
 			msg.concat("StackTrace not available");
-		}		
-		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);		
+		}
+		showMessage(title,msg,MessageDialog.ERROR_MESSAGE);
 	}
-	
+
 	public static boolean showMessage(final String title, final String msg, final int options)
-	{		
+	{
 		// consume?
 		if(isMessageDialogShown()) return false;
-		
+
 		if(SwingUtilities.isEventDispatchThread()) {
-			
-			DiskoProgressMonitor monitor = null;
-			
+
+			ProgressMonitor monitor = null;
+
 			// get monitor
-			try { 
-				monitor = DiskoProgressMonitor.getInstance(); 
+			try {
+				monitor = ProgressMonitor.getInstance();
 			}
 			catch(Exception e) { e.printStackTrace(); }
-			
+
 			// create message dialog
 			messageDialog = new MessageDialog(getApp().getFrame());
 			messageDialog.setLocationRelativeTo(getApp().getFrame(), DefaultDialog.POS_CENTER, false,true);
@@ -189,26 +152,26 @@ public class Utils {
             		// if
             		messageDialog.requestFocusInWindow();
                 }
-            });    		
-			
+            });
+
 			// set inhibit flag
-			boolean isInhibit = monitor.setInhibit(false);						
-			
+			boolean isInhibit = monitor.setInhibit(false);
+
 			// force progress dialog to hide
 			monitor.hide();
-			
+
 			// show dialog
 			messageDialog.showMessage(title, msg, options);
-			
+
 			// show progress dialog again
-			monitor.showAgain(); 
-			
+			monitor.showAgain();
+
 			// resume mode
 			monitor.setInhibit(isInhibit);
-			
+
 			// reset message dialog
 			messageDialog = null;
-			
+
 		}
 		else {
 			Runnable r = new Runnable(){
@@ -218,18 +181,18 @@ public class Utils {
 			};
 			SwingUtilities.invokeLater(r);
 		}
-		// success 
+		// success
 		return true;
 	}
-	
+
 	public static boolean isMessageDialogShown() {
 		return messageDialog!=null;
 	}
-	
+
 	public static boolean isMessageDialog(Component c) {
 		return (c!=null) && (messageDialog==c || c instanceof JOptionPane);
 	}
-	
+
 	public static String getPackageName(Class<?> c) {
 		String fullyQualifiedName = c.getName();
 		int lastDot = fullyQualifiedName.lastIndexOf ('.');
@@ -238,34 +201,36 @@ public class Utils {
 		lastDot = packageName.lastIndexOf ('.');
 		if (lastDot==-1){ return null; }
 		return packageName.substring (lastDot+1,packageName.length()).toUpperCase();
-	}	
-	
+	}
+
 	public static void setFixedHeight(Component c, int h) {
 		setFixedHeight(c,h,0);
 	}
-	
+
 	public static void setFixedHeight(Component c, int h, int adjust) {
 		// limit height, allow any width
 		c.setMinimumSize(new Dimension(0,h+adjust));
-		c.setPreferredSize(new Dimension(h+adjust,h+adjust));
+		Dimension d = c.getPreferredSize();
+		c.setPreferredSize(new Dimension(d!=null ? d.width : c.getWidth(),h+adjust));
 		c.setMaximumSize(new Dimension(Integer.MAX_VALUE,h+adjust));
 	}
-	
+
 	public static void setFixedWidth(Component c, int w) {
 		setFixedWidth(c,w,0);
 	}
-	
+
 	public static void setFixedWidth(Component c, int w, int adjust) {
 		// limit height, allow any width
 		c.setMinimumSize(new Dimension(w+adjust, 0));
-		c.setPreferredSize(new Dimension(w+adjust,w+adjust));
+		Dimension d = c.getPreferredSize();
+		c.setPreferredSize(new Dimension(w+adjust,d!=null ? d.height : c.getHeight()));
 		c.setMaximumSize(new Dimension(w+adjust, Integer.MAX_VALUE));
 	}
-	
+
 	public static void setFixedSize(Component c, int w, int h) {
 		setFixedSize(c,w,h,0,0);
 	}
-	
+
 	public static void setFixedSize(Component c, int w, int h, int dw, int dh) {
 		Dimension d = new Dimension(w+dw,h+dh);
 		c.setSize(d);
@@ -273,26 +238,26 @@ public class Utils {
 		c.setPreferredSize((Dimension)d.clone());
 		c.setMaximumSize((Dimension)d.clone());
 	}
-	
+
 	public static void setAnySize(Component c, int w, int h) {
 		setAnySize(c,w,h,0,0);
 	}
-	
+
 	public static void setAnySize(Component c, int w, int h, int dw, int dh) {
 		Dimension d = new Dimension(w+dw,h+dh);
 		c.setSize(d);
 		c.setPreferredSize((Dimension)d.clone());
 		c.setMinimumSize(new Dimension(0,0));
-		c.setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));		
+		c.setMaximumSize(new Dimension(Integer.MAX_VALUE,Integer.MAX_VALUE));
 	}
-	
-	
+
+
 	public static List<Enum<?>> getListOf(Enum<?> e) {
 		List<Enum<?>> list = new ArrayList<Enum<?>>();
 		list.add(e);
 		return list;
 	}
-	
+
 	public static List<Enum<?>> getListOfAll(Class e) {
 		List<Enum<?>> list = new ArrayList<Enum<?>>();
 		Iterator<Enum<?>> it = EnumSet.allOf(e).iterator();
@@ -301,7 +266,7 @@ public class Utils {
 		}
 		return list;
 	}
-	
+
 	public static List<Enum<?>> getListNoneOf(Class e) {
 		List<Enum<?>> list = new ArrayList<Enum<?>>();
 		Iterator<Enum<?>> it = EnumSet.noneOf(e).iterator();
@@ -310,7 +275,7 @@ public class Utils {
 		}
 		return list;
 	}
-	
+
 	public static boolean inApp(Component c) {
 		Object[] windows = Window.getWindows();
 		for(int i=0;i<windows.length;i++) {
@@ -321,12 +286,12 @@ public class Utils {
 		}
 		return false;
 	}
-	
+
     public static boolean isNumeric(String str)
     {
     	return isNumeric(str,Number.class);
     }
-    
+
     public static Class<? extends Number> getNumericClass(Object value)
     {
     	if(value instanceof Number) {
@@ -346,12 +311,12 @@ public class Utils {
         		return Byte.class;
         	else if(isNumeric(str,Short.class))
         		return Short.class;
-        	
+
     	}
     	return null;
     }
-    
-    
+
+
     public static boolean isNumeric(String str, Class<? extends Number> c)
     {
         try
@@ -370,9 +335,9 @@ public class Utils {
             		return true;
             	else if(isNumeric(str,Short.class))
             		return true;
-            	
+
                 return false;
-                
+
             }
             else if (c.equals(Integer.class))
             {
@@ -406,7 +371,7 @@ public class Utils {
         {
             return false;
         }
- 
+
         return true;
     }
 
@@ -414,7 +379,7 @@ public class Utils {
     {
     	return parseNumeric(str,Number.class);
     }
-    
+
     public static Object parseNumeric(String str, Class<? extends Number> c)
     {
         try
@@ -433,7 +398,7 @@ public class Utils {
             		return parseNumeric(str,Byte.class);
             	else if(isNumeric(str,Short.class))
             		return parseNumeric(str,Short.class);
-            	
+
             }
             else if (c.equals(Byte.class))
             {
@@ -464,43 +429,43 @@ public class Utils {
         {
             return null;
         }
- 
+
         return null;
     }
-    
+
 	public static String getTime(int seconds) {
 		float sign = Math.signum(seconds);
 		seconds = Math.abs(seconds);
 		int hours = Math.abs(seconds) / 3600;
 		seconds = seconds % 3600;
 		int minutes = seconds / 60;
-		seconds = seconds % 60;		
-		DecimalFormat formatter = new DecimalFormat("00");		
-		return formatter.format(sign*hours) 
-				+ ":" + formatter.format(minutes) 
-				+ ":" + formatter.format(seconds); 
-	}    
-	
+		seconds = seconds % 60;
+		DecimalFormat formatter = new DecimalFormat("00");
+		return formatter.format(sign*hours)
+				+ ":" + formatter.format(minutes)
+				+ ":" + formatter.format(seconds);
+	}
+
 	public static String toString(Object value) {
 		if(value instanceof Integer) {
-			return String.valueOf(value); 
+			return String.valueOf(value);
 		}
 		else if(value instanceof Double) {
-			return String.valueOf(value);			
+			return String.valueOf(value);
 		}
 		else if(value instanceof Calendar) {
 			DateFormat formatter = new SimpleDateFormat(DATA_STRING_FORMAT);
-			return formatter.format(((Calendar)value).getTime()); 			
+			return formatter.format(((Calendar)value).getTime());
 		}
 		else if(value instanceof TimePos) {
 			return ((TimePos)value).toString();
 		}
 		else if(value instanceof GeoPos) {
-			return ((TimePos)value).toString();			
+			return ((TimePos)value).toString();
 		}
 		return value!=null ? value.toString() : "";
-	}    
-	
+	}
+
 	public static Object valueOf(String value, Class<?> c) {
 		if(value!=null) {
 			try {
@@ -512,7 +477,7 @@ public class Utils {
 				}
 				else if(c.equals(Calendar.class)) {
 					DateFormat formatter = new SimpleDateFormat(DATA_STRING_FORMAT);
-					return formatter.parse(value); 			
+					return formatter.parse(value);
 				}
 				else if(c.equals(TimePos.class)) {
 					// parse string
@@ -534,20 +499,20 @@ public class Utils {
 							Double.valueOf(split[1]));
 					return new GeoPos(p);
 				}
-			} 
-			catch (Exception e) { 
+			}
+			catch (Exception e) {
 				// Consume
 				return null;
-			} 
+			}
 		}
 		return value!=null ? value.toString() : "";
-	}    
-	
+	}
+
 	public static String trimHtml(String text) {
 		if(text!=null) {
 			if(text.length()>5) {
 				if(text.substring(0, 6).equalsIgnoreCase("<html>"))
-					text = text.substring(6, text.length());			
+					text = text.substring(6, text.length());
 			}
 			if(text.length()>6) {
 				if(text.substring(text.length()-7, text.length()).equalsIgnoreCase("</html>"))
@@ -556,25 +521,25 @@ public class Utils {
 		}
 		return text;
 	}
-	
+
 	public static String stripHtml(String text) {
 		if(text!=null) {
-			String sep = System.getProperty("line.separator"); 
+			String sep = System.getProperty("line.separator");
 			text = text.replace("</p>", sep+sep);
 			text = text.replace("<br>", sep);
-			text = text.replaceAll("\\<.*?>",""); 			
+			text = text.replaceAll("\\<.*?>","");
 		}
 		return text;
 	}
-	
+
 	public static String getBold(String text) {
     	return "<b>"+text+"</b>";
     }
-     
+
 	public static String getHtml(String text) {
     	return "<html>"+text+"</html>";
     }
-	
+
 	public static int getStringWidth(Graphics g, Object value) {
 		String text;
 		if(value instanceof Enum<?>) {
@@ -585,10 +550,10 @@ public class Utils {
 		}
 		else {
 			text = (value!=null ? value.toString() : "");
-		}		
+		}
 		return g.getFontMetrics().stringWidth(Utils.stripHtml(text));
 	}
-	
+
 	public static int getStringWidth(Graphics g, Font font, Object value) {
 		String text;
 		Font oldFont = null;
@@ -604,49 +569,49 @@ public class Utils {
 		}
 		else {
 			text = (value!=null ? value.toString() : "");
-		}		
+		}
 		int w = g.getFontMetrics().stringWidth(Utils.stripHtml(text));
 		if(font!=null) g.setFont(oldFont);
 		return w;
 	}
-	
+
 	public static String[][] importText(String file, String token) {
-		
+
 		// initialize
 		int row = 0;
 		int col = 0;
 		String line = null;
-		String[][] matrix = null;		
-		
+		String[][] matrix = null;
+
 		// get file
 		File f = new File(file);
-		
+
 		// exists?
 		if(f.exists()) {
-		 
+
 			try {
-				
+
 				// get readers
 				FileReader reader = new FileReader(f);
-				LineNumberReader counter = new LineNumberReader(reader);  
+				LineNumberReader counter = new LineNumberReader(reader);
 				BufferedReader buffered = new BufferedReader(reader);
- 				
+
 				// allocate memory
 				counter.skip(f.length());
-				matrix = new String [counter.getLineNumber()][];				
-				
+				matrix = new String [counter.getLineNumber()][];
+
 				//read each line of text file
 				while((line = buffered.readLine()) != null && row < 24)
-				{	
+				{
 					// get tokenizer for this line
 					StringTokenizer st = new StringTokenizer(line,token);
-					
+
 					// allocate memory
-					matrix[row] = new String[st.countTokens()];					
-					
+					matrix[row] = new String[st.countTokens()];
+
 					// import text
 					while (st.hasMoreTokens())
-					{						
+					{
 						//get next token and store it in the array
 						matrix[row][col] = st.nextToken();
 						col++;
@@ -654,12 +619,12 @@ public class Utils {
 					col = 0;
 					row++;
 				}
-				
+
 				// close readers
 				counter.close();
 				buffered.close();
 				reader.close();
-				
+
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -673,21 +638,21 @@ public class Utils {
 	}
 
 	public static void exportText(String[][] matrix, String file, String token) {
-		
+
 		// get file
 		File f = new File(file);
-		
+
 		try {
-			
+
 			// create file?
 			if(!f.exists()) {
 				f.createNewFile();
 			}
-			 
+
 			// get readers
 			FileWriter writer = new FileWriter(f);
 			BufferedWriter buffered = new BufferedWriter(writer);
-			
+
 			//read each line of text file
 			for(int i=0;i<matrix.length;i++) {
 				// get row
@@ -700,11 +665,11 @@ public class Utils {
 				// write new line
 				buffered.newLine();
 			}
-			
+
 			// close writers
 			buffered.close();
 			writer.close();
-			
+
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -714,7 +679,7 @@ public class Utils {
 		}
 
 	}
-	
+
 	public static String getExtension(File f) {
         String ext = null;
         String s = f.getName();
@@ -724,5 +689,5 @@ public class Utils {
             ext = s.substring(i+1).toLowerCase();
         }
         return ext;
-    }	
+    }
 }

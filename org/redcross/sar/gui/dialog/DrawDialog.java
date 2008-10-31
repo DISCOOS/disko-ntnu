@@ -14,6 +14,9 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
@@ -31,7 +34,9 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.Utils;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -47,40 +52,40 @@ import javax.swing.JSplitPane;
 public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, IMsoToolCollection, ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	
-	private DefaultPanel m_contentPanel = null;
-	private JPanel m_buttonsPanel = null;
-	private JPanel m_propertyPanels = null;
-	private ButtonGroup m_buttonGroup = null;	
-	private JSplitPane m_splitPane = null;
-	private IHostDiskoTool m_hostTool = null;
-	
-	private IDiskoMap m_map = null;
-	
-	private IDrawTool m_selectedTool = null;
-	
-	private HashMap<MapToolType, IDrawTool> m_tools = null;
-	private HashMap<MapToolType, IToolPanel> m_panels = null;
-	private HashMap<MapToolType, JToggleButton> m_buttons = null;
+
+	private DefaultPanel m_contentPanel;
+	private JPanel m_buttonsPanel;
+	private JPanel m_propertyPanels;
+	private ButtonGroup m_buttonGroup;
+	private JSplitPane m_splitPane;
+	private IHostDiskoTool m_hostTool;
+
+	private IDiskoMap m_map;
+
+	private IDrawTool m_selectedTool;
+
+	private HashMap<MapToolType, IDrawTool> m_tools;
+	private HashMap<MapToolType, IToolPanel> m_panels;
+	private HashMap<MapToolType, JToggleButton> m_buttons;
 
 	/**
-	 * Constructor 
-	 * 
+	 * Constructor
+	 *
 	 * @param owner
 	 */
 	public DrawDialog(Frame owner) {
-		
+
 		// forward
 		super(owner);
-		
+
 		// prepare
 		m_tools = new HashMap<MapToolType, IDrawTool>();
 		m_panels = new HashMap<MapToolType, IToolPanel>();
 		m_buttons = new HashMap<MapToolType, JToggleButton>();
-		
+
 		// initialize GUI
 		initialize();
-		
+
 	}
 
 	private void initialize() {
@@ -90,66 +95,74 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			// prepare dialog
 	        this.setContentPane(getContentPanel());
 			this.setPreferredSize(new Dimension(300,500));
-	        this.pack();
+			// forward
+			setup();
+			// apply
+			this.pack();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * This method initializes m_contentPanel	
-	 * 	
-	 * @return {@link DefaultPanel}	
+	 * This method initializes m_contentPanel
+	 *
+	 * @return {@link DefaultPanel}
 	 */
 	private DefaultPanel getContentPanel() {
 		if (m_contentPanel == null) {
-			m_contentPanel = new DefaultPanel("Tegneverktøy",false,false,ButtonSize.SMALL);
+			m_contentPanel = new DefaultPanel("Tegneverktøy",false,true,ButtonSize.SMALL);
 			m_contentPanel.setBodyComponent(getSplitPane());
+			m_contentPanel.setNotScrollBars();
+			m_contentPanel.setFitBodyOnResize(true);
+			m_contentPanel.setRequestHideOnCancel(true);
 		}
 		return m_contentPanel;
 	}
 
 	/**
-	 * This method initializes m_buttonsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes m_buttonsPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getButtonsPanel() {
 		if (m_buttonsPanel == null) {
 			FlowLayout fl = new FlowLayout();
 			fl.setAlignment(FlowLayout.LEFT);
-			fl.setVgap(0);
-			fl.setHgap(0);
+			fl.setVgap(1);
+			fl.setHgap(1);
 			m_buttonsPanel = new JPanel();
-			m_buttonsPanel.setBorder(null);
+			m_buttonsPanel.setBorder(
+					BorderFactory.createCompoundBorder(
+					BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(5, 5, 5, 5), UIFactory.createBorder()),
+					BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 			m_buttonsPanel.setLayout(fl);
-			Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
-			m_buttonsPanel.setPreferredSize(new Dimension(300, dim.height+10));
 		}
 		return m_buttonsPanel;
 	}
 
 	/**
-	 * This method initializes m_propertyPanels	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes m_propertyPanels
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getPropertyPanels() {
 		if (m_propertyPanels == null) {
 			m_propertyPanels = new JPanel();
-			m_propertyPanels.setBorder(null);
+			m_propertyPanels.setBorder(BorderFactory.createEmptyBorder());
 			m_propertyPanels.setLayout(new CardLayout());
 			m_propertyPanels.setPreferredSize(new Dimension(200, 350));
 			m_propertyPanels.add(new JLabel("<html><center>&ltIngen egenskaper&gt</center></html>"),"message");
 		}
 		return m_propertyPanels;
 	}
-	
-	
+
+
 	/**
 	 * This gets current snap dialog
-	 * 	
+	 *
 	 * @return {@link SnapDialog}
 	 */
 	private SnapDialog getSnapDialog() {
@@ -160,7 +173,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			try {
 				// get dialog
 				dialog = m_map.getSnapDialog();
-				// force dialog to snap east to of this dialog 
+				// force dialog to snap east to of this dialog
 				dialog.setLocationRelativeTo(this, DefaultDialog.POS_EAST, true, false);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -170,22 +183,21 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 	}
 
 	/**
-	 * This method initializes m_splitPane	
-	 * 	
-	 * @return javax.swing.JSplitPane	
+	 * This method initializes m_splitPane
+	 *
+	 * @return javax.swing.JSplitPane
 	 */
 	private JSplitPane getSplitPane() {
 		if (m_splitPane == null) {
 			m_splitPane = new JSplitPane();
 			m_splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			m_splitPane.setBorder(null);
+			m_splitPane.setBorder(BorderFactory.createEmptyBorder());
 			m_splitPane.setTopComponent(getButtonsPanel());
 			m_splitPane.setBottomComponent(getPropertyPanels());
-			m_splitPane.setPreferredSize(new Dimension(200, 350));
 		}
 		return m_splitPane;
 	}
-	
+
 	private boolean selectTool(IDrawTool tool, boolean activate, boolean force) {
 		// reset old tool?
 		if(m_selectedTool!=null && m_selectedTool.isDirty()) {
@@ -228,26 +240,32 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			button.requestFocusInWindow();
 			activate = activate && button.isVisible();
 		}
-		
+
 		// update tool caption
 		getToolCaption();
-		
+
 		// selection change
 		return true;
-		
+
 	}
-	
+
 	private void showPropertyPanel(Object key) {
 		// show panel from card layout
 		CardLayout cl = (CardLayout)getPropertyPanels().getLayout();
 		cl.show(getPropertyPanels(), key.toString());
-	}	
-	
+	}
+
+	private Icon getIcon(Enum<?> type, ButtonSize size) {
+		return DiskoIconFactory.getIcon(
+				DiskoEnumFactory.getIcon(type),
+				DiskoIconFactory.getCatalog(size));
+	}
+
 	/*==========================================================
 	 * IToolCollection interface
-	 *========================================================== 
+	 *==========================================================
 	 */
-	
+
 	public IHostDiskoTool getHostTool() {
 		return m_hostTool;
 	}
@@ -257,11 +275,11 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 		if(m_hostTool==null)
 			m_hostTool = tool;
 	}
-	
+
 	public IDrawTool getSelectedTool() {
 		return m_selectedTool;
 	}
-	
+
 	public void setSelectedTool(IMapTool tool, boolean activate) {
 		// validate
 		if(!(tool instanceof IDrawTool))
@@ -269,23 +287,23 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 					"IDrawTool can be selected");
 		// forward
 		selectTool((IDrawTool)tool,activate,true);
-	}	
-	
+	}
+
 	public boolean containsToolType(MapToolType type) {
 		return m_tools.containsKey(type);
 	}
-	
+
 	public void register(IMapTool tool) {
-		
+
 		// validate
 		if(!(tool instanceof IDrawTool))
 			throw new IllegalArgumentException("Only tools implementing the " +
 					"IDrawTool interface is supported");
-		
+
 		// forward
 		register((IDrawTool)tool);
 	}
-	
+
 	public void getToolCaption() {
 		if(m_selectedTool!=null) {
 			try {
@@ -295,14 +313,20 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}		
+		}
 	}
-	
+
 	public void setup() {
+
 		// counters
+		int buttonRows = 1;
 		int enabledCount = 0;
 		int visibleCount = 0;
-		
+
+		// initialize size
+		int w = 0;
+		int max = m_buttonsPanel.getWidth();
+
 		// loop over all tools and update buttons
 		Iterator<IDrawTool> it = m_tools.values().iterator();
 		while(it.hasNext()) {
@@ -310,12 +334,26 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			AbstractButton button = tool.getButton();
 			JToggleButton toggle = m_buttons.get(tool.getType());
 			if(toggle.getIcon()==null) {
-				toggle.setIcon(button.getIcon());
+				toggle.setIcon(getIcon(tool.getType(),ButtonSize.SMALL));
 				toggle.setToolTipText(button.getToolTipText());
 			}
 			enabledCount += toggle.isEnabled() ? 1 : 0;
 			visibleCount += toggle.isVisible() ? 1 : 0;
-		}		
+			if(toggle.isVisible()) {
+				w += toggle.getWidth();
+				if(w>=max) {
+					w = 0;
+					buttonRows++;
+				}
+			}
+		}
+
+		// set button panel height
+		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
+		m_buttonsPanel.setMinimumSize(new Dimension(300, dim.height+16));
+		m_buttonsPanel.setPreferredSize(new Dimension(300, (dim.height+1)*buttonRows+15));
+		m_buttonsPanel.setMaximumSize(new Dimension(300, (dim.height+1)*buttonRows+15));
+
 		// setup host tool button?
 		if(m_hostTool!=null) {
 			// get button
@@ -330,8 +368,10 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 				}
 			}
 		}
-	}	
-	
+		// apply changes to layout
+		m_splitPane.resetToPreferredSizes();
+	}
+
 	public IMapTool getTool(MapToolType type) {
 		return m_tools.get(type);
 	}
@@ -351,7 +391,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 					AbstractButton button = m_buttons.get(drawTool.getType());
 					// return state
 					return button.isEnabled();
-				}		
+				}
 			}
 		}
 		return false;
@@ -368,7 +408,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 				AbstractButton button = m_buttons.get(tool.getType());
 				// return state
 				return button.isVisible();
-			}		
+			}
 		}
 		return false;
 	}
@@ -387,7 +427,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 					button.setSelected(false);
 				// set state
 				button.setEnabled(isEnabled);
-			}		
+			}
 		}
 	}
 
@@ -402,10 +442,10 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 				AbstractButton button = m_buttons.get(tool.getType());
 				// set state
 				button.setVisible(isVisible);
-			}		
+			}
 		}
 	}
-	
+
 	public Object getAttribute(MapToolType type, String attribute) {
 		// exists?
 		if(m_tools.containsKey(type)) {
@@ -427,24 +467,24 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			IDrawTool tool =  tools.next();
 			tool.setBatchUpdate(isBatchUpdate);
 			tool.resetDirtyFlag();
-		}		
+		}
 	}
-	
-	
+
+
 	public void setAttribute(Object value, String attribute) {
 		Iterator<IDrawTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
 			tools.next().setAttribute(value,attribute);
-		}		
+		}
 	}
-	
+
 	public void setMsoData(IMsoTool source) {
 		Iterator<IDrawTool> tools = m_tools.values().iterator();
 		while(tools.hasNext()) {
 			IMapTool tool = tools.next();
 			if(tool!=source && tool instanceof IMsoTool)
 				((IMsoTool)tool).setMsoData(source);
-		}		
+		}
 	}
 
 	public void setMsoData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, MsoClassCode msoClassCode) {
@@ -453,14 +493,14 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			IDrawTool tool = tools.next();
 			if(tool instanceof IMsoTool)
 				((IMsoTool)tool).setMsoData(msoOwner,msoObject,msoClassCode);
-		}		
+		}
 	}
-	
+
 	/*==========================================================
 	 * IDrawToolCollection interface
-	 *========================================================== 
+	 *==========================================================
 	 */
-	
+
 	public void register(IDiskoMap map) throws IOException {
 		// prepare
 		this.m_map = map;
@@ -469,28 +509,28 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			this.setLocationRelativeTo((JComponent)map, DefaultDialog.POS_WEST,true,true);
 		}
 	}
-	
+
 
 	public void register(final IDrawTool tool) {
-		
+
 		// can register?
-		if(m_panels.containsKey(tool.getType())) 
+		if(m_panels.containsKey(tool.getType()))
 			throw new IllegalArgumentException("Tool is already added");
-		
-		// register this tool in dialog...
+
+		// register this tool in dialog
 		try {
-			
+
 			// add separator?
 			if(m_buttonsPanel.getComponentCount()==1) {
 				m_buttonsPanel.add(new JSeparator(JSeparator.HORIZONTAL),null);
-			}		
-			
-			// create toggle button 
-			JToggleButton button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-			button.setIcon(tool.getButton().getIcon());
+			}
+
+			// create toggle button
+			JToggleButton button = DiskoButtonFactory.createToggleButton(ButtonSize.SMALL);
+			button.setIcon(getIcon(tool.getType(),ButtonSize.SMALL));
 			button.setToolTipText(tool.getButton().getToolTipText());
 			m_buttonsPanel.add(button,null);
-			
+
 			// add action listener
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -501,13 +541,13 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 					}
 				}
 			});
-			
+
 			// put to tool map
 			m_tools.put(tool.getType(), tool);
-			
+
 			// get property panel
 			IToolPanel panel = tool.getToolPanel();
-			
+
 			// register panel?
 			if(panel!=null && (panel instanceof Component)) {
 				// cast to component
@@ -517,23 +557,23 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 				// register this
 				panel.addActionListener(this);
 			}
-			
+
 			// put to panel map
 			m_panels.put(tool.getType(), panel);
-			
+
 			// add to button group
 			m_buttonGroup.add(button);
-			
+
 			// put to button map
 			m_buttons.put(tool.getType(), button);
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public void enableTools(boolean isEnabled) {
 		for(IMapTool tool: m_tools.values()) {
 			// get button
@@ -541,10 +581,10 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 			// enable or diable?
 			b.setEnabled(isEnabled);
 			m_buttons.get(tool.getType()).setEnabled(isEnabled);
-		}		
+		}
 		setup();
 	}
-	
+
 	public void enableToolTypes(EnumSet<FeatureType> types) {
 		for(IDrawTool tool: m_tools.values()) {
 			// get button
@@ -570,17 +610,17 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 		}
 		setup();
 	}
-	
+
 	/*==========================================================
 	 * ActionListener interface
-	 *========================================================== 
+	 *==========================================================
 	 */
-		
+
 	public void actionPerformed(ActionEvent e) {
 		// parse action
 		if("editsnap".equalsIgnoreCase(e.getActionCommand())) {
 			getSnapDialog().setVisible(!getSnapDialog().isVisible());
-		}		
+		}
 	}
-	
+
 }  //  @jve:decl-index=0:visual-constraint="23,0"

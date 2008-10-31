@@ -37,7 +37,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
@@ -911,7 +911,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	public void reset() {
 		try {
 			// forward
-			refresh();
+			//refresh();
 			// rest draw geometries
 			p = null;
 			geoPath = null;
@@ -1653,7 +1653,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				// decide on worker
 				if(isWorkPoolMode) {
 					// schedule on work pool thread
-					DiskoWorkPool.getInstance().schedule(work);
+					WorkPool.getInstance().schedule(work);
 				}
 				else {
 					// do work on this thread
@@ -1693,7 +1693,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	}
 
 	/**
-	 * DiskoWork class for scheduling work in the disko woork pool.
+	 * Work class for scheduling work in the disko woork pool.
 	 *
 	 * The work is converting tool geometry to map features and Mso data
 	 *

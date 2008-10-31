@@ -17,7 +17,7 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.IWork;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.geodatabase.IFeature;
@@ -40,19 +40,19 @@ public class SelectTool extends AbstractMapTool {
 	private Point2D screen;
 	private IEnvelope extent;
 	private SelectMsoObjectDialog m_selectorDialog;
-	
-	
+
+
 	// flags
 	private boolean isSelectByPoint = true;
-	
+
 	// features
 	private IFeature currentFeature = null;
-	
+
 	/**
 	 * Constructs the DrawTool
 	 */
 	public SelectTool() throws IOException {
-		
+
 		// create points
 		p = new Point();
 		p.setX(0);
@@ -61,11 +61,11 @@ public class SelectTool extends AbstractMapTool {
 		screen.setLocation(0, 0);
 
 		// set tool type
-		type = MapToolType.SELECT_TOOL;		
+		type = MapToolType.SELECT_TOOL;
 
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		
+
 		// add global keyevent listener
 		Utils.getApp().getKeyEventDispatcher().addKeyListener(
 				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
@@ -79,10 +79,10 @@ public class SelectTool extends AbstractMapTool {
 					// consume event
 					e.consume();
 				}
-				
+
 			}
-		});		
-		
+		});
+
 	}
 
 	public void onCreate(Object obj) {
@@ -101,27 +101,27 @@ public class SelectTool extends AbstractMapTool {
 
 		// is working?
 		if(isWorking()) return;
-		
+
 		try {
-		
+
 			// get selection rectangle
 			extent = map.trackRectangle();
-			
+
 			// save screen coordinates
 			screen.setLocation(x, y);
-			
+
 			// transform to map coordinates
-			p = toMapPoint(x, y);			
-			
+			p = toMapPoint(x, y);
+
 			// get tolerance
 			double min = map.isEditSupportInstalled() ? map.getSnapAdapter().getSnapTolerance() : map.getExtent().getWidth()/SNAP_TOL_FACTOR;
-			
+
 			// no selection by rectangle?
 			isSelectByPoint = (extent==null || extent.isEmpty() || extent.getWidth()<min);
-			
+
 			// forward to draw adapter?
 			if(!map.isEditSupportInstalled() || !map.getDrawAdapter().onMouseDown(button,shift,p)){
-			
+
 				// invoke later
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -134,7 +134,7 @@ public class SelectTool extends AbstractMapTool {
 						}
 					}
 				});
-				
+
 			}
 			else if(isSelectByPoint) {
 				// forward onMouseUp() that was consumed by map.trackRectangle()
@@ -145,37 +145,37 @@ public class SelectTool extends AbstractMapTool {
 			e.printStackTrace();
 		}
 	}
-	
+
 
 	@Override
 	public void onMouseUp(int button, int shift, int x, int y) {
-		
+
 		// is working?
 		if(isWorking()) return;
-		
+
 		try {
-		
+
 			// get position in map units
 			p = toMapPoint(x,y);
-			
+
 			// forward to draw adapter?
 			if(map.isEditSupportInstalled())
 				map.getDrawAdapter().onMouseUp(button,shift,p);
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private IMsoFeature selectFeature() throws Exception  {
-		
+
 		// initialize
 		List<Object[]> selected = new ArrayList<Object[]>();
-		
+
 		// get maximum deviation from point
 		double max = map.getExtent().getWidth()/SNAP_TOL_FACTOR;
-		
+
 		// forward
 		if(isSelectByPoint)
 			// only select features within maximum length of point
@@ -183,18 +183,18 @@ public class SelectTool extends AbstractMapTool {
 		else {
 			// select all mso features that is contained by extent
 			selected.addAll(MapUtil.selectMsoFeaturesFromEnvelope(
-					extent, null, map, -1, max, 
-					esriSpatialRelEnum.esriSpatialRelContains));					
+					extent, null, map, -1, max,
+					esriSpatialRelEnum.esriSpatialRelContains));
 			// select all mso features that overlaps with extent
 			selected.addAll(MapUtil.selectMsoFeaturesFromEnvelope(
-					extent, null, map, -1, max, 
+					extent, null, map, -1, max,
 					esriSpatialRelEnum.esriSpatialRelOverlaps));
 			// select all mso features that overlaps with extent
 			selected.addAll(MapUtil.selectMsoFeaturesFromEnvelope(
-					extent, null, map, -1, max, 
+					extent, null, map, -1, max,
 					esriSpatialRelEnum.esriSpatialRelCrosses));
 		}
-			
+
 		// only one selected?
 		if(selected.size()==1) {
 			// get feature
@@ -225,13 +225,13 @@ public class SelectTool extends AbstractMapTool {
 				// is mso object?
 				if(ans==f.getMsoObject()) {
 					return f;
-				}				
+				}
 			}
 		}
 		// nothing to select
 		return null;
-	}		
-	
+	}
+
 	private SelectMsoObjectDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
 			m_selectorDialog = new SelectMsoObjectDialog(Utils.getApp().getFrame());
@@ -239,14 +239,14 @@ public class SelectTool extends AbstractMapTool {
 		}
 		return m_selectorDialog;
 	}
-	
-	
+
+
 	@Override
 	public IMapToolState save() {
 		// get new state
 		return new SelectFeatureToolState(this);
 	}
-	
+
 	@Override
 	public boolean load(IMapToolState state) {
 		// valid state?
@@ -261,19 +261,19 @@ public class SelectTool extends AbstractMapTool {
 	 * Inner classes
 	 * ==================================================
 	 */
-	
+
 	public class SelectFeatureToolState extends MsoToolState {
 
 		private Point p = null;
 		private IEnvelope extent = null;
 		private boolean isSelectByPoint = true;
 		private IFeature currentFeature = null;
-		
+
 		// create state
 		public SelectFeatureToolState(SelectTool tool) {
 			super((AbstractMapTool)tool);
 			save(tool);
-		}		
+		}
 		public void save(SelectTool tool) {
 			super.save((AbstractMapTool)tool);
 			this.p = tool.p;
@@ -281,7 +281,7 @@ public class SelectTool extends AbstractMapTool {
 			this.isSelectByPoint = tool.isSelectByPoint;
 			this.currentFeature = tool.currentFeature;
 		}
-		
+
 		public void load(SelectTool tool) {
 			super.load((AbstractMapTool)tool);
 			tool.p = this.p;
@@ -289,12 +289,12 @@ public class SelectTool extends AbstractMapTool {
 			tool.isSelectByPoint = this.isSelectByPoint;
 			tool.currentFeature = this.currentFeature;
 		}
-	}			
-	
+	}
+
 	private boolean doSelectFeatureWork(IMsoFeature msoFeature) {
 		try {
-			DiskoWorkPool.getInstance().schedule(
-					new SelectFeatureWork(map,msoFeature));
+			IWork work = new SelectFeatureWork(map,msoFeature);
+			work.run();
 			return true;
 		}
 		catch(Exception e) {
@@ -302,22 +302,23 @@ public class SelectTool extends AbstractMapTool {
 		}
 		return false;
 	}
-	
+
 	class SelectFeatureWork extends AbstractToolWork<Boolean> {
 
 		DiskoMap map = null;
 		IMsoFeature msoFeature = null;
-		
-		SelectFeatureWork(DiskoMap map,IMsoFeature msoFeature) 
-									throws Exception {
-			super(true);
+
+		SelectFeatureWork(DiskoMap map,IMsoFeature msoFeature) throws Exception {
+			// forward
+			super(true,true,"Vent litt");
+			// prepare
 			this.map = map;
 			this.msoFeature = msoFeature;
 		}
-				
+
 		@Override
 		public Boolean doWork() {
-		
+
 			try {
 				// forward to map
 				if(msoFeature==null) {
@@ -327,7 +328,7 @@ public class SelectTool extends AbstractMapTool {
 				}
 				else {
 					if(map.getSelectionCount(false)>0) {
-						map.clearSelected();			
+						map.clearSelected();
 					}
 					if(map.isSelected(msoFeature.getMsoObject())==0) {
 						map.setSelected(msoFeature.getMsoObject(),true);
@@ -339,17 +340,17 @@ public class SelectTool extends AbstractMapTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			// failed
 			return false;
 		}
-		
+
 		@Override
 		public void beforeDone() {
 
 			// update selected feature
 			currentFeature = msoFeature;
 
-		}		
-	}		
+		}
+	}
 }

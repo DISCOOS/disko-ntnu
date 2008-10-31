@@ -13,13 +13,13 @@ public class MsoLayerEventStack {
 
 	private ArrayList<IMsoLayerEventListener> listeners = null;
 	private HashMap<MsoLayerEventType,MsoLayerEvent> stack = null;
-	
+
 	public MsoLayerEventStack() {
 		// prepare
 		listeners = new ArrayList<IMsoLayerEventListener>();
 		stack = new HashMap<MsoLayerEventType,MsoLayerEvent>();
 	}
-	
+
 	public void addMsoLayerEventListener(IMsoLayerEventListener listener) {
 		if (!listeners.contains(listener)) {
 			listeners.add(listener);
@@ -44,15 +44,15 @@ public class MsoLayerEventStack {
 		// add layer
 		e.add(layer);
 	}
-	
+
 	public void fireAll() throws AutomationException, IOException{
-		
+
 		// consume?
 		if(stack.size()==0) return;
-		
+
 		// start with DESELECTED_EVENT events
 		MsoLayerEvent e = stack.get(MsoLayerEventType.DESELECTED_EVENT);
-		
+
 		// has event?
 		if(e!=null) {
 			// is final event?
@@ -62,10 +62,10 @@ public class MsoLayerEventStack {
 			// remove from stack
 			stack.remove(MsoLayerEventType.DESELECTED_EVENT);
 		}
-		
+
 		// continue with SELECTED_EVENT events
 		e = stack.get(MsoLayerEventType.SELECTED_EVENT);
-		
+
 		// has event?
 		if(e!=null) {
 			// set as final event
@@ -75,15 +75,15 @@ public class MsoLayerEventStack {
 			// remove from stack
 			stack.remove(MsoLayerEventType.SELECTED_EVENT);
 		}
-		
+
 	}
-	
+
 	public void consumeAll() {
 		stack.clear();
 	}
-	
-	
-	public void fire(IMsoFeatureLayer layer) throws AutomationException, IOException {		
+
+
+	public void fire(IMsoFeatureLayer layer) throws AutomationException, IOException {
 		// consume?
 		if(stack.size()==0) return;
 		// start with DESELECTED_EVENT events
@@ -132,9 +132,9 @@ public class MsoLayerEventStack {
 			if(isEmpty)
 				stack.remove(MsoLayerEventType.SELECTED_EVENT);
 		}
-		
+
 	}
-	
+
 	public void consume(IMsoFeatureLayer layer) {
 		// consume?
 		if(stack.size()==0) return;
@@ -162,12 +162,12 @@ public class MsoLayerEventStack {
 			if(isEmpty)
 				stack.remove(MsoLayerEventType.SELECTED_EVENT);
 		}
-		
-	}	
-	
+
+	}
+
 	private void fire(MsoLayerEvent e) throws AutomationException, IOException {
 		for (int i = 0; i < listeners.size(); i++) {
 			listeners.get(i).onSelectionChanged(e);
-		}				
+		}
 	}
 }

@@ -20,9 +20,9 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 	// Lists
     private final PersonnelListImpl m_personnel = new PersonnelListImpl(this, "CalloutPersonnel", false);
 
-    public CalloutImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public CalloutImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()

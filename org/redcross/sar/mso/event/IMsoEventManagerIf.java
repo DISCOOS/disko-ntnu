@@ -39,7 +39,7 @@ public interface IMsoEventManagerIf
      *
      */
     public void notifyClearAll(IMsoObjectIf root);
-    
+
     /**
      * Add a listener in the Server Update Listeners} queue.
      *
@@ -90,5 +90,32 @@ public interface IMsoEventManagerIf
 
     public void notifyDerivedUpdate(IMsoObjectIf aSource, int anEventTypeMask);
 
+    /**
+     * Notify that a resume operation is begun.</p>
+     *
+     * For each invocation of <code>enterResume()</code>, the manager increments
+     * a internal resume counter. When the this counter is greater than 0,
+     * all update notification is buffered. Likewise, for each invocation of
+     * <code>leaveResume()</code> the counter is decreased. When the counter reaches
+     * zero, all buffered invocation is forwarded to registered update listeners.</p>
+     *
+     * <b>IMPORTANT</b>: This method should be called by the IMsoObjectIf implementation just BEFORE
+     * the update notification is fired in <code>resumeClientUpdate()</code>. </p>
+     */
+    public void enterResume();
+
+    /**
+     * Notify that a resume operation is ended. </p>
+     *
+     * For each invocation of <code>enterResume()</code>, the manager increments
+     * a internal resume counter. When the this counter is greater than 0,
+     * all update notification is buffered. Likewise, for each invocation of
+     * <code>leaveResume()</code> the counter is decreased. When the counter reaches
+     * zero, all buffered invocation is forwarded to registered update listeners.</p>
+     *
+     * <b>IMPORTANT</b>: This method should be called by the IMsoObjectIf implementation just AFTER
+     * the update notification is fired in <code>resumeClientUpdate()</code>. </p>
+     */
+    public void leaveResume();
 
 }

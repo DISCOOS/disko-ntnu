@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Icon;
 
 import org.redcross.sar.gui.IChangeable;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.IWorkListener;
 
 public interface IDiskoField extends IChangeable { 
 
@@ -59,8 +59,8 @@ public interface IDiskoField extends IChangeable {
 	public boolean cancel();
 	public boolean finish();
 	
-	public void addDiskoWorkListener(IDiskoWorkListener listener);
-	public void removeDiskoWorkListener(IDiskoWorkListener listener);
+	public void addWorkListener(IWorkListener listener);
+	public void removeWorkListener(IWorkListener listener);
 	
 	public boolean addButtonActionListener(ActionListener listener);	
 	public boolean removeButtonActionListener(ActionListener listener);

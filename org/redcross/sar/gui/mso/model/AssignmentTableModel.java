@@ -1,12 +1,12 @@
 package org.redcross.sar.gui.mso.model;
 
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentListIf;
 
-public class AssignmentTableModel extends MsoTableModel<IAssignmentIf> {
+public class AssignmentTableModel extends AbstractMsoTableModel<IAssignmentIf> {
 
 	private static final long serialVersionUID = 1L;
 

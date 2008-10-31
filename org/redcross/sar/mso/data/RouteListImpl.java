@@ -13,21 +13,21 @@ public class RouteListImpl extends MsoListImpl<IRouteIf> implements IRouteListIf
     public IRouteIf createRoute(Route aRoute)
     {
         checkCreateOp();
-        return createdUniqueItem(new RouteImpl(makeUniqueId(), aRoute));
+        return createdUniqueItem(new RouteImpl(getOwner().getModel(), makeUniqueId(), aRoute));
     }
 
     public IRouteIf createRoute(IMsoObjectIf.IObjectIdIf anObjectId, Route aRoute)
     {
         checkCreateOp();
         IRouteIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new RouteImpl(anObjectId, aRoute));
+        return retVal != null ? retVal : createdItem(new RouteImpl(getOwner().getModel(), anObjectId, aRoute));
     }
 
     public IRouteIf createRoute(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IRouteIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new RouteImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new RouteImpl(getOwner().getModel(), anObjectId));
     }
 
 }

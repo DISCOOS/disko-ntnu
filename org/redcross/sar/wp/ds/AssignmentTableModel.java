@@ -7,11 +7,10 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.ds.ete.RouteCost;
-import org.redcross.sar.gui.model.DsTableModel;
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.gui.model.AbstractDsTableModel;
 import org.redcross.sar.mso.MsoBinder;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -22,7 +21,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.mso.TimePos;
 
-public class AssignmentTableModel extends DsTableModel<IAssignmentIf,RouteCost> {
+public class AssignmentTableModel extends AbstractDsTableModel<IAssignmentIf,RouteCost> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -144,9 +143,6 @@ public class AssignmentTableModel extends DsTableModel<IAssignmentIf,RouteCost> 
 						EDIT_INDEX
 					 };
 
-	private IMsoModelIf mso;
-	private MsoBinder<IAssignmentIf> msoBinder;
-
 	/* ================================================================
 	 * Constructors
 	 * ================================================================ */
@@ -173,18 +169,20 @@ public class AssignmentTableModel extends DsTableModel<IAssignmentIf,RouteCost> 
 		else if(UNIT.equals(name)) {
 			return getId(index).getOwningUnit();
 		}
+
 		// failed
 		return null;
+
 	}
 
 	@Override
-	protected IAssignmentIf[] translate(IDataIf[] data) {
+	protected IAssignmentIf[] translate(IData[] data) {
 		if(data!=null) {
 			List<IAssignmentIf> list = new ArrayList<IAssignmentIf>(data.length);
 			List<IAssignmentIf> found = new ArrayList<IAssignmentIf>(data.length);
 			for(int i=0; i<data.length; i++) {
 				found.clear();
-				IDataIf item = data[i];
+				IData item = data[i];
 				if(item instanceof IAssignmentIf){
 					found.add((IAssignmentIf)item);
 				}
@@ -269,6 +267,7 @@ public class AssignmentTableModel extends DsTableModel<IAssignmentIf,RouteCost> 
 		binder.addCoClass(IRouteIf.class,null);
 		binder.addCoClass(IUnitIf.class,null);
 		return binder;
+
 	}
 
 	/* ================================================================

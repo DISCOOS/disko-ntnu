@@ -5,34 +5,34 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.data.IData;
 
-public abstract class AbstractDsObject implements IDsObjectIf {
+public abstract class AbstractDsObject implements IDsObject {
 
-	private final List<Object[]> m_samples = new ArrayList<Object[]>(1);						
-	
-	private IDataIf m_id;
-	
+	private final List<Object[]> m_samples = new ArrayList<Object[]>(1);
+
+	private IData m_id;
+
 	/* =============================================================
 	 * Constructors
 	 * ============================================================= */
-	
-	public AbstractDsObject(IDataIf id) {
+
+	public AbstractDsObject(IData id) {
 		m_id = id;
 	}
-	
+
 	/* =============================================================
-	 * Public methods
+	 * IDsObject implementation
 	 * ============================================================= */
-	
-	public IDataIf getId() {
+
+	public IData getId() {
 		return m_id;
 	}
 
 	public Object getAttrValue(Object key) {
 		return getAttrValue(key,-1);
 	}
-	
+
 	public Object getAttrValue(Object key, int sample) {
 		Object value = null;
 		// current value?
@@ -83,66 +83,75 @@ public abstract class AbstractDsObject implements IDsObjectIf {
 		// finished
 		return value;
 	}
-	
+
 	public int getSampleCount() {
 		return m_samples.size();
 	}
-	
+
 	public Object[][] samples() {
 		Object[][] samples = new Object[m_samples.size()][getAttrCount()];
 		return m_samples.toArray(samples);
 	}
-	
+
 	public void load(Object[][] samples) {
 		m_samples.clear();
-		for(int i=0;i<samples.length;i++) 
+		for(int i=0;i<samples.length;i++)
 			m_samples.add(samples[i]);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if(super.equals(obj)) return true;
-		if(obj instanceof IDsObjectIf) {
-			return ((IDsObjectIf)obj).getId().equals(getId());
+		if(obj instanceof IDsObject) {
+			return ((IDsObject)obj).getId().equals(getId());
 		}
 		return false;
 	}
-	
+
+	/* =============================================================
+	 * Comparable implementation
+	 * ============================================================= */
+
+	public int compareTo(IData o) {
+		// default implementation
+		return this.hashCode() - o.hashCode();
+	}
+
 	/* =============================================================
 	 * Public abstract methods
 	 * ============================================================= */
-	
+
 	public abstract int getAttrCount();
 
 	public abstract String getAttrName(int index);
-	
+
 	public abstract int getAttrIndex(String name);
-	
+
 	public abstract Class<?> getAttrClass(int index);
-	
+
 	/* =============================================================
 	 * Helper methods
 	 * ============================================================= */
-	
+
 	protected void addSample() {
-		
+
 		// get attribute count
 		int count = getAttrCount();
-		
+
 		// allocate memory
 		Object[] sample = new Object[count];
-		
+
 		// loop over all parameters and
 		for(int i=0;i<count;i++)
 			sample[i] = getAttrValue(i);
-		
+
 		// add to samples
 		m_samples.add(sample);
-		
+
 	}
-	
+
 	protected void clearSamples() {
 		m_samples.clear();
 	}
-	
+
 }

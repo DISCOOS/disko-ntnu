@@ -8,9 +8,9 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.menu.MainMenu;
+import org.redcross.sar.gui.menu.SubMenu;
 import org.redcross.sar.gui.mso.dialog.TaskDialog;
-import org.redcross.sar.gui.panel.MainMenuPanel;
-import org.redcross.sar.gui.panel.SubMenuPanel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
@@ -18,7 +18,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskListIf;
-import org.redcross.sar.thread.DiskoWorkPool;
+import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -49,10 +49,9 @@ import java.util.List;
  */
 public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpTasks
 {
-    
-	private boolean m_wasFinishButtonVisible = false;
-	private boolean m_wasCancelButtonVisible = false;
-	
+
+	private boolean m_oldTransactionMode = false;
+
 	private JPanel m_contentsPanel;
 
     private DiskoTable m_taskTable;
@@ -122,7 +121,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             {
             	try {
             		if(m_taskTable!=null && m_taskTable.getRowCount()>0)
-            			DiskoWorkPool.getInstance().schedule(new TaskTickWork());
+            			WorkPool.getInstance().schedule(new TaskTickWork());
             	}
             	catch(Exception ex) {
             		ex.printStackTrace();
@@ -160,7 +159,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             }
         });
         layoutButton(m_newButton, true);
-        
+
 		key = TaskActionType.EDIT_TASK;
 		m_changeButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
         m_changeButton.addActionListener(new ActionListener()
@@ -214,7 +213,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 			}
 
 		});
-		
+
         TableColumn column = m_taskTable.getColumnModel().getColumn(0);
         column.setMaxWidth(75);
         column.setPreferredWidth(75);
@@ -247,38 +246,34 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     @Override
 	public void activate(IDiskoRole role) {
-		
+
 		// forward
 		super.activate(role);
-		
+
 		// set role in task table model (enables popup menus)
 		((TaskTableModel)m_taskTable.getModel()).setRole(role);
 
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
+		if(isNavMenuSetupNeeded()) {
 			// forward
-			setupNavBar(Utils.getListNoneOf(MapToolType.class),false);
-		}		
-        
-        SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();
-        m_wasFinishButtonVisible = subMenu.getCommitButton().isVisible();
-        m_wasCancelButtonVisible = subMenu.getRollbackButton().isVisible();
-        subMenu.getCommitButton().setVisible(false);
-        subMenu.getRollbackButton().setVisible(false);
+			setupNavMenu(Utils.getListNoneOf(MapToolType.class),false);
+		}
+
+        SubMenu subMenu = this.getApplication().getUIFactory().getSubMenu();
+        m_oldTransactionMode = subMenu.setTransactionMode(false);
     }
 
     @Override
     public void deactivate()
     {
         super.deactivate();
-        SubMenuPanel subMenu = this.getApplication().getUIFactory().getSubMenuPanel();
-        subMenu.getCommitButton().setVisible(m_wasFinishButtonVisible);
-        subMenu.getRollbackButton().setVisible(m_wasCancelButtonVisible);
-        
+        SubMenu subMenu = this.getApplication().getUIFactory().getSubMenu();
+        subMenu.setTransactionMode(m_oldTransactionMode);
+
         TaskDialog taskDialog = getApplication().getUIFactory().getTaskDialog();
         taskDialog.setVisible(false);
     }
-    
+
     @Override
     public boolean confirmDeactivate()
     {
@@ -387,7 +382,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         	else
         		Utils.showWarning("Begrensning", "Du må først velge en oppgave i listen");
         }
-        
+
         hideDialogs();
     }
 
@@ -404,21 +399,21 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         m_currentTask = task;
     }
 
-	class TaskTickWork extends ModuleWork<Boolean> {
+	class TaskTickWork extends ModuleWork {
 
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param task
 		 */
 		TaskTickWork() throws Exception {
 			super("Sjekker oppgaver",false,false);
 		}
-		
+
 		@Override
 		public Boolean doWork() {
 			try {
-				
+
                 ICmdPostIf cmdPost = getCmdPost();
                 if (cmdPost == null)
                 {
@@ -455,25 +450,29 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 			return false;
 		}
 
+		public Boolean get() {
+			return (Boolean)super.get();
+		}
+
 		@Override
 		public void beforeDone() {
-			
+
 			try {
 				// get current role
                 IDiskoRole role = getDiskoRole();
                 if(role!=null) {
 	                List<IDiskoWpModule> modules = role.getDiskoWpModules();
 	                int index = modules.indexOf(getDiskoWpTasks());
-	                MainMenuPanel mainMenu = getApplication().getUIFactory().getMainMenuPanel();
+	                MainMenu mainMenu = getApplication().getUIFactory().getMainMenu();
 	                AbstractButton button = mainMenu.getButton(role.getName(), index);
-	                // set button icon color mask according to 
+	                // set button icon color mask according to
 	                // the alert flag from DiskWork result
 	            	((DiskoIcon)button.getIcon()).setColored(get());
                 }
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-			}			
+			}
 		}
-	}	
+	}
 }

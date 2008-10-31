@@ -16,14 +16,14 @@ public class OperationAreaListImpl extends MsoListImpl<IOperationAreaIf> impleme
     public IOperationAreaIf createOperationArea()
     {
         checkCreateOp();
-        return createdUniqueItem(new OperationAreaImpl(makeUniqueId()));
+        return createdUniqueItem(new OperationAreaImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IOperationAreaIf createOperationArea(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IOperationAreaIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new OperationAreaImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new OperationAreaImpl(getOwner().getModel(), anObjectId));
     }
 
 

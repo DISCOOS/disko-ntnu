@@ -15,12 +15,12 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.event.IToolListenerIf;
+import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
-import org.redcross.sar.thread.AbstractDiskoWork;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.AbstractWork;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 
 import java.io.IOException;
@@ -32,17 +32,17 @@ import java.awt.geom.Point2D;
 import javax.swing.AbstractButton;
 
 public abstract class AbstractMapTool extends BaseTool implements IMapTool {
-	
+
 	// flags
 	protected boolean isDirty = false;			// true:=change is pending
 	protected boolean isActive = false;
 	protected boolean showDirect = false;
 	protected boolean showDialog = true;
-	
+
 	// objects
 	protected Properties properties;
 	protected IDisplayTransformation transform;
-	
+
 	// GUI components
 	protected DiskoMap map;
 	protected DefaultDialog dialog;
@@ -53,25 +53,25 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	// types
 	protected MapToolType type = null;
 	protected ButtonSize buttonSize = ButtonSize.NORMAL;
-	
+
 	// counter
 	private int workCount = 0;
-	
+
 	// lists
 	protected List<IToolPanel> panels;
-	protected List<IToolListenerIf> toolListeners;		
-	protected List<IDiskoWorkListener> workListeners;
-	
+	protected List<IToolListener> toolListeners;
+	protected List<IWorkListener> workListeners;
+
 	/**
 	 * Constructor
 	 *
 	 */
 	protected AbstractMapTool() {
 		// prepare
-		toolListeners = new ArrayList<IToolListenerIf>();		
-		workListeners = new ArrayList<IDiskoWorkListener>();		
+		toolListeners = new ArrayList<IToolListener>();
+		workListeners = new ArrayList<IWorkListener>();
 	}
-	
+
 	/*===============================================
 	 * IMapTool interface implementation
 	 *===============================================
@@ -83,21 +83,21 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	public boolean isActive() {
 		return isActive;
 	}
-	
+
 	public boolean isDirty() {
 		return isDirty;
 	}
-	
+
 	public boolean resetDirtyFlag() {
 		boolean bFlag = isDirty;
 		setDirty(false);
 		return bFlag;
 	}
-	
+
 	/**
 	 * Set dirty bit
-	 * 
-	 */	
+	 *
+	 */
 	protected void setDirty(boolean isDirty) {
 		// get change flag
 		boolean isChanged = this.isDirty != isDirty;
@@ -106,10 +106,10 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			// set flag
 			this.isDirty = isDirty;
 			// forward
-			getToolPanel().update();		
+			getToolPanel().update();
 		}
-	}	
-	
+	}
+
 	/**
 	 * Returns the disko tool type
 	 */
@@ -125,7 +125,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		// the tool must be hosted
 		return (dialog instanceof IToolCollection);
 	}
-	
+
 	/**
 	 * Returns the host tool is hosted
 	 */
@@ -137,7 +137,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		}
 		return null;
 	}
-	
+
 	public boolean isShowDialog() {
 		return showDialog;
 	}
@@ -147,10 +147,10 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	}
 
 	/**
-	 * The default behaviour is that is allways allowed 
+	 * The default behaviour is that is allways allowed
 	 * to activate this class. Howerver, an extender
-	 * of this class can override this behavior. 
-	 */	
+	 * of this class can override this behavior.
+	 */
 	public boolean activate(int options){
 		// set flag
 		isActive = true;
@@ -162,9 +162,9 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	}
 
 	/**
-	 * The default behaviour is that is allways allowed 
+	 * The default behaviour is that is allways allowed
 	 * to deactivate this class. However, an extender
-	 * of this class can override this behavior. 
+	 * of this class can override this behavior.
 	 */
 	public boolean deactivate(){
 		// reset flag
@@ -176,41 +176,41 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		return true;
 	}
 
-	public void addDiskoWorkListener(IDiskoWorkListener listener) {
+	public void addWorkListener(IWorkListener listener) {
 		workListeners.add(listener);
 	}
 
-	public void removeDiskoEventListener(IDiskoWorkListener listener) {
+	public void removeDiskoEventListener(IWorkListener listener) {
 		workListeners.remove(listener);
 	}
-	
+
 	public AbstractButton getButton() {
 		return button;
 	}
-	
+
 	public boolean requestFocustOnButton() {
-		
+
 		// notify
 		if(!fireToolEvent(ToolEventType.FOCUS_EVENT, 0)) {
-			
+
 			AbstractButton b = null;
-			
+
 			// forward
 			if(isHosted())
 				b = getHostTool().getButton();
 			else
 				b = getButton();
-			
+
 			// can request focus?
 			if(b!=null && b.isEnabled() && b.isVisible() && !b.hasFocus()) {
 				return b.requestFocusInWindow();
 			}
-			
+
 		}
 		// failed
 		return false;
 	}
-	
+
 	public DefaultDialog getDialog() {
 		return dialog;
 	}
@@ -218,17 +218,17 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	public DiskoMap getMap() {
 		return map;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-		
+
 	@Override
 	public IMapToolState save() {
 		// get new state
 		return new MsoToolState(this);
 	}
-	
+
 	@Override
 	public boolean load(IMapToolState state) {
 		// valid state?
@@ -237,9 +237,9 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			return true;
 		}
 		return false;
-	
-	}	
-	
+
+	}
+
 	/*====================================================
 	 * Protected methods (only intended for use inside
 	 * this package)
@@ -271,12 +271,12 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Method used to get current display transformation. Display
 	 * transformation is a utility class for the map spatial reference
 	 * and convertion between map and screen
-	 * 
+	 *
 	 * @return Current display transformation
 	 * @throws IOException
 	 * @throws AutomationException
@@ -291,7 +291,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 	/**
 	 * Utility function used to transform screen coordinates to map point
-	 * 
+	 *
 	 * @param x Screen x-position
 	 * @param y Screen y-position
 	 * @return Point in map coordinates
@@ -305,7 +305,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	/**
 	 * Utility function used to transform from map paint to screen coordinates
 	 * @param p
-	 * @return Point2D of screen coordinates 
+	 * @return Point2D of screen coordinates
 	 * @throws IOException
 	 * @throws AutomationException
 	 */
@@ -315,7 +315,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		getTransform().fromMapPoint(p, x, y);
 		return new Point2D.Double(x[0],y[0]);
 	}
-	
+
 	protected void transform(Point p) throws IOException, AutomationException {
 		p.transform(esriTransformDirection.esriTransformReverse, getTransform());
 	}
@@ -333,33 +333,33 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_FINISH);
+		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_FINISH);
 	   	// forward
 		fireOnWorkPerformed(e);
     }
-    
+
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_CANCEL);
+		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }
-    
+
 	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source,data,DiskoWorkEvent.EVENT_CHANGE);
+		WorkEvent e = new WorkEvent(source,data,WorkEvent.EVENT_CHANGE);
 		// forward
-		fireOnWorkPerformed(e);    	
+		fireOnWorkPerformed(e);
     }
-    
-    protected void fireOnWorkPerformed(DiskoWorkEvent e)
+
+    protected void fireOnWorkPerformed(WorkEvent e)
     {
 		// notify listeners
 		for (int i = 0; i < workListeners.size(); i++) {
 			workListeners.get(i).onWorkPerformed(e);
 		}
 	}
-    
+
     protected boolean isWorking() {
 		return (workCount>0);
 	}
@@ -367,19 +367,19 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	protected int isWorkingCount() {
 		return workCount;
 	}
-	
+
 	protected int setIsWorking() {
 		workCount++;
-		return workCount; 
+		return workCount;
 	}
-	
+
 	protected int setIsNotWorking() {
 		if(workCount>0) {
 			workCount--;
 		}
-		return workCount; 
+		return workCount;
 	}
-	
+
 	protected void suspendUpdate() {
 		if(map!=null) {
 			try {
@@ -389,13 +389,13 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-		}		
+		}
 		Utils.getApp().getMsoModel().suspendClientUpdate();
 	}
-	
+
 	protected void resumeUpdate() {
 		// start with notifying all mso listeners
-		Utils.getApp().getMsoModel().resumeClientUpdate();
+		Utils.getApp().getMsoModel().resumeClientUpdate(true);
 		// allow map to update
 		if(map!=null) {
 			try {
@@ -406,20 +406,18 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-		}		
+		}
 	}
-	
+
 	protected boolean fireToolEvent(ToolEventType type, int flags) {
 		ToolEvent e = new ToolEvent(this,type,flags);
-		for(IToolListenerIf listener : toolListeners) {
+		for(IToolListener listener : toolListeners) {
 			listener.onAction(e);
 			if(e.isConsumed()) return true;
 		}
 		return false;
 	}
-	
-	
-	
+
 	public Object getAttribute(String attribute) {
 		return null;
 	}
@@ -436,19 +434,19 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	public boolean removeToolPanel(IToolPanel panel) {
 		// has panels?
 		if(panels!=null) {
-			return panels.remove(panel);			
+			return panels.remove(panel);
 		}
 		return false;
-	}		
-	
+	}
+
 	public IToolPanel getDefaultToolPanel() {
 		return defaultToolPanel;
 	}
-	
+
 	public boolean setDefaultPropertyPanel() {
 		return setToolPanel(defaultToolPanel);
 	}
-	
+
 	public boolean setToolPanel(IToolPanel panel) {
 		// has panels?
 		if(panels!=null) {
@@ -461,11 +459,11 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 				toolPanel = panel;
 			}
 		}
-		return (panel!=null && toolPanel == panel);			
+		return (panel!=null && toolPanel == panel);
 	}
-	
+
 	public IToolPanel getToolPanel() {
-		return toolPanel;		
+		return toolPanel;
 	}
 
 	public boolean cancel() {
@@ -479,38 +477,42 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	}
 
 	public void reset() {
-		// TODO Auto-generated method stu	
+		// TODO Auto-generated method stu
 	}
-	
+
 	/* ==================================================
 	 * IToolListenerIf
 	 * ==================================================
 	 */
-	
-	public boolean addToolListener(IToolListenerIf listener) {
+
+	public boolean addToolListener(IToolListener listener) {
 		if(!toolListeners.contains(listener)) {
-			return toolListeners.add(listener); 
+			return toolListeners.add(listener);
 		}
 		return false;
 	}
-	
-	public boolean removeToolListener(IToolListenerIf listener) {
+
+	public boolean removeToolListener(IToolListener listener) {
 		if(toolListeners.contains(listener)) {
-			return toolListeners.remove(listener); 
+			return toolListeners.remove(listener);
 		}
 		return false;
-	}	
-	
+	}
+
 	/*=============================================================
 	 * Inner classes
-	 *============================================================= 
-	 */
-	protected abstract class AbstractToolWork<T> extends AbstractDiskoWork<T> {
-		
+	 *============================================================= */
+
+	protected abstract class AbstractToolWork<T> extends AbstractWork {
+
 		public AbstractToolWork(boolean notify) throws Exception {
+			this(false,notify,"Vent litt");
+		}
+		public AbstractToolWork(boolean isThreadSafe, boolean notify, String message) throws Exception {
 			// forward
-			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,notify,false,false,0);
+			super(isThreadSafe,true,
+					isThreadSafe ? ThreadType.WORK_ON_UNSAFE : ThreadType.WORK_ON_SAFE,
+					"Vent litt",500,notify,false);
 		}
 
 		@Override
@@ -518,17 +520,17 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			// set flag to prevent reentry
 			setIsWorking();
 			// suspend for faster execution
-			suspendUpdate();			
-		}		
-		
+			suspendUpdate();
+		}
+
 		@Override
 		public abstract T doWork();
 
 		/**
-		 * done 
-		 * 
+		 * done
+		 *
 		 * Executed on the Event Dispatch Thread.
-		 * 
+		 *
 		 */
 		@Override
 		public void afterDone() {
@@ -543,10 +545,10 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			}
 		}
 	}
-	
+
 	/**
 	 * Abstract tool state class
-	 * 
+	 *
 	 * @author kennetgu
 	 *
 	 */
@@ -560,12 +562,12 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 		// other objects
 		protected IToolPanel propertyPanel;
-		
+
 		// create state
 		public MsoToolState(AbstractMapTool tool) {
 			save(tool);
 		}
-		
+
 		public void save(AbstractMapTool tool) {
 			this.isActive = tool.isActive;
 			this.showDirect = tool.showDirect;
@@ -573,7 +575,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			this.propertyPanel = tool.toolPanel;
 			this.isDialogVisible = tool.dialog!=null ? tool.dialog.isVisible() : false;
 		}
-		
+
 		public void load(AbstractMapTool tool) {
 			tool.isActive = this.isActive;
 			tool.showDirect = this.showDirect;
@@ -581,7 +583,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 			tool.toolPanel = this.propertyPanel;
 			if(tool.toolPanel!=null)
 				tool.toolPanel.update();
-			if(tool.dialog!=null) 
+			if(tool.dialog!=null)
 				tool.dialog.setVisible(this.isDialogVisible);
 		}
 	}

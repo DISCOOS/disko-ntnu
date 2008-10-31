@@ -18,7 +18,7 @@ import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.interop.AutomationException;
 
-public abstract class AbstractDiskoLayer extends 
+public abstract class AbstractDiskoLayer extends
 					CompositeGraphicsLayer implements IDiskoLayer {
 
 	protected boolean isActive;
@@ -26,18 +26,18 @@ public abstract class AbstractDiskoLayer extends
 	protected ISpatialReference srs;
 	protected IScreenDisplay display;
 	protected List<IDiskoFeature> features;
-	
+
 	private int refreshRate;
 	private long refreshTime;
 	private IEnvelope refreshExtent;
-	
 
-	public AbstractDiskoLayer(String name, 
-			LayerCode layerCode, ISpatialReference srs) throws UnknownHostException, IOException {
+
+	public AbstractDiskoLayer(String name, LayerCode layerCode,
+			ISpatialReference srs) throws UnknownHostException, IOException {
 
 		// forward
 		super();
-		
+
 		// prepare
 		this.isActive = false;
 		this.layerCode = layerCode;
@@ -46,20 +46,20 @@ public abstract class AbstractDiskoLayer extends
 		this.refreshRate = -1;
 		this.refreshTime = System.currentTimeMillis();
 		this.refreshExtent = null;
-		
+
 		// forward
 		setName(name);
 
 	}
-	
+
 	public LayerCode getLayerCode() {
 		return layerCode;
 	}
-	
+
 	public IScreenDisplay display() {
 		return display;
 	}
-	
+
 	public boolean isActive() {
 		return isActive;
 	}
@@ -102,7 +102,7 @@ public abstract class AbstractDiskoLayer extends
 			super.setVisible(false);
 		}
 	}
-	
+
 	protected void addFeature(IDiskoFeature feature) {
 		features.add(feature);
 		try {
@@ -127,7 +127,7 @@ public abstract class AbstractDiskoLayer extends
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected void removeFeature(IDiskoFeature feature) {
 		features.remove(feature);
 		try {
@@ -144,7 +144,7 @@ public abstract class AbstractDiskoLayer extends
 				}
 				element.deactivate();
 			}
-			
+
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -153,7 +153,7 @@ public abstract class AbstractDiskoLayer extends
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected static IEnvelope getExtent(IElement element) {
 		if(element!=null) {
 			try {
@@ -168,10 +168,10 @@ public abstract class AbstractDiskoLayer extends
 							extent.union(getExtent(it));
 						// get next
 						it = items.next();
-					}	
+					}
 					return extent;
 				}
-				else {					
+				else {
 					IGeometry geom = element.getGeometry();
 					return geom!=null ? geom.getEnvelope() : null;
 				}
@@ -184,16 +184,16 @@ public abstract class AbstractDiskoLayer extends
 			}
 		}
 		return null;
-	}	
+	}
 
 	public int getRefreshRate() {
 		return refreshRate;
 	}
-	
+
 	public void setRefreshRate(int inMillis) {
 		refreshRate = inMillis;
 	}
-	
+
 	protected void refresh(IEnvelope extent) {
 		try {
 			long tic = System.currentTimeMillis();
@@ -201,7 +201,7 @@ public abstract class AbstractDiskoLayer extends
 				if(extent!=null) {
 					display().invalidate(setRefreshExtent(extent), false, (short)esriViewDrawPhase.esriViewGeography);
 					setRefreshExtent(null);
-					
+
 				}
 				refreshTime = tic;
 			}
@@ -216,7 +216,7 @@ public abstract class AbstractDiskoLayer extends
 			e.printStackTrace();
 		}
 	}
-	
+
 	private IEnvelope setRefreshExtent(IEnvelope extent) {
 		try {
 			if(extent==null)
@@ -233,9 +233,9 @@ public abstract class AbstractDiskoLayer extends
 			e.printStackTrace();
 		}
 		return refreshExtent;
-		
+
 	}
-	
+
 	@Override
 	public ISpatialReference getSpatialReference() throws IOException,
 			AutomationException {
@@ -248,8 +248,8 @@ public abstract class AbstractDiskoLayer extends
 		// prepare
 		this.srs = srs;
 		// forward
-		super.setSpatialReferenceByRef(srs);		
+		super.setSpatialReferenceByRef(srs);
 	}
-	
-	
+
+
 }

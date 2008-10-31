@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.gui.model.MsoTableModel;
+import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;
@@ -14,7 +14,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 
-public class UnitTableModel extends MsoTableModel<IUnitIf> {
+public class UnitTableModel extends AbstractMsoTableModel<IUnitIf> {
 
 	private static final long serialVersionUID = 1L;
 

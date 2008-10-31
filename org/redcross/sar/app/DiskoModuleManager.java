@@ -9,7 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.thread.DiskoProgressMonitor;
+import org.redcross.sar.thread.ProgressMonitor;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.w3c.dom.Document;
@@ -131,7 +131,7 @@ public class DiskoModuleManager {
 						Class<?> cls = classLoader.loadClass(className);
 						String message = DiskoStringFactory.getText(Utils.getPackageName(cls));
 						message = String.format(DiskoStringFactory.getText("PROGRESS_LOADING_CLASS"),message);
-						DiskoProgressMonitor.getInstance().setNote(message);
+						ProgressMonitor.getInstance().setNote(message);
 						Object obj = cls.getConstructors()[0].newInstance();
 						if (obj instanceof IDiskoWpModule) {
 							module = (IDiskoWpModule)obj;

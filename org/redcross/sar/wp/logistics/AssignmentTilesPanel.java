@@ -4,17 +4,20 @@ import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IDiskoDropTarget;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DiskoTilesPanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.logistics.AssignmentLabel.AssignmentLabelActionHandler;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
@@ -44,16 +47,14 @@ import javax.swing.JLabel;
  */
 public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropTarget
 {
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
     /**
 	 * Drop data flavor object (assignment)
 	 */
-	private static DataFlavor m_flavor = null;
-	
+	private static DataFlavor m_flavor;
+
 	/**
      * List of assignments to show.
      */
@@ -89,7 +90,7 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
      * Pointer to wp module
      */
     private final IDiskoWpLogistics m_wpModule;
-    
+
     /**
      * Status of assignments listed.
      */
@@ -111,8 +112,13 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     private final AssignmentLabelActionHandler m_actionHandler;
 
     /**
-     * Constructor.
-     * <p/>
+     * Icon sizr
+     */
+    private final Dimension m_iconSize = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
+
+    /**
+     * Constructor. </p>
+     *
      * Define a panel with a given FlowLayout manager.
      *
      * @param aLayoutManager  The layout manager used by the panel.
@@ -130,12 +136,12 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     }
 
     /**
-     * Constructor.
-     * <p/>
+     * Constructor. </p>
+     *
      * Define a panel with a given GridLayout manager.
      *
      * @param aLayoutManager  The layout manager used by the panel.
-     * @param anActionHandler The {@link AssignmentLabel.AssignmentLabelActionHandler} that shall be used by te labels.
+     * @param anActionHandler The {@link AssignmentLabel.AssignmentLabelActionHandler} that shall be used by the labels.
      * @param showIcons       <code>true</code> if icons shall be shown in the labels, <code>false</code> otherwise.
      * @see DiskoTilesPanel
      */
@@ -149,8 +155,8 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     }
 
     /**
-     * Constructor.
-     * <p/>
+     * Constructor. </p>
+     *
      * Define a panel with a given layout manager.
      *
      * @param aScrollPane      The surrounding scroll pane.
@@ -184,22 +190,22 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     	catch(Exception e) {
     		e.printStackTrace();
     	}
-    	
+
     	// create gesture recognizer
     	DragSource ds = DragSource.getDefaultDragSource();
-    	ds.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, 
+    	ds.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE,
     			new IconDragGestureListener(new AssignmentScrollPanelDragSourceListener()));
-    	
+
     	// create drop target
     	setDropTarget(new DropTarget(this, new AssignmentScrollPanelDropTargetListener()));
-    	
+
     	// add focus listener
         addFocusListener(new FocusListener()
         {
             public void focusGained(FocusEvent e){}
             public void focusLost(FocusEvent e){}
         });
-        
+
 
     }
 
@@ -325,15 +331,15 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
         int lastIndex = m_lastIndex < 0 ? m_assignments.size() - 1 : Math.min(m_assignments.size() - 1, m_lastIndex);
         int iv = 0;
 
-        IAssignmentIf[] assignmentArray = new IAssignmentIf[m_assignments.size()];
-        m_assignments.toArray(assignmentArray);
+        IAssignmentIf[] items = new IAssignmentIf[m_assignments.size()];
+        m_assignments.toArray(items);
 
         Iterator<IAssignmentIf> iterator = m_assignments.iterator();
         int i = -1;
         while (iterator.hasNext())
         {
             i++;
-            IAssignmentIf asg = assignmentArray[i];
+            IAssignmentIf asg = items[i];
             asg = iterator.next();
             if (i < firstIndex) continue;
             if (i > lastIndex) break;
@@ -343,7 +349,7 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
                     icon = new AssignmentIcon(asg, m_selected.contains(asg), null);
                     m_icons.ensureCapacity(lastIndex - firstIndex + 1);
                     m_icons.add(icon);
-                } 
+                }
                 else {
                     icon = m_icons.get(iv);
                     icon.setAssignment(asg);
@@ -352,16 +358,16 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
                 if (m_labels.size() == iv){
                     m_labels.ensureCapacity(lastIndex - firstIndex + 1);
                     m_labels.add(new AssignmentDragDropLabel(icon, m_actionHandler));
-                } 
+                }
                 else {
                     m_labels.get(iv).setAssignmentIcon(icon);
                 }
-            } 
+            }
             else {
                 if (m_labels.size() == iv){
                     m_labels.ensureCapacity(lastIndex - firstIndex + 1);
                     m_labels.add(new AssignmentDragDropLabel(asg, m_actionHandler));
-                } 
+                }
                 else {
                     m_labels.get(iv).setAssignment(asg);
                 }
@@ -380,7 +386,7 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
      */
     public int getMaxNonScrollItems()
     {
-        return super.getMaxNonScrollItems(IconRenderer.AssignmentIcon.getIconSize());
+        return super.getMaxNonScrollItems(m_iconSize);
     }
 
     public void setSelectedAssignment(IAssignmentIf anAssignment)
@@ -400,7 +406,7 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     public Component getComponent() {
 		return this;
 	}
-    
+
     public boolean transfer(Transferable data) {
 		// get data
 		try{
@@ -415,38 +421,38 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
 			e.printStackTrace();
 		}
 		// can not transfer
-		return false;    	
-	}		
+		return false;
+	}
 
 	public boolean canTransfer(Transferable data) {
 		// get data
 		try{
-			
+
 			// try to get assignment
 			IAssignmentIf assignment = (IAssignmentIf)data.getTransferData(m_flavor);
-			
+
 			// valid assignment?
 			if(assignment!=null) {
-			
+
 				// get status change
 				AssignmentStatus newStatus = getSelectedStatus()==null ? AssignmentStatus.READY : getSelectedStatus();
 
 				// validate
-		    	Object[] ans = AssignmentTransferUtilities.verifyMove(assignment, null, newStatus);
-		    	
+		    	Object[] ans = AssignmentUtilities.verifyMove(assignment, null, newStatus);
+
 		    	// get action
 		    	int action = Integer.valueOf(ans[0].toString());
-		    	
+
 		    	// can move to status?
 		        if (action>=0)
 		        {
 		        	// only change should result in a transfer
 		        	return action==0 ? false : true;
 		        }
-		        					
+
 				// notify reason
 				Utils.showWarning(ans[1].toString());
-				
+
 			}
 		}
 		catch(UnsupportedFlavorException e1) {
@@ -456,15 +462,15 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
 			e2.printStackTrace();
 		}
 		// can not transfer
-		return false;    	
-	}	
-	
-	class AssignmentScrollPanelDragSourceListener extends DiskoDragSourceAdapter {
+		return false;
+	}
+
+	private class AssignmentScrollPanelDragSourceListener extends DiskoDragSourceAdapter {
 
 	    public Component getComponent() {
 			return AssignmentTilesPanel.this;
 		}
-	
+
 		public Transferable getTransferable() {
 			// Only assignment labels are draggable!!
 			return null;
@@ -474,10 +480,10 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
 		public Icon getIcon() {
 			// Only assignment labels are draggable!!
 	    	return null;
-		}		
+		}
 	}
 
-	class AssignmentScrollPanelDropTargetListener extends DiskoDropTargetAdapter {
+	private class AssignmentScrollPanelDropTargetListener extends DiskoDropTargetAdapter {
 
 		@Override
 		public void dragOver(DropTargetDragEvent e) {
@@ -505,6 +511,6 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
 			}
 			// reject request
 			e.rejectDrop();
-		}		
-	}	
+		}
+	}
 }

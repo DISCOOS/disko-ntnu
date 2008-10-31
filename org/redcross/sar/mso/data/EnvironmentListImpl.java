@@ -18,7 +18,7 @@ public class EnvironmentListImpl extends MsoListImpl<IEnvironmentIf> implements 
     public IEnvironmentIf createEnvironment(Calendar aCalendar, String aText)
     {
         checkCreateOp();
-        return createdUniqueItem(new EnvironmentImpl(makeUniqueId(), aCalendar, aText));
+        return createdUniqueItem(new EnvironmentImpl(getOwner().getModel(), makeUniqueId(), aCalendar, aText));
     }
 
 
@@ -26,7 +26,7 @@ public class EnvironmentListImpl extends MsoListImpl<IEnvironmentIf> implements 
     {
         checkCreateOp();
         IEnvironmentIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new EnvironmentImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new EnvironmentImpl(getOwner().getModel(), anObjectId));
     }
 
 }

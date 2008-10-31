@@ -1,14 +1,15 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
 
 public class SketchImpl extends AbstractMsoObject implements ISketchIf
 {
 
-    public SketchImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public SketchImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()

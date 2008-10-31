@@ -16,14 +16,14 @@ public class EquipmentListImpl extends MsoListImpl<IEquipmentIf> implements IEqu
     public IEquipmentIf createEquipment()
     {
         checkCreateOp();
-        return createdUniqueItem(new EquipmentImpl(makeUniqueId()));
+        return createdUniqueItem(new EquipmentImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public IEquipmentIf createEquipment(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IEquipmentIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new EquipmentImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new EquipmentImpl(getOwner().getModel(), anObjectId));
     }
 
 

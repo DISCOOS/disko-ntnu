@@ -1,14 +1,11 @@
 package org.redcross.sar.wp.messageLog;
 
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
-import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.DTG;
@@ -33,16 +30,16 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	public StartedAssignmentPanel(IDiskoWpMessageLog wp)
 	{
+
+		// forward
 		super(wp);
 
-		m_editAssignmentPanel.getAttribute("Time").setCaptionText(
-				 m_wpMessageLog.getBundleText("StartedTimeLabel.text") + ": ");
+		// prepare
+		m_editAssignmentPanel.getField("Time").setCaptionText(
+				 m_aWp.getBundleText("StartedTimeLabel.text") + ": ");
 
 	}
 
-	/**
-	 *
-	 */
 	@Override
 	protected void updateMessageLine()
 	{
@@ -57,7 +54,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 		// Must have started message line to reach this point
 		IMessageLineIf messageLine = MessageLogBottomPanel.getCurrentMessage(true).findMessageLine(MessageLineType.STARTED, false);
 
-		String time = DTG.CalToDTG(messageLine.getOperationTime());
+		String time = DTG.CalToDTG(messageLine.getLineTime());
 		if(time.isEmpty())
 		{
 			time = DTG.CalToDTG(Calendar.getInstance());
@@ -76,33 +73,33 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 
 	protected void addNewMessageLine()
 	{
-		
+
 		// violation?
 		if(!MessageLogBottomPanel.isNewMessage()) {
-			
+
 			// notify reason
-			Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
-					m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
-			
+			Utils.showWarning(m_aWp.getBundleText("MessageTaskOperationError.header"),
+					m_aWp.getBundleText("MessageTaskOperationError.details"));
+
 			// finished
 			return;
-			
+
 		}
-		
+
 		// get unit if exists
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(false);
 		IUnitIf unit = getAvailableUnit(message);
-				
+
 		if(unitHasStartedAssignment(unit)) {
-			
+
 			// notify reason
 			Utils.showWarning(String.format("%s kan ikke utføre mer enn ett oppdrag om gangen", MsoUtils.getUnitName(unit, false)));
-			
+
 			// finished
 			return;
-			
+
 		}
-		
+
 		if(unitHasAllocatedAssignment(unit))
 		{
 			// If unit has Allocated, ask if this is started
@@ -111,13 +108,13 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 			// try not committed assignments?
 			if(assignment==null) {
 				IMessageLineIf line = getAddedLine(MessageLineType.ALLOCATED);
-				assignment = (line!=null) ? line.getLineAssignment() : null;			
+				assignment = (line!=null) ? line.getLineAssignment() : null;
 			}
-			
-			Object[] options = {m_wpMessageLog.getBundleText("yes.text"), m_wpMessageLog.getBundleText("no.text")};
-			int n = JOptionPane.showOptionDialog(m_wpMessageLog.getApplication().getFrame(),
-					String.format(m_wpMessageLog.getBundleText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),
-					m_wpMessageLog.getBundleText("UnitStartedAssignment.header"),
+
+			Object[] options = {m_aWp.getBundleText("yes.text"), m_aWp.getBundleText("no.text")};
+			int n = JOptionPane.showOptionDialog(m_aWp.getApplication().getFrame(),
+					String.format(m_aWp.getBundleText("UnitStartedAssignment.text"), MsoUtils.getMsoObjectName(unit,0), MsoUtils.getMsoObjectName(assignment,1)),
+					m_aWp.getBundleText("UnitStartedAssignment.header"),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
 					null,
@@ -128,7 +125,7 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 			{
 
 				// Set assignment started
-				AssignmentTransferUtilities.createAssignmentChangeMessageLines(message, MessageLineType.STARTED,
+				AssignmentUtilities.createAssignmentChangeMessageLines(message, MessageLineType.STARTED,
 						MessageLineType.STARTED, Calendar.getInstance(), unit, assignment);
 
 				m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, assignment, false));
@@ -152,35 +149,36 @@ public class StartedAssignmentPanel extends AbstractAssignmentPanel
 			return;
 		}
 		// success
-		m_assignmentUnit = unit;
+		m_owningUnit = unit;
 
 	}
 
 	protected void addSelectedAssignment()
 	{
-		if(m_assignmentUnit!=null && m_selectedAssignment!=null)
+		if(m_owningUnit!=null && m_selectedAssignment!=null)
 		{
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
-			
-			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
+
+			AssignmentUtilities.createAssignmentChangeMessageLines(message,
 					MessageLineType.ALLOCATED, MessageLineType.STARTED,
-					Calendar.getInstance(), m_assignmentUnit, m_selectedAssignment);
-			
+					Calendar.getInstance(), m_owningUnit, m_selectedAssignment);
+
 			// add to lines
 			m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, m_selectedAssignment, false));
 			m_addedLines.add(message.findMessageLine(MessageLineType.STARTED, m_selectedAssignment, false));
-			
+
 		}
 
 		MessageLogBottomPanel.showStartPanel();
+
 	}
-	
+
     public void showEditor()
     {
     	super.showEditor();
-    	
+
     	m_messageLinesPanel.setCaptionText("Startet oppdrag");
-        
+
     }
-	
+
 }

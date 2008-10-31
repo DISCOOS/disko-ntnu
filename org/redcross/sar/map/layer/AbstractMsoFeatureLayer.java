@@ -2,27 +2,28 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.event.MsoLayerEvent.MsoLayerEventType;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.feature.MsoFeatureClass;
+import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 
 import com.esri.arcgis.carto.ILayerGeneralProperties;
 import com.esri.arcgis.carto.esriViewDrawPhase;
@@ -41,203 +42,106 @@ import com.esri.arcgis.system.ITrackCancel;
 import com.esri.arcgis.system.IUID;
 import com.esri.arcgis.system.IVariantStream;
 
-public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoDataset,
-	IPersistVariant, ILayerGeneralProperties, IMsoUpdateListenerIf {
+public abstract class AbstractMsoFeatureLayer
+				implements IMsoFeatureLayer, IGeoDataset, IPersistVariant, ILayerGeneralProperties {
 
-	protected String name = null;
-	protected MsoClassCode classCode = null;
-	protected LayerCode layerCode = null;
-	protected IEnvelope extent = null;
-	protected ISpatialReference srs = null;
-	protected IFeatureClass featureClass = null;
-	protected boolean isCached = false;
-	protected boolean isValid, isVisible = true;
-	protected boolean isSelectable = true;
-	protected boolean isEnabled = true, isOldEnabled = true;
+
 	protected int notifySuspended = 0;
 	protected int selectionCount = 0;
 	protected int visibleCount = 0;
 	protected int editCount = 0;
+
 	protected double maximumScale, minimumScale = 0;
-	protected boolean showTips = false, isDirty = false;	
-	protected IMsoModelIf msoModel = null;
-	protected EnumSet<MsoClassCode> myInterests = null;
-	protected MsoLayerEventStack eventStack = null;
-	protected Map<Integer,Selector<IMsoObjectIf>> selectors = null;
+
+	protected boolean isInterestChanged = false;
+	protected boolean isCached = false;
+	protected boolean isValid, isVisible = true;
+	protected boolean isSelectable = true;
+	protected boolean isEnabled = true, isOldEnabled = true;
+	protected boolean showTips = false, isDirty = false;
 	protected boolean isTextShown = true;
 
-	public AbstractMsoFeatureLayer(MsoClassCode classCode, 
-			LayerCode layerCode, IMsoModelIf msoModel, 
-			ISpatialReference srs, int shapeType, 
-			MsoLayerEventStack eventStack) {
+	protected String name;
+	protected MsoClassCode classCode;
+	protected LayerCode layerCode;
+	protected IEnvelope extent;
+	protected ISpatialReference srs;
+	protected MsoFeatureModel featureClass;
+	protected EnumSet<MsoClassCode> myInterests;
+	protected MsoLayerEventStack eventStack;
+	protected IDiskoMapManager manager;
+
+	protected final Map<Integer,Selector<IMsoObjectIf>> selectors = new HashMap<Integer,Selector<IMsoObjectIf>>();
+
+	/* ===============================================================
+	 * Constructors
+	 * =============================================================== */
+
+	public AbstractMsoFeatureLayer(
+			int shapeType,
+			MsoClassCode classCode,
+			EnumSet<MsoClassCode> coClasses,
+			LayerCode layerCode,
+			ISpatialReference srs,
+			MsoLayerEventStack eventStack,
+			IDiskoMapManager manager) {
 
 		// prepare
 		this.classCode = classCode;
 		this.layerCode = layerCode;
-		this.msoModel = msoModel;
 		this.srs = srs;
-		this.selectors = new HashMap<Integer,Selector<IMsoObjectIf>>(); 
 		this.eventStack = eventStack;
-
-		featureClass = new MsoFeatureClass(shapeType);
-		name = DiskoEnumFactory.getText(layerCode);
+		this.manager = manager;
+		this.featureClass = new MsoFeatureModel(shapeType);
+		this.name = DiskoEnumFactory.getText(layerCode);
 
 		// event handling
-		myInterests = EnumSet.of(classCode);
-		msoModel.getEventManager().addClientUpdateListener(this);
+		myInterests =  EnumSet.of(classCode);
+		myInterests.addAll(coClasses);
 
 	}
 
-	protected boolean addInterestIn(MsoClassCode classCode) {
-		if(!myInterests.contains(classCode)) {
-			return myInterests.add(classCode);
-		}
-		return false;			
-	}
-	
-	protected boolean removeInterestIn(MsoClassCode classCode) {
-		if(myInterests.contains(classCode) && !this.classCode.equals(classCode)) {
-			return myInterests.remove(classCode);
-		}
-		return false;			
-		
-	}
-	
-	public IMsoModelIf getMsoModel() {
-		return msoModel;
-	}
+	/* ===============================================================
+	 * IMsoFeatureLayer implementation
+	 * =============================================================== */
 
-	public List<IMsoObjectIf> getGeodataMsoObjects(String id) {
-		try {
-			MsoFeatureClass msoFC = (MsoFeatureClass)getFeatureClass();
-			IMsoFeature msoFeature = msoFC.getFeature(id);
-			IMsoObjectIf msoObj = msoFeature!=null ? msoFeature.getMsoObject() : null;		
-			if(msoObj!=null) {
-				return getGeodataMsoObjects(msoObj);
-			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// failed
-		return new ArrayList<IMsoObjectIf>(0);
-	}
-	
+	/**
+	 * Use this method to get geodata objects. </p>
+	 *
+	 * The default behavior is to return a list containing the passed
+	 * MSO object. If other behavior is required, override this method.
+	 */
+	@SuppressWarnings("unchecked")
 	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
 		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
-		objects.add(msoObject);
+		if(msoObject!=null && msoObject.getMsoClassCode().equals(classCode)) {
+			objects.add((IMsoObjectIf)msoObject);
+		}
 		return objects;
 	}
-	
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		//if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-		return myInterests.contains(aMsoObject.getMsoClassCode());
-	}
 
-	public void handleMsoUpdateEvent(Update e) {
-				
+
+	public Collection<IMsoFeature> load(Collection<IMsoObjectIf> msoObjs)  {
+
+		// initialize list
+		Collection<IMsoFeature> workList = new Vector<IMsoFeature>(msoObjs.size());
+
 		try {
-
-			// get event flags
-			int mask = e.getEventTypeMask();
-			
-	        // get flag
-	        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-			
-	        // get mso object and feature class
-	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-			MsoFeatureClass msoFC = (MsoFeatureClass)featureClass;
-			
-	        // clear all?
-	        if(clearAll) {
-	        	// forward
-	        	msoFC.removeAll();
-	        	// set dirty
-	        	isDirty = true;
-	        }
-	        else {
-	        	
-	        	// get flags
-				boolean createdObject  = (mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-				boolean deletedObject  = (mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-				boolean modifiedObject = (mask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-				boolean addedReference = (mask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-				boolean removedReference = (mask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;			
-				
+			// remove all
+			featureClass.removeAll();
+			// add new
+			for (IMsoObjectIf msoObj : msoObjs) {
 				// get list of
-				List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);
-				
+				List<IMsoObjectIf> geodata = getGeodataMsoObjects(msoObj);
 				// loop over all object
-				for(IMsoObjectIf it: msoObjs) {
-					
-					// get feature	
-					IMsoFeature msoFeature = msoFC.getFeature(it.getObjectId());
-		
-					// get other flags
-					boolean isFeature = it.getMsoClassCode().equals(classCode);
-					
-					// add object?
-					if (createdObject && msoFeature == null && isFeature) {
-						// create and att to feature class				
-						msoFeature = createMsoFeature(it);
-						msoFC.addFeature(msoFeature);
-						// update dirty flag
-						isDirty = isDirty || isFeatureDirty(msoFeature);			
-					}
-					// is object modified?
-					if ( (addedReference || removedReference || modifiedObject) 
-							&& msoFeature != null && msoFeature.isMsoChanged(it)) {
-						// change geometry
-						msoFeature.msoChanged();
-						// update dirty flag
-						isDirty = isDirty || isFeatureDirty(msoFeature);			
-					}
-					if(deletedObject) {
-						System.out.println();
-					}
-					// delete object?
-					if ((deletedObject) && msoFeature != null && isFeature) {
-						// remove from feature class
-						msoFC.removeFeature(msoFeature);
-						// update dirty flag
-						isDirty = isDirty || isFeatureDirty(msoFeature);			
-					}
-				}
-	        }
-			
-		} catch (AutomationException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		}
-	}
-
-	protected IMsoFeature createMsoFeature(IMsoObjectIf msoFeature) 
-		throws AutomationException, IOException {
-		return null;
-	}
-
-	protected void loadObjects(Object[] objects)  {
-		try {
-			MsoFeatureClass msoFC = (MsoFeatureClass)featureClass;
-			for (int i = 0; i < objects.length; i++) {
-				IMsoObjectIf msoObj = (IMsoObjectIf)objects[i];				
-				// get list of
-				List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);				
-				// loop over all object
-				for(IMsoObjectIf it: msoObjs) {				
+				for(IMsoObjectIf it: geodata) {
 					IMsoFeature msoFeature = createMsoFeature(it);
-					msoFC.addFeature(msoFeature);
-					isDirty = isDirty || isFeatureDirty(msoFeature);
+					featureClass.addFeature(msoFeature);
+					workList.add(msoFeature);
 				}
 			}
+			setDirty(true);
+
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -245,8 +149,21 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		// finished
+		return workList;
+
 	}
-	
+
+	public boolean removeAll() {
+		// forward
+		if(featureClass.removeAll()) {
+			setDirty(true);
+			return true;
+		}
+		return false;
+	}
+
 	public void addMsoLayerEventListener(IMsoLayerEventListener listener) {
 		if (eventStack!=null) {
 			eventStack.addMsoLayerEventListener(listener);
@@ -259,12 +176,6 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		}
 	}
 
-	protected void fireOnSelectionChanged(MsoLayerEventType type) {
-		if (eventStack!=null) {
-			eventStack.push(this, type);
-		}
-	}
-	
 	public void setSelected(IMsoFeature msoFeature, boolean selected) {
 		if(msoFeature==null) return;
 		if (!msoFeature.isSelected() && selected) {
@@ -276,18 +187,18 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			msoFeature.setSelected(false);
 			fireOnSelectionChanged(MsoLayerEventType.DESELECTED_EVENT);
 		}
-		isDirty = isDirty || isFeatureDirty(msoFeature);			
+		setDirty(isDirty || isFeatureDirty(msoFeature));
 	}
 
 	public int clearSelected() throws AutomationException, IOException {
 		int count = 0;
 		for (int i = 0; i < featureClass.featureCount(null); i++) {
-			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+			IMsoFeature feature = getFeature(i);
 			if (feature.isSelected()) {
 				selectionCount--;
 				count++;
 				feature.setSelected(false);
-				isDirty = isDirty || isFeatureDirty(feature);			
+				setDirty(isDirty || isFeatureDirty(feature));
 			}
 		}
 		selectionCount = 0;
@@ -297,14 +208,14 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return count;
 	}
 
-	public List<IMsoFeature> getSelected() throws AutomationException, IOException {
+	public List<IMsoFeature> getSelectedFeatures() throws AutomationException, IOException {
 		ArrayList<IMsoFeature> selection = new ArrayList<IMsoFeature>();
 		for (int i = 0; i < featureClass.featureCount(null); i++) {
-			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+			IMsoFeature feature = getFeature(i);
 			if (feature.isSelected()) {
 				selection.add(feature);
 			}
-			isDirty = isDirty || isFeatureDirty(feature);			
+			setDirty(isDirty || isFeatureDirty(feature));
 		}
 		return selection;
 	}
@@ -312,11 +223,11 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public List<IMsoObjectIf> getSelectedMsoObjects() throws AutomationException, IOException {
 		ArrayList<IMsoObjectIf> selection = new ArrayList<IMsoObjectIf>();
 		for (int i = 0; i < featureClass.featureCount(null); i++) {
-			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+			IMsoFeature feature = getFeature(i);
 			if (feature.isSelected()) {
 				selection.add(feature.getMsoObject());
 			}
-			isDirty = isDirty || isFeatureDirty(feature);			
+			setDirty(isDirty || isFeatureDirty(feature));
 		}
 		return selection;
 	}
@@ -327,15 +238,15 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			selectionCount = 0;
 			// loop over all features
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// set editing
 				if(msoFeature!=null){
 					// change to editing?
-					if(msoFeature.isSelected()) 
+					if(msoFeature.isSelected())
 						selectionCount++;
 				}
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
-			}			
+				setDirty(isDirty || isFeatureDirty(msoFeature));
+			}
 		}
 		// return count
 		return selectionCount;
@@ -349,7 +260,8 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		// only check visible
 		return isDirty(false);
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public boolean isDirty(boolean checkAll) {
 		// is dirty?
 		if(isDirty) return true;
@@ -360,13 +272,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// loop over all features
 			for (int i = 0; i < count; i++) {
 				// get mso feature
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// is not filtered and is visible?
 				if(checkAll || isFeatureDirty(msoFeature)) {
 					// is dirty?
 					if(msoFeature.isDirty()) {
-						isDirty = true; 
-						return true; 
+						setDirty(true);
+						return true;
 					}
 				}
 			}
@@ -387,7 +299,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 	public void setName(String name) throws IOException, AutomationException {
 		this.name = name;
-		isDirty = true; 
+		setDirty(true);
 
 	}
 
@@ -409,7 +321,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 	public void setMinimumScale(double scale) throws IOException, AutomationException {
 		minimumScale = scale;
-		isDirty = true; 
+		setDirty(true);
 
 	}
 
@@ -419,7 +331,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 	public void setMaximumScale(double scale) throws IOException, AutomationException {
 		maximumScale = scale;
-		isDirty = true;
+		setDirty(true);
 	}
 
 	public boolean isVisible() throws IOException, AutomationException {
@@ -429,7 +341,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setVisible(boolean isVisible) throws IOException, AutomationException {
 		if(this.isVisible != isVisible) {
 			this.isVisible = isVisible;
-			isDirty = true;
+			setDirty(true);
 		}
 	}
 
@@ -452,13 +364,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setSpatialReferenceByRef(ISpatialReference srs)
 		throws IOException, AutomationException {
 		this.srs = srs;
-		/*
-		int count = featureClass.featureCount(null);
-		for(int i=0;i<count;i++) {
-			IMsoFeature f = (IMsoFeature)featureClass.getFeature(i);
-			f.setSpatialReference(srs);
-		}
-		*/
+		this.featureClass.setSpatialReferenceByRef(srs);
 	}
 
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException {
@@ -471,7 +377,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 
 	public void setExtent(IEnvelope extent) {
 		this.extent = extent;
-		isDirty = true;
+		setDirty(true);
 	}
 
 	public IUID getID() throws IOException, AutomationException {
@@ -529,7 +435,8 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		return null;
 	}
 
-	public IFeatureClass getFeatureClass() throws IOException, AutomationException {
+	@Override
+	public MsoFeatureModel getFeatureClass() throws IOException, AutomationException {
 		return featureClass;
 	}
 
@@ -557,8 +464,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	}
 
 	public void setFeatureClassByRef(IFeatureClass featureClass) throws IOException, AutomationException {
-		this.featureClass = featureClass;
-
+		this.featureClass = (MsoFeatureModel)featureClass;
 	}
 
 	public void setScaleSymbols(boolean arg0) throws IOException, AutomationException {
@@ -579,13 +485,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		// any change?
 		if(this.isEnabled != isEnabled) {
 			this.isEnabled = isEnabled;
-			isDirty = true;
+			setDirty(true);
 		}
 	}
 
 	public boolean isNotifySuspended() {
 		return notifySuspended>0;
-	}	
+	}
 
 	public void suspendNotify() {
 		// increment
@@ -611,24 +517,16 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			}
 		}
 	}
-	
+
 	public void consumeNotify() {
-		/*/ decrement?
-		if(notifySuspended>0)
-			notifySuspended--;
-		// only resume on last decrement
-		if(notifySuspended==0){
-		*/
-			// clear stack
-			eventStack.consume(this);
-		//}
-		
+		// clear stack
+		eventStack.consume(this);
 	}
-	
+
 	public IEnvelope getVisibleFeaturesExtent() {
 
 		try {
-			
+
 			// initialize
 			IEnvelope extent = null;
 
@@ -638,7 +536,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// loop over all features and hide all other planned searches
 			for (int i = 0; i < count; i++) {
 				// get feature
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// is visible?
 				if(msoFeature.isVisible()) {
 					if(extent==null)
@@ -646,7 +544,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					else
 						extent.union(msoFeature.getExtent());
 				}
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
+				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
 			// finished!
 			return extent;
@@ -658,8 +556,8 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			e.printStackTrace();
 		}
 		return null;
-	}	
-	
+	}
+
 	public void setVisibleFeatures(boolean isVisible) {
 
 		try {
@@ -670,7 +568,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// loop over all features and hide all other planned searches
 			for (int i = 0; i < count; i++) {
 				// get feature
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// make visible
 				if(!msoFeature.isVisible() && isVisible) {
 					visibleCount++;
@@ -679,7 +577,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 					visibleCount--;
 					msoFeature.setVisible(false);
 				}
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
+				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -687,12 +585,13 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	public void setVisibleFeatures(IMsoObjectIf msoObj, boolean match, boolean others) {
 
 		try {
+
 			// get id
 			String ID = msoObj.getObjectId();
 
@@ -702,7 +601,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// loop over all features and hide all other planned searches
 			for (int i = 0; i < count; i++) {
 				// get feature
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// make visible?
 				if(msoFeature.getID().equals(ID)) {
 					// make visible
@@ -724,7 +623,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 						msoFeature.setVisible(false);
 					}
 				}
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
+				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -732,10 +631,9 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 	}
 
-	@Override
 	public void setVisibleFeatures(List<IMsoObjectIf> msoObjs, boolean match, boolean others) {
 
 		try {
@@ -746,7 +644,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			// loop over all features and hide all other planned searches
 			for (int i = 0; i < count; i++) {
 				// get feature
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// make visible?
 				if(msoObjs.contains(msoFeature.getMsoObject())) {
 					// make visible
@@ -768,7 +666,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 						msoFeature.setVisible(false);
 					}
 				}
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
+				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -776,7 +674,7 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	public int getVisibleFeatureCount(boolean update) throws AutomationException, IOException {
@@ -786,23 +684,29 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 			visibleCount = 0;
 			// loop over all features
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
-				IMsoFeature msoFeature = (IMsoFeature)featureClass.getFeature(i);
+				IMsoFeature msoFeature = getFeature(i);
 				// set editing
 				if(msoFeature!=null){
 					// change to editing?
-					if(msoFeature.isVisible()) 
+					if(msoFeature.isVisible())
 						visibleCount++;
 				}
-				isDirty = isDirty || isFeatureDirty(msoFeature);			
-			}			
+				setDirty(isDirty || isFeatureDirty(msoFeature));
+			}
 
 		}
 		// dirty?
-		isDirty = isDirty || (count!=visibleCount);
+		setDirty(isDirty || (count!=visibleCount));
 		// return count
 		return visibleCount;
 	}
 
+	@SuppressWarnings("unchecked")
+	public IMsoFeature getFeature(IMsoObjectIf msoObj) throws AutomationException, IOException {
+		return ((MsoFeatureModel)featureClass).getFeature(msoObj.getObjectId());
+	}
+
+	@SuppressWarnings("unchecked")
 	public IMsoFeature getFeature(int index) throws AutomationException, IOException {
 		return (IMsoFeature)featureClass.getFeature(index);
 	}
@@ -814,31 +718,21 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public Selector<IMsoObjectIf> getSelector(int id) {
 		return selectors.get(id);
 	}
-	
+
 	public boolean addSelector(Selector<IMsoObjectIf> selector,int id) {
 		// replace existing
 		selectors.put(id,selector);
-		isDirty = true;
+		setDirty(true);
 		return true;
 	}
 
 	public boolean removeSelector(int id) {
 		if(selectors.containsKey(id)) {
 			selectors.remove(id);
-			isDirty = true;
+			setDirty(true);
 			return true;
 		}
-		return false;	
-	}
-	
-	protected boolean select(IMsoFeature msoFeature) {
-		boolean doSelect = selectors.size()==0;
-		for(Selector<IMsoObjectIf> it : selectors.values()) {
-			// select?
-			if(it.select(msoFeature.getMsoObject())) return true;
-		}
-		// select feature
-		return doSelect;
+		return false;
 	}
 
 	public boolean isTextShown() {
@@ -848,30 +742,25 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setTextShown(boolean isVisible) {
 		isTextShown = isVisible;
 	}
-	
+
 	public IEnvelope getDirtyExtent() throws AutomationException, IOException {
 		// initialize
 		IEnvelope extent = null;
 		// check deep dirty state
 		int count = featureClass.featureCount(null);
 		for (int i = 0; i < count; i++) {
-			IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
+			IMsoFeature feature = getFeature(i);
 			if (feature.isDirty()) {
 				if(extent==null)
 					extent = feature.getExtent();
 				else
 					extent.union(feature.getExtent());
 			}
-			isDirty = isDirty || isFeatureDirty(feature); 				
+			setDirty(isDirty || isFeatureDirty(feature));
 		}
 		return extent;
 	}
-	
-	private boolean isFeatureDirty(IMsoFeature msoFeature) {
-		return (msoFeature!=null && select(msoFeature) 
-				&& msoFeature.isVisible() && msoFeature.isDirty());
-	}
-	
+
 	public int getRefreshRate() {
 		// TODO Auto-generated method stub
 		return 0;
@@ -880,6 +769,173 @@ public abstract class AbstractMsoFeatureLayer implements IMsoFeatureLayer, IGeoD
 	public void setRefreshRate(int inMillis) {
 		// TODO Auto-generated method stub
 	}
-	
-	
+
+	/* ===============================================================
+	 * IMsoUpdateListenerIf implementation
+	 * =============================================================== */
+
+	public EnumSet<MsoClassCode> getInterests() {
+		return myInterests;
+	}
+
+	public void handleMsoUpdateEvent(UpdateList events) {
+		processMsoUpdateEvent(events);
+	}
+
+	/**
+	 * Processes MSO update events. Long operations are returned as work list.
+	 * Add and change operations are long operations, remove operations are fast.
+	 * Hence, add and change operations are added to the work list, remove operations
+	 * are executed directly. The isDirty flag is only set for operations executed
+	 * in this procedure. This disables layer redraws until the work is actually done.
+	 * If only add and change operations are required, isDirty is not changed to true.
+	 * If any remove operations are executed directly, the isDirty bit is set to true.
+	 */
+	@SuppressWarnings("unchecked")
+	public Collection<IMsoFeature> processMsoUpdateEvent(UpdateList events) {
+
+		// initialize work list
+		Collection<IMsoFeature> workList = new ArrayList<IMsoFeature>();
+
+		try {
+
+			// loop over all events
+			for(MsoEvent.Update e : events.getEvents(myInterests)) {
+
+				// consume loopback updates
+				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+
+					// get event flags
+					int mask = e.getEventTypeMask();
+
+			        // get flag
+			        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+
+			        // get mso object and feature class
+			        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
+					final MsoFeatureModel msoFC = (MsoFeatureModel)featureClass;
+
+			        // clear all?
+			        if(clearAll) {
+			        	// forward
+			        	msoFC.removeAll();
+			        	// set dirty
+			        	setDirty(true);
+			        }
+			        else {
+
+			        	// get flags
+						boolean createdObject  = (mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+						boolean deletedObject  = (mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+						boolean modifiedObject = (mask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+						boolean addedReference = (mask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+						boolean removedReference = (mask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+
+						// get list of
+						List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);
+
+						// loop over all object
+						for(IMsoObjectIf it: msoObjs) {
+
+							// get feature
+							IMsoFeature msoFeature = getFeature(it);
+
+							// get other flags
+							boolean isFeature = it.getMsoClassCode().equals(classCode);
+
+							// add object?
+							if (createdObject && msoFeature == null && isFeature) {
+								// create feature
+								msoFeature = createMsoFeature(it);
+								// try to add feature
+								if(msoFC.addFeature(msoFeature)) {
+									// add load work?
+									workList.add(msoFeature);
+								}
+							}
+							// is object modified?
+							if ( (addedReference || removedReference || modifiedObject)
+									&& msoFeature != null && msoFeature.isMsoChanged()) {
+								// add load work?
+								if(!workList.contains(msoFeature)) {
+									workList.add(msoFeature);
+								}
+							}
+							// delete object?
+							if ((deletedObject) && msoFeature != null && isFeature) {
+								// remove from feature class
+								if(msoFC.removeFeature(msoFeature)) {
+									setDirty(true);
+								}
+							}
+						}
+			        }
+				}
+			}
+
+		} catch (AutomationException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+		// finished
+		return workList;
+	}
+
+	/* ===============================================================
+	 * Protected methods
+	 * =============================================================== */
+
+	protected void setDirty(boolean isDirty) {
+		if(this.isDirty!=isDirty) {
+			this.isDirty = isDirty;
+			/*
+			if(this instanceof RouteLayer)
+				System.out.println(isDirty+"#"+this);
+			*/
+		}
+	}
+
+	protected IMsoFeature createMsoFeature(IMsoObjectIf msoFeature)
+		throws AutomationException, IOException {
+		return null;
+	}
+
+
+	protected void fireOnSelectionChanged(MsoLayerEventType type) {
+		if (eventStack!=null) {
+			eventStack.push(this, type);
+		}
+	}
+
+	protected boolean select(IMsoFeature msoFeature) {
+		try {
+			if(msoFeature!=null && msoFeature.getShape()!=null) {
+				boolean doSelect = selectors.size()==0;
+				for(Selector<IMsoObjectIf> it : selectors.values()) {
+					// select?
+					if(it.select(msoFeature.getMsoObject())) return true;
+				}
+				// select feature
+				return doSelect;
+			}
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/* ===============================================================
+	 * Helper methods
+	 * =============================================================== */
+
+	private boolean isFeatureDirty(IMsoFeature msoFeature) {
+		return select(msoFeature) && msoFeature.isDirty();
+	}
 }

@@ -1,6 +1,6 @@
 package org.redcross.sar.gui;
 
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.IWorkListener;
 
 public interface IChangeable {
 	
@@ -18,6 +18,6 @@ public interface IChangeable {
 	public boolean finish();
 	public boolean cancel();
 	
-	public void addDiskoWorkListener(IDiskoWorkListener listener);
-	public void removeDiskoWorkListener(IDiskoWorkListener listener);
+	public void addWorkListener(IWorkListener listener);
+	public void removeWorkListener(IWorkListener listener);
 }

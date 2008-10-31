@@ -100,7 +100,7 @@ public class DiskoTableHeader extends JTableHeader {
 	 * =================================================================== */
 
 	@Override
-	public void updateUI(){
+	public void updateUI() {
 		setUI(new EditableHeaderUI());
 		resizeAndRepaint();
 		invalidate();
@@ -614,25 +614,29 @@ public class DiskoTableHeader extends JTableHeader {
 			@Override
 			public void mouseExited(MouseEvent e) {
 				setMouseColumn(getColumn(e));
-				if(!repostEvent(e)) super.mouseExited(e);
+				repostEvent(e);
+				super.mouseExited(e);
 			}
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				setMouseColumn(getColumn(e));
-				if(!repostEvent(e)) super.mouseClicked(e);
+				repostEvent(e);
+				super.mouseClicked(e);
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
 				setMouseColumn(getColumn(e));
-				if(!repostEvent(e)) super.mousePressed(e);
+				repostEvent(e);
+				super.mousePressed(e);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				setMouseColumn(getColumn(e));
-				if(!repostEvent(e)) super.mouseReleased(e);
+				repostEvent(e);
+				super.mouseReleased(e);
 			}
 
 			/* =========================================================

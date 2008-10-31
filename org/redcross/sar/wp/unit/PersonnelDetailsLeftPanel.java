@@ -6,17 +6,16 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
-import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelType;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
@@ -32,6 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
@@ -53,7 +53,7 @@ import javax.swing.JTextField;
 public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListenerIf, ITickEventListenerIf
 {
     private static final long serialVersionUID = 1L;
-    
+
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
     private IPersonnelIf m_currentPersonnel = null;
@@ -103,7 +103,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		JPanel topPanel = new JPanel(new BorderLayout());
 		m_topLabel = new JLabel();
 		topPanel.add(m_topLabel, BorderLayout.CENTER);
-		
+
 		m_changeStatusButton = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 		m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wpUnit.getBundleText("AlertedButton.icon"),"48x48"));
 		m_changeStatusButton.setToolTipText(m_wpUnit.getBundleText("AlertedButton.text"));
@@ -213,7 +213,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		layoutComponent(0, m_resources.getString("Notes.text"), notesScrollPane, gbc, 1);
-		
+
 	}
 
 	private void layoutComponent(int column, String label, JComponent component, GridBagConstraints gbc, int height)
@@ -230,7 +230,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 		gbc.gridy += height;
 	}
-	
+
     /**
      * Updates personnel data in MSO
      */
@@ -239,12 +239,12 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         if (m_currentPersonnel != null)
         {
             String[] fields = m_nameTextField.getText().split(" ");
-            
+
             // validate
             if (fields.length > 0)
             {
             	m_currentPersonnel.suspendClientUpdate();
-            	
+
                 StringBuilder text = new StringBuilder();
                 for (int i = 0; i < fields.length - 1; i++)
                 {
@@ -253,32 +253,32 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
                 String firstName = text.toString().trim();
                 String lastName = fields[fields.length - 1].trim();
-                
+
                 // valid name?
                 if(firstName.length()!=0 || lastName.length()!=0) {
-                
+
 	                if (firstName.toString() != null)
 	                {
 	                    m_currentPersonnel.setFirstname(firstName);
 	                }
 	                m_currentPersonnel.setLastname(lastName);
-	
+
 	                String phone = m_cellTextField.getText();
 		            m_currentPersonnel.setTelephone1(phone);
-		
+
 		            PersonnelType type = (PersonnelType) m_propertyComboBox.getSelectedItem();
 		            if (type == null)
 		            {
 		                type = PersonnelType.OTHER;
 		            }
 		            m_currentPersonnel.setType(type);
-		
+
 		            String organization = m_organizationTextField.getText();
 		            m_currentPersonnel.setOrganization(organization);
-		
+
 		            String department = m_departmentTextField.getText();
 		            m_currentPersonnel.setDepartment(department);
-		
+
 		            try
 		            {
 		            	Calendar callout = m_currentPersonnel.getCallOut();
@@ -290,9 +290,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		            catch (IllegalMsoArgumentException e)
 		            {
 		            }
-		
+
 		            m_currentPersonnel.setEstimatedArrival(parseEstimatedArrival());
-		
+
 		            try
 		            {
 		            	Calendar arrived = m_currentPersonnel.getArrived();
@@ -304,7 +304,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		            catch (IllegalMsoArgumentException e)
 		            {
 		            }
-		
+
 		            try
 		            {
 		            	Calendar released = m_currentPersonnel.getReleased();
@@ -316,15 +316,15 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		            catch (IllegalMsoArgumentException e)
 		            {
 		            }
-		
+
 		            String remarks = m_remarksTextArea.getText();
 		            m_currentPersonnel.setRemarks(remarks);
-		
-		            m_currentPersonnel.resumeClientUpdate();
-		            
+
+		            m_currentPersonnel.resumeClientUpdate(true);
+
 		            // finished!
 		            return true;
-		            
+
                 }
             }
         	Utils.showWarning("Begrensning","Fullt navn må oppgis for personell");
@@ -378,7 +378,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	                }
 	            }
 	            m_unitTextField.setText(personnelUnit == null ? "" : personnelUnit.getDefaultName());
-	
+
 	            if (personnelUnit != null)
 	            {
 	                if (personnelUnit.getUnitLeader() == m_currentPersonnel)
@@ -392,11 +392,11 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	            {
 	                m_roleTextField.setText("");
 	            }
-	
+
 	            m_calloutTextField.setText(DTG.CalToDTG(m_currentPersonnel.getCallOut()));
-	
+
 	            updateEstimatedArrival();
-	
+
 	            if (m_currentPersonnel.getStatus() == PersonnelStatus.RELEASED)
 	            {
 	                m_releasedTextField.setText(m_resources.getString("Yes.text"));
@@ -404,9 +404,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	            {
 	                m_releasedTextField.setText(m_resources.getString("No.text"));
 	            }
-	
+
 	            m_remarksTextArea.setText(m_currentPersonnel.getRemarks());
-	
+
 	            // Get next status for
 	            PersonnelStatus status = m_currentPersonnel.getStatus();
 	            PersonnelStatus[] values = PersonnelStatus.values();
@@ -525,26 +525,36 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
     {
         m_currentPersonnel = personnel;
     }
-    
+
+	public EnumSet<MsoClassCode> getInterests() {
+		return EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL);
+	}
+
     /**
      * Update fields if any changes occur in the personnel object
      */
-    public void handleMsoUpdateEvent(Update e)
-    {
-        IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ? 
-        		(IPersonnelIf) e.getSource() : null;
-        if (m_currentPersonnel == personnel)
-        {
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		if(events.isClearAllEvent()) {
+			m_currentPersonnel = null;
             updateFieldContents();
-        }
-    }    
-    
-	public boolean hasInterestIn(IMsoObjectIf msoObject, UpdateMode mode) 
-	{
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return msoObject.getMsoClassCode() == IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
+		}
+		else {
+			// loop over all events
+			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
+
+				// consume loopback updates
+				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+				{
+					IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ?
+	        		(IPersonnelIf) e.getSource() : null;
+			        if (m_currentPersonnel == personnel)
+			        {
+			            updateFieldContents();
+			        }
+				}
+			}
+		}
     }
 
     public long getInterval()
@@ -568,7 +578,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	        {
 	            return;
 	        }
-	
+
 	        // Don't update if adding new personnel
 	        if (m_currentPersonnel != null && !m_wpUnit.getNewPersonnel())
 	        {

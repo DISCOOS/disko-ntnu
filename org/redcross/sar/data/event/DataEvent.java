@@ -2,28 +2,30 @@ package org.redcross.sar.data.event;
 
 import java.util.EventObject;
 
-import org.redcross.sar.data.IDataBinderIf;
-import org.redcross.sar.data.IDataIf;
+import org.redcross.sar.data.IDataModel;
 
-public class DataEvent<S> extends EventObject {
+public class DataEvent extends EventObject {
 
 	private static final long serialVersionUID = 1L;
 
-	private S[] idx;
-	private IDataIf[] data;
-	private int flags;
+	public static final int ADDED_EVENT = 0;
+	public static final int UPDATED_EVENT = 1;
+	public static final int REMOVED_EVENT = 2;
+	public static final int CLEAR_EVENT = 3;
+
+	private int[] rows;
+	private int type;
 
 	/* ===========================================================
 	 * Constructors
 	 * =========================================================== */
 
-	public DataEvent(IDataBinderIf<S,? extends IDataIf,?> source, S[] idx, IDataIf[] data, int flags) {
+	public DataEvent(IDataModel<?,?> source, int[] rows, int type) {
 		// forward
 		super(source);
 		// prepare
-		this.idx = idx;
-		this.data = data;
-		this.flags = flags;
+		this.rows = rows;
+		this.type = type;
 	}
 
 	/* ===========================================================
@@ -32,20 +34,16 @@ public class DataEvent<S> extends EventObject {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public IDataBinderIf<S,? extends IDataIf,?> getSource() {
-		return (IDataBinderIf<S,? extends IDataIf,?>)super.getSource();
+	public IDataModel<?,?> getSource() {
+		return (IDataModel<?,?>)super.getSource();
 	}
 
-	public S[] getIdx() {
-		return idx;
+	public int[] getRows() {
+		return rows;
 	}
 
-	public IDataIf[] getData() {
-		return data;
-	}
-
-	public int getFlags() {
-		return flags;
+	public int getType() {
+		return type;
 	}
 
 }

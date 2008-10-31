@@ -43,8 +43,8 @@ import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.UnitUtilities;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -54,7 +54,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
  *
  * @author thomasl
  */
-public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IDiskoWorkListener
+public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IWorkListener
 {
 	private JPanel m_contentsPanel;
 
@@ -346,9 +346,9 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		super.activate(role);
 
 		// setup of navbar needed?
-		if(isNavBarSetupNeeded()) {
+		if(isNavMenuSetupNeeded()) {
 			// forward
-			setupNavBar(Utils.getListNoneOf(MapToolType.class),false);
+			setupNavMenu(Utils.getListNoneOf(MapToolType.class),false);
 		}
 	}
 
@@ -428,7 +428,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		}
 
 		// forward
-		getMsoModel().resumeClientUpdate();
+		getMsoModel().resumeClientUpdate(true);
 
 		// forward
 		getMsoModel().rollback();
@@ -465,7 +465,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			// failed?
 			if(m_leftViewId == PERSONNEL_DETAILS_VIEW_ID) {
 				// resume update
-				this.getMsoModel().resumeClientUpdate();
+				this.getMsoModel().resumeClientUpdate(true);
 				// failed!
 				return false;
 			}
@@ -508,7 +508,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		// forward
 		getMsoModel().commit();
 
-		getMsoModel().resumeClientUpdate();
+		// notify
+		getMsoModel().resumeClientUpdate(true);
 
 		// finished
 		return super.commit();
@@ -1049,7 +1050,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_newCallOut = newCallOut;
 	}
 
-	public void onWorkPerformed(DiskoWorkEvent e){
+	public void onWorkPerformed(WorkEvent e){
 
 		if(e.isFinish()) {
 

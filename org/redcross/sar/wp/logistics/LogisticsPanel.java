@@ -80,7 +80,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
     private IDiskoWpLogistics m_wpModule;
 
     private IUnitListIf m_unitList;
-    private IAssignmentListIf m_assignmentList;
 
     private IUnitIf m_mapSelectedUnit;
     private IAssignmentIf m_mapSelectedAssignment;
@@ -89,6 +88,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     AssignmentDisplayModel m_assignmentDisplayModel;
     UnitTableModel m_unitTableModel;
+
     private AssignmentLabel.AssignmentLabelActionHandler m_labelActionHandler;
     private AssignmentLabel.AssignmentLabelActionHandler m_listPanelActionHandler;
 
@@ -102,7 +102,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_wpModule = aWp;
         m_map = m_wpModule.getMap();
         m_unitList = m_wpModule.getCmdPost().getUnitList();
-        m_assignmentList = m_wpModule.getCmdPost().getAssignmentList();
 
         defineSubpanelActionHandlers();
 
@@ -110,46 +109,16 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
         addToListeners();
 
-        /*
-        m_contentPanel.addComponentListener(new ComponentListener()
-        {
-            boolean initialized = false;
-
-            public void componentResized(ComponentEvent e)
-            {
-            }
-
-            public void componentMoved(ComponentEvent e)
-            {
-            }
-
-            public void componentShown(ComponentEvent e)
-            {
-                if (!initialized)
-                {
-                    setSplitters();
-                    setPanelSizes();
-                    m_contentPanel.validate();
-                    initialized = true;
-                }
-            }
-
-            public void componentHidden(ComponentEvent e)
-            {
-            }
-        });
-        */
     }
 
     public void reInitPanel()
-     {
-         m_unitList = m_wpModule.getCmdPost().getUnitList();
-         m_assignmentList = m_wpModule.getCmdPost().getAssignmentList();
-         m_unitTableModel = (UnitTableModel) m_unitTable.getModel();
-         m_unitTableModel.getMsoBinder().setSelector(m_unitList);
-         m_unitTableModel.load(m_unitList);
-         m_assignmentDisplayModel.reInitModel(m_assignmentList);
-     }
+    {
+        m_unitList = m_wpModule.getCmdPost().getUnitList();
+        m_unitTableModel = (UnitTableModel) m_unitTable.getModel();
+        m_unitTableModel.getMsoBinder().setSelector(m_unitList);
+        m_unitTableModel.load(m_unitList);
+        m_assignmentDisplayModel.load();
+    }
 
     public void setSelectableLayers() {
         try {
@@ -216,9 +185,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
         setSelectedAssignmentInPanels(null);
         getInfoPanelHandler().setUnit(anUnit,true);
 
-		// show progress
-		m_map.showProgressor(true);
-
         // select later
         SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -246,9 +212,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
 					// resume events
 					m_map.resumeNotify();
 
-					// hide progress
-					m_map.hideProgressor();
-
 					// listen for selection events
 					m_mapSelectedByButton = false;
 
@@ -268,9 +231,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
     	setSelectedAssignmentInPanels(anAssignment);
         getInfoPanelHandler().setAssignment(anAssignment, calledFromListPanel);
 		getInfoPanelHandler().setUnit(anAssignment.getOwningUnit(),false);
-
-		// show progress
-		m_map.showProgressor(true);
 
         // select later
         SwingUtilities.invokeLater(new Runnable() {
@@ -301,9 +261,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
 					// resume events
 					m_map.resumeNotify();
 
-					// hide progress dialog
-					m_map.hideProgressor();
-
 					// handle selection events
 					m_mapSelectedByButton = false;
 
@@ -328,7 +285,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_unitTableModel.getMsoBinder().setSelector(m_unitList);
         m_unitTableModel.load(m_unitList);
         m_unitTable.setModel(m_unitTableModel);
-        m_unitTable.setAutoCreateColumnsFromModel(true);
         m_unitTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         m_unitTable.setDefaultRenderer(IconRenderer.UnitIcon.class, new LogisticsIconRenderer());
         m_unitTable.setDefaultRenderer(IconRenderer.AssignmentIcon.class, new LogisticsIconRenderer());
@@ -375,7 +331,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
 				// translate
 				if("actions.edit.sorting".equals(cmd)) {
-					tableRowSorter.setSortKeys(null);
+					tableRowSorter.clearSort();
 				}
 				else if("actions.edit.togglemaxsort".equals(cmd)) {
 					// get toggle state
@@ -582,7 +538,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
         initUnitTable();
 
         // prepare display model
-        m_assignmentDisplayModel = new AssignmentDisplayModel(m_selectableAssignmentsPanel, m_priAssignmentsPanel, m_wpModule.getMsoEventManager(), m_assignmentList);
+        m_assignmentDisplayModel = new AssignmentDisplayModel(m_selectableAssignmentsPanel, m_priAssignmentsPanel, m_wpModule.getMsoModel());
         m_rightPanel.addComponentListener(m_assignmentDisplayModel);
 
         // reset splitter divider locations

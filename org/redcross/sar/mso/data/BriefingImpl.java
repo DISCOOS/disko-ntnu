@@ -31,9 +31,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
     private final AttributeImpl.MsoString m_telephones = new AttributeImpl.MsoString(this, "Telephones");
     private final AttributeImpl.MsoString m_transportProcedure = new AttributeImpl.MsoString(this, "TransportProcedure");
 
-    public BriefingImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public BriefingImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()

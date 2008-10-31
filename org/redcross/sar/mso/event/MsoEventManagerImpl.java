@@ -2,13 +2,18 @@ package org.redcross.sar.mso.event;
 
 import no.cmr.tools.Log;
 
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.DiskoProgressMonitor;
+import org.redcross.sar.thread.ProgressMonitor;
 import org.redcross.sar.util.except.CommitException;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -18,17 +23,55 @@ import java.util.Vector;
  */
 public class MsoEventManagerImpl implements IMsoEventManagerIf
 {
-    private final Collection<IMsoUpdateListenerIf> m_clientUpdateListeners = new Vector<IMsoUpdateListenerIf>();
-    private final Collection<IMsoUpdateListenerIf> m_serverUpdateListeners = new Vector<IMsoUpdateListenerIf>();
+
+	/**
+	 * Map from MsoClassCode to client update listeners that is interested in each MsoClassCodes
+	 */
+    private final Map<MsoClassCode, List<IMsoUpdateListenerIf>>
+    	m_clientUpdateListeners = new HashMap<MsoClassCode,List<IMsoUpdateListenerIf>>();
+
+    /**
+	 * Map from MsoClassCode to server update listeners that is interested in each MsoClassCodes
+	 */
+    private final Map<MsoClassCode, List<IMsoUpdateListenerIf>>
+    	m_serverUpdateListeners = new HashMap<MsoClassCode,List<IMsoUpdateListenerIf>>();
+
+	/**
+	 * Collections of commit listeners
+	 */
     private final Collection<IMsoCommitListenerIf> m_commitListeners = new Vector<IMsoCommitListenerIf>();
+
+	/**
+	 * Collections of derived update listeners
+	 */
     private final Collection<IMsoDerivedUpdateListenerIf> m_derivedUpdateListeners = new Vector<IMsoDerivedUpdateListenerIf>();
+
+
+	/**
+	 * Current progress monitor
+	 */
+    private ProgressMonitor m_monitor;
+
+    /**
+     * The number of started resume client update operations
+     */
+    private int m_resumeCount;
+
+    /**
+     * Pending updates
+     */
+    private final Collection<MsoEvent.Update> m_buffer = new Vector<MsoEvent.Update>(100);
+
+    /* ------------------------------------------------------------------
+     * IMsoEventManagerIf implementation
+     * ------------------------------------------------------------------ */
 
     /**
      * Add a listener in the {@link #m_clientUpdateListeners} queue.
      */
     public void addClientUpdateListener(IMsoUpdateListenerIf aListener)
     {
-        m_clientUpdateListeners.add(aListener);
+        defineInterests(m_clientUpdateListeners,aListener,aListener.getInterests());
     }
 
     /**
@@ -36,31 +79,70 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
      */
     public void removeClientUpdateListener(IMsoUpdateListenerIf aListener)
     {
-        m_clientUpdateListeners.remove(aListener);
+        removeInterests(m_clientUpdateListeners,aListener);
     }
-    
-    public void notifyClearAll(IMsoObjectIf root) {
-        fireUpdate(m_clientUpdateListeners, root, MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue());    	
+
+    public void notifyClearAll(IMsoObjectIf root)
+    {
+        // notify
+        fireUpdate(m_clientUpdateListeners,
+        		getUpdateEvents(root,MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()));
     }
-    
+
     public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask)
     {
-        fireUpdate(m_clientUpdateListeners, aSource, anEventTypeMask);
+    	// consume?
+    	if(anEventTypeMask!=0)
+    	{
+    		// notify now?
+    		if(m_resumeCount==0)
+    		{
+    			fireUpdate(m_clientUpdateListeners, getUpdateEvents(aSource, anEventTypeMask));
+    		}
+    		else
+    		{
+    			// forward
+    			update(m_buffer,new MsoEvent.Update( aSource, anEventTypeMask ));
+    		}
+
+    	}
     }
+
+    private void update(Collection<MsoEvent.Update> buffer, MsoEvent.Update e) {
+    	// get source
+    	IMsoObjectIf msoObj = e.getSource();
+    	// search for existing event
+		for(MsoEvent.Update it : buffer) {
+			if(it.getSource().equals(msoObj)) {
+				it.union(e); return;
+			}
+		}
+		// add as new
+		buffer.add(e);
+    }
+
+	protected MsoEvent.Update getExisting(MsoEvent.Update e) {
+		return null;
+	}
+
 
     public void addServerUpdateListener(IMsoUpdateListenerIf aListener)
     {
-        m_serverUpdateListeners.add(aListener);
+        defineInterests(m_serverUpdateListeners,aListener,aListener.getInterests());
     }
 
     public void removeServerUpdateListener(IMsoUpdateListenerIf aListener)
     {
-        m_serverUpdateListeners.remove(aListener);
+        removeInterests(m_serverUpdateListeners,aListener);
     }
 
     public void notifyServerUpdate(IMsoObjectIf aSource, int anEventTypeMask)
     {
-        fireUpdate(m_serverUpdateListeners, aSource, anEventTypeMask);
+    	// consume?
+    	if(anEventTypeMask!=0)
+    	{
+	        fireUpdate(m_serverUpdateListeners, getUpdateEvents(aSource, anEventTypeMask));
+    	}
     }
 
     /**
@@ -84,67 +166,88 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         fireCommit(m_commitListeners, aSource, MsoEvent.MsoEventType.COMMIT_EVENT.maskValue());
     }
 
-    private void fireUpdate(Collection<IMsoUpdateListenerIf> theListeners, IMsoObjectIf aSource, int anEventTypeMask)
+    public ProgressMonitor getProgressMonitor() {
+        if(m_monitor == null) {
+            try {
+            	m_monitor = ProgressMonitor.getInstance();
+            } catch (Exception ex) {
+                // TODO Auto-generated catch block
+                ex.printStackTrace();
+            }
+        }
+        return m_monitor;
+    }
+
+
+
+    private void fireUpdate(
+    		Map<MsoClassCode, List<IMsoUpdateListenerIf>> theListeners,
+    		MsoEvent.UpdateList events)
     {
-    	final long WORK_TIME = 100;
-    	
-        if (theListeners.size() == 0 || anEventTypeMask == 0)
+        final long WORK_TIME = 100;
+
+        if (theListeners.size() == 0)
         {
             return;
         }
-        
-        // get flag
-        boolean clearAll = (anEventTypeMask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-        
-        MsoEvent.Update event = new MsoEvent.Update(aSource, anEventTypeMask);
-        
-        UpdateMode mode = event.getUpdateMode();
-        
+
+        // initialize
         long tic = System.currentTimeMillis();
-        
-        DiskoProgressMonitor monitor = null;
-		try {
-			monitor = DiskoProgressMonitor.getInstance();
-		} catch (Exception ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		}
-		
-		// get array to prevent concurrent modification
-		IMsoUpdateListenerIf[] list = new IMsoUpdateListenerIf[theListeners.size()];
-		theListeners.toArray(list);
-		
-		// get number of listeners
-		int count = list.length;
-		
-		// loop over all listeners
+        List<IMsoUpdateListenerIf> list = new ArrayList<IMsoUpdateListenerIf>(100);;
+
+        // get all?
+        if (events.isClearAllEvent())
+        {
+        	for(List<IMsoUpdateListenerIf> it : theListeners.values()) {
+        		for(IMsoUpdateListenerIf listener : it) {
+        			if(!list.contains(listener)) list.add(listener);
+        		}
+        	}
+        }
+        else
+        {
+        	// only notify those that are interested
+        	for(MsoEvent.Update it : events.getEvents()) {
+        		List<IMsoUpdateListenerIf> interested = theListeners.get(it.getSource().getMsoClassCode());
+        		if(interested!=null) {
+            		for(IMsoUpdateListenerIf listener : interested) {
+            			if(!list.contains(listener)) list.add(listener);
+            		}
+        		}
+        	}
+        }
+
+        // get array of interested listeners to prevent concurrent modification
+        IMsoUpdateListenerIf[] items = new IMsoUpdateListenerIf[list.size()];
+        list.toArray(items);
+
+        // get number of listeners
+        int count = items.length;
+
+        // loop over all listeners
         for (int i=0; i< count; i++)
         {
-        	// get listener
-        	IMsoUpdateListenerIf listener = list[i];
-        	// notify?
-            if (clearAll || listener.hasInterestIn(aSource,mode))
+            // get listener
+            IMsoUpdateListenerIf listener = items[i];
+
+            try
             {
-            	
-                try
-                {
-                    listener.handleMsoUpdateEvent(event);
-                                        
-                }
-                catch (Exception ex)
-                {
-                	ex.printStackTrace();
-                    Log.printStackTrace("Exception in fireUpdate, listener: " + listener.toString(),ex);
-                }
-                
-                // update progress monitor?
-                if(WORK_TIME<System.currentTimeMillis()-tic) {
-                	Thread.yield();
-                	if(monitor!=null) monitor.refreshProgress();
-                	tic = System.currentTimeMillis();
-                }                
-                	
+                listener.handleMsoUpdateEvent(events);
+
             }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                Log.printStackTrace("Exception in fireUpdate, listener: " + listener.toString(),ex);
+            }
+
+            // update progress monitor?
+            if(WORK_TIME<System.currentTimeMillis()-tic) {
+                Thread.yield();
+                getProgressMonitor().refreshProgress();
+                tic = System.currentTimeMillis();
+            }
+
         }
     }
 
@@ -170,6 +273,18 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
                 }
             }
         }
+    }
+
+    private MsoEvent.UpdateList getUpdateEvents(IMsoObjectIf msoObj, int mask)
+    {
+     	MsoEvent.Update e = new MsoEvent.Update( msoObj, mask );
+        return new MsoEvent.UpdateList(getUpdateEvents(e),e.isClearAllEvent());
+    }
+
+    private List<MsoEvent.Update> getUpdateEvents(MsoEvent.Update e) {
+    	List<MsoEvent.Update> list = new ArrayList<MsoEvent.Update>(1);
+    	list.add(e);
+    	return list;
     }
 
     public void addDerivedUpdateListener(IMsoDerivedUpdateListenerIf aListener)
@@ -202,5 +317,48 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         }
     }
 
+    private void defineInterests(
+    		Map<MsoClassCode, List<IMsoUpdateListenerIf>> theListeners,
+    		IMsoUpdateListenerIf aListener, EnumSet<MsoClassCode> interests) {
+    	// cleanup
+    	removeInterests(theListeners, aListener);
+    	// register interests
+    	for(MsoClassCode it : interests) {
+    		List<IMsoUpdateListenerIf> list = theListeners.get(it);
+    		if(list==null) {
+    			list = new ArrayList<IMsoUpdateListenerIf>();
+    			theListeners.put(it,list);
+    		}
+    		list.add(aListener);
+    	}
+    }
+
+    private void removeInterests(
+    		Map<MsoClassCode, List<IMsoUpdateListenerIf>> theListeners,
+    		IMsoUpdateListenerIf aListener) {
+
+        for(List<IMsoUpdateListenerIf> it : theListeners.values()) {
+            if(it.contains(aListener)) {
+            	it.remove(aListener);
+            }
+        }
+    }
+
+    public void enterResume() {
+    	m_resumeCount++;
+    }
+
+    public void leaveResume() {
+    	// decrement?
+    	if(m_resumeCount>0) m_resumeCount--;
+    	// fire client update notifications?
+    	if(m_resumeCount==0 && m_buffer.size()>0) {
+    		// notify listeners
+    		fireUpdate(m_clientUpdateListeners, new MsoEvent.UpdateList(m_buffer,false));
+    		// clear buffer
+    		m_buffer.clear();
+    	}
+
+    }
 
 }

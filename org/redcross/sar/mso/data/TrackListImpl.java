@@ -13,27 +13,27 @@ public class TrackListImpl extends MsoListImpl<ITrackIf> implements ITrackListIf
     public ITrackIf createTrack()
     {
         checkCreateOp();
-        return createdUniqueItem(new TrackImpl(makeUniqueId()));
+        return createdUniqueItem(new TrackImpl(getOwner().getModel(), makeUniqueId()));
     }
 
     public ITrackIf createTrack(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         ITrackIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new TrackImpl(anObjectId));
+        return retVal != null ? retVal : createdItem(new TrackImpl(getOwner().getModel(), anObjectId));
     }
 
     public ITrackIf createTrack(Track aTrack)
     {
         checkCreateOp();
-        return createdUniqueItem(new TrackImpl(makeUniqueId(), aTrack));
+        return createdUniqueItem(new TrackImpl(getOwner().getModel(), makeUniqueId(), aTrack));
     }
 
     public ITrackIf createTrack(IMsoObjectIf.IObjectIdIf anObjectId, Track aTrack)
     {
         checkCreateOp();
         ITrackIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new TrackImpl(anObjectId, aTrack));
+        return retVal != null ? retVal : createdItem(new TrackImpl(getOwner().getModel(), anObjectId, aTrack));
     }
 
 }

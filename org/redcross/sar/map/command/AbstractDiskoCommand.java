@@ -16,9 +16,9 @@ import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.thread.AbstractDiskoWork;
-import org.redcross.sar.thread.event.DiskoWorkEvent;
-import org.redcross.sar.thread.event.IDiskoWorkListener;
+import org.redcross.sar.thread.AbstractWork;
+import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
@@ -33,23 +33,23 @@ import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
 public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCommand {
-	
+
 	// properties
 	protected int helpContextID = 0;
-	
+
 	// flags
 	protected boolean isActive = false;
 	protected boolean showDirect = false;
 	protected boolean showDialog = true;
-	
+
 	// objects
 	protected Properties properties = null;
-	
+
 	// mso objects information
 	protected IMsoObjectIf msoOwner = null;
 	protected IMsoObjectIf msoObject = null;
-	protected IMsoManagerIf.MsoClassCode msoClassCode = null;	
-	
+	protected IMsoManagerIf.MsoClassCode msoClassCode = null;
+
 	// GUI components
 	protected DefaultDialog dialog = null;
 	protected JPanel propertyPanel = null;
@@ -57,22 +57,22 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 
 	// types
 	protected MapCommandType type = null;
-	
+
 	// counter
 	private int workCount = 0;
-	
+
 	// objects
 	protected ArrayList<JPanel> panels = null;
-	private ArrayList<IDiskoWorkListener> listeners = null;
-	
+	private ArrayList<IWorkListener> listeners = null;
+
 	/**
 	 * Constructor
 	 *
 	 */
 	protected AbstractDiskoCommand() {
-		listeners = new ArrayList<IDiskoWorkListener>();
+		listeners = new ArrayList<IWorkListener>();
 	}
-	
+
 	/*===============================================
 	 * Overridden ICommand methods
 	 *===============================================
@@ -100,15 +100,15 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	}
 
 	/**
-	 * The default behaviour is to execute the 
+	 * The default behaviour is to execute the
 	 * command. However, an extender
-	 * of this class can override this behavior. 
-	 */	
+	 * of this class can override this behavior.
+	 */
 	public void onClick() {
 		if (dialog != null && showDialog && showDirect)
 			dialog.setVisible(!dialog.isVisible());
 	}
-	
+
 	/**
 	 * If true, the command is hosted
 	 */
@@ -116,7 +116,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		// TODO: Implement
 		return false;
 	}
-	
+
 	/**
 	 * Returns the host command if hosted
 	 */
@@ -124,7 +124,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		// TODO: Implement
 		return null;
 	}
-	
+
 	public boolean isShowDialog() {
 		return showDialog;
 	}
@@ -144,7 +144,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	public void setMsoObject(IMsoObjectIf msoObject) {
 		setMsoDrawData(msoOwner,msoObject,msoClassCode);
 	}
-	
+
 	public IMsoObjectIf getMsoOwner() {
 		return msoOwner;
 	}
@@ -152,19 +152,19 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	public void setMsoOwner(IMsoObjectIf msoOwner) {
 		setMsoDrawData(msoOwner,msoObject,msoClassCode);
 	}
-	
+
 	public void setMsoDrawData(IMapCommand command) {
 		if(command instanceof AbstractDiskoCommand && command!=this) {
 			AbstractDiskoCommand abstractCommand = (AbstractDiskoCommand)command;
 			setMsoDrawData(abstractCommand.msoOwner,abstractCommand.msoObject,abstractCommand.msoClassCode);
 		}
 	}
-	
+
 	public void setMsoDrawData(IMsoObjectIf msoOwner, IMsoObjectIf msoObject, IMsoManagerIf.MsoClassCode msoClassCode) {
-		
+
 		// is working?
 		if(isWorking()) return;
-		
+
 		// set mso owner object
 		this.msoOwner = msoOwner;
 		// set mso object
@@ -173,21 +173,21 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		this.msoClassCode = msoClassCode;
 		// set class code
 		this.msoClassCode = msoClassCode;
-		
+
 	}
 
-	public void addDiskoWorkEventListener(IDiskoWorkListener listener) {
+	public void addWorkEventListener(IWorkListener listener) {
 		listeners.add(listener);
 	}
 
-	public void removeDiskoWorkEventListener(IDiskoWorkListener listener) {
+	public void removeWorkEventListener(IWorkListener listener) {
 		listeners.remove(listener);
 	}
-	
+
 	public AbstractButton getButton() {
 		return button;
 	}
-	
+
 	public DefaultDialog getDialog() {
 		return dialog;
 	}
@@ -195,13 +195,13 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	public String getName() {
 		return name;
 	}
-		
+
 	@Override
 	public IDiskoCommandState save() {
 		// get new state
 		return new DiskoCommandState(this);
 	}
-	
+
 	@Override
 	public boolean load(IDiskoCommandState state) {
 		// valid state?
@@ -210,9 +210,9 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 			return true;
 		}
 		return false;
-	
-	}	
-	
+
+	}
+
 	/*====================================================
 	 * Protected methods (only intended for use inside
 	 * this package)
@@ -241,10 +241,10 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		// failed
 		return false;
 	}
-	
+
 
 	protected void updateMsoObject(IMsoFeature msoFeature, IGeometry geom) throws IOException, AutomationException {
-		
+
 		// get mso object
 		IMsoObjectIf msoObj = msoFeature.getMsoObject();
 		// get class code
@@ -260,7 +260,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		}
 		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE) {
 			IRouteIf msoRoute = (IRouteIf)msoObj;
-			msoRoute.setGeodata(MapUtil.getMsoRoute((Polyline)geom));			
+			msoRoute.setGeodata(MapUtil.getMsoRoute((Polyline)geom));
 		}
 		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_TRACK) {
 			ITrackIf msoTrack = (ITrackIf)msoObj;
@@ -270,47 +270,47 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 			for(int i=0;i<list.size();i++) {
 				timesteps.add(list.get(i).getTime());
 			}
-			msoTrack.setGeodata(MapUtil.getMsoTrack((Polyline)geom,timesteps));						
+			msoTrack.setGeodata(MapUtil.getMsoTrack((Polyline)geom,timesteps));
 		}
 		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA) {
 			ISearchAreaIf msoSearchArea = (ISearchAreaIf)msoObj;
-			msoSearchArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));			
+			msoSearchArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));
 		}
 		else if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA) {
 			IOperationAreaIf msoOperationArea = (IOperationAreaIf)msoObj;
-			msoOperationArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));						
+			msoOperationArea.setGeodata(MapUtil.getMsoPolygon((Polygon)geom));
 		}
 	}
 
 	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_FINISH);
+		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_FINISH);
 	   	// forward
 		fireOnWorkPerformed(e);
     }
-    
+
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_CANCEL);
+		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }
-    
+
 	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		DiskoWorkEvent e = new DiskoWorkEvent(source, data,DiskoWorkEvent.EVENT_CHANGE);
+		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_CHANGE);
     	// forward
 		fireOnWorkPerformed(e);
     }
-	    
-    protected void fireOnWorkPerformed(DiskoWorkEvent e)
+
+    protected void fireOnWorkPerformed(WorkEvent e)
     {
 		// notify listeners
 		for (int i = 0; i < listeners.size(); i++) {
 			listeners.get(i).onWorkPerformed(e);
 		}
 	}
-    
+
     protected boolean isWorking() {
 		return (workCount>0);
 	}
@@ -318,27 +318,27 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	protected int isWorkingCount() {
 		return workCount;
 	}
-	
+
 	protected int setIsWorking() {
 		workCount++;
-		return workCount; 
+		return workCount;
 	}
-	
+
 	protected int setIsNotWorking() {
 		if(workCount>0) {
 			workCount--;
 		}
-		return workCount; 
+		return workCount;
 	}
-	
+
 	protected void suspendUpdate() {
 		Utils.getApp().getMsoModel().suspendClientUpdate();
 	}
-	
+
 	protected void resumeUpdate() {
-		Utils.getApp().getMsoModel().resumeClientUpdate();
+		Utils.getApp().getMsoModel().resumeClientUpdate(true);
 	}
-	
+
 	public Object getAttribute(String attribute) {
 		return null;
 	}
@@ -355,11 +355,11 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	public boolean removePropertyPanel(JPanel panel) {
 		// has panels?
 		if(panels!=null) {
-			return panels.remove(panel);			
+			return panels.remove(panel);
 		}
 		return false;
-	}		
-	
+	}
+
 	public boolean setPropertyPanel(JPanel panel) {
 		// has panels?
 		if(panels!=null) {
@@ -368,23 +368,22 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 				propertyPanel = panel;
 			}
 		}
-		return (propertyPanel == panel);			
+		return (propertyPanel == panel);
 	}
-	
+
 	public JPanel getPropertyPanel() {
-		return propertyPanel;		
+		return propertyPanel;
 	}
 
 	/*=============================================================
 	 * Inner classes
-	 *============================================================= 
+	 *=============================================================
 	 */
-	protected abstract class AbstractToolWork<T> extends AbstractDiskoWork<T> {
-		
+	protected abstract class AbstractToolWork<T> extends AbstractWork {
+
 		public AbstractToolWork(boolean notify) throws Exception {
 			// forward
-			super(false,true,WorkOnThreadType.WORK_ON_SAFE,
-					"Vent litt",100,notify,false,false,0);
+			super(false,true,ThreadType.WORK_ON_SAFE,"Vent litt",100,notify,false);
 		}
 
 		@Override
@@ -392,17 +391,17 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 			// set flag to prevent reentry
 			setIsWorking();
 			// suspend for faster execution¨
-			suspendUpdate();			
-		}		
-		
+			suspendUpdate();
+		}
+
 		@Override
 		public abstract T doWork();
 
 		/**
-		 * done 
-		 * 
+		 * done
+		 *
 		 * Executed on the Event Dispatch Thread.
-		 * 
+		 *
 		 */
 		@Override
 		public void afterDone() {
@@ -417,10 +416,10 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 			}
 		}
 	}
-	
+
 	/**
 	 * Abstract tool state class
-	 * 
+	 *
 	 * @author kennetgu
 	 *
 	 */
@@ -435,15 +434,15 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		private IMsoObjectIf msoOwner = null;
 		private IMsoObjectIf msoObject = null;
 		private IMsoManagerIf.MsoClassCode msoClassCode;
-		
+
 		// other objects
 		private JPanel propertyPanel = null;
-		
+
 		// create state
 		public DiskoCommandState(AbstractDiskoCommand command) {
 			save(command);
 		}
-		
+
 		public void save(AbstractDiskoCommand command) {
 			this.showDirect = command.showDirect;
 			this.showDialog = command.showDialog;
@@ -453,7 +452,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 			this.propertyPanel = command.propertyPanel;
 			this.isDialogVisible = command.dialog!=null ? command.dialog.isVisible() : false;
 		}
-		
+
 		public void load(AbstractDiskoCommand command) {
 			command.showDirect = this.showDirect;
 			command.showDialog = this.showDialog;
@@ -461,7 +460,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 			command.msoObject = this.msoObject;
 			command.msoOwner = this.msoOwner;
 			command.propertyPanel = this.propertyPanel;
-			if(command.dialog!=null) 
+			if(command.dialog!=null)
 				command.dialog.setVisible(this.isDialogVisible);
 		}
 	}

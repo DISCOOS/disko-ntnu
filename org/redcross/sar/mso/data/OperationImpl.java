@@ -16,12 +16,12 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     private final AttributeImpl.MsoString m_opNumberPrefix = new AttributeImpl.MsoString(this, "OpNumberPrefix");
 
     private final MsoReferenceImpl<ISystemIf> m_system = new MsoReferenceImpl<ISystemIf>(this, "System", 1, false);
-    
+
     private final CmdPostListImpl m_cmdPostList = new CmdPostListImpl(this, "CmdPostList", true);
 
-    public OperationImpl(IMsoObjectIf.IObjectIdIf anObjectId, String aNumberPrefix, String aNumber)
+    public OperationImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, String aNumberPrefix, String aNumber)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         setOpNumberPrefix(aNumberPrefix);
         setOpNumber(aNumber);
     }
@@ -113,7 +113,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     /*-------------------------------------------------------------------------------------------
      * Methods for references
      *-------------------------------------------------------------------------------------------*/
-    
+
     public void setSystem(ISystemIf aSystem)
     {
         m_system.setReference(aSystem);
@@ -133,7 +133,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     {
         return m_system;
     }
-    
+
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
@@ -173,20 +173,19 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         MsoModelImpl.getInstance().suspendClientUpdate();
         m_cmdPostList.deleteAll();
         doDelete();
-        MsoModelImpl.getInstance().resumeClientUpdate();
+        MsoModelImpl.getInstance().resumeClientUpdate(true);
         return true;
     }
-    
+
     public ISystemIf createSystem() {
     	IObjectIdIf id = MsoModelImpl.getInstance().getModelDriver().makeObjectId();
         return createSystem(id);
     }
 
     public ISystemIf createSystem(IObjectIdIf id) {
-    	AbstractMsoObject msoObj = new SystemImpl(id);
-    	msoObj.setup();
-    	msoObj.resumeClientUpdate();
+    	AbstractMsoObject msoObj = new SystemImpl(m_msoModel, id);
+    	msoObj.setup(true);
         return (ISystemIf)msoObj;
     }
-    
+
 }

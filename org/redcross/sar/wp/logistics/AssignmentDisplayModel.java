@@ -15,26 +15,32 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
+import org.redcross.sar.data.DataModel;
 import org.redcross.sar.data.Selector;
+import org.redcross.sar.data.event.DataEvent;
+import org.redcross.sar.data.event.IDataListener;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoBinder;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentListIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 
 /**
  *  Model used for the Assignment Display part of the Logistics Panel
  */
-public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentListener
+public class AssignmentDisplayModel implements ComponentListener
 {
+
+	private IMsoModelIf m_model;
+	private DataModel<IAssignmentIf, IAssignmentIf> m_assignments;
+
     private AssignmentTilesPanel m_selectableAssignments;
     private AssignmentTilesPanel m_priAssignments;
-    private IAssignmentListIf m_AssignmentList;
+
+    //private IAssignmentListIf m_AssignmentList;
 
     /**
      * Initial value for selection
@@ -45,7 +51,6 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      * Selectors for left panel
      */
     private Selector<IAssignmentIf> m_selectableSelector;
-
 
     /**
      * Status for left panel
@@ -75,76 +80,94 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      * @param anEventManager MSO model's event manager
      * @param anAssignmentList MSO model's assignment list.
      */
-    public AssignmentDisplayModel(AssignmentTilesPanel selectable, AssignmentTilesPanel priority, IMsoEventManagerIf anEventManager, IAssignmentListIf anAssignmentList)
+    public AssignmentDisplayModel(
+    		AssignmentTilesPanel selectable,
+    		AssignmentTilesPanel priority,
+    		IMsoModelIf model)
     {
+
+    	// prepare
+    	m_model = model;
+
+    	// set selectable assignments panel
         m_selectableAssignments = selectable;
         m_selectableAssignments.setLastIndex(-1);
         m_selectableSelector = IAssignmentIf.READY_SELECTOR;
         m_selectableAssignments.setHeaderPopupHandler(new SelectionPopupHandler(this));
 
+    	// set priority assignments panel
         m_priAssignments = priority;
         m_priAssignments.setFirstIndex(0);
         m_priSelector = IAssignmentIf.READY_SELECTOR;
         m_priAssignments.getHeaderPanel().setCaptionText("Pri");
         m_priAssignments.setSelectedStatus(IAssignmentIf.AssignmentStatus.READY);
 
-        anEventManager.addClientUpdateListener(this);
-
-        m_AssignmentList = anAssignmentList;
-
         // set header text
         m_selectableAssignments.getHeaderPanel().setCaptionText(Internationalization.translate(m_assigmentSelection));
 
-        handleMsoUpdateEvent(null);
+        // connect to MSO model
+        getDataModel();
+
     }
 
-    void reInitModel(IAssignmentListIf anAssgnmentList)
+    public void load()
     {
-        m_AssignmentList = anAssgnmentList;
-        handleMsoUpdateEvent(null);
+    	// forward
+    	m_assignments.getBinder(m_model).load();
     }
 
-    /**
-     * Handle change of data in the MSO model event
-     * @param e The event
-     */
-    public void handleMsoUpdateEvent(MsoEvent.Update e)
-    {
-    	if(e!=null && e.isClearAllEvent()) {
-    		m_priAssignments.setAssignmentList(new ArrayList<IAssignmentIf>());
+    public DataModel<IAssignmentIf, IAssignmentIf> getDataModel() {
+    	if(m_assignments==null) {
+
+            // bind assignments in MSO model to data model
+            m_assignments = new DataModel<IAssignmentIf, IAssignmentIf>(IAssignmentIf.class);
+            MsoBinder<IAssignmentIf> binder = new MsoBinder<IAssignmentIf>(IAssignmentIf.class);
+            IAssignmentListIf list = m_model.getMsoManager().getCmdPost().getAssignmentList();
+            binder.setSelector(list);
+            binder.connect(m_model);
+            m_assignments.connect(binder);
+        	m_assignments.addDataListener(new IDataListener() {
+
+    			@Override
+    			public void onDataChanged(DataEvent e) {
+
+    		    	if(e.getType()==DataEvent.CLEAR_EVENT) {
+    		    		m_priAssignments.setAssignmentList(new ArrayList<IAssignmentIf>());
+    		    	}
+    		    	else {
+
+    		    		List<IAssignmentIf> priList = selectAssignments(m_priSelector);
+    			        m_priAssignments.setAssignmentList(priList);
+
+    		    	}
+    		        setSelectableList();
+    		        calculateDivider();
+    		        renderData();
+
+    			}
+
+        	});
+
+            // load assignments into model
+            binder.load(list);
+
     	}
-    	else {
-	        
-    		List<IAssignmentIf> priList = selectAssignments(m_priSelector);
-	        m_priAssignments.setAssignmentList(priList);
-	
-    	}
-        setSelectableList();	
-        calculateDivider();
-        renderData();
+    	return m_assignments;
     }
 
     private final EnumSet<IMsoManagerIf.MsoClassCode> myInterests = EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT);
 
-    /**
-     * Decide if  this object is interesting for update events
-     * @param aMsoObject The actual object
-     * @return <code><code/> if interesting, <code>false<code/> otherwise
-     */
-	public boolean hasInterestIn(IMsoObjectIf aMsoObject, UpdateMode mode) {
-		// consume loopback updates
-		if(UpdateMode.LOOPBACK_UPDATE_MODE.equals(mode)) return false;
-		// check against interests
-        return myInterests.contains(aMsoObject.getMsoClassCode());
-    }
+	public EnumSet<MsoClassCode> getInterests() {
+		return myInterests;
+	}
 
     /**
      * Set the list that is source for the left panel
      */
     private void setSelectableList()
     {
-        Collection<IAssignmentIf> selectionList = 
-        	(m_assigmentSelection == IAssignmentIf.AssignmentStatus.READY ? 
+        Collection<IAssignmentIf> selectionList =
+        	(m_assigmentSelection == IAssignmentIf.AssignmentStatus.READY ?
         			m_priAssignments.getAssignmens() : selectAssignments(m_selectableSelector));
         m_selectableAssignments.setAssignmentList(selectionList);
         m_selectableAssignments.setSelectedStatus(m_selectableStatus);
@@ -155,9 +178,9 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
      * @param aSelector The Selector
      * @return The list of assignments
      */
-    private java.util.List<IAssignmentIf> selectAssignments(Selector<IAssignmentIf> aSelector)
+    private List<IAssignmentIf> selectAssignments(Selector<IAssignmentIf> aSelector)
     {
-        return m_AssignmentList.selectItems(aSelector, IAssignmentIf.PRIORITY_AND_NUMBER_COMPARATOR);
+        return (List<IAssignmentIf>)m_assignments.getObjects(aSelector,IAssignmentIf.PRIORITY_AND_NUMBER_COMPARATOR);
     }
 
     public void componentResized(ComponentEvent e)
@@ -204,7 +227,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
         m_assigmentSelection = aSelection;
         m_selectableAssignments.getHeaderPanel().setCaptionText(Internationalization.translate(m_assigmentSelection));
         selectionChanged();
-        
+
     }
 
     /**
@@ -248,7 +271,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
         setSelectableList();
         renderSelectablePanel();
     }
-    
+
     /**
      * Draw right panel.
      */
@@ -279,7 +302,7 @@ public class AssignmentDisplayModel implements IMsoUpdateListenerIf, ComponentLi
     public static class SelectButton extends JRadioButtonMenuItem
     {
 		private static final long serialVersionUID = 1L;
-		
+
 		final IAssignmentIf.AssignmentStatus m_selection;
 
         public SelectButton(AbstractAction anAction, IAssignmentIf.AssignmentStatus aSelection)

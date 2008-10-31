@@ -39,66 +39,66 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IVehicleIf createVehicle(String anIdentifier)
     {
         checkCreateOp();
-        return (VehicleImpl) createdUniqueItem(new VehicleImpl(makeUniqueId(), makeUnitSerialNumber(VehicleImpl.class), anIdentifier));
+        return (VehicleImpl) createdUniqueItem(new VehicleImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(VehicleImpl.class), anIdentifier));
     }
 
     public IVehicleIf createVehicle(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IVehicleIf retVal = (IVehicleIf) getLoopback(anObjectId);
-        return retVal != null ? retVal : (IVehicleIf) createdItem(new VehicleImpl(anObjectId, -1));
+        return retVal != null ? retVal : (IVehicleIf) createdItem(new VehicleImpl(getOwner().getModel(), anObjectId, -1));
     }
 
     public IBoatIf createBoat(String anIdentifier)
     {
         checkCreateOp();
-        return (BoatImpl) createdUniqueItem(new BoatImpl(makeUniqueId(), makeUnitSerialNumber(BoatImpl.class), anIdentifier));
+        return (BoatImpl) createdUniqueItem(new BoatImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(BoatImpl.class), anIdentifier));
     }
 
     public IBoatIf createBoat(IMsoObjectIf.IObjectIdIf anObjectId)
     {
         checkCreateOp();
         IBoatIf retVal = (IBoatIf) getLoopback(anObjectId);
-        return retVal != null ? retVal : (IBoatIf) createdItem(new BoatImpl(anObjectId, -1));
+        return retVal != null ? retVal : (IBoatIf) createdItem(new BoatImpl(getOwner().getModel(), anObjectId, -1));
     }
 
     public IDogIf createDog(String anIdentifier)
     {
         checkCreateOp();
-        return (IDogIf) createdUniqueItem(new DogImpl(makeUniqueId(), makeUnitSerialNumber(DogImpl.class)));
+        return (IDogIf) createdUniqueItem(new DogImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(DogImpl.class)));
     }
 
     public IDogIf createDog(IObjectIdIf objectId)
     {
         checkCreateOp();
         IDogIf retVal = (IDogIf) getLoopback(objectId);
-        return retVal != null ? retVal : (IDogIf) createdItem(new DogImpl(objectId, -1));
+        return retVal != null ? retVal : (IDogIf) createdItem(new DogImpl(getOwner().getModel(), objectId, -1));
     }
 
     public IAircraftIf createAircraft(String anIdentifier)
     {
         checkCreateOp();
-        return (IAircraftIf) createdUniqueItem(new AircraftImpl(makeUniqueId(), makeUnitSerialNumber(AircraftImpl.class), anIdentifier));
+        return (IAircraftIf) createdUniqueItem(new AircraftImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(AircraftImpl.class), anIdentifier));
     }
 
     public IAircraftIf createAircraft(IObjectIdIf objectId)
     {
         checkCreateOp();
         IAircraftIf retVal = (IAircraftIf) getLoopback(objectId);
-        return retVal != null ? retVal : (IAircraftIf) createdItem(new AircraftImpl(objectId, -1));
+        return retVal != null ? retVal : (IAircraftIf) createdItem(new AircraftImpl(getOwner().getModel(), objectId, -1));
     }
 
     public ITeamIf createTeam(String anIdentifier)
     {
         checkCreateOp();
-        return (ITeamIf) createdUniqueItem(new TeamImpl(makeUniqueId(), makeUnitSerialNumber(TeamImpl.class)));
+        return (ITeamIf) createdUniqueItem(new TeamImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(TeamImpl.class)));
     }
 
     public ITeamIf createTeam(IObjectIdIf objectId)
     {
         checkCreateOp();
         ITeamIf retVal = (ITeamIf) getLoopback(objectId);
-        return retVal != null ? retVal : (ITeamIf) createdItem(new TeamImpl(objectId, -1));
+        return retVal != null ? retVal : (ITeamIf) createdItem(new TeamImpl(getOwner().getModel(), objectId, -1));
     }
 
     public IUnitIf getUnit(int aUnitNr)

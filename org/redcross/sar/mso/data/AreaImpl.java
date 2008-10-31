@@ -25,10 +25,10 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     private final MsoListImpl<IMsoObjectIf> m_areaGeodata = new MsoListImpl<IMsoObjectIf>(IMsoObjectIf.class, this, "AreaGeodata", false);
 
     private final boolean m_hostile;
-    
-    public AreaImpl(IMsoObjectIf.IObjectIdIf anObjectId, boolean hostile)
+
+    public AreaImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, boolean hostile)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         this.m_hostile = hostile;
     }
 
@@ -145,7 +145,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     /*-------------------------------------------------------------------------------------------
      * Overridden Methods
      *-------------------------------------------------------------------------------------------*/
-    
+
     @Override
     public boolean delete()
     {
@@ -172,7 +172,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
         return false;
     }
-    
+
     /*-------------------------------------------------------------------------------------------
     * Methods for lists
     *-------------------------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     public IAssignmentIf getOwningAssignment()
     {
         owningAssigmentSelector.setSelfObject(this);
-        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();        
+        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
         return cmdPost != null ? cmdPost.getAssignmentList().selectSingleItem(owningAssigmentSelector) : null;
     }
 
@@ -355,7 +355,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
             {
                 return true;
             }
-        }, 
+        },
         new Comparator<IMsoObjectIf>()
         {
             public int compare(IMsoObjectIf o1, IMsoObjectIf o2)

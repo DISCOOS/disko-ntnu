@@ -30,14 +30,14 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return getText("SearchSubType." + aType.name() + ".text");
     }
 
-    public SearchImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
+    public SearchImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel,anObjectId, aNumber);
     }
 
-    public SearchImpl(IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, SearchSubType aSubType)
+    public SearchImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, SearchSubType aSubType)
     {
-        super(anObjectId, aNumber);
+        super(theMsoModel, anObjectId, aNumber);
         m_subType.setValue(aSubType);
     }
 

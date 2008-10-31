@@ -3,7 +3,7 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.util.AssignmentTransferUtilities;
+import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 
@@ -26,8 +26,8 @@ public class AllocatedAssignmentPanel extends AbstractAssignmentPanel
 	{
 		super(wp);
 
-		 m_editAssignmentPanel.getAttribute("Time").setCaptionText(
-				 m_wpMessageLog.getBundleText("AllocatedTimeLabel.text") + ": ");
+		 m_editAssignmentPanel.getField("Time").setCaptionText(
+				 m_aWp.getBundleText("AllocatedTimeLabel.text") + ": ");
 		 
 	}
 
@@ -61,8 +61,8 @@ public class AllocatedAssignmentPanel extends AbstractAssignmentPanel
 		if(!MessageLogBottomPanel.isNewMessage()) {
 			
 			// notify reason
-			Utils.showWarning(m_wpMessageLog.getBundleText("MessageTaskOperationError.header"),
-					m_wpMessageLog.getBundleText("MessageTaskOperationError.details"));
+			Utils.showWarning(m_aWp.getBundleText("MessageTaskOperationError.header"),
+					m_aWp.getBundleText("MessageTaskOperationError.details"));
 			
 			// finished
 			return;
@@ -101,7 +101,7 @@ public class AllocatedAssignmentPanel extends AbstractAssignmentPanel
 
 		}
 		// success
-		m_assignmentUnit = unit;
+		m_owningUnit = unit;
 	}
 
 	/**
@@ -109,13 +109,13 @@ public class AllocatedAssignmentPanel extends AbstractAssignmentPanel
 	 */
 	protected void addSelectedAssignment()
 	{
-		if(m_assignmentUnit!=null && m_selectedAssignment!=null)
+		if(m_owningUnit!=null && m_selectedAssignment!=null)
 		{
 			IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);
 			
-			AssignmentTransferUtilities.createAssignmentChangeMessageLines(message,
+			AssignmentUtilities.createAssignmentChangeMessageLines(message,
 					MessageLineType.ALLOCATED, MessageLineType.ALLOCATED,
-					Calendar.getInstance(), m_assignmentUnit, m_selectedAssignment);
+					Calendar.getInstance(), m_owningUnit, m_selectedAssignment);
 			
 			// add to lines
 			m_addedLines.add(message.findMessageLine(MessageLineType.ALLOCATED, m_selectedAssignment, false));

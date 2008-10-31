@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.feature.MsoFeatureClass;
+import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
@@ -2151,7 +2151,7 @@ public class MapUtil {
 			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
 			if(l.isSelectable() && l.isVisible()) {
 				// get features in search extent
-				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), p, max);
+				IFeatureCursor c = search((MsoFeatureModel)l.getFeatureClass(), p, max);
 				// select features within {min, max} distance of point p
 				Object[] found = selectFeature(c,p,min,max);
 				// found?
@@ -2186,7 +2186,7 @@ public class MapUtil {
 			IMsoFeatureLayer l = (IMsoFeatureLayer)layers.get(i);
 			if(l.isSelectable() && l.isVisible() && l.isEnabled()) {
 				// get all features within search extent
-				IFeatureCursor c = search((MsoFeatureClass)l.getFeatureClass(), extent, relation);
+				IFeatureCursor c = search((MsoFeatureModel)l.getFeatureClass(), extent, relation);
 				// select features within {min, max} distance of point p?
 				if(!(p==null || p.isEmpty())) {
 					// forward

@@ -10,11 +10,11 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
+import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.AreaFeature;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -24,6 +24,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	private static final double fontOffset = 5;
 	private static final double lineWidth = 1.5;
 	private static final double referenceScale = 50000;
-	
+
 	private RgbColor disabledColor = null;
 	private RgbColor selectionColor = null;
 	private RgbColor plannedColor = null;
@@ -44,22 +45,21 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleLineSymbol defaultLineSymbol = null;
 	private TextSymbol textSymbol = null;
 
- 	public AreaLayer(IMsoModelIf msoModel, ISpatialReference srs, MsoLayerEventStack eventStack) {
- 		super(MsoClassCode.CLASSCODE_AREA,LayerCode.AREA_LAYER, msoModel, srs, 
- 				esriGeometryType.esriGeometryBag,eventStack);
- 		addInterestIn(MsoClassCode.CLASSCODE_ROUTE);
- 		addInterestIn(MsoClassCode.CLASSCODE_ASSIGNMENT);
+ 	public AreaLayer(ISpatialReference srs,
+ 			MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 		super(esriGeometryType.esriGeometryBag,
+ 				MsoClassCode.CLASSCODE_AREA,
+ 				EnumSet.of(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_ASSIGNMENT),
+ 				LayerCode.AREA_LAYER, srs, eventStack, manager);
+ 		// prepare
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
+ 		// forward
  		createSymbols();
-		if(msoModel.getMsoManager().operationExists()) {
-			ICmdPostIf cmdPost = msoModel.getMsoManager().getCmdPost();
-			loadObjects(cmdPost.getAreaListItems().toArray());
-		}
 	}
 
  	protected IMsoFeature createMsoFeature(IMsoObjectIf msoObject)
  			throws IOException, AutomationException {
- 		IMsoFeature msoFeature = new AreaFeature(msoModel);
+ 		IMsoFeature msoFeature = new AreaFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
  		System.out.println("Created AreaFeature " + msoObject);
@@ -67,10 +67,10 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
  	}
 
  	@Override
-	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
-		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);		
-		if (msoObject instanceof IAssignmentIf) {
-			IAssignmentIf assignment = (IAssignmentIf)msoObject;
+	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObj) {
+		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
+		if (msoObj instanceof IAssignmentIf) {
+			IAssignmentIf assignment = (IAssignmentIf)msoObj;
 			IAreaIf area = assignment.getPlannedArea();
 			if(area!=null)
 				objects.add(area);
@@ -78,18 +78,18 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			if(area!=null)
 				objects.add(area);
 		}
-		if (msoObject instanceof IRouteIf) {
+		if (msoObj instanceof IRouteIf) {
 			// get owning area
-			IAreaIf area = MsoUtils.getOwningArea((IRouteIf)msoObject);
-			if(area!=null)			
+			IAreaIf area = MsoUtils.getOwningArea(msoObj);
+			if(area!=null)
 				objects.add(area);
 		}
-		else {
-			objects.add(msoObject);
+		else if (msoObj instanceof IAreaIf){
+			objects.add(msoObj);
 		}
 		return objects;
 	}
- 	
+
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
@@ -99,21 +99,21 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 
 			// get scale
 			double scale = display.getDisplayTransformation().getScaleRatio();
-			
+
 			// get zoom ratio
 			double zoomRatio = java.lang.Math.min(1.0,referenceScale / scale);
-			
+
 			// get text zoom size and offset
 			double zoomFontSize = java.lang.Math.min(fontSize, fontSize*zoomRatio);
 			double zoomFontOffset = java.lang.Math.min(fontOffset, fontOffset*zoomRatio);
-			
+
 			// get line zoom width
 			double zoomLineWidth = java.lang.Math.min(lineWidth, lineWidth*zoomRatio);
-			
+
 			// update
 			textSymbol.setSize(zoomFontSize);
 			textSymbol.setYOffset(zoomFontOffset);
-			
+
 			for (int i = 0; i < featureClass.featureCount(null); i++) {
 				IMsoFeature feature = (IMsoFeature)featureClass.getFeature(i);
 				if(select(feature) && feature.isVisible()){
@@ -128,7 +128,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 							color = executingColor;
 						}
 						else if(AssignmentStatus.FINISHED.equals(status)){
-							color = finishedColor;							
+							color = finishedColor;
 						}
 						IAreaIf area = (IAreaIf)feature.getMsoObject();
 						ISearchIf search = (ISearchIf)area.getOwningAssignment();
@@ -143,7 +143,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 						lineSymbol.setWidth(zoomLineWidth);
 						IColor saveLineColor = lineSymbol.getColor();
 						IColor saveTextColor = textSymbol.getColor();
-						
+
 						// is enabled?
 						if(isEnabled) {
 							// is selected
@@ -159,7 +159,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 							lineSymbol.setColor(disabledColor);
 							textSymbol.setColor(disabledColor);
 						}
-												
+
 						for (int j = 0; j < geomBag.getGeometryCount(); j++) {
 							IGeometry geom = geomBag.getGeometry(j);
 							if (geom instanceof IPolyline) {
@@ -178,16 +178,16 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 									display.drawText(MapUtil.getCenter(geom.getEnvelope()), text);
 								}
 							}
-							
+
 						}
-						
+
 						lineSymbol.setColor(saveLineColor);
 						textSymbol.setColor(saveTextColor);
 					}
-					feature.setDirty(false);
 				}
-				isDirty = false;
+				feature.setDirty(false);
 			}
+			setDirty(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -200,7 +200,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			disabledColor.setBlue(110);
 			disabledColor.setGreen(110);
 			disabledColor.setRed(110);
-			
+
 			selectionColor = new RgbColor();
 			selectionColor.setBlue(255);
 			selectionColor.setGreen(255);
@@ -211,7 +211,7 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			executingColor = new RgbColor();
 			executingColor.setRed(255);
 			executingColor.setGreen(230);
-			
+
 			finishedColor = new RgbColor();
 			finishedColor.setGreen(155);
 
@@ -234,8 +234,8 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 			defaultLineSymbol = new SimpleLineSymbol();
 			defaultLineSymbol.setWidth(lineWidth);
 			defaultLineSymbol.setColor(plannedColor);
-			
-			
+
+
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

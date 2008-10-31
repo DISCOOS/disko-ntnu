@@ -16,14 +16,14 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
     private final AttributeImpl.MsoInteger m_areaSequenceNumber = new AttributeImpl.MsoInteger(this, "AreaSequenceNumber");
 
-    public RouteImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public RouteImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
-    public RouteImpl(IMsoObjectIf.IObjectIdIf anObjectId, Route aRoute)
+    public RouteImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, Route aRoute)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
         setGeodata(aRoute);
     }
 
@@ -169,11 +169,11 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
     {
         return m_areaSequenceNumber;
     }
-    
+
     /*-------------------------------------------------------------------------------------------
      * Public methods
      *-------------------------------------------------------------------------------------------*/
-    
+
     public void addRoutePoint(GeoPos aGeoPos)
     {
         Route r = getGeodata();
@@ -188,7 +188,7 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
             Log.error("CloneNotSupportedException in addRoutePoint, no point added.");
         }
     }
-    
+
     public void removeRoutePoint(GeoPos aGeoPos)
     {
     	Route r = getGeodata();
@@ -238,5 +238,5 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
 			return r.getStopPoint();
 		}
 		return null;
-	}   
+	}
 }

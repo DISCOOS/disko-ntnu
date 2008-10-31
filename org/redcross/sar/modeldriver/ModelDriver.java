@@ -42,7 +42,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
 
     public List<String[]> getActiveOperations()
     {
-        java.util.List<String[]> list = new ArrayList();
+        java.util.List<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"2", "2"});
         return list;
     }
@@ -60,8 +60,8 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
 	public String getActiveOperationName() {
 		// TODO Auto-generated method stub
 		return null;
-	}    
-	
+	}
+
 	public void finishActiveOperation()
     {
         //To change body of implemented methods use File | Settings | File Templates.

@@ -15,13 +15,13 @@ public class AreaListImpl extends MsoListImpl<IAreaIf> implements IAreaListIf
     public IAreaIf createArea(boolean hostile)
     {
         checkCreateOp();
-        return createdUniqueItem(new AreaImpl(makeUniqueId(),true));
+        return createdUniqueItem(new AreaImpl(getOwner().getModel(), makeUniqueId(),true));
     }
 
     public IAreaIf createArea(IMsoObjectIf.IObjectIdIf anObjectId,boolean hostile)
     {
         checkCreateOp();
         IAreaIf retVal = getLoopback(anObjectId);
-        return retVal != null ? retVal : createdItem(new AreaImpl(anObjectId,true));
+        return retVal != null ? retVal : createdItem(new AreaImpl(getOwner().getModel(), anObjectId,true));
     }
 }

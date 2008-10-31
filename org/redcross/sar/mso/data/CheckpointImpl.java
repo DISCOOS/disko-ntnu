@@ -12,9 +12,9 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
     private final AttributeImpl.MsoString m_description = new AttributeImpl.MsoString(this, "Description");
     private final AttributeImpl.MsoString m_name = new AttributeImpl.MsoString(this, "Name");
 
-    public CheckpointImpl(IMsoObjectIf.IObjectIdIf anObjectId)
+    public CheckpointImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
-        super(anObjectId);
+        super(theMsoModel, anObjectId);
     }
 
     protected void defineAttributes()
