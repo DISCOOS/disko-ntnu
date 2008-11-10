@@ -50,7 +50,7 @@ public interface IDiskoMapManager {
 
 	public void schedule(IMapWork work);
 
-	public void execute();
-	public void execute(IDiskoMap exclude);
+	public void execute(boolean wait);
+	public void execute(IDiskoMap exclude, boolean wait);
 
 }

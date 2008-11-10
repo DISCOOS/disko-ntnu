@@ -62,11 +62,11 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPOIIf;
-import org.redcross.sar.thread.ProgressMonitor;
-import org.redcross.sar.thread.event.WorkEventRepeater;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
+import org.redcross.sar.work.ProgressMonitor;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEventRepeater;
 
 /**
  * This calls extends MapBean to provide user interface for map rendering
@@ -92,10 +92,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	private boolean isCacheChanged = false;
 	private boolean isEditSupportInstalled = false;
 
+	// models
+	private MsoLayerModel msoLayerModel;
+	private WmsLayerModel wmsLayerModel;
+	private MapLayerModel mapLayerModel;
+
 	// lists
-	private MsoLayerSelectionModel msoLayerSelectionModel;
-	private WmsLayerSelectionModel wmsLayerSelectionModel;
-	private MapLayerSelectionModel mapLayerSelectionModel;
 	private EnumSet<LayerCode> layerCodes;
 	private EnumSet<MsoClassCode> classCodes;
 	private Map<MsoClassCode,EnumSet<MsoClassCode>> coClassCodes;
@@ -118,7 +120,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	// adapters
 	private MsoDrawAdapter drawAdapter;
 	private SnapAdapter snapAdapter;
-	private final WorkEventRepeater workRepeater = new WorkEventRepeater();
+	private final WorkFlowEventRepeater workRepeater = new WorkFlowEventRepeater();
 	private final ControlEventsAdapter ctrlAdapter = new ControlEventsAdapter();
 	private final MapCompEventsAdapter compAdapter = new MapCompEventsAdapter();
 
@@ -322,7 +324,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		binder.load();
 
 		// initialize MSO selection model
-		setMsoLayerSelectionModel();
+		setMsoLayerModel();
 
 	}
 
@@ -389,7 +391,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			// set extent?
 			if(e!=null && !e.isEmpty()) {
 				setExtent(MapUtil.expand(1.25,e));
-    			//refreshGeography(null, getExtent());
         	}
 		}
 		else if(refreshCount==1)
@@ -410,15 +411,15 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	}
 
 	public boolean activate() {
-		return binder.activate(isShowing());
+		return binder.activate(isShowing(),false);
 	}
 
 	public boolean deactivate() {
 		return binder.deactivate();
 	}
 
-	public boolean execute(boolean showProgress) {
-		return binder.execute(showProgress);
+	public boolean execute(boolean showProgress, boolean wait) {
+		return binder.execute(showProgress,wait);
 	}
 
 	public void setMsoLayersVisible(MsoClassCode classCode, boolean value) throws IOException {
@@ -546,7 +547,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		if(activeTool!=null) {
 
 			// register work listener
-			activeTool.addWorkListener(workRepeater);
+			activeTool.addWorkFlowListener(workRepeater);
 
 			// get button
 			AbstractButton button = activeTool.getButton();
@@ -574,58 +575,58 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public void setMsoLayerSelectionModel()
+	public void setMsoLayerModel()
 		throws IOException, AutomationException{
-		msoLayerSelectionModel = new MsoLayerSelectionModel(this);
+		msoLayerModel = new MsoLayerModel(this);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public MsoLayerSelectionModel getMsoLayerSelectionModel()
+	public MsoLayerModel getMsoLayerModel()
 			throws IOException, AutomationException {
-		if (msoLayerSelectionModel == null) {
-			msoLayerSelectionModel = new MsoLayerSelectionModel(this);
+		if (msoLayerModel == null) {
+			msoLayerModel = new MsoLayerModel(this);
 		}
-		return msoLayerSelectionModel;
+		return msoLayerModel;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public void setWmsLayerSelectionModel()
+	public void setWmsLayerModel()
 		throws IOException, AutomationException {
-		wmsLayerSelectionModel = new WmsLayerSelectionModel(this);
+		wmsLayerModel = new WmsLayerModel(this);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public WmsLayerSelectionModel getWmsLayerSelectionModel()
+	public WmsLayerModel getWmsLayerModel()
 			throws IOException, AutomationException {
-		if (wmsLayerSelectionModel == null) {
-			wmsLayerSelectionModel = new WmsLayerSelectionModel(this);
+		if (wmsLayerModel == null) {
+			wmsLayerModel = new WmsLayerModel(this);
 		}
-		return wmsLayerSelectionModel;
+		return wmsLayerModel;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public void setMapLayerSelectionModel()
+	public void setMapLayerModel()
 		throws IOException, AutomationException {
-		mapLayerSelectionModel = new MapLayerSelectionModel(this);
+		mapLayerModel = new MapLayerModel(this);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.map.IDiskoMap#getClipLayerSelectionModel()
 	 */
-	public MapLayerSelectionModel getMapLayerSelectionModel()
+	public MapLayerModel getMapLayerModel()
 			throws IOException, AutomationException {
-		if (mapLayerSelectionModel == null) {
-			mapLayerSelectionModel = new MapLayerSelectionModel(this);
+		if (mapLayerModel == null) {
+			mapLayerModel = new MapLayerModel(this);
 		}
-		return mapLayerSelectionModel;
+		return mapLayerModel;
 	}
 
 	public IDiskoMapManager getMapManager() {
@@ -1866,7 +1867,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			currentBase = index;
 
 			// update map layer selection model
-			setMapLayerSelectionModel();
+			setMapLayerModel();
 
 			// return next base layer index
 			return index;
@@ -1996,7 +1997,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	public void showProgressor(boolean autocancel) {
 		try {
 			// show progress dialog?
-			if(!(ProgressMonitor.getInstance().isInAction() || progressShown)) {
+			if(isShowing() && !(ProgressMonitor.getInstance().isInAction() || progressShown)) {
 				ProgressMonitor.getInstance().setProgressLocationAt(this);
 				if(autocancel) {
 					progressShownAutoCancel = true;
@@ -2080,12 +2081,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	 * IWorkListener methods
 	 *==========================================================*/
 
-	public void addWorkListener(IWorkListener listener) {
-		workRepeater.addWorkListener(listener);
+	public void addWorkFlowListener(IWorkFlowListener listener) {
+		workRepeater.addWorkFlowListener(listener);
 	}
 
-	public void removeWorkEventListener(IWorkListener listener) {
-		workRepeater.removeWorkListener(listener);
+	public void removeWorkEventListener(IWorkFlowListener listener) {
+		workRepeater.removeWorkFlowListener(listener);
 	}
 
 	/*==========================================================
@@ -2151,9 +2152,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 						clickPoint.setSpatialReferenceByRef(getSpatialReference());
 
 						// update current selection models
-						setMsoLayerSelectionModel();
-						setMapLayerSelectionModel();
-						setWmsLayerSelectionModel();
+						setMsoLayerModel();
+						setMapLayerModel();
+						setWmsLayerModel();
 
 						// forward
 						fireOnMapReplaced();

@@ -142,8 +142,6 @@ public class RouteCost extends AbstractDsObject {
 	// flags
 	private boolean m_isSpatialChanged = false;				// if true, create() is invoked calculating a new spatial and temporal estimate
 	private boolean m_isTemporalChanged = false;			// if true, update() is invoked only updating the temporal part of the estimate
-	private boolean m_isArchived = false;					// if true, estimate() returns previous calculated ete() value
-	private boolean m_isSuspended = true;					// if true, estimate() returns previous calculated ete() value
 
 	// properties
 	private final RouteCostProp m_p;		// propulsion type
@@ -453,7 +451,7 @@ public class RouteCost extends AbstractDsObject {
 	 *  @return Estimated time enroute at destination (<code>ete</code>)
 	 *  @throws Exception
 	 */
-	public int estimate() throws Exception {
+	public int calculate() throws Exception {
 
 		// return current value?
 		if(m_isSuspended || m_isArchived) return ete();
@@ -598,42 +596,6 @@ public class RouteCost extends AbstractDsObject {
 	 */
 	public boolean isSpatialChanged() {
 		return m_isSpatialChanged;
-	}
-
-	/**
-	 * If true, estimation is finished
-	 */
-	public boolean isArchived() {
-		return m_isArchived;
-	}
-
-	/**
-	 * Archive result
-	 */
-	public void archive() {
-		addSample();
-		m_isArchived = true;
-	}
-
-	/**
-	 * If true, estimation is suspended
-	 */
-	public boolean isSuspended() {
-		return m_isSuspended;
-	}
-
-	/**
-	 * sets isSuspended() true. Only possible if not archived
-	 */
-	public void suspend() {
-		m_isSuspended = !m_isArchived && true;
-	}
-
-	/**
-	 * sets isSuspended() false
-	 */
-	public void resume() {
-		m_isSuspended = false;
 	}
 
 	/* =====================================================================

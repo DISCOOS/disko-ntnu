@@ -151,6 +151,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     {
         if (canDelete())
         {
+        	suspendClientUpdate();
         	// is hostile?
         	if(m_hostile) {
 	        	// delete area POIs
@@ -167,6 +168,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		it.delete();
 	        	}
         	}
+        	resumeClientUpdate(true);
         	// forward
             return super.delete();
         }
@@ -219,7 +221,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         {
             m_areaGeodata.add(anMsoObjectIf);
         }
-        registerModifiedData(this); // in order to generate an event that the map draw tools recognize
+        registerModifiedData(this,m_msoModel.getUpdateMode(),true,false); // in order to generate an event that the map draw tools recognize
     }
 
     private boolean setAreaSequenceNumber(IMsoObjectIf anMsoObjectIf, int aNr)

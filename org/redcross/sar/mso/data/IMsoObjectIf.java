@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface for MSO object
+ * Interface for MSO objects
  */
 public interface IMsoObjectIf extends IData
 {

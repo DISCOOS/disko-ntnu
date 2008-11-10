@@ -16,8 +16,8 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.WorkPool;
 
 import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
 import com.esri.arcgis.geometry.IEnvelope;

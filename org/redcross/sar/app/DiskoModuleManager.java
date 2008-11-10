@@ -9,8 +9,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.thread.ProgressMonitor;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.ProgressMonitor;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -19,37 +19,37 @@ import org.w3c.dom.NodeList;
 
 /**
  * <p>
- * This class manages modules that implement the IDiskoWpModule 
+ * This class manages modules that implement the IDiskoWpModule
  * interface. Modules shared resources between roles, each role will
  * can have one or more of these roles available.
- * 
+ *
  * <p>
  * Roles an modules are read from a xml-file.
- * 
+ *
  * @author geira
  *
  */
 
 public class DiskoModuleManager {
 
-	private IDiskoApplication app = null;
-	private Document doc = null;
-	private String[] rolleNames = null;
-	private ClassLoader classLoader = null;
-	private Map<String,IDiskoWpModule> modules = null;
-	
+	private final IApplication app;
+	private final Document doc;
+	private String[] rolleNames;
+	private final ClassLoader classLoader;
+	private final Map<String,IDiskoWpModule> modules;
+
 	/**
 	 * Constructs a DiskoModuleManager
 	 * @param app A reference to the Disko application.
 	 * @param file A xml file containing roles and modules.
 	 */
-	public DiskoModuleManager(IDiskoApplication app, File file) throws Exception {
-		
+	public DiskoModuleManager(IApplication app, File file) throws Exception {
+
 		// prepare
 		this.app = app;
 		this.classLoader = ClassLoader.getSystemClassLoader();
 		this.modules = new HashMap<String,IDiskoWpModule>();
-		
+
 		// load xml document
 		FileInputStream instream = new FileInputStream(file);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -57,9 +57,9 @@ public class DiskoModuleManager {
 		dbf.setValidating(false);
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		this.doc = db.parse(instream);
-		
+
 	}
-	
+
 	/**
 	 * Get an array containing all role titles defined in the xml-file.
 	 * @return An array of role titles
@@ -76,9 +76,9 @@ public class DiskoModuleManager {
 		}
 		return rolleNames;
 	}
-	
+
 	/**
-	 * Parse and load a role with the given name. New instances of 
+	 * Parse and load a role with the given name. New instances of
 	 * DiskoWP defined under the given role is parsed.
 	 * @param name The name of the role to parse
 	 * @return A new IDiskoRole
@@ -98,7 +98,7 @@ public class DiskoModuleManager {
 	}
 
 	private IDiskoRole parseDiskoRole(Element elem) {
-		
+
 		// get role information
 		String name = elem.getAttribute("name");
 		String title = elem.getAttribute("title");
@@ -123,7 +123,7 @@ public class DiskoModuleManager {
 				}
 				// is module loaded already?
 				if(modules.containsKey(className)) {
-					module = modules.get(className);	
+					module = modules.get(className);
 				}
 				else {
 					// load module
@@ -140,7 +140,7 @@ public class DiskoModuleManager {
 						else throw new Exception("Unsupported class was found");
 					} catch (Exception e) { /* NOP */
 						// TODO: Handle failed load of work modules
-						Utils.showError("Feil i arbeidsprosess", "Følgende feil funnet i "+ className + ":",e);						
+						Utils.showError("Feil i arbeidsprosess", "Følgende feil funnet i "+ className + ":",e);
 						System.out.println("Error"+e.getMessage());
 						e.printStackTrace();
 					}
@@ -148,9 +148,9 @@ public class DiskoModuleManager {
 				// add module?
 				if(module!=null)
 					role.addDiskoWpModule(module,isDefault);
-			}			
+			}
 		}
 		// return role
 		return role;
-	}	
+	}
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.redcross.sar.ds.ete.RouteCost;
+import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.element.PositionElement;
 import org.redcross.sar.util.mso.GeoPos;
@@ -31,7 +32,7 @@ public class EstimatedPositionLayer extends AbstractDsLayer<RouteCost> {
 	public EstimatedPositionLayer(ISpatialReference srs) throws Exception {
 
 		// forward
-		super(RouteCost.class,"ESTIMATEDPOSITIONLAYER",LayerCode.ESTIMATED_POSITION_LAYER,srs);
+		super(RouteCostEstimator.class,"ESTIMATEDPOSITIONLAYER",LayerCode.ESTIMATED_POSITION_LAYER,srs);
 
 		// prepare
 		setMinimumScale(50000);

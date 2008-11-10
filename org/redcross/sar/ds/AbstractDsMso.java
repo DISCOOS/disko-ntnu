@@ -10,7 +10,6 @@ import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -19,9 +18,9 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.mso.work.AbstractMsoWork;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.IWorkLoop.LoopState;
 import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop.LoopState;
 
 public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		extends IDsObject> extends AbstractDs<M, T, MsoEvent.Update> {
@@ -103,11 +102,11 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		// prepare
 		m_msoInterests = msoInterests;
 		m_attributes = attributes;
-		m_model = MsoModelImpl.getInstance();
-		m_comitter = (ICommitManagerIf)m_model;
-		m_driver = m_model.getModelDriver();
 		m_loopWork = new LoopWork(timeOut);
 		m_workLoop.schedule(m_loopWork);
+
+		// connect to MSO model
+		connect(MsoModelImpl.getInstance());
 
 	}
 
@@ -134,12 +133,15 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		disconnect();
 		// allowed?
 		if(model!=null) {
+
 			// prepare
 			m_model = model;
 			m_comitter = (ICommitManagerIf)m_model;
 			m_driver = m_model.getModelDriver();
-			// add listener
+
+			// listen for changes
 			m_model.getEventManager().addClientUpdateListener(m_msoAdapter);
+
 			// finished
 			return true;
 		}
@@ -215,7 +217,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     			for(Update e : list.getEvents(m_msoInterests)) {
 
     				// consume?
-    				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+    				if(!e.isLoopback()) {
 
     					// get flags
     			        boolean deletedObject  = e.isDeleteObjectEvent();
@@ -260,7 +262,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
 		public LoopWork(int timeOut) throws Exception {
 			// forward
-			super(true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
+			super(0,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
 			// prepare
 			m_timeOut = timeOut;
 		}

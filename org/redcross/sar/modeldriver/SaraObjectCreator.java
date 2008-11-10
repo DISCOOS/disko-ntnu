@@ -32,8 +32,12 @@ import java.util.ListIterator;
  */
 public class SaraObjectCreator
 {
-   static final int LOC_POI = 0;
-   static final int LOC_POS = 1;
+   public static final int LOC_POI = 0;
+   public static final int LOC_POS = 1;
+   public static final int LOC_POS_MANUEL = 2;
+   public static final int LOC_POS_AUTO = 3;
+   public static final int LOC_POS_GPS = 4;
+
    static final NumberFormat millisforma = new DecimalFormat("00000000000");
    //private HashMap<String, SarBaseObject> facts = new HashMap();
    private HashMap<String, SarObjectImpl> objs = new LinkedHashMap<String, SarObjectImpl>();
@@ -210,15 +214,6 @@ public class SaraObjectCreator
    {
 
       SarFact sf = null;
-//      if (objs.containsKey((type)))
-//      {
-//         //Check object
-//         return objs.get(type);
-//      }
-//      if (facts.containsKey(name))
-//      {
-//         return facts.get(name);
-//      }
       if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("Integer"))
       {
          return createIntFact(objId, name);
@@ -239,10 +234,6 @@ public class SaraObjectCreator
          return createDateFact(objId, name);
       }
 
-//      else if(type.equalsIgnoreCase("POI"))
-//      {
-//         return createPOIFact(objId ,name);
-//      }
       else if (type.equalsIgnoreCase("org.redcross.sar.util.mso.Position"))
       {
          return createPositionFact(objId, name);

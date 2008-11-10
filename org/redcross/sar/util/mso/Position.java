@@ -7,7 +7,8 @@ import java.awt.geom.Point2D;
  */
 public class Position extends AbstractGeodata
 {
-	
+
+    private int m_type;
     private GeoPos m_position;
 
     /**
@@ -31,6 +32,22 @@ public class Position extends AbstractGeodata
     public Position(String anId, Point2D.Double aPosition)
     {
     	super(anId);
+    	m_type = 1;
+        m_position = new GeoPos(aPosition);
+
+    }
+
+    /**
+     * Create a position at a point.
+     *
+     * @param anId      Object Id
+     * @param aPosition The point's coordinates
+     * @param aType The position type
+     */
+    public Position(String anId, Point2D.Double aPosition, int aType)
+    {
+    	super(anId);
+    	m_type = aType;
         m_position = new GeoPos(aPosition);
 
     }
@@ -41,11 +58,37 @@ public class Position extends AbstractGeodata
      * @param anId  Object Id
      * @param aLong The point's longitude
      * @param aLat  The point's latitude
+     * @param aType The position type
      */
     public Position(String anId, double aLong, double aLat)
     {
     	super(anId);
+    	m_type = 1;
         m_position = new GeoPos(aLong, aLat);
+    }
+
+    /**
+     * Create a position at a given long/lat
+     *
+     * @param anId  Object Id
+     * @param aLong The point's longitude
+     * @param aLat  The point's latitude
+     * @param aType The position type
+     */
+    public Position(String anId, double aLong, double aLat, int aType)
+    {
+    	super(anId);
+    	m_type = aType;
+        m_position = new GeoPos(aLong, aLat);
+    }
+
+    public int getType() {
+    	return m_type;
+    }
+
+    public void setType(int type) {
+    	m_type = type;
+        incrementChangeCount();
     }
 
     /**
@@ -120,7 +163,7 @@ public class Position extends AbstractGeodata
     public GeoPos getGeoPos() {
     	return m_position;
     }
-    
+
     /**
      * Calculate bearing between two positions.
      *
@@ -150,11 +193,11 @@ public class Position extends AbstractGeodata
       result = 31 * result + (m_position != null ? m_position.hashCode() : 0);
       return result;
    }
-   
+
    	@Override
 	public Position clone() throws CloneNotSupportedException {
-		return new Position(m_id,m_position.getPosition());
+		return new Position(m_id,m_position.getPosition(),m_type);
 	}
 
-   
+
 }

@@ -18,10 +18,10 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	// lists
 	protected List<IToolPanel> panels;
 	protected List<IToolListener> toolListeners;
-	protected List<IWorkListener> workListeners;
+	protected List<IWorkFlowListener> workListeners;
 
 	/**
 	 * Constructor
@@ -69,7 +69,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	protected AbstractMapTool() {
 		// prepare
 		toolListeners = new ArrayList<IToolListener>();
-		workListeners = new ArrayList<IWorkListener>();
+		workListeners = new ArrayList<IWorkFlowListener>();
 	}
 
 	/*===============================================
@@ -176,11 +176,11 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		return true;
 	}
 
-	public void addWorkListener(IWorkListener listener) {
+	public void addWorkFlowListener(IWorkFlowListener listener) {
 		workListeners.add(listener);
 	}
 
-	public void removeDiskoEventListener(IWorkListener listener) {
+	public void removeDiskoEventListener(IWorkFlowListener listener) {
 		workListeners.remove(listener);
 	}
 
@@ -333,30 +333,30 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_FINISH);
+		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_FINISH);
 	   	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_CANCEL);
+		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source,data,WorkEvent.EVENT_CHANGE);
+		WorkFlowEvent e = new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CHANGE);
 		// forward
 		fireOnWorkPerformed(e);
     }
 
-    protected void fireOnWorkPerformed(WorkEvent e)
+    protected void fireOnWorkPerformed(WorkFlowEvent e)
     {
 		// notify listeners
 		for (int i = 0; i < workListeners.size(); i++) {
-			workListeners.get(i).onWorkPerformed(e);
+			workListeners.get(i).onFlowPerformed(e);
 		}
 	}
 
@@ -510,7 +510,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		}
 		public AbstractToolWork(boolean isThreadSafe, boolean notify, String message) throws Exception {
 			// forward
-			super(isThreadSafe,true,
+			super(0,isThreadSafe,true,
 					isThreadSafe ? ThreadType.WORK_ON_UNSAFE : ThreadType.WORK_ON_SAFE,
 					"Vent litt",500,notify,false);
 		}

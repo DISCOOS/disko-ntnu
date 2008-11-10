@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
@@ -172,7 +172,7 @@ public class LoginDialog extends DefaultDialog {
 
 	public void load() {
 		String[] rolleNames = null;
-		IDiskoApplication app = Utils.getApp();
+		IApplication app = Utils.getApp();
 		try {
 			rolleNames = app.getModuleManager().getRoleTitles(false);
 		} catch (Exception e) {

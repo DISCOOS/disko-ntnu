@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.redcross.sar.ds.AbstractDsMso;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -77,9 +76,9 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 		// forward
 		clear();
 		// load lists from available assignments
-		if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+		if(m_model.getMsoManager().operationExists()) {
 			// forward
-			for(IAssignmentIf it : MsoModelImpl.getInstance().getMsoManager().getCmdPost().getAssignmentListItems()) {
+			for(IAssignmentIf it : m_model.getMsoManager().getCmdPost().getAssignmentListItems()) {
 				if(setEstimate(it)) {
 					RouteCost c = getCost(it);
 					if(!c.isArchived()) {
@@ -350,19 +349,10 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 	}
 
 	private void removeEstimate(IAssignmentIf assignment) {
-		if(assignment!=null) {
-			// get cost
-			RouteCost cost = m_dsObjs.get(assignment);
-			m_routes.remove(assignment);
-			if(cost!=null) {
-				m_dsObjs.remove(assignment);
-				m_idObjs.remove(cost);
-				m_heavySet.remove(cost);
-				m_residueSet.remove(cost);
-				m_added.remove(assignment);
-				m_archived.remove(assignment);
-			}
-		}
+		// get cost
+		m_routes.remove(assignment);
+		// forward
+		remove(assignment);
 	}
 
 	private boolean setRoute(IAssignmentIf assignment, List<IRouteIf> list) {
@@ -400,14 +390,8 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 	private RouteCost createCost(IAssignmentIf assignment, Route route) {
 		// create new route cost object
 		RouteCost cost = new RouteCost(assignment,route,0,Utils.getApp().getMapManager().getPrintMap());
-		// add to costs and assignments
-		m_dsObjs.put(assignment, cost);
-		m_idObjs.put(cost,assignment);
-		// push to added?
-		if(!cost.isArchived()) {
-			m_added.put(assignment,cost);
-			m_archived.remove(assignment);
-		}
+		// forward
+		add(assignment,cost);
 		// finished
 		return cost;
 	}
@@ -541,7 +525,7 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 					if(cost.isSpatialChanged()) heavyCount++;
 
 					// forward
-					cost.estimate();
+					cost.calculate();
 
 					// add object to list
 					modified.add(cost);
@@ -639,18 +623,22 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 
 		if(progress) {
 
-			// add the rest from last time to prevent
-			// starvation of costs in the back of m_dsObjs.values()
+			/* ==========================================
+			 * add the residue progress work set from
+			 * last work cycle to prevent starvation.
+			 * ========================================== */
 			for(RouteCost it: m_residueSet) {
-				if(!it.isDirty() && it.canProgress() && !list.contains(it))
-					list.add(it);
+				if(it.canProgress() && include(it,list)) list.add(it);
 			}
 
-			// get costs ready to progress
+			/* ==========================================
+			 * add work that only need progress
+			 * calculated.
+			 * ========================================== */
 			for(RouteCost it: m_dsObjs.values()) {
-				if(!it.isDirty() && it.canProgress() && !changed.contains(it)) {
+				if(it.canProgress() && include(it,list)) {
 					IAssignmentIf assignment = getAssignment(it);
-					if(!(assignment == null || it.isDirty() || it.isArchived())) {
+					if(assignment != null) {
 						IUnitIf unit = assignment.getOwningUnit();
 						if(unit!=null && UnitStatus.WORKING.equals(unit.getStatus())) {
 							list.add(it);
@@ -662,33 +650,25 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 		}
 		else {
 
-			// add the rest
+			/* ==========================================
+			 * add heavy work set from last work cycle
+			 * to prevent starvation
+			 * ========================================== */
 			for(RouteCost it: m_heavySet) {
-				// add to work list?
-				if(it.isDirty() && !(it.isSuspended() || it.isArchived() || list.contains(it)))
-					list.add(it);
+				if(it.isDirty() && include(it,list)) list.add(it);
 			}
 
-			// add the rest from last time to prevent
-			// starvation of costs in the back of m_dsObjs.values()
+			/* ==========================================
+			 * add the residue work set from last work
+			 * cycle to prevent starvation
+			 * ========================================== */
 			for(RouteCost it: m_residueSet) {
-				if(it.isDirty() && !list.contains(it))
-					list.add(it);
+				if(it.isDirty() && include(it,list)) list.add(it);
 			}
 
 			// add the missing, and remove all archived costs
 			for(RouteCost it : changed) {
-
-				// add to work list?
-				if(!(it.isSuspended() || it.isArchived() || list.contains(it)))
-					list.add(it);
-
-				// remove misplaced costs
-				if(!it.isDirty() || it.isArchived()) {
-					if(list.contains(it))
-						list.remove(it);
-				}
-
+				if(it.isDirty() && include(it,list)) list.add(it);
 			}
 
 		}

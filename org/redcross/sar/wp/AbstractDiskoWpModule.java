@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -16,7 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
@@ -33,12 +32,12 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.WorkEventRepeater;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.WorkFlowEventRepeater;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -49,7 +48,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  */
 public abstract class AbstractDiskoWpModule
-			implements IDiskoWp, IMsoUpdateListenerIf, IWorkListener {
+			implements IDiskoWp, IMsoUpdateListenerIf, IWorkFlowListener {
 
 	private IDiskoRole role;
     private IDiskoMap map;
@@ -64,8 +63,8 @@ public abstract class AbstractDiskoWpModule
 
     private int isWorking = 0;
 
-    protected final WorkEventRepeater repeater = new WorkEventRepeater();
-    protected final List<WorkEvent> changeStack = new ArrayList<WorkEvent>();
+    protected final WorkFlowEventRepeater repeater = new WorkFlowEventRepeater();
+    protected final List<WorkFlowEvent> changeStack = new ArrayList<WorkFlowEvent>();
 	protected final EnumSet<IMsoManagerIf.MsoClassCode> wpInterests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
 
     public AbstractDiskoWpModule() throws IllegalClassFormatException
@@ -162,7 +161,7 @@ public abstract class AbstractDiskoWpModule
         return map;
     }
 
-    public IDiskoApplication getApplication()
+    public IApplication getApplication()
     {
         return Utils.getApp();
     }
@@ -215,17 +214,17 @@ public abstract class AbstractDiskoWpModule
 		return bFlag;
 	}
 
-    public void addWorkListener(IWorkListener listener)
+    public void addWorkFlowListener(IWorkFlowListener listener)
     {
-    	repeater.addWorkListener(listener);
+    	repeater.addWorkFlowListener(listener);
     }
 
-    public void removeWorkListener(IWorkListener listener)
+    public void removeWorkFlowListener(IWorkFlowListener listener)
     {
-    	repeater.removeWorkListener(listener);
+    	repeater.removeWorkFlowListener(listener);
     }
 
-	public void onWorkPerformed(WorkEvent e) {
+	public void onFlowPerformed(WorkFlowEvent e) {
     	// update change stack?
 		if(e.isChange() || e.isFinish())
 			changeStack.add(e);
@@ -238,7 +237,7 @@ public abstract class AbstractDiskoWpModule
     {
 
     	// create event
-		WorkEvent e = new WorkEvent(this,data,WorkEvent.EVENT_CHANGE);
+		WorkFlowEvent e = new WorkFlowEvent(this,data,WorkFlowEvent.EVENT_CHANGE);
 
 		// forward
 		fireOnWorkPerformed(e);
@@ -248,7 +247,7 @@ public abstract class AbstractDiskoWpModule
     protected void fireOnWorkRollback()
     {
     	// create event
-    	WorkEvent e = new WorkEvent(this,null,WorkEvent.EVENT_ROLLBACK);
+    	WorkFlowEvent e = new WorkFlowEvent(this,null,WorkFlowEvent.EVENT_ROLLBACK);
 
     	// forward
     	fireOnWorkPerformed(e);
@@ -257,12 +256,12 @@ public abstract class AbstractDiskoWpModule
     protected void fireOnWorkCommit()
     {
     	// create event
-    	WorkEvent e = new WorkEvent(this,null,WorkEvent.EVENT_COMMIT);
+    	WorkFlowEvent e = new WorkFlowEvent(this,null,WorkFlowEvent.EVENT_COMMIT);
     	// forward
     	fireOnWorkPerformed(e);
     }
 
-    protected void fireOnWorkPerformed(WorkEvent e)
+    protected void fireOnWorkPerformed(WorkFlowEvent e)
     {
     	// update change stack?
 		if(e.isCommit() || e.isRollback())
@@ -335,13 +334,13 @@ public abstract class AbstractDiskoWpModule
     		 *
     		 * ======================================================= */
 
-    		getApplication().getMapManager().execute(getMap());
+    		getApplication().getMapManager().execute(getMap(),false);
 
         }
         else {
 
         	// start executing all pending map work in the background
-    		getApplication().getMapManager().execute();
+    		getApplication().getMapManager().execute(false);
 
         }
 
@@ -565,8 +564,7 @@ public abstract class AbstractDiskoWpModule
 
 	/*============================================================
 	 * Global timer implementation
-	 *============================================================
-	 */
+	 *============================================================ */
 
     private static final int TIMER_DELAY = 1000; // 1 second
     private static final Timer timer = new Timer(true);
@@ -590,7 +588,7 @@ public abstract class AbstractDiskoWpModule
 	        {
 	            public void run()
 	            {
-	                long newTickTime = Calendar.getInstance().getTimeInMillis();
+	                long newTickTime = System.currentTimeMillis();
 	                if (tickTime == 0)
 	                {
 	                    tickTime = newTickTime;
@@ -698,7 +696,7 @@ public abstract class AbstractDiskoWpModule
 
 		public ModuleWork(String msg, boolean show, boolean suspend) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_SAFE,msg,100,show,false);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,msg,100,show,false);
 			// prepare
 			m_suspend = suspend;
 		}

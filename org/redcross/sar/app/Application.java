@@ -12,15 +12,17 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
+import org.redcross.sar.modeldriver.IModelDriverListenerIf;
+import org.redcross.sar.modeldriver.ModelDriverAdapter;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.output.DiskoReportManager;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.ProgressMonitor;
-import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.ProgressMonitor;
+import org.redcross.sar.work.WorkPool;
 
 import com.esri.arcgis.system.EngineInitializer;
 
@@ -52,10 +54,9 @@ import javax.swing.SwingUtilities;
 /**
  * @author geira
  */
-public class Application extends JFrame implements IDiskoApplication, WindowListener
+public class Application extends JFrame implements IApplication, WindowListener
 {
-	private static final ResourceBundle bundle =
-		Internationalization.getBundle(IDiskoApplication.class);
+	private static final ResourceBundle bundle = Internationalization.getBundle(IApplication.class);
 	private static final String CONFIRMATION_TEXT = "CONFIRMATION.TEXT";
 	private static final String CONFIRMATION_TITLE = "CONFIRMATION.HEADER";
 	private static final String CHOOSETEXT = "CHOOSE.OP.TEXT";
@@ -74,21 +75,22 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 
 	private static final long serialVersionUID = 1L;
 
-	private IDiskoRole currentRole = null;
-	private Hashtable<String, IDiskoRole> roles = null;
-	private DiskoModuleManager moduleLoader = null;
-	private UIFactory uiFactory = null;
-	private IDiskoMapManager mapManager = null;
-	private MsoModelImpl m_msoModel = null;
-	private DiskoReportManager diskoReport = null;
-	private DiskoKeyEventDispatcher keyEventDispatcher = null;
+	private IDiskoRole m_currentRole;
+	private Hashtable<String, IDiskoRole> m_roles;
+	private DiskoModuleManager m_moduleLoader;
+	private UIFactory m_uiFactory;
+	private IDiskoMapManager mapManager;
+	private MsoModelImpl m_msoModel;
+	private DiskoReportManager m_diskoReport;
+	private DiskoKeyEventDispatcher m_keyEventDispatcher;
+	private ServicePool m_servicePool;
 
 	// counters
 	private int lockCount = 0;
 
 	// flags
 	private boolean isLoading = false;
-	private boolean waitingForNewOp=false;
+	private boolean waitingForNewOp = false;
 
 	/**
 	 * The main method.
@@ -160,18 +162,21 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 			DsPool.getInstance();
 			// show me
 			this.setVisible(true);
-			//initiate modeldriver
+			//initiate model driver
 			this.getMsoModel().getModelDriver().initiate();
-			this.getMsoModel().getModelDriver().setDiskoApplication(this);
+			this.getMsoModel().getModelDriver().addModelDriverListener(m_driverAdapter);
+			// load services?
+			if(AppProps.getText("SERVICES.initialize").equals("true")) {
+				this.getServices().installFromXmlFile(new File("DiskoServices.xml"));
+				this.getServices().setAutomatic(AppProps.getText("SERVICES.automatic").equals("true"));
+				this.getServices().setMaster(AppProps.getText("SERVICES.master").equals("true"));
+			}
 			// prepare reporting
-			diskoReport = new DiskoReportManager(this);
+			m_diskoReport = new DiskoReportManager(this);
 			// set loading bit
 			setLoading(true);
 			// forward
 			getUIFactory().getLoginDialog().showLogin(true);
-			// show login later (this allows the main application frame to show first)
-			//SwingUtilities.invokeLater(new Runnable() {public void
-			//	run() { getUIFactory().getLoginDialog().showLogin(true); }});
 		}
 		catch (Exception e)
 		{
@@ -197,32 +202,32 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	public DiskoKeyEventDispatcher getKeyEventDispatcher() {
-		if(keyEventDispatcher==null) {
+		if(m_keyEventDispatcher==null) {
 			// create new
-			keyEventDispatcher=new DiskoKeyEventDispatcher();
+			m_keyEventDispatcher=new DiskoKeyEventDispatcher();
 			// pass through events from classes
-			keyEventDispatcher.addPassed(JTextArea.class);
-			keyEventDispatcher.addPassed(JTextField.class);
-			keyEventDispatcher.addPassed(JFormattedTextField.class);
+			m_keyEventDispatcher.addPassed(JTextArea.class);
+			m_keyEventDispatcher.addPassed(JTextField.class);
+			m_keyEventDispatcher.addPassed(JFormattedTextField.class);
 			// add to current KeyboardFocusManager
 			KeyboardFocusManager.getCurrentKeyboardFocusManager()
-								.addKeyEventDispatcher(keyEventDispatcher);
+								.addKeyEventDispatcher(m_keyEventDispatcher);
 		}
-		return keyEventDispatcher;
+		return m_keyEventDispatcher;
 	}
 
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getCurrentRole()
+	 * @see org.redcross.sar.app.IApplication#getCurrentRole()
 	 */
 	public IDiskoRole getCurrentRole()
 	{
-		return currentRole;
+		return m_currentRole;
 	}
 
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getCurrentMap()
+	 * @see org.redcross.sar.app.IApplication#getCurrentMap()
 	 */
 	public IDiskoMap getCurrentMap()
 	{
@@ -230,7 +235,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getFrame()
+	 * @see org.redcross.sar.app.IApplication#getFrame()
 	 */
 	public JFrame getFrame()
 	{
@@ -276,15 +281,15 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getUIFactory()
+	 * @see org.redcross.sar.app.IApplication#getUIFactory()
 	 */
 	public UIFactory getUIFactory()
 	{
-		if (uiFactory == null)
+		if (m_uiFactory == null)
 		{
-			uiFactory = new UIFactory(this);
+			m_uiFactory = new UIFactory(this);
 		}
-		return uiFactory;
+		return m_uiFactory;
 	}
 
 	public NavMenu getNavMenu()
@@ -298,7 +303,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getDiskoMapManager()
+	 * @see org.redcross.sar.app.IApplication#getDiskoMapManager()
 	 */
 	public IDiskoMapManager getMapManager()
 	{
@@ -325,7 +330,21 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	public DiskoReportManager getReportManager(){
-		return this.diskoReport;
+		return this.m_diskoReport;
+	}
+
+	public ServicePool getServices()
+	{
+		if (m_servicePool == null)
+		{
+			try {
+				m_servicePool = ServicePool.getInstance();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return m_servicePool;
 	}
 
 	public void windowClosing(WindowEvent e) {
@@ -373,7 +392,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#login(java.lang.String, java.lang.String, char[])
+	 * @see org.redcross.sar.app.IApplication#login(java.lang.String, java.lang.String, char[])
 	 */
 	public boolean login(final String role, final String user, final char[] password)
 	{
@@ -414,7 +433,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#changeRole(java.lang.String, java.lang.String, char[])
+	 * @see org.redcross.sar.app.IApplication#changeRole(java.lang.String, java.lang.String, char[])
 	 */
 
 	public boolean swapTo(final String role, final String user, final char[] password)
@@ -430,7 +449,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 				loggedin[1] = user;
 				loggedin[2] = password;
 				// forward
-				scheduleSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
+				scheduleSetActiveRoleWorker(m_roles,m_currentRole,(String)loggedin[0]);
 			}
 		});
 
@@ -439,7 +458,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 
 	}
 		/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#chooseActiveOperation()
+	 * @see org.redcross.sar.app.IApplication#chooseActiveOperation()
 	 */
 	public boolean selectActiveOperation(boolean prompt)
 	{
@@ -481,13 +500,13 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#finishOperation()
+	 * @see org.redcross.sar.app.IApplication#finishOperation()
 	 */
 	public void finishOperation()
 	{
 		String[] options = {bundle.getString("QUIT.APPLICATION.TEXT"), bundle.getString("QUIT.OPERATION.TEXT"), bundle.getString("QUIT.CANCEL.TEXT")};
 		int ans = JOptionPane.showOptionDialog(
-				uiFactory.getContentPanel(),
+				m_uiFactory.getContentPanel(),
 				bundle.getString(FINISH_TEXT),
 				bundle.getString(FINISH_TITLE),
 				JOptionPane.YES_NO_CANCEL_OPTION,
@@ -502,7 +521,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		else {
 			if(ans==JOptionPane.NO_OPTION) {
 				ans = JOptionPane.showOptionDialog(
-						uiFactory.getContentPanel(),
+						m_uiFactory.getContentPanel(),
 						bundle.getString(CONFIRMATION_TEXT),
 						bundle.getString(CONFIRMATION_TITLE),
 						JOptionPane.YES_NO_OPTION,
@@ -518,88 +537,8 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		}
 	}
 
-	public void onOperationCreated(final String oprId, final boolean current)
-	{
-
-		// only handle if current
-		if(!current) return;
-
-		if (SwingUtilities.isEventDispatchThread()) {
-			// is waiting for this operation
-			if (waitingForNewOp) {
-				// reset flag
-				waitingForNewOp = false;
-				// notify user of new operation created?
-				if (!isLocked())
-					Utils.showMessage(String.format(bundle
-							.getString(OPERATION_CREATED_TEXT), oprId));
-				// schedule work
-				scheduleSetActiveOperation(oprId);
-			}
-		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					onOperationCreated(oprId,current);
-				}
-			});
-		}
-	}
-
-	public void onOperationFinished(final String oprID, final boolean current)
-	{
-		// only handle if current
-		if(!current) return;
-
-		if (SwingUtilities.isEventDispatchThread()) {
-			// force finish progress
-			try {
-				ProgressMonitor.getInstance().finish(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			// get active operations
-			java.util.List<String[]> opList = getMsoModel().getModelDriver()
-					.getActiveOperations();
-			// prompt user for actions
-			String[] options = { bundle.getString("QUIT.APPLICATION.TEXT"),
-					bundle.getString(CHOOSETEXT),
-					bundle.getString("NEWACTION.TEXT") };
-			int ans = JOptionPane.showOptionDialog(uiFactory.getContentPanel(),
-					bundle.getString(OPERATION_FINISHED_TEXT), bundle
-							.getString(OPERATION_FINISHED_TITLE),
-					JOptionPane.YES_NO_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-			// user choose to exit the application
-			if (ans == JOptionPane.YES_OPTION) {
-				shutdown();
-			} else if (ans == JOptionPane.NO_OPTION) {
-
-				// the user choose to select another active operation (if it exists)
-				if (opList.size() > 0) {
-					// choose operation without prompt
-					selectActiveOperation(false);
-				} else {
-					// get maximum wait time
-					long maxTime = Long.parseLong(getProperty("max.wait.time",
-							"" + 60 * 1000));
-					// add work to work pool. If initiation succeeds, the active operation
-					// is choosen. If initiation fails, the system will be shut down.
-					scheduleInitiateModelDriver(maxTime, true, false);
-				}
-			} else
-				// forward
-				createOperation(false);
-		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					onOperationFinished(oprID,current);
-				}
-			});
-		}
-	}
-
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#mergeOperations()
+	 * @see org.redcross.sar.app.IApplication#mergeOperations()
 	 */
 	public void mergeOperations()
 	{
@@ -614,7 +553,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		// prompt user?
 		if(prompt) {
 			ans = JOptionPane.showOptionDialog(
-					uiFactory.getContentPanel(),
+					m_uiFactory.getContentPanel(),
 					bundle.getString(NEWACTION_DESC),
 					bundle.getString(NEWACTION_TEXT),
 					JOptionPane.YES_NO_OPTION,
@@ -623,7 +562,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 
 		// create?
 		if(ans==JOptionPane.YES_OPTION) {
-			waitingForNewOp=true;
+			waitingForNewOp = true;
 			getMsoModel().getModelDriver().createNewOperation();
 			return true;
 		}
@@ -643,15 +582,15 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 	}
 
 	/* (non-Javadoc)
-	 * @see org.redcross.sar.app.IDiskoApplication#getDiskoModuleLoader()
+	 * @see org.redcross.sar.app.IApplication#getDiskoModuleLoader()
 	 */
 	public DiskoModuleManager getModuleManager()
 	{
-		if (moduleLoader == null)
+		if (m_moduleLoader == null)
 		{
 			try
 			{
-				moduleLoader = new DiskoModuleManager(this,
+				m_moduleLoader = new DiskoModuleManager(this,
 						new File("DiskoModules.xml"));
 			}
 			catch (Exception e)
@@ -660,7 +599,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 				e.printStackTrace();
 			}
 		}
-		return moduleLoader;
+		return m_moduleLoader;
 	}
 
 	public String getProperty(String key)
@@ -683,8 +622,8 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 
 	private void fireBeforeOperationChange() {
 		// notify current work processes?
-		if(currentRole!=null)
-			currentRole.fireBeforeOperationChange();
+		if(m_currentRole!=null)
+			m_currentRole.fireBeforeOperationChange();
 	}
 
 	private void fireAfterOperationChange() {
@@ -693,11 +632,11 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		getMapManager().selectMap(isLocked(),true);
 
 		// start executing all pending map work in the background
-		getMapManager().execute();
+		getMapManager().execute(false);
 
 		// notify current work processes?
-		if(currentRole!=null) {
-			currentRole.fireAfterOperationChange();
+		if(m_currentRole!=null) {
+			m_currentRole.fireAfterOperationChange();
 		}
 
 	}
@@ -736,7 +675,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		 */
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_SAFE,"Henter aksjonsliste",0,true,true);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,"Henter aksjonsliste",0,true,true);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -852,7 +791,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		 */
 		SetActiveOperation(String opId) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + opId,0,true,true);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + opId,0,true,true);
 			// save
 			m_opID = opId;
 			// set loading bit
@@ -910,8 +849,8 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 				// get result
 				if(get()) {
 					// choose active operation?
-					if(currentRole==null)
-						scheduleSetActiveRoleWorker(roles,currentRole,(String)loggedin[0]);
+					if(m_currentRole==null)
+						scheduleSetActiveRoleWorker(m_roles,m_currentRole,(String)loggedin[0]);
 				}
 
 				// notify
@@ -975,7 +914,7 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		SetActiveRoleWorker(Hashtable<String, IDiskoRole> roles,
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_SAFE,"Aktiverer rolle",0,true,true);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,"Aktiverer rolle",0,true,true);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;
@@ -1031,9 +970,9 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 				// success?
 				if(get()) {
 					// update roles table
-					Application.this.roles = this.roles;
+					Application.this.m_roles = this.roles;
 					// update current role
-					Application.this.currentRole = this.currentRole;
+					Application.this.m_currentRole = this.currentRole;
 					// show role specific menu
 					getUIFactory().getMainMenu().showMenu(currentRole.getName());
 					// activate work process
@@ -1080,4 +1019,89 @@ public class Application extends JFrame implements IDiskoApplication, WindowList
 		}
 		return false;
 	}
+
+	private final IModelDriverListenerIf m_driverAdapter = new ModelDriverAdapter() {
+
+		public void onOperationCreated(final String oprId, final boolean current)
+		{
+
+			// only handle if current
+			if(!current) return;
+
+			if (SwingUtilities.isEventDispatchThread()) {
+				// is waiting for this operation
+				if (waitingForNewOp) {
+					// reset flag
+					waitingForNewOp = false;
+					// notify user of new operation created?
+					if (!isLocked())
+						Utils.showMessage(String.format(bundle
+								.getString(OPERATION_CREATED_TEXT), oprId));
+					// schedule work
+					scheduleSetActiveOperation(oprId);
+				}
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						onOperationCreated(oprId,current);
+					}
+				});
+			}
+		}
+
+		public void onOperationFinished(final String oprID, final boolean current)
+		{
+			// only handle if current
+			if(!current) return;
+
+			if (SwingUtilities.isEventDispatchThread()) {
+				// force finish progress
+				try {
+					ProgressMonitor.getInstance().finish(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				// get active operations
+				java.util.List<String[]> opList = getMsoModel().getModelDriver()
+						.getActiveOperations();
+				// prompt user for actions
+				String[] options = { bundle.getString("QUIT.APPLICATION.TEXT"),
+						bundle.getString(CHOOSETEXT),
+						bundle.getString("NEWACTION.TEXT") };
+				int ans = JOptionPane.showOptionDialog(m_uiFactory.getContentPanel(),
+						bundle.getString(OPERATION_FINISHED_TEXT), bundle
+								.getString(OPERATION_FINISHED_TITLE),
+						JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+				// user choose to exit the application
+				if (ans == JOptionPane.YES_OPTION) {
+					shutdown();
+				} else if (ans == JOptionPane.NO_OPTION) {
+
+					// the user choose to select another active operation (if it exists)
+					if (opList.size() > 0) {
+						// choose operation without prompt
+						selectActiveOperation(false);
+					} else {
+						// get maximum wait time
+						long maxTime = Long.parseLong(getProperty("max.wait.time",
+								"" + 60 * 1000));
+						// add work to work pool. If initiation succeeds, the active operation
+						// is choosen. If initiation fails, the system will be shut down.
+						scheduleInitiateModelDriver(maxTime, true, false);
+					}
+				} else
+					// forward
+					createOperation(false);
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						onOperationFinished(oprID,current);
+					}
+				});
+			}
+		}
+
+	};
+
 }  // @jve:decl-index=0:visual-constraint="10,10"

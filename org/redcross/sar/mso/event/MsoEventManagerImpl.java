@@ -2,11 +2,14 @@ package org.redcross.sar.mso.event;
 
 import no.cmr.tools.Log;
 
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.ProgressMonitor;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.work.ProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,10 +89,12 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     {
         // notify
         fireUpdate(m_clientUpdateListeners,
-        		getUpdateEvents(root,MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()));
+        		getUpdateEvents(root,MsoModelImpl.getInstance().getUpdateMode(),
+        				false, MsoEventType.CLEAR_ALL_EVENT.maskValue()));
     }
 
-    public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask)
+    public void notifyClientUpdate(IMsoObjectIf aSource,
+    		UpdateMode mode, boolean isLoopback, int anEventTypeMask)
     {
     	// consume?
     	if(anEventTypeMask!=0)
@@ -97,12 +102,13 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     		// notify now?
     		if(m_resumeCount==0)
     		{
-    			fireUpdate(m_clientUpdateListeners, getUpdateEvents(aSource, anEventTypeMask));
+    			fireUpdate(m_clientUpdateListeners,
+    					getUpdateEvents(aSource, mode, isLoopback, anEventTypeMask));
     		}
     		else
     		{
     			// forward
-    			update(m_buffer,new MsoEvent.Update( aSource, anEventTypeMask ));
+    			update(m_buffer,new MsoEvent.Update( aSource, mode, isLoopback, anEventTypeMask ));
     		}
 
     	}
@@ -121,11 +127,6 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 		buffer.add(e);
     }
 
-	protected MsoEvent.Update getExisting(MsoEvent.Update e) {
-		return null;
-	}
-
-
     public void addServerUpdateListener(IMsoUpdateListenerIf aListener)
     {
         defineInterests(m_serverUpdateListeners,aListener,aListener.getInterests());
@@ -136,12 +137,12 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         removeInterests(m_serverUpdateListeners,aListener);
     }
 
-    public void notifyServerUpdate(IMsoObjectIf aSource, int anEventTypeMask)
+    public void notifyServerUpdate(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask)
     {
     	// consume?
     	if(anEventTypeMask!=0)
     	{
-	        fireUpdate(m_serverUpdateListeners, getUpdateEvents(aSource, anEventTypeMask));
+	        fireUpdate(m_serverUpdateListeners, getUpdateEvents(aSource, mode, false, anEventTypeMask));
     	}
     }
 
@@ -275,9 +276,10 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         }
     }
 
-    private MsoEvent.UpdateList getUpdateEvents(IMsoObjectIf msoObj, int mask)
+    private MsoEvent.UpdateList getUpdateEvents(IMsoObjectIf msoObj,
+    		UpdateMode mode, boolean isLoopback, int mask)
     {
-     	MsoEvent.Update e = new MsoEvent.Update( msoObj, mask );
+     	MsoEvent.Update e = new MsoEvent.Update( msoObj, mode, isLoopback, mask );
         return new MsoEvent.UpdateList(getUpdateEvents(e),e.isClearAllEvent());
     }
 

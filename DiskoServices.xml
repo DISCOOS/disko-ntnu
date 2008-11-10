@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<DiskoApplication>
+	<IServiceCatalog classname="org.redcross.sar.ds.DsPool" isSingleton="true">
+		<IService classname="org.redcross.sar.ds.ete.RouteCostEstimator" />
+		<IService classname="org.redcross.sar.ds.sc.Advisor" />
+	</IServiceCatalog>
+</DiskoApplication>

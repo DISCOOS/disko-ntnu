@@ -18,7 +18,6 @@ import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
@@ -256,7 +255,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL))
 			{
 				// consume loopback updates
-				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+				if(!e.isLoopback())
 				{
 					IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ?
 	        		(IPersonnelIf) e.getSource() : null;

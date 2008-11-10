@@ -21,7 +21,7 @@ import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -50,7 +50,7 @@ public class ListDialog extends DefaultDialog {
 	private JPanel optionsPanel;
 
 	private IDiskoWpModule wp;
-	private IDiskoApplication app;
+	private IApplication app;
 	private AssignmentTable assignmentTable;
 
 	private DiskoReportManager report;

@@ -54,7 +54,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
         // add to head of list
         setAddToTail(false);
         // forward
-        connect(aWp.getMsoModel(),aWp.getMsoManager().getCmdPost().getMessageLog(),IMessageIf.MESSAGE_NUMBER_COMPARATOR);
+        connect(aWp.getMsoModel(),IMessageIf.SELECT_ALL,IMessageIf.MESSAGE_NUMBER_COMPARATOR);
         // add co-classes
         getMsoBinder().addCoClass(IMessageLineIf.class,null);
         getMsoBinder().addCoClass(IUnitIf.class,null);
@@ -203,6 +203,11 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
 		return data;
 	}
 
+	public int getRowCount() {
+		return super.getRowCount();
+	}
+
+
 	/* ================================================================
 	 *  DiskoTableModel implementation
 	 * ================================================================ */
@@ -324,8 +329,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
         {
             IMessageIf message = getId(i);
             Boolean expanded = m_toggleMap.get(message.getObjectId());
-
-            if (expanded)
+            if (expanded==null || expanded)
             {
                 setRowExpanded(i);
             } else

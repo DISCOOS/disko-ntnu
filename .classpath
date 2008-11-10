@@ -1,28 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding=".classpath|DiskoModules.xml|Thumbs.db|cursors/|icons/|lib/|mapping/|output/|reports/|sara.id.lockfile|symbols/" kind="src" path=""/>
+	<classpathentry excluding=".classpath|.settings|DiskoModules.xml|Thumbs.db|cursors/|doc/|icons/|lib/|mapping/|output/|reports/|sara.id.lockfile|symbols/" kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/apache-activemq-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/arcobjects.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/castor-0.9.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-beanutils-1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-collections-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-digester-1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-1.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/ekit10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/infobus.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jasperreports-1.3.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jbcl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdic.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdic-native.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jms.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jndi.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/junit-4.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/ldap.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/SaraApi.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/spring-2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/wmscommon.jar"/>
-	<classpathentry kind="lib" path="lib/jcommon-1.0.12.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart-1.0.9.jar"/>
+	<classpathentry kind="lib" path="lib/infobus.jar"/>
+	<classpathentry kind="lib" path="lib/jbcl.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.12.jar"/>
+	<classpathentry kind="lib" path="lib/jms.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-digester-1.7.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-api-1.0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

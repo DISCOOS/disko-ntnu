@@ -32,14 +32,14 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf> {
 	 * ============================================================= */
 
 	public UnitTableModel(IMsoModelIf msoModel) {
-		this(msoModel,IUnitIf.ACTIVE_RANGE);
+		this(msoModel,EnumSet.allOf(UnitStatus.class));
 	}
 
 	public UnitTableModel(IMsoModelIf msoModel, EnumSet<UnitStatus> status) {
 		// forward
 		super(IUnitIf.class,NAMES,CAPTIONS,false);
 		// install model
-		connect(msoModel,createDefaultSelector(status),IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+		connect(msoModel,createDefaultSelector(status),IUnitIf.TYPE_AND_NUMBER_COMPARATOR);
 		load(msoModel.getMsoManager().getCmdPost().getUnitList());
 	}
 

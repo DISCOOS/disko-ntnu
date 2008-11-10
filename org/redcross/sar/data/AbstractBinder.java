@@ -64,7 +64,13 @@ public abstract class AbstractBinder<S,T extends IData, I>
 	 * IDataBinderIf implementation
 	 * ============================================================================= */
 
-	public abstract boolean load(Collection<T> objects);
+	public abstract boolean load(Collection<T> objects, boolean append);
+
+	public boolean load(Collection<T> objects) {
+		return load(objects,false);
+	}
+
+	public abstract boolean clear();
 
 	public boolean connect(IDataSource<I> source) {
 		if(source!=null && this.source==null && source.isSupported(dataClass)) {
@@ -86,7 +92,7 @@ public abstract class AbstractBinder<S,T extends IData, I>
 		// has model?
 		if(source!=null) {
 			// forward
-			return load(DataUtils.selectItemsInCollection(getSelector(), (Collection<T>)getSource().getItems(getDataClass())));
+			return load(query(),false);
 		}
 		// failure
 		return false;
@@ -177,6 +183,15 @@ public abstract class AbstractBinder<S,T extends IData, I>
 	/* =============================================================================
 	 * Helper methods
 	 * ============================================================================= */
+
+	protected abstract T[] getData(Collection<T> items);
+
+	protected Collection<T> query() {
+		if(source!=null)
+			return (Collection<T>)getSource().getItems(getDataClass());
+		else
+			return null;
+	}
 
 	protected List<T> sort(Collection<T> objs) {
 		List<T> list = new ArrayList(objs);

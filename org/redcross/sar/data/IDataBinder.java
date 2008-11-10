@@ -30,5 +30,7 @@ public interface IDataBinder<S,T extends IData,I> {
 	public IDataSource<?> getSource();
 	public boolean load();
 	public boolean load(Collection<T> objects);
+	public boolean load(Collection<T> objects, boolean append);
+	public boolean clear();
 
 }

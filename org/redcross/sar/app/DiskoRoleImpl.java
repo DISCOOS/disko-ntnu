@@ -15,7 +15,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.menu.MainMenu;
 import org.redcross.sar.gui.menu.SubMenu;
 import org.redcross.sar.gui.panel.MainPanel;
-import org.redcross.sar.thread.event.WorkEvent;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -31,21 +31,19 @@ import com.esri.arcgis.interop.AutomationException;
  */
 public class DiskoRoleImpl implements IDiskoRole {
 
-	private IDiskoApplication app = null;
-	private String name = null;
-	private String title = null;
-	private String description = null;
-	private IDiskoWpModule currentModule = null;
-	private ArrayList<IDiskoWpModule> modules = null;
-	private IDiskoWpModule defaultModule = null;
-	//private Border bussyBorder = null;
-	//private Border normalBorder = null;
+	private IApplication app;
+	private String name;
+	private String title;
+	private String description;
+	private IDiskoWpModule currentModule;
+	private ArrayList<IDiskoWpModule> modules;
+	private IDiskoWpModule defaultModule;
 
 	/**
 	 * Constructs a DiskoRolleImpl
 	 * @param app A reference to DiskoApplication
 	 */
-	public DiskoRoleImpl(IDiskoApplication app) {
+	public DiskoRoleImpl(IApplication app) {
 		this(app, null, null, null);
 	}
 
@@ -56,7 +54,7 @@ public class DiskoRoleImpl implements IDiskoRole {
 	 * @param title The title
 	 * @param description The description
 	 */
-	public DiskoRoleImpl(IDiskoApplication app, String name, String title, String description) {
+	public DiskoRoleImpl(IApplication app, String name, String title, String description) {
 		this.app = app;
 		this.name = name;
 		this.title = title;
@@ -76,7 +74,7 @@ public class DiskoRoleImpl implements IDiskoRole {
 			final String id = module.getName();
 
 			// add role as disko work to module
-			module.addWorkListener(this);
+			module.addWorkFlowListener(this);
 
 			// get toggle button and icon
 			JToggleButton tbutton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL, 0, 0);
@@ -257,11 +255,11 @@ public class DiskoRoleImpl implements IDiskoRole {
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.app.IDiskoRole#getApplication()
 	 */
-	public IDiskoApplication getApplication() {
+	public IApplication getApplication() {
 		return app;
 	}
 
-	public void onWorkPerformed(WorkEvent e) {
+	public void onFlowPerformed(WorkFlowEvent e) {
 		// get module state
 		boolean bFlag = currentModule!=null ? currentModule.isChanged() : false;
 		// update icons to reflect state

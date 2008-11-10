@@ -5,12 +5,12 @@ import java.awt.event.ActionListener;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.thread.event.IWorkListener;
+import org.redcross.sar.work.event.IWorkFlowListener;
 
 public interface IPanel extends IChangeable,
 								IMsoUpdateListenerIf,
 								IMsoLayerEventListener,
-								IWorkListener,
+								IWorkFlowListener,
 								ActionListener {
 
 	/* ================================================
@@ -42,8 +42,8 @@ public interface IPanel extends IChangeable,
 	public void addActionListener(ActionListener listener);
 	public void removeActionListener(ActionListener listener);
 
-	public void addWorkListener(IWorkListener listener);
-	public void removeWorkListener(IWorkListener listener);
+	public void addWorkFlowListener(IWorkFlowListener listener);
+	public void removeWorkFlowListener(IWorkFlowListener listener);
 
 	public IPanelManager getManager();
 	public void setManager(IPanelManager manager);

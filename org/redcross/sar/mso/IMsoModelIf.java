@@ -39,7 +39,7 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
     /**
      * Modification state, tells the modification state of each attribute or relation.
      */
-    enum ModificationState
+    public enum ModificationState
     {
         STATE_UNDEFINED,
         STATE_SERVER,

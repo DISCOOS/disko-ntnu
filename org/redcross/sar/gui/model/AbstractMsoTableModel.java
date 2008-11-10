@@ -82,21 +82,36 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 	}
 
 	public MsoBinder<T> connect(IMsoModelIf source, Selector<T> selector, Comparator<T> comparator) {
-		// get binder
-		MsoBinder<T> binder = createBinder(source, selector, comparator);
 		// forward
-		if(connect(binder)) {
+		if(isConnected(source)) {
+			// get current mso binder
+			MsoBinder<T> binder = getMsoBinder();
+			binder.setSelector(selector);
+			binder.setComparator(comparator);
 			return binder;
+		}
+		else {
+			// get binder
+			MsoBinder<T> binder = createBinder(source, selector, comparator);
+			// forward
+			if(connect(binder)) return binder;
 		}
 		return null;
 	}
 
 	public MsoBinder<T> connect(IMsoModelIf source, IMsoListIf<T> list, Comparator<T> comparator) {
-		// get binder
-		MsoBinder<T> binder = createBinder(source, createListSelector(list), comparator);
 		// forward
-		if(connect(binder)) {
+		if(isConnected(source)) {
+			// get current mso binder
+			MsoBinder<T> binder = getMsoBinder();
+			binder.setSelector(list);
+			binder.setComparator(comparator);
 			return binder;
+		}
+		else {
+			// get binder
+			MsoBinder<T> binder = createBinder(source, createListSelector(list), comparator);
+			if(connect(binder)) return binder;
 		}
 		return null;
 	}
@@ -128,19 +143,21 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
 				// is item class supported?
 				if(isSupported(it.getItemClass())) {
-					load((Collection<T>)it.getItems());
+					load((Collection<T>)it.getItems(),true);
 				}
 			}
 			bFlag = true;
 		}
-		// notify
-		fireTableDataChanged();
 		// finished
 		return bFlag;
 	}
 
 	public void load(IMsoListIf<T> list) {
-		super.load(list.getItems());
+		load(list,false);
+	}
+
+	public void load(IMsoListIf<T> list, boolean append) {
+		super.load(list.getItems(),append);
 	}
 
 	/* =============================================================================
@@ -192,8 +209,9 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 
 	private Selector<T> createListSelector(final IMsoListIf<T> list) {
 		Selector<T> selector = new Selector<T>() {
+			private IMsoListIf<T> m_list = list;
 			public boolean select(T anObject) {
-				return list.exists(anObject);
+				return m_list.exists(anObject);
 			}
 		};
 		return selector;

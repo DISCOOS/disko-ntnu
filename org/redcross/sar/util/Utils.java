@@ -32,16 +32,16 @@ import java.util.StringTokenizer;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.ProgressMonitor;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.TimePos;
+import org.redcross.sar.work.ProgressMonitor;
 
 /**
  * Utility class containing access to methods for handling properties.
@@ -53,13 +53,13 @@ public class Utils {
 	public final static String DATA_STRING_FORMAT = "yyyy.MM.dd HH:mm:ss Z";
 
 	private static MessageDialog messageDialog = null;
-	private static IDiskoApplication diskoApp = null;
+	private static IApplication diskoApp = null;
 
-	public static void setApp(IDiskoApplication app) {
+	public static void setApp(IApplication app) {
 		diskoApp = app;
 	}
 
-	public static IDiskoApplication getApp() {
+	public static IApplication getApp() {
 		return diskoApp;
 	}
 

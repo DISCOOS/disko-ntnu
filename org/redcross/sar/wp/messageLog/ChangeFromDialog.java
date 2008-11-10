@@ -25,9 +25,9 @@ import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * The dialog for selecting unit type and number.
@@ -190,10 +190,10 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 			m_contentPanel.addBodyChild(getLeftPanel());
 			m_contentPanel.addBodyChild(Box.createHorizontalStrut(5));
 			m_contentPanel.addBodyChild(getSenderPanel());
-			m_contentPanel.addWorkListener(new IWorkListener() {
+			m_contentPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 					
 					// forward?
 					if(e.isFinish()) change();
@@ -243,12 +243,12 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 		if(m_typePanel==null) {			
 			m_typePanel = new UnitTypeInputPanel("Type",3);
 			m_typePanel.setHeaderVisible(false);
-			m_typePanel.addWorkListener(new IWorkListener() {
+			m_typePanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				/**
 				 * Updates the type filter based on which buttons are pressed in the unit type selection pad
 				 */
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 					// consume?
 					if(!isChangeable()) return;
 					// get type
@@ -268,10 +268,10 @@ public class ChangeFromDialog extends DefaultDialog implements IEditorIf
 			m_numberPanel.setHeaderVisible(false);
 			m_numberPanel.setInputVisible(false);
 			m_numberPanel.setInputField(getUnitField(), false);
-			m_numberPanel.addWorkListener(new IWorkListener() {
+			m_numberPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 					
 					// consume?
 					if(!isChangeable()) return;

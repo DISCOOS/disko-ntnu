@@ -3,9 +3,9 @@ package org.redcross.sar.gui.dialog;
 import java.awt.Frame;
 
 import org.redcross.sar.gui.panel.ListSelectorPanel;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * @author kennetgu
@@ -33,10 +33,10 @@ public class ListSelectorDialog extends DefaultDialog  {
 		initialize();
 		
 		// add listener
-		addWorkListener(new IWorkListener() {
+		addWorkFlowListener(new IWorkFlowListener() {
 
 			@Override
-			public void onWorkPerformed(WorkEvent e) {
+			public void onFlowPerformed(WorkFlowEvent e) {
 				if(e.isCancel()) m_cancel = true;				
 			}
 			

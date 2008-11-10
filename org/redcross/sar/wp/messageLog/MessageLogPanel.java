@@ -20,6 +20,7 @@ import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.RowSorterEvent;
@@ -307,6 +308,9 @@ public class MessageLogPanel
         // add table scroll pane to card layout
         m_tablePanel.add(m_scrollPane, LOG_ID);
 
+        // forward
+        hideMap();
+
     }
 
     private void installSort(MessageTableModel model) {
@@ -397,7 +401,6 @@ public class MessageLogPanel
 
 	}
 
-
     public void setSelectableLayers() {
         try {
         	// buffer changes
@@ -451,14 +454,16 @@ public class MessageLogPanel
 		if(m_wpModule.isActive() && m_tablePanel!=null) {
 	        // show nav menu
 	        m_wpModule.getApplication().getUIFactory().setNavMenuVisible(true);
-	        // show map?
-	        if(m_current != MAP_ID) {
-				// show map
-	        	m_current = MAP_ID;
-		    	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
-		        cards.show(m_tablePanel, MAP_ID);
-		        m_map.setVisible(true);
-			}
+			// show map
+        	m_current = MAP_ID;
+	    	CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+	        cards.show(m_tablePanel, MAP_ID);
+        	SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// hide map
+			        m_map.setVisible(true);
+				}
+			});
 		}
     }
 
@@ -471,14 +476,11 @@ public class MessageLogPanel
 		if(m_tablePanel!=null) {
 	        // hide nav menu
 	        m_wpModule.getApplication().getUIFactory().setNavMenuVisible(false);
-	        // show log?
-	        if(m_current != LOG_ID) {
-	        	// hid map
-	            m_map.setVisible(false);
-	        	m_current = LOG_ID;
-	    		CardLayout cards = (CardLayout) m_tablePanel.getLayout();
-	    		cards.show(m_tablePanel, LOG_ID);
-	        }
+			// hide map
+			m_map.setVisible(false);
+			m_current = LOG_ID;
+    		CardLayout cards = (CardLayout) m_tablePanel.getLayout();
+    		cards.show(m_tablePanel, LOG_ID);
 		}
     }
 

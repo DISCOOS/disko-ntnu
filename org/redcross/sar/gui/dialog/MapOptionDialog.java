@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.DefaultPanel;
@@ -48,13 +48,13 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 	
 	private JTextField textFieldBrowse = null;
 	
-	private IDiskoApplication app = null;
+	private IApplication app = null;
 	
 	private File file = null;
 	
 	private boolean cancel = true;
 	
-	public MapOptionDialog(IDiskoApplication app){
+	public MapOptionDialog(IApplication app){
 		super(app.getFrame());
 		this.app = app;
 		initalize();

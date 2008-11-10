@@ -14,7 +14,6 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -276,7 +275,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
     		for(MsoEvent.Update e : events.getEvents(m_interests)) {
 
     			// consume loopback updates
-    			if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+    			if(!e.isLoopback()) {
 
 		            // get ICommunicatorIf object
 		    		ICommunicatorIf c = (ICommunicatorIf)e.getSource();

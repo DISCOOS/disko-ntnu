@@ -25,9 +25,9 @@ import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
@@ -138,18 +138,18 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		if(m_autoSave) {
 			MsoModelImpl.getInstance().suspendClientUpdate();
 			if(finish()) {
-				fireOnWorkChange(new WorkEvent(this,getValue(),WorkEvent.EVENT_FINISH));
+				fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_FINISH));
 			}
 			else {
 				// notify change instead
 				m_isDirty = true;
-				fireOnWorkChange(new WorkEvent(this,getValue(),WorkEvent.EVENT_CHANGE));
+				fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_CHANGE));
 			}
 			MsoModelImpl.getInstance().resumeClientUpdate(true);
 		}
 		else {
 			m_isDirty = true;
-			fireOnWorkChange(new WorkEvent(this,getValue(),WorkEvent.EVENT_CHANGE));
+			fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_CHANGE));
 		}
 	}
 
@@ -212,12 +212,12 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	}
 
-	private void fireOnWorkChange(WorkEvent e) {
+	private void fireOnWorkChange(WorkFlowEvent e) {
 		// get listeners
-		IWorkListener[] list = listeners.getListeners(IWorkListener.class);
+		IWorkFlowListener[] list = listeners.getListeners(IWorkFlowListener.class);
 		// forward
 		for(int i=0; i<list.length; i++) {
-			list[i].onWorkPerformed(e);
+			list[i].onFlowPerformed(e);
 		}
 	}
 
@@ -461,12 +461,12 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 				attribute instanceof AttributeImpl.MsoTrack);
   	}
 
-	public void addWorkListener(IWorkListener listener) {
-		listeners.add(IWorkListener.class,listener);
+	public void addWorkFlowListener(IWorkFlowListener listener) {
+		listeners.add(IWorkFlowListener.class,listener);
 	}
 
-	public void removeWorkListener(IWorkListener listener) {
-		listeners.remove(IWorkListener.class,listener);
+	public void removeWorkFlowListener(IWorkFlowListener listener) {
+		listeners.remove(IWorkFlowListener.class,listener);
 
 	}
 

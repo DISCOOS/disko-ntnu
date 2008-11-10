@@ -21,7 +21,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.WorkPool;
+import org.redcross.sar.work.WorkPool;
 
 import java.awt.*;
 import java.io.IOException;

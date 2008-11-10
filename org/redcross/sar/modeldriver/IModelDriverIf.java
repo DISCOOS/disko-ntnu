@@ -1,7 +1,6 @@
 package org.redcross.sar.modeldriver;
 
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.app.IDiskoApplication;
 
 /**
  *  Specification of the Model Driver API.
@@ -46,11 +45,11 @@ public interface IModelDriverIf
    public String getActiveOperationID();
 
    /**
-    *   Gets active operation name
+    * Gets active operation name
     * @return operation id as string
     */
    public String getActiveOperationName();
-   
+
    /**
     * Finish the currently active operation
     */
@@ -66,15 +65,13 @@ public interface IModelDriverIf
     */
    public void merge();
 
-    /**
-     * Sets the DiscoApplication
-     */
-    public void setDiskoApplication(IDiskoApplication diskoApp);
+   /**
+    * Shut down model driver
+    */
+   public void shutDown();
 
-    void shutDown();
-    
-    public boolean addModelDriverListener(IModelDriverListenerIf listener);
-    
-    public boolean removeModelDriverListener(IModelDriverListenerIf listener);
-    
+   public boolean addModelDriverListener(IModelDriverListenerIf listener);
+
+   public boolean removeModelDriverListener(IModelDriverListenerIf listener);
+
 }

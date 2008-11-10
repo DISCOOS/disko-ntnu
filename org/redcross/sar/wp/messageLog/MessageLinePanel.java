@@ -77,14 +77,20 @@ public class MessageLinePanel extends JPanel implements IEditorIf
 	 */
 	public void setMessage(IMessageIf message)
 	{
+
+		// get message line list
 		IMessageLineListIf list = message.getMessageLines();
 
+		// do cleanup
+
+		// disconnect?
 		if(list == null)
 		{
 			m_model.disconnectAll();
 			m_model.clear();
 		}
 		else {
+			// connect to source
 			m_model.connect(m_wp.getMsoModel(),list,IMessageLineIf.LINE_NUMBER_COMPARATOR);
 			m_model.load(list);
 		}

@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Collection;
@@ -16,6 +17,20 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
         CONFIRMED,
         POSTPONED
     }
+
+    /**
+     * Often used selectors
+     */
+    public static final Selector<IMessageIf> SELECT_ALL = new Selector<IMessageIf>() {
+
+		public boolean select(IMessageIf anObject) {
+			return true;
+		}
+    };
+
+    /**
+     * Often used comparators
+     */
 
     public static final Comparator<IMessageIf> MESSAGE_NUMBER_COMPARATOR = new Comparator<IMessageIf>()
     {

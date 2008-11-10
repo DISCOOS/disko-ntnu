@@ -2,26 +2,27 @@ package org.redcross.sar.gui.model;
 
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 import org.redcross.sar.modeldriver.IModelDriverIf;
-import org.redcross.sar.modeldriver.IModelDriverListenerIf;
+import org.redcross.sar.modeldriver.ModelDriverAdapter;
 import org.redcross.sar.util.Utils;
 
-public class OperationTableModel extends AbstractTableModel implements IModelDriverListenerIf {
+public class OperationTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = 1L;
 
 	private Object[] rows = null;
 	private IModelDriverIf modelDriver = null;
-	
+
 	public OperationTableModel() {
 		// forward
 		super();
 		// prepare
 		modelDriver = Utils.getApp().getMsoModel().getModelDriver();
 		// add to listeners
-		modelDriver.addModelDriverListener(this);
+		modelDriver.addModelDriverListener(m_adapter);
 	}
 
 	public int update() {
@@ -55,7 +56,7 @@ public class OperationTableModel extends AbstractTableModel implements IModelDri
 		// finished
 		return current;
 	}
-    
+
 	public int getColumnCount() {
 		return 1;
 	}
@@ -85,16 +86,31 @@ public class OperationTableModel extends AbstractTableModel implements IModelDri
 		}
 	}
 
-	@Override
-	public void onOperationCreated(String oprID, boolean current) {
-		// forward
-		update();
-		
-	}
+	private final ModelDriverAdapter m_adapter = new ModelDriverAdapter() {
 
-	@Override
-	public void onOperationFinished(String oprID, boolean current) {
-		// forward
-		update();
-	}	
+		@Override
+		public void onOperationCreated(String oprID, boolean current) {
+			change();
+		}
+
+		@Override
+		public void onOperationFinished(String oprID, boolean current) {
+			change();
+		}
+
+		private void change() {
+			if (SwingUtilities.isEventDispatchThread()) {
+				// forward
+				update();
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						change();
+					}
+				});
+			}
+
+		}
+
+	};
 }

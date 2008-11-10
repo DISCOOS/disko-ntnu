@@ -2,13 +2,12 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 
+import org.redcross.sar.app.event.ICatalogListener;
+import org.redcross.sar.app.event.CatalogEvent.Instance;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.IDs;
 import org.redcross.sar.ds.IDsObject;
 import org.redcross.sar.ds.event.IDsChangeListener;
-import org.redcross.sar.ds.event.IDsPoolListener;
-import org.redcross.sar.ds.event.DsEvent.Execute;
-import org.redcross.sar.ds.event.DsEvent.Install;
 import org.redcross.sar.ds.event.DsEvent.Update;
 
 import com.esri.arcgis.geometry.IEnvelope;
@@ -20,7 +19,7 @@ public abstract class AbstractDsLayer<T extends IDsObject> extends AbstractDisko
 	private static final long serialVersionUID = 1L;
 
 	protected final DsPool pool;
-	protected final Class<T> dataClass;
+	protected final Class<? extends IDs<?>> sourceClass;
 
 	protected IDs<T> source;
 
@@ -28,18 +27,18 @@ public abstract class AbstractDsLayer<T extends IDsObject> extends AbstractDisko
 	 * Constructor
 	 * ======================================================= */
 
-	public AbstractDsLayer(Class<T> dataClass, String name, LayerCode layerCode,
+	public AbstractDsLayer(Class<? extends IDs<?>> sourceClass, String name, LayerCode layerCode,
 			ISpatialReference srs) throws Exception {
 
 		// forward
 		super(name,layerCode,srs);
 
 		// prepare
-		this.dataClass = dataClass;
+		this.sourceClass = sourceClass;
 		this.pool = DsPool.getInstance();
 
 		// add install listener
-		pool.addPoolListener(new DsAdapter());
+		pool.addCatalogListener(new DsAdapter());
 
 	}
 
@@ -56,36 +55,32 @@ public abstract class AbstractDsLayer<T extends IDsObject> extends AbstractDisko
 	 * Inner classes
 	 * ======================================================= */
 
-	private class DsAdapter implements IDsChangeListener, IDsPoolListener {
+	private class DsAdapter implements IDsChangeListener, ICatalogListener {
 
-		public void handleExecuteEvent(Execute e) { /* NOP */ }
+		/* ==============================================
+		 * ICatalogListener implementation
+		 * ============================================== */
 
-		@SuppressWarnings("unchecked")
-		public void handleInstallEvent(Install e) {
-			// supported class?
-			if(e.getSource().isSupported(dataClass)) {
-				// install?
-				if(e.getFlags()==0 && source==null) {
-					// install
-					source = (IDs<T>)e.getSource();
-					source.addChangeListener(this);
-					// clear current object
-					clear();
-					// load objects
-					for(T it : source.getItems())
-						add(it);
-
+		@Override
+		public void handleCatalogEvent(Instance e) {
+			// supported source class?
+			if(sourceClass.isAssignableFrom(e.getSource().getClass())) {
+				// connect?
+				if(e.getFlags()==0) {
+					// forward
+					connect(source);
 				}
-				// uninstall?
-				else if(e.getFlags()==1 && source!=null) {
-					// uninstall
-					source.removeChangeListener(this);
-					source = null;
-					// clear current object
-					clear();
+				// disconnect?
+				else if(e.getFlags()==1) {
+					// forward
+					disconnect();
 				}
 			}
 		}
+
+		/* ==============================================
+		 * IDsChangeListener implementation
+		 * ============================================== */
 
 		@SuppressWarnings("unchecked")
 		public void handleUpdateEvent(Update e) {
@@ -143,6 +138,34 @@ public abstract class AbstractDsLayer<T extends IDsObject> extends AbstractDisko
 			}
 		}
 
+		/* =======================================================
+		 * Helper methods
+		 * ======================================================= */
+
+		private void connect(IDs<T> source) {
+			// forward
+			disconnect();
+			// connect?
+			if(source!=null) {
+				// connect
+				AbstractDsLayer.this.source = source;
+				AbstractDsLayer.this.source.addChangeListener(this);
+				// load objects
+				for(T it : source.getItems())
+					add(it);
+			}
+		}
+
+		private void disconnect() {
+			// disconnect?
+			if(source!=null) {
+				// disconnect
+				source.removeChangeListener(this);
+				source = null;
+				// clear current object
+				clear();
+			}
+		}
 
 	}
 

@@ -12,9 +12,7 @@ public class DsEvent extends java.util.EventObject {
     	ADDED_EVENT,
     	MODIFIED_EVENT,
     	REMOVED_EVENT,
-    	CLEAR_ALL_EVENT,
-    	INSTALL_EVENT,
-    	EXECUTE_EVENT
+    	CLEAR_ALL_EVENT
     }
 
     private int m_flags;
@@ -58,30 +56,5 @@ public class DsEvent extends java.util.EventObject {
         }
 
     }
-
-    public static class Install extends DsEvent
-    {
-
-		private static final long serialVersionUID = 1L;
-
-        public Install(IDs<?> source, int flags)
-        {
-            super(source,DsEventType.INSTALL_EVENT,flags);
-        }
-
-    }
-
-    public static class Execute extends DsEvent
-    {
-
-		private static final long serialVersionUID = 1L;
-
-        public Execute(IDs<?> source, int flags)
-        {
-            super(source,DsEventType.EXECUTE_EVENT,flags);
-        }
-
-    }
-
 
 }

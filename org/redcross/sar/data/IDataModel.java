@@ -15,6 +15,8 @@ public interface IDataModel<S,T extends IData> {
 
 	public IDataBinder<S,? extends IData,?> getBinder(IDataSource<?> source);
 
+	public boolean isConnected(IDataSource<?> source);
+
 	public boolean connect(IDataBinder<S,? extends IData,?> binder);
 	public boolean disconnect(IDataBinder<S,? extends IData,?> binder);
 	public boolean disconnectAll();
@@ -27,7 +29,7 @@ public interface IDataModel<S,T extends IData> {
 
 	public void load();
 	public void load(Collection<T> objects);
-	public void addAll(Collection<T> objects);
+	public void load(Collection<T> objects, boolean append);
 
 	public int add(S id, T obj);
 	public int update(S id, T obj);
@@ -56,7 +58,7 @@ public interface IDataModel<S,T extends IData> {
 	public void addDataListener(IDataListener listener);
 	public void removeDataListener(IDataListener listener);
 
-	public ITranslator<S, T> getTranslator();
-	public void setTranslator(ITranslator<S, T> translator);
+	public ITranslator<S, IData> getTranslator();
+	public void setTranslator(ITranslator<S, IData> translator);
 
 }

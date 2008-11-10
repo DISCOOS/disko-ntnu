@@ -7,8 +7,8 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.work.event.IWorkFlowListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -106,7 +106,7 @@ public class UnitTypeDialog extends DefaultDialog
 		panel.setBodyComponent(m_typeList);
 
 		// add work listener
-		panel.addWorkListener((IWorkListener)m_wpUnit);
+		panel.addWorkFlowListener((IWorkFlowListener)m_wpUnit);
 		
 		// add content panel
 		this.setContentPane(panel);

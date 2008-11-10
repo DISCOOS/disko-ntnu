@@ -49,11 +49,11 @@ import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWp;
 import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog.MessageLogActionType;
 
@@ -62,7 +62,7 @@ import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog.MessageLogActionType;
  *
  * @author thomasl
  */
-public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListenerIf, IWorkListener
+public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListenerIf, IWorkFlowListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -201,7 +201,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	if(m_changeDTGDialog == null)
     	{
     		m_changeDTGDialog = new ChangeDTGDialog(m_wp);
-    		m_changeDTGDialog.addWorkListener(this);
+    		m_changeDTGDialog.addWorkFlowListener(this);
     		m_editComponents.add(m_changeDTGDialog);
     	}
     	return m_changeDTGDialog;
@@ -212,7 +212,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
     	if(m_changeFromDialog == null)
     	{
     		m_changeFromDialog = new ChangeFromDialog(m_wp);
-    		m_changeFromDialog.addWorkListener(this);
+    		m_changeFromDialog.addWorkFlowListener(this);
     		m_editComponents.add(m_changeFromDialog);
     	}
 
@@ -224,7 +224,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		if(m_changeToDialog == null)
 		{
 			m_changeToDialog = new ChangeToDialog(m_wp);
-			m_changeToDialog.addWorkListener(this);
+			m_changeToDialog.addWorkFlowListener(this);
 			m_editComponents.add(m_changeToDialog);
 		}
 		return m_changeToDialog;
@@ -314,7 +314,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		if(m_changeTasksDialog == null)
 		{
 			m_changeTasksDialog = new ChangeTasksDialog(m_wp);
-			m_changeTasksDialog.addWorkListener(this);
+			m_changeTasksDialog.addWorkFlowListener(this);
 			m_editComponents.add(m_changeTasksDialog);
 		}
 		return m_changeTasksDialog;
@@ -632,7 +632,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		updateMessageGUI();
 	}
 
-	public void onWorkPerformed(WorkEvent e)
+	public void onFlowPerformed(WorkFlowEvent e)
 	{
 		if(e.isFinish()) {
 
@@ -654,7 +654,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			hideEditPanels(true);
 		}
 		// forward
-		m_wp.onWorkPerformed(e);
+		m_wp.onFlowPerformed(e);
 	}
 
 

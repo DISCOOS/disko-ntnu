@@ -28,24 +28,24 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class RequirementDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	private DefaultPanel contentPanel = null;
-	private JPanel requirementPanel = null;
-	private BasePanel remarksPanel = null;
-	private JTextArea remarksTextArea = null;
-	private FieldsPanel attribsPanel = null;
+	private DefaultPanel contentPanel;
+	private JPanel requirementPanel;
+	private BasePanel remarksPanel;
+	private JTextArea remarksTextArea;
+	private FieldsPanel attribsPanel;
 	private ComboBoxField accuracyCombo;
 	private ComboBoxField priorityCombo;
 	private ComboBoxField personnelCombo;
 
-	private IDiskoWpModule wp = null;
+	private IDiskoWpModule wp;
 
 	public RequirementDialog(IDiskoWpModule wp) {
 		// forward
@@ -218,10 +218,10 @@ public class RequirementDialog extends DefaultDialog {
 				attribsPanel.addField(getPriorityCombo());
 				attribsPanel.addField(getAccuracyCombo());
 				attribsPanel.addField(getPersonnelCombo());
-				attribsPanel.addWorkListener(new IWorkListener() {
+				attribsPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 					@Override
-					public void onWorkPerformed(WorkEvent e) {
+					public void onFlowPerformed(WorkFlowEvent e) {
 						if(e.isChange() || e.isFinish())
 							setDirty(true);
 					}

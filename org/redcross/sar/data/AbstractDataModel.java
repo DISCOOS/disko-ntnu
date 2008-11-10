@@ -27,7 +27,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 	protected boolean addToTail;
 
 	protected Class<T> dataClass;
-	protected ITranslator<S, T> translator;
+	protected ITranslator<S, IData> translator;
 
 	protected final List<S> ids = new ArrayList<S>();
 	protected final List<T> objects = new ArrayList<T>();
@@ -73,20 +73,21 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 		return null;
 	}
 
+	public boolean isConnected(IDataSource<?> source) {
+		return (getBinder(source)!=null);
+	}
+
 	public boolean connect(IDataBinder<S,? extends IData,?> binder) {
 		// allowed?
 		if(binder.getSource()!=null) {
-			// search for source
-			for(IDataBinder<S,? extends IData,?> it : getBinders()) {
-				// already connected?
-				if(it.getSource()==binder.getSource())
+			// is not already connected?
+			if(!isConnected(binder.getSource())) {
+				// loop
+				if(!binders.contains(binder)) {
+					binder.addBinderListener(adapter);
+					binders.add(binder);
 					return true;
-			}
-			// loop
-			if(!binders.contains(binder)) {
-				binder.addBinderListener(adapter);
-				binders.add(binder);
-				return true;
+				}
 			}
 		}
 		// failed
@@ -148,14 +149,11 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 	}
 
 	public void load(Collection<T> list) {
-		// reset
-		clear();
-		// forward
-		addAll(list);
+		load(list,false);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addAll(Collection<T> list) {
+	public void load(Collection<T> list, boolean append) {
 		// loop over all binders
 		for(IDataBinder<S, ?, ?> it : getBinders()) {
 			// is data supported?
@@ -163,49 +161,25 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 				// cast binder to supported data type
 				IDataBinder<S,T,?> binder = (IDataBinder<S,T,?>)it;
 				// forward
-				binder.load(list);
+				binder.load(list,append);
 			}
 		}
 	}
 
 	public int add(S id, T obj) {
-		int iRow = findRowFromId(id);
-		if (iRow == -1) {
-			if(addToTail) {
-				ids.add(id);
-				objects.add(obj);
-			}
-			else {
-				ids.add(0,id);
-				objects.add(0,obj);
-			}
-			rows.put(id,create(id,obj,size));
-		}
-		// fill data into row
-		return update(id,obj,false);
-	}
-
-	public int update(S id, T obj) {
-		// forward
-		return update(id,obj,false);
-	}
-
-	public int remove(S id) {
-		int row = findRowFromId(id);
-		if (row != -1) {
-			cleanup(id,false);
-			ids.remove(row);
-			objects.remove(row);
-			rows.remove(id);
-		}
-		return row;
+		return add(id, obj, true);
 	}
 
 	public void clear() {
-		if(ids.size()>0) cleanup(null,false);
-		ids.clear();
-		objects.clear();
-		rows.clear();
+		clear(true);
+	}
+
+	public int remove(S id) {
+		return remove(id, true);
+	}
+
+	public int update(S id, T obj) {
+		return update(id, obj, true);
 	}
 
 	public int findRowFromId(S id) {
@@ -304,11 +278,11 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 		listeners.remove(IDataListener.class, listener);
 	}
 
-	public ITranslator<S, T> getTranslator() {
+	public ITranslator<S, IData> getTranslator() {
 		return translator;
 	}
 
-	public void setTranslator(ITranslator<S, T> translator) {
+	public void setTranslator(ITranslator<S, IData> translator) {
 		this.translator = translator;
 	}
 
@@ -379,27 +353,78 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 		}
 	}
 
-	protected int update(S id, T obj, boolean doAdd) {
+	protected boolean isFlag(int pattern, int flag) {
+		return (pattern & flag)!=0;
+	}
+
+	protected int add(S id, T obj, boolean notify) {
+		int iRow = findRowFromId(id);
+		if (iRow == -1) {
+			if(addToTail) {
+				ids.add(id);
+				objects.add(obj);
+			}
+			else {
+				ids.add(0,id);
+				objects.add(0,obj);
+			}
+			rows.put(id,create(id,obj,size));
+		}
+		// fill data into row
+		return update(id,obj,false,notify);
+	}
+
+	protected int update(S id, T obj, boolean notify) {
+		// forward
+		return update(id,obj,false, notify);
+	}
+
+	protected int update(S id, T obj, boolean doAdd, boolean notify) {
 		// get current data
 		Object[] data = rows.get(id);
 		if(data!=null) {
-			// get object
 			// forward
 			data = update(id,obj,data);
 			// save changes
 			rows.put(id,data);
-			// return index
-			return findRowFromId(id);
+			// find row index
+			int row = findRowFromId(id);
+			// notify?
+			if(notify) fireDataChanged(new int[]{row},DataEvent.UPDATED_EVENT);
+			// finished
+			return row;
 		}
 		else if (doAdd) {
-			return add(id, obj);
+			return add(id, obj,notify);
 		}
 		return -1;
 	}
 
-	protected boolean isFlag(int pattern, int flag) {
-		return (pattern & flag)!=0;
+	protected int remove(S id, boolean notify) {
+		int row = findRowFromId(id);
+		if (row != -1) {
+			cleanup(id,false);
+			ids.remove(row);
+			objects.remove(row);
+			rows.remove(id);
+			if(notify) fireDataChanged(new int[]{row},DataEvent.REMOVED_EVENT);
+		}
+		return row;
 	}
+
+	protected void clear(boolean notify) {
+		int size = ids.size();
+		if(size>0) cleanup(null,false);
+		int[] idx = new int[size];
+		for(int i=0;i<size;i++) {
+			idx[i]=i;
+		}
+		ids.clear();
+		objects.clear();
+		rows.clear();
+		if(notify) fireDataChanged(idx,DataEvent.CLEAR_EVENT);
+	}
+
 
 	/* =============================================================================
 	 * Anonymous classes
@@ -427,10 +452,10 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
         	for(int i=0;i<count;i++) {
         		IData d = data[i];
         		if(dataClass.isInstance(d)) {
-        			row = add(idx[i],(T)d);
+        			row = add(idx[i], (T)d, false);
         		}
         		else {
-        			row = add(idx[i],null);
+        			row = add(idx[i], null, false);
         		}
 
         		// a row was changed?
@@ -488,10 +513,10 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 
         		// update row data, add if not exist
         		if(dataClass.isInstance(d)) {
-        			row = update(id,d,true);
+        			row = update(id, d, true, false);
         		}
         		else {
-        			row = update(id,null,true);
+        			row = update(id, null, true, false);
         		}
 
         		// a row was changed?
@@ -539,7 +564,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
         	for(int i=0;i<count;i++) {
 
         		// try to remove
-				int row = remove(idx[i]);
+				int row = remove(idx[i], false);
 
 				// was a row removed?
 				if(row!=-1) list.add(row);
@@ -567,8 +592,6 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
     			fireDataChanged(rows,DataEvent.REMOVED_EVENT);
 
     		}
-
-
 		}
 
 		@Override
@@ -587,7 +610,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
         	for(int i=0;i<count;i++) {
 
         		// try to remove
-				int row = remove(idx[i]);
+				int row = remove(idx[i], false);
 
 				// was a row removed?
 				if(row!=-1) removed.add(row);
@@ -620,16 +643,54 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 
 		public void onDataClearAll(BinderEvent<S> e) {
 
-			// notify
-			cleanup(null,true);
+			// clear all?
+			if(e.getData()==null) {
+				clear(true);
+			}
+			else {
 
-			// remove all
-			ids.clear();
-			objects.clear();
-			rows.clear();
+				// get information
+				S[] idx = e.getIdx();
 
-			// notify
-			fireDataChanged(null,DataEvent.CLEAR_EVENT);
+				// get count
+		        int count = idx!=null ? idx.length : 0;
+
+		        // create remove list
+		        Collection<Integer> removed = new Vector<Integer>(count);
+
+				// remove rows
+	        	for(int i=0;i<count;i++) {
+
+	        		// try to remove
+					int row = remove(idx[i], false);
+
+					// was a row removed?
+					if(row!=-1) removed.add(row);
+
+	        	}
+
+	        	// update count
+	        	count = removed.size();
+
+	    		// is dirty?
+	    		if(count>0) {
+
+	    	        // allocate memory
+	    			int[] rows = new int[count];
+
+	    			// initialize
+	    			int i = 0;
+
+	    			// get indexes
+	    			for(Integer it : removed) {
+	    				rows[i++] = it;
+	    			}
+
+	    			// notify
+	    			fireDataChanged(rows,DataEvent.CLEAR_EVENT);
+
+	    		}
+			}
 
 		}
 
@@ -650,15 +711,15 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
         			int row = -1;
         			if(isFlag(e.getFlags(),addOnCoUpdate)) {
         				// add, update data if exists
-        				row = add(idx[i], null);
+        				row = add(idx[i], null, false);
         			}
         			else if(isFlag(e.getFlags(),removeOnCoUpdate)) {
         				// remove if exists
-        				row = remove(idx[i]);
+        				row = remove(idx[i], false);
         			}
         			else {
         				// try to update only
-            			row = update(idx[i],null,false);
+            			row = update(idx[i], null, false, false);
         			}
         			// changed?
         			if(row!=-1) {
@@ -706,7 +767,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
         	for(int i=0;i<count;i++) {
 
         		// try to remove
-				int row = remove(idx[i]);
+				int row = remove(idx[i], false);
 
 				// was a row removed?
 				if(row!=-1) list.add(row);

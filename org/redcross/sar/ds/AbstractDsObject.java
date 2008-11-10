@@ -13,6 +13,10 @@ public abstract class AbstractDsObject implements IDsObject {
 
 	private IData m_id;
 
+	protected boolean m_isArchived = false;					// if true, estimate() returns previous calculated ete() value
+	protected boolean m_isSuspended = false;				// if true, estimate() returns previous calculated ete() value
+
+
 	/* =============================================================
 	 * Constructors
 	 * ============================================================= */
@@ -27,6 +31,42 @@ public abstract class AbstractDsObject implements IDsObject {
 
 	public IData getId() {
 		return m_id;
+	}
+
+	/**
+	 * If true, estimation is finished
+	 */
+	public boolean isArchived() {
+		return m_isArchived;
+	}
+
+	/**
+	 * If true, estimation is suspended
+	 */
+	public boolean isSuspended() {
+		return m_isSuspended;
+	}
+
+	/**
+	 * Archive result
+	 */
+	public void archive() {
+		addSample();
+		m_isArchived = true;
+	}
+
+	/**
+	 * sets isSuspended() true. Only possible if not archived
+	 */
+	public void suspend() {
+		m_isSuspended = !m_isArchived;
+	}
+
+	/**
+	 * sets isSuspended() false
+	 */
+	public void resume() {
+		m_isSuspended = false;
 	}
 
 	public Object getAttrValue(Object key) {

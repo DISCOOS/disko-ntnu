@@ -9,7 +9,7 @@ public class AssignmentCellRenderer extends DiskoTableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final AssignmentStringConverter converter = new AssignmentStringConverter();
+	private static final AssignmentStringConverter converter = new AssignmentStringConverter(true);
 
 	/* ==================================================
 	 * TableCellRenderer implementation

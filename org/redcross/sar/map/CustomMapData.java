@@ -2,7 +2,7 @@ package org.redcross.sar.map;
 
 import java.io.File;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 
 import com.esri.arcgis.carto.RasterLayer;
 
@@ -19,7 +19,7 @@ import com.esri.arcgis.system.FileStream;
 public class CustomMapData {
 	
 	
-	public void AddCustomData(IDiskoApplication app, File f){
+	public void AddCustomData(IApplication app, File f){
 		String fname = f.getName();
 		String path = f.getAbsolutePath().substring(0,f.getAbsolutePath().length()-fname.length());		
 		DiskoMap map = (DiskoMap) app.getCurrentMap();	

@@ -9,15 +9,15 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
@@ -30,7 +30,7 @@ public class PromptDialog extends DefaultDialog {
 	private JButton makeReadyButton;
 	private AssignmentTable assignmentTable;
 
-	private IDiskoApplication app = null;
+	private IApplication app;
 
 	private int changeCount = 0;
 	private boolean isCancel = false;
@@ -100,7 +100,7 @@ public class PromptDialog extends DefaultDialog {
 					}
 
 				});
-				contentPanel.addWorkListener((IWorkListener)wp);
+				contentPanel.addWorkFlowListener((IWorkFlowListener)wp);
 
 
 			} catch (java.lang.Throwable e) {
@@ -175,8 +175,8 @@ public class PromptDialog extends DefaultDialog {
 					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
 						changeCount++;
 						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);
-						WorkEvent e = new WorkEvent(assignment,AssignmentStatus.READY,WorkEvent.EVENT_CHANGE);
-						getContentPanel().onWorkPerformed(e);
+						WorkFlowEvent e = new WorkFlowEvent(assignment,AssignmentStatus.READY,WorkFlowEvent.EVENT_CHANGE);
+						getContentPanel().onFlowPerformed(e);
 					}
 				}
 			}

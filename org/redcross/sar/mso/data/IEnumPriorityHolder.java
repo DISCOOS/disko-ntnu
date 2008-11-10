@@ -12,7 +12,7 @@ import org.redcross.sar.util.except.IllegalOperationException;
 /**
  *
  */
-public interface IEnumPriorityHolder<E extends Enum> extends IMsoObjectIf
+public interface IEnumPriorityHolder<E extends Enum<E>> extends IMsoObjectIf
 {
     public void setPriority(E aPriority);
 

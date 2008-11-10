@@ -261,7 +261,7 @@ public class RouteCostPanel extends JPanel
 		    	// run the route cost estimator n times
 		    	for(int i = 0; i < 1 ;i++) {
 			    	// calculate
-		    		cost += m_rce.estimate();    		
+		    		cost += m_rce.calculate();    		
 		    	}
 	    	}
 	    	catch (Exception e) {

@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.swing.event.EventListenerList;
 import javax.swing.filechooser.FileSystemView;
 
+import org.redcross.sar.app.AbstractService;
 import org.redcross.sar.data.DataSourceImpl;
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.event.ISourceListener;
@@ -22,10 +22,6 @@ import org.redcross.sar.ds.event.DsEvent;
 import org.redcross.sar.ds.event.DsChangeAdapter;
 import org.redcross.sar.ds.event.IDsChangeListener;
 import org.redcross.sar.ds.event.DsEvent.DsEventType;
-import org.redcross.sar.thread.IWorkLoop;
-import org.redcross.sar.thread.WorkLoop;
-import org.redcross.sar.thread.WorkPool;
-import org.redcross.sar.thread.IWorkLoop.LoopState;
 import org.redcross.sar.util.Utils;
 
 /**
@@ -45,7 +41,8 @@ import org.redcross.sar.util.Utils;
  * The update object is added to the queue of updates.
  * Every update may result in a change in DS data. </p>
  */
-public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends EventObject> implements IDs<T> {
+public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends EventObject>
+			extends AbstractService implements IDs<T> {
 
 	/* ============================================================
 	 * Declaration of local lists
@@ -123,30 +120,11 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	 */
 	protected final List<T> m_residueSet = new ArrayList<T>();
 
-	/**
-	 * Operation id
-	 */
-	protected final String m_oprID;
-
-	/**
-	 * List of update listeners.
-	 */
-	protected final EventListenerList m_listeners = new EventListenerList();
 
 	/**
 	 * The data class
 	 */
 	protected final Class<T> m_dataClass;
-
-	/**
-	 * The work pool
-	 */
-	protected final WorkPool m_workPool;
-
-	/**
-	 * The work loop
-	 */
-	protected final WorkLoop m_workLoop;
 
 	/* ============================================================
 	 * Constructors
@@ -155,11 +133,11 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	public AbstractDs(Class<T> dataClass, String oprID,
 			int dutyCycle, int timeOut) throws Exception {
 
+		// forward
+		super(oprID, dutyCycle, timeOut);
+
 		// prepare
-		m_oprID = oprID;
 		m_dataClass = dataClass;
-		m_workPool = WorkPool.getInstance();
-		m_workLoop = new WorkLoop(dutyCycle,timeOut);
 
         // connect repeater to client update events
         addChangeListener(m_dsUpdateRepeater);
@@ -190,66 +168,8 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	 * IDs implementation
 	 * ============================================================ */
 
-	public String getOprID() {
-		return m_oprID;
-	}
-
 	public List<T> getItems() {
 		return getDsObjects();
-	}
-
-
-	public IWorkLoop getWorkLoop() {
-		return m_workLoop;
-	}
-
-	public LoopState getLoopState() {
-		return m_workLoop.getState();
-	}
-
-	public boolean isLoopState(LoopState state) {
-		return m_workLoop.isState(state);
-	}
-
-	public boolean start() {
-
-		// allowed?
-		if(m_workLoop.getID()==0) {
-			// add work loop to work pool
-			if((m_workPool.add(m_workLoop)>0)) {
-				fireExecuteEvent(new DsEvent.Execute(this,0));
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public boolean resume() {
-		if(m_workLoop.resume()) {
-			fireExecuteEvent(new DsEvent.Execute(this,1));
-			return true;
-		}
-		return false;
-	}
-
-	public boolean suspend() {
-		if(m_workLoop.suspend()) {
-			fireExecuteEvent(new DsEvent.Execute(this,2));
-			return true;
-		}
-		return false;
-	}
-
-	public boolean stop() {
-		// allowed?
-		if(m_workLoop.getID()>0) {
-			// remove work loop from work pool
-			if(m_workPool.remove(m_workLoop.getID())) {
-				fireExecuteEvent(new DsEvent.Execute(this,3));
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/* ============================================================
@@ -423,7 +343,34 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	 * Protected methods
 	 * ============================================================ */
 
-	protected abstract void schedule(Map<S,Object[]> changes);
+	protected T add(S id, T data) {
+		// add to costs and assignments
+		m_dsObjs.put(id, data);
+		m_idObjs.put(data,id);
+		// push to added?
+		if(!data.isArchived()) {
+			m_added.put(id, data);
+			m_archived.remove(id);
+		}
+		// finished
+		return data;
+	}
+
+	protected T remove(S id) {
+		// try to remove object
+		T data = m_dsObjs.remove(id);
+		// remove from all?
+		if(data!=null && !data.isArchived()) {
+			m_idObjs.remove(data);
+			m_heavySet.remove(data);
+			m_residueSet.remove(data);
+			m_added.remove(id);
+			m_archived.remove(id);
+		}
+		// finished
+		return data;
+	}
+
 
 	protected T getDsObject(Object id) {
 		if(id instanceof String) {
@@ -452,12 +399,18 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	}
 
 	protected void addToResidue(List<T> list) {
-		m_residueSet.addAll(list);
+		for(T it : list) {
+			if(!m_residueSet.contains(it))
+				m_residueSet.add(it);
+		}
 	}
 
 	protected void setHeavySet(List<T> list) {
 		m_heavySet.clear();
-		m_heavySet.addAll(list);
+		for(T it : list) {
+			if(!m_heavySet.contains(it))
+				m_heavySet.add(it);
+		}
 	}
 
 	protected U getExisting(U e) {
@@ -468,6 +421,10 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 			}
 		}
 		return null;
+	}
+
+	protected boolean include(IDsObject dsObj, List<?> list) {
+		return !(list.contains(dsObj) || dsObj.isArchived() || dsObj.isSuspended());
 	}
 
 	protected void fireAdded() {
@@ -529,14 +486,6 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	private String toString(IDsObject obj) {
 		return obj.getId().toString();
 	}
-
-	private void fireExecuteEvent(DsEvent.Execute e) {
-		IDsChangeListener[] list = m_listeners.getListeners(IDsChangeListener.class);
- 		for(int i=0;i<list.length; i++) {
-			list[i].handleExecuteEvent(e);
-		}
-	}
-
 
 	/* =========================================================================
 	 * Anonymous classes

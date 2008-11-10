@@ -110,6 +110,19 @@ public class Track extends AbstractGeodata
     }
 
     /**
+     * Add a new point to the track.
+     * Calls {@link #add(TimePos)} .
+     *
+     * @param aLon
+     * @param aLat
+     * @param aCalendar
+     */
+    public void add(double aLon, double aLat, double anAlt, Calendar aCalendar)
+    {
+        add(new TimePos(aLon, aLat, anAlt, aCalendar));
+    }
+
+    /**
      * Remove a point from track
      *
      * @param aTimePos

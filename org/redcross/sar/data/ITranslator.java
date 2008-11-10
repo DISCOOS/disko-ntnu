@@ -9,6 +9,6 @@ package org.redcross.sar.data;
 
 public interface ITranslator<S,T extends IData> {
 
-	public S[] translate(IData[] data);
+	public S[] translate(T[] data);
 
 }

@@ -16,12 +16,12 @@ import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,14 +63,14 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 
 	// objects
 	protected ArrayList<JPanel> panels = null;
-	private ArrayList<IWorkListener> listeners = null;
+	private ArrayList<IWorkFlowListener> listeners = null;
 
 	/**
 	 * Constructor
 	 *
 	 */
 	protected AbstractDiskoCommand() {
-		listeners = new ArrayList<IWorkListener>();
+		listeners = new ArrayList<IWorkFlowListener>();
 	}
 
 	/*===============================================
@@ -176,11 +176,11 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 
 	}
 
-	public void addWorkEventListener(IWorkListener listener) {
+	public void addWorkEventListener(IWorkFlowListener listener) {
 		listeners.add(listener);
 	}
 
-	public void removeWorkEventListener(IWorkListener listener) {
+	public void removeWorkEventListener(IWorkFlowListener listener) {
 		listeners.remove(listener);
 	}
 
@@ -284,30 +284,30 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 
 	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_FINISH);
+		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_FINISH);
 	   	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_CANCEL);
+		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source, data,WorkEvent.EVENT_CHANGE);
+		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_CHANGE);
     	// forward
 		fireOnWorkPerformed(e);
     }
 
-    protected void fireOnWorkPerformed(WorkEvent e)
+    protected void fireOnWorkPerformed(WorkFlowEvent e)
     {
 		// notify listeners
 		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).onWorkPerformed(e);
+			listeners.get(i).onFlowPerformed(e);
 		}
 	}
 
@@ -383,7 +383,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 
 		public AbstractToolWork(boolean notify) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_SAFE,"Vent litt",100,notify,false);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,"Vent litt",100,notify,false);
 		}
 
 		@Override

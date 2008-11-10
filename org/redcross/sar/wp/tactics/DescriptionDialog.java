@@ -107,13 +107,13 @@ public class DescriptionDialog extends DefaultDialog {
 
 						// update
 						msoObject = assignment;
-						if(area!=null) {
-							getPOITableModel().connect(wp.getMsoModel(),area.getAreaPOIs(),IPOIIf.POI_COMPARATOR);
-							getPOITableModel().load(area.getAreaPOIs());
-						}
-						else {
+						if(area==null) {
 							getPOITableModel().disconnectAll();
 							getPOITableModel().clear();
+						}
+						else {
+							getPOITableModel().connect(wp.getMsoModel(),area.getAreaPOIs(),IPOIIf.POI_COMPARATOR);
+							getPOITableModel().load(area.getAreaPOIs());
 						}
 
 						// resume changes

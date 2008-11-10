@@ -9,10 +9,10 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * @author kennetgu
@@ -41,10 +41,10 @@ public class PositionSelectorDialog extends DefaultDialog {
 		initialize();
 		
 		// add listener
-		addWorkListener(new IWorkListener() {
+		addWorkFlowListener(new IWorkFlowListener() {
 
 			@Override
-			public void onWorkPerformed(WorkEvent e) {
+			public void onFlowPerformed(WorkFlowEvent e) {
 				if(e.isCancel()) m_cancel = true;				
 			}
 			

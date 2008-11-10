@@ -2,7 +2,7 @@ package org.redcross.sar.wp;
 
 import java.util.List;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.map.IDiskoMap;
@@ -10,7 +10,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.thread.event.IWorkListener;
+import org.redcross.sar.work.event.IWorkFlowListener;
 
 /**
  * This interface provides access to properties and methods for
@@ -61,7 +61,7 @@ public interface IDiskoWpModule {
 	 * Get a reference to the DiskoApplication.
 	 * @return
 	 */
-	public IDiskoApplication getApplication();
+	public IApplication getApplication();
 
 	public void setCallingWp(String name);
 
@@ -99,9 +99,9 @@ public interface IDiskoWpModule {
      */
     public boolean confirmDeactivate();
 
-	public void addWorkListener(IWorkListener listener);
+	public void addWorkFlowListener(IWorkFlowListener listener);
 
-    public void removeWorkListener(IWorkListener listener);
+    public void removeWorkFlowListener(IWorkFlowListener listener);
 
     public void showWarning(String msg);
 

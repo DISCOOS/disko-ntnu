@@ -39,7 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
 
-import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupAdapter;
 import org.redcross.sar.gui.dnd.AssignmentTransferable;
@@ -115,7 +114,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
         m_unitTypeSelection = EnumSet.allOf(IUnitIf.UnitType.class);
 
         // install mso model
-        connect(aWp.getMsoModel(), IUnitIf.ACTIVE_UNIT_SELECTOR, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+        connect(aWp.getMsoModel(), IUnitIf.ACTIVE_SELECTOR, IUnitIf.TYPE_AND_NUMBER_COMPARATOR);
         load(aWp.getMsoModel().getMsoManager().getCmdPost().getUnitList());
 
         /* -------------------------------------------------
@@ -124,8 +123,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
          * This ensures that the table is updated every
          * time a assignment is changed
          * ------------------------------------------------- */
-        IDataBinder binder = getBinders().iterator().next();
-        binder.addCoClass(IAssignmentIf.class,null);
+        getMsoBinder().addCoClass(IAssignmentIf.class,null);
 
         // initialize sorting
         setRowSorter();
@@ -230,7 +228,9 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     {
         m_rowSorter = new UnitTableRowSorter(this);
         m_rowSorter.setRowFilter(m_rowFilter);
+        m_rowSorter.setSortsOnUpdates(true);
         m_table.setRowSorter(m_rowSorter);
+        m_table.setUpdateSelectionOnSort(true);
     }
 
     public void scrollToTableCellPosition(int aRowNumber)
@@ -440,7 +440,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
         ((IconRenderer.AssignmentIcon) icons[2]).setAssignments(aUnit, 1);
         ((IconRenderer.AssignmentIcon) icons[3]).setAssignments(aUnit, 2);
         ((IconRenderer.AssignmentIcon) icons[4]).setAssignments(aUnit, 3);
-        ((IconRenderer.InfoIcon) icons[5]).setInfo(aUnit.getRemarks());  // todo getInfo
+        ((IconRenderer.InfoIcon) icons[5]).setInfo(aUnit.getRemarks());
         return icons;
     }
 
@@ -582,7 +582,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     {
         public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
         {
-            return IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR.compare(o1.getUnit(), o2.getUnit());
+            return IUnitIf.TYPE_AND_NUMBER_COMPARATOR.compare(o1.getUnit(), o2.getUnit());
         }
     };
 

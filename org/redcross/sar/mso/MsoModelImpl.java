@@ -34,11 +34,11 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.mso.work.IMsoWork;
-import org.redcross.sar.thread.WorkLoop;
-import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.work.WorkLoop;
+import org.redcross.sar.work.WorkPool;
 
 /**
  * Singleton class for accessing the MSO model
@@ -215,7 +215,6 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
         {
             Log.error("suspend client update stack grows too large, size:" + m_suspendClientUpdate);
         }
-        //System.out.println("suspendClientUpdate:="+m_suspendClientUpdate);
     }
 
 
@@ -349,7 +348,7 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
     public synchronized void rollback()
     {
         suspendClientUpdate();
-        setRemoteUpdateMode();
+        setLocalUpdateMode();
         m_commitManager.rollback();
         m_msoManager.rollback();
         restoreUpdateMode();

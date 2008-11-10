@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.data.IPersonnelListIf;
+import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 import javax.swing.JComponent;
@@ -26,7 +26,7 @@ public class PersonnelTransferHandler extends TransferHandler
 
 	private static DataFlavor m_personnelFlavor;
 
-	private static IDiskoWpUnit m_wpUnit;
+	private static IDiskoWpUnit m_wp;
 
 	public PersonnelTransferHandler(IDiskoWpUnit wp) throws ClassNotFoundException
 	{
@@ -35,7 +35,7 @@ public class PersonnelTransferHandler extends TransferHandler
 			m_personnelFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=org.redcross.sar.mso.data.IPersonnelIf");
 		}
 
-		m_wpUnit = wp;
+		m_wp = wp;
 	}
 
 	/**
@@ -51,13 +51,17 @@ public class PersonnelTransferHandler extends TransferHandler
 		IPersonnelIf personnel = null;
 		if(model instanceof PersonnelTableModel)
 		{
-			// Exporting from personnel overview table
-			personnel = (IPersonnelIf)table.getValueAt(selectedRow, 2);
+			// convert to model index
+			selectedRow = table.convertRowIndexToModel(selectedRow);
+			// get personnel object from selection
+			personnel = ((PersonnelTableModel)model).getPersonnel(selectedRow);
 		}
 		else if(model instanceof UnitPersonnelTableModel)
 		{
-			// Exporting from unit personnel table
-			personnel = (IPersonnelIf)table.getValueAt(selectedRow, 2);
+			// convert to model index
+			selectedRow = table.convertRowIndexToModel(selectedRow);
+			// get personnel object from selection
+			personnel = ((UnitPersonnelTableModel)model).getPersonnel(selectedRow);
 		}
 
 		PersonnelTransferable transferable = new PersonnelTransferable(personnel);
@@ -132,21 +136,28 @@ public class PersonnelTransferHandler extends TransferHandler
 				// Add personnel to unit personnel list
 				try
 				{
+
+					// get personnel
 					IPersonnelIf personnel = (IPersonnelIf)transferable.getTransferData(m_personnelFlavor);
-					IPersonnelListIf personnelList = unitModel.getPersonnelList();
-					if(personnelList==null || personnelList.exists(personnel))
+
+					// get current unit
+                    IUnitIf aUnit = m_wp.getEditingUnit();
+
+                    // import possible?
+					if(aUnit==null || aUnit.getUnitPersonnel().exists(personnel))
 					{
 						// Dont't import if already in list
 						return false;
 					}
 					else
 					{
-						personnelList.add(personnel);
+						// add to unit
+						aUnit.addUnitPersonnel(personnel);
 
-						// Commit if no new major changes exists
-						if(!(m_wpUnit.getNewCallOut() || m_wpUnit.getNewPersonnel() || m_wpUnit.getNewUnit()))
+						// commit changes?
+						if(!(m_wp.getNewCallOut() || m_wp.getNewPersonnel() || m_wp.getNewUnit()))
 						{
-							m_wpUnit.getMsoModel().commit();
+							m_wp.commit();
 						}
 					}
 					unitModel.fireTableDataChanged();
@@ -186,12 +197,28 @@ public class PersonnelTransferHandler extends TransferHandler
 			if(model instanceof UnitPersonnelTableModel)
 			{
 				// Drag source was unit personnel table
-				UnitPersonnelTableModel unitModel = (UnitPersonnelTableModel)model;
 				try
 				{
+					// get exported personnel
 					IPersonnelIf personnel = (IPersonnelIf)data.getTransferData(m_personnelFlavor);
-					unitModel.getPersonnelList().remove(personnel);
-					unitModel.fireTableDataChanged();
+
+					// get current unit
+                    IUnitIf aUnit = m_wp.getEditingUnit();
+
+                    // is a unit selected?
+					if(aUnit!=null) {
+
+						// remove personnel from unit
+						aUnit.removeUnitPersonnel(personnel);
+
+						// commit changes?
+						if(!(m_wp.getNewCallOut() || m_wp.getNewPersonnel() || m_wp.getNewUnit()))
+						{
+							m_wp.commit();
+						}
+
+					}
+
 				}
 				catch (UnsupportedFlavorException e)
 				{
@@ -204,11 +231,6 @@ public class PersonnelTransferHandler extends TransferHandler
 			}
 		}
 
-		// Commit changes right away
-		if(!(m_wpUnit.getNewCallOut() || m_wpUnit.getNewPersonnel() || m_wpUnit.getNewUnit()))
-		{
-			m_wpUnit.getMsoModel().commit();
-		}
     }
 
 	/**

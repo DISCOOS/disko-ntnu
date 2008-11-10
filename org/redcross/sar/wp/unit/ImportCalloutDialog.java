@@ -49,10 +49,10 @@ import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelImportStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.work.event.IWorkFlowListener;
 
 /**
  * Dialog handling import of new call-outs
@@ -127,7 +127,7 @@ public class ImportCalloutDialog extends DefaultDialog
 		initializeButtons();
 
 		// add work listener
-		m_contentsPanel.addWorkListener((IWorkListener)m_wpUnit);
+		m_contentsPanel.addWorkFlowListener((IWorkFlowListener)m_wpUnit);
 		
 		// add action listener		
 		m_contentsPanel.addActionListener(new ActionListener() {

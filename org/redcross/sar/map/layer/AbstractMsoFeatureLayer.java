@@ -19,7 +19,6 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
@@ -445,10 +444,6 @@ public abstract class AbstractMsoFeatureLayer
 		return false;
 	}
 
-	public boolean isSelectable() throws IOException, AutomationException {
-		return isSelectable;
-	}
-
 	public IFeatureCursor search(IQueryFilter filter, boolean b) throws IOException, AutomationException {
 		return featureClass.search(filter, b);
 	}
@@ -470,6 +465,10 @@ public abstract class AbstractMsoFeatureLayer
 	public void setScaleSymbols(boolean arg0) throws IOException, AutomationException {
 		// TODO Auto-generated method stub
 
+	}
+
+	public boolean isSelectable() throws IOException, AutomationException {
+		return isSelectable;
 	}
 
 	public void setSelectable(boolean isSelectable) throws IOException, AutomationException {
@@ -799,30 +798,29 @@ public abstract class AbstractMsoFeatureLayer
 
 		try {
 
-			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(myInterests)) {
+			// get feature class
+			final MsoFeatureModel msoFC = getFeatureClass();
 
-				// consume loopback updates
-				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+	        // clear all?
+	        if(events.isClearAllEvent()) {
+	        	// forward
+	        	msoFC.removeAll();
+	        	// set dirty
+	        	setDirty(true);
+	        }
+	        else {
 
-					// get event flags
-					int mask = e.getEventTypeMask();
+				// loop over all events
+				for(MsoEvent.Update e : events.getEvents(myInterests)) {
 
-			        // get flag
-			        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+					// consume loopback updates
+					if(!e.isLoopback()) {
 
-			        // get mso object and feature class
-			        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-					final MsoFeatureModel msoFC = (MsoFeatureModel)featureClass;
+						// get event flags
+						int mask = e.getEventTypeMask();
 
-			        // clear all?
-			        if(clearAll) {
-			        	// forward
-			        	msoFC.removeAll();
-			        	// set dirty
-			        	setDirty(true);
-			        }
-			        else {
+				        // get mso object and feature class
+				        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 
 			        	// get flags
 						boolean createdObject  = (mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
@@ -869,7 +867,7 @@ public abstract class AbstractMsoFeatureLayer
 								}
 							}
 						}
-			        }
+					}
 				}
 			}
 

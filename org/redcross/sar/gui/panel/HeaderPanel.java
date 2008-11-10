@@ -24,9 +24,9 @@ import javax.swing.SwingConstants;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 public class HeaderPanel extends JPanel {
 
@@ -50,7 +50,7 @@ public class HeaderPanel extends JPanel {
 
 	private Map<String,ActionEvent> m_actions;
 	private List<ActionListener> m_actionListeners;
-	private List<IWorkListener> m_workListeners;
+	private List<IWorkFlowListener> m_workListeners;
 
 	/* =======================================================
 	 * Constructors
@@ -71,7 +71,7 @@ public class HeaderPanel extends JPanel {
 		m_insets = new Insets(1,1,1,1);
 		m_actions = new HashMap<String, ActionEvent>();
 		m_actionListeners = new ArrayList<ActionListener>();
-		m_workListeners = new ArrayList<IWorkListener>();
+		m_workListeners = new ArrayList<IWorkFlowListener>();
 		// initialize GUI
 		initialize();
 		// set caption
@@ -392,11 +392,11 @@ public class HeaderPanel extends JPanel {
 			fireActionEvent(e);
 	}
 
-	public void addWorkEventListener(IWorkListener listener) {
+	public void addWorkEventListener(IWorkFlowListener listener) {
 		m_workListeners.add(listener);
 	}
 
-	public void removeWorkEventListener(IWorkListener listener) {
+	public void removeWorkEventListener(IWorkFlowListener listener) {
 		m_workListeners.remove(listener);
 	}
 
@@ -437,30 +437,30 @@ public class HeaderPanel extends JPanel {
 
 	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source,data,WorkEvent.EVENT_FINISH);
+		WorkFlowEvent e = new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_FINISH);
 	   	// forward
     	fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source,data,WorkEvent.EVENT_CANCEL);
+		WorkFlowEvent e = new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		WorkEvent e = new WorkEvent(source,data,WorkEvent.EVENT_CHANGE);
+		WorkFlowEvent e = new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CHANGE);
 		// forward
 		fireOnWorkPerformed(e);
 	}
 
-	protected void fireOnWorkPerformed(WorkEvent e)
+	protected void fireOnWorkPerformed(WorkFlowEvent e)
     {
 		// notify listeners
-		for (IWorkListener it : m_workListeners)
-			it.onWorkPerformed(e);
+		for (IWorkFlowListener it : m_workListeners)
+			it.onFlowPerformed(e);
 	}
 
 	/* =======================================================

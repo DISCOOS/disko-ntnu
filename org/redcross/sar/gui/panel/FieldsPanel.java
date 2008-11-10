@@ -290,7 +290,7 @@ public class FieldsPanel extends DefaultPanel {
 			m_names.add(name);
 			m_fields.put(name,field);
 			// add listener
-			field.addWorkListener(this);
+			field.addWorkFlowListener(this);
 			// set layout dirty
 			m_isLayoutDirty = true;
 			if(!m_isLayoutSuspended) doLayout();

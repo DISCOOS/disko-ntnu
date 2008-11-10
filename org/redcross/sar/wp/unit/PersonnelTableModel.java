@@ -1,11 +1,15 @@
 package org.redcross.sar.wp.unit;
 
+import java.util.Collection;
+import java.util.Vector;
+
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
+import org.redcross.sar.data.IData;
+import org.redcross.sar.data.ITranslator;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 /**
@@ -18,9 +22,9 @@ public class PersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
 	private static final long serialVersionUID = 1L;
 
 	private static final String NAME = "name";
-	private static final String UNIT = "status";
-	private static final String SHOW = "status";
-	private static final String EDIT = "edit";
+	private static final String UNIT = "unit";
+	private static final String VIEW = "view";
+	private static final String STATUS = "status";
 
 	/* ===============================================================
 	 * Constructors
@@ -28,15 +32,22 @@ public class PersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
 
 	public PersonnelTableModel(IMsoModelIf model)
 	{
+
 		// forward
-		super(IPersonnelIf.class,false);
-		// create table
-		create(getNames(),getCaptions());
-		// get list
-		IPersonnelListIf list = model.getMsoManager().getCmdPost().getAttendanceList();
-		// forward
-		connect(model, list, IPersonnelIf.PERSONNEL_NAME_COMPARATOR);
-		load(list.getItems());
+		super(IPersonnelIf.class,getNames(),getCaptions(),false);
+
+		// install model
+		connect(model, IPersonnelIf.ALL_SELECTOR, IPersonnelIf.PERSONNEL_NAME_COMPARATOR);
+
+		// add co-data classes
+		getMsoBinder().addCoClass(IUnitIf.class, IUnitIf.ALL_SELECTOR);
+
+		// set co-data translator
+		setTranslator(m_translator);
+
+		// load personnel from attendance list
+		load(model.getMsoManager().getCmdPost().getAttendanceList());
+
 	}
 
 	/* ===============================================================
@@ -54,13 +65,15 @@ public class PersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
             IUnitIf unit = personnel.getOwningUnit();
             return unit == null ? "" : MsoUtils.getUnitName(unit,false);
 		}
-		else if(SHOW.equals(column))
+		else if(VIEW.equals(column))
 			return personnel;
-		else if(EDIT.equals(column))
+		else if(STATUS.equals(column))
 			return personnel;
 		// not found
 		return null;
 	}
+
+
 
 	/* ===============================================================
 	 *  AbstractTableModel implementation
@@ -102,12 +115,36 @@ public class PersonnelTableModel extends AbstractMsoTableModel<IPersonnelIf>
 	 * Helper methods
 	 * =============================================================== */
 
-	public String[] getNames() {
-		return new String[] {NAME, UNIT, SHOW, EDIT};
+	public static String[] getNames() {
+		return new String[] {NAME, UNIT, VIEW, STATUS};
 	}
 
-	public String[] getCaptions() {
+	public static String[] getCaptions() {
 		return new String[] {"Navn", "Underordnet", "Vis", "Endre status"};
 	}
+
+	/* ===============================================================
+	 * Inner classes
+	 * =============================================================== */
+
+	private ITranslator<IPersonnelIf, IData> m_translator = new ITranslator<IPersonnelIf, IData>() {
+
+		@Override
+		public IPersonnelIf[] translate(IData[] data) {
+			Collection<IPersonnelIf> list = new Vector<IPersonnelIf>();
+			for(IData item : data) {
+				if(item instanceof IUnitIf) {
+					// add all
+					list.addAll(impl.getIds());
+				}
+			}
+			// get found personnel
+			data = new IPersonnelIf[list.size()];
+			list.toArray(data);
+			// finished
+			return (IPersonnelIf[])data;
+		}
+
+	};
 
 }

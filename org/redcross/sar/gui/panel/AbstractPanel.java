@@ -16,12 +16,10 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
-import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -36,7 +34,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	protected IMsoModelIf msoModel;
 
-	protected IMsoObjectIf msoObject = null;
+	protected IMsoObjectIf msoObject;
 
 	protected EnumSet<LayerCode> msoLayers;
 	protected EnumSet<MsoClassCode> msoInterests;
@@ -54,7 +52,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 		// prepare
         msoLayers =  EnumSet.noneOf(LayerCode.class);
 		msoInterests = EnumSet.noneOf(MsoClassCode.class);
-		msoModel = Utils.getApp().getMsoModel();
 	}
 
 	/* ===========================================
@@ -67,20 +64,17 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	}
 
 	public void setInterests(IMsoModelIf model, EnumSet<MsoClassCode> interests) {
-		// any change?
-		if(model!=msoModel) {
-			// unregister?
-			if(msoModel!=null) {
-				msoModel.getEventManager().removeClientUpdateListener(this);
-			}
-			// initialize
-			msoModel = model;
-			msoInterests = EnumSet.noneOf(MsoClassCode.class);
-			// add listener?
-			if(model!=null) {
-				msoInterests = interests;
-				msoModel.getEventManager().addClientUpdateListener(this);
-			}
+		// unregister?
+		if(msoModel!=null) {
+			msoModel.getEventManager().removeClientUpdateListener(this);
+		}
+		// initialize
+		msoModel = model;
+		msoInterests = EnumSet.noneOf(MsoClassCode.class);
+		// add listener?
+		if(model!=null) {
+			msoInterests = interests;
+			msoModel.getEventManager().addClientUpdateListener(this);
 		}
 	}
 
@@ -93,7 +87,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 		for(MsoEvent.Update e : events.getEvents(msoInterests)) {
 
 			// consume loopback updates
-			if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+			if(!e.isLoopback()) {
 
 				// get mask
 				int mask = e.getEventTypeMask();
@@ -200,9 +194,9 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	public abstract void removeActionListener(ActionListener listener);
 
-	public abstract void addWorkListener(IWorkListener listener);
+	public abstract void addWorkFlowListener(IWorkFlowListener listener);
 
-	public abstract void removeWorkListener(IWorkListener listener);
+	public abstract void removeWorkFlowListener(IWorkFlowListener listener);
 
 	public abstract IPanelManager getManager();
 
@@ -237,12 +231,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 		if(!isChangeable()) return false;
 		// consume change events
 		setChangeable(false);
-		// suspend for faster update
-		msoModel.suspendClientUpdate();
+		// suspend for faster update?
+		if(msoModel!=null) msoModel.suspendClientUpdate();
 		// request action
 		bFlag = beforeFinish();
-		// resume updates
-		msoModel.resumeClientUpdate(true);
+		// resume updates?
+		if(msoModel!=null) msoModel.resumeClientUpdate(true);
 		// finish?
 		if(bFlag) {
 			// request action
@@ -350,7 +344,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	 * ===========================================
 	 */
 
-	public void onWorkPerformed(WorkEvent e) {
+	public void onFlowPerformed(WorkFlowEvent e) {
 		fireOnWorkPerformed(e);
 	}
 
@@ -367,7 +361,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	protected abstract void fireOnWorkChange(Object source, Object data);
 
-	protected abstract void fireOnWorkPerformed(WorkEvent e);
+	protected abstract void fireOnWorkPerformed(WorkFlowEvent e);
 
 	protected void setDirty(boolean isDirty, boolean update) {
 		this.isDirty = isDirty;

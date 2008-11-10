@@ -28,14 +28,14 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.work.IMapWork;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.WorkLoop;
-import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.MapInfoComparator;
 import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.WorkLoop;
+import org.redcross.sar.work.WorkPool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -53,7 +53,7 @@ import com.esri.arcgis.interop.AutomationException;
 public class DiskoMapManagerImpl implements IDiskoMapManager {
 
 
-	private IDiskoApplication app;
+	private IApplication app;
 	private IDiskoMap printMap;
 	private MapControl tmpMap;
 	private Document xmlDoc;
@@ -67,7 +67,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	private final Map<String,MapSourceInfo> mxdDocs = new HashMap<String,MapSourceInfo>();
 	private final WorkLoop m_loop = new WorkLoop(500,2000);
 
-	public DiskoMapManagerImpl(IDiskoApplication app, File file)  throws Exception {
+	public DiskoMapManagerImpl(IApplication app, File file)  throws Exception {
 		// prepare
 		this.app = app;
 		this.xmlFile = file;
@@ -864,7 +864,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	/**
 	 * This method matches the active operation with a suitable map. <p>
 	 * It is automatically called after the active operation is changed, by
-	 * IDiskoApplication.<p>
+	 * IApplication.<p>
 	 * @param autoselect - if <code>true</code> the map that covers the active
 	 * operation the most is selected, else an MapOptionDialog is shown allowing
 	 * the user to select a map manually.
@@ -895,15 +895,15 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		return maps.contains(c);
 	}
 
-	public void execute() {
+	public void execute(boolean wait) {
 		for(IDiskoMap it : maps) {
-			it.execute(it.isShowing());
+			it.execute(it.isShowing(),wait);
 		}
 	}
 
-	public void execute(IDiskoMap exclude) {
+	public void execute(IDiskoMap exclude, boolean wait) {
 		for(IDiskoMap it : maps) {
-			if(it!=exclude) it.execute(it.isVisible());
+			if(it!=exclude) it.execute(it.isShowing(),wait);
 		}
 	}
 
@@ -954,7 +954,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		 */
 		SelectMapWork(boolean autoselect) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_SAFE,"Velger kart",500,true,false);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,"Velger kart",500,true,false);
 			// prepare
 			m_autoSelect = autoselect;
 		}

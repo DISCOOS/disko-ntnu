@@ -8,7 +8,9 @@ import org.redcross.sar.util.mso.*;
 import org.rescuenorway.saraccess.model.*;
 import org.rescuenorway.saraccess.model.TimePos;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,7 +23,7 @@ import java.util.List;
  */
 public class SarMsoMapper {
 
-    public static void mapMsoAttrToSarFact(SarFact sarFact, IAttributeIf msoAttr, boolean distribute) {
+    public static void mapMsoAttrToSarFact(SarObject sarObj, SarFact sarFact, IAttributeIf<?> msoAttr, boolean distribute) {
         try
         {
         if (msoAttr instanceof AttributeImpl.MsoBoolean) {
@@ -49,9 +51,46 @@ public class SarMsoMapper {
             AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) msoAttr;
             if(lAttr.getPosition()!=null)
             {
+            	// cast to SarFactLocation
+            	SarFactLocation locFact = ((SarFactLocation) sarFact);
 
-            ((SarFactLocation) sarFact).updateLocation( lAttr.getPosition().getPosition().getY(),
-                     lAttr.getPosition().getPosition().getX(), distribute);
+            	/*
+	            // get position type
+	            int type = locFact.getLocationType();
+	            // split id into base and number
+	            String[] split = sarFact.getID().split("\\.",0);
+	            // remove current fact
+	            ((SarObjectImpl)sarObj).removeFact(sarFact);
+	            // clone fact
+	            locFact = new FactLocation("Bus", sarFact.getID(), 999, 999, sarFact.getLabel(),
+	            		false, split[0]+"."+split[1], true, split[2], 1, type, locFact.getLatValue(), locFact.getLongValue());
+	            // add clone
+	            ((SarObjectImpl)sarObj).addFact(locFact);
+	            */
+
+	            // get attribute position
+	            Point2D.Double p = lAttr.getPosition().getPosition();
+
+	            // update position
+ 	            locFact.updateLocation( p.getY(), p.getX(), distribute);
+
+	            /*
+	             *
+ 	            locFact.updateLocation( lAttr.getPosition().getPosition().getY(),
+	                     lAttr.getPosition().getPosition().getX(), distribute);
+
+	            public FactLocation(String aBusName, String aItemName, int aPos1, int aPos2,
+	                                String aLabel, boolean aCompulsory, String aRelation,
+	                                boolean aEdit, String aOrigId, int aVersion, int aType, double aLatValue,
+	                                double aLongValue)
+
+	            public FactLocation(String aBusName, String aItemName, int aPos1, int aPos2,
+	                                String aLabel, boolean aCompulsory, String aRelation,
+	                                boolean aEdit, String aOrigId, int aVersion, double aLatValue,
+	                                double aLongValue)
+
+	            */
+
             }
 
         }
@@ -78,11 +117,8 @@ public class SarMsoMapper {
             List<TimePos> posList = mapTimePosListToSaraTimePos(lAttr.getTrack().getItems());
             ((SarFactTrack) sarFact).setTrack(posList, lAttr.getTrack().getName(), lAttr.getTrack().getLayout(), distribute);
         }
-// todo remove        if (msoAttr instanceof AttributeImpl.MsoGeoList) {
-// todo remove            throw new ClassCastException("MsoGeoList not supported by mapper");
-// todo remove        }
         if (msoAttr instanceof AttributeImpl.MsoEnum) {
-            AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) msoAttr;
+            AttributeImpl.MsoEnum<?> lAttr = (AttributeImpl.MsoEnum<?>) msoAttr;
             ((SarFactString) sarFact).setStringValue(lAttr.getValueName(), distribute);
         }
         }
@@ -94,7 +130,7 @@ public class SarMsoMapper {
         }
     }
 
-    public static void mapSarFactToMsoAttr(Object msoAttr, SarFact sarFact) {
+    public static void mapSarFactToMsoAttr(Object msoAttr, SarFact sarFact, long aTimeMillis) {
         if (msoAttr instanceof AttributeImpl.MsoBoolean) {
             AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) msoAttr;
             int factVal = (int) ((SarFactNumerical) sarFact).getIntegerValue();
@@ -120,57 +156,71 @@ public class SarMsoMapper {
             lAttr.setValue(((SarFactDate) sarFact).getDate());
         } else if (msoAttr instanceof AttributeImpl.MsoPosition) {
             AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) msoAttr;
-            SarFactLocation lFact = (SarFactLocation) sarFact;    //2Sjekk med vinjar
-//            lAttr.setValue(new Position(lFact.getID(), lFact.getLongValue(), lFact.getLatValue()));   todo er denne feil?
-            lAttr.setValue(new Position(null, lFact.getLongValue(), lFact.getLatValue())); // todo sjekk at dette er rett!!!
+            SarFactLocation lFact = (SarFactLocation) sarFact;
+            lAttr.setValue(new Position(null,
+            		lFact.getLongValue(), lFact.getLatValue(),
+            		lFact.getLocationType())); // TODO: sjekk at dette er rett!!!
         } else if (msoAttr instanceof AttributeImpl.MsoTimePos) {
             AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) msoAttr;
             SarFactLocation lFact = (SarFactLocation) sarFact;
             lAttr.setValue(new org.redcross.sar.util.mso.TimePos(lFact.getLongValue(), lFact.getLatValue(), lFact.getTimeAtPos()));
         } else if (msoAttr instanceof AttributeImpl.MsoPolygon) {
             AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) msoAttr;
-
             SarFactArea aFact = (SarFactArea) sarFact;
-            //Polygon lPoly = new Polygon(lAttr.getPolygon().getId(), aFact.getName());
-            Polygon lPoly = new Polygon(aFact.getID(), aFact.getName());
+            Polygon lPoly = new Polygon(null, aFact.getName());
             lPoly.setLayout(aFact.getStyle());
             for (TimePos tp : aFact.getArea()) {
-                lPoly.add(tp.getLongitude(), tp.getLatitude());
+            	if(tp instanceof PositionOccurrence) {
+            		PositionOccurrence p = (PositionOccurrence)tp;
+            		lPoly.add(tp.getLongitude(), tp.getLatitude(), p.getPosition().getAltitude());
+            	}
+            	else
+            		lPoly.add(tp.getLongitude(), tp.getLatitude());
             }
             lAttr.setValue(lPoly);
         } else if (msoAttr instanceof AttributeImpl.MsoRoute) {
             AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) msoAttr;
             SarFactTrack aFact = (SarFactTrack) sarFact;
-
-            //Route lPoly = new Route(lAttr.getRoute().getId(), aFact.getName());//TODO avsjekk
-            Route lPoly = new Route(aFact.getID(), aFact.getName());//TODO avsjekk
+            Route lPoly = new Route(null, aFact.getName()); //TODO avsjekk
             lPoly.setLayout(aFact.getStyle());
             for (TimePos tp : aFact.getTrack()) {
-                lPoly.add(tp.getLongitude(), tp.getLatitude());
+            	if(tp instanceof PositionOccurrence) {
+            		PositionOccurrence p = (PositionOccurrence)tp;
+            		lPoly.add(tp.getLongitude(), tp.getLatitude(), p.getPosition().getAltitude());
+            	}
+            	else
+            		lPoly.add(tp.getLongitude(), tp.getLatitude());
             }
             lAttr.setValue(lPoly);
-
-
         } else if (msoAttr instanceof AttributeImpl.MsoTrack) {
-
             AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) msoAttr;
             SarFactTrack aFact = (SarFactTrack) sarFact;
-            //Track lPoly = new Track(lAttr.getTrack().getId(), aFact.getName());
-            Track lPoly = new Track(aFact.getID(), aFact.getName());
-
+            Track lPoly = new Track(null , aFact.getName());
             lPoly.setLayout(aFact.getStyle());
             for (TimePos tp : aFact.getTrack()) {
-                lPoly.add(tp.getLongitude(), tp.getLatitude(), tp.getTimeInPos());
+            	if(tp instanceof PositionOccurrence) {
+            		PositionOccurrence p = (PositionOccurrence)tp;
+            		lPoly.add(tp.getLongitude(), tp.getLatitude(), p.getPosition().getAltitude(), tp.getTimeInPos());
+            	}
+            	else
+                    lPoly.add(tp.getLongitude(), tp.getLatitude(), tp.getTimeInPos());
             }
             lAttr.setValue(lPoly);
-
-// todo remove        } else if (msoAttr instanceof AttributeImpl.MsoGeoList) {
-// todo remove            throw new ClassCastException("MsoGeoList not supported by mapper");
         } else if (msoAttr instanceof AttributeImpl.MsoEnum) {
-            AttributeImpl.MsoEnum lAttr = (AttributeImpl.MsoEnum) msoAttr;
-            if(((SarFactString) sarFact).getStringValue().length()>0)
+            AttributeImpl.MsoEnum<?> lAttr = (AttributeImpl.MsoEnum<?>) msoAttr;
+            SarFactString strFact = (SarFactString) sarFact;
+            if(strFact.getStringValue().length()>0)
             {
-            lAttr.setValue(((SarFactString) sarFact).getStringValue());
+            	if(aTimeMillis == 0)
+            	{
+            		lAttr.setValue(strFact.getStringValue());
+            	}
+            	else
+            	{
+                	Calendar aTime = Calendar.getInstance();
+                	aTime.setTimeInMillis(aTimeMillis);
+            		lAttr.setValue(strFact.getStringValue(), aTime);
+            	}
             }
         } else {
             Log.warning("Unknown mapping type" + msoAttr.getClass().getName());
@@ -182,7 +232,8 @@ public class SarMsoMapper {
     private static List<TimePos> mapGeoPosListToSaraTimePos(Collection<GeoPos> route) {
         List<TimePos> list = new ArrayList<TimePos>();
         for (GeoPos geo : route) {
-            TimePos lPos = new PositionOccurrence((float) geo.getPosition().getY(), (float) geo.getPosition().getX(), "");
+        	Point2D.Double p = geo.getPosition();
+            TimePos lPos = new PositionOccurrence(p.getY(), p.getX(), (float) geo.getAltitude(), "");
             list.add(lPos);
         }
         return list;
@@ -191,7 +242,8 @@ public class SarMsoMapper {
     private static List<TimePos> mapTimePosListToSaraTimePos(Collection<org.redcross.sar.util.mso.TimePos> track) {
         List<TimePos> list = new ArrayList<TimePos>();
         for (org.redcross.sar.util.mso.TimePos geo : track) {
-            TimePos lPos = new PositionOccurrence((float) geo.getPosition().getY(), (float) geo.getPosition().getX(), geo.getTime().getTimeInMillis(), "");
+        	Point2D.Double p = geo.getPosition();
+            TimePos lPos = new PositionOccurrence(p.getY(), p.getX(), (float) geo.getAltitude(), geo.getTime().getTimeInMillis(), "");
             list.add(lPos);
         }
         return list;

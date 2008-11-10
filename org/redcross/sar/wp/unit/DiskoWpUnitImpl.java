@@ -20,10 +20,12 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
@@ -34,7 +36,6 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -43,10 +44,10 @@ import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.UnitUtilities;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -54,7 +55,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
  *
  * @author thomasl
  */
-public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IWorkListener
+public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IWorkFlowListener
 {
 	private JPanel m_contentsPanel;
 
@@ -189,6 +190,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		 * Create Personnel list table
 		 * ----------------------------------------- */
 		PersonnelTableModel personnelModel = new PersonnelTableModel(getMsoModel());
+		personnelModel.setColumnAlignment(2, SwingConstants.CENTER);
+		personnelModel.setColumnAlignment(3, SwingConstants.CENTER);
 		m_personnelOverviewTable = new DiskoTable(personnelModel);
 		m_personnelOverviewTable.setColumnSelectionAllowed(false);
 		m_personnelOverviewTable.setRowSelectionAllowed(true);
@@ -196,6 +199,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_personnelOverviewTable.addMouseListener(new PersonnelTableMouseListener());
 		m_personnelOverviewTable.setTransferHandler(m_personnelTransferHandler);
 		m_personnelOverviewTable.setDragEnabled(true);
+
 		m_personnelOverviewTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
 			@Override
@@ -204,8 +208,11 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 				if(m_leftViewId.equals(UNIT_VIEW_ID))
 				{
-					if(e.getFirstIndex()>-1)
-						setPersonnelBottom((IPersonnelIf)m_personnelOverviewTable.getValueAt(e.getFirstIndex(),2));
+					// get selected row
+					int row = m_personnelOverviewTable.getSelectedRow();
+					if(row!=-1) {
+						setPersonnelBottom((IPersonnelIf)m_personnelOverviewTable.getValueAt(row,3));
+					}
 					setBottomView(PERSONNEL_DETAILS_VIEW_ID);
 				}
 			}
@@ -215,6 +222,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		TableRowSorter<PersonnelTableModel> tableRowSorter =
 				new TableRowSorter<PersonnelTableModel>(personnelModel);
 		m_personnelOverviewTable.setRowSorter(tableRowSorter);;
+		tableRowSorter.setMaxSortKeys(1);
 		tableRowSorter.setSortsOnUpdates(true);
 		tableRowSorter.setSortable(2, false);
 		tableRowSorter.setSortable(3, false);
@@ -231,11 +239,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(dim.width * 3 + 20);
 		column.setMaxWidth(dim.width * 3 + 20);
 
-		m_personnelOverviewTable.getTableHeader().setDefaultRenderer(new DefaultHeaderRenderer());
+		JTableHeader header = m_personnelOverviewTable.getTableHeader();
+		header.setResizingAllowed(false);
+		header.setReorderingAllowed(false);
 
-		JScrollPane personnelOverviewScrollPane = UIFactory.createScrollPane(m_personnelOverviewTable,true);
+		JScrollPane scrollPane = UIFactory.createScrollPane(m_personnelOverviewTable,true);
 		m_overviewTabPane.addTab(getBundleText("Personnel.text"),
-				DiskoIconFactory.getIcon("GENERAL.PERSONNEL", "32x32"), personnelOverviewScrollPane);
+				DiskoIconFactory.getIcon("GENERAL.PERSONNELLIST", "32x32"), scrollPane);
 
 		/* -----------------------------------------
 		 * Create Unit list table
@@ -246,6 +256,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_unitOverviewTable.setRowSelectionAllowed(true);
 		m_unitOverviewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_unitOverviewTable.addMouseListener(new UnitTableMouseListener());
+		unitModel.setColumnAlignment(1, SwingConstants.CENTER);
+		unitModel.setColumnAlignment(2, SwingConstants.CENTER);
 
 		UnitTableEditor unitRenderer = new UnitTableEditor(this);
 		unitRenderer.setTable(m_unitOverviewTable);
@@ -255,14 +267,16 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(dim.width + 10);
 		column.setMaxWidth(dim.width + 10);
 		column = m_unitOverviewTable.getColumnModel().getColumn(2);
-		column.setPreferredWidth(dim.width * 2 + 15);
-		column.setMaxWidth(dim.width * 2 + 15);
+		column.setPreferredWidth(dim.width * 3 + 20);
+		column.setMaxWidth(dim.width * 3 + 20);
 
-		m_unitOverviewTable.getTableHeader().setDefaultRenderer(new DefaultHeaderRenderer());
+		header = m_unitOverviewTable.getTableHeader();
+		header.setResizingAllowed(false);
+		header.setReorderingAllowed(false);
 
-		JScrollPane unitOverviewScrollPane = UIFactory.createScrollPane(m_unitOverviewTable,true);
+		scrollPane = UIFactory.createScrollPane(m_unitOverviewTable,true);
 		m_overviewTabPane.addTab(getBundleText("Unit.text"),
-				DiskoIconFactory.getIcon("GENERAL.UNIT", "32x32"), unitOverviewScrollPane);
+				DiskoIconFactory.getIcon("GENERAL.UNITLIST", "32x32"), scrollPane);
 
 		/* -----------------------------------------
 		 * Create Callout list table
@@ -277,11 +291,13 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		column.setPreferredWidth(80);
 		column.setMaxWidth(80);
 
-		m_calloutOverviewTable.getTableHeader().setDefaultRenderer(new DefaultHeaderRenderer());
+		header = m_calloutOverviewTable.getTableHeader();
+		header.setResizingAllowed(false);
+		header.setReorderingAllowed(false);
 
-		JScrollPane OverviewScrollPane = UIFactory.createScrollPane(m_calloutOverviewTable,true);
+		scrollPane = UIFactory.createScrollPane(m_calloutOverviewTable,true);
 		m_overviewTabPane.addTab(getBundleText("CallOut.text"),
-				DiskoIconFactory.getIcon("GENERAL.CALLOUT", "32x32"), OverviewScrollPane);
+				DiskoIconFactory.getIcon("GENERAL.CALLOUTLIST", "32x32"), scrollPane);
 	}
 
 	private void initButtons()
@@ -479,17 +495,6 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 		if(m_newUnit)
 		{
-			/*
-			// Unit is set to ready on first commit
-			IUnitIf unit = m_unitDetailsLeftPanel.getUnit();
-			try {
-				unit.setStatus(UnitStatus.READY);
-			} catch (IllegalOperationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			*/
-
 			m_unitOverviewTable.setEnabled(true);
 			m_newUnitButton.setSelected(false);
 			m_newUnit = false;
@@ -886,7 +891,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		public void mouseClicked(MouseEvent e)
 		{
 			int clickCount = e.getClickCount();
-			if(clickCount == 2)
+			if(clickCount > 1)
 			{
 				handle(e);
 			}
@@ -935,7 +940,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		public void mouseClicked(MouseEvent e)
 		{
 			int clickCount = e.getClickCount();
-			if(clickCount == 2)
+			if(clickCount > 1)
 			{
 				handle(e);
 			}
@@ -954,7 +959,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			UnitTableModel model = (UnitTableModel)m_unitOverviewTable.getModel();
 			IUnitIf clickedUnit = model.getUnit(clickedRow);
 
-			if(clickedColumn ==0)
+			if(clickedColumn == 0)
 			{
 				// update bottom message
 				setBottomMessage(getBundleText("SelectUnitPersonnel.text"));
@@ -983,7 +988,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		public void mouseClicked(MouseEvent e)
 		{
 			int clickCount = e.getClickCount();
-			if(clickCount == 2)
+			if(clickCount > 1)
 			{
 				handle(e);
 			}
@@ -1050,7 +1055,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_newCallOut = newCallOut;
 	}
 
-	public void onWorkPerformed(WorkEvent e){
+	public void onFlowPerformed(WorkFlowEvent e){
 
 		if(e.isFinish()) {
 
@@ -1135,13 +1140,10 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		if(getMsoModel().getMsoManager().operationExists()) {
 			ICmdPostIf cmdPost = getMsoModel().getMsoManager().getCmdPost();
 			PersonnelTableModel m1 = (PersonnelTableModel)m_personnelOverviewTable.getModel();
-			m1.connect(getMsoModel(),cmdPost.getAttendanceList(), IPersonnelIf.PERSONNEL_NAME_COMPARATOR);
 			m1.load(cmdPost.getAttendanceList());
 			UnitTableModel m2 = (UnitTableModel)m_unitOverviewTable.getModel();
-			m2.connect(getMsoModel(),cmdPost.getUnitList(), IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
 			m2.load(cmdPost.getUnitList());
 			CalloutTableModel m3 = (CalloutTableModel)m_calloutOverviewTable.getModel();
-			m3.connect(getMsoModel(),cmdPost.getCalloutList(), ICalloutIf.CALLOUT_COMPARATOR);
 			m3.load(cmdPost.getCalloutList());
 		}
 

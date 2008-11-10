@@ -37,7 +37,11 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	}
 
 	public boolean load(IMsoListIf<T> list) {
-		return load(list.getItems());
+		return load(list,false);
+	}
+
+	public boolean load(IMsoListIf<T> list, boolean append) {
+		return load(list.getItems(), append);
 	}
 
 	/* =============================================================================
@@ -61,7 +65,9 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	}
 
 	@Override
-	public boolean load(Collection<T> objects) {
+	public boolean load(Collection<T> objects, boolean append) {
+		// clear current?
+		if(!append) clear();
 		// allowed?
 		if(source!=null) {
 			// sort objects
@@ -77,14 +83,30 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	        if(data.length>0) {
 	        	fireDataCreated(data, 0);
 	        }
+			// get data
+			IMsoObjectIf[] coData = (IMsoObjectIf[])found[1];
 	        // any co-data selected?
-	        if(data.length>0 && coClassList.size()>0) {
-	        	fireCoDataChanged(data, 0);
+	        if(coData.length>0 && coClassList.size()>0) {
+	        	fireCoDataChanged(coData, 0);
 	        }
 	        // success
 	        return true;
 		}
 		// failure
+		return false;
+	}
+
+	public boolean clear() {
+		// query source for current values
+		Collection<T> items = query();
+		// allowed?
+		if(items!=null) {
+			// notify
+			fireDataClearAll(getData(items), 0);
+	        // success
+	        return true;
+		}
+		// failed
 		return false;
 	}
 
@@ -99,11 +121,14 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 
 		// clear all event?
 		if(events.isClearAllEvent()) {
+			// get first item
 			MsoEvent.Update it = events.getEvents().get(0);
-			IMsoObjectIf msoObj = it.getSource();
-			fireDataClearAll((T)msoObj,it.getEventTypeMask());
+			// notify
+			fireDataClearAll(null,it.getEventTypeMask());
 		}
 		else {
+
+			//System.out.println(this);
 
 			// loop over all events
 			for(MsoEvent.Update it : events.getEvents()) {
@@ -163,6 +188,15 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	 * Helper methods
 	 * ============================================================================= */
 
+	protected T[] getData(Collection<T> items) {
+		if(items.size()>0) {
+			T[] data = (T[])new IMsoObjectIf[items.size()];
+			items.toArray(data);
+			return data;
+		}
+		return null;
+	}
+
 	protected Object[] select(IMsoObjectIf[] data) {
 		List<IMsoObjectIf> msoList = new ArrayList<IMsoObjectIf>(data!=null ? data.length : 0);
 		List<IMsoObjectIf> coList = new ArrayList<IMsoObjectIf>(data!=null ? data.length : 0);
@@ -184,12 +218,12 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	}
 
 	protected T[] getIdx(T id) {
-		IMsoObjectIf[] data = new IMsoObjectIf[]{id};
+		IMsoObjectIf[] data = id!=null ? new IMsoObjectIf[]{id} : new IMsoObjectIf[0];
 		return (T[])data;
 	}
 
 	protected T[] getData(T id) {
-		IMsoObjectIf[] data = new IMsoObjectIf[]{id};
+		IMsoObjectIf[] data = id!=null ? new IMsoObjectIf[]{id} : new IMsoObjectIf[0];
 		return (T[])data;
 	}
 
@@ -213,8 +247,8 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 		fireDataUnselected(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
 	}
 
-	protected void fireDataClearAll(T id, int mask) {
-		fireDataClearAll(new BinderEvent<T>(this,getIdx(id),getData(id),mask));
+	protected void fireDataClearAll(T[] id, int mask) {
+		fireDataClearAll(new BinderEvent<T>(this,id,id,mask));
 	}
 
 	protected void fireCoDataChanged(IMsoObjectIf data, int mask) {

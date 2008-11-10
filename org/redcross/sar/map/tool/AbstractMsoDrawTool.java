@@ -37,13 +37,13 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
+import org.redcross.sar.work.WorkPool;
 
 import com.esri.arcgis.carto.InvalidArea;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;

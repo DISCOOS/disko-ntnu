@@ -16,7 +16,15 @@ public interface IPersonnelIf extends IPersonIf
     /**
      * Often used selectors
      */
-    
+
+    public static Selector<IPersonnelIf> ALL_SELECTOR = new Selector<IPersonnelIf>()
+	{
+		public boolean select(IPersonnelIf personnel)
+		{
+			return true;
+		}
+	};
+
     public static Selector<IPersonnelIf> ACTIVE_SELECTOR = new Selector<IPersonnelIf>()
 	{
 		public boolean select(IPersonnelIf personnel)
@@ -24,7 +32,7 @@ public interface IPersonnelIf extends IPersonIf
 			return personnel.getNextOccurence() == null;
 		}
 	};
-    
+
 	/**
 	 * Often used comparators
 	 */
@@ -35,8 +43,8 @@ public interface IPersonnelIf extends IPersonIf
 			int res = p1.getFirstName().compareTo(p2.getFirstName());
 			return res == 0 ? p1.getLastName().compareTo(p2.getLastName()) : res;
 		}
-	};    
-    
+	};
+
     public enum PersonnelStatus
     {
         IDLE,
@@ -158,7 +166,7 @@ public interface IPersonnelIf extends IPersonIf
     public IAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute();
 
     public String getTypeName();
-    
+
     public String getInternationalTypeName();
 
     public void setImportStatus(PersonnelImportStatus status);
@@ -181,8 +189,8 @@ public interface IPersonnelIf extends IPersonIf
     public IMsoModelIf.ModificationState getNextOccurenceState();
 
     public IMsoReferenceIf<IPersonnelIf> getNextOccurenceAttribute();
-    
+
     public IUnitIf getOwningUnit();
-    
+
 
 }

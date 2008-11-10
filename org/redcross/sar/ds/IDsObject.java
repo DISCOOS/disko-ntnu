@@ -20,4 +20,14 @@ public interface IDsObject extends IData {
 
 	public void load(Object[][] samples);
 
+	public boolean isDirty();
+	public boolean isArchived();
+	public boolean isSuspended();
+
+	public void archive();
+	public void suspend();
+	public void resume();
+
+	public int calculate() throws Exception;
+
 }

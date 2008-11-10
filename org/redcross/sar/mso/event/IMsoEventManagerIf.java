@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.event;
 
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.CommitWrapper;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -32,7 +33,7 @@ public interface IMsoEventManagerIf
      * @param aSource         The source object
      * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType})
      */
-    public void notifyClientUpdate(IMsoObjectIf aSource, int anEventTypeMask);
+    public void notifyClientUpdate(IMsoObjectIf aSource, UpdateMode mode, boolean isLoopback, int anEventTypeMask);
 
     /**
      * Notify a client clear all update.
@@ -60,7 +61,7 @@ public interface IMsoEventManagerIf
      * @param aSource         The source object
      * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType})
      */
-    public void notifyServerUpdate(IMsoObjectIf aSource, int anEventTypeMask);
+    public void notifyServerUpdate(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask);
 
     /**
      * Add a listener in the Commit Listeners queue.

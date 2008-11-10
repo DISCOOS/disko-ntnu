@@ -16,8 +16,8 @@ import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.mso.GeoPos;
+import org.redcross.sar.work.event.IWorkFlowListener;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.ILayer;
@@ -46,7 +46,7 @@ public interface IDiskoMap {
 	public boolean activate();
 	public boolean deactivate();
 
-	public boolean execute(boolean showProgress);
+	public boolean execute(boolean showProgress, boolean wait);
 
 	public IMapTool getActiveTool();
 	public boolean setActiveTool(IMapTool tool, int options) throws IOException, AutomationException;
@@ -63,12 +63,12 @@ public interface IDiskoMap {
 
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;
 
-	public MsoLayerSelectionModel getMsoLayerSelectionModel() throws IOException, AutomationException;
-	public WmsLayerSelectionModel getWmsLayerSelectionModel() throws IOException, AutomationException;
-	public MapLayerSelectionModel getMapLayerSelectionModel() throws IOException, AutomationException;
-	public void setWmsLayerSelectionModel() throws IOException, AutomationException;
-	public void setMsoLayerSelectionModel() throws IOException, AutomationException;
-	public void setMapLayerSelectionModel() throws IOException, AutomationException;
+	public MsoLayerModel getMsoLayerModel() throws IOException, AutomationException;
+	public WmsLayerModel getWmsLayerModel() throws IOException, AutomationException;
+	public MapLayerModel getMapLayerModel() throws IOException, AutomationException;
+	public void setWmsLayerModel() throws IOException, AutomationException;
+	public void setMsoLayerModel() throws IOException, AutomationException;
+	public void setMapLayerModel() throws IOException, AutomationException;
 
 	public IDiskoMapManager getMapManager();
 
@@ -169,8 +169,8 @@ public interface IDiskoMap {
 
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException;
 
-	public void addWorkListener(IWorkListener listener);
-	public void removeWorkEventListener(IWorkListener listener);
+	public void addWorkFlowListener(IWorkFlowListener listener);
+	public void removeWorkEventListener(IWorkFlowListener listener);
 
 	public IEnvelope getDirtyExtent();
 

@@ -12,7 +12,7 @@ import org.redcross.sar.util.except.IllegalOperationException;
 /**
  * Interface for classes holding a status Enum attribute
  */
-public interface IEnumStatusHolder<E extends Enum> extends IMsoObjectIf
+public interface IEnumStatusHolder<E extends Enum<E>> extends IMsoObjectIf
 {
 
     public void setStatus(E aStatus) throws IllegalOperationException;

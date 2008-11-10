@@ -147,7 +147,7 @@ public class UnitTableEditor
 		private int m_editingRow = -1;
 
 		private JPanel m_panel;
-		//private JButton m_pauseButton;
+		private JButton m_pauseButton;
 		private JButton m_releaseButton;
 
 		public UnitStatusCellEditor()
@@ -155,7 +155,6 @@ public class UnitTableEditor
 			m_panel = new JPanel();
 			m_panel.setBackground(m_table.getBackground());
 
-			/*
 			String text = m_resources.getString("PauseButton.text");
 			String letter = m_resources.getString("PauseButton.letter");
 			m_pauseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
@@ -163,35 +162,44 @@ public class UnitTableEditor
 			{
 				public void actionPerformed(ActionEvent arg0)
 				{
-					// Toggle working status
+
+					// release unit
 					int index = m_table.convertRowIndexToModel(m_editingRow);
-					UnitOverviewTableModel model = (UnitOverviewTableModel)m_table.getModel();
+					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 
-					try
-					{
-						UnitUtilities.toggleUnitPause(unit);
+					m_wpUnit.getMsoModel().suspendClientUpdate();
 
-						// Commit
-						if(!m_wpUnit.getNewUnit())
-						{
-							m_wpUnit.getMsoModel().commit();
-						}
-					}
-					catch (IllegalOperationException e)
-					{
-						Utils.showError(m_resources.getString("PauseUnitError.header"),
-								m_resources.getString("PauseUnitError.text"));
-					}
+	                if (unit != null)
+	                {
+	                    try
+	                    {
+	                    	if(unit.isPaused())
+	                    		unit.resume();
+	                    	else
+	                    		unit.pause();
+
+							if(!m_wpUnit.getNewUnit())
+							{
+								m_wpUnit.commit();
+							}
+
+	                    }
+	                    catch (IllegalOperationException ex)
+	                    {
+	                    	Utils.showWarning("Enhet kan ikke endre status");
+	                    }
+	                }
+					m_wpUnit.getMsoModel().resumeClientUpdate(true);
 
 					fireEditingStopped();
+
 				}
 			});
 			m_panel.add(m_pauseButton);
-			*/
 
-	        String text = m_resources.getString("DissolveButton.text");
-	        String letter = m_resources.getString("DissolveButton.letter");
+	        text = m_resources.getString("DissolveButton.text");
+	        letter = m_resources.getString("DissolveButton.letter");
 	        m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
 	        m_releaseButton.addActionListener(new ActionListener()
 			{

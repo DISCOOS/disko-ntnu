@@ -18,7 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.DiskoCorner;
 import org.redcross.sar.gui.DiskoGlassPane;
@@ -45,7 +45,7 @@ public class UIFactory {
 	public final static Font DEFAULT_PLAIN_LARGE_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, FONT_SIZE_LARGE);
 	public final static Font DIALOG_PLAIN_MEDIUM_FONT = new Font(DIALOG_FONT, Font.PLAIN, FRONT_SIZE_MEDIUM);
 
-	private IDiskoApplication app;
+	private IApplication app;
 	private JPanel contentPanel;
 	private DiskoGlassPane glassPane;
 	private MainMenu mainMenu;
@@ -67,7 +67,7 @@ public class UIFactory {
 	 * Constructors
 	 * =================================================================*/
 
-	public UIFactory(IDiskoApplication app) {
+	public UIFactory(IApplication app) {
 		// prepare
 		this.app = app;
 		// initialize content panel

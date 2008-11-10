@@ -111,17 +111,18 @@ public class RouteFeature extends AbstractMsoFeature {
 			 * POSSIBLE SOLUTION FOUND: When assignments with polygon geodata was created, search area was not set
 			 */
 
-
 			// TODO: THIS IS AN HACK AND SHOULD BE RESOLVED! Route objects MUST have a assignment
 			if(area!=null) {
 				IAssignmentIf assignment = area.getOwningAssignment();
 				caption = MsoUtils.getAssignmentName(assignment,2);
-				System.out.println("IRouteIf:="+route.getObjectId()+ " changed in " + this);
+				//System.out.println("IRouteIf:="+route.getObjectId()+ " changed in " + this);
 			}
+			/*
 			else if(route!=null)
 				System.out.println("IRouteIf:="+route.getObjectId()+ " is dangling in " + this);
 			else
 				System.out.println("Empty IRouteIf found and discarded by " + this);
+			*/
 
 			setDirty(isDirty || (getShape()!=null));
 			return true;

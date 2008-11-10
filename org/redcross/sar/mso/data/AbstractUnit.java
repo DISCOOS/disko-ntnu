@@ -17,6 +17,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -128,15 +129,11 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
-			m_unitAssignments.add((IAssignmentIf) anObject);
-			return true;
+			return m_unitAssignments.add((IAssignmentIf) anObject);
 		}
 		if (anObject instanceof IPersonIf)
 		{
-			m_unitPersonnel.add((IPersonnelIf) anObject);
-			if(MsoModelImpl.getInstance().isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
-				m_status.set(getAutoStatus());
-			return true;
+			return m_unitPersonnel.add((IPersonnelIf) anObject);
 		}
 		return false;
 	}
@@ -149,9 +146,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 		if (anObject instanceof IPersonIf)
 		{
-			boolean bFlag = m_unitPersonnel.remove((IPersonnelIf) anObject);
-			m_status.set(getAutoStatus());
-			return bFlag;
+			return m_unitPersonnel.remove((IPersonnelIf) anObject);
 		}
 		return false;
 	}
@@ -166,23 +161,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	 * Renumber duplicate numbers
 	 */
 	@Override
-	protected void registerModifiedData(Object source)
+	protected void registerModifiedData(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
 	{
 		if (getType() != getTypeBySubclass())
 		{
 			setType(getTypeBySubclass());
 		}
-		super.registerModifiedData(source);
-	}
-
-	@Override
-	protected void registerRemovedReference(Object source, boolean updateServer) {
-		if (m_unitPersonnel == source)
-		{
-			m_status.setValue(getAutoStatus());
-		}
-		super.registerRemovedReference(source,updateServer);
-
+		super.registerModifiedData(source,aMode,updateServer,isLoopback);
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -425,9 +410,19 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public void addUnitPersonnel(IPersonnelIf anPersonnel)
 	{
+		suspendClientUpdate();
 		m_unitPersonnel.add(anPersonnel);
-		m_status.set(getAutoStatus());
+		m_status.set(getAutoStatus(isPaused()));
+		resumeClientUpdate(true);
 
+	}
+
+	public void removeUnitPersonnel(IPersonnelIf anPersonnel)
+	{
+		suspendClientUpdate();
+		m_unitPersonnel.remove(anPersonnel);
+		m_status.set(getAutoStatus(isPaused()));
+		resumeClientUpdate(true);
 	}
 
 	public IPersonnelListIf getUnitPersonnel()
@@ -614,7 +609,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 					"Only a paused unit can be resumed");
 		}
 		// forward
-		m_status.set(getAutoStatus());
+		m_status.set(getAutoStatus(false));
 	}
 
 	public IAssignmentIf getActiveAssignment()
@@ -663,6 +658,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			return false;
 		}
 
+		// suspend MSO update
+		suspendClientUpdate();
+
 		/*
 		 * the assignment will be added by AssignmentImpl
 		 * with latest prioritySequence using helper method
@@ -670,41 +668,37 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		 * accordingly.
 		 */
 		newAssignment.setOwningUnit(AssignmentStatus.QUEUED, this);
-
 		// check for update of priority sequence is required?
-		boolean bUpdate = ( beforeAssignment != null &&
-				beforeAssignment.getStatus() == AssignmentStatus.QUEUED &&
-				beforeAssignment.getOwningUnit() == this);
-
+		boolean bUpdate = (beforeAssignment != null
+				&& beforeAssignment.getStatus() == AssignmentStatus.QUEUED && beforeAssignment
+				.getOwningUnit() == this);
 		// calculate the
-		int newPrioritySequence =
-			bUpdate ? beforeAssignment.getPrioritySequence() : Integer.MAX_VALUE;
-
-			// move forwards in list if not last
-			if (newPrioritySequence != Integer.MAX_VALUE)
-			{
-				boolean insertionPointFound = false;
-				int lastPri = -1;
-				for (IAssignmentIf asg : getEnqueuedAssignments())
-				{
-					if (asg == newAssignment)
-					{
-						continue;
-					}
-					lastPri = asg.getPrioritySequence();
-					if (lastPri == newPrioritySequence)
-					{
-						insertionPointFound = true;
-						newAssignment.setPrioritySequence(newPrioritySequence);
-					}
-					if (insertionPointFound)
-					{
-						asg.setPrioritySequence(lastPri + 1);
-					}
+		int newPrioritySequence = bUpdate ? beforeAssignment
+				.getPrioritySequence() : Integer.MAX_VALUE;
+		// move forwards in list if not last
+		if (newPrioritySequence != Integer.MAX_VALUE) {
+			boolean insertionPointFound = false;
+			int lastPri = -1;
+			for (IAssignmentIf asg : getEnqueuedAssignments()) {
+				if (asg == newAssignment) {
+					continue;
+				}
+				lastPri = asg.getPrioritySequence();
+				if (lastPri == newPrioritySequence) {
+					insertionPointFound = true;
+					newAssignment.setPrioritySequence(newPrioritySequence);
+				}
+				if (insertionPointFound) {
+					asg.setPrioritySequence(lastPri + 1);
 				}
 			}
+		}
 
-			return true;
+		// resume MSO update
+		resumeClientUpdate(true);
+
+		// finished
+		return true;
 	}
 
 	public boolean dequeueAssignment(IAssignmentIf anAssignment) throws IllegalOperationException
@@ -719,7 +713,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		 * using helper method removeUnitAssignment(). AssignmentImpl
 		 * will update its status accordingly.
 		 */
-		anAssignment.setOwningUnit(AssignmentStatus.QUEUED, null);
+		anAssignment.setOwningUnit(AssignmentStatus.READY, null);
 
 		// success
 		return true;
@@ -1047,10 +1041,6 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
     /**
      * Get duration of given unit status. </p>
      *
-     * Current implementation do not contain the necessary
-	 * information about all status changes. Only aStatus:=WORKING and
-	 * total:=true is implemented. All other argument combinations return zero.
-     *
      * @param aStatus - The status to get duration for
      * @param total - If <code>true</code> the sum of all durations for a given status
      * is returned, the duration of the last occurrence otherwise.
@@ -1059,38 +1049,23 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
      */
 	public double getDuration(UnitStatus aStatus, boolean total) {
 
-		// initialize
-		double t = 0.0;
-		// translate
-		switch(aStatus) {
-		case EMPTY:
-		case READY:
-		case INITIALIZING:
-		case PAUSED:
-		case PENDING:
-		case RELEASED:
-			break;
-		case WORKING:
-			// calculate total work time?
-			if(total) {
-				// get MSO track
-				ITrackIf msoTrack = m_track.getReference();
-				// has track?
-				if(msoTrack!=null) {
-		        	// initialize
-		        	Track track = msoTrack.getGeodata();
-		        	int count = track.size();
-		        	// has more than one point?
-		        	if(count>1)
-		        	{
-		        		// get duration from start to finish
-		        		return track.getDuration();
-		        	}
-		        }
-			}
-		}
-		// finished
-		return t;
+        return getStatusAttribute().getDuration(aStatus,total);
+
+	}
+
+    /**
+     * Get duration of given set of unit status. </p>
+     *
+     * @param aList - The status to get duration for
+     * @param total - If <code>true</code> the sum of all durations for a given status
+     * is returned, the duration of the last occurrence otherwise.
+     *
+     * @return Duration (second)
+     */
+	public double getDuration(EnumSet<UnitStatus> aList, boolean total) {
+
+        return getStatusAttribute().getDuration(aList,total);
+
 	}
 
 	public double getDistance()
@@ -1113,6 +1088,18 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return 0.0;
 	}
 
+    public Calendar getTime(Enum<?> aStatus)
+    {
+    	// translate status type
+    	if(aStatus instanceof UnitStatus)
+    	{
+	        return getStatusAttribute().getLastTime((UnitStatus)aStatus);
+    	}
+        // failed
+        return null;
+    }
+
+
 	/*-------------------------------------------------------------------------------------------
 	 * Helper methods
 	 *-------------------------------------------------------------------------------------------*/
@@ -1120,29 +1107,37 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	protected void addUnitAssignment(IAssignmentIf anAssignment) throws IllegalOperationException
 	{
 		if(anAssignment!=null) {
+			// suspend MSO update
+			suspendClientUpdate();
 			m_unitAssignments.add(anAssignment);
 			rearrangeAsgPrioritiesAfterReferenceChange(anAssignment);
-			m_status.set(getAutoStatus());
+			m_status.set(getAutoStatus(isPaused()));
 			m_position.set(getAutoPosition(anAssignment));
+			// resume MSO update
+			resumeClientUpdate(true);
 		}
 	}
 
 	protected void removeUnitAssignment(IAssignmentIf anAssignment) throws IllegalOperationException
 	{
 		if(anAssignment!=null) {
+			// suspend MSO update
+			suspendClientUpdate();
 			m_unitAssignments.remove(anAssignment);
 			rearrangeAsgPrioritiesAfterReferenceChange(anAssignment);
-			getAutoStatus();
+			getAutoStatus(isPaused());
+			// resume MSO update
+			resumeClientUpdate(true);
 		}
 	}
 
-	private UnitStatus getAutoStatus() {
+	private UnitStatus getAutoStatus(boolean isPaused) {
 
 		// initialize on current status
 		UnitStatus aStatus = getStatus();
 
 		// is allowed?
-		if(!(isPaused() || isReleased())) {
+		if(!(isPaused || isReleased())) {
 
 			if(getAllocatedAssignment()!=null) {
 				aStatus = UnitStatus.INITIALIZING;
@@ -1190,10 +1185,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	}
 
 	protected void assignmentChanged(IAssignmentIf anAssignment, AssignmentStatus oldStatus, boolean add) throws IllegalOperationException {
-		// forward
-		m_status.set(getAutoStatus());
+		// suspend MSO update
+		suspendClientUpdate();
+		m_status.set(getAutoStatus(isPaused()));
 		m_position.set(getAutoPosition(anAssignment));
-		rearrangeAsgPrioritiesAfterStatusChange(anAssignment,oldStatus);
+		rearrangeAsgPrioritiesAfterStatusChange(anAssignment, oldStatus);
+		// resume MSO update
+		resumeClientUpdate(true);
 	}
 
 	private void rearrangeAsgPrioritiesAfterStatusChange(IAssignmentIf anAssignment, AssignmentStatus oldStatus)
@@ -1214,15 +1212,17 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	private void rearrangeAsgPriorities()
 	{
+		// suspend MSO update
+		suspendClientUpdate();
 		int actPriSe = 0;
-		for (IAssignmentIf asg : getEnqueuedAssignments())
-		{
-			if (asg.getPrioritySequence() != actPriSe)
-			{
+		for (IAssignmentIf asg : getEnqueuedAssignments()) {
+			if (asg.getPrioritySequence() != actPriSe) {
 				asg.setPrioritySequence(actPriSe);
 			}
 			actPriSe++;
 		}
+		// resume MSO update
+		resumeClientUpdate(true);
 	}
 
 }

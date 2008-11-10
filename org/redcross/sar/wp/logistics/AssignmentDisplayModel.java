@@ -123,7 +123,7 @@ public class AssignmentDisplayModel implements ComponentListener
             m_assignments = new DataModel<IAssignmentIf, IAssignmentIf>(IAssignmentIf.class);
             MsoBinder<IAssignmentIf> binder = new MsoBinder<IAssignmentIf>(IAssignmentIf.class);
             IAssignmentListIf list = m_model.getMsoManager().getCmdPost().getAssignmentList();
-            binder.setSelector(list);
+            binder.setSelector(IAssignmentIf.ACTIVE_SELECTOR);
             binder.connect(m_model);
             m_assignments.connect(binder);
         	m_assignments.addDataListener(new IDataListener() {

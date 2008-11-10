@@ -29,10 +29,10 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
         super();
         // set position?
         if(aPosition!=null)
-        	setPosition(aPosition.getPosition());        
+        	setPosition(aPosition.getPosition());
         m_time = createTime(aCalendar);
     }
-    
+
     public TimePos(Point2D.Double aPosition, Calendar aCalendar)
     {
         super(aPosition);
@@ -42,19 +42,25 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
     public TimePos(Point2D.Double aPosition, double anAltitude, Calendar aCalendar)
     {
         super(aPosition,anAltitude);
-        m_time = createTime(aCalendar);        
+        m_time = createTime(aCalendar);
     }
-    
+
     public TimePos(double aLongPosition, double aLatPosition, Calendar aCalendar)
     {
         super(aLongPosition, aLatPosition);
         m_time = createTime(aCalendar);
     }
 
+    public TimePos(double aLongPosition, double aLatPosition, double anAltitude, Calendar aCalendar)
+    {
+        super(aLongPosition, aLatPosition, anAltitude);
+        m_time = createTime(aCalendar);
+    }
+
     private Calendar createTime(Calendar aCalendar) {
     	return aCalendar!=null ? (Calendar)aCalendar.clone() : Calendar.getInstance();
     }
-    
+
     public String getDTG()
     {
         return DTG.CalToDTG(m_time);
@@ -102,21 +108,21 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
     {
         return new GeoPos(getPosition());
     }
-    
+
     public boolean equals(Object obj)
     {
-    	
+
     	if(!super.equals(obj)) return false;
-        
+
     	TimePos in = (TimePos) obj;
 
         if (m_time != null ? !m_time.equals(in.m_time) : in.m_time != null)
         {
             return false;
         }
-        
+
         return true;
-        
+
     }
 
     public int hashCode()
@@ -125,11 +131,11 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
         result = 31 * result + (m_time != null ? m_time.hashCode() : 0);
         return result;
     }
-    
+
     public TimePos clone() {
     	return new TimePos(getPosition(),getTime());
     }
-    
+
     @Override
     public String toString() {
     	return super.toString() + " " + Utils.toString(getTime());

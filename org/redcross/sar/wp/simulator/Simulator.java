@@ -1,9 +1,9 @@
 package org.redcross.sar.wp.simulator;
 
-import org.redcross.sar.thread.IWorkLoop;
-import org.redcross.sar.thread.WorkLoop;
-import org.redcross.sar.thread.WorkPool;
-import org.redcross.sar.thread.IWorkLoop.LoopState;
+import org.redcross.sar.work.IWorkLoop;
+import org.redcross.sar.work.WorkLoop;
+import org.redcross.sar.work.WorkPool;
+import org.redcross.sar.work.IWorkLoop.LoopState;
 
 public class Simulator  {
 

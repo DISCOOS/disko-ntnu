@@ -1,6 +1,6 @@
 package org.redcross.sar.modeldriver;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.mso.CommitManager;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
@@ -10,7 +10,6 @@ import org.redcross.sar.mso.event.IMsoCommitListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -77,7 +76,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setDiskoApplication(IDiskoApplication diskoApp)
+    public void setDiskoApplication(IApplication diskoApp)
     {
         //To change body of implemented methods use File | Settings | File Templates.
     }

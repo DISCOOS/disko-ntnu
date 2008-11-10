@@ -1,7 +1,5 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.util.except.IllegalDeleteException;
-
 /**
  * Interface for MsoObject holders.
  * The purpose of this interface is to define functionality for managing global deletion (remove all references) of MsoObject.

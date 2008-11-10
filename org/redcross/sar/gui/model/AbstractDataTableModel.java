@@ -119,6 +119,10 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 		return impl.getBinders();
 	}
 
+	public boolean isConnected(IDataSource<?> source) {
+		return impl.isConnected(source);
+	}
+
 	public boolean connect(IDataBinder<S,? extends IData,?> binder) {
 		return impl.connect(binder);
 	}
@@ -155,8 +159,8 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 		impl.load(list);
 	}
 
-	public void addAll(Collection<T> list) {
-		impl.addAll(list);
+	public void load(Collection<T> list, boolean append) {
+		impl.load(list,append);
 	}
 
 	public int add(S id, T obj) {
@@ -231,11 +235,11 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 		impl.removeDataListener(listener);
 	}
 
-	public ITranslator<S, T> getTranslator() {
+	public ITranslator<S, IData> getTranslator() {
 		return impl.getTranslator();
 	}
 
-	public void setTranslator(ITranslator<S, T> translator) {
+	public void setTranslator(ITranslator<S, IData> translator) {
 		impl.setTranslator(translator);
 	}
 
@@ -278,7 +282,7 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 	 */
 	@SuppressWarnings("unchecked")
 	protected S[] translate(IData[] data) {
-		ITranslator<S, T> translator = impl.getTranslator();
+		ITranslator<S, IData> translator = impl.getTranslator();
 		if(translator!=null) {
 			return translator.translate(data);
 		}
@@ -313,13 +317,20 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 	}
 
 	private int[] getIndexes(int[] rows) {
-		int uBound = rows.length-1;
+		if(rows==null) {
+			int uBound = getRowCount()-1;
+			if(uBound<0)
+				return new int[]{-1,-1};
+			else
+				return new int[]{0,uBound};
+		}
 		if(rows.length<1) {
 			return new int[]{-1,-1};
 		}
-		else if(rows.length==1) {
+		if(rows.length==1) {
 			return new int[]{rows[0],rows[0]};
 		}
+		int uBound = rows.length-1;
 		// search for maximum and minimum index values
 		int min = Integer.MAX_VALUE;
 		int max = -1;
@@ -339,11 +350,23 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 		public void onDataChanged(DataEvent e) {
 			int[] idx = getIndexes(e.getRows());
 			try {
-				switch(e.getType()) {
-				case DataEvent.ADDED_EVENT: fireTableRowsInserted(idx[0], idx[idx.length-1]); break;
-				case DataEvent.UPDATED_EVENT: fireTableRowsUpdated(idx[0], idx[idx.length-1]); break;
-				case DataEvent.REMOVED_EVENT: fireTableRowsDeleted(idx[0], idx[idx.length-1]); break;
-				default: fireTableDataChanged(); break;
+				/* =====================================================
+				 * Hack: Resolves a refresh problem in JTable.
+				 * =====================================================
+				 * Occurs when a single row is added to an empty model,
+				 * or removed from an model with only one row.
+				 * ===================================================== */
+				if(idx[0]==-1 || idx[0]==idx[1] && getRowCount()<=1) {
+					fireTableDataChanged();
+				}
+				else {
+					switch(e.getType()) {
+					case DataEvent.ADDED_EVENT: fireTableRowsInserted(idx[0], idx[idx.length-1]); break;
+					case DataEvent.UPDATED_EVENT: fireTableRowsUpdated(idx[0], idx[idx.length-1]); break;
+					case DataEvent.REMOVED_EVENT: fireTableRowsDeleted(idx[0], idx[idx.length-1]); break;
+					case DataEvent.CLEAR_EVENT:
+					default: fireTableDataChanged(); break;
+					}
 				}
 			} catch (IndexOutOfBoundsException ex) {
 				// HACK: Consume errors from DefaultRowSorter

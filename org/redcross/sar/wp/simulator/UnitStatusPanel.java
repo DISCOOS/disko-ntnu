@@ -28,10 +28,10 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class UnitStatusPanel extends TogglePanel {
@@ -207,7 +207,7 @@ public class UnitStatusPanel extends TogglePanel {
         	m_attribsPanel.setBorderVisible(false);
         	m_attribsPanel.setNotScrollBars();
         	m_attribsPanel.setPreferredBodySize(new Dimension(FIXED_WIDTH-90,FIXED_HEIGHT-37));
-        	m_attribsPanel.addWorkListener(this);
+        	m_attribsPanel.addWorkFlowListener(this);
         }
         return m_attribsPanel;
     }
@@ -297,7 +297,7 @@ public class UnitStatusPanel extends TogglePanel {
 
 		// listener for changes in position
 		getAttribsPanel().getField(
-				ATTRIBUTES[2]).addWorkListener(m_positionListener);
+				ATTRIBUTES[2]).addWorkFlowListener(m_positionListener);
 
 		// forward
 		update();
@@ -355,10 +355,10 @@ public class UnitStatusPanel extends TogglePanel {
 		return null;
 	}
 
-	private final IWorkListener m_positionListener = new IWorkListener() {
+	private final IWorkFlowListener m_positionListener = new IWorkFlowListener() {
 
 		@Override
-		public void onWorkPerformed(WorkEvent e) {
+		public void onFlowPerformed(WorkFlowEvent e) {
 			// is position changed?
 			if(e.isFinish()) {
 				// log position

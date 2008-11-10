@@ -22,9 +22,9 @@ import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.BaseToolPanel;
 import org.redcross.sar.gui.panel.IPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 public class DefaultDialog extends JDialog implements IDialog {
 
@@ -400,14 +400,14 @@ public class DefaultDialog extends JDialog implements IDialog {
 		return false;
 	}
 
-	public void addWorkListener(IWorkListener listener) {
+	public void addWorkFlowListener(IWorkFlowListener listener) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).addWorkListener(listener);
+			((IPanel)getContentPane()).addWorkFlowListener(listener);
 	}
 
-	public void removeWorkListener(IWorkListener listener) {
+	public void removeWorkFlowListener(IWorkFlowListener listener) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).removeWorkListener(listener);
+			((IPanel)getContentPane()).removeWorkFlowListener(listener);
 	}
 
 	/* ==========================================================
@@ -456,24 +456,24 @@ public class DefaultDialog extends JDialog implements IDialog {
 	 */
 
 	protected void fireOnWorkFinish(Object source, Object data) {
-		fireOnWorkPerformed(new WorkEvent(source,data,WorkEvent.EVENT_FINISH));
+		fireOnWorkPerformed(new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_FINISH));
     }
 
 	protected void fireOnWorkCancel(Object source, Object data) {
-		fireOnWorkPerformed(new WorkEvent(source,data,WorkEvent.EVENT_CANCEL));
+		fireOnWorkPerformed(new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CANCEL));
     }
 
 	protected void fireOnWorkChange(Object data) {
-		fireOnWorkPerformed(new WorkEvent(this,data,WorkEvent.EVENT_CHANGE));
+		fireOnWorkPerformed(new WorkFlowEvent(this,data,WorkFlowEvent.EVENT_CHANGE));
     }
 
 	protected void fireOnWorkChange(Object source, Object data) {
-		fireOnWorkPerformed(new WorkEvent(source,data,WorkEvent.EVENT_CHANGE));
+		fireOnWorkPerformed(new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CHANGE));
 	}
 
-	protected void fireOnWorkPerformed(WorkEvent e) {
+	protected void fireOnWorkPerformed(WorkFlowEvent e) {
 		if(isWorkSupported())
-			((IPanel)getContentPane()).onWorkPerformed(e);
+			((IPanel)getContentPane()).onFlowPerformed(e);
     }
 
 	/*========================================================

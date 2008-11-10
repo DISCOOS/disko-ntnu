@@ -146,12 +146,12 @@ public class TaskPanel extends DefaultPanel
 					updateTaskText();
 				}
 			});
-			m_typeCombo.addWorkListener(this);
+			m_typeCombo.addWorkFlowListener(this);
 			m_westPanel.add(m_typeCombo);
 			
 			// Created date
 			m_createdField = new DTGField("created",m_resources.getString("TaskCreated.text"),false);
-			m_createdField.addWorkListener(this);
+			m_createdField.addWorkFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_createdField);
 
@@ -169,7 +169,7 @@ public class TaskPanel extends DefaultPanel
 					m_resources.getString("TaskResponsible.text"),false);
 			m_responsibleCombo.fill(responsible);
 			m_responsibleCombo.getComboBox().setSelectedIndex(0);
-			m_responsibleCombo.addWorkListener(this);
+			m_responsibleCombo.addWorkFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_responsibleCombo);
 			
@@ -198,7 +198,7 @@ public class TaskPanel extends DefaultPanel
 					updateFieldsEditable();
 				}
 			});
-			m_statusCombo.addWorkListener(this);
+			m_statusCombo.addWorkFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_statusCombo);
 
@@ -219,7 +219,7 @@ public class TaskPanel extends DefaultPanel
 			m_priorityCombo.fill(TaskPriority.values());
 			m_priorityCombo.getComboBox().setSelectedIndex(3);
 			m_priorityCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
-			m_priorityCombo.addWorkListener(this);
+			m_priorityCombo.addWorkFlowListener(this);
 			m_eastPanel.add(m_priorityCombo);
 
 			// Due (2,1)
@@ -229,7 +229,7 @@ public class TaskPanel extends DefaultPanel
 			JTextField field = (JTextField)m_dueCombo.getComboBox()
 									.getEditor().getEditorComponent();
 			field.setDocument(new NumericDocument(6,0,false));
-			m_dueCombo.addWorkListener(this);
+			m_dueCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_dueCombo);
 
@@ -237,7 +237,7 @@ public class TaskPanel extends DefaultPanel
 			m_alertCombo = new ComboBoxField("alert",m_resources.getString("TaskAlert.text"),true);
 			updateAlertComboBox();
 			m_alertCombo.getComboBox().setSelectedIndex(2);
-			m_alertCombo.addWorkListener(this);
+			m_alertCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_alertCombo);
 			
@@ -246,7 +246,7 @@ public class TaskPanel extends DefaultPanel
 			m_progressCombo = new ComboBoxField("progress",m_resources.getString("TaskProgress.text"),false);
 			m_progressCombo.fill(progressItems);
 			m_progressCombo.getComboBox().setSelectedIndex(0);
-			m_progressCombo.addWorkListener(this);
+			m_progressCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_progressCombo);
 		
@@ -291,7 +291,7 @@ public class TaskPanel extends DefaultPanel
 				}
 			});
 			m_descriptionArea.installButton(m_useSourceButton, true);
-			m_descriptionArea.addWorkListener(this);
+			m_descriptionArea.addWorkFlowListener(this);
 			m_bottomPanel.add(m_descriptionArea);
 			
 			
@@ -300,14 +300,14 @@ public class TaskPanel extends DefaultPanel
 					m_resources.getString("TaskSource.text"),false);
 			m_sourceArea.setFixedHeight(100);
 			m_sourceArea.getTextArea().setRows(0);
-			m_sourceArea.addWorkListener(this);
+			m_sourceArea.addWorkFlowListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));
 			m_bottomPanel.add(m_sourceArea);
 
 			// Object
 			m_objectField = new TextLineField("object",
 					m_resources.getString("TaskObject.text"),false);
-			m_objectField.addWorkListener(this);
+			m_objectField.addWorkFlowListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));
 			m_bottomPanel.add(m_objectField);
 		}

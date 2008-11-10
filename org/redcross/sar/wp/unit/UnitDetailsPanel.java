@@ -13,6 +13,7 @@ import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -29,24 +30,22 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -56,6 +55,7 @@ import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.mso.DTG;
 
 /**
  * JPanel displaying unit details
@@ -80,7 +80,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     private JTextField m_toneIDTextField;
     private JTextField m_createdTextField;
     private JTextField m_callsignTextField;
-    private JTextField m_fieldTimeTextField;
+    private JTextField m_workTimeTextField;
     private JTextField m_assignmentTextField;
     private JTextField m_stopTimeTextField;
     private JTable m_personnelTable;
@@ -133,7 +133,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                         // Commit small changes right away if new unit has been committed
                         if (!m_wp.getNewUnit())
                         {
-                            m_wp.getMsoModel().commit();
+                            m_wp.commit();
                         }
                     }
                     catch (IllegalOperationException ex)
@@ -216,9 +216,9 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         layoutComponent(0, m_resources.getString("CallSign.text"), m_callsignTextField, gbc, 0);
 
         // Field time
-        m_fieldTimeTextField = new JTextField();
-        m_fieldTimeTextField.setEditable(false);
-        layoutComponent(2, m_resources.getString("FieldTime.text"), m_fieldTimeTextField, gbc, 1);
+        m_workTimeTextField = new JTextField();
+        m_workTimeTextField.setEditable(false);
+        layoutComponent(2, m_resources.getString("FieldTime.text"), m_workTimeTextField, gbc, 1);
 
         // Assignment
         m_assignmentTextField = new JTextField();
@@ -248,12 +248,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         UnitLeaderColumnRenderer leaderRenderer = new UnitLeaderColumnRenderer();
         leaderRenderer.setTable(m_personnelTable);
 
-//        JTableHeader tableHeader = m_personnelTable.getTableHeader();
-//        tableHeader.setResizingAllowed(false);
-//        tableHeader.setReorderingAllowed(false);
-        m_personnelTable.setTableHeader(null);
+        JTableHeader tableHeader = m_personnelTable.getTableHeader();
+        tableHeader.setResizingAllowed(false);
+        tableHeader.setReorderingAllowed(false);
 
-        JScrollPane personnelTableScrollPane = new JScrollPane(m_personnelTable);
+        JScrollPane personnelTableScrollPane = UIFactory.createScrollPane(m_personnelTable,true);
         gbc.gridwidth = 4;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
@@ -298,7 +297,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_topPanelLabel.setText(topText);
 
             // Pause button
-            //m_pauseToggleButton.setSelected(m_currentUnit.getStatus() == UnitStatus.PAUSED);
+            m_pauseToggleButton.setSelected(m_currentUnit.getStatus() == UnitStatus.PAUSED);
 
             // Released button
             m_releaseButton.setSelected(m_currentUnit.getStatus() == UnitStatus.RELEASED);
@@ -313,8 +312,8 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             String toneId = m_currentUnit.getToneID();
             m_toneIDTextField.setText(toneId);
 
-//			String created = DTG.CalToDTG(m_currentUnit.get)
-//			m_createdTextField.setText(created); TODO
+            String created = DTG.CalToDTG(m_currentUnit.getCreatedTime());
+			m_createdTextField.setText(created);
 
             String callsign = m_currentUnit.getCallSign();
             m_callsignTextField.setText(callsign);
@@ -323,7 +322,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             String assignmentString = assignment == null ? "" : assignment.getDefaultName();
             m_assignmentTextField.setText(assignmentString);
 
-            updateFieldTime();
+            updateWorkTime();
 
             updateStopTime();
 
@@ -335,7 +334,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             m_toneIDTextField.setText("");
             m_createdTextField.setText("");
             m_callsignTextField.setText("");
-            m_fieldTimeTextField.setText("");
+            m_workTimeTextField.setText("");
             m_assignmentTextField.setText("");
             m_stopTimeTextField.setText("");
         }
@@ -357,38 +356,30 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         }
     }
 
-    private void updateFieldTime()
+    private void updateWorkTime()
     {
         if (m_currentUnit != null)
         {
-            IAssignmentIf assignment = m_currentUnit.getActiveAssignment();
-            if (assignment != null)
-            {
-                Calendar timeAllocated = assignment.getTime(AssignmentStatus.ALLOCATED);
-                if (timeAllocated != null)
-                {
-                    long minutes = (Calendar.getInstance().getTimeInMillis() - timeAllocated.getTimeInMillis()) / 60000;
-                    String fieldTime = null;
-                    if (minutes > 59)
-                    {
-                        fieldTime = minutes / 60 + m_resources.getString("Hours.text")
-                                + " " + minutes % 60 + m_resources.getString("Minutes.text");
-                    } else
-                    {
-                        fieldTime = minutes + " " + m_resources.getString("Minutes.text");
-                    }
-                    m_fieldTimeTextField.setText(fieldTime);
-                }
-            } else
-            {
-                m_fieldTimeTextField.setText("");
-            }
+        	double t = m_currentUnit.getDuration(IUnitIf.OCCUPIED_RANGE,true);
+        	m_workTimeTextField.setText(Utils.getTime((int)t));
+        }
+        else
+        {
+        	m_workTimeTextField.setText(Utils.getTime(0));
         }
     }
 
     private void updateStopTime()
     {
-        // TODO
+        if (m_currentUnit != null)
+        {
+        	double t = m_currentUnit.getDuration(IUnitIf.IDLE_RANGE,true);
+        	m_stopTimeTextField.setText(Utils.getTime((int)t));
+        }
+        else
+        {
+        	m_stopTimeTextField.setText(Utils.getTime(0));
+        }
     }
 
     /**
@@ -418,31 +409,22 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_UNIT))
 			{
 				// consume loopback updates
-				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+				if(!e.isLoopback())
 				{
-
-					// get mask
-					int mask = e.getEventTypeMask();
-
-		        	// get flags
-			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-			        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
 
 			        // get unit
 			        IUnitIf unit = (IUnitIf)e.getSource();
 
 					// is object modified?
-					if (modifiedObject) {
+					if (e.isModifyObjectEvent()) {
 						updateFieldContents();
 					}
-					if (addedReference || removedReference) {
+					if (e.isChangeReferenceEvent()) {
 						updateUnitPersonnel();
 					}
 
 					// delete object?
-					if (deletedObject && unit == m_currentUnit) {
+					if (e.isDeleteObjectEvent() && unit == m_currentUnit) {
 			    		m_currentUnit = null;
 			            updateContents();
 					}
@@ -598,14 +580,14 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			// set list
 			m_list = list;
 
-			// install model?
-			if(list!=null) {
-				connect(model,list,IPersonnelIf.PERSONNEL_NAME_COMPARATOR);
-				load(list);
-			}
-			else {
+			// uninstall?
+			if(list == null) {
 				disconnectAll();
 				clear();
+			}
+			else {
+				connect(model,list,IPersonnelIf.PERSONNEL_NAME_COMPARATOR);
+				load(list);
 			}
 		}
 
@@ -623,7 +605,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 		}
 
 		public String[] getCaptions() {
-			return new String[] {"Navn", "Telefon", "Endre"};
+			return new String[] {"Navn", "Telefon", "Leder"};
 		}
 
     }
@@ -664,7 +646,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	                    UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
 	                    IPersonnelIf newLeader = model.getPersonnel(index);
 
-	                    editingUnit.setUnitLeader(newLeader);
+	                    // remove?
+	                    if(editingUnit.getUnitLeader()==newLeader)
+	                    	editingUnit.setUnitLeader(null);
+	                    else
+	                    	editingUnit.setUnitLeader(newLeader);
 
 	                    // Commit changes¨
 	                    if (!m_wp.getNewUnit())
@@ -771,7 +757,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	            return;
 	        }
 
-	        updateFieldTime();
+	        updateWorkTime();
 	        updateStopTime();
     	}
     }

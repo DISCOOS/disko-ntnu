@@ -2,28 +2,34 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.util.EnumHistory;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.*;
 
 import java.awt.geom.Point2D;
 import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Vector;
 
 /**
  * Generic class for all MSO attributes
  */
+@SuppressWarnings("unchecked")
 public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<AttributeImpl<T>>
 {
-    protected final Class m_class;
-    protected final AbstractMsoObject m_owner;
     private final String m_name;
+    private final int m_cardinality;
+
     private int m_indexNo;
     private boolean m_required = false;
-    //private boolean m_changed = false;
-    private final int m_cardinality;
     private int m_changeCount = 0;
+
+	protected final Class m_class;
+    protected final AbstractMsoObject m_owner;
+    protected final IMsoModelIf m_msoModel;
 
     protected T m_localValue = null;
     protected T m_serverValue = null;
@@ -33,6 +39,11 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         m_class = aClass;
         m_owner = theOwner;
+    	if(m_owner==null)
+    	{
+    		throw new IllegalArgumentException("MsoListImpl must have a owner");
+    	}
+        m_msoModel = m_owner.getModel();
         m_name = theName.toLowerCase();
         m_cardinality = theCardinality;
         m_indexNo = theIndexNo;
@@ -68,6 +79,10 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         return m_state;
     }
 
+    public boolean isState(ModificationState state) {
+    	return (m_state==state);
+    }
+
     Class getAttributeClass()
     {
         return m_class;
@@ -77,11 +92,11 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
         return m_changeCount;
     }
-    
+
     protected void incrementChangeCount() {
     	m_changeCount++;
-    }    
-    
+    }
+
     public void set(T aValue)
     {
         if (!m_class.isAssignableFrom(aValue.getClass()))
@@ -105,149 +120,158 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     {
     	/* ========================================================
     	 * Setting a new attribute value is dependent on the
-    	 * update mode of the MSO model. If the model is in 
+    	 * update mode of the MSO model. If the model is in
     	 * LOOPBACK_UPDATE_MODE, the attribute should reflect
     	 * the server value without any conflict detection. If the
     	 * model is in REMOTE_UPDATE_MODE, a change from the server
     	 * is registered and the attribute value should be analyzed
-    	 * to detect any conflicts between local value (private) and 
-    	 * the server value (shared). If the model is in 
-    	 * LOCAL_UPDATE_MODE, the attribute value state should be 
+    	 * to detect any conflicts between local value (private) and
+    	 * the server value (shared). If the model is in
+    	 * LOCAL_UPDATE_MODE, the attribute value state should be
     	 * updated according to the passed attribute value.
-    	 * 
-    	 * Server value and local value should only be present 
-    	 * concurrently during a local update sequence (between two 
-    	 * commit() or rollback() invocations), or if a conflict has 
+    	 *
+    	 * Server value and local value should only be present
+    	 * concurrently during a local update sequence (between two
+    	 * commit() or rollback() invocations), or if a conflict has
     	 * occurred (remote update during a local update sequence).
-    	 * Hence, if the attribute is in a LOCAL or CONFLICTING, 
-    	 * both values will be present. Else, only server value will 
+    	 * Hence, if the attribute is in a LOCAL or CONFLICTING,
+    	 * both values will be present. Else, only server value will
     	 * be present (REMOTE state).
-    	 *  
+    	 *
     	 * A commit() or rollback() will reset the local value
-    	 * to null to ensure state consistency. 
-    	 * 
-    	 * ======================================================== */    	    	
-    	
-        UpdateMode updateMode = MsoModelImpl.getInstance().getUpdateMode();
+    	 * to null to ensure state consistency.
+    	 *
+    	 * ======================================================== */
+
+        UpdateMode updateMode = m_msoModel.getUpdateMode();
         ModificationState newState;
-        boolean valueChanged = false;
+        boolean isChanged = false;
+        boolean isLoopback = false;
+
+        // translate
         switch (updateMode)
         {
             case LOOPBACK_UPDATE_MODE:
             {
             	/* ===========================================================
             	 * Update to server value state without any conflict detection.
-            	 * 
+            	 *
             	 * After a commit, all changes are looped back to the model
             	 * from the message queue. This ensures that only changes
-            	 * that are successfully committed to the global message 
-            	 * queue becomes valid. If any errors occurred, the message queue 
-            	 * is given precedence over local values. 
-            	 * 
-            	 * Because of limitations in SaraAPI, it is not possible to 
-            	 * distinguish between messages committed by this model instance 
-            	 * and other model instances. Hence, any change received from 
-            	 * the message queue may be a novel change. Because 
+            	 * that are successfully committed to the global message
+            	 * queue becomes valid. If any errors occurred, the message queue
+            	 * is given precedence over local values.
+            	 *
+            	 * Because of limitations in SaraAPI, it is not possible to
+            	 * distinguish between messages committed by this model instance
+            	 * and other model instances. Hence, any change received from
+            	 * the message queue may be a novel change. Because
             	 * LOOPBACK_UPDATE_MODE is only a proper update mode if the
             	 * received update is a loop back from this model instance, the
-            	 * mode can not be used with the current SaraAPI. If used, 
-            	 * local changes will be overwritten because conflict detection 
+            	 * mode can not be used with the current SaraAPI. If used,
+            	 * local changes will be overwritten because conflict detection
             	 * is disabled in this mode.
-            	 * 
+            	 *
             	 * The fix to this problem is to assume that if a commit is
-            	 * executed without any exception from the message queue, then all 
+            	 * executed without any exception from the message queue, then all
             	 * changes was posted and forwarded to all listeners. Hence, the
-            	 * attribute value can be put in server mode directly after a commit 
-            	 * is executed. 
-            	 * 
+            	 * attribute value can be put in server mode directly after a commit
+            	 * is executed.
+            	 *
             	 * 		!!! The postProcessCommit() implements this fix !!!
-            	 * 
-            	 * If the source of each change could be uniquely identified 
-            	 * (at the model instance level), change messages received as a 
-            	 * result of a commit by this model, could be group together and 
-            	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would 
+            	 *
+            	 * If the source of each change could be uniquely identified
+            	 * (at the model instance level), change messages received as a
+            	 * result of a commit by this model, could be group together and
+            	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would
             	 * be the correct and intended usage of this mode.
-            	 * 
+            	 *
             	 * ================================================================
-            	 * IMPORTANT 
+            	 * IMPORTANT
             	 * ================================================================
-            	 * 
-            	 * This mode is by definition a violation of the SARA Protocol 
-            	 * which is based on the assumption that any local changes is only 
-            	 * valid when it equals the server value. Hence, REMOTE mode should 
-            	 * only be resumed if local value equals server value, or a REMOTE 
+            	 *
+            	 * This mode is by definition a violation of the SARA Protocol
+            	 * which is based on the assumption that any local changes is only
+            	 * valid when it equals the server value. Hence, REMOTE mode should
+            	 * only be resumed if local value equals server value, or a REMOTE
             	 * update is explicitly received.
-            	 * 
+            	 *
             	 * The use of postProcessCommit() and LOOPBACK mode is therefore
             	 * discarded.
-            	 * 
+            	 *
             	 * =========================================================== */
-            	
+
                 // only server value is kept
                 m_localValue = null;
-                
+
             	// set new state
                 newState = ModificationState.STATE_SERVER;
-                
+
                 // any change?
                 if (!equal(m_serverValue, aValue))
                 {
                     m_serverValue = aValue;
-                    valueChanged = true;
+                    isChanged = true;
+                    isLoopback = true;
                 }
-                
+
                 break;
-                
+
             }
             case REMOTE_UPDATE_MODE:
             {
             	/* ===========================================================
             	 * Update to server value state with conflict detection.
-            	 * 
+            	 *
             	 * If the model is in REMOTE_UPDATE_MODE, this indicates that
-            	 * an external change is detected (message queue update), and the 
+            	 * an external change is detected (message queue update), and the
             	 * model should be update accordingly.
-            	 * 
-            	 * If the attribute is in local state, the local value may 
-            	 * be different from the server value. Local changes are made 
-            	 * by the user (GUI) or a local service (the application). When a 
-            	 * remote update occurs (a change received from the message queue), 
-            	 * the new attribute state depends on the new server value 
-            	 * and current (local) value. If these are different, a conflict has 
-            	 * occurred. This is indicated by setting the attribute state 
-            	 * to CONFLICTING. Methods for resolving conflicts are supplied 
-				 * by this class. If the new server value and local value 
-            	 * are equal, the attribute state is changed to REMOTE. 
-            	 * 
+            	 *
+            	 * If the attribute is in local state, the local value may
+            	 * be different from the server value. Local changes are made
+            	 * by the user (GUI) or a local service (the application). When a
+            	 * remote update occurs (a change received from the message queue),
+            	 * the new attribute state depends on the new server value
+            	 * and current (local) value. If these are different, a conflict has
+            	 * occurred. This is indicated by setting the attribute state
+            	 * to CONFLICTING. Methods for resolving conflicts are supplied
+				 * by this class. If the new server value and local value
+            	 * are equal, the attribute state is changed to REMOTE.
+            	 *
             	 * =========================================================== */
-            	
+
             	// check if a conflict has occurred?
-            	boolean isConflict = (m_state == ModificationState.STATE_LOCAL 
-            			|| m_state == ModificationState.STATE_CONFLICTING) ? 
+            	boolean isConflict = (m_state == ModificationState.STATE_LOCAL
+            			|| m_state == ModificationState.STATE_CONFLICTING) ?
             			!equal(m_localValue, aValue) : false;
-            	
+
+            	if(isConflict) {
+            		System.out.println("isConflict::"+this);
+            	}
+
             	// get next state
-                newState = isConflict ? 
-                		  ModificationState.STATE_CONFLICTING 
+                newState = isConflict ?
+                		  ModificationState.STATE_CONFLICTING
                 		: ModificationState.STATE_SERVER;
-                
+
                 // any change?
                 if (!equal(m_serverValue, aValue))
                 {
                     m_serverValue = aValue;
-                    valueChanged = true;
+                    isChanged = true;
                 }
-                
+
                 // no conflict?
-                if(!isConflict) 
+                if(!isConflict)
                 {
                 	m_localValue = null;
+                    isLoopback = true;
                 }
-                
+
                 // notify change
-                valueChanged |= isConflict;
-                
-                
+                isChanged |= isConflict;
+
+
                 break;
             }
             default: // LOCAL_UPDATE_MODE
@@ -255,29 +279,29 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
             	/* ===========================================================
             	 * Update attribute to the appropriate value state
-            	 * 
+            	 *
             	 * The default update mode is LOCAL_UPDATE_MODE. This mode
-            	 * indicates that the change originates from a GUI (user) or 
-            	 * Service (application) invocation, not from an external 
-            	 * change made on a different model instance. If the new 
-            	 * value equals the server value, the attribute value state 
-            	 * should be set to server state. If the new value is different 
-            	 * from the server value, the attribute value state should be 
-            	 * set to local state. 
+            	 * indicates that the change originates from a GUI (user) or
+            	 * Service (application) invocation, not from an external
+            	 * change made on a different model instance. If the new
+            	 * value equals the server value, the attribute value state
+            	 * should be set to server state. If the new value is different
+            	 * from the server value, the attribute value state should be
+            	 * set to local state.
             	 * =========================================================== */
-            	
+
             	if (equal(m_serverValue, aValue))
                 {
                     newState = ModificationState.STATE_SERVER;
                     m_localValue = null;
-                    valueChanged = true;
+                    isChanged = true;
                 } else
                 {
                     newState = ModificationState.STATE_LOCAL;
                     if (!equal(m_localValue, aValue))
                     {
                         m_localValue = aValue;
-                        valueChanged = true;
+                        isChanged = true;
                     }
                 }
             }
@@ -285,12 +309,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         if (m_state != newState)
         {
             m_state = newState;
-            valueChanged = true;
+            isChanged = true;
         }
-        if (valueChanged && !isCreating)
+        if (!isCreating && (isChanged || isLoopback))
         {
         	incrementChangeCount();
-            m_owner.registerModifiedData(this);
+            m_owner.registerModifiedData(this,updateMode,isChanged,isLoopback);
         }
     }
 
@@ -329,7 +353,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     public boolean rollback()
     {
         boolean isChanged = m_state == ModificationState.STATE_LOCAL || m_state == ModificationState.STATE_CONFLICTING;
-        if(isChanged)     
+        if(isChanged)
         {
 	        m_localValue = null;
 	        m_state = ModificationState.STATE_SERVER;
@@ -346,7 +370,6 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             m_localValue = null;
             m_state = ModificationState.STATE_SERVER;
         }
-       // m_changed = isChanged;
         return isChanged;
     }
 
@@ -359,30 +382,30 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             {
             	/* ==========================================================
             	 * resolve conflict as a local value state (keep local value)
-            	 * 
+            	 *
             	 * Both server and local values must be kept to enable
-            	 * future conflict detection  
-            	 * 
+            	 * future conflict detection
+            	 *
             	 * ========================================================== */
-            	
+
             	// NOP
-            	
+
             } else
             {
             	/* ==========================================================
             	 * resolve conflict as a server value state (overwrite local value)
-            	 * 
+            	 *
             	 * Since server value is chosen, the local value must be
             	 * erased
-            	 * 
+            	 *
             	 * ========================================================== */
-            	
+
                 m_localValue = null;
-                
+
             }
             m_state = aState;
         	incrementChangeCount();
-            m_owner.registerModifiedData(this);
+            m_owner.registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
             return true;
         }
         return false;
@@ -390,18 +413,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public boolean acceptLocal()
     {
-        //MsoModelImpl.getInstance().setLocalUpdateMode();
-        boolean retVal = acceptConflicting(ModificationState.STATE_LOCAL);
-        //MsoModelImpl.getInstance().restoreUpdateMode();
-        return retVal;
+        return acceptConflicting(ModificationState.STATE_LOCAL);
     }
 
     public boolean acceptServer()
     {
-        //MsoModelImpl.getInstance().setRemoteUpdateMode();
-        boolean retVal = acceptConflicting(ModificationState.STATE_SERVER);
-        //MsoModelImpl.getInstance().restoreUpdateMode();
-        return retVal;
+        return acceptConflicting(ModificationState.STATE_SERVER);
     }
 
     public boolean isUncommitted()
@@ -430,19 +447,19 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         return m_changed;
     }
     */
-    
+
     public int getCardinality()
     {
         return m_cardinality;
     }
-    
+
     public boolean validate() {
     	if(m_cardinality>0) {
     		return (getAttrValue()!=null);
     	}
     	return true;
     }
-    
+
     public static class MsoBoolean extends AttributeImpl<Boolean> implements IMsoBooleanIf
     {
         public MsoBoolean(AbstractMsoObject theOwner, String theName)
@@ -542,7 +559,8 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         {
             if (m_isSequenceNumber)
             {
-                ISerialNumberedIf numberedOwner = (ISerialNumberedIf)m_owner;
+                @SuppressWarnings("unused")
+				ISerialNumberedIf numberedOwner = (ISerialNumberedIf)m_owner;
             }
         }
 
@@ -909,12 +927,25 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         }
     }
 
-    public static class MsoEnum<E extends Enum> extends AttributeImpl<E> implements IMsoEnumIf<E>
+    public static class MsoEnum<E extends Enum<E>> extends AttributeImpl<E> implements IMsoEnumIf<E>
     {
+        /**
+         * List of status changes since creation
+         */
+        private final EnumHistory<E> m_history = new EnumHistory<E>();
+
+        /* ====================================================
+         * Constructors
+         * ==================================================== */
+
         public MsoEnum(AbstractMsoObject theOwner, String theName, int theCardinality, E anInstance)
         {
             super(anInstance.getClass(), theOwner, theName, theCardinality, Integer.MAX_VALUE, anInstance);
         }
+
+        /* ====================================================
+         * Public methods
+         * ==================================================== */
 
         @Override
         public void set(E anEnum)
@@ -924,16 +955,33 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
         public void setValue(E anEnum)
         {
-            super.setAttrValue(anEnum);
+        	setValue(anEnum,null);
         }
 
         public void setValue(String aName)
         {
+        	setValue(aName,null);
+        }
+
+        public void setValue(E anEnum, Calendar aTime)
+        {
+            // forward
+        	addHistory(anEnum, aTime);
+        	// forward
+            super.setAttrValue(anEnum);
+        }
+
+        public void setValue(String aName, Calendar aTime)
+        {
             E anEnum = enumValue(aName);
+            // validate
             if (anEnum == null)
             {
                 //throw new MsoException("Cannot set enum value " + aName + " to " + this); // todo sjekk !!!!!
             }
+            // forward
+        	addHistory(anEnum, aTime);
+            // forward
             super.setAttrValue(enumValue(aName));
         }
 
@@ -965,6 +1013,77 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             }
             return retVal;
         }
+
+        /**
+         * Get history of specified status
+         *
+         * @param aStatus - the status to get history of
+         *
+         */
+        public List<Calendar> getHistory(E aStatus)
+        {
+        	return m_history.getHistory(aStatus);
+        }
+
+        /**
+         * Get first occurrence of specified status
+         *
+         * @param aStatus - The status occurrence
+         *
+         * @return The time of status change
+         */
+        public Calendar getFirstTime(E aStatus)
+        {
+        	return m_history.getFirstTime(aStatus);
+        }
+
+        /**
+         * Get last occurrence of specified status
+         *
+         * @param aStatus - The status occurrence
+         *
+         * @return The time of status change
+         */
+        public Calendar getLastTime(E aStatus) {
+        	return m_history.getLastTime(aStatus);
+        }
+
+        /**
+         * Get duration of given unit status. </p>
+         *
+         * @param aStatus - The status to get duration for
+         * @param total - If <code>true</code> the sum of all durations for a given status
+         * is returned, the duration of the last occurrence otherwise.
+         *
+         * @return Duration (second)
+         */
+    	public double getDuration(E aStatus, boolean total) {
+    		return m_history.getDuration(aStatus,total);
+    	}
+
+		public double getDuration(EnumSet<E> list, boolean total) {
+			return m_history.getDuration(list,total);
+		}
+
+
+
+        /* ====================================================
+         * Protected methods
+         * ==================================================== */
+
+        /**
+         * Add a status change to status history
+         *
+         * @param aStatus
+         * @param aTime
+         */
+        protected void addHistory(E aStatus, Calendar aTime)
+        {
+            if(aTime!=null && m_owner.m_msoModel.isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
+            	m_history.add(aStatus,aTime);
+            }
+        }
+
     }
 
     public boolean equals(Object o)
@@ -1003,7 +1122,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         if (m_owner != null ? !m_owner.getObjectId().equals(attribute.m_owner.getObjectId()) : attribute.m_owner != null)
         {
             return false;
-        }        
+        }
         if (m_serverValue != null ? !m_serverValue.equals(attribute.m_serverValue) : attribute.m_serverValue != null)
         {
             return false;

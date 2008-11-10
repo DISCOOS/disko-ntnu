@@ -22,8 +22,8 @@ import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.IWork.WorkState;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWork.WorkState;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -38,7 +38,7 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 	private IDiskoMapManager m_manager;
 	private EnumSet<MsoClassCode> m_interests = EnumSet.noneOf(MsoClassCode.class);
 
-	private final List<FeatureWork> m_exec = new ArrayList<FeatureWork>();
+	private final List<FeatureWork> m_scheduled = new ArrayList<FeatureWork>();
 	private final EventListenerList m_listeners = new EventListenerList();
 	private final Collection<IMsoFeatureLayer> m_layers = new Vector<IMsoFeatureLayer>(10);
 
@@ -65,13 +65,13 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 		return m_work!=null ? m_work.size() : 0;
 	}
 
-	public boolean activate() {
-		return activate(true);
+	public boolean activate(boolean wait) {
+		return activate(true,wait);
 	}
 
-	public boolean activate(boolean showProgress) {
+	public boolean activate(boolean showProgress, boolean wait) {
 		m_isActive = true;
-		return execute(showProgress);
+		return execute(showProgress, wait);
 	}
 
 	public boolean deactivate() {
@@ -82,35 +82,62 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 	}
 
 
-	public boolean execute(boolean showProgress) {
-		// update executing work
-		setShowProgress(showProgress);
-		// process buffer?
-		if(m_work!=null) {
-			// get map work
-			IMapWork work = m_work;
-			// create new work on next change
-			m_work = null;
-			// forward work to work loop
-			m_manager.schedule(work);
-			// work i schedules
-			return true;
+	public boolean execute(boolean showProgress, boolean wait) {
+		// initialize
+		boolean bFlag = false;
+		// execute on loop?
+		if(!wait) {
+			// process buffer?
+			if(m_work!=null) {
+				// get map work
+				IMapWork work = m_work;
+				// ensure atomic operation
+				synchronized(m_scheduled) {
+					// ass to execution loop
+					m_scheduled.add(m_work);
+				}
+				// create new work on next change
+				m_work = null;
+				// forward work to work loop
+				m_manager.schedule(work);
+				// update executing work
+				setShowProgress(showProgress);
+				// was scheduled
+				bFlag = true;
+			}
 		}
-		// work is not scheduled
-		return false;
+		else {
+			// process buffer?
+			if(m_work!=null) {
+				// get map work
+				IMapWork work = m_work;
+				// create new work on next change
+				m_work = null;
+				// this will block thread until finished
+				work.run();
+			}
+		}
+		// finished
+		return bFlag;
 	}
 
 	public void setShowProgress(boolean showProgress) {
+		// initialize
 		List<FeatureWork> remove = new ArrayList<FeatureWork>();
-		for(FeatureWork it : m_exec) {
-			if(it.isState(WorkState.FINISHED) || it.isState(WorkState.CANCELED)) {
-				remove.add(it);
-				it.setShowProgress(false);
+		// ensure synchronized operation
+		synchronized(m_scheduled) {
+			// evaluate scheduled work
+			for(FeatureWork it : m_scheduled) {
+				if(it.isState(WorkState.FINISHED) || it.isState(WorkState.CANCELED)) {
+					remove.add(it);
+					it.setShowProgress(false);
+				}
+				else
+					it.setShowProgress(showProgress);
 			}
-			else
-				it.setShowProgress(showProgress);
+			// remove finished and canceled work
+			m_scheduled.removeAll(remove);
 		}
-		m_exec.removeAll(remove);
 	}
 
 	public boolean connect(IMsoModelIf model, boolean load) {
@@ -281,8 +308,6 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 			else if(m_work==null){
 				// initialize work
 				m_work = createWork(workList);
-				// ass to execution loop
-				m_exec.add(m_work);
 			}
 			else {
 				// merge with existing work
@@ -343,7 +368,7 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 
 		public FeatureWork(Map<IMsoFeatureLayer,Collection<IMsoFeature>> data) throws Exception {
 			// forward
-			super(true, false, ThreadType.WORK_ON_LOOP, "Bearbeider", 500, true, false);
+			super(m_isActive?1:0,true, false, ThreadType.WORK_ON_LOOP, "Bearbeider", 500, true, false);
 			// prepare
 			m_data = data;
 		}

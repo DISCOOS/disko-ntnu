@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
@@ -18,8 +17,10 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
  * <p/>
  * The event object is passed from updating (observable) to updated (observer) objects.
  * <p/>
- * The MSO model requires three sets of listeners: Client Update Listeners handle updates sent to the client, either by the user or the server.
- * The Server Update Listener shall handle update that shall be sent to the server at a (later) commit. Commit Listeners handle the Commit / Rollback events.
+ * The MSO model requires three sets of listeners: Client Update Listeners
+ * handle updates sent to the client, either by the user or the server.
+ * The Server Update Listener shall handle update that shall be sent to the server
+ * at a (later) commit. Commit Listeners handle the Commit / Rollback events.
  */
 public class MsoEvent extends java.util.EventObject
 {
@@ -63,6 +64,9 @@ public class MsoEvent extends java.util.EventObject
         }
     }
 
+    /**
+     * Event type mask
+     */
     private int m_eventTypeMask;
 
     /**
@@ -133,11 +137,9 @@ public class MsoEvent extends java.util.EventObject
     	return (m_eventTypeMask & MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
     }
 
-    public UpdateMode getUpdateMode() {
-    	return MsoModelImpl.getInstance().getUpdateMode();
-    }
-
     public boolean union(MsoEvent e) {
+    	// initialize dirty flag
+    	boolean isDirty = false;
     	// is union possible?
     	if(e==null || !e.getSource().equals(getSource())) return false;
     	// get union mask
@@ -152,13 +154,47 @@ public class MsoEvent extends java.util.EventObject
 			mask += MsoEventType.MODIFIED_REFERENCE_EVENT.maskValue();
 		if(e.isRemovedReferenceEvent() || isRemovedReferenceEvent())
 			mask += MsoEventType.REMOVED_REFERENCE_EVENT.maskValue();
-		// changed?
+		// mask changed?
 		if(m_eventTypeMask!=mask) {
 			m_eventTypeMask = mask;
-			return true;
+			isDirty = true;
 		}
-		// no change
-		return false;
+		// is both update events?
+		if(this instanceof Update && e instanceof Update) {
+
+			// cast to MsoEvent.Update
+			Update u1 = (Update)this;
+			Update u2 = (Update)e;
+
+	        /* =========================================
+	         * Get union of dominant update modes. If a
+	         * local update has occurred, this should
+	         * override any existing update mode.
+	         * ========================================= */
+	        UpdateMode aMode = (u1.m_updateMode==null
+	        		|| !UpdateMode.LOCAL_UPDATE_MODE.equals(u1.m_updateMode) ?
+	        				u2.m_updateMode : u1.m_updateMode);
+
+	        /* =========================================
+	         * Get union of update loopback flags. Is loopback as long
+	         * as all updates are loopbacks. Else, flag
+	         * is reset.
+	         * ========================================= */
+	        boolean isLoopback = u2.m_isLoopback && u2.m_isLoopback;
+
+	        // changed?
+	        if(u1.m_updateMode != aMode) {
+	        	u1.m_updateMode = aMode;
+	        	isDirty = true;
+	        }
+	        if(u1.m_isLoopback != isLoopback) {
+	        	u1.m_isLoopback = isLoopback;
+	        	isDirty = true;
+	        }
+
+		}
+		// finished
+		return isDirty;
 
     }
 
@@ -169,14 +205,36 @@ public class MsoEvent extends java.util.EventObject
     {
 		private static final long serialVersionUID = 1L;
 
-		public Update(IMsoObjectIf aSource, int anEventTypeMask)
+	    /**
+	     * Type of update mode
+	     */
+	    private UpdateMode m_updateMode;
+
+	    /**
+	     * Looback flag
+	     */
+	    private boolean m_isLoopback;
+
+		public Update(IMsoObjectIf aSource, UpdateMode mode, boolean isLooback, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
+            m_updateMode = mode;
+            m_isLoopback = isLooback;
+
         }
 
 		public IMsoObjectIf getSource() {
 			return (IMsoObjectIf)super.getSource();
 		}
+
+	    public UpdateMode getUpdateMode() {
+	    	return m_updateMode;
+	    }
+
+	    public boolean isLoopback() {
+	    	return m_isLoopback;
+	    }
+
     }
 
     /**

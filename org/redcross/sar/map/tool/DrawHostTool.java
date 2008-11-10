@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
@@ -53,7 +53,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		super();
 		
 		// get current application
-		IDiskoApplication app = Utils.getApp();
+		IApplication app = Utils.getApp();
 		
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);

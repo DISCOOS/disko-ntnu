@@ -30,7 +30,7 @@ public class CalloutTableModel extends AbstractMsoTableModel<ICalloutIf>
 		// get list
 		ICalloutListIf list = model.getMsoManager().getCmdPost().getCalloutList();
 		// forward
-		connect(model, list, ICalloutIf.CALLOUT_COMPARATOR);
+		connect(model, ICalloutIf.ALL_SELECTOR, ICalloutIf.CALLOUT_COMPARATOR);
 		load(list);
 	}
 

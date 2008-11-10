@@ -87,12 +87,8 @@ public class AssignmentsPanel extends BasePanel {
 			try {
 				// center at position?
 				if(assignment!=null) {
-					map.suspendNotify();
-					map.clearSelected();
-					map.setSelected(assignment, true);
-					map.centerAtSelected();
-					map.flashSelected();
-					map.resumeNotify();
+					map.centerAtMsoObject(assignment);
+					map.flashMsoObject(assignment);
 				}
 				else
 					Utils.showWarning("Ingen oppdrag funnet");

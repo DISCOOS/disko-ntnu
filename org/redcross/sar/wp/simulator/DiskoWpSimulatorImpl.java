@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
@@ -24,20 +25,21 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
-import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.thread.IWorkLoop;
-import org.redcross.sar.thread.WorkPool;
-import org.redcross.sar.thread.IWorkLoop.LoopState;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.IWorkLoop;
+import org.redcross.sar.work.WorkPool;
+import org.redcross.sar.work.IWorkLoop.LoopState;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
+
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  *
@@ -100,31 +102,46 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 
     private void initialize()
     {
-		// get properties
-		assignWpBundle(IDiskoWpSimulator.class);
 
-		// forward
-		installMap();
+		try {
+			// get properties
+			assignWpBundle(IDiskoWpSimulator.class);
 
-		// set layout component
-		layoutComponent(getSplitPane());
+			// forward
+			installMap();
 
-		// listen to work in this
-		addWorkListener(new IWorkListener() {
+			// set layout component
+			layoutComponent(getSplitPane());
 
-			@Override
-			public void onWorkPerformed(WorkEvent e) {
-				// auto update?
-				if(e.isFinish())
-					commit();
-				else if(e.isCancel())
-					rollback();
-			}
+			// listen to work in this
+			addWorkFlowListener(new IWorkFlowListener() {
 
-		});
+				@Override
+				public void onFlowPerformed(WorkFlowEvent e) {
+					// auto update?
+					if(e.isFinish())
+						commit();
+					else if(e.isCancel())
+						rollback();
+				}
 
-		// start update task
-		registerUpdateTask();
+			});
+
+			// start update task
+			registerUpdateTask();
+
+			// make all layers unselectable
+			getMap().getMsoLayerModel().setAllSelectable(false);
+
+
+		} catch (AutomationException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+
 
     }
 
@@ -432,7 +449,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_activeUnitsPanel == null)
         {
         	m_activeUnitsPanel = new UnitsPanel(false);
-        	m_activeUnitsPanel.addWorkListener(this);
+        	m_activeUnitsPanel.addWorkFlowListener(this);
         }
         return m_activeUnitsPanel;
     }
@@ -442,7 +459,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_archivedUnitsPanel == null)
         {
         	m_archivedUnitsPanel = new UnitsPanel(true);
-        	m_archivedUnitsPanel.addWorkListener(this);
+        	m_archivedUnitsPanel.addWorkFlowListener(this);
         }
         return m_archivedUnitsPanel;
     }

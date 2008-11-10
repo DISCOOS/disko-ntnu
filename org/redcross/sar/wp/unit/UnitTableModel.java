@@ -2,7 +2,6 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.data.IUnitListIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
@@ -11,11 +10,11 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 	private static final long serialVersionUID = 1L;
 
 	public static final String NAME = "name";
-	public static final String UNIT = "unit";
+	public static final String VIEW = "view";
 	public static final String EDIT = "edit";
 
-	public static final String[] NAMES = new String[] { NAME, UNIT, EDIT };
-	public static final String[] CAPTIONS = new String[] { "Enhet", "Status", "Oppløs" };
+	public static final String[] NAMES = new String[] { NAME, VIEW, EDIT };
+	public static final String[] CAPTIONS = new String[] { "Enhet", "Vis", "Endre status" };
 
 	/* ================================================================
 	 *  Constructors
@@ -27,9 +26,10 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 		super(IUnitIf.class,NAMES,CAPTIONS,false);
 
 		// install model
-		IUnitListIf list = model.getMsoManager().getCmdPost().getUnitList();
-		connect(model,list,IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
-		load(list);
+		connect(model,IUnitIf.ALL_SELECTOR,IUnitIf.TYPE_AND_NUMBER_COMPARATOR);
+
+		// load units from model
+		load(model.getMsoManager().getCmdPost().getUnitList());
 
 	}
 
@@ -42,7 +42,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 		// translate
 		if(NAME.equals(column))
 			return MsoUtils.getUnitName(getId(row), true);
-		else if(UNIT.equals(column))
+		else if(VIEW.equals(column))
 			return getId(row);
 
 		// not supported

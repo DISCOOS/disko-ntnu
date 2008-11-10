@@ -24,8 +24,8 @@ import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 public class BasePanel extends AbstractPanel {
 
@@ -137,9 +137,9 @@ public class BasePanel extends AbstractPanel {
 			try {
 				headerPanel = new HeaderPanel("",buttonSize);
 				headerPanel.setInsets(0,0,1,0);
-				headerPanel.addWorkEventListener(new IWorkListener() {
+				headerPanel.addWorkEventListener(new IWorkFlowListener() {
 
-					public void onWorkPerformed(WorkEvent e) {
+					public void onFlowPerformed(WorkFlowEvent e) {
 						// is dirty?
 						if(e.isChange())
 							setDirty(true);
@@ -494,11 +494,11 @@ public class BasePanel extends AbstractPanel {
 		getHeaderPanel().setManager(manager);
 	}
 
-	public void addWorkListener(IWorkListener listener) {
+	public void addWorkFlowListener(IWorkFlowListener listener) {
 		getHeaderPanel().addWorkEventListener(listener);
 	}
 
-	public void removeWorkListener(IWorkListener listener) {
+	public void removeWorkFlowListener(IWorkFlowListener listener) {
 		getHeaderPanel().removeWorkEventListener(listener);
 	}
 
@@ -540,7 +540,7 @@ public class BasePanel extends AbstractPanel {
 		getHeaderPanel().fireOnWorkChange(source,data);
 	}
 
-	protected void fireOnWorkPerformed(WorkEvent e){
+	protected void fireOnWorkPerformed(WorkFlowEvent e){
 		getHeaderPanel().fireOnWorkPerformed(e);
 	}
 

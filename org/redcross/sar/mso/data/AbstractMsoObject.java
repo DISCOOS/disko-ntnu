@@ -26,8 +26,7 @@ import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.util.EnumHistory;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.except.UnknownAttributeException;
@@ -87,6 +86,18 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private int m_clientUpdateMask = 0;
 
     /**
+     * Dominant update mode, where LOCAL_UPDATE_MODE overwrites all other modes
+     */
+    private UpdateMode m_updateMode = null;
+
+    /**
+     * Loopback flag, should only be <code>true</code> if all registered
+     * updates are a result of change in SERVER VALUE that results in
+     * SERVER VALUE == LOCAL VALUE.
+     */
+    private boolean m_isLoopback = true;
+
+    /**
      * Mask for suspended derived update events for client
      */
     private int m_derivedUpdateMask = 0;
@@ -126,11 +137,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      */
     private boolean m_hasBeenDeleted;
 
-    /**
-     * List of status changes since creation
-     */
-    private final EnumHistory<Enum<?>> m_statusHistory = new EnumHistory<Enum<?>>();
-
 	/*-------------------------------------------------------------------------------------------
 	 * Constructors
 	 *-------------------------------------------------------------------------------------------*/
@@ -152,7 +158,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         System.out.println("Created " + this);
         suspendClientUpdate();
         suspendDerivedUpdate();
-        registerCreatedObject(this);
+        registerCreatedObject(this,theMsoModel.getUpdateMode());
     }
 
 	/*-------------------------------------------------------------------------------------------
@@ -293,6 +299,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
         if (canDelete())
         {
+        	suspendClientUpdate();
             for (MsoListImpl list : m_referenceLists.values())
             {
                 list.deleteAll();
@@ -307,6 +314,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
                 }
             }
             doDelete();
+            resumeClientUpdate(true);
             return true;
         }
         return false;
@@ -366,6 +374,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     @SuppressWarnings("unchecked")
 	public void doDelete()
     {
+    	suspendClientUpdate();
         System.out.println("Deleting " + this);
         while (m_objectHolders.size() > 0)
         {
@@ -373,9 +382,14 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             IMsoObjectHolderIf myHolder = iterator.next();
             myHolder.doDeleteReference(this);
         }
-
+        // get flags
+        boolean isChanged = !m_hasBeenDeleted;
+        boolean isLoopback = m_hasBeenDeleted && !m_msoModel.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+        // set as deleted
         m_hasBeenDeleted = true;
-        registerDeletedObject(this);
+        // notify
+        registerDeletedObject(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
+    	resumeClientUpdate(true);
     }
 
     public boolean isSetup()
@@ -760,7 +774,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         if (dataModified)
         {
-            registerModifiedData(this);
+            registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
         }
 
         for (MsoListImpl list : m_referenceLists.values())
@@ -788,7 +802,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         if (dataModified)
         {
-            registerModifiedData(this);
+            registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
         }
 
         for (MsoListImpl list : m_referenceLists.values())
@@ -824,10 +838,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         // notify MSO manager
         m_eventManager.enterResume();
 
-        // notify updates in this object
+        // resume update notifications
         m_suspendClientUpdate = false;
+
+        // notify updates in this object
         notifyClientUpdate();
-        m_clientUpdateMask = 0;
 
         // notify updates in referenced objects?
         if(all)
@@ -836,6 +851,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	        {
 	            list.resumeClientUpdate(true);
 	        }
+
         }
 
         // notify MSO manager
@@ -1000,27 +1016,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
     /**
-     * Add a status change to status history
-     *
-     * @param aStatus
-     * @param time
-     */
-    protected void registerStatus(Enum<?> aStatus, Calendar time)
-    {
-    	m_statusHistory.add(aStatus,time);
-    }
-
-    /**
-     * Get status history
-     *
-     * @param aStatus - the status to get history of
-     */
-    protected List<Calendar> getStatusHistory(Enum<?> aStatus)
-    {
-    	return m_statusHistory.getHistory(aStatus);
-    }
-
-    /**
      * Add a new attribute. </p>
      *
      * Maintains the double bookkeeping under the following conditions:
@@ -1091,52 +1086,58 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	m_changeCount++;
     }
 
-    protected void registerAddedReference(Object source)
+    /*
+    protected void registerAddedReference(Object source, UpdateMode aMode)
     {
         System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT, true);
+        registerUpdate(aMode, MsoEventType.ADDED_REFERENCE_EVENT, true, false);
     }
 
-    protected void registerRemovedReference(Object source)
+    protected void registerRemovedReference(Object source, UpdateMode aMode)
     {
         System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, true);
+        registerUpdate(aMode, MsoEventType.REMOVED_REFERENCE_EVENT, true, false);
+    }
+	*/
+
+    protected void registerAddedReference(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    {
+        System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
+        registerUpdate(aMode, MsoEventType.ADDED_REFERENCE_EVENT, updateServer, isLoopback);
     }
 
-    protected void registerRemovedReference(Object source, boolean updateServer)
+    protected void registerRemovedReference(Object source,
+    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
     {
     	System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT, updateServer);
+        registerUpdate(aMode, MsoEventType.REMOVED_REFERENCE_EVENT, updateServer, isLoopback);
     }
 
-    protected void registerModifiedReference(Object source)
+    protected void registerModifiedReference(Object source,
+    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
     {
     	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, true);
+        registerUpdate(aMode, MsoEventType.MODIFIED_REFERENCE_EVENT, updateServer, isLoopback);
     }
 
-    protected void registerModifiedReference(Object source, boolean updateServer)
-    {
-    	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.MODIFIED_REFERENCE_EVENT, updateServer);
-    }
-
-    protected void registerCreatedObject(Object source)
+    protected void registerCreatedObject(Object source, UpdateMode aMode)
     {
     	System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.CREATED_OBJECT_EVENT, true);
+        registerUpdate(aMode, MsoEventType.CREATED_OBJECT_EVENT, true, false);
     }
 
-    protected void registerDeletedObject(Object source)
+    protected void registerDeletedObject(Object source,
+    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
     {
         System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.DELETED_OBJECT_EVENT, true);
+        registerUpdate(aMode, MsoEventType.DELETED_OBJECT_EVENT, updateServer, isLoopback);
     }
 
-    protected void registerModifiedData(Object source)
+    protected void registerModifiedData(Object source,
+    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
     {
         System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
-        registerUpdate(MsoEvent.MsoEventType.MODIFIED_DATA_EVENT, true);
+        registerUpdate(aMode, MsoEventType.MODIFIED_DATA_EVENT, updateServer, isLoopback);
     }
 
     /**
@@ -1144,11 +1145,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      *
      * @param anEventTypeMask Mask for Type of event for server
      */
-    protected void notifyServerUpdate(int anEventTypeMask)
+    protected void notifyServerUpdate(UpdateMode aMode, int anEventTypeMask)
     {
         if (anEventTypeMask != 0)
         {
-            m_eventManager.notifyServerUpdate(this, anEventTypeMask);
+            m_eventManager.notifyServerUpdate(this, aMode, anEventTypeMask);
         }
     }
 
@@ -1171,7 +1172,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
         if (m_clientUpdateMask != 0)
         {
-            m_eventManager.notifyClientUpdate(this, m_clientUpdateMask);
+            m_eventManager.notifyClientUpdate(this, m_updateMode, m_isLoopback, m_clientUpdateMask);
+            m_updateMode = null;
+            m_isLoopback = true;
             m_clientUpdateMask = 0;
         }
     }
@@ -1191,16 +1194,16 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	 * Helper methods
 	 *-------------------------------------------------------------------------------------------*/
 
-    private void registerUpdate(MsoEvent.MsoEventType anEventType, boolean updateServer)
+    private void registerUpdate(UpdateMode aMode, MsoEventType anEventType, boolean updateServer, boolean isLoopback)
     {
 
     	// track change
     	incrementChangeCount();
 
     	// get update mode
-    	IMsoModelIf.UpdateMode anUpdateMode = m_msoModel.getUpdateMode();
+    	//UpdateMode anUpdateMode = m_msoModel.getUpdateMode();
         int clientEventTypeMask = anEventType.maskValue();
-        int serverEventTypeMask = (updateServer && anUpdateMode == IMsoModelIf.UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
+        int serverEventTypeMask = (updateServer && aMode == UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
 
         // notify derived update listeners
         m_derivedUpdateMask |= clientEventTypeMask;
@@ -1209,8 +1212,28 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             notifyDerivedUpdate();
         }
 
-        // set update mask
+        /* =========================================
+         * Accumulate updates
+         * ========================================= */
         m_clientUpdateMask |= clientEventTypeMask;
+
+        /* =========================================
+         * Set dominant update mode. If any local
+         * updates occur, this should override any
+         * existing update mode.
+         * ========================================= */
+        m_updateMode = (m_updateMode==null
+        		|| !UpdateMode.LOCAL_UPDATE_MODE.equals(m_updateMode) ? aMode : m_updateMode);
+
+        /* =========================================
+         * Update loopback flag. Is loopback as long
+         * as all updates are loopbacks. Else, flag
+         * is reset.
+         * ========================================= */
+        m_isLoopback = isLoopback && m_isLoopback;
+
+        //if(!m_isLoopback)
+        //	System.out.println("!isLoopback::"+this);
 
         // notify client update listeners?
         if (!(m_suspendClientUpdate || m_msoModel.isUpdateSuspended()))
@@ -1219,7 +1242,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 
         // notify server update listeners
-        notifyServerUpdate(serverEventTypeMask);
+        notifyServerUpdate(aMode,serverEventTypeMask);
+
     }
 
     private boolean isTrue(Object value) {
@@ -1414,7 +1438,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     /**
      * Selector used for selecting assignments with status in a given set.
      */
-    public static class StatusSetSelector<T extends IEnumStatusHolder<E>, E extends Enum> implements Selector<T>
+    public static class StatusSetSelector<T extends IEnumStatusHolder, E extends Enum> implements Selector<T>
     {
         EnumSet<? extends E> m_valueSet;
 

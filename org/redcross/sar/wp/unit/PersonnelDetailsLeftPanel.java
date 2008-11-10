@@ -7,7 +7,6 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
@@ -353,7 +352,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
             m_arrivedTextField.setText("");
             m_releasedTextField.setText("");
             m_remarksTextArea.setText("");
-            //m_changeStatusButton.setText("");
+
         } else
         {
             m_topLabel.setText(m_currentPersonnel.getFirstName() + " " + m_currentPersonnel.getLastName() +
@@ -544,7 +543,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
 
 				// consume loopback updates
-				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+				if(!e.isLoopback())
 				{
 					IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ?
 	        		(IPersonnelIf) e.getSource() : null;

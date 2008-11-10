@@ -17,8 +17,8 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.IWork;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.IWork;
 
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.esriSpatialRelEnum;

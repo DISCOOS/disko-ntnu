@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
@@ -176,7 +177,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
      * Often uses status sets
      */
     public static final EnumSet<AssignmentStatus> PENDING_SET = EnumSet.range(AssignmentStatus.DRAFT, AssignmentStatus.ALLOCATED);
-    public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.of(AssignmentStatus.QUEUED, AssignmentStatus.ALLOCATED, AssignmentStatus.EXECUTING);
+    public static final EnumSet<AssignmentStatus> ACTIVE_SET = EnumSet.range(AssignmentStatus.READY, AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> WORKING_SET = EnumSet.of(AssignmentStatus.EXECUTING);
     public static final EnumSet<AssignmentStatus> FINISHED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED);
     public static final EnumSet<AssignmentStatus> FINISHED_AND_REPORTED_SET = EnumSet.of(AssignmentStatus.ABORTED, AssignmentStatus.FINISHED, AssignmentStatus.REPORTED);
@@ -185,10 +186,19 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
     /**
      * Often uses selectors
      */
+    public static final Selector<IAssignmentIf> ALL_SELECTOR = new Selector<IAssignmentIf>() {
+
+		public boolean select(IAssignmentIf anObject) {
+			return true;
+		}
+
+    };
+
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> READY_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.READY);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> QUEUED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.QUEUED);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> ALLOCATED_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.ALLOCATED);
     public static final AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus> EXECUTING_SELECTOR = new AbstractMsoObject.StatusSelector<IAssignmentIf, AssignmentStatus>(AssignmentStatus.EXECUTING);
+    public static final AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus> ACTIVE_SELECTOR = new AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus>(ACTIVE_SET);
     public static final AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus> FINISHED_SELECTOR = new AbstractMsoObject.StatusSetSelector<IAssignmentIf, AssignmentStatus>(FINISHED_AND_REPORTED_SET);
 
     /**

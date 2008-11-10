@@ -46,11 +46,11 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.event.MsoEvent.Commit;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.WorkPool;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.work.WorkPool;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -62,25 +62,25 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		implements IDiskoWpTactics, IDrawAdapterListener {
 
-	private JToggleButton elementToggleButton = null;
-	private JToggleButton listToggleButton = null;
-	private JToggleButton missionToggleButton = null;
-	private JToggleButton hypotheseToggleButton = null;
-	private JToggleButton priorityToggleButton = null;
-	private JToggleButton requirementToggleButton = null;
-	private JToggleButton descriptionToggleButton = null;
-	private JToggleButton unitToggleButton = null;
-	private JToggleButton estimateToggleButton = null;
-	private ArrayList<DefaultDialog> dialogs = null;
-	private MissionTextDialog missionTextDialog = null;
-	private HypothesisDialog hypothesesDialog = null;
-	private PriorityDialog priorityDialog = null;
-	private UnitSelectionDialog unitSelectionDialog = null;
-	private RequirementDialog requirementDialog = null;
-	private EstimateDialog estimateDialog = null;
-	private ListDialog listDialog = null;
-	private PromptDialog draftListDialog = null;
-	private DescriptionDialog descriptionDialog = null;
+	private JToggleButton elementToggleButton;
+	private JToggleButton listToggleButton;
+	private JToggleButton missionToggleButton;
+	private JToggleButton hypotheseToggleButton;
+	private JToggleButton priorityToggleButton;
+	private JToggleButton requirementToggleButton;
+	private JToggleButton descriptionToggleButton;
+	private JToggleButton unitToggleButton;
+	private JToggleButton estimateToggleButton;
+	private ArrayList<DefaultDialog> dialogs;
+	private MissionTextDialog missionTextDialog;
+	private HypothesisDialog hypothesesDialog;
+	private PriorityDialog priorityDialog;
+	private UnitSelectionDialog unitSelectionDialog;
+	private RequirementDialog requirementDialog;
+	private EstimateDialog estimateDialog;
+	private ListDialog listDialog;
+	private PromptDialog draftListDialog;
+	private DescriptionDialog descriptionDialog;
 	private boolean inferNextElement = false;
 
 	/**
@@ -159,7 +159,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMap().installEditSupport();
 
 		// register listeners
-		getMap().getDrawAdapter().addWorkListener(this);
+		getMap().getDrawAdapter().addWorkFlowListener(this);
 		getMap().getDrawAdapter().addDrawAdapterListener(this);
 
 		// add map dialogs
@@ -459,16 +459,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (missionTextDialog == null) {
 			missionTextDialog = new MissionTextDialog(this);
 			dialogs.add(missionTextDialog);
-			missionTextDialog.addWorkListener(new IWorkListener() {
+			missionTextDialog.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 					if(e.isFinish() && inferNextElement)
 						getMap().getDrawAdapter().nextElement();
 				}
 
 			});
-			missionTextDialog.addWorkListener(this);
+			missionTextDialog.addWorkFlowListener(this);
 		}
 		return missionTextDialog;
 	}
@@ -477,16 +477,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (hypothesesDialog == null) {
 			hypothesesDialog = new HypothesisDialog(this);
 			dialogs.add(hypothesesDialog);
-			hypothesesDialog.addWorkListener(new IWorkListener() {
+			hypothesesDialog.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 					if(e.isFinish() && inferNextElement)
 						getMap().getDrawAdapter().nextElement();
 				}
 
 			});
-			hypothesesDialog.addWorkListener(this);
+			hypothesesDialog.addWorkFlowListener(this);
 
 		}
 		return hypothesesDialog;
@@ -495,7 +495,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PriorityDialog getPriorityDialog() {
 		if (priorityDialog == null) {
 			priorityDialog = new PriorityDialog(this);
-			priorityDialog.addWorkListener(this);
+			priorityDialog.addWorkFlowListener(this);
 			dialogs.add(priorityDialog);
 		}
 		return priorityDialog;
@@ -504,7 +504,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private RequirementDialog getRequirementDialog() {
 		if (requirementDialog == null) {
 			requirementDialog = new RequirementDialog(this);
-			requirementDialog.addWorkListener(this);
+			requirementDialog.addWorkFlowListener(this);
 			dialogs.add(requirementDialog);
 		}
 		return requirementDialog;
@@ -514,7 +514,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (estimateDialog == null) {
 			estimateDialog = new EstimateDialog(this);
 			dialogs.add(estimateDialog);
-			estimateDialog.addWorkListener(this);
+			estimateDialog.addWorkFlowListener(this);
 		}
 		return estimateDialog;
 	}
@@ -531,7 +531,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (unitSelectionDialog == null) {
 			unitSelectionDialog = new UnitSelectionDialog(this);
 			dialogs.add(unitSelectionDialog);
-			unitSelectionDialog.addWorkListener(this);
+			unitSelectionDialog.addWorkFlowListener(this);
 		}
 		return unitSelectionDialog;
 	}
@@ -539,7 +539,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private ListDialog getListDialog() {
 		if (listDialog == null) {
 			listDialog = new ListDialog(this);
-			listDialog.addWorkListener(this);
+			listDialog.addWorkFlowListener(this);
 			dialogs.add(listDialog);
 		}
 		return listDialog;

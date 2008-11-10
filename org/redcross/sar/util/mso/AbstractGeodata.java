@@ -6,8 +6,9 @@ package org.redcross.sar.util.mso;
 public abstract class AbstractGeodata implements IGeodataIf, Cloneable
 {
     protected final String m_id;
-    
+
     protected String m_layout;
+
     protected int m_changeCount;
 
     protected final String m_name;
@@ -32,17 +33,18 @@ public abstract class AbstractGeodata implements IGeodataIf, Cloneable
     {
         m_id = anId;
         m_name = aName;
+        m_layout = "";
     }
 
     public int getChangeCount()
     {
         return m_changeCount;
     }
-    
+
     protected void incrementChangeCount() {
     	m_changeCount++;
-    }    
-    
+    }
+
      /**
      * Get name of polygon
      *

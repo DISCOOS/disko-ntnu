@@ -77,6 +77,18 @@ public class Route extends AbstractGeodata
     }
 
     /**
+     * Add a new point to the route.
+     *
+     * @param aLongPosition The point's longitude
+     * @param aLatPosition  The point's latitude
+     * @param aAltitude The point's altitude
+     */
+    public void add(double aLongPosition, double aLatPosition, double aAltitude)
+    {
+        add(new GeoPos(aLongPosition, aLatPosition, aAltitude));
+    }
+
+    /**
      * Remove a point from track
      *
      * @param aTimePos

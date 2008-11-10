@@ -22,8 +22,8 @@ import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.tool.IMapTool;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 public class BaseToolPanel extends AbstractToolPanel {
 
@@ -127,9 +127,9 @@ public class BaseToolPanel extends AbstractToolPanel {
 		if (actionsPanel == null) {
 			try {
 				actionsPanel = new HeaderPanel("Utfør",ButtonSize.SMALL);
-				actionsPanel.addWorkEventListener(new IWorkListener() {
+				actionsPanel.addWorkEventListener(new IWorkFlowListener() {
 
-					public void onWorkPerformed(WorkEvent e) {
+					public void onFlowPerformed(WorkFlowEvent e) {
 						// is dirty?
 						if(e.isChange())
 							setDirty(true);
@@ -442,11 +442,11 @@ public class BaseToolPanel extends AbstractToolPanel {
 		getActionsPanel().removeActionListener(listener);
 	}
 	
-	public void addWorkListener(IWorkListener listener) {
+	public void addWorkFlowListener(IWorkFlowListener listener) {
 		getActionsPanel().addWorkEventListener(listener);
 	}
 	
-	public void removeWorkListener(IWorkListener listener) {
+	public void removeWorkFlowListener(IWorkFlowListener listener) {
 		getActionsPanel().removeWorkEventListener(listener);
 	}	
 
@@ -489,7 +489,7 @@ public class BaseToolPanel extends AbstractToolPanel {
 		getActionsPanel().fireOnWorkChange(source,data);
 	}
     
-	protected void fireOnWorkPerformed(WorkEvent e){
+	protected void fireOnWorkPerformed(WorkFlowEvent e){
     	getActionsPanel().fireOnWorkPerformed(e);
 	}	
 		

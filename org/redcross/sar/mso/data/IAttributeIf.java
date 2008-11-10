@@ -1,10 +1,12 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.util.mso.*;
 
 import java.awt.geom.Point2D;
 import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -23,13 +25,13 @@ public interface IAttributeIf<T>
      * Gets change count since construction. Use this counter when tracking
      * changes executed on a object. Each time the attributes is changed, the
      * counter is incremented<p>
-     * This property enables MSO Update listeners to track changes 
+     * This property enables MSO Update listeners to track changes
      * without the need for local buffering of attribute states.
      *
      * @return The number of changes performed on the object since the construction.
      */
     public int getChangeCount();
-    
+
     /**
      * Set index number for the attribute
      * Will force renumbering of attributes.
@@ -50,7 +52,14 @@ public interface IAttributeIf<T>
      *
      * @return The state
      */
-    public IMsoModelIf.ModificationState getState();
+    public ModificationState getState();
+
+    /**
+     * Check modification state
+     *
+     * @return boolean
+     */
+    public boolean isState(ModificationState state);
 
     public void set(T aValue);
 
@@ -70,18 +79,18 @@ public interface IAttributeIf<T>
 
     /**
      * Get value cardinality
-     * 
-     *@return cardinality, if >0, then getAttrValue can not be null. 
+     *
+     *@return cardinality, if >0, then getAttrValue can not be null.
      */
     public int getCardinality();
-    
+
     /**
      * Validates getAttrValue against the value cardinality
      * <p/>
      * @return  <code>true<code> if getAttrValue is not null, <code>false<code> otherwise.
      */
     public boolean validate();
-    
+
     /**
      * Accept local (client) value in case of conflict.
      *
@@ -116,7 +125,7 @@ public interface IAttributeIf<T>
      * @return <code>true</code>  if required (cannot be null) in order to commit the object, <code>false</code> oterhwise.
      */
     public boolean isRequired();
-    
+
     /**
      * Tells if this attributes is changed since last commit.
      *
@@ -275,7 +284,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link Enum} attributes.
      */
-    public interface IMsoEnumIf<E extends Enum> extends IAttributeIf<E>
+    public interface IMsoEnumIf<E extends Enum<E>> extends IAttributeIf<E>
     {
         public void setValue(E anEnum);
 
@@ -286,6 +295,17 @@ public interface IAttributeIf<T>
         public String getValueName();
 
         public E enumValue(String aName);
+
+        public List<Calendar> getHistory(E aStatus);
+
+        public Calendar getFirstTime(E aStatus);
+
+        public Calendar getLastTime(E aStatus);
+
+        public double getDuration(E aStatus, boolean total);
+
+        public double getDuration(EnumSet<E> aList, boolean total);
+
     }
 
 }

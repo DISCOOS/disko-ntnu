@@ -3,8 +3,8 @@ package org.redcross.sar.wp.messageLog;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.thread.WorkPool;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
@@ -22,10 +22,9 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 
     public DiskoWpMessageLogImpl() throws IllegalClassFormatException
     {
-        // initialize with spesific map interests
     	super();
 
-    	// intialize GUI
+    	// initialize GUI
         initialize();
     }
 
@@ -142,9 +141,6 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 	}
 
 
-    /* (non-Javadoc)
-    * @see com.geodata.engine.disko.task.DiskoAp#getCaption()
-    */
     @Override
 	public String getCaption()
     {

@@ -3,6 +3,7 @@ package org.redcross.sar.mso.data;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.util.Internationalization;
@@ -121,7 +122,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
      * Resets correct subclass in case of incorrect changes by application or others.
      * Renumber duplicate numbers
      */
-    public void registerModifiedData(Object source)
+    public void registerModifiedData(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
     {
         if (getType() != getTypeBySubclass())
         {
@@ -129,13 +130,15 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
         if (getPlannedArea() != null)
         {
-            ((AreaImpl) getPlannedArea()).registerModifiedData(getPlannedArea());
+            ((AreaImpl) getPlannedArea()).registerModifiedData(
+            		getPlannedArea(),aMode,updateServer,isLoopback);
         }
         if (getReportedArea() != null)
         {
-            ((AreaImpl) getReportedArea()).registerModifiedData(getReportedArea());
+            ((AreaImpl) getReportedArea()).registerModifiedData(
+            		getReportedArea(),aMode,updateServer,isLoopback);
         }
-        super.registerModifiedData(this);
+        super.registerModifiedData(this,aMode,updateServer,isLoopback);
     }
 
     public static AssignmentImpl implementationOf(IAssignmentIf anInterface) throws MsoCastException
@@ -487,31 +490,14 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public Calendar getTime(Enum<?> aStatus)
     {
     	// translate status type
-    	if(aStatus instanceof AssignmentStatus) {
-
-	    	// translate status
-	        switch((AssignmentStatus)aStatus)
-	        {
-	        case EMPTY:
-	        case DRAFT:
-	        case READY:
-	        case QUEUED:
-	        case ABORTED:
-	        	return getMessageLineTime(MessageLineType.ABORTED);
-	        case ALLOCATED:
-	        	return getMessageLineTime(MessageLineType.ALLOCATED);
-	        case EXECUTING:
-	            return getMessageLineTime(MessageLineType.STARTED);
-	        case FINISHED:
-	        	return getMessageLineTime(MessageLineType.COMPLETED);
-	        }
-
+    	if(aStatus instanceof AssignmentStatus)
+    	{
+	        return getStatusAttribute().getLastTime((AssignmentStatus)aStatus);
     	}
     	else if(aStatus instanceof MessageLineType)
     	{
             return getMessageLineTime((MessageLineType)aStatus);
     	}
-
         // failed
         return null;
     }
@@ -552,7 +538,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public IMessageLineIf getLatestStatusChangeMessageLine(MessageLineType aType)
     {
         messageLineTypeSelector.setSelectionCriteria(this, aType);
-        List<IMessageLineIf> retVal = MsoModelImpl.getInstance().getMsoManager()
+        List<IMessageLineIf> retVal = m_msoModel.getMsoManager()
         	.getCmdPost().getMessageLines().selectItems(
         			messageLineTypeSelector, IMessageLineIf.MESSAGE_LINE_TIME_COMPARATOR);
         return (retVal.size() == 0) ? null : retVal.get(0);
@@ -626,45 +612,46 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     private void changeOwnership(IUnitIf aUnit, AssignmentStatus aStatus) throws IllegalOperationException
     {
+
     	// initialize
         IUnitIf owner = getOwningUnit();
         AssignmentStatus oldStatus = getStatus();
+
         // is a change in ownership required?
         boolean changeOwner = aUnit != owner;
 
-        if (changeOwner && owner != null)
-        {
-            ((AbstractUnit)owner).removeUnitAssignment(this);
-        }
-        m_status.setValue(aStatus);
+        // suspend MSO update
+		suspendClientUpdate();
 
-        /*
-         * if assignment is going to be enqueue, then
-         * add as tail which is default
-         *
-         */
-        if (aStatus == AssignmentStatus.QUEUED)
-        {
-            setPrioritySequence(Integer.MAX_VALUE);
-        }
+		// remove this from owner?
+		if (changeOwner && owner != null) {
+			((AbstractUnit) owner).removeUnitAssignment(this);
+		}
+		// update status
+		m_status.setValue(aStatus);
+		/*
+		 * if assignment is going to be enqueue, then
+		 * add as tail which is default
+		 */
+		if (aStatus == AssignmentStatus.QUEUED) {
+			setPrioritySequence(Integer.MAX_VALUE);
+		}
+		if (aUnit != null) {
+			// was owner changed?
+			if (changeOwner) {
+				/*
+				 * add to unit using the helper method. This ensures
+				 * that unit status is updated accordingly.
+				 */
+				((AbstractUnit) aUnit).addUnitAssignment(this);
 
-        if (aUnit != null)
-        {
-        	// was owner changed?
-            if (changeOwner)
-            {
-            	/*
-            	 * add to unit using the helper method. This ensures
-            	 * that unit status is updated accordingly.
-            	 */
-            	((AbstractUnit)aUnit).addUnitAssignment(this);
-
-            } else
-            {
-            	// notify unit that assignment has changed
-                ((AbstractUnit)aUnit).assignmentChanged(this, oldStatus, true);
-            }
-        }
+			} else {
+				// notify unit that assignment has changed
+				((AbstractUnit) aUnit).assignmentChanged(this, oldStatus, true);
+			}
+		}
+		// resume MSO update
+		resumeClientUpdate(true);
 
     }
 

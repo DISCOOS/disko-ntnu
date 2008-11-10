@@ -16,9 +16,9 @@ import org.redcross.sar.gui.panel.NumPadPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * Creates the dialog for changing DTG in message log edit mode.
@@ -205,10 +205,10 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_contentPanel.setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			m_contentPanel.addBodyChild(getAttributesPanel(),BorderLayout.CENTER);
 			m_contentPanel.addBodyChild(getNumPadPanel(),BorderLayout.EAST);
-			m_contentPanel.addWorkListener(new IWorkListener() {
+			m_contentPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 
 					// forward?
 					if(e.isFinish())
@@ -235,7 +235,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_attributesPanel.addField(getCreatedAttr());
 			m_attributesPanel.addField(getTimeAttr());
 			// add listeners
-			m_attributesPanel.addWorkListener(getContentPanel());
+			m_attributesPanel.addWorkFlowListener(getContentPanel());
 		}
 		return m_attributesPanel;
 	}
@@ -261,7 +261,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_numPadPanel.setHeaderVisible(false);
 			m_numPadPanel.setInputVisible(false);
 			m_numPadPanel.setInputField(getTimeAttr().getTextField(), false);
-			m_numPadPanel.addWorkListener(getContentPanel());
+			m_numPadPanel.addWorkFlowListener(getContentPanel());
 		}
 		return m_numPadPanel;
 	}

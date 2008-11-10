@@ -48,7 +48,9 @@ public class DsBinder<S extends IData, T extends IDsObject> extends AbstractBind
 		super.addCoClass(c,selector);
 	}
 
-	public boolean load(Collection<T> objects) {
+	public boolean load(Collection<T> objects, boolean append) {
+		// forward?
+		if(!append) clear();
 		// allowed?
 		if(source!=null) {
 			// sort objects
@@ -74,6 +76,21 @@ public class DsBinder<S extends IData, T extends IDsObject> extends AbstractBind
 		// failed
 		return false;
 	}
+
+	public boolean clear() {
+		// query source for current values
+		Collection<T> items = query();
+		// allowed?
+		if(items!=null) {
+			// notify
+			fireDataClearAll(getData(items), 0);
+	        // success
+	        return true;
+		}
+		// failed
+		return false;
+	}
+
 	/* =============================================================================
 	 * IDsUpdateListenerIf implementation
 	 * ============================================================================= */
@@ -103,7 +120,7 @@ public class DsBinder<S extends IData, T extends IDsObject> extends AbstractBind
 	        boolean clearAll = type.equals(DsEventType.CLEAR_ALL_EVENT);
 
 	        if(clearAll) {
-	        	fireDataClearAll(data, flags);
+	        	fireDataClearAll(null, flags);
 	        }
 	        else {
 
@@ -156,6 +173,12 @@ public class DsBinder<S extends IData, T extends IDsObject> extends AbstractBind
 	/* =============================================================================
 	 * Helper methods
 	 * ============================================================================= */
+
+	protected T[] getData(Collection<T> items) {
+		T[] data = (T[])new IDsObject[items.size()];
+		items.toArray(data);
+		return data;
+	}
 
 	protected Object[] select(IDsObject[] data) {
 		List<IDsObject> dsList = new ArrayList<IDsObject>(data!=null ? data.length : 0);

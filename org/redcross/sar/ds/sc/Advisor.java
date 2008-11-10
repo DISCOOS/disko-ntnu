@@ -1,29 +1,42 @@
 package org.redcross.sar.ds.sc;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.ds.AbstractDs;
+import org.redcross.sar.ds.IDsObject;
 import org.redcross.sar.ds.event.DsEvent;
 import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
+import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
-import org.redcross.sar.thread.AbstractWork;
-import org.redcross.sar.thread.IWorkLoop.LoopState;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop.LoopState;
 
-public class Advisor extends AbstractDs<Clue,Action,EventObject> {
+public class Advisor extends AbstractDs<ICue,IDsObject,EventObject> {
+
+	/**
+	 * ID generation counter
+	 */
+	private static int m_nextID = 0;
 
 	/**
 	 * Listen for MSO events
@@ -55,6 +68,28 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 	 */
 	protected final LoopWork m_loopWork;
 
+	/**
+	 * The assignment production level
+	 */
+	protected final Map<AssignmentStatus,Production> m_production = new HashMap<AssignmentStatus,Production>();
+
+	/**
+	 * Production status level set
+	 */
+	protected final EnumSet<AssignmentStatus> PRODUCTION_SET
+		= EnumSet.of(AssignmentStatus.READY,AssignmentStatus.QUEUED,AssignmentStatus.EXECUTING);
+
+	/**
+	 * The unit execution level
+	 */
+	protected final Map<UnitStatus,Execution> m_execution = new HashMap<UnitStatus,Execution>();
+
+	/**
+	 * Production status level set
+	 */
+	protected final EnumSet<UnitStatus> EXECUTION_SET
+		= EnumSet.of(UnitStatus.READY,UnitStatus.INITIALIZING
+				,UnitStatus.WORKING,UnitStatus.PAUSED,UnitStatus.PENDING);
 
 	/* ============================================================
 	 * Constructors
@@ -63,16 +98,16 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 	public Advisor(String oprID) throws Exception {
 
 		// forward
-		super(Action.class, oprID, 1000, 500);
+		super(IDsObject.class, oprID, 1000, 500);
 
 		// prepare
 		m_msoInterests = getMsoInterests();
 		m_attributes = getMsoAttributes();
-		m_model = MsoModelImpl.getInstance();
-		m_comitter = (ICommitManagerIf)m_model;
-		m_driver = m_model.getModelDriver();
 		m_loopWork = new LoopWork(500);
 		m_workLoop.schedule(m_loopWork);
+
+		// connect to MSO model
+		connect(MsoModelImpl.getInstance());
 
 	}
 
@@ -80,26 +115,51 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 	 * Public methods
 	 * ============================================================ */
 
-	public Action getAction(Clue id) {
-		return getDsObject(id);
+	public boolean connect(IMsoModelIf model) {
+		// forward
+		disconnect();
+		// allowed?
+		if(model!=null) {
+
+			// prepare
+			m_model = model;
+			m_comitter = (ICommitManagerIf)m_model;
+			m_driver = m_model.getModelDriver();
+
+			// listen for changes
+			m_model.getEventManager().addClientUpdateListener(m_msoAdapter);
+
+			// finished
+			return true;
+		}
+		return false;
 	}
 
-	public List<Action> getItems() {
-		return getDsObjects();
-	}
-
-	public Map<Clue,Action> getActions() {
-		return getDsMap();
+	public boolean disconnect() {
+		// allowed?
+		if(m_model!=null) {
+			// remove listener
+			m_model.getEventManager().removeClientUpdateListener(m_msoAdapter);
+			// initialize
+			m_model = null;
+			m_comitter = null;
+			m_driver = null;
+			// finished
+			return true;
+		}
+		return false;
 	}
 
 	public synchronized boolean load() {
 		// forward
 		clear();
 		// load lists from available assignments
-		if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
-			// TODO: evaluate MSO model state
-			// TODO: evaluate ETE
-
+		if(m_model.getMsoManager().operationExists()) {
+			// get command post
+			ICmdPostIf cmdPost = m_model.getMsoManager().getCmdPost();
+			// create levels
+			createProduction(cmdPost.getAssignmentListItems());
+			createExecution(cmdPost.getUnitListItems());
 			// notify
 			fireAdded();
 			fireArchived();
@@ -108,57 +168,117 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 		return m_dsObjs.size()>0;
 	}
 
+	public Production getLevel(AssignmentStatus status) {
+		return m_production.get(status);
+	}
+
+	public Execution getLevel(UnitStatus status) {
+		return m_execution.get(status);
+	}
+
 	/* ===========================================
 	 * Protected methods
 	 * =========================================== */
 
-	protected void execute(List<Action> changed, long tic, long timeOut) {
+	protected void createProduction(Collection<IAssignmentIf> list) {
+		// clear current levels
+		m_production.clear();
+		// loop over production set
+		for(AssignmentStatus it : PRODUCTION_SET) {
+			createLevel(list,it);
+		}
+	}
+
+	protected void createLevel(Collection<IAssignmentIf> list, AssignmentStatus status) {
+		// create production level
+		Production level = new Production(createID(),status.name(),5,status);
+		// add level
+		m_production.put(status,level);
+		// schedule assignments
+		level.schedule(list);
+		// register level as cue
+		add(level,level);
+
+	}
+
+	protected void createExecution(Collection<IUnitIf> list) {
+		// clear current levels
+		m_execution.clear();
+		// loop over production set
+		for(UnitStatus it : EXECUTION_SET) {
+			createLevel(list,it);
+		}
+	}
+
+	protected void createLevel(Collection<IUnitIf> list, UnitStatus status) {
+		// create production level
+		Execution level = new Execution(createID(),status.name(),5,status);
+		// add level
+		m_execution.put(status,level);
+		// schedule assignments
+		level.schedule(list);
+		// register level as cue
+		add(level,level);
+
+	}
+
+	protected void execute(List<IDsObject> changed, long tic, long timeOut) {
 
 		// forward
 		evaluate(changed, tic, timeOut);
 
 	}
 
-	protected void schedule(Map<Clue,Object[]> changes) {
-		// any data to submit?
-		if(changes.size()>0) {
-			// TODO: Schedule work
+	protected void schedule(IAssignmentIf msoObj) {
+		// loop over production levels
+		for(Production it : m_production.values()) {
+			it.schedule(msoObj);
 		}
 	}
 
+	protected void schedule(IUnitIf msoObj) {
+		// loop over execution levels
+		for(Execution it : m_execution.values()) {
+			it.schedule(msoObj);
+		}
+	}
 
 	/* ===========================================
 	 * Helper methods
 	 * =========================================== */
 
 	private static EnumSet<MsoClassCode> getMsoInterests() {
-		return null;
+		return EnumSet.of(MsoClassCode.CLASSCODE_ASSIGNMENT);
 	}
 
 	private static Map<MsoClassCode,List<String>> getMsoAttributes() {
 		return null;
 	}
 
+	private static ID createID() {
+		ID id = new ID(m_nextID);
+		m_nextID++;
+		return id;
+	}
+
 	/* ============================================================
 	 * Estimation implementation
 	 * ============================================================ */
 
-	private void evaluate(List<Action> changed, long tic, long timeOut) {
+	private void evaluate(List<IDsObject> changed, long tic, long timeOut) {
 
 		// initialize heavy count
 		int heavyCount = 0;
 
 		// initialize local lists
-		List<Action> modified = new ArrayList<Action>(m_dsObjs.size());
-		List<Action> heavySet = new ArrayList<Action>(m_dsObjs.size());
-		List<Action> estimated = new ArrayList<Action>(m_dsObjs.size());
-		Map<Clue,Object[]> actions = new HashMap<Clue, Object[]>(m_dsObjs.size());
+		List<IDsObject> modified = new ArrayList<IDsObject>(m_dsObjs.size());
+		List<IDsObject> heavySet = new ArrayList<IDsObject>(m_dsObjs.size());
 
 		// get current work set
-		List<Action> workSet = getWorkSet(changed,false);
+		List<IDsObject> workSet = getWorkSet(changed);
 
 		// loop over costs in work set
-		for(Action cost : workSet) {
+		for(IDsObject it : workSet) {
 
 			// ensure that the MAX_WORK_TIME is only exceeded once
 			if(System.currentTimeMillis()-tic>timeOut)
@@ -168,10 +288,15 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 			try {
 				// add to heavy list?
 				if(heavyCount > 0 && false) {
-					heavySet.add(cost);
+					heavySet.add(it);
 				}
 				else {
 
+					// forward
+					it.calculate();
+
+					// is modified
+					modified.add(it);
 
 				}
 			} catch (Exception e) {
@@ -180,11 +305,8 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 			}
 		}
 
-		// forward
-		schedule(actions);
-
-		// remove estimated from work set
-		workSet.removeAll(estimated);
+		// remove modified from work set
+		workSet.removeAll(modified);
 
 		// set remaining as next work set
 		addToResidue(workSet);
@@ -197,49 +319,31 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 
 	}
 
+	private List<IDsObject> getWorkSet(List<IDsObject> changed) {
 
+		// initialize
+		List<IDsObject> list = new ArrayList<IDsObject>(m_dsObjs.size());
 
-	private List<Action> getWorkSet(List<Action> changed, boolean progress) {
-
-		// create new work set
-		List<Action> list = new ArrayList<Action>(m_dsObjs.size());
-
-		if(progress) {
-
-			// get costs ready to progress
-			for(Action it: m_dsObjs.values()) {
-				if(!changed.contains(it)) {
-
-				}
-			}
-
+		/* ==========================================
+		 * add the residue progress work set from
+		 * last work cycle to prevent starvation.
+		 * ========================================== */
+		for(IDsObject it: m_residueSet) {
+			if(it.isDirty() && include(it,list)) list.add(it);
 		}
-		else {
 
-			// add the rest
-			for(Action it: m_heavySet) {
-				// add to work list?
-				if(!(list.contains(it)))
-					list.add(it);
-			}
-
-			// add the rest from last time to prevent
-			// starvation of costs in the back of m_dsObjs.values()
-			for(Action it: m_residueSet) {
-				if(!list.contains(it))
-					list.add(it);
-			}
-
-			// add the missing
-			for(Action it : changed) {
-
-				// add to work list?
-				if(!(list.contains(it)))
-					list.add(it);
-
-			}
-
+		// add the changed
+		for(IDsObject it : changed) {
+			if(it.isDirty() && include(it,list)) list.add(it);
 		}
+
+		// add the rest
+		for(IDsObject it : m_dsObjs.values()) {
+			if(it.isDirty() && include(it,list)) list.add(it);
+		}
+
+		// remove from residue
+		m_residueSet.removeAll(list);
 
 		// finished
 		return list;
@@ -269,35 +373,31 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
     			// loop over all events
     			for(Update e : list.getEvents(m_msoInterests)) {
 
-    				// consume?
-    				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode())) {
+					// get flags
+			        boolean deletedObject  = e.isDeleteObjectEvent();
+			        boolean modifiedObject = e.isModifyObjectEvent();
+			        boolean modifiedReference = e.isChangeReferenceEvent();
 
-    					// get flags
-    			        boolean deletedObject  = e.isDeleteObjectEvent();
-    			        boolean modifiedObject = e.isModifyObjectEvent();
-    			        boolean modifiedReference = e.isChangeReferenceEvent();
+			        // initialize dirty flag
+			        boolean isDirty = false;
 
-    			        // initialize dirty flag
-    			        boolean isDirty = false;
-
-    					// is object modified?
-    					if (deletedObject || modifiedObject || modifiedReference) {
-    						// forward
-    						EventObject found = getExisting(e);
-    						// add to queue?
-    						if(found==null)
-    							isDirty = m_queue.add(e);
-    						else if(found instanceof MsoEvent.Update){
-    							// make union
-    							isDirty = ((MsoEvent.Update)found).union(e);
-    						}
-    						// decide action on changes
-    		 				if(isDirty && isLoopState(LoopState.SUSPENDED)) {
-    							// this ensures faster service if work is suspended
-    							resume();
-    						}
-    					}
-    				}
+					// is object modified?
+					if (deletedObject || modifiedObject || modifiedReference) {
+						// forward
+						EventObject found = getExisting(e);
+						// add to queue?
+						if(found==null)
+							isDirty = m_queue.add(e);
+						else if(found instanceof MsoEvent.Update){
+							// make union
+							isDirty = ((MsoEvent.Update)found).union(e);
+						}
+						// decide action on changes
+		 				if(isDirty && isLoopState(LoopState.SUSPENDED)) {
+							// this ensures faster service if work is suspended
+							resume();
+						}
+					}
     			}
     		}
     	}
@@ -307,13 +407,40 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 	 * Inner classes
 	 * ========================================================================= */
 
+    public static class ID implements IData {
+
+    	private final int m_number;
+
+    	public ID(int number) {
+    		// prepare
+    		m_number = number;
+    	}
+
+		public int getNumber(int number) {
+			return m_number;
+		}
+
+		@Override
+		public int compareTo(IData data) {
+			if(!(data instanceof ID))
+				throw new IllegalArgumentException("Objects not comparable");
+			// compare
+			return m_number - ((ID)data).m_number;
+		}
+
+    }
+
     private class LoopWork extends AbstractWork {
 
     	private int m_timeOut;
 
+		/* ============================================================
+		 * Constructors
+		 * ============================================================ */
+
 		public LoopWork(int timeOut) throws Exception {
 			// forward
-			super(true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
+			super(0,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
 			// prepare
 			m_timeOut = timeOut;
 		}
@@ -324,31 +451,6 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 
 		public Void doWork() {
 
-			/* =============================================================
-			 * DESCRIPTION: This method is listening for updates made in
-			 * IAssignmentIf and IRouteIf MSO objects. Only one Update is
-			 * handled in each work cycle if spatial changes in routes are
-			 * made. This ensures that the system remains responsive since
-			 * spatial route estimation is time consuming (ArcGIS geodata
-			 * lookup). A concurrent FIFO queue is used to store new
-			 * MSO Update events between work cycles.
-
-			 * ALGORITHM: The following algorithm is implemented
-			 * 1. Get next Update if exists. Update if new route is
-			 *    created or existing is changed spatially.
-			 * 2. Update all route cost estimates (fast if no spatial changes)
-			 * 3. Update all estimated current positions of costs which is not changed
-			 *
-			 * DUTY CYCLE MANAGEMENT: TIMEOUT is the cutoff work duty
-			 * cycle time. The actual duty cycle time may become longer,
-			 * but not longer than a started update or estimate step.
-			 * update() is only allowed to exceed TIMEOUT/2. The
-			 * remaining time is given to estimate(). This ensures that
-			 * update() will not starve estimate() during long update
-			 * sequences.
-			 *
-			 * ============================================================= */
-
 			// get start tic
 			long tic = System.currentTimeMillis();
 
@@ -357,7 +459,7 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 			fireAdded();
 
 			// handle updates in queue
-			List<Action> changed = update(tic,m_timeOut/2);
+			List<IDsObject> changed = update(tic,m_timeOut/2);
 
 			// forward
 			execute(changed,tic,m_timeOut/2);
@@ -371,11 +473,11 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 		 * Helper methods
 		 * ============================================================ */
 
-		private List<Action> update(long tic, int timeOut) {
+		private List<IDsObject> update(long tic, int timeOut) {
 
 			// initialize
 			int count = 0;
-			List<Action> workSet = new ArrayList<Action>(m_queue.size());
+			List<IDsObject> workSet = new ArrayList<IDsObject>(m_queue.size());
 
 			// loop over all updates
 			while(m_queue.peek()!=null) {
@@ -405,27 +507,31 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 			        // get MSO object
 			        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 
-			        // initialize action
-					Action object = null;
+			        // initialize list of changed cues
+			        Collection<IDsObject> dirtyList = null;
 
 					// is object created?
 					if(!deletedObject && createdObject) {
-						object = msoObjectCreated(msoObj,e);
+						dirtyList = msoObjectCreated(msoObj,e);
 					}
 
 					// is object modified?
 					if (!deletedObject && modifiedObject) {
-						object = msoObjectChanged(msoObj,e);
+						dirtyList = msoObjectChanged(msoObj,e);
 					}
 
 					// delete object?
 					if (deletedObject) {
-						object = msoObjectDeleted(msoObj,e);
+						dirtyList = msoObjectDeleted(msoObj,e);
 					}
 
 					// add to work set?
-					if(object!=null && !workSet.contains(object)) {
-						workSet.add(object);
+					if(dirtyList!=null) {
+						for(IDsObject it : dirtyList) {
+							if(!workSet.contains(it)) {
+								workSet.addAll(dirtyList);
+							}
+						}
 					}
 
 				}
@@ -440,22 +546,44 @@ public class Advisor extends AbstractDs<Clue,Action,EventObject> {
 
 		}
 
-    	protected Action msoObjectCreated(IMsoObjectIf msoObj, Update e) {
-    		// TODO: Implement
-    		return null;
+    	protected Collection<IDsObject> msoObjectCreated(IMsoObjectIf msoObj, Update e) {
+    		// initialize
+    		Collection<IDsObject> isDirty = new Vector<IDsObject>();
+    		// translate
+    		if(msoObj instanceof IAssignmentIf) {
+    			schedule((IAssignmentIf)msoObj);
+    			isDirty.addAll(m_production.values());
+    		}
+    		// finished
+    		return isDirty;
     	}
 
-    	protected Action msoObjectChanged(IMsoObjectIf msoObj, Update e) {
-    		// TODO: Implement
-    		return null;
+    	protected Collection<IDsObject> msoObjectChanged(IMsoObjectIf msoObj, Update e) {
+    		// initialize
+    		Collection<IDsObject> isDirty = new Vector<IDsObject>();
+    		// translate
+    		if(msoObj instanceof IAssignmentIf) {
+    			schedule((IAssignmentIf)msoObj);
+    			isDirty.addAll(m_production.values());
+    		}
+    		// finished
+    		return isDirty;
     	}
 
-    	protected Action msoObjectDeleted(IMsoObjectIf msoObj, Update e) {
-    		// TODO: Implement
-    		return null;
-
+    	protected Collection<IDsObject> msoObjectDeleted(IMsoObjectIf msoObj, Update e) {
+    		// initialize
+    		Collection<IDsObject> isDirty = new Vector<IDsObject>();
+    		// translate
+    		if(msoObj instanceof IAssignmentIf) {
+    			schedule((IAssignmentIf)msoObj);
+    			isDirty.addAll(m_production.values());
+    		}
+    		// finished
+    		return isDirty;
     	}
 
     }
+
+
 
 }

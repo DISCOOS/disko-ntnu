@@ -15,7 +15,7 @@ import java.util.Vector;
 
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.committer.CommittableImpl;
@@ -23,13 +23,11 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoRuntimeException;
 
-/**
- *
- */
 public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoObjectHolderIf<M>
 {
-    protected final IMsoObjectIf m_owner;
     protected String m_name;
+
+    protected final AbstractMsoObject m_owner;
     protected final HashMap<String, M> m_items;
     protected final HashMap<String, M> m_added;
     protected final HashMap<String, M> m_deleted;
@@ -38,6 +36,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     protected final int m_cardinality;
     protected final boolean m_isMain;
     protected final Class<M> m_itemClass;
+    protected final IMsoModelIf m_msoModel;
 
     protected int m_changeCount;
 
@@ -58,8 +57,13 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     public MsoListImpl(Class<M> theItemClass, IMsoObjectIf anOwner, String theName, boolean isMain, int cardinality, int aSize)
     {
-        m_owner = anOwner;
+    	if(!(anOwner instanceof AbstractMsoObject))
+    	{
+    		throw new IllegalArgumentException("MsoListImpl must have a AbstractMsoObject owner");
+    	}
+        m_owner = (AbstractMsoObject)anOwner;
         m_name = theName;
+        m_msoModel = m_owner.getModel();
         m_isMain = isMain;
         m_cardinality = cardinality;
         m_items = new LinkedHashMap<String, M>(aSize);
@@ -246,7 +250,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	    	 * ======================================================== */
 
 	        // update internal lists
-	        switch (MsoModelImpl.getInstance().getUpdateMode())
+	        switch (m_msoModel.getUpdateMode())
 	        {
 	            case LOOPBACK_UPDATE_MODE:
 	            case REMOTE_UPDATE_MODE:
@@ -306,7 +310,9 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
 		                // register?
 		                if(!isLoopback)
-		                	registerAddedReference(anObject,true);
+		                {
+		                	registerAddedReference(anObject,true,false,isLoopback);
+		                }
 
 		            	// update
 		                incrementChangeCount();
@@ -347,7 +353,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		                m_added.put(id, anObject);
 
 		                // register
-		            	registerAddedReference(anObject,true);
+		            	registerAddedReference(anObject,true,true,false);
 
 		            	// update
 		                incrementChangeCount();
@@ -364,16 +370,18 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         return false;
     }
 
-    private void registerAddedReference(M anObject, boolean add)
+    private void registerAddedReference(M anObject, boolean add, boolean isChanged, boolean isLoopback)
     {
         if (anObject != null)
         {
         	if(add) ((AbstractMsoObject) anObject).addDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerAddedReference(this);
+        	((AbstractMsoObject) anObject).registerAddedReference(this,
+        			m_msoModel.getUpdateMode(),isChanged,isLoopback);
         }
         if (m_owner != null)
         {
-            ((AbstractMsoObject) m_owner).registerAddedReference(this);
+            m_owner.registerAddedReference(this,
+            		m_msoModel.getUpdateMode(),isChanged,isLoopback);
         }
 
     }
@@ -407,7 +415,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     	boolean bFlag = false;
 
     	// remove from list
-        if (isMain())
+        if (m_isMain)
         {
             bFlag = anObject.delete();
         } else
@@ -435,9 +443,9 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     public boolean doDeleteReference(M anObject)
     {
-    	MsoModelImpl model = MsoModelImpl.getInstance();
-        boolean isLocalUpdate = model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
-        boolean updateServer = isLocalUpdate;
+        boolean isLocalUpdate = m_msoModel.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+        boolean isChanged = isLocalUpdate;
+        boolean isLoopback = false;
 
         /* ================================================================
          * If client updates are suspended, deleted references must
@@ -448,7 +456,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
          * is called.
          * ================================================================ */
 
-        boolean isUpdateSuspended = model.isUpdateSuspended();
+        boolean isUpdateSuspended = m_msoModel.isUpdateSuspended();
 
         String key = anObject.getObjectId();
 
@@ -460,14 +468,14 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
             {
                 m_deleted.put(key, anObject);
             }
-            else {
-            	m_deleted.remove(key);
-            }
+
         } else
         {
         	// remove locally added
             refObj = m_added.remove(key);
-            updateServer = false;
+            // set flags
+            isChanged = false;
+        	isLoopback = (m_deleted.remove(key)!=null);
         }
         if (refObj != null)
         {
@@ -480,7 +488,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
             }
             if (m_owner != null)
             {
-                ((AbstractMsoObject) m_owner).registerRemovedReference(this,updateServer);
+                m_owner.registerRemovedReference(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
             }
             return true;
         }
@@ -510,7 +518,8 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
         if (m_owner != null)
         {
-            ((AbstractMsoObject) m_owner).registerRemovedReference(this,updateServer);
+            m_owner.registerRemovedReference(
+            		this,m_msoModel.getUpdateMode(),updateServer,false);
         }
 
         Collection<String> tmpList = aList.keySet();
@@ -572,7 +581,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         {
             m_items.put(anObject.getObjectId(), anObject);
             ((AbstractMsoObject) anObject).addDeleteListener(this);
-            ((AbstractMsoObject) anObject).registerCreatedObject(this);
+            ((AbstractMsoObject) anObject).registerCreatedObject(this,m_msoModel.getUpdateMode());
         }
     }
 
@@ -591,7 +600,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
         if (m_owner != null && m_deleted.size() > 0)
         {
-            ((AbstractMsoObject) m_owner).registerAddedReference(this);
+            m_owner.registerAddedReference(this,m_msoModel.getUpdateMode(),true,false);
         }
 
         m_deleted.clear();
@@ -640,7 +649,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     private void clearPending(HashMap<String, M> aList) {
     	// only clear if client update is resumed (active)
-    	if(!MsoModelImpl.getInstance().isUpdateSuspended()) {
+    	if(!m_msoModel.isUpdateSuspended()) {
 	        for(M it : aList.values()) {
 	        	m_pending.remove(it.getObjectId());
 	        }
@@ -665,18 +674,24 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     public void resumeClientUpdate(boolean all)
     {
+    	// only notify existing items once in main list
         if (m_isMain)
         {
             for (M object : getItems())
             {
                 object.resumeClientUpdate(all);
             }
-            for (M object : m_pending.values())
-            {
-                object.resumeClientUpdate(all);
-            }
-            m_pending.clear();
         }
+        // notify deleted and pending items
+        for (M object : m_deleted.values())
+        {
+            object.resumeClientUpdate(all);
+        }
+        for (M object : m_pending.values())
+        {
+            object.resumeClientUpdate(all);
+        }
+        m_pending.clear();
     }
 
     public int getCardinality()
@@ -813,7 +828,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         IMsoObjectIf.IObjectIdIf retVal;
         do
         {
-            retVal = MsoModelImpl.getInstance().getModelDriver().makeObjectId();
+            retVal = m_msoModel.getModelDriver().makeObjectId();
         }
         while (m_items.get(retVal.getId()) != null || m_added.get(retVal.getId()) != null || m_deleted.get(retVal.getId()) != null);
         return retVal;
@@ -995,7 +1010,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         if (candidates.size() != 0)
         {
 
-	        MsoModelImpl.getInstance().setLocalUpdateMode();
+	        m_msoModel.setLocalUpdateMode();
 	        int nextNumber = -1;
 	        for (M item : candidates)
 	        {
@@ -1016,7 +1031,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	                }
 	            }
 	        }
-	        MsoModelImpl.getInstance().restoreUpdateMode();
+	        m_msoModel.restoreUpdateMode();
         }
 
         // finished

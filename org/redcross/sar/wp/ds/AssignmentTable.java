@@ -67,12 +67,12 @@ public class AssignmentTable extends DiskoTable {
 		installHeader();
 
 		// set string converter
-		setStringConverter(new AssignmentStringConverter());
+		setStringConverter(new AssignmentStringConverter(true));
 
 		// add row sorter
 		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
 		tableRowSorter.setComparator(0, IAssignmentIf.ASSIGNMENT_TYPE_NUMBER_COMPERATOR);
-		tableRowSorter.setStringConverter(getStringConverter());
+		tableRowSorter.setStringConverter(new AssignmentStringConverter(false));
 		tableRowSorter.setMaxSortKeys(1);
 		tableRowSorter.setSortsOnUpdates(true);
 		setRowSorter(tableRowSorter);
@@ -163,7 +163,7 @@ public class AssignmentTable extends DiskoTable {
 		final TableCellButtons editor = new TableCellButtons();
 		editor.setEditorShown(true);
 		editor.setIconConverter(new AssignmentIconConverter());
-		editor.setStringConverter(new AssignmentStringConverter());
+		editor.setStringConverter(new AssignmentStringConverter(true));
 		if(actions) {
 			editor.createPopupMenu("actions");
 			editor.installEditorPopup("actions","button");

@@ -20,7 +20,14 @@ import org.redcross.sar.util.mso.TimePos;
 public class AssignmentStringConverter extends TableStringConverter {
 
 	private static final String EMPTY = "";
+	private static final String SPACE = " ";
 	private static final NumberFormat f11 = new DecimalFormat("0.0");
+
+	private boolean m_isHtml;
+
+	public AssignmentStringConverter(boolean isHtml) {
+		m_isHtml = isHtml;
+	}
 
 	public String toString(TableModel m, int row, int column) {
 		// not filtered?
@@ -52,14 +59,14 @@ public class AssignmentStringConverter extends TableStringConverter {
 			case AssignmentTableModel.MDA_INDEX:
 			case AssignmentTableModel.XDE_INDEX:
 			case AssignmentTableModel.XDA_INDEX:
-				return value instanceof Double ? Math.round((Double)value) + " m" : EMPTY;
+				return value instanceof Double ? getText(Math.round((Double)value), "m") : EMPTY;
 			case AssignmentTableModel.ESE_INDEX:
 			case AssignmentTableModel.ESA_INDEX:
 			case AssignmentTableModel.MSE_INDEX:
 			case AssignmentTableModel.MSA_INDEX:
 			case AssignmentTableModel.XSE_INDEX:
 			case AssignmentTableModel.XSA_INDEX:
-				return value instanceof Double ? f11.format(((Double)value)* 3.6) + " km/t" : EMPTY;
+				return value instanceof Double ? getText(f11.format(((Double)value)* 3.6), "km/t") : EMPTY;
 			case AssignmentTableModel.ECP_INDEX:
 				String position = EMPTY;
 				if(value instanceof TimePos) {
@@ -78,5 +85,14 @@ public class AssignmentStringConverter extends TableStringConverter {
 		return EMPTY;
 
 	}
+
+	private String getText(Object value, String unit) {
+		return m_isHtml ? Utils.getHtml(value + getUnitText(unit)) : value + getUnitText(unit);
+	}
+
+	private String getUnitText(String text) {
+		return SPACE + (m_isHtml ? "<small style=\"color:gray\">" + text : text);
+	}
+
 
 }

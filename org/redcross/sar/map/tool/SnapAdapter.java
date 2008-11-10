@@ -15,7 +15,7 @@ import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.index.IndexedGeometry;
 import org.redcross.sar.map.work.IMapWork;
-import org.redcross.sar.thread.AbstractWork;
+import org.redcross.sar.work.AbstractWork;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.IIdentify;
@@ -478,7 +478,7 @@ public class SnapAdapter {
 
 		public SnapWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
 			// forward
-			super(false,true,ThreadType.WORK_ON_LOOP,
+			super(0,false,true,ThreadType.WORK_ON_LOOP,
 					"Oppdaterer snapping buffer", 100,notify,false);
 			// prepare
 			this.extent = extent;

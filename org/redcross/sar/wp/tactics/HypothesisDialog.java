@@ -4,7 +4,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -23,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.EnumSet;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
@@ -46,33 +44,34 @@ import org.redcross.sar.mso.data.IHypothesisIf.HypothesisStatus;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class HypothesisDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	private IMsoModelIf msoModel = null;
-	private DefaultPanel contentPanel = null;
-	private JPanel hypothesisPanel = null;
-	private JPanel buttonPanel = null;
-	private JButton createButton = null;
-	private JButton deleteButton = null;
-	private JScrollPane listScrollPane = null;
-	private JList hypothesisList = null;
-	private JPanel centerPanel = null;
-	private JLabel selectedLabel = null;
-	private BasePanel descriptionPanel = null;
-	private JTextArea descriptionTextArea = null;
+
+	private IMsoModelIf msoModel;
+	private DefaultPanel contentPanel;
+	private JPanel hypothesisPanel;
+	private JPanel buttonPanel;
+	private JButton createButton;
+	private JButton deleteButton;
+	private JScrollPane listScrollPane;
+	private JList hypothesisList;
+	private JPanel centerPanel;
+	private JLabel selectedLabel;
+	private BasePanel descriptionPanel;
+	private JTextArea descriptionTextArea;
 	private FieldsPanel attribsPanel;
 	private ComboBoxField statusCombo;
 	private ComboBoxField priorityCombo;
 
-	private IDiskoWpModule wp = null;
+	private IDiskoWpModule wp;
 
-	private String[] labels = null;
+	private String[] labels;
 
 	public HypothesisDialog(IDiskoWpModule wp) {
 		// forward
@@ -97,7 +96,6 @@ public class HypothesisDialog extends DefaultDialog {
 			this.setContentPane(getContentPanel());
             this.setPreferredSize(new Dimension(900, 300));
             this.pack();
-			loadHypotheses();
 		}
 		catch (java.lang.Throwable e) {
 			e.printStackTrace();
@@ -107,7 +105,6 @@ public class HypothesisDialog extends DefaultDialog {
 	private static EnumSet<IMsoManagerIf.MsoClassCode> getMyInterest() {
 		EnumSet<IMsoManagerIf.MsoClassCode> myInterests
 			= EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA);
-		myInterests.add(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS);
 		return myInterests;
 	}
 
@@ -129,18 +126,6 @@ public class HypothesisDialog extends DefaultDialog {
 				contentPanel = new DefaultPanel("",true,true) {
 
 					private static final long serialVersionUID = 1L;
-
-					@Override
-					protected boolean beforeCancel() {
-
-						IHypothesisIf h = getSelectedHypothesis();
-						if(h==null) {
-							Utils.showWarning("Begrensning","Du må velge en hypotese");
-							return false;
-						}
-						return true;
-
-					}
 
 					@Override
 					protected boolean beforeFinish() {
@@ -195,42 +180,6 @@ public class HypothesisDialog extends DefaultDialog {
 					public void update() {
 						super.update();
 						setup();
-					}
-
-					@Override
-					protected void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
-						if(msoObj instanceof IHypothesisIf) {
-							addHypothesis((IHypothesisIf)msoObj);
-						}
-					}
-
-					@Override
-					protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
-						// is same as selected?
-						if(msoObj == msoObject) {
-							setMsoObject(msoObj);
-						}
-						else if(msoObj instanceof IHypothesisIf) {
-							// refresh list
-							setHypothesis((IHypothesisIf)msoObj, true, false);
-						}
-					}
-
-					@Override
-					protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
-						// is same as selected?
-						if(msoObj == msoObject) {
-							// reset selection
-							setMsoObject(null);
-						}
-						else if(msoObj instanceof IHypothesisIf) {
-							removeHypothesis((IHypothesisIf)msoObj);
-						}
-					}
-
-					@Override
-					protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
-						clearHypotheses();
 					}
 
 
@@ -367,6 +316,7 @@ public class HypothesisDialog extends DefaultDialog {
 			try {
 				HypothesisListModel listModel = new HypothesisListModel(msoModel);
 				hypothesisList = new JList(listModel);
+				hypothesisList.setFixedCellHeight(26);
 				hypothesisList.setCellRenderer(new HypothesisListCellRenderer());
 				hypothesisList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				hypothesisList.addListSelectionListener(new ListSelectionListener() {
@@ -466,7 +416,7 @@ public class HypothesisDialog extends DefaultDialog {
 						// consume?
 						if(!isChangeable()) return;
 						// force an update
-						setDirty(true);
+						setDescription(descriptionTextArea.getText(), false, true);
 					}
 
 				});
@@ -491,10 +441,10 @@ public class HypothesisDialog extends DefaultDialog {
 				attribsPanel.setNotScrollBars();
 				attribsPanel.addField(getPriorityCombo());
 				attribsPanel.addField(getStatusCombo());
-				attribsPanel.addWorkListener(new IWorkListener() {
+				attribsPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 					@Override
-					public void onWorkPerformed(WorkEvent e) {
+					public void onFlowPerformed(WorkFlowEvent e) {
 						if(e.isChange() || e.isFinish())
 							setDirty(true);
 					}
@@ -551,58 +501,6 @@ public class HypothesisDialog extends DefaultDialog {
 		return statusCombo;
 	}
 
-	private void loadHypotheses() {
-		if(msoModel.getMsoManager().operationExists()) {
-			Collection<IHypothesisIf> c = msoModel.getMsoManager().
-				getCmdPost().getHypothesisListItems();
-			DefaultListModel model = new DefaultListModel();
-			for(IHypothesisIf h:c) {
-				model.addElement(DiskoEnumFactory.getText(IMsoManagerIf
-						.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
-			}
-			hypothesisList.setModel(model);
-		}
-	}
-
-	private void clearHypotheses() {
-		hypothesisList.setModel(new DefaultListModel());
-	}
-
-	private void addHypothesis(IHypothesisIf h) {
-		DefaultListModel model = (DefaultListModel)hypothesisList.getModel();
-		model.addElement(DiskoEnumFactory.getText(IMsoManagerIf
-				.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
-	}
-
-	private void removeHypothesis(IHypothesisIf h) {
-		DefaultListModel model = (DefaultListModel)hypothesisList.getModel();
-		model.removeElement(DiskoEnumFactory.getText(IMsoManagerIf
-				.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber());
-	}
-
-	private IHypothesisIf getHypothesis(String name) {
-
-		if(name==null || name.isEmpty()) return null;
-
-		if(msoModel.getMsoManager().operationExists()) {
-			Collection<IHypothesisIf> c = msoModel.getMsoManager()
-				.getCmdPost().getHypothesisListItems();
-
-			for(IHypothesisIf h:c) {
-				if(name.equalsIgnoreCase(getHypothesisName(h))) {
-					// found!
-					return h;
-				}
-			}
-		}
-
-		return null;
-	}
-
-	private String getHypothesisName(IHypothesisIf h) {
-		return h!=null ? DiskoEnumFactory.getText(IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS)+" "+h.getNumber() : null;
-	}
-
 	private void createlabels() {
 		labels = new String[5];
 		labels[0] = DiskoStringFactory.getText("PRIMARY_SEARCH_AREA");
@@ -613,7 +511,7 @@ public class HypothesisDialog extends DefaultDialog {
 	}
 
 	public IHypothesisIf getSelectedHypothesis() {
-		return getHypothesis((String)getHypothesisList().getSelectedValue());
+		return (IHypothesisIf)getHypothesisList().getSelectedValue();
 	}
 
 	private void setHypothesis(IHypothesisIf h, boolean gui, boolean mso) {
@@ -626,7 +524,7 @@ public class HypothesisDialog extends DefaultDialog {
 			getSelectedLabel().setText("<html>" + (h!=null ? "<b>" + name + "</b> er valg" :
 				getHypothesisList().getModel().getSize() == 0 ? "Du må opprette en hypotese" : "Velg en hypotese")+"</html>");
 			// update all
-			getHypothesisList().setSelectedValue(name, true);
+			getHypothesisList().setSelectedValue(h, true);
 			setDescription(h!=null ? h.getDescription() : null,true,mso);
 			setPriority(h!=null ? h.getPriorityIndex() + 1 : 0,true,mso);
 			setStatus(h!=null ? h.getStatus() : HypothesisStatus.ACTIVE ,true,mso);
@@ -780,7 +678,7 @@ public class HypothesisDialog extends DefaultDialog {
 		// prompt?
 		if(h!=null) {
 			int ans = Utils.showConfirm("Bekreft", "Dette vil slette "
-					+ getHypothesisList().getSelectedValue()
+					+ getHypothesisName(getSelectedHypothesis())
 					+ ". Vil du fortsette?", JOptionPane.YES_NO_OPTION);
 			if(ans == JOptionPane.YES_OPTION) {
 				if(MsoUtils.delete(h, 0)) {
@@ -792,4 +690,9 @@ public class HypothesisDialog extends DefaultDialog {
 		return true;
 	}
 
-}  //  @jve:decl-index=0:visual-constraint="10,10"
+	private String getHypothesisName(IHypothesisIf h) {
+		return DiskoEnumFactory.getText(IMsoManagerIf
+				.MsoClassCode.CLASSCODE_HYPOTHESIS)+(h.getNumber());
+	}
+
+}

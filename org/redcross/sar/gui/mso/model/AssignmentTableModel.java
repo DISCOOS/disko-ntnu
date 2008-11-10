@@ -1,10 +1,14 @@
 package org.redcross.sar.gui.mso.model;
 
+import java.util.EnumSet;
+
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AssignmentImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentListIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 
 public class AssignmentTableModel extends AbstractMsoTableModel<IAssignmentIf> {
 
@@ -22,11 +26,15 @@ public class AssignmentTableModel extends AbstractMsoTableModel<IAssignmentIf> {
 	 * ============================================================ */
 
 	public AssignmentTableModel(IMsoModelIf model) {
+		this(model,EnumSet.allOf(AssignmentStatus.class));
+	}
+
+	public AssignmentTableModel(IMsoModelIf model, EnumSet<AssignmentStatus> status) {
 		// forward
 		super(IAssignmentIf.class,NAMES,CAPTIONS,false);
 		// install model
 		IAssignmentListIf list = model.getMsoManager().getCmdPost().getAssignmentList();
-		connect(model,list,IAssignmentIf.ASSIGNMENT_TYPE_NUMBER_COMPERATOR);
+		connect(model,createDefaultSelector(status),IAssignmentIf.ASSIGNMENT_TYPE_NUMBER_COMPERATOR);
 		load(list);
 	}
 
@@ -75,5 +83,20 @@ public class AssignmentTableModel extends AbstractMsoTableModel<IAssignmentIf> {
 		}
 		return false;
 	}
+
+	/* ================================================================
+	 *  Helper methods
+	 * ================================================================ */
+
+	private static Selector<IAssignmentIf> createDefaultSelector(final EnumSet<AssignmentStatus> status) {
+		Selector<IAssignmentIf> selector = new Selector<IAssignmentIf>() {
+	        public boolean select(IAssignmentIf anAssignment)
+	        {
+	            return (status.contains(anAssignment.getStatus()));
+	        }
+	    };
+		return selector;
+	}
+
 
 }

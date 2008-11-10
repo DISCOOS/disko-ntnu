@@ -35,7 +35,7 @@ public class SubMenu extends JPanel {
 	private JPanel rollbackPanel;
 	private JPanel commitPanel;
 
-	private boolean isTransactionMode;
+	private boolean isTransactionMode = true;
 
 	private final ButtonGroup bgroup = new ButtonGroup();
 	private final EventListenerList listeners = new EventListenerList();

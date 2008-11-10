@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.thread.event.IWorkListener;
+import org.redcross.sar.work.event.IWorkFlowListener;
 
 import com.esri.arcgis.systemUI.ICommand;
 
@@ -56,9 +56,9 @@ public interface IMapCommand extends ICommand {
 	
 	public AbstractButton getButton();
 	
-	public void addWorkEventListener(IWorkListener listener);
+	public void addWorkEventListener(IWorkFlowListener listener);
 	
-	public void removeWorkEventListener(IWorkListener listener);
+	public void removeWorkEventListener(IWorkFlowListener listener);
 	
 	public Object getAttribute(String attribute);
 	

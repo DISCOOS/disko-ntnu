@@ -30,10 +30,10 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
@@ -133,10 +133,10 @@ public class POIPanel extends DefaultToolPanel {
 				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setPreferredSize(new Dimension(200,80));
 				optionsPanel.addField(getNameAttr());
-				optionsPanel.addWorkListener(new IWorkListener() {
+				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 					@Override
-					public void onWorkPerformed(WorkEvent e) {
+					public void onFlowPerformed(WorkFlowEvent e) {
 
 						// consume?
 						if(!isChangeable()) return;
@@ -181,9 +181,9 @@ public class POIPanel extends DefaultToolPanel {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
 			gotoPanel.setPreferredSize(new Dimension(200, 140));
-			gotoPanel.addWorkListener(new IWorkListener() {
+			gotoPanel.addWorkFlowListener(new IWorkFlowListener() {
 
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 
 					// consume?
 					if(!isChangeable()) return;
@@ -232,9 +232,9 @@ public class POIPanel extends DefaultToolPanel {
 		if (poiTypesPanel == null) {
 			poiTypesPanel = new POITypesPanel();
 			poiTypesPanel.setPreferredSize(new Dimension(200,100));
-			poiTypesPanel.addWorkListener(new IWorkListener() {
+			poiTypesPanel.addWorkFlowListener(new IWorkFlowListener() {
 
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 
 					// consume?
 					if(!isChangeable()) return;

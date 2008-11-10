@@ -1,37 +1,25 @@
 package org.redcross.sar.wp.ds;
 
-import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.Calendar;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
+import javax.swing.JToggleButton;
 
 import org.redcross.sar.app.IDiskoRole;
-import org.redcross.sar.ds.DsPool;
-import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
-import org.redcross.sar.gui.dialog.DirectoryChooserDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.field.TextLineField;
-import org.redcross.sar.gui.model.FileTreeModel;
-import org.redcross.sar.gui.panel.FieldsPanel;
-import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.IDiskoLayer;
@@ -39,45 +27,25 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.thread.IWorkLoop;
-import org.redcross.sar.thread.WorkPool;
-import org.redcross.sar.thread.IWorkLoop.LoopState;
-import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
-import org.redcross.sar.wp.ds.AssignmentsPanel;
+
+import com.esri.arcgis.interop.AutomationException;
 
 public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 {
 
 	private static final int UPDATE_TIME_DELAY = 1000;	// updates every second
-	private static final String CONTROL_CAPTION = "Beslutningsstøtte - <b>Kontrollpanel</b> (%s)";
 
 	private long m_timeCounter = 0;
 
 	private JSplitPane m_splitPane;
 	private MapPanel m_mapPanel;
-	private JPanel m_estimatorPanel;
-	private TogglePanel m_controlPanel;
-	private FieldsPanel m_estAttribsPanel;
-	private DTGField m_startedTimeAttr;
-	private TextLineField m_effortTimeAttr;
-	private TextLineField m_avgEstTimeAttr;
-	private TextLineField m_maxEstTimeAttr;
-	private TextLineField m_utilEstTimeAttr;
-	private TextLineField m_catalogAttr;
-	private JButton m_loadButton;
-	private JButton m_saveButton;
-	private JButton m_resumeButton;
-	private JButton m_suspendButton;
-	private JButton m_stopButton;
-	private JTabbedPane m_tabbedPane;
-	private AssignmentsPanel m_pendingAssignmentsPanel;
-	private AssignmentsPanel m_activeAssignmentsPanel;
-	private AssignmentsPanel m_archivedAssignmentsPanel;
-
-	private DsPool m_ds;
-	private RouteCostEstimator m_estimator;
+	private JPanel m_dsPanel;
+	private ETEPanel m_etePanel;
+	private AdvisorPanel m_advisorPanel;
+	private JToggleButton m_eteToggleButton;
+	private JToggleButton m_advisorToggleButton;
 
     public DiskoWpDsImpl() throws Exception
     {
@@ -87,8 +55,8 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		// initialize GUI
 		initialize();
 
-		// install estimators
-		install();
+		// connect to operation services
+		connect();
 
 	}
 
@@ -130,74 +98,37 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 
     private void initialize()
     {
-		// get properties
-		assignWpBundle(IDiskoWpDs.class);
+		try {
+			// get properties
+			assignWpBundle(IDiskoWpDs.class);
 
-		// forward
-		installMap();
+			// forward
+			installMap();
 
-		// set layout component
-		layoutComponent(getSplitPane());
+			// set layout component
+			layoutComponent(getSplitPane());
 
-		// start update task
-		registerUpdateTask();
+			// add layout buttons on sub menu
+			layoutButton(getETEToggleButton(), true);
+			layoutButton(getAdvisorToggleButton(), true);
 
-    }
+			// start update task
+			registerUpdateTask();
 
-	/**
-	 * This method initializes m_tabbedPane
-	 *
-	 * @return javax.swing.JTabbedPane
-	 */
-	private JTabbedPane getTabbedPane() {
-		if (m_tabbedPane == null) {
-			m_tabbedPane = new JTabbedPane();
-			Dimension dim = new Dimension(350,350);
-			m_tabbedPane.setMinimumSize(dim);
-			m_tabbedPane.setPreferredSize(dim);
-			m_tabbedPane.addTab("Avventer",
-					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"),
-					getPendingAssignmentsPanel(), null);
-			m_tabbedPane.addTab("Aktive",
-					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"),
-					getActiveAssignmentsPanel(), null);
-			m_tabbedPane.addTab("Utførte",
-					DiskoIconFactory.getIcon("SEARCH.PATROL","32x32"),
-					getArchivedAssignmentsPanel(), null);
-			m_tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+			// make all layers unselectable
+			getMap().getMsoLayerModel().setAllSelectable(false);
+
+			// select ETE view
+			getETEToggleButton().doClick();
+
+		} catch (AutomationException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
 		}
-		return m_tabbedPane;
 
-	}
-
-	private AssignmentsPanel getPendingAssignmentsPanel()
-    {
-        if (m_pendingAssignmentsPanel == null)
-        {
-        	m_pendingAssignmentsPanel = new AssignmentsPanel(getMap(),0);
-        	m_pendingAssignmentsPanel.install(MsoModelImpl.getInstance());
-        }
-        return m_pendingAssignmentsPanel;
-    }
-
-	private AssignmentsPanel getActiveAssignmentsPanel()
-    {
-        if (m_activeAssignmentsPanel == null)
-        {
-        	m_activeAssignmentsPanel = new AssignmentsPanel(getMap(),1);
-        	m_activeAssignmentsPanel.install(MsoModelImpl.getInstance());
-        }
-        return m_activeAssignmentsPanel;
-    }
-
-	private AssignmentsPanel getArchivedAssignmentsPanel()
-    {
-        if (m_archivedAssignmentsPanel == null)
-        {
-        	m_archivedAssignmentsPanel = new AssignmentsPanel(getMap(),2);
-        	m_archivedAssignmentsPanel.install(MsoModelImpl.getInstance());
-        }
-        return m_archivedAssignmentsPanel;
     }
 
     private JSplitPane getSplitPane()
@@ -207,7 +138,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         	m_splitPane = new JSplitPane();
         	m_splitPane.setBorder(BorderFactory.createEmptyBorder());
         	m_splitPane.setLeftComponent(getMapPanel());
-        	m_splitPane.setRightComponent(getEstimatorPanel());
+        	m_splitPane.setRightComponent(getDsPanel());
         }
         return m_splitPane;
     }
@@ -227,191 +158,85 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         return m_mapPanel;
     }
 
-    private JPanel getEstimatorPanel()
+    private JPanel getDsPanel()
     {
-        if (m_estimatorPanel == null)
+        if (m_dsPanel == null)
         {
-        	m_estimatorPanel = new JPanel(new BorderLayout(5,5));
-        	m_estimatorPanel.add(getControlPanel(),BorderLayout.NORTH);
-        	m_estimatorPanel.add(getTabbedPane(),BorderLayout.CENTER);
+        	m_dsPanel = new JPanel(new CardLayout(5,5));
+        	m_dsPanel.add(getETEPanel(),"ete");
+        	m_dsPanel.add(getAdvisorPanel(),"advisor");
 
         }
-        return m_estimatorPanel;
+        return m_dsPanel;
     }
 
-    private TogglePanel getControlPanel()
+    private ETEPanel getETEPanel()
     {
-        if (m_controlPanel == null)
+        if (m_etePanel == null)
         {
-        	m_controlPanel = new TogglePanel(String.format(CONTROL_CAPTION,"Stoppet"),false,false,ButtonSize.SMALL);
-        	m_controlPanel.setPreferredSize(new Dimension(400,235));
-        	m_controlPanel.collapse();
-        	m_controlPanel.addButton(getLoadButton(), "load");
-        	m_controlPanel.addButton(getSaveButton(), "save");
-        	m_controlPanel.addButton(getResumeButton(), "resume");
-        	m_controlPanel.addButton(getSuspendButton(), "suspend");
-        	m_controlPanel.addButton(getStopButton(), "stop");
-        	m_controlPanel.addActionListener(new ActionListener() {
-
-    			@Override
-    			public void actionPerformed(ActionEvent e) {
-    				// prepare
-    				String cmd = e.getActionCommand();
-    				// translate
-    				if("load".equals(cmd)) {
-    					load();
-    				}
-    				else if("save".equals(cmd)) {
-    					save();
-    				}
-    				else if("resume".equals(cmd)) {
-    					resume();
-    				}
-    				else if("suspend".equals(cmd)) {
-    					suspend();
-    				}
-    				else if("stop".equals(cmd)) {
-    					stop();
-    				}
-    			}
-
-    		});
-
-        	  // add attributes
-        	m_controlPanel.setBodyComponent(getEstAttribsPanel());
-
+        	try {
+				m_etePanel = new ETEPanel(getMap(),MsoModelImpl.getInstance());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
-        return m_controlPanel;
+        return m_etePanel;
     }
 
-    private JButton getLoadButton() {
-		if(m_loadButton==null) {
-			m_loadButton = DiskoButtonFactory.createButton("GENERAL.OPEN", ButtonSize.SMALL);
-		}
-		return m_loadButton;
-	}
-
-	private JButton getSaveButton() {
-		if(m_saveButton==null) {
-			m_saveButton = DiskoButtonFactory.createButton("GENERAL.SAVE", ButtonSize.SMALL);
-		}
-		return m_saveButton;
-	}
-
-    private JButton getResumeButton() {
-		if(m_resumeButton==null) {
-			m_resumeButton = DiskoButtonFactory.createButton("GENERAL.PLAY", ButtonSize.SMALL);
-		}
-		return m_resumeButton;
-	}
-
-	private JButton getSuspendButton() {
-		if(m_suspendButton==null) {
-			m_suspendButton = DiskoButtonFactory.createButton("GENERAL.PAUSE", ButtonSize.SMALL);
-		}
-		return m_suspendButton;
-	}
-
-	private JButton getStopButton() {
-		if(m_stopButton==null) {
-			m_stopButton = DiskoButtonFactory.createButton("GENERAL.STOP", ButtonSize.SMALL);
-		}
-		return m_stopButton;
-	}
-
-	private FieldsPanel getEstAttribsPanel()
+    private AdvisorPanel getAdvisorPanel()
     {
-        if (m_estAttribsPanel == null)
+        if (m_advisorPanel == null)
         {
-        	m_estAttribsPanel = new FieldsPanel("","",false,false);
-        	m_estAttribsPanel.setHeaderVisible(false);
-        	m_estAttribsPanel.setBorderVisible(false);
-        	m_estAttribsPanel.setNotScrollBars();
-        	m_estAttribsPanel.addField(getStartedTimeAttr());
-        	m_estAttribsPanel.addField(getEffortTimeAttr());
-        	m_estAttribsPanel.addField(getAvgEstTimeAttr());
-        	m_estAttribsPanel.addField(getMaxEstTimeAttr());
-        	m_estAttribsPanel.addField(getUtilEstTimeAttr());
-        	m_estAttribsPanel.addField(getCatalogAttr());
+        	try {
+        		m_advisorPanel = new AdvisorPanel(MsoModelImpl.getInstance());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
-        return m_estAttribsPanel;
+        return m_advisorPanel;
     }
 
-	private DTGField getStartedTimeAttr()
-    {
-        if (m_startedTimeAttr == null)
-        {
-        	m_startedTimeAttr = new DTGField("startedtime","Startet kl",
-        			false, 130, 25, Calendar.getInstance());
-
-        }
-        return m_startedTimeAttr;
-    }
-
-	private TextLineField getEffortTimeAttr()
-    {
-        if (m_effortTimeAttr == null)
-        {
-        	m_effortTimeAttr = new TextLineField("efforttime","Innsatstid", false, 130, 25, 0);
-
-        }
-        return m_effortTimeAttr;
-    }
-
-	private TextLineField getAvgEstTimeAttr()
-    {
-        if (m_avgEstTimeAttr == null)
-        {
-        	m_avgEstTimeAttr = new TextLineField("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
-
-        }
-        return m_avgEstTimeAttr;
-    }
-
-	private TextLineField getMaxEstTimeAttr()
-    {
-        if (m_maxEstTimeAttr == null)
-        {
-        	m_maxEstTimeAttr = new TextLineField("maxtime","Arbeidstid (max)", false, 130, 25, 0);
-
-        }
-        return m_maxEstTimeAttr;
-    }
-
-	private TextLineField getUtilEstTimeAttr()
-    {
-        if (m_utilEstTimeAttr == null)
-        {
-        	m_utilEstTimeAttr = new TextLineField("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
-
-        }
-        return m_utilEstTimeAttr;
-    }
-
-	private TextLineField getCatalogAttr() {
-		if (m_catalogAttr==null) {
-			m_catalogAttr = new TextLineField("Catalog","Katalog",false,130,25,AppProps.getText("DS.ETE.LOGGING.path"));
-			m_catalogAttr.setButtonVisible(true);
-			m_catalogAttr.setButtonEnabled(true);
-			m_catalogAttr.addButtonActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					DirectoryChooserDialog dirChooser = new DirectoryChooserDialog();
-					File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
-					dirChooser.setRoot(FileTreeModel.COMPUTER);
-					String msg = "Velg katalog";
-					Icon icon = UIManager.getIcon("OptionPane.informationIcon");
-					Object selected = dirChooser.select(file.toString(), msg, icon);
-					if(selected != null) {
-						m_catalogAttr.setValue(selected);
-						AppProps.setText("DS.ETE.LOGGING.path",m_catalogAttr.getValue());
+	private JToggleButton getETEToggleButton() {
+		if (m_eteToggleButton == null) {
+			try {
+				m_eteToggleButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+				m_eteToggleButton.setIcon(DiskoIconFactory.getIcon("SEARCH.PATROL", "48x48"));
+				m_eteToggleButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						showView("ete");
 					}
-				}
-
-			});
+				});
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		return m_catalogAttr;
+		return m_eteToggleButton;
+	}
+
+	private JToggleButton getAdvisorToggleButton() {
+		if (m_advisorToggleButton == null) {
+			try {
+				m_advisorToggleButton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
+				m_advisorToggleButton.setIcon(DiskoIconFactory.getIcon("GENERAL.HYPOTHESIS", "48x48"));
+				m_advisorToggleButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						showView("advisor");
+					}
+				});
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return m_advisorToggleButton;
+	}
+
+	private void showView(String name) {
+		CardLayout cards = (CardLayout)getDsPanel().getLayout();
+		cards.show(getDsPanel(), name);
 	}
 
     /**
@@ -439,113 +264,36 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
             @SuppressWarnings("unchecked")
             public void handleTick(TickEvent e)
             {
-            	update(false);
+            	update();
             }
         });
     }
 
-    @Override
-    public void beforeOperationChange() {
-    	suspend();
-    	super.beforeOperationChange();
-    }
-
 	@Override
 	public void afterOperationChange() {
+		// forward
     	super.afterOperationChange();
-		install();
-		update(true);
+    	// connect to operation services
+    	connect();
+    	// update views
+		update();
 	}
 
-	private void update(boolean init) {
-		if(!(isActive() && getMsoModel().getMsoManager().operationExists())) return;
-		if(init) {
-			getStartedTimeAttr().setValue(getMsoModel().getMsoManager().getOperation().getCreatedTime());
-		}
-		Calendar c = getStartedTimeAttr().getValue();
-		if(c!=null) {
-			int seconds = (int)(System.currentTimeMillis() - getStartedTimeAttr().getValue().getTimeInMillis())/1000;
-			getEffortTimeAttr().setValue(Utils.getTime(seconds));
-		}
-		// get decision support statistics
-		if(m_estimator!=null && !m_estimator.isLoopState(LoopState.PENDING)) {
-			// get work loop
-			IWorkLoop loop = m_estimator.getWorkLoop();
-			// update fields
-			getAvgEstTimeAttr().setValue(loop.getAverageWorkTime() + " ms");
-			getMaxEstTimeAttr().setValue(loop.getMaxWorkTime() + " ms");
-			getUtilEstTimeAttr().setValue(Math.round(loop.getUtilization()*100) + " %");
+	private void connect() {
+		getETEPanel().connect();
+		getAdvisorPanel().connect();
+	}
+
+	private void update() {
+		if(isActive()) {
+			getETEPanel().update();
+			getAdvisorPanel().update();
 		}
 	}
 
     public String getCaption() {
 		return getBundleText("DS");
 	}
-
-    private DsPool getDs() {
-    	if(m_ds==null) {
-    		try {
-				m_ds = DsPool.getInstance();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
-    	return m_ds;
-    }
-
-    private String getActiveOperationId() {
-    	return MsoModelImpl.getInstance().getModelDriver().getActiveOperationID();
-    }
-
-    private void install() {
-    	// get active operation
-    	String oprID = getActiveOperationId();
-    	// install estimator
-    	m_estimator = (RouteCostEstimator)getDs().install(RouteCostEstimator.class, oprID);
-    	// connect to MSO model
-    	m_estimator.connect(MsoModelImpl.getInstance());
-    	// connect to estimator
-    	getPendingAssignmentsPanel().connect(m_estimator);
-    	getActiveAssignmentsPanel().connect(m_estimator);
-    	getArchivedAssignmentsPanel().connect(m_estimator);
-    }
-
-    private void load() {
-    	File file = new File(AppProps.getText("DS.ETE.LOGGING.path"));
-    	if(file.exists()) {
-    		m_estimator.importSamples(file.toString());
-    	}
-    	else {
-    		Utils.showWarning("Advarsel","Loggfil " + AppProps.getText("DS.ETE.LOGGING.path") + " finnes ikke");
-    	}
-    }
-
-    private void save() {
-		String file = m_estimator.exportSamples(AppProps.getText("DS.ETE.LOGGING.path"));
-		getCatalogAttr().setValue(file);
-		Utils.showMessage("Bekreftelse","Loggfilen " + file + " er opprettet");
-    }
-
-    private void resume() {
-    	// forward
-    	doWork(1);
-    	// forward
-    	getControlPanel().setCaptionText(String.format(CONTROL_CAPTION,"Spiller"));
-    }
-
-    private void suspend() {
-    	// forward
-    	getDs().suspend(RouteCostEstimator.class, getActiveOperationId());
-    	getControlPanel().setCaptionText(String.format(CONTROL_CAPTION,"Pause"));
-    }
-
-    private void stop() {
-    	// forward
-    	getDs().stop(RouteCostEstimator.class, getActiveOperationId());
-    	// forward
-    	getControlPanel().setCaptionText(String.format(CONTROL_CAPTION,"Stoppet"));
-    }
 
 	public void activate(IDiskoRole role) {
 
@@ -559,73 +307,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		}
 
 		// forward
-		update(true);
+		update();
 
 	}
-
-	private boolean doWork(int task) {
-		try {
-			// forward work
-			WorkPool.getInstance().schedule(new DsWork(task));
-			// do work
-			return true;
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	class DsWork extends ModuleWork {
-
-		private int m_task = 0;
-
-		/**
-		 * Constructor
-		 *
-		 * @param task
-		 */
-		DsWork(int task) throws Exception {
-			// forward
-			super();
-			// prepare
-			m_task = task;
-		}
-
-		@Override
-		public Boolean doWork() {
-			try {
-				// dispatch task
-				switch(m_task) {
-				case 1: start(); return true;
-				case 2: rollback(); return true;
-				}
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-			return false;
-		}
-
-		private void start() {
-			try{
-				// is suspended?
-				if(m_estimator.isLoopState(LoopState.SUSPENDED)) {
-					m_estimator.resume();
-				}
-				else {
-		    		// load data
-		    		m_estimator.load();
-		    		// forward
-		    		m_estimator.start();
-				}
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-
 }

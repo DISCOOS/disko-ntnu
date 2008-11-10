@@ -35,9 +35,9 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf> {
 		// prepare
 		m_archived = archived;
 		// forward
-		connect(model,m_selector,IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+		connect(model,m_selector,IUnitIf.TYPE_AND_NUMBER_COMPARATOR);
 		// load data
-		load(model.getMsoManager().getCmdPost().getUnitList().getItems());
+		load(model.getMsoManager().getCmdPost().getUnitList());
 	}
 
 	/* =========================================================

@@ -18,7 +18,7 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JasperViewer;
 import net.sf.jasperreports.engine.JRPrintPage;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.IMapDataListener;
@@ -48,7 +48,7 @@ public class DiskoReportManager {
 	private final static double mapPrintHeigthSize = 0.169;
 	private final static String outputPrintFormat = ".JPG";
 
-	private IDiskoApplication m_app;
+	private IApplication m_app;
 
 	private String m_templatePath;
 
@@ -65,9 +65,7 @@ public class DiskoReportManager {
 
 	private JasperViewer m_viewer;
 
-	private boolean m_isMapReady = false;
-
-	public DiskoReportManager(IDiskoApplication app){
+	public DiskoReportManager(IApplication app){
 
 		// prepare
 		m_app = app;
@@ -85,42 +83,14 @@ public class DiskoReportManager {
 
 		// get map objects
 		try{
-			// map setup?
-			if(m_map==null){
-
-				// get print map
-				m_map = (DiskoMap)m_mapManager.getPrintMap();
-
-				// TODO: add grid on map
-				/*
-				try{
-					cartoMap = (com.esri.arcgis.carto.Map) m_map.getMap();
-					PageLayout pageLayout = (PageLayout) m_map.getMap();
-					//cartoMap.getAsIGraphicsContainer().findFrame();
-
-					IFrameElement frameElement = pageLayout.findFrame(m_map);
-
-					//lage grid
-					MeasuredGrid mapGrid = new MeasuredGrid();
-					//populere grid med properties
-					IProjectedGrid projGrid = (IProjectedGrid) cartoMap.getSpatialReference();
-
-					//mapGrid.setSpatialReferenceByRef(projGrid);
-
-					//cartoMap.setSpatialReferenceByRef();
-				}
-				catch(IOException ioe){
-					System.out.println("funker ikke");
-					ioe.printStackTrace();
-				}
-				*/
-
-			}
+			// get map?
+			if(m_map==null) m_map = (DiskoMap)m_mapManager.getPrintMap();
 			// get spatial reference?
-			if(m_srs==null)
-				m_srs = m_map.getSpatialReference();
+			if(m_srs==null) m_srs = m_map.getSpatialReference();
 			// update active view
 			m_activeView = m_map.getActiveView();
+			// update map?
+			m_map.execute(true,true);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -373,34 +343,12 @@ public class DiskoReportManager {
 
 	private void updateMap() {
 		// get state
-		m_isMapReady = m_map.isActive() || m_map.getMsoBinder().getBufferCount()==0;
+		boolean isMapReady = m_map.getMsoBinder().getBufferCount()==0;
 		// activate?
-		if(!m_isMapReady) {
-			// create listener
-			IMapDataListener listener = new IMapDataListener() {
-
-				public void onDataChanged(Collection<IMsoFeatureLayer> layers) {
-					m_isMapReady = true;
-				}
-
-			};
-			m_map.getMsoBinder().addMapDataListener(listener);
-			m_map.activate();
-			while(!m_isMapReady) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			m_map.getMsoBinder().removeMapDataListener(listener);
-			m_map.deactivate();
-		}
+		if(!isMapReady) m_map.execute(true,true);
 	}
 
 	private String exportMap(){
-		//System.out.println("exportMap()");
 
 		// initialize
 		long imgResolution = 100;

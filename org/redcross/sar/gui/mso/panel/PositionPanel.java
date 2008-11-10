@@ -39,12 +39,12 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.thread.event.WorkEvent;
-import org.redcross.sar.thread.event.IWorkListener;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
@@ -145,9 +145,9 @@ public class PositionPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.addWorkListener(new IWorkListener() {
+			gotoPanel.addWorkFlowListener(new IWorkFlowListener() {
 
-				public void onWorkPerformed(WorkEvent e) {
+				public void onFlowPerformed(WorkFlowEvent e) {
 					
 					// consume?
 					if(!isChangeable()) return;
@@ -250,10 +250,10 @@ public class PositionPanel extends DefaultToolPanel {
 				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setPreferredSize(new Dimension(200,25));	
 				optionsPanel.addField(getDTGAttr());
-				optionsPanel.addWorkListener(new IWorkListener() {
+				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 					@Override
-					public void onWorkPerformed(WorkEvent e) {
+					public void onFlowPerformed(WorkFlowEvent e) {
 
 						// consume?
 						if(!isChangeable()) return;
@@ -495,7 +495,7 @@ public class PositionPanel extends DefaultToolPanel {
 			if(cp!=null) {
 				// get unit list
 				List<IUnitIf> c = cp.getUnitList().selectItems(
-						IUnitIf.ACTIVE_UNIT_SELECTOR, IUnitIf.UNIT_TYPE_AND_NUMBER_COMPARATOR);
+						IUnitIf.ACTIVE_SELECTOR, IUnitIf.TYPE_AND_NUMBER_COMPARATOR);
 				// sort objects
 				MsoUtils.sortByName(new ArrayList<IMsoObjectIf>(c),1);
 				data = c.toArray();

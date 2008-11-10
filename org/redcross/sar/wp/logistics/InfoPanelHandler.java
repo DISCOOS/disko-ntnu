@@ -24,7 +24,6 @@ import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -103,7 +102,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 		for(MsoEvent.Update e : events.getEvents(myInterests))
 		{
 			// consume loopback updates
-			if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(e.getUpdateMode()))
+			if(!e.isLoopback())
 			{
 		        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
 		        {

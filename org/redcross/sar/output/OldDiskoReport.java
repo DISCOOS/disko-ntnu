@@ -19,7 +19,7 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.engine.util.JRSaver;
 import net.sf.jasperreports.view.JasperViewer;
 
-import org.redcross.sar.app.IDiskoApplication;
+import org.redcross.sar.app.IApplication;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -41,7 +41,7 @@ import com.esri.arcgis.output.IExport;
 
 public class OldDiskoReport {
 
-	private IDiskoApplication app = null;
+	private IApplication app = null;
 	private String reportTemplate_path = null;
 	private String reportPrint_path = null;
 
@@ -66,7 +66,7 @@ public class OldDiskoReport {
 
 	private DiskoWpTacticsImpl wp = null;
 
-	public OldDiskoReport(IDiskoApplication app){
+	public OldDiskoReport(IApplication app){
 		System.out.println("test");
 		this.app = app;
 
