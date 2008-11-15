@@ -7,7 +7,7 @@ import org.redcross.sar.math.IInput;
 import org.redcross.sar.math.ILevel;
 
 public class Level<S extends IData, T, D extends Number>
-				extends AbstractClue<S> implements ILevel<T,D> {
+				extends AbstractCue<S> implements ILevel<T,D> {
 
 	public static String[] ATTRIBUTE_NAMES = new String[] {
 		"time","in","rin","level","out","rout","range"
