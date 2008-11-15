@@ -84,6 +84,7 @@ public abstract class AbstractDsObject implements IDsObject {
 			else if (key instanceof String) {
 				name = (String) key;
 			}
+			name = getMethodName(name);
 			if(name!=null) {
 				Class<?> c = this.getClass();
 				try {
@@ -172,6 +173,18 @@ public abstract class AbstractDsObject implements IDsObject {
 	/* =============================================================
 	 * Helper methods
 	 * ============================================================= */
+
+
+	/**
+	 * Use this method to apply method name syntax. For example, if
+	 * attribute method names follow the "getXx..x" pattern, this
+	 * method should return <code>"get" + Utils.capitalize(key)</code>
+	 *
+	 * @param String attrName - Attribute name
+	 *
+	 * @return String - method name
+	 */
+	protected abstract String getMethodName(String attrName);
 
 	protected void addSample() {
 
