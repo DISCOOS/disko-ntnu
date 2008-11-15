@@ -1,0 +1,23 @@
+*****************************************
+ Run and Debug parameters
+*****************************************
+
+Main class : org.redcross.sar.app.Application
+
+-----------------------------------------
+ Local mode
+-----------------------------------------
+
+VM parameter : -Xmn100M -Xms384M -Xmx500M -Dproperty.file=localdisko.properties
+
+-----------------------------------------
+ Server mode
+-----------------------------------------
+
+VM parameter : -Xmn100M -Xms384M -Xmx500M -Dproperty.file=serverdisko.properties
+
+*****************************************
+ Building MSO model definition
+*****************************************
+
+Main class : org.redcross.sar.modeldriver.SaraObjectCreator
