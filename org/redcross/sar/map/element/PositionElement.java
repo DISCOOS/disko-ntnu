@@ -13,19 +13,32 @@ import com.esri.arcgis.display.esriSimpleMarkerStyle;
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.interop.AutomationException;
 
-public class PositionElement extends AbstractDiskoFeature {
+public class PositionElement extends AbstractMapFeature {
 
 	private static final long serialVersionUID = 1L;
 
+	private int style;
+	private double radius = 50.0; 			// in meters
+
 	private IPoint point = null;
-	private double radius = 50.0; // in meters
+
 	private MarkerElement markerElement;
 	private CircleElement circleElement;
 
 	public PositionElement() throws IOException, UnknownHostException {
 
 		// forward
+		this(esriSimpleMarkerStyle.esriSMSDiamond);
+
+	}
+
+	public PositionElement(int style) throws IOException, UnknownHostException {
+
+		// forward
 		super();
+
+		// prepare
+		this.style = style;
 
 		// initialize elements
 		initialize();
@@ -60,7 +73,7 @@ public class PositionElement extends AbstractDiskoFeature {
 			// create frame element
 			markerElement = new MarkerElement();
 			// set symbol
-			markerElement.setSymbol(MapUtil.getMarkerSymbol(0,255,0,esriSimpleMarkerStyle.esriSMSDiamond, false));
+			markerElement.setSymbol(MapUtil.getMarkerSymbol(0,255,0,style,false));
 			// initialize geometry
 			markerElement.setGeometry(point);
 		}

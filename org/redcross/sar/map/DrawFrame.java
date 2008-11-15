@@ -37,49 +37,49 @@ public class DrawFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	private GroupElement groupElement = null;
-	private TextElement textElement = null;
-	private FrameElement textBoxElement = null;
-	private FrameElement iconBoxElement = null;
-	private FrameElement frameElement = null;
-	
-	private String selectedIcon = null;
-	
-	private Map<String,IconElement> nameIcons = null;
-	private List<IconElement> orderIcons = null;
-	
-	private IActiveView activeView = null;
-	private IGraphicsContainer container = null;
-	
+	private GroupElement groupElement;
+	private TextElement textElement;
+	private FrameElement textBoxElement;
+	private FrameElement iconBoxElement;
+	private FrameElement frameElement;
+
+	private String selectedIcon;
+
+	private Map<String,IconElement> nameIcons;
+	private List<IconElement> orderIcons;
+
+	private IActiveView activeView;
+	private IGraphicsContainer container;
+
 	private boolean isActive = false;
 	private boolean isIconBoxActive = false;
 	private boolean isCommitPending = false;
-	
-	private IEnvelope dirtyArea = null;
-	
-	private String pendingText = null;
-	private IEnvelope pendingFrame = null;
-	
-	
+
+	private IEnvelope dirtyArea;
+
+	private String pendingText;
+	private IEnvelope pendingFrame;
+
+
 	public DrawFrame(IActiveView activeView) throws IOException, UnknownHostException {
 
 		// forward
 		super();
-		
+
 		// prepare
 		this.nameIcons = new HashMap<String, IconElement>();
 		this.orderIcons = new ArrayList<IconElement>();
-		
+
 		// initialize elements
 		initialize();
-		
+
 		// forward
 		setActiveView(activeView);
-		
+
 	}
-	
+
 	private void initialize() throws UnknownHostException, IOException {
-		
+
 		// add elements to group element
 		getGroupElement().addElement(getFrameElement());
 		getGroupElement().addElement(getTextElement());
@@ -90,18 +90,18 @@ public class DrawFrame {
 		getGroupElement().addElement(addIcon("continue",DiskoIconFactory.getPath("GENERAL.CONTINUE", "24x24", null)));
 		getGroupElement().addElement(addIcon("append",DiskoIconFactory.getPath("GENERAL.PLUS", "24x24", null)));
 		//getGroupElement().addElement(addIcon("delete",DiskoIconFactory.getIconPath("GENERAL.DELETE", "24x24", null)));
-		getGroupElement().addElement(getIconBoxElement());				
-		
+		getGroupElement().addElement(getIconBoxElement());
+
 	}
-	
-	public void setActiveView(IActiveView activeView) 
+
+	public void setActiveView(IActiveView activeView)
 		throws IllegalArgumentException, AutomationException, IOException {
-		
+
 		// forward
 		deactivate();
-		
-		// IMPORTANT: Make sure that the graphics container 
-		// belongs to the focus map. ActiveView() only returns the 
+
+		// IMPORTANT: Make sure that the graphics container
+		// belongs to the focus map. ActiveView() only returns the
 		// focus map graphics container if a map in the document is activated
 		if(activeView.isMapActivated()) {
 			// forward
@@ -115,13 +115,13 @@ public class DrawFrame {
 			// deactivate map
 			activeView.setIsMapActivated(false);
 		}
-				
+
 		// update hook
 		this.activeView = activeView;
-		
+
 	}
-	
-	private void setContainer(IActiveView activeView) 
+
+	private void setContainer(IActiveView activeView)
 		throws IllegalArgumentException, AutomationException, IOException {
 		// remove from old?
 		if(container!=null) {
@@ -142,18 +142,18 @@ public class DrawFrame {
 			// create draw frame layer and get hook to IGraphicsContainer
 			container = (IGraphicsContainer)MapUtil.createCompositeGraphicsLayer(map, "DrawLayer");
 			// add elements to graphics container
-			container.addElement(getGroupElement(),0);			
+			container.addElement(getGroupElement(),0);
 			container.addElement(getFrameElement(),0);
 			container.addElement(getTextBoxElement(), 0);
-			container.addElement(getTextElement(), 0);			
+			container.addElement(getTextElement(), 0);
 			container.addElement(getIconBoxElement(),0);
 			for(IconElement it : orderIcons) {
 				container.addElement(it,0);
-			}			
+			}
 		}
-		else throw new IllegalArgumentException("IActiveView must have an focus map");		
+		else throw new IllegalArgumentException("IActiveView must have an focus map");
 	}
-	
+
 	private TextElement getTextElement() throws UnknownHostException, IOException  {
 		if(textElement==null) {
 			// create text element
@@ -178,7 +178,7 @@ public class DrawFrame {
 		}
 		return frameElement;
 	}
-	
+
 	private FrameElement getTextBoxElement() throws UnknownHostException, IOException  {
 		if(textBoxElement==null) {
 			// create frame element
@@ -191,7 +191,7 @@ public class DrawFrame {
 		}
 		return textBoxElement;
 	}
-	
+
 	private FrameElement getIconBoxElement() throws UnknownHostException, IOException  {
 		if(iconBoxElement==null) {
 			// create frame element
@@ -204,7 +204,7 @@ public class DrawFrame {
 		}
 		return iconBoxElement;
 	}
-	
+
 	private GroupElement getGroupElement() throws UnknownHostException, IOException  {
 		if(groupElement==null) {
 			// create group element
@@ -216,17 +216,17 @@ public class DrawFrame {
 	}
 
 	public String getText() throws AutomationException, UnknownHostException, IOException {
-		return getTextElement().getText();		
+		return getTextElement().getText();
 	}
-	
+
 	public void setText(String text) throws AutomationException, UnknownHostException, IOException {
-		
+
 		// set as pending?
 		if(!isActive) {
 			pendingText = text;
 			return;
 		}
-		
+
 		// set dirty union
 		setDirtyRegion(getTextBoxElement());
 		// prepare
@@ -236,12 +236,12 @@ public class DrawFrame {
 		getTextBoxElement().isDirty();
 		// set dirty union?
 		setDirtyRegion(getTextBoxElement());
-		
+
 		// set flag
 		isCommitPending = true;
-		
+
 	}
-	
+
 	public void setFrame(IEnvelope e) throws AutomationException, UnknownHostException, IOException {
 		// set as pending?
 		if(!isActive) {
@@ -251,33 +251,33 @@ public class DrawFrame {
 		// forward
 		setFrameAndText(e,getText());
 	}
-	
+
 	public IEnvelope getExtent() throws AutomationException, UnknownHostException, IOException {
 		// set frame size
 		IGeometry g = getGroupElement().getGeometry();
 		return (g!=null) ? g.getEnvelope() : null;
-	}	
-	
+	}
+
 	public IEnvelope getFrame() throws AutomationException, UnknownHostException, IOException {
 		// set frame size
 		IGeometry g = getFrameElement().getGeometry();
 		return (g!=null) ? g.getEnvelope() : null;
 	}
-	
+
 	public boolean isCommitPending() {
 		return isCommitPending;
 	}
-	
+
 	public void commit() throws AutomationException, UnknownHostException, IOException {
 		// forward?
 		if(isActive && isCommitPending() && display()!=null) {
 			// forward
-			update(getFrame());		
+			update(getFrame());
 			// set flag
-			isCommitPending = false;		
-		}		
+			isCommitPending = false;
+		}
 	}
-	
+
 	private void setFrameAndText(IEnvelope frame, String text) throws AutomationException, UnknownHostException, IOException {
 		// set as pending?
 		if(!isActive) {
@@ -289,7 +289,7 @@ public class DrawFrame {
 		isCommitPending = true;
 		// set dirty unions
 		setDirtyRegion(getTextBoxElement());
-		setDirtyRegion(getFrameElement());		
+		setDirtyRegion(getFrameElement());
 		// add icons to dirty area
 		for(IconElement it : orderIcons) {
 			if(it.isVisible())
@@ -300,18 +300,18 @@ public class DrawFrame {
 		// update
 		getTextElement().setText(text);
 		// set dirty
-		getTextElement().isDirty();		
-		getFrameElement().isDirty();		
+		getTextElement().isDirty();
+		getFrameElement().isDirty();
 		getTextBoxElement().isDirty();
 		// set dirty unions
 		setDirtyRegion(getTextBoxElement());
-		setDirtyRegion(getFrameElement());		
+		setDirtyRegion(getFrameElement());
 	}
-	
+
 	public void draw() throws AutomationException, IOException {
 		// reset area
 		dirtyArea = null;
-		// get current screen display 
+		// get current screen display
 		IDisplay display = display();
 		// start drawing operation
 		display.startDrawing(display.getHDC(),(short) esriScreenCache.esriNoScreenCache);
@@ -320,7 +320,7 @@ public class DrawFrame {
 		// finished
 		display.finishDrawing();
 	}
-	
+
 	public boolean isDirtyAreaDisjointWith(IEnvelope e) throws AutomationException, IOException {
 		if(isDirty()) {
 			if(dirtyArea instanceof Envelope) {
@@ -330,14 +330,14 @@ public class DrawFrame {
 		// is disjoint
 		return true;
 	}
-	
+
 	public boolean isDirty() {
 		return (dirtyArea!=null);
 	}
-	
+
 	public void refresh() {
 		// refresh group?
-		if(isDirty()) { 
+		if(isDirty()) {
 			try {
 				// only refresh this group inside the dirty area
 				activeView.partialRefresh(esriViewDrawPhase.esriViewGraphics, container, dirtyArea);
@@ -352,7 +352,7 @@ public class DrawFrame {
 			}
 		}
 	}
-	
+
 	private void update(IEnvelope e) throws AutomationException, UnknownHostException, IOException {
 		// get screen extent
 		IDisplay display = display();
@@ -365,7 +365,7 @@ public class DrawFrame {
 		// get upper right point
 		p = MapUtil.createPoint(e.getUpperRight());
 		// get bounds of first icon
-		IEnvelope b = display!=null ? MapUtil.getPictureBounds(display(), nameIcons.get("cancel")) : null;		
+		IEnvelope b = display!=null ? MapUtil.getPictureBounds(display(), nameIcons.get("cancel")) : null;
 		// get first offset
 		p.setY((b!=null && !b.isEmpty()) ? p.getY()+b.getHeight()/2 : p.getY());
 		// set outside extent
@@ -383,13 +383,13 @@ public class DrawFrame {
 			// get icon
 			IconElement icon = nameIcons.get(selectedIcon);
 			// update icon box position
-			moveIconBox(icon.getGeometry().getEnvelope());			
+			moveIconBox(icon.getGeometry().getEnvelope());
 		}
 		else {
 			moveIconBox(MapUtil.createEnvelope());
 		}
 	}
-	
+
 	private void moveIconBox(IEnvelope e) throws AutomationException, UnknownHostException, IOException {
 		// get icon box
 		FrameElement box = getIconBoxElement();
@@ -399,21 +399,21 @@ public class DrawFrame {
 		IGraphicsContainerSelect selector = (IGraphicsContainerSelect)container;
 		selector.selectElement(box);
 		container.bringToFront(selector.getSelectedElements());
-		selector.unselectElement(box);			
+		selector.unselectElement(box);
 		// set dirty
 		box.isDirty();
 		// forward
 		setDirtyRegion(box);
-		
+
 	}
-	
+
 	private IconElement addIcon(String name, String file) throws UnknownHostException, IOException {
 		// does not exist?
 		if(!nameIcons.containsKey(name)) {
 			// create icon
 			IconElement icon = new IconElement();
 			// set name
-			icon.setName("DRAWFRAME.ICON."+name.toUpperCase());			
+			icon.setName("DRAWFRAME.ICON."+name.toUpperCase());
 			// prepare
 			icon.setBorder(MapUtil.getSymbolBorder());
 			icon.setBackground(null);
@@ -432,7 +432,7 @@ public class DrawFrame {
 		// failed
 		return null;
 	}
-	
+
 	private double moveCaption(IPoint p) throws UnknownHostException, IOException {
 		// get display
 		IDisplay display = display();
@@ -460,10 +460,10 @@ public class DrawFrame {
 		// finished
 		return y;
 	}
-	
+
 	private double moveIcon(IPoint p, IconElement icon) throws UnknownHostException, IOException {
 		// create new from old
-		p = MapUtil.createPoint(p);		
+		p = MapUtil.createPoint(p);
 		// get size
 		IEnvelope b = display()!=null ? MapUtil.getPictureBounds(display(), icon) : null;
 		// get offsets
@@ -476,35 +476,35 @@ public class DrawFrame {
 		IEnvelope e = (b!=null) ? b : MapUtil.createEnvelope(p);
 		// center at point
 		e.centerAt(p);
-		// move icon 
-		icon.setGeometry(e);	
+		// move icon
+		icon.setGeometry(e);
 		// finished
-		return y;		
+		return y;
 	}
-	
+
 	public boolean isActive() {
 		return isActive;
 	}
-	
+
 	public boolean activate() throws AutomationException, IOException{
 		// any change?
 		if(!isActive) {
 			// remove element from current container?
 			if(container!=null) {
 				// set flag
-				isActive = true;				
+				isActive = true;
 				// update any pending changes
-				if(pendingFrame!=null && !pendingFrame.isEmpty()) 
+				if(pendingFrame!=null && !pendingFrame.isEmpty())
 					setFrame(pendingFrame);
-				if(pendingText!=null) 
+				if(pendingText!=null)
 					setText(pendingText);
 				// reset
 				pendingText = null;
 				pendingFrame = null;
 				// reselect icon?
-				if(selectedIcon!=null) setIconBorder(selectedIcon, true);				
+				if(selectedIcon!=null) setIconBorder(selectedIcon, true);
 				// show layer
-				((IGraphicsLayer)container).activate(display());				
+				((IGraphicsLayer)container).activate(display());
 				((ILayer)container).setVisible(true);
 				// invalidate all
 				setAllRegionsDirty();
@@ -515,7 +515,7 @@ public class DrawFrame {
 		// no change
 		return false;
 	}
-	
+
 	public boolean deactivate() throws AutomationException, IOException{
 		// any change?
 		if(isActive) {
@@ -539,7 +539,7 @@ public class DrawFrame {
 		// no change
 		return false;
 	}
-	
+
 	public String hitIcon(double x, double y, double tolerance) throws AutomationException, IOException {
 		if(isActive()) {
 			Object[] names = nameIcons.keySet().toArray();
@@ -551,24 +551,24 @@ public class DrawFrame {
 		}
 		return null;
 	}
-	
+
 	public boolean hitIcon(String name, double x, double y, double tolerance) throws AutomationException, IOException {
 		if(isActive()) {
 			IconElement icon = nameIcons.get(name);
-			if(icon!=null)  
+			if(icon!=null)
 				return icon.hitTest(x, y, tolerance);
 			else
 				return false;
 		}
 		return false;
 	}
-	
+
 	public IScreenDisplay display() throws AutomationException, IOException {
 		return activeView.getScreenDisplay();
 	}
-	
+
 	public boolean setIconVisible(String name, boolean isVisible) throws AutomationException, IOException {
-		// initialize dirty falg
+		// initialize dirty flag
 		boolean isDirty = false;
 		// get icon?
 		if(nameIcons.containsKey(name)) {
@@ -590,15 +590,15 @@ public class DrawFrame {
 			// update?
 			if(isDirty && isActive) {
 				// forward
-				setDirtyRegion(icon);								
+				setDirtyRegion(icon);
 				// set flag
-				isCommitPending = true;		
+				isCommitPending = true;
 			}
 		}
 		// state
 		return isDirty;
 	}
-	
+
 	public String getSelectedIcon() {
 		return selectedIcon;
 	}
@@ -612,21 +612,21 @@ public class DrawFrame {
 			selectedIcon =null;
 			// success
 			return true;
-		}		
+		}
 		// failure
 		return false;
 	}
-	
+
 	public boolean setSelectedIcon(String name, boolean isSelected) throws AutomationException, IOException {
 		//34386265
 		if(nameIcons.containsKey(name)) {
 			// deselect old?
 			if(selectedIcon!=null && !selectedIcon.equalsIgnoreCase(name)) {
 				// reset selection
-				setIconBorder(selectedIcon,false);				
+				setIconBorder(selectedIcon,false);
 			}
 			// update selection
-			setIconBorder(name,isSelected);				
+			setIconBorder(name,isSelected);
 			// update selected icon name
 			selectedIcon = (isSelected ? name : null);
 			// changed
@@ -635,7 +635,7 @@ public class DrawFrame {
 		// no change
 		return false;
 	}
-	
+
 	private void setIconBorder(String name, boolean isSelected) throws AutomationException, UnknownHostException, IOException {
 		// get icon box
 		FrameElement iconBox = getIconBoxElement();
@@ -662,7 +662,7 @@ public class DrawFrame {
 		for(IElement it: orderIcons)
 			setDirtyRegion(it);
 	}
-	
+
 	private void setDirtyRegion(IElement element) throws AutomationException, IOException {
 		// only if active!
 		if(isActive) {

@@ -14,7 +14,7 @@ import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.interop.AutomationException;
 
-public abstract class AbstractDsLayer<T extends IDsObject> extends AbstractDiskoLayer {
+public abstract class AbstractDsLayer<T extends IDsObject> extends AbstractMapLayer {
 
 	private static final long serialVersionUID = 1L;
 

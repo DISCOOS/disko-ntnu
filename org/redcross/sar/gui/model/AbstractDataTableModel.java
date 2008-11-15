@@ -3,6 +3,8 @@ package org.redcross.sar.gui.model;
 import java.util.Collection;
 import java.util.Comparator;
 
+import javax.swing.SwingUtilities;
+
 import org.redcross.sar.data.AbstractDataModel;
 import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.data.IData;
@@ -347,75 +349,56 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 
 	private final IDataListener listener = new IDataListener() {
 
-		public void onDataChanged(DataEvent e) {
-			int[] idx = getIndexes(e.getRows());
-			try {
-				/* =====================================================
-				 * Hack: Resolves a refresh problem in JTable.
-				 * =====================================================
-				 * Occurs when a single row is added to an empty model,
-				 * or removed from an model with only one row.
-				 * ===================================================== */
-				if(idx[0]==-1 || idx[0]==idx[1] && getRowCount()<=1) {
-					fireTableDataChanged();
-				}
-				else {
-					switch(e.getType()) {
-					case DataEvent.ADDED_EVENT: fireTableRowsInserted(idx[0], idx[idx.length-1]); break;
-					case DataEvent.UPDATED_EVENT: fireTableRowsUpdated(idx[0], idx[idx.length-1]); break;
-					case DataEvent.REMOVED_EVENT: fireTableRowsDeleted(idx[0], idx[idx.length-1]); break;
-					case DataEvent.CLEAR_EVENT:
-					default: fireTableDataChanged(); break;
-					}
-				}
-			} catch (IndexOutOfBoundsException ex) {
-				// HACK: Consume errors from DefaultRowSorter
-				fireTableDataChanged();
-				//ex.printStackTrace();
-			} catch (RuntimeException ex) {
-				ex.printStackTrace();
-			}
-		}
+		public void onDataChanged(final DataEvent e) {
 
+			// this should only be performed on EDT!
+			if (SwingUtilities.isEventDispatchThread()) {
 
-
-					/* ========================================================
-					 * FIX: DefaultRowSorter ArrayOutOfBoundsException Error
-					 * ========================================================
-					 * DefaultRowSorter will fail if fireTableRowsInserted
-					 * is called after a single row is added to a empty table,
-					 * and sorting is enabled. The workaround is given below.
-					 * ======================================================== */
-		/*
-					if(getRowCount()==1) {
-						fireTableDataChanged();
-					}
-					else {
-						fireTableRowsInserted(idx[0], idx[idx.length-1]);
-					}
-					break;
-
-		 */
-
-		/*
-		@Override
-		public void onDataChanged(DataEvent e) {
-			try {
 				int[] idx = getIndexes(e.getRows());
-				switch(e.getType()) {
-				case DataEvent.ADDED_EVENT: fireTableRowsInserted(idx[0], idx[idx.length-1]); break;
-				case DataEvent.UPDATED_EVENT: fireTableRowsUpdated(idx[0], idx[idx.length-1]); break;
-				case DataEvent.REMOVED_EVENT: fireTableRowsDeleted(idx[0], idx[idx.length-1]); break;
-				default: fireTableDataChanged(); break;
+				try {
+					// get row count
+					int count = getRowCount();
+					/* =====================================================
+					 * Hack: Resolves a refresh problem in JTable.
+					 * =====================================================
+					 * Occurs when a single row is added to an empty model,
+					 * or removed from an model with only one row.
+					 * ===================================================== */
+					if (idx[0] == -1 || idx[0] == idx[1] && count <= 1
+							|| count == idx[1] - idx[0] + 1) {
+						fireTableDataChanged();
+					} else {
+						switch (e.getType()) {
+						case DataEvent.ADDED_EVENT:
+							fireTableRowsInserted(idx[0], idx[idx.length - 1]);
+							break;
+						case DataEvent.UPDATED_EVENT:
+							fireTableRowsUpdated(idx[0], idx[idx.length - 1]);
+							break;
+						case DataEvent.REMOVED_EVENT:
+							fireTableRowsDeleted(idx[0], idx[idx.length - 1]);
+							break;
+						case DataEvent.CLEAR_EVENT:
+						default:
+							fireTableDataChanged();
+							break;
+						}
+					}
+				} catch (IndexOutOfBoundsException ex) {
+					// HACK: Consume errors from DefaultRowSorter
+					fireTableDataChanged();
+					//ex.printStackTrace();
+				} catch (RuntimeException ex) {
+					ex.printStackTrace();
 				}
-			} catch (IndexOutOfBoundsException ex) {
-				// HACK: Consume errors from DefaultRowSorter is installed
-				fireTableDataChanged();
-			} catch (RuntimeException ex) {
-				ex.printStackTrace();
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						onDataChanged(e);
+					}
+				});
 			}
 		}
-		*/
 
 	};
 

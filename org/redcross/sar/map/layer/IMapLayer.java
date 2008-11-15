@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.esri.arcgis.interop.AutomationException;
 
-public interface IDiskoLayer {
+public interface IMapLayer {
 
 	public enum LayerCode {
 		AREA_LAYER,

@@ -16,7 +16,7 @@ import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
-public interface IMsoFeatureLayer extends IFeatureLayer, IDiskoLayer, IMsoUpdateListenerIf {
+public interface IMsoFeatureLayer extends IFeatureLayer, IMapLayer, IMsoUpdateListenerIf {
 
 	public IMsoManagerIf.MsoClassCode getClassCode();
 

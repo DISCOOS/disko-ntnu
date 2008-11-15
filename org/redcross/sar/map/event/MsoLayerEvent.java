@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import com.esri.arcgis.interop.AutomationException;

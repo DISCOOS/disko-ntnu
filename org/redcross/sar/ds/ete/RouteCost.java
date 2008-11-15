@@ -1006,6 +1006,12 @@ public class RouteCost extends AbstractDsObject {
 		}
 	}
 
+	@Override
+	protected String getMethodName(String attrName) {
+		// method name equals the attribute name
+		return attrName;
+	}
+
 	/* =====================================================================
 	 * Private methods
 	 * ===================================================================== */

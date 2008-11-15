@@ -52,7 +52,7 @@ import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.*;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.map.tool.MsoDrawAdapter;
 import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.IDrawTool;
@@ -102,7 +102,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	private EnumSet<MsoClassCode> classCodes;
 	private Map<MsoClassCode,EnumSet<MsoClassCode>> coClassCodes;
 	private List<IMsoFeatureLayer> msoLayers;
-	private List<IDiskoLayer> diskoLayers;
+	private List<IMapLayer> diskoLayers;
 	private final List<IDiskoMapListener> mapListeners = new ArrayList<IDiskoMapListener>();;
 
 	// GUI components
@@ -226,7 +226,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 			// add MSO layers
 			msoLayers = new ArrayList<IMsoFeatureLayer>();
-			diskoLayers = new ArrayList<IDiskoLayer>();
+			diskoLayers = new ArrayList<IMapLayer>();
 
 			// get interests as
 			ArrayList<LayerCode> list = new ArrayList<LayerCode>(layerCodes);
@@ -297,7 +297,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			diskoGroup.setCached(true);
 
 			// add DISKO layers to layer group
-			for (IDiskoLayer it : diskoLayers) {
+			for (IMapLayer it : diskoLayers) {
 				diskoGroup.add((ILayer)it);
 			}
 
@@ -310,7 +310,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 		else {
 			// update spatial references
-			for (IDiskoLayer it : diskoLayers) {
+			for (IMapLayer it : diskoLayers) {
 				((ILayer)it).setSpatialReferenceByRef(srs);
 			}
 		}
@@ -328,7 +328,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 	}
 
-	private void addDiskoLayer(IDiskoLayer layer, boolean isMSO) {
+	private void addDiskoLayer(IMapLayer layer, boolean isMSO) {
 		diskoLayers.add(layer);
 		if(isMSO) msoLayers.add((IMsoFeatureLayer)layer);
 	}
@@ -431,12 +431,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public List<IDiskoLayer> getDiskoLayers() {
-		return new ArrayList<IDiskoLayer>(diskoLayers);
+	public List<IMapLayer> getDiskoLayers() {
+		return new ArrayList<IMapLayer>(diskoLayers);
 	}
 
-	public IDiskoLayer getDiskoLayer(LayerCode layerCode) {
-		for (IDiskoLayer it : diskoLayers) {
+	public IMapLayer getDiskoLayer(LayerCode layerCode) {
+		for (IMapLayer it : diskoLayers) {
 			if (it.getLayerCode() == layerCode) {
 				return it;
 			}
@@ -2032,9 +2032,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		// forward
 		if(drawFrame!=null) drawFrame.setActiveView(getActiveView());
 		IScreenDisplay display = getActiveView().getScreenDisplay();
-		for(IDiskoLayer it : diskoLayers) {
-			if(it.isVisible() && it instanceof AbstractDiskoLayer) {
-				((AbstractDiskoLayer)it).activate(display);
+		for(IMapLayer it : diskoLayers) {
+			if(it.isVisible() && it instanceof AbstractMapLayer) {
+				((AbstractMapLayer)it).activate(display);
 			}
 		}
 	}

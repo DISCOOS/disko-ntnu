@@ -177,10 +177,10 @@ public class DiskoTable extends JTable {
 
 	@Override
 	public void tableChanged(TableModelEvent e) {
-		// auto fit column widths?
-		if(m_autoFitWidths) autoFitWidthColumns();
 		// forward
 		super.tableChanged(e);
+		// auto fit column widths?
+		if(m_autoFitWidths) autoFitWidthColumns();
 	}
 
 	@Override

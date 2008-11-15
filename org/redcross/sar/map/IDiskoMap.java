@@ -8,9 +8,9 @@ import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
 import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.map.layer.IDiskoLayer;
+import org.redcross.sar.map.layer.IMapLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.map.tool.MsoDrawAdapter;
 import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.SnapAdapter;
@@ -53,8 +53,8 @@ public interface IDiskoMap {
 
 	public EnumSet<LayerCode> getSupportedLayers();
 
-	public List<IDiskoLayer> getDiskoLayers();
-	public IDiskoLayer getDiskoLayer(LayerCode layerCode);
+	public List<IMapLayer> getDiskoLayers();
+	public IMapLayer getDiskoLayer(LayerCode layerCode);
 
 	public List<IMsoFeatureLayer> getMsoLayers();
 	public List<IMsoFeatureLayer> getMsoLayers(MsoClassCode classCode);

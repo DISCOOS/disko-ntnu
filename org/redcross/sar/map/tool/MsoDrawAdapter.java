@@ -28,7 +28,7 @@ import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.map.tool.IDrawTool.FeatureType;
