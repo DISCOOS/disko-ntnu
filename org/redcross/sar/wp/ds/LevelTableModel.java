@@ -2,8 +2,8 @@ package org.redcross.sar.wp.ds;
 
 import org.redcross.sar.ds.DsBinder;
 import org.redcross.sar.ds.IDsObject;
-import org.redcross.sar.ds.sc.Advisor;
-import org.redcross.sar.ds.sc.ICue;
+import org.redcross.sar.ds.advisor.Advisor;
+import org.redcross.sar.ds.advisor.ICue;
 import org.redcross.sar.gui.model.AbstractDsTableModel;
 
 public class LevelTableModel extends AbstractDsTableModel<ICue,IDsObject> {
@@ -16,9 +16,9 @@ public class LevelTableModel extends AbstractDsTableModel<ICue,IDsObject> {
 	public static final int OUTPUT_INDEX = 3;
 
 	private static final String NAME = "name";
-	private static final String INPUT = "in";
+	private static final String INPUT = "rin";
 	private static final String LEVEL = "level";
-	private static final String OUTPUT = "out";
+	private static final String OUTPUT = "rout";
 
 	public static final String[] ATTRIBUTES =
 

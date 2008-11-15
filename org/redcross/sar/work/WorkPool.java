@@ -286,10 +286,12 @@ public class WorkPool {
   		// is null?
   		if(work==null)
   			throw new NullPointerException("Work can not be null");
+  		/*
   		// is legal thread type?
   		if(ThreadType.WORK_ON_LOOP.equals(work.getThreadType())) {
   			throw new IllegalArgumentException("Work not supported by WorkPool. Work should be executed on a (deamon) work loop");
   		}
+  		*/
   		// execute on new thread?
   		if(!work.isSafe() && ThreadType.WORK_ON_UNSAFE.equals(work.getThreadType())) {
   			// run work on a new swing worker new thread that is not
@@ -414,6 +416,8 @@ public class WorkPool {
   	}
 
   	private boolean remove(long id, boolean cancel, boolean force) {
+  		// initialize
+  		boolean bFlag = false;
 		// allowed?
 		if(force || id>m_unsafeID) {
 			// get worker
@@ -421,17 +425,19 @@ public class WorkPool {
 			// found worker?
 	  		if(w!=null) {
 	  			// cancel operation?
-	  			if(cancel)w.cancel(true);
+	  			if(cancel) bFlag = w.getLoop().cancel();
 	  			// reset id
 	  			w.getLoop().setID(0);
-	  	  		// remove loop listener
+	  	  		// remove loop listeners
+	  			w.getLoop().removeWorkLoopListener(w);
 	  			w.getLoop().removeWorkLoopListener(m_loopListener);
 	  			// remove from map
-	  			return (m_workers.remove(id)!=null);
+	  			bFlag |= (m_workers.remove(id)!=null);
 	  		}
 
 		}
-		return false;
+		// finished
+		return bFlag;
   	}
 
   	/*========================================================
@@ -473,7 +479,7 @@ public class WorkPool {
   	 * Inner classes
   	 *======================================================== */
 
-	private class Worker extends SwingWorker<Object,Integer> {
+	private class Worker extends SwingWorker<Object,Integer> implements IWorkLoopListener {
 
 		private final static long RESUME_DELAY = 1000;		// check if resume should occur every second
 		private final static long MINIMUM_DUTY_CYCLE = 10;	// duty cycle can not be less then 10 milliseconds.
@@ -493,21 +499,7 @@ public class WorkPool {
 
 		public Worker(IWorkLoop loop) {
 			m_loop = loop;
-			m_loop.addWorkLoopListener(new IWorkLoopListener() {
-
-				@Override
-				public void onLoopChange(WorkLoopEvent e) {
-					if(e.isStateEvent()) {
-						LoopState state = (LoopState)e.getData();
-						switch(state) {
-							case CANCELED: Worker.this.cancel(false); break;
-							case EXECUTING: Worker.this.resume(); break;
-							case SUSPENDED: Worker.this.suspend(); break;
-						}
-					}
-				}
-
-			});
+			m_loop.addWorkLoopListener(this);
 		}
 
 		/* =========================================
@@ -616,6 +608,22 @@ public class WorkPool {
 			// forward to work pool
 			WorkPool.this.remove(m_loop.getID(),false,true);
 		}
+
+		/* =========================================
+		 * IWorkLoopListener implementation
+		 * ========================================= */
+
+		public void onLoopChange(WorkLoopEvent e) {
+			if(e.isStateEvent()) {
+				LoopState state = (LoopState)e.getData();
+				switch(state) {
+					case CANCELED: Worker.this.cancel(true); break;
+					case EXECUTING: Worker.this.resume(); break;
+					case SUSPENDED: Worker.this.suspend(); break;
+				}
+			}
+		}
+
 	}
 }
 

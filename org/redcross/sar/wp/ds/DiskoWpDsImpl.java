@@ -22,7 +22,7 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
-import org.redcross.sar.map.layer.IDiskoLayer;
+import org.redcross.sar.map.layer.IMapLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -76,7 +76,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
 		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-		myLayers.add(IDiskoLayer.LayerCode.ESTIMATED_POSITION_LAYER);
+		myLayers.add(IMapLayer.LayerCode.ESTIMATED_POSITION_LAYER);
 	    return myLayers;
 	}
 

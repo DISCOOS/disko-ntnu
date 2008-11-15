@@ -195,7 +195,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 		return id;
   	}
 
-  	public final boolean cancel(IWork work) {
+  	public final boolean revoke(IWork work) {
   		// is null?
   		if(work==null) throw new NullPointerException("Work can not be null");
   		// is not already executing it?
@@ -267,8 +267,15 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	}
 
 	public final boolean suspend() {
-		if(isState(LoopState.EXECUTING)) {
+		if(isState(LoopState.IDLE) || isState(LoopState.EXECUTING)) {
 			return setState(LoopState.SUSPENDED);
+		}
+		return false;
+	}
+
+	public final boolean cancel() {
+		if(isState(LoopState.IDLE) || isState(LoopState.EXECUTING)) {
+			return setState(LoopState.CANCELED);
 		}
 		return false;
 	}

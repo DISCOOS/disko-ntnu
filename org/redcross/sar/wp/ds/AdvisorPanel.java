@@ -26,7 +26,7 @@ import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.ds.sc.Advisor;
+import org.redcross.sar.ds.advisor.Advisor;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
@@ -355,8 +355,14 @@ public class AdvisorPanel extends JPanel
     }
 
     private void resume() {
-    	// forward
-    	doWork(1);
+		// is suspended?
+		if(m_advisor.isLoopState(LoopState.SUSPENDED)) {
+			m_advisor.resume();
+		}
+		else {
+    		// forward
+			m_advisor.start();
+		}
     }
 
     private void suspend() {

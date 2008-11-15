@@ -37,7 +37,7 @@ import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.gui.table.DiskoTableHeader;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.layer.IDiskoLayer.LayerCode;
+import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.mso.data.IMessageIf;
 
 /**

@@ -3,9 +3,11 @@ package org.redcross.sar.util;
 import no.cmr.tools.Log;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,7 +40,7 @@ public class Internationalization
     }
 
     /**
-     * Get international text from first occurence in 
+     * Get international text from first occurrence in
      * an installed java.util.ResourceBundle.
      *
      * @param aBundle The ResourceBundle to use
@@ -49,14 +51,15 @@ public class Internationalization
     {
         if (aKey == null || aKey.isEmpty()) return null;
 
-    	for(ResourceBundle bundle : bundles.values()) {
+        Collection<ResourceBundle> list = new Vector<ResourceBundle>(bundles.values());
+    	for(ResourceBundle bundle : list) {
     		String text = getText(bundle,aKey);
     		if(text!=null) return text;
     	}
     	// not found
     	return null;
     }
-    
+
     /**
      * Get international text from a given java.util.ResourceBundle.
      *
@@ -71,7 +74,7 @@ public class Internationalization
     }
 
     /**
-     * Get international text from first occurence in 
+     * Get international text from first occurence in
      * an installed java.util.ResourceBundle.
      *
      * @param aBundle The ResourceBundle to use
@@ -89,7 +92,7 @@ public class Internationalization
     	// not found, return key
     	return aKey;
     }
-    
+
     /**
      * Get international Enum text from a given java.util.ResourceBundle.
      *

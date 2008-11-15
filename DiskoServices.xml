@@ -2,6 +2,6 @@
 <DiskoApplication>
 	<IServiceCatalog classname="org.redcross.sar.ds.DsPool" isSingleton="true">
 		<IService classname="org.redcross.sar.ds.ete.RouteCostEstimator" />
-		<IService classname="org.redcross.sar.ds.sc.Advisor" />
+		<IService classname="org.redcross.sar.ds.advisor.Advisor" />
 	</IServiceCatalog>
 </DiskoApplication>

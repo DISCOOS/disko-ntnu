@@ -6,8 +6,9 @@ import java.text.NumberFormat;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
-import org.redcross.sar.ds.sc.ICue;
-import org.redcross.sar.ds.sc.ILevel;
+import org.redcross.sar.ds.advisor.ICue;
+import org.redcross.sar.gui.factory.DiskoEnumFactory;
+import org.redcross.sar.math.ILevel;
 import org.redcross.sar.util.Utils;
 
 public class LevelStringConverter extends TableStringConverter {
@@ -22,6 +23,7 @@ public class LevelStringConverter extends TableStringConverter {
 		m_isHtml = isHtml;
 	}
 
+	@SuppressWarnings("unchecked")
 	public String toString(TableModel m, int row, int column) {
 		// not filtered?
 		if(m instanceof LevelTableModel && row!=-1 && column!=-1) {
@@ -31,18 +33,20 @@ public class LevelStringConverter extends TableStringConverter {
 			ILevel level = (ILevel)model.getObject(row);
 			// get value
 			Object value = model.getValueAt(row, column);
+
 			switch(column) {
 			case LevelTableModel.NAME_INDEX:
 				ICue cue = (ICue)value;
-				return cue!=null ? cue.getName() : EMPTY;
+				return cue!=null ? DiskoEnumFactory.getText(cue.getName(),"text",null) : EMPTY;
 			case LevelTableModel.INPUT_INDEX:
 			case LevelTableModel.OUTPUT_INDEX:
-				return value!=null ? getText(f11.format((Double)value), level.unit() + "/min") : EMPTY;
+				return value!=null ? getText(f11.format((Double)value), level.getUnit() + "/min") : EMPTY;
 			case LevelTableModel.LEVEL_INDEX:
-				return value!=null ? getText(String.valueOf(value), level.unit()): EMPTY;
+				return value!=null ? getText(String.valueOf(value), level.getUnit()): EMPTY;
 			default:
 				return value!=null ? value.toString() : EMPTY;
 			}
+
 		}
 		return EMPTY;
 

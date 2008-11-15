@@ -23,10 +23,11 @@ public interface IWorkLoop extends Runnable {
 	public ThreadType getThreadType();
 
 	public long schedule(IWork work);
-	public boolean cancel(IWork work);
+	public boolean revoke(IWork work);
 
 	public boolean suspend();
 	public boolean resume();
+	public boolean cancel();
 
 	public int doWork();
 
