@@ -1,6 +1,6 @@
-package org.redcross.sar.ds.sc;
+package org.redcross.sar.ds.advisor;
 
-import org.redcross.sar.ds.sc.Advisor.ID;
+import org.redcross.sar.ds.advisor.Advisor.ID;
 import org.redcross.sar.math.mso.MsoStatusInput;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;

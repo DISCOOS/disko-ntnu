@@ -1,20 +1,20 @@
-package org.redcross.sar.ds.sc;
+package org.redcross.sar.ds.advisor;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.ds.AbstractDsObject;
+import org.redcross.sar.util.Utils;
 
-public abstract class AbstractDecision extends AbstractDsObject implements IDecision {
+public abstract class AbstractClue<S extends IData> extends AbstractDsObject implements ICue {
 
-	private boolean m_isDirty;
-
-	private final String m_name;
-	private final String[] m_attrNames;
-	private final Class<?>[] m_attrClasses;
+	protected final String m_name;
+	protected final String[] m_attrNames;
+	protected final Class<?>[] m_attrClasses;
 
 	/* =============================================================
 	 * Constructors
 	 * ============================================================= */
 
-	public AbstractDecision(ICue id, String name, String[] attrNames, Class<?>[] attrClasses) {
+	public AbstractClue(IData id, String name, String[] attrNames, Class<?>[] attrClasses) {
 		// forward
 		super(id);
 		// prepare
@@ -28,8 +28,9 @@ public abstract class AbstractDecision extends AbstractDsObject implements IDeci
 	 * ============================================================= */
 
 	@Override
-	public ICue getId() {
-		return (ICue)super.getId();
+	@SuppressWarnings("unchecked")
+	public S getId() {
+		return (S)super.getId();
 	}
 
 	public String getName() {
@@ -57,7 +58,12 @@ public abstract class AbstractDecision extends AbstractDsObject implements IDeci
 		return m_attrClasses[index];
 	}
 
-	public boolean isDirty() {
-		return m_isDirty;
+	/* =============================================================
+	 * Required methods
+	 * ============================================================= */
+
+	protected String getMethodName(String attrName) {
+		return "get"+Utils.capitalize(attrName);
 	}
+
 }

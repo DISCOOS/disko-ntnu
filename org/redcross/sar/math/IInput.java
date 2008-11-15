@@ -2,7 +2,7 @@ package org.redcross.sar.math;
 
 import java.util.Collection;
 
-import org.redcross.sar.ds.sc.event.IInputListener;
+import org.redcross.sar.ds.advisor.event.IInputListener;
 
 public interface IInput<I,C extends Number> {
 

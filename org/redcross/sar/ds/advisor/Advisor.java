@@ -1,4 +1,4 @@
-package org.redcross.sar.ds.sc;
+package org.redcross.sar.ds.advisor;
 
 import java.util.ArrayList;
 import java.util.Collection;
