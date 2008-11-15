@@ -2,8 +2,8 @@ package org.redcross.sar.wp.ds;
 
 import org.redcross.sar.ds.DsBinder;
 import org.redcross.sar.ds.IDsObject;
-import org.redcross.sar.ds.advisor.Advisor;
-import org.redcross.sar.ds.advisor.ICue;
+import org.redcross.sar.ds.sc.Advisor;
+import org.redcross.sar.ds.sc.ICue;
 import org.redcross.sar.gui.model.AbstractDsTableModel;
 
 public class LevelTableModel extends AbstractDsTableModel<ICue,IDsObject> {

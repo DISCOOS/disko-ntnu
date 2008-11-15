@@ -2,7 +2,7 @@ package org.redcross.sar.wp.ds;
 
 import java.awt.Dimension;
 
-import org.redcross.sar.ds.advisor.Advisor;
+import org.redcross.sar.ds.sc.Advisor;
 import org.redcross.sar.gui.panel.BasePanel;
 
 public class LevelPanel extends BasePanel {
