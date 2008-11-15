@@ -315,7 +315,7 @@ public class MsoEvent extends java.util.EventObject
 			List<MsoEvent.Update> list = new ArrayList<Update>();
 			for(MsoClassCode it : classCodes) {
 				List<MsoEvent.Update> found =  m_map.get(it);
-				if(found!=null) list.addAll(m_map.get(it));
+				if(found!=null) list.addAll(found);
 			}
 			return list;
 		}
