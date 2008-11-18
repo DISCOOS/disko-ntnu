@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,6 +30,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.redcross.sar.app.IApplication;
+import org.redcross.sar.map.event.DiskoMapEvent;
+import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.work.IMapWork;
 import org.redcross.sar.util.MapInfoComparator;
@@ -66,6 +69,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	private final List<IDiskoMap> maps = new ArrayList<IDiskoMap>();
 	private final Map<String,MapSourceInfo> mxdDocs = new HashMap<String,MapSourceInfo>();
 	private final WorkLoop m_loop = new WorkLoop(500,2000);
+	private final EventListenerList mapListeners = new EventListenerList();
 
 	public DiskoMapManagerImpl(IApplication app, File file)  throws Exception {
 		// prepare
@@ -92,12 +96,19 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	public IDiskoMap createMap(EnumSet<IMsoFeatureLayer.LayerCode> myLayers) {
 		DiskoMap map = null;
 		try {
+
 			// create new disko map instance
 			map = new DiskoMap(this, app.getMsoModel(), myLayers);
+
 			// add to internal collection
 			maps.add(map);
+
 			// prepare print map to saves some time later
 			getPrintMap();
+
+			// register map listener
+			map.addDiskoMapListener(m_mapListener);
+
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -907,6 +918,13 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		}
 	}
 
+	public void addDiskoMapListener(IDiskoMapListener listener) {
+		mapListeners.add(IDiskoMapListener.class, listener);
+	}
+
+	public void removeDiskoMapListener(IDiskoMapListener listener) {
+		mapListeners.remove(IDiskoMapListener.class, listener);
+	}
 
 	/* ===============================================================================
 	 * Helper methods
@@ -938,6 +956,49 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		return list;
 
 	}
+
+	/* ===============================================================================
+	 * Anonymous classes
+	 * =============================================================================== */
+
+    private IDiskoMapListener m_mapListener = new IDiskoMapListener() {
+
+		@Override
+		public void onMouseMove(DiskoMapEvent e) {
+			for(IDiskoMapListener it : mapListeners.getListeners(IDiskoMapListener.class)) {
+				it.onMouseMove(e);
+			}
+		}
+
+		@Override
+		public void onExtentChanged(DiskoMapEvent e) {
+			for(IDiskoMapListener it : mapListeners.getListeners(IDiskoMapListener.class)) {
+				it.onExtentChanged(e);
+			}
+		}
+
+		@Override
+		public void onMapReplaced(DiskoMapEvent e) {
+			for(IDiskoMapListener it : mapListeners.getListeners(IDiskoMapListener.class)) {
+				it.onMapReplaced(e);
+			}
+		}
+
+		@Override
+		public void onMouseClick(DiskoMapEvent e) {
+			for(IDiskoMapListener it : mapListeners.getListeners(IDiskoMapListener.class)) {
+				it.onMouseClick(e);
+			}
+		}
+
+		@Override
+		public void onSelectionChanged(DiskoMapEvent e) {
+			for(IDiskoMapListener it : mapListeners.getListeners(IDiskoMapListener.class)) {
+				it.onSelectionChanged(e);
+			}
+		}
+
+    };
 
 	/* ===============================================================================
 	 * Internal classes

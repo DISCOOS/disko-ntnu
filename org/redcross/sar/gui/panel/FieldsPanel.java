@@ -42,7 +42,7 @@ import org.redcross.sar.util.Utils;
  * @author kennetgu
  *
  */
-public class FieldsPanel extends DefaultPanel {
+public class FieldsPanel extends TogglePanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -69,21 +69,23 @@ public class FieldsPanel extends DefaultPanel {
 	}
 
 	public FieldsPanel(String caption, String message, boolean finish, boolean cancel) {
-		this(caption,message,finish,cancel,ButtonSize.SMALL,1);
+		this(caption,message,finish,cancel,false,ButtonSize.SMALL,1);
 	}
 
 	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
-		this(caption,message,finish,cancel,buttonSize,1);
+		this(caption,message,finish,cancel,false,buttonSize,1);
 	}
-	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize, int columns) {
+	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, boolean toggle, ButtonSize buttonSize, int columns) {
 		// forward
-		super(caption,finish,cancel,buttonSize);
+		super(caption,finish,cancel,toggle,buttonSize);
 		// prepare
 		m_columns = columns;
 		m_names = new ArrayList<String>();
 		m_fields = new HashMap<String, IDiskoField>();
 		// initialize GUI
 		initialize(message);
+		// hide toggle button
+		setButtonVisible("toggle", false);
 	}
 
 	private void initialize(String message) {

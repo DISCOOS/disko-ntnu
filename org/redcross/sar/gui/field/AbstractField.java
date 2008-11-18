@@ -50,6 +50,8 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	protected IAttributeIf<?> m_attribute;
 
+	protected int m_isMarked = 0;
+
 	protected boolean m_isDirty = false;
 	protected boolean m_autoSave = false;
 	protected boolean m_isEditable = false;
@@ -272,6 +274,14 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		if(m_attribute==null) {
 			m_isDirty = isDirty;
 		}
+	}
+
+	public int isMarked() {
+		return m_isMarked;
+	}
+
+	public void setMarked(int isMarked) {
+		m_isMarked = isMarked;
 	}
 
 	public int getFixedCaptionWidth() {

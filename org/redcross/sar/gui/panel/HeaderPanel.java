@@ -36,6 +36,7 @@ public class HeaderPanel extends JPanel {
 	private int m_y = -1;
 
 	private Insets m_insets;
+	private boolean m_isMainHeader = false;
 	private boolean m_isBorderVisible = true;
 	private Color m_borderColor = Color.GRAY;
 	private int m_buttonDirection = SwingConstants.RIGHT;
@@ -46,7 +47,7 @@ public class HeaderPanel extends JPanel {
 	private JLabel m_captionLabel;
 	private ButtonsPanel m_buttons;
 
-	private IPanelManager manager;
+	private IPanelManager m_manager;
 
 	private Map<String,ActionEvent> m_actions;
 	private List<ActionListener> m_actionListeners;
@@ -233,9 +234,11 @@ public class HeaderPanel extends JPanel {
 	 * This method sets the border color
 	 *
 	 */
-	public void setBorderColor(Color color) {
+	public Color setBorderColor(Color color) {
+		Color old = m_borderColor;
 		m_borderColor = color;
 		this.setBorder(createBorder());
+		return old;
 	}
 
 	public Color getBorderColor() {
@@ -401,19 +404,22 @@ public class HeaderPanel extends JPanel {
 	}
 
 	public IPanelManager getManager() {
-		return manager;
+		return m_manager;
 	}
 
-	public void setManager(IPanelManager manager) {
+	public void setManager(IPanelManager manager, boolean isMainHeader) {
 		// unregister?
-		if(this.manager!=null) {
+		if(this.m_manager!=null && m_isMainHeader) {
 			removeMouseListener(m_mouseAdapter);
 			removeMouseMotionListener(m_mouseAdapter);
+			m_isMainHeader = false;
+			this.m_manager = null;
 		}
 		// prepare
-		this.manager = manager;
+		this.m_manager = manager;
+		this.m_isMainHeader = isMainHeader;
 		// register?
-		if(this.manager!=null) {
+		if(this.m_manager!=null && isMainHeader) {
 			addMouseListener(m_mouseAdapter);
 			addMouseMotionListener(m_mouseAdapter);
 		}
@@ -480,8 +486,8 @@ public class HeaderPanel extends JPanel {
         }
 
 		public void mouseDragged(MouseEvent e) {
-			if(manager!=null && e.getButton()==0)
-				manager.requestMoveTo(e.getX()-m_x, e.getY()-m_y);
+			if(m_manager!=null && e.getButton()==0)
+				m_manager.requestMoveTo(e.getX()-m_x, e.getY()-m_y, true);
 
 		}
 

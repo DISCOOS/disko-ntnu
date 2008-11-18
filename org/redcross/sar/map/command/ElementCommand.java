@@ -17,9 +17,9 @@ import org.redcross.sar.util.Utils;
 import com.esri.arcgis.interop.AutomationException;
 
 public class ElementCommand extends AbstractDiskoCommand implements IElementEventListener {
-	
-	private static final long serialVersionUID = 1L; 
-	
+
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructs the DrawTool
 	 */
@@ -27,10 +27,10 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 
 		// forward
 		super();
-		
+
 		// set tool type
-		type = MapCommandType.ELEMENT_COMMAND;		
-		
+		type = MapCommandType.ELEMENT_COMMAND;
+
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 		button.setFocusable(false);
@@ -38,25 +38,25 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		// create dialog
 		dialog = new ElementDialog(Utils.getApp().getFrame());
 		showDirect = true; // shows dialog first time onClick is invoked
-		
+
 		// add listener
 		((ElementDialog)dialog).getElementPanel().addElementListener(this);
-		
+
 	}
-	
+
 	public void onCreate(Object obj) {
 		// NOP
 		try {
 			if (obj instanceof JComponent) {
 				ElementDialog elementDialog = (ElementDialog)dialog;
-				elementDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, false, true);			
+				elementDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, 0, true);
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}	
-	
+	}
+
 	public void onElementChange(Enum<?> element) {
 		// update toggle button
 		button.setIcon(DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(element),"48x48"));
@@ -67,5 +67,5 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 	public void onElementDelete(ElementEvent e)  { /* Not in use */ }
 	public void onElementEdit(ElementEvent e)  { /* Not in use */ }
 	public void onElementSelected(ElementEvent e)  { /* Not in use */ }
-	
+
 }

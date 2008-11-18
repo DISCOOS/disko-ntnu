@@ -7,6 +7,7 @@ import java.util.List;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
 import org.redcross.sar.gui.mso.dialog.ElementDialog;
+import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMapLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;

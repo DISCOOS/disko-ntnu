@@ -7,13 +7,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.Internationalization;
 
-public class POITypesPanel extends BasePanel {
+public class POITypesPanel extends TogglePanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -27,15 +27,15 @@ public class POITypesPanel extends BasePanel {
 	}
 
 	public POITypesPanel(String caption, ButtonSize buttonSize) {
-		
+
 		// forward
-		super(caption,buttonSize);
-		
+		super(caption,false,false,buttonSize);
+
 		// initialize gui
 		initialize();
-		
+
 	}
-	
+
 	/**
 	 * This method initializes this
 	 *
@@ -50,7 +50,7 @@ public class POITypesPanel extends BasePanel {
 		}
 
 	}
-	
+
 	public void reset() {
 		if(getTypeList().getModel().getSize()>0)
 			getTypeList().setSelectedIndex(0);
@@ -64,7 +64,7 @@ public class POITypesPanel extends BasePanel {
 		}
 		return types;
 	}
-	
+
 	public void setPOITypes(POIType[] poiTypes) {
 		DefaultListModel model = (DefaultListModel)getTypeList().getModel();
 		model.clear();
@@ -90,18 +90,18 @@ public class POITypesPanel extends BasePanel {
 		// return selected value
 		return (POIType)getTypeList().getSelectedValue();
 	}
-	
+
 	public void setPOIType(POIType type) {
 		if(type==null)
 			getTypeList().clearSelection();
 		else
 			getTypeList().setSelectedValue(type,true);
 	}
-	
+
 	/**
-	 * This method initializes typeList	
-	 * 	
-	 * @return javax.swing.JComboBox	
+	 * This method initializes typeList
+	 *
+	 * @return javax.swing.JComboBox
 	 */
 	public JList getTypeList() {
 		if (typeList == null) {
@@ -116,7 +116,7 @@ public class POITypesPanel extends BasePanel {
 					if(e.getValueIsAdjusting()) return;
 					fireOnWorkChange(typeList, typeList.getSelectedValue());
 				}
-            	
+
             });
 		}
 		return typeList;
@@ -125,11 +125,11 @@ public class POITypesPanel extends BasePanel {
 	public boolean isSelectionAllowed() {
 		return getTypeList().isEnabled();
 	}
-	
+
 	public void setSelectionAllowed(boolean isAllowed) {
 		getTypeList().setEnabled(isAllowed);
 		setCaptionText(isAllowed ? SELECTION_ENABLED : SELECTION_DISABLED);
 	}
-	
+
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

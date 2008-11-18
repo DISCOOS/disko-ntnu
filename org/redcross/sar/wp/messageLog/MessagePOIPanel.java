@@ -286,7 +286,6 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// set preferred size of body component
 			m_typesPanel.setPreferredSize(new Dimension(100,115));
-
 		}
 		return m_typesPanel;
 	}

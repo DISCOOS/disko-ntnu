@@ -7,7 +7,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JButton;
-import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -29,23 +30,23 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 
 	private static final long serialVersionUID = 1L;
 
-	private JButton snapToButton = null;
-	private FieldsPanel optionsPanel = null;
-	private CheckBoxField snapToAttr = null;
-	private TextLineField minStepAttr = null;
-	private TextLineField maxStepAttr = null;
-	private CheckBoxField constraintAttr = null;
-	
+	private JButton snapToButton;
+	private FieldsPanel optionsPanel;
+	private CheckBoxField snapToAttr;
+	private TextLineField minStepAttr;
+	private TextLineField maxStepAttr;
+	private CheckBoxField constraintAttr;
+
 	public LinePanel(LineTool tool) {
 		// forward
 		this("Tegne linje",tool);
 	}
-	
+
 	public LinePanel(String caption, LineTool tool) {
-		
+
 		// forward
 		super(caption,tool);
-		
+
 		// initialize gui
 		initialize();
 	}
@@ -55,33 +56,43 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	 *
 	 */
 	private void initialize() {
-		
-		// set preferred body size
-		setPreferredBodySize(new Dimension(200,200));
-		
-		// set body panel
+
+		// prepare
+		setFitBodyOnResize(true);
+		setPreferredSize(new Dimension(300,135));
 		setBodyComponent(getOptionsPanel());
-		
+
 		// add buttons
 		insertButton("finish",getSnapToButton(),"snapto");
 
 	}
-	
+
 	/**
-	 * This method initializes optionsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes optionsPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private FieldsPanel getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
-				
+
 				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
-				optionsPanel.setPreferredBodySize(new Dimension(200, 150));
+				optionsPanel.setFitBodyOnResize(true);
+				optionsPanel.setButtonVisible("toggle", true);
+				optionsPanel.setPreferredSize(new Dimension(290, 100));
 				optionsPanel.addField(getSnapToAttr());
 				optionsPanel.addField(getConstraintAttr());
 				optionsPanel.addField(getMinStepAttr());
 				optionsPanel.addField(getMaxStepAttr());
+				optionsPanel.addChangeListener(new ChangeListener() {
+
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						fitBodyToPreferredLayoutSize();
+						fitThisToPreferredBodySize();
+					}
+
+				});
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -89,11 +100,10 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		}
 		return optionsPanel;
 	}
-	
+
 	private CheckBoxField getSnapToAttr() {
 		if(snapToAttr == null) {
 			snapToAttr = new CheckBoxField("autosnap","Automatisk snapping",true,135,35,false);
-			snapToAttr.setVerticalAlignment(SwingConstants.CENTER);
 			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
 			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
 
@@ -114,7 +124,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 				    	}
 				    }
 				}
-				
+
 			});
 			snapToAttr.setButtonVisible(true);
 			snapToAttr.setButtonCommand("editsnap");
@@ -122,16 +132,16 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 
 				public void actionPerformed(ActionEvent e) {
 					// forward
-					fireActionEvent(e);					
+					fireActionEvent(e);
 				}
-				
+
 			});
 			addAction("editsnap");
-			
+
 		}
 		return snapToAttr;
 	}
-		
+
 	private CheckBoxField getConstraintAttr() {
 		if(constraintAttr == null) {
 			constraintAttr = new CheckBoxField("constaint","Begrens avstand",true,135,25,true);
@@ -142,19 +152,19 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 
 					// get flag
 					boolean mode = (e.getStateChange() == ItemEvent.SELECTED);
-					
+
 					// update
 				    getTool().setConstrainMode(mode);
 				    getMinStepAttr().setEnabled(mode);
 				    getMaxStepAttr().setEnabled(mode);
-				    
+
 				}
-				
+
 			});
 		}
 		return constraintAttr;
-	}	
-	
+	}
+
 	private TextLineField getMinStepAttr() {
 		if(minStepAttr == null) {
 			minStepAttr = new TextLineField("min","Minium avstand",true,135,25,"10");
@@ -165,7 +175,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 				public void changedUpdate(DocumentEvent e) { change(); }
 				public void insertUpdate(DocumentEvent e) { change(); }
 				public void removeUpdate(DocumentEvent e) { change(); }
-				
+
 				private void change() {
 					// consume?
 					if(!isChangeable()) return;
@@ -174,13 +184,13 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 					// set value
 					getTool().setMinStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
 				}
-				
+
 			});
-			
+
 		}
 		return minStepAttr;
-	}	
-	
+	}
+
 	private TextLineField getMaxStepAttr() {
 		if(maxStepAttr == null) {
 			maxStepAttr = new TextLineField("max","Maximum avstand",true,135,25,"100");
@@ -191,7 +201,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 				public void changedUpdate(DocumentEvent e) { change(); }
 				public void insertUpdate(DocumentEvent e) { change(); }
 				public void removeUpdate(DocumentEvent e) { change(); }
-				
+
 				private void change() {
 					// consume?
 					if(!isChangeable()) return;
@@ -200,11 +210,11 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 					// set value
 					getTool().setMaxStep(value !=null && !value.isEmpty() ? Integer.valueOf(value) : 0);
 				}
-				
+
 			});
 		}
 		return maxStepAttr;
-	}	
+	}
 
 	private JButton getSnapToButton() {
 		if (snapToButton == null) {
@@ -222,13 +232,13 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 			}
 		}
 		return snapToButton;
-	}	
-			
+	}
+
 	/* ===========================================
 	 * Private methods
 	 * ===========================================
 	 */
-	
+
 	private void doSnapTo() {
 		// get adapter
 		SnapAdapter snapping = getTool().getSnapAdapter();
@@ -244,13 +254,13 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 			if(bFlag) setDirty(false);
 		}
 	}
-	
+
 	private boolean isSnappingAvailable(SnapAdapter snapping) {
 		// assume available
 		boolean bFlag = true;
 		// adapter available?
 		if(snapping==null) {
-			// notify 
+			// notify
 			Utils.showWarning("Snapping er ikke tilgjengelig");
 			// reset flag
 			bFlag = false;
@@ -262,14 +272,14 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 			bFlag = false;
 		}
 		// finished
-		return bFlag;		
+		return bFlag;
 	}
-	
+
 	/* ===========================================
 	 * Overridden public methods
 	 * ===========================================
 	 */
-	
+
 	/*
 	@Override
 	public void setFixedSize() {
@@ -277,18 +287,18 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		int w = getWidth()-20;
 		int h = getConstraintAttr().getHeight();
 		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
-		Utils.setFixedSize(getSnapToAttr(),w,dim.height);	
-		Utils.setFixedSize(getConstraintAttr(),w,h);	
-		Utils.setFixedSize(getMinStepAttr(),w,h);	
-		Utils.setFixedSize(getMaxStepAttr(),w,h);	
+		Utils.setFixedSize(getSnapToAttr(),w,dim.height);
+		Utils.setFixedSize(getConstraintAttr(),w,h);
+		Utils.setFixedSize(getMinStepAttr(),w,h);
+		Utils.setFixedSize(getMaxStepAttr(),w,h);
 	}
 	*/
-	
+
 	/* ===========================================
 	 * SnapListener interface implementation
 	 * ===========================================
 	 */
-	
+
 	public void onSnapToChanged() {
 		// get adapter
 		SnapAdapter adapter = getTool().getSnapAdapter();
@@ -296,14 +306,14 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
 	}
 
-	public void onSnapableChanged() { 
+	public void onSnapableChanged() {
 		// get adapter
 		SnapAdapter adapter = getTool().getSnapAdapter();
 		// enable auto snapping check?
 		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
 	}
-	
-	
+
+
 	/* ===========================================
 	 * IPropertyPanel interface implementation
 	 * ===========================================
@@ -313,17 +323,17 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	public LineTool getTool() {
 		return (LineTool)super.getTool();
 	}
-	
+
 	public void update() {
-		
+
 		// forward
 		super.update();
-		
+
 		// suspend events
 		setChangeable(false);
-		
+
 		try {
-			
+
 			// update attributes
 			getSnapToAttr().setValue(getTool().isSnapToMode());
 			getConstraintAttr().setValue(getTool().isConstrainMode());
@@ -332,15 +342,15 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 			// update caption
 			if(getTool().getMap().isEditSupportInstalled())
 				setCaptionText(getTool().getMap().getDrawAdapter().getDescription());
-			else 
-				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(), 
-						getTool().getMsoCode(), getTool().getDrawMode())); 
+			else
+				setCaptionText(MapUtil.getDrawText(getTool().getMsoObject(),
+						getTool().getMsoCode(), getTool().getDrawMode()));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// resume changes
 		setChangeable(true);
-	}	
-	
+	}
+
 }  //  @jve:decl-index=0:visual-constraint="10,10"

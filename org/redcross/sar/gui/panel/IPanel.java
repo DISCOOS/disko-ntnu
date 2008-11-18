@@ -46,6 +46,6 @@ public interface IPanel extends IChangeable,
 	public void removeWorkFlowListener(IWorkFlowListener listener);
 
 	public IPanelManager getManager();
-	public void setManager(IPanelManager manager);
+	public void setManager(IPanelManager manager, boolean isMainPanel);
 
 }

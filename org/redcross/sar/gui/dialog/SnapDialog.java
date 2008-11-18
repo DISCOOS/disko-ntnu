@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.dialog;
 
@@ -17,39 +17,41 @@ import org.redcross.sar.util.Utils;
 public class SnapDialog extends DefaultDialog  {
 
 	private static final long serialVersionUID = 1L;
-	
-	private SnapPanel m_snapPanel = null;
-	
+
+	private SnapPanel m_snapPanel;
+
 	/**
-	 * Constructor 
-	 * 
+	 * Constructor
+	 *
 	 * @param owner
 	 */
 	public SnapDialog(Frame owner) {
-		
+
 		// forward
 		super(owner);
-		
+
 		// initialize GUI
 		initialize();
-		
+
 	}
 
 	private void initialize() {
 		try {
 			// prepare dialog
-			Utils.setFixedSize(this, 325, 125);
 	        this.setContentPane(getSnapPanel());
+			// set translucency behavior
+			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
+			// pack to content size
 	        this.pack();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * This method initializes m_snapPanel	
-	 * 	
+	 * This method initializes m_snapPanel
+	 *
 	 * @return org.redcross.sar.gui.SnapPanel
 	 */
 	public SnapPanel getSnapPanel() {
@@ -62,17 +64,35 @@ public class SnapDialog extends DefaultDialog  {
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
 						// hide?
-						if("finish".equalsIgnoreCase(cmd) 
+						if("finish".equalsIgnoreCase(cmd)
 						|| "cancel".equalsIgnoreCase(cmd))
-							setVisible(false);						
+							setVisible(false);
 					}
-					
+
 				});
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return m_snapPanel;
 	}
-	
+
+	@Override
+	public boolean requestFitToContent() {
+		if(getSnapPanel().isExpanded()) {
+			// get size
+			int h = getSnapPanel().getPreferredSize().height;
+			int w = getSnapPanel().getPreferredSize().width;
+			// update
+			Utils.setAnySize(SnapDialog.this,w,h);
+		}
+		else {
+			// update
+			Utils.setAnySize(SnapDialog.this,getSnapPanel().getWidth(),36);
+		}
+		return true;
+	}
+
+
 }  //  @jve:decl-index=0:visual-constraint="23,0"

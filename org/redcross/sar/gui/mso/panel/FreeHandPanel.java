@@ -7,6 +7,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -54,10 +56,9 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	 */
 	private void initialize() {
 
-		// set preferred body size
-		setPreferredBodySize(new Dimension(200,200));
-
-		// set body panel
+		// prepare
+		setFitBodyOnResize(true);
+		setPreferredSize(new Dimension(300,135));
 		setBodyComponent(getOptionsPanel());
 
 		// add buttons
@@ -75,12 +76,23 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 			try {
 
 				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
-				optionsPanel.setPreferredSize(new Dimension(200, 150));
 				optionsPanel.setFitBodyOnResize(true);
+				optionsPanel.setButtonVisible("toggle", true);
+				optionsPanel.setPreferredSize(new Dimension(290, 100));
 				optionsPanel.addField(getSnapToAttr());
 				optionsPanel.addField(getConstraintAttr());
 				optionsPanel.addField(getMinStepAttr());
 				optionsPanel.addField(getMaxStepAttr());
+				optionsPanel.addChangeListener(new ChangeListener() {
+
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						fitBodyToPreferredLayoutSize();
+						fitThisToPreferredBodySize();
+					}
+
+				});
+
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

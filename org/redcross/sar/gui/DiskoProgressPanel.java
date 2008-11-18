@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.JButton;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.factory.DiskoAnimationFactory;
 
 /**
  * @author kennetgu
@@ -27,10 +28,18 @@ public class DiskoProgressPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private JLabel m_labelMessage = null;
-	private JProgressBar m_progressBar = null;
-	private JPanel m_buttonPanel = null;
-	private JButton m_cancelButton = null;
+	public enum ProgressStyleType {
+		BAR_STYLE,
+		ICON_STYLE
+	}
+
+	private ProgressStyleType m_style;
+
+	private JLabel m_labelMessage;
+	private JLabel m_progressIcon;
+	private JProgressBar m_progressBar;
+	private JPanel m_buttonPanel;
+	private JButton m_cancelButton;
 
 	public DiskoProgressPanel() {
 		// initialize GUI
@@ -49,12 +58,16 @@ public class DiskoProgressPanel extends JPanel {
 		m_labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
 		m_labelMessage.setVerticalAlignment(SwingConstants.CENTER);
 		m_labelMessage.setFocusable(false);
+		m_progressIcon = new JLabel();
+		m_progressIcon.setOpaque(false);
+		m_progressIcon.setHorizontalAlignment(SwingConstants.CENTER);
+		m_progressIcon.setVerticalAlignment(SwingConstants.CENTER);
+		m_progressIcon.setFocusable(false);
+		m_progressIcon.setIcon(DiskoAnimationFactory.getIcon("ANIMATE.CLOCK"));
 		this.setOpaque(false);
 		this.setLayout(new BorderLayout());
-		this.add(m_labelMessage, BorderLayout.NORTH);
-		this.add(getProgressBar(), BorderLayout.CENTER);
-		this.add(getButtonPanel(), BorderLayout.SOUTH);
 		this.setFocusable(false);
+		setStyle(ProgressStyleType.BAR_STYLE);
 
 	}
 
@@ -63,7 +76,7 @@ public class DiskoProgressPanel extends JPanel {
 	 *
 	 * @return javax.swing.JProgressBar
 	 */
-	private JProgressBar getProgressBar() {
+	public JProgressBar getProgressBar() {
 		if (m_progressBar == null) {
 			m_progressBar = new JProgressBar();
 			m_progressBar.setPreferredSize(new Dimension(100,30));
@@ -113,7 +126,7 @@ public class DiskoProgressPanel extends JPanel {
 		getProgressBar().setIndeterminate(intermediate);
 	}
 
-	public void setProgress(int step,String text,String message) {
+	public void setProgress(int step, String text, String message) {
 		// update progress
 		getProgressBar().setValue(step);
 		// update progress bar text
@@ -123,19 +136,47 @@ public class DiskoProgressPanel extends JPanel {
 		// update progressbar message
 		m_labelMessage.setText(message);
 		Graphics g = m_labelMessage.getGraphics();
-		Component c = SwingUtilities.getRoot(this);
 		if(g!=null && message!=null) {
 			int w = Math.max(g.getFontMetrics().stringWidth(message),100);
-			c.setSize(w+10,SwingUtilities.getRoot(this).getHeight());
+			setParentSize(w+10,SwingUtilities.getRoot(this).getHeight());
 		}
 		else {
-			c.setSize(75,SwingUtilities.getRoot(this).getHeight());
-
+			setParentSize(75,SwingUtilities.getRoot(this).getHeight());
 		}
-		// update position
-		if(c instanceof DefaultDialog)
-			((DefaultDialog)c).snapTo();
+	}
 
+	private void setParentSize(int width, int height) {
+		Component c = SwingUtilities.getRoot(this);
+		if(c!=null) {
+			c.setSize(width, height);
+			// update position
+			if(c instanceof DefaultDialog)
+				((DefaultDialog)c).snapTo();
+		}
+	}
+
+	public ProgressStyleType getStyle() {
+		return m_style;
+	}
+
+	public void setStyle(ProgressStyleType style) {
+		this.removeAll();
+		Component c = SwingUtilities.getRoot(this);
+		int w = c!=null ? c.getWidth() : 100;
+		w = Math.min(100, w);
+		if(ProgressStyleType.BAR_STYLE.equals(style)) {
+			this.add(m_labelMessage, BorderLayout.NORTH);
+			this.add(getProgressBar(), BorderLayout.CENTER);
+			this.add(getButtonPanel(), BorderLayout.SOUTH);
+			setParentSize(w, 45);
+		}
+		else {
+			this.add(m_labelMessage, BorderLayout.NORTH);
+			this.add(m_progressIcon, BorderLayout.CENTER);
+			this.add(getButtonPanel(), BorderLayout.SOUTH);
+			setParentSize(w, 65);
+		}
+		m_style = style;
 	}
 
 }

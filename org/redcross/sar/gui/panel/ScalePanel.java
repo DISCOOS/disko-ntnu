@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JToggleButton;
@@ -29,43 +30,44 @@ import com.esri.arcgis.controls.IMapControlEvents2OnMapReplacedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
 import com.esri.arcgis.interop.AutomationException;
 
-public class ScalePanel extends DefaultPanel {
-	
+public class ScalePanel extends TogglePanel {
+
 	private static final long serialVersionUID = 1L;
-	private static final String[] scales = {"1:2500", "1:5000", "1:10000", 
+	private static final String[] scales = {"1:2500", "1:5000", "1:10000",
 											"1:25 000", "1:50 000","1:250 000",
 											"1:500 000","1:1000 000"};
-	
-	private JPanel m_scaleListPanel = null;
-	private ButtonGroup m_group = null;
-	private JToggleButton m_custom = null;
-	
-	private IDiskoMap m_map = null;
-	
-	private Map<JToggleButton,JTextField> m_textFields = null;
 
-	
+	private JPanel m_scaleListPanel;
+	private ButtonGroup m_group;
+	private JToggleButton m_custom;
+
+	private IDiskoMap m_map;
+
+	private Map<JToggleButton,JTextField> m_textFields;
+
+
 	public ScalePanel() {
 
 		// forward
 		super("Sett skala",false,true,ButtonSize.SMALL);
-		
+
 		// prepare
 		m_group = new ButtonGroup();
 		m_textFields = new HashMap<JToggleButton,JTextField>();
-		
+
 		// initialize gui
 		initialize();
 	}
-	
+
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 */
 	private void initialize() {
 		try {
-			
+
 			// create content
+			setFitBodyOnResize(true);
 			setBodyComponent(getScaleListPanel());
 
 		}
@@ -74,52 +76,59 @@ public class ScalePanel extends DefaultPanel {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private JPanel getScaleListPanel() {
 		if (m_scaleListPanel == null) {
-			try {						
-				
+			try {
+
+				// create panel
 				m_scaleListPanel = new JPanel();
-				m_scaleListPanel.setBorder(null);
+				m_scaleListPanel.setBorder(BorderFactory.createEmptyBorder());
 				m_scaleListPanel.setLayout(new BoxLayout(m_scaleListPanel,BoxLayout.Y_AXIS));
-				
+
+				// initialize height
+				int h = getHeaderPanel().getPreferredSize().height + 10;
+
 				// add items
 				addScale("1:1",true,true,false);
 				for(int i=0;i<scales.length;i++) {
 					// get new panel
-					addScale(scales[i],false,false,true);					
-				}				
-				
+					h += addScale(scales[i],false,false,true);
+				}
+
+				// set preferred size
+				m_scaleListPanel.setPreferredSize(new Dimension(200,h));
+
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		return m_scaleListPanel;
-	}	
+	}
 
-	private void addScale(String scale, boolean editable, boolean custom, boolean strut) {
-		// add strut?
-		//if(strut) m_scaleListPanel.add(Box.createVerticalStrut(5));
+	private int addScale(String scale, boolean editable, boolean custom, boolean strut) {
 		// get item
 		JPanel item = createScaleItemPanel(scale,editable,custom);
 		// add to panel
-		m_scaleListPanel.add(item);		
+		m_scaleListPanel.add(item);
+		// finished
+		return item.getPreferredSize().height;
 	}
-	
+
 	private JPanel createScaleItemPanel(String scale, boolean editable, boolean custom) {
-		
+
 		// initialize
 		JToggleButton button = null;
 		JTextField textField = null;
-		
+
 		// add new item panel
 		JPanel item = new JPanel();
 		item.setBorder(null);
 		FlowLayout layout = new FlowLayout();
 		layout.setHgap(5);
 		item.setLayout(layout);
-		
+
 		// add object pair
 		textField = createScaleItemText(scale);
 		textField.setEditable(editable);
@@ -131,26 +140,26 @@ public class ScalePanel extends DefaultPanel {
 		// add to button group
 		m_group.add(button);
 		// set as custom?
-		if (custom) 
+		if (custom)
 			m_custom = button;
 		// return panel
 		return item;
 	}
 
 	private JTextField createScaleItemText(String scale) {
-		
+
 		// add new item panel
 		BorderLayout borderLayout = new BorderLayout();
 		borderLayout.setHgap(5);
 		JTextField item = new JTextField(scale);
 		Dimension size = new Dimension(150,32);
 		item.setPreferredSize(size);
-		
+
 		// add action listener
 		item.addActionListener(new ActionListener() {
-			
+
 			double oldScale = 0;
-			
+
 			public void actionPerformed(ActionEvent e) {
 				// get item
 				JTextField item = (JTextField)e.getSource();
@@ -165,17 +174,17 @@ public class ScalePanel extends DefaultPanel {
 					// changed?
 					if(oldScale != newScale) {
 						oldScale = newScale;
-					}					
+					}
 				}
 				// replace text old text
 				item.setText("1:"+String.valueOf((int)oldScale));
 				// forward
 				apply(newScale);
-			}			
+			}
 		});
 		return item;
 	}
-	
+
 	private JToggleButton createScaleItemButton() {
 		// add new button
 		JToggleButton item = DiskoButtonFactory.createToggleButton(
@@ -196,16 +205,16 @@ public class ScalePanel extends DefaultPanel {
 					// forward
 					apply(newScale);
 				}
-			}			
+			}
 		});
 		return item;
 	}
-	
+
 	private void apply(double newScale) {
-		
+
 		// consume changes
 		setChangeable(false);
-		
+
 		try {
 			// is new scale valid?
 			if(newScale!=0) {
@@ -234,12 +243,12 @@ public class ScalePanel extends DefaultPanel {
 		// resume changes
 		setChangeable(true);
 	}
-	
+
 	public void update() {
-		
+
 		// consume changes
 		setChangeable(false);
-		
+
 		try {
 			// get current map scale
 			double scale = ((MapBean)m_map).getMapScale();
@@ -251,9 +260,9 @@ public class ScalePanel extends DefaultPanel {
 		}
 
 		setChangeable(true);
-		
+
 	}
-	
+
 	// update to scale ratio
 	private void gotoItem(String item) {
 		try {
@@ -277,7 +286,7 @@ public class ScalePanel extends DefaultPanel {
 			// not found, update custom scale and select it
 			JTextField textField = m_textFields.get(m_custom);
 			textField.setText(item);
-			m_custom.setSelected(true);						
+			m_custom.setSelected(true);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -309,7 +318,7 @@ public class ScalePanel extends DefaultPanel {
 		}
 		return Double.valueOf(number);
 	}
-		
+
 	private boolean isNumeric(String s) {
 		try
 		{
@@ -319,38 +328,38 @@ public class ScalePanel extends DefaultPanel {
 			catch(NumberFormatException e)
 		{
 			return false;
-		}				
+		}
 	}
-	
+
 	private void notifyInvalidNumber() {
 		// notfiy user
 		Utils.showMessage("Ulovlig verdi",
 				"Du må benytte formatet 1:<skala>");
 	}
-	
+
 	public void load(IDiskoMap map) {
-		
+
 		try {
 			// remove old?
 			if(m_map!=null)
 				((MapBean)m_map).removeIMapControlEvents2Listener(adapter);
-			
+
 			// save m_map instanse
 			m_map = map;
-			
+
 			//listen to do actions when the m_map is loaded
 			((MapBean)m_map).addIMapControlEvents2Listener(adapter);
-			
+
 			// forward
 			update();
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	final IMapControlEvents2Adapter adapter = new IMapControlEvents2Adapter() {
 		private static final long serialVersionUID = 1L;
 		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
@@ -359,7 +368,7 @@ public class ScalePanel extends DefaultPanel {
 				public void run() {
 					update();
 				}
-			});				
+			});
 		}
 		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
         	throws java.io.IOException, AutomationException {
@@ -367,7 +376,7 @@ public class ScalePanel extends DefaultPanel {
 				public void run() {
 					update();
 				}
-			});				
+			});
 		}
 
 	};

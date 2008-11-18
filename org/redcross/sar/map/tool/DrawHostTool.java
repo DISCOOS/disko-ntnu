@@ -1,8 +1,9 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.map.tool;
 
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -11,7 +12,6 @@ import javax.swing.AbstractButton;
 
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.DiskoIcon;
-import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -29,8 +29,8 @@ import com.esri.arcgis.interop.AutomationException;
  */
 public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
-	private static final long serialVersionUID = 1L; 
-	
+	private static final long serialVersionUID = 1L;
+
 	// flags
 	protected boolean isActive = false;
 	protected boolean showDirect = false;
@@ -38,12 +38,12 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
 	// current hosted tool
 	private IMapTool tool = null;
-	
+
 	// GUI components
 	protected DiskoMap map = null;
 	protected DrawDialog dialog = null;
 	protected AbstractButton button = null;
-	
+
 	/**
 	 * Constructs the DrawHostTool
 	 */
@@ -51,13 +51,13 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
 		// forward
 		super();
-		
+
 		// get current application
 		IApplication app = Utils.getApp();
-		
+
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
-		
+
 		// add show dialog listener
 		button.addMouseListener(new MouseListener() {
 
@@ -65,8 +65,9 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 				// consume?
 				if(dialog == null || !showDialog ) return;
 				// double click?
-				if(e.getClickCount() == 2) {
+				if(e.getClickCount() >= 2) {
 					dialog.setVisible(!dialog.isVisible());
+					dialog.setPreferredSize(new Dimension(300,35));
 				}
 			}
 
@@ -74,16 +75,16 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 				// consume?
 				if(dialog == null || !showDialog ) return;
 				// start show/hide
-				dialog.delayedSetVisible(!dialog.isVisible(), 250);				
+				dialog.delayedSetVisible(!dialog.isVisible(), 250);
 			}
 
 			public void mouseReleased(MouseEvent e) {
 				// consume?
 				if(dialog == null || !showDialog ) return;
 				// stop show if not shown already
-				dialog.cancelSetVisible();				
+				dialog.cancelSetVisible();
 			}
-			
+
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
 
@@ -94,19 +95,18 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
 		// register me as host tool
 		dialog.setHostTool(this);
-		
+
 		// do not show dialog first time onClick is invoked
-		showDirect = false; 
-		
+		showDirect = false;
+
 	}
-	
+
 	public void onCreate(Object obj) {
-		
+
 		try {
 			if (obj instanceof IDiskoMap) {
 				map = (DiskoMap)obj;
 				dialog.register(map);
-				dialog.setLocationRelativeTo(map, DefaultDialog.POS_WEST, true, true);
 				if(button!=null && button.getIcon() instanceof DiskoIcon) {
 					DiskoIcon icon = (DiskoIcon)button.getIcon();
 					icon.setMarked(true);
@@ -117,7 +117,7 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void onClick() {
 		// forward to map?
 		if(tool!=null) {
@@ -132,11 +132,12 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			}
 		}
 		// toogle dialog?
-		if (dialog != null && showDialog && showDirect )
+		if (dialog != null && showDialog && showDirect ) {
 			dialog.setVisible(!dialog.isVisible());
+		}
 	}
 
-	
+
 	public void setTool(IMapTool tool, boolean activate) {
 		// host can't host as empty tool
 		if(tool!=null) {
@@ -158,10 +159,10 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	}
 
 	/**
-	 * The default behaviour is that is allways allowed 
+	 * The default behaviour is that is allways allowed
 	 * to activate this class. Howerver, an extender
-	 * of this class can override this behavior. 
-	 */	
+	 * of this class can override this behavior.
+	 */
 	public boolean activate(boolean allow){
 		// set flag
 		isActive = true;
@@ -173,9 +174,9 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	}
 
 	/**
-	 * The default behaviour is that is allways allowed 
+	 * The default behaviour is that is allways allowed
 	 * to deactivate this class. Howerver, an extender
-	 * of this class can override this behavior. 
+	 * of this class can override this behavior.
 	 */
 	public boolean deactivate(){
 		// reset flag
@@ -194,12 +195,12 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	public AbstractButton getButton() {
 		return button;
 	}
-	
+
 	public IMapToolState save() {
 		// get new state
 		return new DrawHostToolState(this);
 	}
-	
+
 	public boolean load(IMapToolState state) {
 		// valid state?
 		if(state instanceof DrawHostToolState) {
@@ -207,14 +208,14 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 			return true;
 		}
 		return false;
-	
-	}	
-	
+
+	}
+
 	/*===============================================
 	 * Overridden ICommand methods
 	 *===============================================
 	 */
-	
+
 	@Override
 	public String getCaption() {
 		try {
@@ -313,15 +314,15 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		}
 		return false;
 	}
-		
+
 	/*===============================================
 	 * Inner classes
 	 *===============================================
 	 */
-	
+
 	/**
 	 * Abstract tool state class
-	 * 
+	 *
 	 * @author kennetgu
 	 *
 	 */
@@ -334,19 +335,19 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 
 		// current hosted tool
 		private IMapTool tool = null;
-		
+
 		// create state
 		public DrawHostToolState(DrawHostTool tool) {
 			save(tool);
 		}
-		
+
 		public void save(DrawHostTool tool) {
 			this.isActive = tool.isActive;
 			this.showDirect = tool.showDirect;
 			this.showDialog = tool.showDialog;
 			this.tool = tool.tool;
 		}
-		
+
 		public void load(DrawHostTool tool) {
 			tool.isActive = this.isActive;
 			tool.showDirect = this.showDirect;

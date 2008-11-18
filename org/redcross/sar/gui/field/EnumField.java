@@ -25,48 +25,48 @@ import org.redcross.sar.util.Utils;
  *
  */
 public class EnumField extends AbstractField {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private Enum<?> m_value;
 	private Enum<?>[] m_values;
 	private ListSelectorPanel m_selectorPanel;
 	private ListSelectorDialog m_selectorDialog;
-	
+
 	/*==================================================================
 	 * Constructors
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	public EnumField(String name, String caption, boolean isEditable) {
 		// forward
 		super(name,caption,false);
 		// forward
 		initialize(null,isEditable);
 	}
-	
+
 	public EnumField(String name, String caption, boolean isEditable, Enum<?>[] values) {
 		// forward
 		super(name,caption,false);
 		// forward
 		initialize(values,isEditable);
 	}
-	
+
 	public EnumField(String name, String caption, boolean isEditable, int width, int height) {
 		// forward
 		super(name,caption,false,width,height,null);
 		// forward
 		initialize(null,isEditable);
 	}
-	
-	
+
+
 	public EnumField(String name, String caption, boolean isEditable, int width, int height, Enum<?> value, Enum<?>[] values) {
 		// forward
 		super(name,caption,false,width,height,null);
 		// forward
 		initialize(values,isEditable);
 	}
-	
+
 	public EnumField(MsoEnum<?> attribute, String caption, boolean isEditable) {
 		// forward
 		super(attribute, caption, false);
@@ -81,35 +81,35 @@ public class EnumField extends AbstractField {
 		// forward
 		initialize(values,isEditable);
 	}
-	
-	public EnumField(MsoEnum<?> attribute, String caption, 
+
+	public EnumField(MsoEnum<?> attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, false, width, height);
 		// forward
 		initialize(getAllEnumValues(attribute),isEditable);
 	}
-	
-	public EnumField(MsoEnum<?> attribute, String caption, 
+
+	public EnumField(MsoEnum<?> attribute, String caption,
 			boolean isEditable, int width, int height, Enum<?>[] values) {
 		// forward
 		super(attribute, caption, false, width, height);
 		// forward
 		initialize(values,isEditable);
 	}
-	
+
 	private void initialize(Enum<?>[] values, boolean isEditable) {
 		// fill values
 		setValues(values);
 		// forward?
-		initalizeEdit();	
+		initalizeEdit();
 		// forward
-		setEditable(isEditable);		
+		setEditable(isEditable);
 	}
-	
+
 	/*==================================================================
 	 * Public methods
-	 *================================================================== 
+	 *==================================================================
 	 */
 
 	public Component getComponent() {
@@ -117,7 +117,7 @@ public class EnumField extends AbstractField {
 			JFormattedTextField field = new JFormattedTextField();
 			field.setEditable(false);
 			// save the component
-			m_component = field;			
+			m_component = field;
 		}
 		return m_component;
 	}
@@ -125,19 +125,19 @@ public class EnumField extends AbstractField {
 	public JFormattedTextField getTextField() {
 		return (JFormattedTextField)m_component;
 	}
-	
+
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}
-	
+
 	public boolean getAutoSave() {
 		return m_autoSave;
-	}	
-	
+	}
+
 	public Enum<?> getValue() {
 		return m_value;
 	}
-	
+
 	public boolean setValue(Object value) {
 		if(value instanceof Enum) {
 			// save
@@ -155,11 +155,11 @@ public class EnumField extends AbstractField {
 		return false;
 	}
 
-	
+
 	public Enum<?>[] getValues() {
 		return m_values;
 	}
-	
+
 	public void setValues(Enum<?>[] values) {
 		// prepare
 		m_values = values;
@@ -185,15 +185,15 @@ public class EnumField extends AbstractField {
 			if(model.getSize()>0)
 				list.setSelectedIndex(0);
 	}
-	
+
 	public void setVisibleRowCount(int rows) {
 		((JList)m_component).setVisibleRowCount(rows);
 	}
-	
+
 	public int getVisibleRowCount() {
 		return ((JList)m_component).getVisibleRowCount();
 	}
-	
+
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
@@ -209,46 +209,46 @@ public class EnumField extends AbstractField {
 		}
 		// failure
 		return false;
-	}	
-	
+	}
+
 	@Override
 	public void setEditable(boolean isEditable) {
 		// forward
 		super.setEditable(isEditable);
 		// force
-		getTextField().setEditable(false);		
+		getTextField().setEditable(false);
 	}
-	
+
 	/*==================================================================
 	 * Private methods
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	private ListSelectorPanel getSelectorPanel() {
 		if(m_selectorPanel==null) {
 			m_selectorPanel = getSelectorDialog().getListSelectorPanel();
 		}
 		return m_selectorPanel;
 	}
-	
+
 	private ListSelectorDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
 			m_selectorDialog = new ListSelectorDialog(Utils.getApp().getFrame());
 		}
 		return m_selectorDialog;
 	}
-	
+
 	private void initalizeEdit() {
-		
+
 		// initialize gui
 		installButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
-		
+
 		// handle actions
 		getButton().addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getSelectorDialog().setLocationRelativeTo(getButton(), DefaultDialog.POS_WEST, false, false);
+				getSelectorDialog().setSnapTo(getButton(), DefaultDialog.POS_WEST, 0, false);
 				Enum<?> value = (Enum<?>)getSelectorDialog().select();
 				if(value!=null) {
 					setValue(value);
@@ -262,15 +262,15 @@ public class EnumField extends AbstractField {
 					setChangeable(true);
 				}
 			}
-			
+
 		});
 	}
-	
+
 	/*==================================================================
 	 * Private static methods
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	@SuppressWarnings("unchecked")
 	private static Enum[] getAllEnumValues(MsoEnum attribute) {
 		Enum value = attribute.getValue();

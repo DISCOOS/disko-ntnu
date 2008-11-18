@@ -10,9 +10,12 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.event.EventListenerList;
 
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoProgressPanel;
+import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IProgressListener;
@@ -52,13 +55,13 @@ public class ProgressMonitor {
 	private ProgressDialog m_progressDialog;
 	private DiskoProgressPanel m_progressPanel;
 
-	private List<IProgressListener> m_listeners;
+	private EventListenerList m_listeners;
 
 	private ProgressMonitor() {
 		// prepare
 		m_notes = new ArrayList<String>(1);
 		m_notes.add("Vent litt");
-		m_listeners = new ArrayList<IProgressListener>();
+		m_listeners = new EventListenerList();
 	}
 
 	/*========================================================
@@ -314,12 +317,12 @@ public class ProgressMonitor {
 		return m_inAction;
 	}
 
-	public synchronized void addListener(IProgressListener listener) {
-		m_listeners.add(listener);
+	public synchronized void addProgressListener(IProgressListener listener) {
+		m_listeners.add(IProgressListener.class, listener);
 	}
 
-	public synchronized void removeListener(IProgressListener listener) {
-		m_listeners.remove(listener);
+	public synchronized void removeProgressListener(IProgressListener listener) {
+		m_listeners.remove(IProgressListener.class, listener);
 	}
 
 	public synchronized boolean isInhibit() {
@@ -419,14 +422,14 @@ public class ProgressMonitor {
 		}
 	}
 
-	public void setProgressLocationAt(final JComponent c) {
+	public void setProgressSnapTo(final JComponent snapTo) {
 		if(SwingUtilities.isEventDispatchThread()) {
-			getGlassPane().setProgressLocationAt(c);
+			getProgressDialog().setSnapTo(snapTo, DefaultDialog.POS_CENTER, 0, true);
 		}
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					getGlassPane().setProgressLocationAt(c);
+					setProgressSnapTo(snapTo);
 				}
 			});
 		}
@@ -476,7 +479,7 @@ public class ProgressMonitor {
 		// forward event to listeners
 		fireUpdateProgressEvent(ProgressEventType.EVENT_CANCEL);
 		// reset position
-		setProgressLocationAt(m_glassPane);
+		setProgressSnapTo(m_glassPane);
 	}
 
 	private synchronized void scheduleEventFinish() {
@@ -485,7 +488,7 @@ public class ProgressMonitor {
 		// forward event to listeners
 		fireUpdateProgressEvent(ProgressEventType.EVENT_FINISH);
 		// reset position
-		setProgressLocationAt(Utils.getApp().getFrame().getLayeredPane());
+		setProgressSnapTo(Utils.getApp().getFrame().getLayeredPane());
 	}
 
 
@@ -541,8 +544,8 @@ public class ProgressMonitor {
 
 	private void fireProgressEvent(ProgressEvent e) {
 		// notify listeners
-		for(int i=0;i<m_listeners.size();i++) {
-			m_listeners.get(i).changeProgress(e);
+		for(IProgressListener it : m_listeners.getListeners(IProgressListener.class)) {
+			it.changeProgress(e);
 		}
 	}
 
@@ -566,7 +569,8 @@ public class ProgressMonitor {
 	private ProgressDialog getProgressDialog() {
 		// initialize?
 		if(m_progressDialog==null) {
-			m_progressDialog = getGlassPane().getProgressDialog();
+			m_progressDialog = new ProgressDialog(Utils.getApp().getFrame(),false,ProgressStyleType.BAR_STYLE);
+			getGlassPane().setProgressDialog(m_progressDialog);
 		}
 		return m_progressDialog;
 	}
@@ -579,7 +583,7 @@ public class ProgressMonitor {
 	private DiskoProgressPanel getProgressPanel() {
 		// initialize?
 		if(m_progressPanel==null) {
-			m_progressPanel = getGlassPane().getProgressDialog().getProgressPanel();
+			m_progressPanel = getProgressDialog().getProgressPanel();
 		}
 		return m_progressPanel;
 	}

@@ -313,7 +313,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 								e.printStackTrace();
 							}
 							HypothesisDialog dialog = getHypothesesDialog();
-							dialog.setLocationRelativeTo((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, true,true);
+							dialog.setSnapTo((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
 							dialog.setVisible(true);
 							return false;
 						}
@@ -548,7 +548,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PromptDialog getDraftListDialog() {
 		if (draftListDialog == null) {
 			draftListDialog = new PromptDialog(this);
-			draftListDialog.setLocationRelativeTo((DiskoMap)getMap(),DefaultDialog.POS_CENTER, false, true);
+			draftListDialog.setSnapTo((DiskoMap)getMap(),DefaultDialog.POS_CENTER, 0, true);
 			dialogs.add(draftListDialog);
 		}
 		return draftListDialog;
@@ -656,8 +656,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						if (descriptionToggleButton.isSelected() && dialog.isVisible()) {
 							dialog.setVisible(false);
 						} else {
-							dialog.setLocationRelativeTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, true, true);
+							dialog.setSnapTo((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
 							dialog.setVisible(true);
 						}
 					}
@@ -686,7 +686,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							hypotheseToggleButton.setSelected(false);
 						}
 						else {
-							dialog.setLocationRelativeTo(mapComp,DefaultDialog.POS_SOUTH, true, true);
+							dialog.setSnapTo(mapComp,DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
 							dialog.setVisible(true);
 						}
 					}
@@ -713,7 +713,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setLocationRelativeTo(mapComp,DefaultDialog.POS_CENTER, false, true);
+							dialog.setSnapTo(mapComp,DefaultDialog.POS_CENTER, 0, true);
 							dialog.setVisible(true);
 						}
 					}
@@ -740,8 +740,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setLocationRelativeTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, true, true);
+							dialog.setSnapTo((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
 							dialog.setVisible(true);
 						}
 					}
@@ -796,8 +796,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setLocationRelativeTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, true, true);
+							dialog.setSnapTo((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
 							dialog.setVisible(true);
 						}
 					}
@@ -851,8 +851,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setLocationRelativeTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, true, true);
+							dialog.setSnapTo((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
 							/*
 							java.awt.Point p = unitToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);

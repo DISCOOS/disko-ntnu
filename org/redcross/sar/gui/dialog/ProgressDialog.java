@@ -3,11 +3,14 @@
  */
 package org.redcross.sar.gui.dialog;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import org.redcross.sar.gui.DiskoProgressPanel;
+import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
 
-import java.awt.Dimension;
+import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -21,14 +24,13 @@ public class ProgressDialog extends DefaultDialog {
 
 	private DiskoProgressPanel m_progressPanel;
 
-	/**
-	 *
-	 */
-	public ProgressDialog(JFrame frame, boolean cancel) {
+	public ProgressDialog(Window window, boolean cancel, ProgressStyleType style) {
 		// forward
-		super(frame);
+		super(window);
 		// initialize GUI
-		initialize(frame,cancel);
+		initialize(window,cancel);
+		// set style
+		getProgressPanel().setStyle(style);
 	}
 
 	/**
@@ -36,19 +38,30 @@ public class ProgressDialog extends DefaultDialog {
 	 *
 	 * @return void
 	 */
-	private void initialize(JFrame frame, boolean cancel) {
+	private void initialize(Window window, boolean cancel) {
 		// prepare
 		this.setTitle("");
 		this.setUndecorated(true);
 		this.setResizable(false);
 		this.setFocusable(false);
+		this.setFocusableWindowState(false);
 		this.setContentPane(getProgressPanel());
-		this.setPreferredSize(new Dimension(100,45));
-		this.setLocationRelativeTo(frame.getLayeredPane(), DefaultDialog.POS_CENTER, false, true);
+		this.setSnapTo(getLocationComponent(window), DefaultDialog.POS_CENTER, 0, true);
+
 		// set cancel button status
 		getProgressPanel().setButtonVisible(cancel);
+
 		// apply layout
 		this.pack();
+	}
+
+	private Component getLocationComponent(Window window) {
+		if(window instanceof JFrame)
+			return ((JFrame)window).getLayeredPane();
+		else if(window instanceof JDialog)
+			return ((JDialog)window).getLayeredPane();
+		else
+			return window;
 	}
 
 	/**
@@ -70,6 +83,14 @@ public class ProgressDialog extends DefaultDialog {
 			});
 		}
 		return m_progressPanel;
+	}
+
+	public ProgressStyleType getStyle() {
+		return getProgressPanel().getStyle();
+	}
+
+	public void setStyle(ProgressStyleType style) {
+		getProgressPanel().setStyle(style);
 	}
 
 }

@@ -14,9 +14,9 @@ import org.redcross.sar.util.Utils;
 import com.esri.arcgis.interop.AutomationException;
 
 public class TocCommand extends AbstractDiskoCommand {
-	
-	private static final long serialVersionUID = 1L; 
-	
+
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructs the command
 	 */
@@ -24,37 +24,37 @@ public class TocCommand extends AbstractDiskoCommand {
 
 		// forward
 		super();
-		
+
 		// set tool type
-		type = MapCommandType.TOC_COMMAND;		
-		
+		type = MapCommandType.TOC_COMMAND;
+
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 		button.setFocusable(false);
 
 		// shows dialog first time onClick is invoked
 		showDirect = true;
-		
+
 		// create dialog
 		dialog = new TocDialog(Utils.getApp().getFrame());
-		
+
 	}
-	
-	public void onCreate(Object obj) {		
+
+	public void onCreate(Object obj) {
 		try {
 			if (obj instanceof IDiskoMap) {
 				TocDialog tocDialog = (TocDialog)dialog;
 				tocDialog.onLoad((IDiskoMap)obj);
-				tocDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, true, true);			
+				tocDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, DefaultDialog.SIZE_TO_LIMIT, true);
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 		// forward
-		super.onCreate(obj);		
+		super.onCreate(obj);
 	}
-	
+
 	@Override
 	public void onClick() {
 		// forward
@@ -63,5 +63,5 @@ public class TocCommand extends AbstractDiskoCommand {
 		super.onClick();
 	}
 
-	
+
 }

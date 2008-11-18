@@ -11,6 +11,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -21,6 +23,7 @@ import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
 import org.redcross.sar.gui.panel.GotoPanel;
+import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
@@ -48,7 +51,7 @@ public class POIPanel extends DefaultToolPanel {
 	private POITypesPanel poiTypesPanel;
 	private FieldsPanel optionsPanel;
 	private TextLineField nameAttr;
-	private DefaultPanel remarksPanel;
+	private TogglePanel remarksPanel;
 	private JTextArea remarksArea;
 
 	private IPOIIf msoPOI;
@@ -96,11 +99,9 @@ public class POIPanel extends DefaultToolPanel {
 	 */
 	private void initialize() {
 
-		// set preferred size
-		setPreferredSize(new Dimension(200,550));
-
-		// set preferred body size
-		setPreferredBodySize(new Dimension(200,400));
+		// prepare
+		setFitBodyOnResize(true);
+		setPreferredSize(new Dimension(300,470));
 
 		// get body panel
 		JPanel panel = (JPanel)getBodyComponent();
@@ -131,7 +132,9 @@ public class POIPanel extends DefaultToolPanel {
 		if (optionsPanel == null) {
 			try {
 				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
-				optionsPanel.setPreferredSize(new Dimension(200,80));
+				optionsPanel.setPreferredSize(new Dimension(290,80));
+				optionsPanel.setFitBodyOnResize(true);
+				optionsPanel.setButtonVisible("toggle", true);
 				optionsPanel.addField(getNameAttr());
 				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
 
@@ -150,6 +153,15 @@ public class POIPanel extends DefaultToolPanel {
 
 						}
 
+					}
+
+				});
+				optionsPanel.addChangeListener(new ChangeListener() {
+
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						fitBodyToPreferredLayoutSize();
+						fitThisToPreferredBodySize();
 					}
 
 				});
@@ -180,7 +192,9 @@ public class POIPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.setPreferredSize(new Dimension(200, 140));
+			gotoPanel.setFitBodyOnResize(true);
+			gotoPanel.setPreferredSize(new Dimension(290,140));
+			Utils.setFixedHeight(gotoPanel, 140);
 			gotoPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				public void onFlowPerformed(WorkFlowEvent e) {
@@ -218,6 +232,15 @@ public class POIPanel extends DefaultToolPanel {
 				}
 
 			});
+			gotoPanel.addChangeListener(new ChangeListener() {
+
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					fitBodyToPreferredLayoutSize();
+					fitThisToPreferredBodySize();
+				}
+
+			});
 
 		}
 		return gotoPanel;
@@ -231,7 +254,7 @@ public class POIPanel extends DefaultToolPanel {
 	public POITypesPanel getPOITypesPanel() {
 		if (poiTypesPanel == null) {
 			poiTypesPanel = new POITypesPanel();
-			poiTypesPanel.setPreferredSize(new Dimension(200,100));
+			poiTypesPanel.setPreferredSize(new Dimension(290,100));
 			poiTypesPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				public void onFlowPerformed(WorkFlowEvent e) {
@@ -251,6 +274,16 @@ public class POIPanel extends DefaultToolPanel {
 				}
 
 			});
+			poiTypesPanel.addChangeListener(new ChangeListener() {
+
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					fitBodyToPreferredLayoutSize();
+					fitThisToPreferredBodySize();
+				}
+
+			});
+
 
 		}
 		return poiTypesPanel;
@@ -261,12 +294,22 @@ public class POIPanel extends DefaultToolPanel {
 	 *
 	 * @return {@link DefaultPanel}
 	 */
-	public DefaultPanel getRemarksPanel() {
+	public TogglePanel getRemarksPanel() {
 		if (remarksPanel == null) {
 			try {
-				remarksPanel = new DefaultPanel("Merknader",false,false);
-				remarksPanel.setPreferredSize(new Dimension(200, 150));
+				remarksPanel = new TogglePanel("Merknader",false,false,true);
+				remarksPanel.setPreferredSize(new Dimension(290, 150));
 				remarksPanel.setBodyComponent(getRemarksArea());
+				remarksPanel.addChangeListener(new ChangeListener() {
+
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						fitBodyToPreferredLayoutSize();
+						fitThisToPreferredBodySize();
+					}
+
+				});
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -284,7 +327,6 @@ public class POIPanel extends DefaultToolPanel {
 			remarksArea = new JTextArea();
 			remarksArea.setLineWrap(true);
 			remarksArea.setRows(3);
-			remarksArea.setPreferredSize(new Dimension(200, 100));
 			remarksArea.getDocument().addDocumentListener(new DocumentListener() {
 
 				public void changedUpdate(DocumentEvent e) { change(); }

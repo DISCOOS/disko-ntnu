@@ -27,8 +27,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	private static final long serialVersionUID = 1L;
 
-	private boolean isDirty = false;
+	private int m_isMarked = 0;
+
 	private int consumeCount = 0;
+	private int loopCount = 0;
+
+	private boolean isDirty = false;
 	private boolean requestHideOnFinish = true;
 	private boolean requestHideOnCancel = true;
 
@@ -130,8 +134,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	/* ===========================================
 	 * IMsoLayerEventListener implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	public void onSelectionChanged(MsoLayerEvent e) {
 		if (!e.isFinal()) return;
@@ -183,8 +186,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	/* ===========================================
 	 * IDiskoPanel implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	public abstract void update();
 
@@ -200,7 +202,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	public abstract IPanelManager getManager();
 
-	public abstract void setManager(IPanelManager manager);
+	public abstract void setManager(IPanelManager manager, boolean isMainPanel);
 
 	public IMsoObjectIf getMsoObject() {
 		return msoObject;
@@ -280,6 +282,16 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 		setDirty(isDirty,true);
 	}
 
+	public int isMarked() {
+		return m_isMarked;
+	}
+
+	public void setMarked(int isMarked) {
+		if(m_isMarked != isMarked) {
+			m_isMarked = isMarked;
+		}
+	}
+
 	public boolean isRequestHideOnFinish() {
 		return requestHideOnFinish;
 	}
@@ -305,6 +317,17 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 			consumeCount++;
 		else if(consumeCount>0)
 			consumeCount--;
+	}
+
+	public boolean isLoop() {
+		return (loopCount>0);
+	}
+
+	public void setLoop(boolean isLoop) {
+		if(isLoop)
+			loopCount++;
+		else if(loopCount>0)
+			loopCount--;
 	}
 
 	public EnumSet<LayerCode> getMsoLayers() {
@@ -334,15 +357,13 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	/* ===========================================
 	 * ActionListener implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	public abstract void actionPerformed(ActionEvent e);
 
 	/* ===========================================
 	 * IWorkListener implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	public void onFlowPerformed(WorkFlowEvent e) {
 		fireOnWorkPerformed(e);
@@ -350,8 +371,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 
 	/* ===========================================
 	 * Protected methods
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	protected abstract void fireActionEvent(ActionEvent e);
 
@@ -372,9 +392,34 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 		}
 	}
 
-	protected void requestShow() {
+	protected boolean requestShow() {
 		if(getManager()!=null)
-			getManager().requestShow();
+			return getManager().requestShow();
+		return false;
+	}
+
+	protected boolean requestHide() {
+		if(getManager()!=null)
+			return getManager().requestHide();
+		return false;
+	}
+
+	protected boolean requestMoveTo(int dx, int dy, boolean isRelative) {
+		if(getManager()!=null)
+			return getManager().requestMoveTo(dx, dy, isRelative);
+		return false;
+	}
+
+	protected boolean requestResize(int w, int h, boolean isRelative) {
+		if(getManager()!=null)
+			return getManager().requestResize(w, h, isRelative);
+		return false;
+	}
+
+	protected boolean requestFitToContent() {
+		if(getManager()!=null)
+			return getManager().requestFitToContent();
+		return false;
 	}
 
 	protected boolean beforeFinish() {
@@ -421,6 +466,4 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 			setMsoObject(null);
 		}
 	}
-
-
-}  //  @jve:decl-index=0:visual-constraint="10,10"
+}

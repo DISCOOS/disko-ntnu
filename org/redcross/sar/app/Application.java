@@ -2,7 +2,7 @@ package org.redcross.sar.app;
 
 import no.cmr.tools.Log;
 import org.redcross.sar.ds.DsPool;
-import org.redcross.sar.gui.DiskoGlassPane;
+import org.redcross.sar.gui.DiskoGlassPaneUtils;
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.menu.NavMenu;
@@ -26,12 +26,9 @@ import org.redcross.sar.work.WorkPool;
 
 import com.esri.arcgis.system.EngineInitializer;
 
-import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -122,9 +119,9 @@ public class Application extends JFrame implements IApplication, WindowListener
 	public Application()
 	{
 		super();
-		// registrate me
+		// register me
 		Utils.setApp(this);
-		// initialze ArcGIS
+		// initialize ArcGIS
 		initializeArcGISLicenses();
 		// initialize GUI
 		initialize();
@@ -138,15 +135,8 @@ public class Application extends JFrame implements IApplication, WindowListener
 			Log.init("DISKO");
 			// set title
 			this.setTitle("DISKO");
-			// get disko glass pane
-			DiskoGlassPane glassPane = getUIFactory().getGlassPane();
 			// set glass pane
 			this.setGlassPane(getUIFactory().getGlassPane());
-			// get event listener
-            AWTEventListener al = (AWTEventListener)glassPane;
-            // add glass pane as mouse listener
-            Toolkit.getDefaultToolkit().addAWTEventListener(al,
-                    AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
             // set content panel
 			this.setContentPane(getUIFactory().getContentPanel());
 			// apply size and layout
@@ -258,11 +248,11 @@ public class Application extends JFrame implements IApplication, WindowListener
 		switch(lockCount) {
 		case 1:
 			getKeyEventDispatcher().setEnabled(false);
-			((DiskoGlassPane)getFrame().getGlassPane()).setLocked(true);
+			DiskoGlassPaneUtils.setLocked(true);
 			break;
 		case 0:
 			getKeyEventDispatcher().setEnabled(!isLoading());
-			((DiskoGlassPane)getFrame().getGlassPane()).setLocked(false);
+			DiskoGlassPaneUtils.setLocked(false);
 			break;
 		}
 

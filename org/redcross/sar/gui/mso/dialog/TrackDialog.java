@@ -242,10 +242,10 @@ public class TrackDialog extends DefaultDialog  {
 	private void showProfile(boolean isVisible) {
 		getProfilePanel().setVisible(isVisible);
 		if(isVisible) {
-			requestResize(500, 520);
+			requestResize(500, 520, false);
 		}
 		else {
-			requestResize(500, 315);
+			requestResize(500, 315, false);
 		}
 
 	}

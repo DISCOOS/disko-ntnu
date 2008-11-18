@@ -15,9 +15,9 @@ import org.redcross.sar.util.Utils;
 import com.esri.arcgis.interop.AutomationException;
 
 public class GotoCommand extends AbstractDiskoCommand {
-	
-	private static final long serialVersionUID = 1L; 
-	
+
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructs the DrawTool
 	 */
@@ -25,29 +25,29 @@ public class GotoCommand extends AbstractDiskoCommand {
 
 		// forward
 		super();
-		
+
 		// set tool type
-		type = MapCommandType.GOTO_COMMAND;		
-		
+		type = MapCommandType.GOTO_COMMAND;
+
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 		button.setFocusable(false);
 
 		// shows dialog first time onClick is invoked
-		showDirect = true; 
-		
+		showDirect = true;
+
 		// create dialog
 		dialog = new GotoDialog(Utils.getApp().getFrame());
-		
+
 	}
-	
+
 	public void onCreate(Object obj) {
-		
+
 		try {
 			if (obj instanceof IDiskoMap) {
 				GotoDialog gotoDialog = (GotoDialog)dialog;
 				gotoDialog.onLoad((IDiskoMap)obj);
-				gotoDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, false, true);			
+				gotoDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, 0, true);
 			}
 		}
 		catch (Exception e) {
@@ -66,6 +66,6 @@ public class GotoCommand extends AbstractDiskoCommand {
 		}
 		// forward
 		super.onClick();
-	}	
-	
+	}
+
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.field;
 
@@ -18,14 +18,13 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
  *
  */
 public class CheckBoxField extends AbstractField {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	/*==================================================================
 	 * Constructors
-	 *================================================================== 
-	 */
-	
+	 *==================================================================  */
+
 	public CheckBoxField(String name, String caption, boolean isEditable,
 			int width, int height, Object value) {
 		super(name, caption, isEditable, width, height, value);
@@ -34,7 +33,7 @@ public class CheckBoxField extends AbstractField {
 	public CheckBoxField(String name, String caption, boolean isEditable) {
 		super(name, caption, isEditable);
 	}
-		
+
 	public CheckBoxField(MsoBoolean attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
@@ -44,12 +43,12 @@ public class CheckBoxField extends AbstractField {
 			int width, int height) {
 		super(attribute, caption, isEditable, width, height);
 	}
-	
+
 	/*==================================================================
 	 * Public methods
-	 *================================================================== 
+	 *==================================================================
 	 */
-	
+
 	public Component getComponent() {
 		if(m_component==null) {
 			JCheckBox cb = new JCheckBox();
@@ -61,7 +60,7 @@ public class CheckBoxField extends AbstractField {
 					if(!isChangeable()) return;
 					fireOnWorkChange();
 				}
-				
+
 			});
 		}
 		return m_component;
@@ -70,25 +69,25 @@ public class CheckBoxField extends AbstractField {
 	public JCheckBox getCheckBox() {
 		return ((JCheckBox)m_component);
 	}
-	
+
 	public void setAutoSave(boolean auto) {
 		m_autoSave = auto;
 	}
-	
+
 	public boolean getAutoSave() {
 		return m_autoSave;
-	}	
-	
+	}
+
 	@Override
 	public Boolean getValue() {
 		return ((JCheckBox)m_component).isSelected();
 	}
-	
+
 	@Override
 	public boolean setValue(Object value) {
 		if(value instanceof String)
 			((JCheckBox)m_component).setSelected(Boolean.valueOf((String)value));
-		else if(value instanceof Boolean) 
+		else if(value instanceof Boolean)
 			((JCheckBox)m_component).setSelected(Boolean.valueOf((Boolean)value));
 		else {
 			// failure
@@ -97,7 +96,7 @@ public class CheckBoxField extends AbstractField {
 		// success
 		return true;
 	}
-	
+
 	@Override
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
 		// is supported?
@@ -114,12 +113,12 @@ public class CheckBoxField extends AbstractField {
 		}
 		// failure
 		return false;
-	}	
-	
+	}
+
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
-		getCheckBox().setEnabled(isEditable && isEnabled());		
+		getCheckBox().setEnabled(isEditable && isEnabled());
 	}
-		
+
 }

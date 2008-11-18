@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.work.IMapWork;
 
@@ -52,5 +53,9 @@ public interface IDiskoMapManager {
 
 	public void execute(boolean wait);
 	public void execute(IDiskoMap exclude, boolean wait);
+
+	public void addDiskoMapListener(IDiskoMapListener listener);
+	public void removeDiskoMapListener(IDiskoMapListener listener);
+
 
 }

@@ -434,7 +434,7 @@ public class RouteCost extends AbstractDsObject {
 	}
 
 	public boolean hasRoute() {
-		return m_original!=null;
+		return m_original!=null && m_original.size()>1;
 	}
 
 	public boolean canEstimate() {

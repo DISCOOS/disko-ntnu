@@ -1,6 +1,7 @@
 package org.redcross.sar.map;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.SwingUtilities;
 
 import java.awt.Toolkit;
@@ -47,8 +48,11 @@ import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.mso.dialog.ElementDialog;
+import org.redcross.sar.map.event.DiskoMapEvent;
+import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.event.IMapDataListener;
 import org.redcross.sar.map.event.MsoLayerEventStack;
+import org.redcross.sar.map.event.DiskoMapEvent.MapEventType;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.*;
@@ -156,7 +160,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		this.mapManager = mapManager;
 		this.msoModel = msoModel;
 		this.layerCodes = myLayers;
-		this.binder = new MsoDataBinder(mapManager);
+		this.binder = new MsoDataBinder(mapManager,getProgressor());
 		this.binder.addMapDataListener(new MapDataListener());
 
 		// connect to MSO model
@@ -188,12 +192,12 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 		// prepare
 		setName("diskoMap");
-		setBorder(null); // BorderFactory.createBevelBorder(BevelBorder.LOWERED)
+		setBorder(BorderFactory.createEmptyBorder());
 		setBorderStyle(esriControlsBorderStyle.esriNoBorder);
 		setShowScrollbars(false);
 		suppressResizeDrawing(true, 0);
 
-		// set disko map progress
+		// set DISKO map progress
 		getTrackCancel().setCheckTime(250);
 		getTrackCancel().setProgressor(getProgressor());
 
@@ -351,7 +355,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 		// register step progressor?
 		if(l instanceof ILayerStatus) {
-			// add the disko step processor to this layer
+			// add the DISKO step processor to this layer
 			((ILayerStatus)l).setStepProgressor(getProgressor());
 		}
 	}
@@ -1062,7 +1066,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 				}
 			}
 		}
-		if(affected.size()>0) fireOnSelectionChanged();
+		if(affected.size()>0) fireOnSelectionChanged(affected);
 		return affected;
 	}
 
@@ -1114,7 +1118,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 				cleared.add(msoLayer);
 			}
 		}
-		if(cleared.size()>0) fireOnSelectionChanged();
+		if(cleared.size()>0) fireOnSelectionChanged(cleared);
 		resumeNotify();
 		return cleared;
 	}
@@ -1592,35 +1596,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 	private Progressor getProgressor() {
 		if(progressor==null) {
-			progressor = new Progressor();
-
-			/*
-			progressor.addListener(new DiskoMapProgressor.ProgressorListener() {
-
-				public void onChange() {}
-
-				public void onHide() {
-					try {
-						DiskoProgressMonitor.getInstance().finish();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					//showBar(getSouthBar(), "MapFilterBar");
-				}
-
-				public void onShow() {
-					try {
-						DiskoProgressMonitor.getInstance().start("Laster kart");
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					//showBar(getSouthBar(), "ProgressBar");
-				}
-
-			});
-			*/
+			progressor = new Progressor(this);
 		}
 		return progressor;
 	}
@@ -1720,8 +1696,6 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			// get draw dialog
 	        NavMenu navBar = Utils.getApp().getNavMenu();
 			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
-			drawDialog.setLocationRelativeTo(this,DefaultDialog.POS_WEST, true, true);
-
 		}
 		return drawDialog;
 	}
@@ -1734,7 +1708,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 			// create
 			elementDialog = new ElementDialog(Utils.getApp().getFrame());
-			elementDialog.setLocationRelativeTo(this,DefaultDialog.POS_EAST, false, true);
+			elementDialog.setSnapTo(this,DefaultDialog.POS_EAST, 0, true);
 
 		}
 		return elementDialog;
@@ -1764,7 +1738,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 			// create new snap dialog
 	        snapDialog = new SnapDialog(Utils.getApp().getFrame());
-	        snapDialog.setLocationRelativeTo(this,DefaultDialog.POS_WEST, true, true);
+	        snapDialog.setSnapTo(this,DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_LIMIT, true);
 
 		}
 		return snapDialog;
@@ -1998,7 +1972,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		try {
 			// show progress dialog?
 			if(isShowing() && !(ProgressMonitor.getInstance().isInAction() || progressShown)) {
-				ProgressMonitor.getInstance().setProgressLocationAt(this);
+				ProgressMonitor.getInstance().setProgressSnapTo(this);
 				if(autocancel) {
 					progressShownAutoCancel = true;
 					ProgressMonitor.getInstance().start("Laster kart",0,0,0,0,2000);
@@ -2051,30 +2025,39 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		return false;
 	}
 
-	private void fireOnMouseClick() {
+	private void fireOnMouseClick(IMapControlEvents2OnMouseDownEvent event) {
+		Object[] data = new Object[]{event.getX(),event.getY(),event.getButton(),event.getShift()};
+		DiskoMapEvent e = new DiskoMapEvent(this,MapEventType.MOUSE_CLICK,data,event.getButton());
 		for(IDiskoMapListener it : mapListeners)
-			it.onMouseClick();
+			it.onMouseClick(e);
 	}
 
-	private void fireOnMouseMove() {
-		//System.out.println("fireOnMouseMove:="+System.currentTimeMillis());
+	private void fireOnMouseMove(IMapControlEvents2OnMouseMoveEvent event) {
+		Object[] data = new Object[]{event.getX(),event.getY(),event.getButton(),event.getShift()};
+		DiskoMapEvent e = new DiskoMapEvent(this,MapEventType.MOUSE_MOVE,data,event.getButton());
 		for(IDiskoMapListener it : mapListeners)
-			it.onMouseMove();
+			it.onMouseMove(e);
 	}
 
-	private void fireOnExtendChanged() {
+	private void fireOnExtendChanged(IMapControlEvents2OnExtentUpdatedEvent event) {
+		Object[] data = new Object[]{event.getDisplayTransformation(),event.getNewEnvelope(),event.getSizeChanged()};
+		DiskoMapEvent e = new DiskoMapEvent(this,MapEventType.EXTENT_CHANGED,data,0);
 		for(IDiskoMapListener it : mapListeners)
-			it.onExtentChanged();
+			it.onExtentChanged(e);
 	}
 
-	private void fireOnMapReplaced() {
+	private void fireOnMapReplaced(IMapControlEvents2OnMapReplacedEvent event) {
+		Object[] data = new Object[]{event.getNewMap()};
+		DiskoMapEvent e = new DiskoMapEvent(this,MapEventType.MAP_REPLACED,data,0);
 		for(IDiskoMapListener it : mapListeners)
-			it.onExtentChanged();
+			it.onExtentChanged(e);
 	}
 
-	private void fireOnSelectionChanged() {
+	private void fireOnSelectionChanged(List<IMsoFeatureLayer> list) {
+		Object[] data = new Object[]{list};
+		DiskoMapEvent e = new DiskoMapEvent(this,MapEventType.SELECTION_CHANGED,data,0);
 		for(IDiskoMapListener it : mapListeners)
-			it.onSelectionChanged();
+			it.onSelectionChanged(e);
 	}
 
 	/*==========================================================
@@ -2098,7 +2081,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void onMouseDown(IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
+		public void onMouseDown(final IMapControlEvents2OnMouseDownEvent e) throws IOException, AutomationException {
 
 			// update
 			clickPoint.setX(e.getMapX());
@@ -2107,14 +2090,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					fireOnMouseClick();
+					fireOnMouseClick(e);
 				}
 			});
 
 		}
 
 		@Override
-		public void onMouseMove(IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
+		public void onMouseMove(final IMapControlEvents2OnMouseMoveEvent e) throws IOException, AutomationException {
 
 			// update
 			double x = e.getMapX();
@@ -2122,7 +2105,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 			// get current tic
 			long tic = Calendar.getInstance().getTimeInMillis();
-			//System.out.println("onMouseMove:="+tic);
+
 			// update?
 			if (tic - previous > 100 && (movePoint.isEmpty() || !MapUtil.is2DEqual(movePoint,x,y))) {
 				// update point
@@ -2132,14 +2115,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 				// notify later on EDT
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						fireOnMouseMove();
+						fireOnMouseMove(e);
 					}
 				});
 			}
 
 		}
 
-		public void onMapReplaced(IMapControlEvents2OnMapReplacedEvent e)
+		public void onMapReplaced(final IMapControlEvents2OnMapReplacedEvent e)
                	throws java.io.IOException, AutomationException {
 
 			// notify later on EDT
@@ -2157,7 +2140,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 						setWmsLayerModel();
 
 						// forward
-						fireOnMapReplaced();
+						fireOnMapReplaced(e);
 
 					} catch (AutomationException e) {
 						// TODO Auto-generated catch block
@@ -2174,13 +2157,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			});
 		}
 
-		public void onExtentUpdated(IMapControlEvents2OnExtentUpdatedEvent theEvent)
+		public void onExtentUpdated(final IMapControlEvents2OnExtentUpdatedEvent e)
     		throws java.io.IOException, AutomationException {
 
 			// notify later on EDT
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					fireOnExtendChanged();
+					fireOnExtendChanged(e);
 				}
 			});
 

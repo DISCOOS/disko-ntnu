@@ -14,42 +14,42 @@ import org.redcross.sar.util.Utils;
 import com.esri.arcgis.interop.AutomationException;
 
 public class ScaleCommand extends AbstractDiskoCommand {
-	
-	private static final long serialVersionUID = 1L; 
-	
+
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructs the DrawTool
 	 */
 	public ScaleCommand() throws IOException, AutomationException {
-		
+
 		// forward
 		super();
-		
+
 		// set tool type
-		type = MapCommandType.SCALE_COMMAND;		
+		type = MapCommandType.SCALE_COMMAND;
 
 		// create button
 		button = DiskoButtonFactory.createButton(ButtonSize.NORMAL);
 		button.setFocusable(false);
-		
+
 		// shows dialog first time onClick is invoked
-		showDirect = true; 
-		
+		showDirect = true;
+
 		// create dialog
 		dialog = new ScaleDialog(Utils.getApp().getFrame());
-		
+
 	}
-	
+
 	public void onCreate(Object obj) {
 		try {
 			if (obj instanceof IDiskoMap) {
 				ScaleDialog scaleDialog = (ScaleDialog)dialog;
 				scaleDialog.onLoad((IDiskoMap)obj);
-				scaleDialog.setLocationRelativeTo((JComponent)obj, DefaultDialog.POS_EAST, false, true);			
+				scaleDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, 0, true);
 			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-	}	
+	}
 }

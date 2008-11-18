@@ -52,7 +52,7 @@ public class LineTool extends AbstractMsoDrawTool {
 			FeatureType.FEATURE_POLYLINE));
 
 		// prepare abstract class BasicTool
-		caption = DiskoEnumFactory.getText(featureType);
+		caption = "Linje (" + DiskoEnumFactory.getText(featureType) + ")";
 		category = "Commands";
 		message = "Tegner en linje mellom hvert punkt";
 		name = "CustomCommands_Ployline";

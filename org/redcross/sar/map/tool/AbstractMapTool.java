@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.awt.geom.Point2D;
 
 import javax.swing.AbstractButton;
+import javax.swing.SwingUtilities;
 
 public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
@@ -190,23 +191,33 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 	public boolean requestFocustOnButton() {
 
-		// notify
-		if(!fireToolEvent(ToolEventType.FOCUS_EVENT, 0)) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			// notify
+			if (!fireToolEvent(ToolEventType.FOCUS_EVENT, 0)) {
 
-			AbstractButton b = null;
+				AbstractButton b = null;
 
-			// forward
-			if(isHosted())
-				b = getHostTool().getButton();
-			else
-				b = getButton();
+				// forward
+				if (isHosted())
+					b = getHostTool().getButton();
+				else
+					b = getButton();
 
-			// can request focus?
-			if(b!=null && b.isEnabled() && b.isVisible() && !b.hasFocus()) {
-				return b.requestFocusInWindow();
+				// can request focus?
+				if (b != null && b.isEnabled() && b.isVisible()
+						&& !b.hasFocus()) {
+					return b.requestFocusInWindow();
+				}
+
 			}
-
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					requestFocustOnButton();
+				}
+			});
 		}
+
 		// failed
 		return false;
 	}

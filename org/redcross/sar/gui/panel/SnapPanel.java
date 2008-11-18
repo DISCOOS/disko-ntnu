@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -25,33 +28,35 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.map.tool.SnapAdapter.SnapListener;
+import org.redcross.sar.util.Utils;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.interop.AutomationException;
 
-public class SnapPanel extends DefaultPanel implements SnapListener {
-	
+public class SnapPanel extends TogglePanel implements SnapListener {
+
 	private static final long serialVersionUID = 1L;
 
-	private DefaultPanel layersPanel = null;
-	private DefaultPanel tolerancePanel = null;
-	private JSlider toleranceSlider = null;
-	private JLabel messageLabel = null;
-	private JPanel selectorPanel = null;
-	private JButton allButton = null;
-	private JButton noneButton = null;
-	private HashMap<String,JCheckBox> checkBoxes = null;
-	private HashMap<String,IFeatureLayer> layers = null;
-	private HashMap<String,String> myInterests = null;
-	private SnapAdapter adapter = null;
-	
+	private DefaultPanel layersPanel;
+	private DefaultPanel tolerancePanel;
+	private JSlider toleranceSlider;
+	private JPanel messagePanel;
+	private JLabel messageLabel;
+	private JPanel selectorPanel;
+	private JButton allButton;
+	private JButton noneButton;
+	private HashMap<String,JCheckBox> checkBoxes;
+	private HashMap<String,IFeatureLayer> layers;
+	private HashMap<String,String> myInterests;
+	private SnapAdapter adapter;
+
 	public SnapPanel() {
-		
+
 		// forward
-		super("Snapping",true,true,ButtonSize.SMALL);
-		
+		super("Snapping",true,true);
+
 		// prepare
 		checkBoxes = new HashMap<String,JCheckBox>();
 		layers = new HashMap<String,IFeatureLayer>();
@@ -62,22 +67,24 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		myInterests.put(IMsoFeatureLayer.LayerCode.ROUTE_LAYER.name(),IMsoFeatureLayer.LayerCode.ROUTE_LAYER.name());
 		myInterests.put(IMsoFeatureLayer.LayerCode.FLANK_LAYER.name(),IMsoFeatureLayer.LayerCode.FLANK_LAYER.name());
 		myInterests.put(IMsoFeatureLayer.LayerCode.POI_LAYER.name(),IMsoFeatureLayer.LayerCode.POI_LAYER.name());
+
 		// initialize gui
 		initialize();
+
 	}
-	
+
 	private void initialize() {
 		try {
-			
-			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setAlignment(VerticalFlowLayout.LEFT);
-			vfl.setHgap(5);
-			vfl.setVgap(5);
-			vfl.setVerticalFill(true);
+
+			// prepare
+			setFitBodyOnResize(true);
+			setMinimumSize(new Dimension(300,36));
+			// build body
 			JPanel body = (JPanel)getBodyComponent();
-			body.setPreferredSize(new Dimension(200,400));
-			body.setLayout(vfl);
+			body.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+			body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
 			body.add(getTolerancePanel());
+			body.add(Box.createVerticalStrut(5));
 			body.add(getLayersPanel());
 
 		}
@@ -86,31 +93,31 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			e.printStackTrace();
 		}
 	}
-			
+
 	/**
-	 * This method initializes allButton	
-	 * 	
+	 * This method initializes allButton
+	 *
 	 * @return {@link JButton}
 	 */
 	private JButton getAllButton() {
 		if (allButton == null) {
-			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.SMALL);			
+			allButton = DiskoButtonFactory.createButton("GENERAL.ALL",ButtonSize.SMALL);
 		}
 		return allButton;
 	}
-	
+
 	/**
-	 * This method initializes noneButton	
-	 * 	
+	 * This method initializes noneButton
+	 *
 	 * @return {@link JButton}
 	 */
 	private JButton getNoneButton() {
 		if (noneButton == null) {
-			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.SMALL);			
+			noneButton = DiskoButtonFactory.createButton("GENERAL.NONE",ButtonSize.SMALL);
 		}
 		return noneButton;
 	}
-	
+
 	public void setSnapAdapter(SnapAdapter adapter) {
 		// release current?
 		if(this.adapter!=null)
@@ -123,16 +130,16 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			adapter.addSnapListener(this);
 			// update snappable layers
 			onSnapableChanged();
-			// update selected layers 
+			// update selected layers
 			onSnapToChanged();
 		}
-		
+
 	}
-	
+
 	public SnapAdapter getSnapAdapter() {
 		return adapter;
 	}
-	
+
 	@Override
 	public boolean finish() {
 		// get flag
@@ -163,7 +170,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		// finished
 		return bFlag;
 	}
-	
+
 	@Override
 	public boolean cancel() {
 		// any change?
@@ -177,7 +184,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		// failure
 		return false;
 	}
-	
+
 	private DefaultPanel getLayersPanel() {
 		if (layersPanel == null) {
 			try {
@@ -190,26 +197,21 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
 						// canceled?
-						if("all".equalsIgnoreCase(cmd)) 
+						if("all".equalsIgnoreCase(cmd))
 							checkAll();
-						else if("none".equalsIgnoreCase(cmd)) 
-							checkNone();					
+						else if("none".equalsIgnoreCase(cmd))
+							checkNone();
 					}
-					
+
 				});
-				
-				
+
+
 				JPanel body = ((JPanel)layersPanel.getBodyComponent());
-				VerticalFlowLayout vfl = new VerticalFlowLayout();
-				vfl.setAlignment(VerticalFlowLayout.LEFT);
-				vfl.setHgap(0);
-				vfl.setVgap(5);
-				vfl.setVerticalFill(true);
-				body.setLayout(vfl);
-				body.add(getMessageLabel());
+				body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
+				body.add(getMessagePanel());
 				body.add(getSelectorPanel());
 				// set preferred size
-				layersPanel.setPreferredSize(new Dimension(200,50));
+				layersPanel.setPreferredSize(new Dimension(300,50));
 				// setup
 				showSelector(false);
 			} catch (java.lang.Throwable e) {
@@ -219,18 +221,28 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		}
 		return layersPanel;
 	}
-	
+
+	private JPanel getMessagePanel() {
+		if(messagePanel==null) {
+			messagePanel = new JPanel();
+			messagePanel.setLayout(new BoxLayout(messagePanel,BoxLayout.Y_AXIS));
+			messagePanel.add(getMessageLabel());
+			messagePanel.add(Box.createVerticalStrut(5));
+		}
+		return messagePanel;
+	}
+
 	private JLabel getMessageLabel() {
 		if(messageLabel==null) {
 			messageLabel = new JLabel();
 			messageLabel.setVerticalAlignment(SwingConstants.CENTER);
 			messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			messageLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			messageLabel.setVerticalTextPosition(SwingConstants.CENTER);			
+			messageLabel.setVerticalTextPosition(SwingConstants.CENTER);
 		}
 		return messageLabel;
 	}
-	
+
 	private JPanel getSelectorPanel() {
 		if(selectorPanel==null) {
 			// create selector panel
@@ -240,18 +252,19 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			vfl.setHgap(0);
 			vfl.setAlignment(VerticalFlowLayout.TOP);
 			selectorPanel.setLayout(vfl);
-			
+
 		}
 		return selectorPanel;
 	}
-	
-	
+
+
 	private DefaultPanel getTolerancePanel() {
 		if (tolerancePanel == null) {
 			try {
 				tolerancePanel = new DefaultPanel("Sett toleranse (meter)",false,false,ButtonSize.SMALL);
+				tolerancePanel.setFitBodyOnResize(true);
 				tolerancePanel.setBodyComponent(getToleranceSlider());
-				tolerancePanel.setPreferredSize(new Dimension(200, 100));
+				Utils.setFixedHeight(tolerancePanel,100);
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -259,7 +272,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		}
 		return tolerancePanel;
 	}
-	
+
 	private JSlider getToleranceSlider() {
 		if (toleranceSlider == null) {
 			try {
@@ -284,21 +297,21 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 						}
 					}
 				});
-				
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return toleranceSlider;
 	}
-		
+
 	private JCheckBox getCheckBox(String name) {
 		if(checkBoxes.containsKey(name)) {
 			return checkBoxes.get(name);
 		}
 		return null;
 	}
-	
+
 	private void hideAll() {
 		Iterator<JCheckBox> it = checkBoxes.values().iterator();
 		while(it.hasNext()) {
@@ -312,34 +325,34 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			it.next().setSelected(true);
 		}
 	}
-	
+
 	private void checkNone() {
 		Iterator<JCheckBox> it = checkBoxes.values().iterator();
 		while(it.hasNext()) {
 			it.next().setSelected(false);
 		}
 	}
-	
+
 	private String getLayerCaption(String name)
-	{	   
+	{
 		// search for mso layers
 		for(int i=0;i<myInterests.size();i++){
 			if(myInterests.containsKey(name)){
-				return DiskoEnumFactory.getText("LayerCode."+name+".text",null); 
-			}		   
-		}	   
-		// remove any suffix	   
+				return DiskoEnumFactory.getText("LayerCode."+name+".text",null);
+			}
+		}
+		// remove any suffix
 		int pos = name.indexOf("_");
 		if(pos>0 && pos<name.length()-1) {
 			return name.substring(pos+1);
-		}	   
+		}
 		return name;
 	}
 
 	public void setSnapTolerance(double value) {
 		toleranceSlider.setValue((int)value);
 	}
-	
+
 	public List<IFeatureLayer> getSnapToLayers() {
 		ArrayList<IFeatureLayer> snapTo = new ArrayList<IFeatureLayer>();
 		Iterator<JCheckBox> it = checkBoxes.values().iterator();
@@ -351,7 +364,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		}
 		return snapTo;
 	}
-	
+
 	public void setSnapableLayers(List<IFeatureLayer> list) {
 		// adding checkboxes
 		try {
@@ -359,27 +372,32 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			hideAll();
 			layers.clear();
 			JCheckBox cb = null;
-			// get layer panels
-			JPanel body = (JPanel)getLayersPanel().getBodyComponent();
-			JPanel selector = (JPanel)body.getComponent(1);
+			// get selector panel
+			JPanel selector = getSelectorPanel();
 			// loop over all
 			for (int i = 0; i < list.size(); i++) {
 				IFeatureLayer flayer = (IFeatureLayer)list.get(i);
 				String name = flayer.getName();
-				cb = getCheckBox(name);				
+				cb = getCheckBox(name);
 				if (cb == null) {
 					cb = createCheckBox(name);
 					selector.add(cb);
 				}
 				// update text
 				cb.setText(getLayerCaption(name));
-						// put combobox
+				// put combobox
 				checkBoxes.put(name,cb);
 				// put layer
 				layers.put(name,flayer);
 				// show box
 				cb.setVisible(true);
 			}
+			// set preferred size
+			layersPanel.setPreferredSize(layersPanel.getLayout().preferredLayoutSize(layersPanel));
+			// fit body to data
+			fitBodyToPreferredLayoutSize();
+			// try to fit manager to content
+			requestFitToContent(true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -392,13 +410,13 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 			// unselect all
 			checkNone();
 			// get selector panel
-			JPanel selector = (JPanel)((JPanel)getLayersPanel().getBodyComponent()).getComponent(1);
+			JPanel selector = getSelectorPanel();
 			// initialize
 			List<IFeatureLayer> snapTo = null;
 			// get list?
-			if(adapter!=null) snapTo = adapter.getSnapToLayers();			
+			if(adapter!=null) snapTo = adapter.getSnapToLayers();
 			// has no layers?
-			if(snapTo==null) return;			
+			if(snapTo==null) return;
 			// update selection
 			for(int i=0;i<snapTo.size();i++) {
 				IFeatureLayer flayer = snapTo.get(i);
@@ -423,10 +441,18 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 					e.printStackTrace();
 				}
 			}
+			// set preferred size
+			layersPanel.setPreferredSize(layersPanel.getLayout().preferredLayoutSize(layersPanel));
+			//getBodyComponent().setPreferredSize(new Dimension(300,h+getTolerancePanel().getPreferredSize().height));
+			// fit body to data
+			fitBodyToPreferredLayoutSize();
+			// try to fit manager to content
+			requestFitToContent(true);
+			// forward
 			setDirty(true);
 		}
 	}
-	
+
 	private JCheckBox createCheckBox(String name) {
 		JCheckBox cb = new JCheckBox();
 		cb.setName(name);
@@ -445,7 +471,7 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		// update gui
 		if(bFlag) {
 			try {
-				if(adapter!=null) 				
+				if(adapter!=null)
 					setSnapTolerance(adapter.getSnapTolerance());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -455,26 +481,37 @@ public class SnapPanel extends DefaultPanel implements SnapListener {
 		// set state
 		getToleranceSlider().setEnabled(bFlag);
 		// update snappable layers?
-		if(adapter!=null) 
+		if(adapter!=null) {
 			setSnapableLayers(adapter.getSnapableLayers());
+		}
 		// get card layout
 		showSelector(bFlag);
 		// reset changes
 		setDirty(false);
 	}
-	
+
 	private void showSelector(boolean isVisible) {
 		// get panels
 		getSelectorPanel().setVisible(isVisible);
-		showMessage("<html><center>Snapping er kun mulig på <br> kartskala mindre enn 1:" 
-				+ ((adapter!=null) ? (int)adapter.getMaxSnapScale() : "<nothing>") 
+		showMessage("<html><center>Snapping er kun mulig på <br> kartskala mindre enn 1:"
+				+ ((adapter!=null) ? (int)adapter.getMaxSnapScale() : "<nothing>")
 				+ "</center></html>",!isVisible);
 	}
-	
+
 	private void showMessage(String text, boolean isVisible) {
 		// get panels
 		getMessageLabel().setText(text);
-		getMessageLabel().setVisible(isVisible);
+		getMessagePanel().setVisible(isVisible);
+		// set preferred size?
+		if(isVisible) {
+			int h = getMessagePanel().getPreferredSize().height;
+			layersPanel.setPreferredSize(new Dimension(300,h));
+			//getBodyComponent().setPreferredSize(new Dimension(300,h+getTolerancePanel().getPreferredSize().height));
+			// fit body to data
+			fitBodyToPreferredLayoutSize();
+			// try to fit manager to content
+			requestFitToContent(true);
+		}
 	}
-	
+
 }

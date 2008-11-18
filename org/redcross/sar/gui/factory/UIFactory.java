@@ -22,6 +22,7 @@ import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.DiskoCorner;
 import org.redcross.sar.gui.DiskoGlassPane;
+import org.redcross.sar.gui.DiskoGlassPaneUtils;
 import org.redcross.sar.gui.DiskoRoundBorder;
 import org.redcross.sar.gui.dialog.LoginDialog;
 import org.redcross.sar.gui.dialog.MapOptionDialog;
@@ -274,7 +275,7 @@ public class UIFactory {
 	public DiskoGlassPane getGlassPane() {
 		if (glassPane == null) {
 			try {
-				glassPane = new DiskoGlassPane(app.getFrame());
+				glassPane = DiskoGlassPaneUtils.createGlassPane(app.getFrame());
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

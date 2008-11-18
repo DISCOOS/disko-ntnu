@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -56,7 +57,16 @@ public class TogglePanel extends BasePanel {
 		this(caption,finish,cancel,ButtonSize.SMALL);
 	}
 
+	public TogglePanel(String caption, boolean finish, boolean cancel, boolean toggle) {
+		this(caption,finish,cancel,toggle,ButtonSize.SMALL);
+	}
+
 	public TogglePanel(String caption, boolean finish, boolean cancel, ButtonSize buttonSize) {
+		// forward
+		this(caption,finish,cancel,true,buttonSize);
+	}
+
+	public TogglePanel(String caption, boolean finish, boolean cancel, boolean toggle, ButtonSize buttonSize) {
 		// forward
 		super(caption,buttonSize);
 		// prepare
@@ -66,6 +76,9 @@ public class TogglePanel extends BasePanel {
 		// hide default buttons
 		setButtonVisible("finish", finish);
 		setButtonVisible("cancel", cancel);
+		setButtonVisible("toggle", toggle);
+		// set expanded
+		setExpanded(true);
 	}
 
 	/* ===========================================
@@ -144,7 +157,7 @@ public class TogglePanel extends BasePanel {
 		// update
 		preSize = d;
 		// forward?
-		if(isExpanded()) super.setMaximumSize(d);
+		if(isExpanded()) super.setPreferredSize(d);
 		// apply
 		change();
 	}
@@ -169,9 +182,16 @@ public class TogglePanel extends BasePanel {
 	 * =========================================== */
 
 	protected void change() {
+
+		// consume?
+		if(isLoop()) return;
+
+		// prevent reentry
+		setLoop(true);
+
 		// translate selection to view
 		if(getToggleButton().isSelected()) {
-			// show content11
+			// show content
 			getScrollPane().setVisible(true);
 			// resume sizes
 			super.setMinimumSize(minSize);
@@ -187,7 +207,7 @@ public class TogglePanel extends BasePanel {
 			// hide content
 			getScrollPane().setVisible(false);
 			// get collapsed height
-			int h = getHeaderPanel().getPreferredSize().height+1;
+			int h = getHeaderPanel().getPreferredSize().height + 1;
 			// set sizes
 			super.setMinimumSize(new Dimension(minSize!=null ? minSize.width : super.getWidth(),h));
 			super.setPreferredSize(new Dimension(preSize!=null ? preSize.width : super.getWidth(),h));
@@ -198,6 +218,7 @@ public class TogglePanel extends BasePanel {
 	    	// update tool tip text
 	    	getToggleButton().setToolTipText("Åpne");
 		}
+
 		// apply change to container
 		if(getParent()!=null) {
 			getParent().validate();
@@ -205,8 +226,16 @@ public class TogglePanel extends BasePanel {
 		else {
 			validate();
 		}
+
 		// notify
 		fireChangeEvent();
+
+		// fit manager to content
+		super.requestFitToContent();
+
+		// resume
+		setLoop(false);
+
 	}
 
 	/* ===========================================
@@ -286,5 +315,28 @@ public class TogglePanel extends BasePanel {
 			list[i].stateChanged(e);
 		}
 	}
+
+    /* ===========================================
+     * Protected methods
+     * =========================================== */
+
+	@Override
+    protected Dimension fitThisToPreferredBodySize() {
+        Dimension d = getBodyComponent().getPreferredSize();
+        int w = d.width;
+        int h = d.height+getHeaderPanel().getPreferredSize().height + 5
+			+ (isScrollBarVisible(JScrollPane.HORIZONTAL_SCROLLBAR)
+				? getScrollPane().getHorizontalScrollBar().getHeight() : 0);
+		// update
+		preSize = new Dimension(w,h);
+		// forward
+		super.setSize(new Dimension(w,h));
+		super.setPreferredSize(new Dimension(w,h));
+		// forward
+		change();
+		// finished
+		return d;
+    }
+
 
 }

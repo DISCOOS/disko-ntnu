@@ -191,8 +191,7 @@ public abstract class AbstractWork implements IWork {
     public void setShowProgress(boolean showProgress) {
     	m_showProgress = showProgress;
     	if(m_isNotified && !showProgress) {
-    		m_isNotified = false;
-    		m_monitor.finish();
+    		hideProgress();
     	}
     	else {
     		showProgress();
@@ -325,11 +324,8 @@ public abstract class AbstractWork implements IWork {
                 MsoModelImpl.getInstance().resumeClientUpdate(true);
             // resume previous state?
             if (m_isModal) Utils.getApp().setLocked(false);
-            // notify progress monitor ?
-            if (m_isNotified) {
-                // notify progress monitor
-                m_monitor.finish();
-            }
+            // forward
+            hideProgress();
             // set state
             setState(m_isLoop ? WorkState.PENDING : WorkState.FINISHED);
 
@@ -443,11 +439,7 @@ public abstract class AbstractWork implements IWork {
     	}
     }
 
-    /* ====================================================
-     * Helper methods
-     * ==================================================== */
-
-    private void showProgress() {
+    protected void showProgress() {
         // show progress?
         if (m_showProgress && !m_isNotified && canShowProgess()) {
             // set millis to progress popup?
@@ -459,6 +451,18 @@ public abstract class AbstractWork implements IWork {
         }
 
     }
+
+    protected void hideProgress() {
+    	if(m_isNotified) {
+			m_isNotified = false;
+			m_monitor.finish();
+    	}
+
+    }
+
+    /* ====================================================
+     * Helper methods
+     * ==================================================== */
 
     private boolean isLockRequired() {
         return 	ThreadType.WORK_ON_SAFE.equals(m_thread) ||

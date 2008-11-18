@@ -77,7 +77,6 @@ public class Advisor extends AbstractDs<ICue,IDsObject,EventObject> {
 	 * Production status level set
 	 */
 	protected final EnumSet<AssignmentStatus> PRODUCTION_SET = EnumSet.allOf(AssignmentStatus.class);
-		//= EnumSet.of(AssignmentStatus.READY,AssignmentStatus.QUEUED,AssignmentStatus.EXECUTING);
 
 	/**
 	 * The unit execution level
@@ -88,8 +87,6 @@ public class Advisor extends AbstractDs<ICue,IDsObject,EventObject> {
 	 * Production status level set
 	 */
 	protected final EnumSet<UnitStatus> EXECUTION_SET = EnumSet.allOf(UnitStatus.class);
-		//= EnumSet.of(UnitStatus.READY,UnitStatus.INITIALIZING,
-		//		UnitStatus.WORKING,UnitStatus.PAUSED,UnitStatus.PENDING);
 
 	/* ============================================================
 	 * Constructors

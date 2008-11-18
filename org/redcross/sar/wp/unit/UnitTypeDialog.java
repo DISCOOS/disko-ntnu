@@ -46,30 +46,30 @@ public class UnitTypeDialog extends DefaultDialog
 	{
 		// forward
 		super(wpUnit.getApplication().getFrame());
-		
+
 		// prepare
-		m_wpUnit = wpUnit;		
-		
+		m_wpUnit = wpUnit;
+
 		// initialize gui
 		initialize();
-		
+
 		// show in center of parent
-		setLocationRelativeTo(parent, DefaultDialog.POS_CENTER, true, true);
-		
+		setSnapTo(parent, DefaultDialog.POS_CENTER, DefaultDialog.SIZE_TO_FIT, true);
+
 	}
 
 	private void initialize()
 	{
-		
+
 		// set modal
 		this.setModal(true);
-		
+
 		// prepare dialog
 		this.setPreferredSize(new Dimension(400, 500));
-		
+
 		// create content panel
 		DefaultPanel panel = new DefaultPanel(m_wpUnit.getBundleText("CreateNewUnit.text"));
-		
+
 		// create unit list
 		m_typeList = new JList();
 		EnumSet<UnitType> data  = EnumSet.of( UnitType.AIRCRAFT, UnitType.BOAT,
@@ -83,11 +83,11 @@ public class UnitTypeDialog extends DefaultDialog
 			public void valueChanged(ListSelectionEvent e) {
 				if(!isChangeable()) return;
 				m_type = (UnitType)m_typeList.getSelectedValue();
-				setDirty(true);	
+				setDirty(true);
 			}
-			
+
 		});
-		
+
 		// add mouse listener
 		m_typeList.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e){
@@ -101,13 +101,13 @@ public class UnitTypeDialog extends DefaultDialog
 			   }
 			}
 		});
-		
+
 		// set list as body
 		panel.setBodyComponent(m_typeList);
 
 		// add work listener
 		panel.addWorkFlowListener((IWorkFlowListener)m_wpUnit);
-		
+
 		// add content panel
 		this.setContentPane(panel);
 		this.pack();
@@ -151,9 +151,9 @@ public class UnitTypeDialog extends DefaultDialog
 			return this;
 		}
 	}
-	
+
 	public void setVisible(boolean isVisible) {
 		super.setVisible(isVisible);
-		setDirty(true);		
+		setDirty(true);
 	}
 }

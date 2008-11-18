@@ -145,7 +145,7 @@ public class Utils {
 
 			// create message dialog
 			messageDialog = new MessageDialog(getApp().getFrame());
-			messageDialog.setLocationRelativeTo(getApp().getFrame(), DefaultDialog.POS_CENTER, false,true);
+			messageDialog.setSnapTo(getApp().getFrame(), DefaultDialog.POS_CENTER, 0, true);
 			messageDialog.addFocusListener(new FocusAdapter() {
             	@Override
                 public void focusGained(FocusEvent e) {

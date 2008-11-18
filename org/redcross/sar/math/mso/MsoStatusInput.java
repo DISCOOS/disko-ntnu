@@ -108,7 +108,7 @@ public class MsoStatusInput<T extends IMsoObjectIf, E extends Enum<E>> extends A
 		}
 
 		// clear queue
-		//m_queue.clear();
+		m_queue.clear();
 
 		// finished
 		return change;

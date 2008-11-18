@@ -1,12 +1,17 @@
 package org.redcross.sar.map;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Component;
 
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
+import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.map.event.IProgressorListener;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.system.IStepProgressor;
 
@@ -14,22 +19,27 @@ public class Progressor implements IStepProgressor {
 
 	private static final long serialVersionUID = 1L;
 	private static final String PROGRESS_DEFAULT_MAP_TEXT = "PROGRESS.DEFAULT.MAP";
-	
+
 	private boolean isActive = false;
-	private JProgressBar bar = null;
-	private List<ProgressorListener> listeners = null;
-	
-	public Progressor()  {
-		this.bar = new JProgressBar();
-		this.listeners = new ArrayList<ProgressorListener>();
+	private JProgressBar bar;
+	private EventListenerList listeners;
+	private ProgressDialog progressDialog;
+
+	public Progressor(Component locationAt)  {
+		this.progressDialog = new ProgressDialog(Utils.getApp().getFrame(),false,ProgressStyleType.ICON_STYLE);
+		this.progressDialog.setTrancluent(true);
+		this.progressDialog.setSnapTo(locationAt, DefaultDialog.POS_CENTER, 0, true);
+		this.bar = progressDialog.getProgressPanel().getProgressBar();
+		this.listeners = new EventListenerList();
 		this.bar.setString(DiskoStringFactory.getText(PROGRESS_DEFAULT_MAP_TEXT));
 		this.bar.setIndeterminate(true);
 	}
-	
+
+
 	public JProgressBar getProgressBar() {
 		return bar;
 	}
-	
+
 	public int getMaxRange() {
 		return bar.getMaximum();
 	}
@@ -43,10 +53,9 @@ public class Progressor implements IStepProgressor {
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					bar.setMaximum(max);
-					bar.setIndeterminate(bar.getMinimum() == max);
+					setMaxRange(max);
 				}
-			});		
+			});
 		}
 	}
 
@@ -63,10 +72,9 @@ public class Progressor implements IStepProgressor {
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					bar.setMaximum(min);
-					bar.setIndeterminate(bar.getMaximum() == min);
+					setMinRange(min);
 				}
-			});		
+			});
 		}
 	}
 
@@ -82,12 +90,12 @@ public class Progressor implements IStepProgressor {
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					bar.setValue(value);
+					setStepValue(value);
 				}
-			});		
+			});
 		}
 	}
-	
+
 	public String getMessage() {
 		return bar.getString();
 	}
@@ -95,15 +103,14 @@ public class Progressor implements IStepProgressor {
 	public void setMessage(final String message) {
 		if(SwingUtilities.isEventDispatchThread()) {
 			// prepare
-			bar.setString(message);
+			progressDialog.getProgressPanel().setProgress(bar.getValue(), message, message);
 		}
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					// prepare
-					bar.setString(message);
+					setMessage(message);
 				}
-			});		
+			});
 		}
 	}
 
@@ -120,20 +127,20 @@ public class Progressor implements IStepProgressor {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	public void step() {
 		try {
-			// firwar
+			// forward
 			if(isActive) fireOnChange();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public void hide() {
 		try {
 			// is already inactive?
@@ -142,80 +149,70 @@ public class Progressor implements IStepProgressor {
 			isActive = false;
 			// notify
 			fireOnHide();
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
 	}
-	
+
 	public void setPosition(int position) { }
 	public int getPosition() { return 0; }
 	public int offsetPosition(int position) { return 0; }
 
-	public boolean addListener(ProgressorListener listener) {
-		if(!listeners.contains(listener))
-			return listeners.add(listener);
-		return false;
+	public void addProgressorListener(IProgressorListener listener) {
+		listeners.add(IProgressorListener.class,listener);
 	}
-	
-	public boolean removeListener(ProgressorListener listener) {
-		if(listeners.contains(listener))
-			return listeners.remove(listener);
-		return false;
+
+	public void removeProgressorListener(IProgressorListener listener) {
+		listeners.remove(IProgressorListener.class,listener);
 	}
-	
+
 	private void fireOnShow() {
 		if(SwingUtilities.isEventDispatchThread()) {
-			for (ProgressorListener it : listeners)
+			progressDialog.setVisible(true);
+			progressDialog.snapTo();
+			for (IProgressorListener it : listeners.getListeners(IProgressorListener.class))
 				it.onShow();
-			
 		}
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					for (ProgressorListener it : listeners)
-						it.onShow();
-				}
-			});		
-		}
-	}
-	
-	private void fireOnChange() {
-		if(SwingUtilities.isEventDispatchThread()) {
-			for (ProgressorListener it : listeners)
-				it.onChange();
-			
-		}
-		else {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					for (ProgressorListener it : listeners)
-						it.onChange();
+					fireOnShow();
 				}
 			});
 		}
 	}
-	
-	private void fireOnHide() {
+
+	private void fireOnChange() {
 		if(SwingUtilities.isEventDispatchThread()) {
-			for (ProgressorListener it : listeners)
-				it.onHide();			
+			for (IProgressorListener it : listeners.getListeners(IProgressorListener.class))
+				it.onChange();
+
 		}
 		else {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					for (ProgressorListener it : listeners)
-						it.onHide();
+					fireOnChange();
 				}
-			});		
+			});
 		}
 	}
-	
-	public interface ProgressorListener {
-		public void onShow();
-		public void onChange();
-		public void onHide();
+
+	private void fireOnHide() {
+		if(SwingUtilities.isEventDispatchThread()) {
+			for (IProgressorListener it : listeners.getListeners(IProgressorListener.class)) {
+				it.onHide();
+			}
+			progressDialog.setVisible(false);
+		}
+		else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					fireOnHide();
+				}
+			});
+		}
 	}
 
 }

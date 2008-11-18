@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.dialog;
 
@@ -21,35 +21,35 @@ import org.redcross.sar.work.event.WorkFlowEvent;
 public class PositionSelectorDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private boolean m_cancel = false;
-	
+
 	private GotoPanel m_gotoPanel = null;
-	
-	
+
+
 	/**
-	 * Constructor 
-	 * 
+	 * Constructor
+	 *
 	 * @param owner
 	 */
 	public PositionSelectorDialog(Frame owner) {
-		
+
 		// forward
 		super(owner);
-		
+
 		// initialize GUI
 		initialize();
-		
+
 		// add listener
 		addWorkFlowListener(new IWorkFlowListener() {
 
 			@Override
 			public void onFlowPerformed(WorkFlowEvent e) {
-				if(e.isCancel()) m_cancel = true;				
+				if(e.isCancel()) m_cancel = true;
 			}
-			
+
 		});
-		
+
 	}
 
 	private void initialize() {
@@ -64,54 +64,54 @@ public class PositionSelectorDialog extends DefaultDialog {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void onLoad(IDiskoMap map) {
 		getGotoPanel().setMap(map);
-	}	
-	
+	}
+
 	/**
-	 * This method initializes m_contentPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes m_contentPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	public GotoPanel getGotoPanel() {
 		if (m_gotoPanel == null) {
-			m_gotoPanel = new GotoPanel("Velg posisjon",true,true,true,ButtonSize.SMALL);
+			m_gotoPanel = new GotoPanel("Velg posisjon",true,true,true,false,ButtonSize.SMALL);
 		}
 		return m_gotoPanel;
 	}
-	
+
 	public void getPoint() {
 		getGotoPanel().setPoint();
 	}
-	
+
 	public void getCenterPoint() {
 		getGotoPanel().setCenterPoint();
 	}
-	
+
 	public void getClickPoint() {
 		getGotoPanel().setClickPoint();
 	}
-	
+
 	public void getMovePoint() {
 		getGotoPanel().setMovePoint();
 	}
-	
+
 	public Position select() {
 		return select(null);
 	}
-	
+
 	public Position select(Position p) {
-		
+
 		// reset
 		m_cancel = false;
-		
+
 		// set initial select point
 		if(p==null)
 			getPoint();
 		else
 			getGotoPanel().setPosition(p);
-		
+
 		// show position in map
 		getGotoPanel().setPositionMarked(true);
 		// activate SelectFeatureTool
@@ -126,5 +126,5 @@ public class PositionSelectorDialog extends DefaultDialog {
 		else
 			return getGotoPanel().getCoordinatePanel().getPosition();
 	}
-	
+
 }  //  @jve:decl-index=0:visual-constraint="23,0"

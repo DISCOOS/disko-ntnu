@@ -79,11 +79,14 @@ public class DiskoButtonFactory
 		// set button font
 		button.setFont(BUTTON_FONT);
 
+		// set opaque
+		button.setOpaque(true);
+
 		// set button size
 		setButtonSize(button,size,dx,dy);
 
 		// remove button border
-		button.setBorder(null);
+		//button.setBorder(null);
 
 		// return button
 		return button;
@@ -108,11 +111,14 @@ public class DiskoButtonFactory
 		// set button font
 		button.setFont(BUTTON_FONT);
 
+		// set opaque
+		button.setOpaque(true);
+
 		// set button size
 		setButtonSize(button,size,dx,dy);
 
 		// remove button border
-		button.setBorder(null);
+		//button.setBorder(null);
 
 		// return button
 		return button;

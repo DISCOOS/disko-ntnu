@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.redcross.sar.gui.dialog;
 
@@ -18,47 +18,49 @@ import org.redcross.sar.util.Utils;
 public class TocDialog extends DefaultDialog  {
 
 	private static final long serialVersionUID = 1L;
-	
-	private TocPanel m_tocPanel = null;
-	
+
+	private TocPanel m_tocPanel;
+
 	/**
-	 * Constructor 
-	 * 
+	 * Constructor
+	 *
 	 * @param owner
 	 */
 	public TocDialog(Frame owner) {
-		
+
 		// forward
 		super(owner);
-		
+
 		// initialize GUI
 		initialize();
-		
+
 	}
 
 	private void initialize() {
 		try {
 			// prepare dialog
-			Utils.setFixedSize(this, 250, 550);
 	        this.setContentPane(getTocPanel());
+			// set translucency behavior
+			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
+			// pack to content size
 	        this.pack();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void onLoad(IDiskoMap map) {
 		getTocPanel().load(map);
 	}
-	
+
 	public void reload() {
 		getTocPanel().reload();
 	}
-	
+
 	/**
-	 * This method initializes m_tocPanel	
-	 * 	
+	 * This method initializes m_tocPanel
+	 *
 	 * @return org.redcross.sar.gui.TocPanel
 	 */
 	public TocPanel getTocPanel() {
@@ -71,11 +73,11 @@ public class TocDialog extends DefaultDialog  {
 					public void actionPerformed(ActionEvent e) {
 						String cmd = e.getActionCommand();
 						// hide?
-						if("finish".equalsIgnoreCase(cmd) 
+						if("finish".equalsIgnoreCase(cmd)
 						|| "cancel".equalsIgnoreCase(cmd))
-							setVisible(false);						
+							setVisible(false);
 					}
-					
+
 				});
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -83,5 +85,22 @@ public class TocDialog extends DefaultDialog  {
 		}
 		return m_tocPanel;
 	}
-	
+
+	@Override
+	public boolean requestFitToContent() {
+		if(getTocPanel().isExpanded()) {
+			// get size
+			int w = getTocPanel().getPreferredSize().width;
+			int h = getTocPanel().getPreferredSize().height;
+			// update
+			Utils.setAnySize(TocDialog.this,w,h);
+		}
+		else {
+			// update
+			Utils.setAnySize(TocDialog.this,getTocPanel().getWidth(),36);
+		}
+		return true;
+	}
+
+
 }  //  @jve:decl-index=0:visual-constraint="23,0"

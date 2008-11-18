@@ -111,7 +111,7 @@ public class MessagePanel extends DefaultPanel {
 				getMessagePane().setPreferredSize(size);
 				if(getManager()!=null) {
 					int h = size.height + getHeaderPanel().getHeight()+10;
-					getManager().requestResize(size.width,(h > 300 ? 300 : h));
+					getManager().requestResize(size.width,(h > 300 ? 300 : h), false);
 				}
 
 			}

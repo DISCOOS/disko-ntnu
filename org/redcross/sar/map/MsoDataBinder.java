@@ -36,6 +36,7 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 	private FeatureWork m_work;
 	private IMsoModelIf m_model;
 	private IDiskoMapManager m_manager;
+	private Progressor m_progressor;
 	private EnumSet<MsoClassCode> m_interests = EnumSet.noneOf(MsoClassCode.class);
 
 	private final List<FeatureWork> m_scheduled = new ArrayList<FeatureWork>();
@@ -46,11 +47,12 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 	 * Constructors
 	 * ============================================================================= */
 
-	public MsoDataBinder(IDiskoMapManager manager) {
+	public MsoDataBinder(IDiskoMapManager manager, Progressor progressor) {
 		// forward
 		super();
 		// prepare
 		m_manager = manager;
+		m_progressor = progressor;
 	}
 
 	/* =============================================================================
@@ -368,7 +370,7 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 
 		public FeatureWork(Map<IMsoFeatureLayer,Collection<IMsoFeature>> data) throws Exception {
 			// forward
-			super(m_isActive?1:0,true, false, ThreadType.WORK_ON_LOOP, "Bearbeider", 500, true, false);
+			super(m_isActive?1:0,true, false, ThreadType.WORK_ON_LOOP, "", 0, false, false);
 			// prepare
 			m_data = data;
 		}
@@ -471,6 +473,22 @@ public class MsoDataBinder implements IMsoUpdateListenerIf {
 			// finished
 			return null;
 
+		}
+
+		@Override
+		public void showProgress() {
+			if(m_showProgress && !m_isNotified && canShowProgess()) {
+				m_isNotified = true;
+				m_progressor.show();
+			}
+		}
+
+		@Override
+		public void hideProgress() {
+			if(m_isNotified) {
+				m_progressor.hide();
+				m_isNotified = false;
+			}
 		}
 
 	}
