@@ -83,8 +83,7 @@ public class PromptDialog extends DefaultDialog {
 					}
 
 				};
-				contentPanel.setBodyComponent(getAssignmentTable());
-				contentPanel.setFitBodyOnResize(true);
+				contentPanel.setContainer(getAssignmentTable());
 				contentPanel.setScrollBarPolicies(
 						JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -138,7 +137,7 @@ public class PromptDialog extends DefaultDialog {
 			try {
 				assignmentTable = new AssignmentTable(wp.getMsoModel());
 				assignmentTable.showOnly(AssignmentStatus.DRAFT);
-				assignmentTable.setPreferredSize(new Dimension(380,300));
+				assignmentTable.setPreferredSize(new Dimension(400,300));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

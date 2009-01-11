@@ -1,6 +1,5 @@
 package org.redcross.sar.gui.mso.panel;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -9,10 +8,7 @@ import java.util.EnumSet;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -56,6 +52,10 @@ public class POIPanel extends DefaultToolPanel {
 
 	private IPOIIf msoPOI;
 
+	/* =============================================================
+	 * Constructors
+	 * ============================================================= */
+
 	public POIPanel(POITool tool) {
 		// forward
 		this("Opprette punkt",tool);
@@ -70,7 +70,7 @@ public class POIPanel extends DefaultToolPanel {
 		setInterests(Utils.getApp().getMsoModel(),
 				EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI));
 
-		// initialize gui
+		// initialize GUI
 		initialize();
 
 		// listen for changes in position
@@ -93,96 +93,9 @@ public class POIPanel extends DefaultToolPanel {
 
 	}
 
-	/**
-	 * This method initializes this
-	 *
-	 */
-	private void initialize() {
-
-		// prepare
-		setFitBodyOnResize(true);
-		setPreferredSize(new Dimension(300,470));
-
-		// get body panel
-		JPanel panel = (JPanel)getBodyComponent();
-
-		// set layout
-		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-
-		// build container
-		addBodyChild(getGotoPanel());
-		addBodyChild(Box.createVerticalStrut(5));
-		addBodyChild(getOptionsPanel());
-		addBodyChild(Box.createVerticalStrut(5));
-		addBodyChild(getPOITypesPanel());
-		addBodyChild(Box.createVerticalStrut(5));
-		addBodyChild(getRemarksPanel());
-
-		// add buttons
-		insertButton("finish",getCenterAtButton(),"centerat");
-
-	}
-
-	/**
-	 * This method initializes optionsPanel
-	 *
-	 * @return {@link FieldsPanel}
-	 */
-	public FieldsPanel getOptionsPanel() {
-		if (optionsPanel == null) {
-			try {
-				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
-				optionsPanel.setPreferredSize(new Dimension(290,80));
-				optionsPanel.setFitBodyOnResize(true);
-				optionsPanel.setButtonVisible("toggle", true);
-				optionsPanel.addField(getNameAttr());
-				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
-
-					@Override
-					public void onFlowPerformed(WorkFlowEvent e) {
-
-						// consume?
-						if(!isChangeable()) return;
-
-						// is not dirty?
-						if(!isDirty()) {
-
-							// update
-							setDirty(msoPOI!=null ?
-									msoPOI.getName()!=getNameAttr().getValue() : true);
-
-						}
-
-					}
-
-				});
-				optionsPanel.addChangeListener(new ChangeListener() {
-
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
-					}
-
-				});
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return optionsPanel;
-	}
-
-	/**
-	 * This method initializes nameAttr
-	 *
-	 * @return {@link TextLineField}
-	 */
-	public TextLineField getNameAttr() {
-		if (nameAttr == null) {
-			nameAttr = new TextLineField("Name","Navn",true,50,25,"");
-		}
-		return nameAttr;
-	}
+	/* =============================================================
+	 * Public methods
+	 * ============================================================= */
 
 	/**
 	 * This method initializes GotoPanel
@@ -192,8 +105,7 @@ public class POIPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.setFitBodyOnResize(true);
-			gotoPanel.setPreferredSize(new Dimension(290,140));
+			gotoPanel.setPreferredExpandedHeight(140);
 			Utils.setFixedHeight(gotoPanel, 140);
 			gotoPanel.addWorkFlowListener(new IWorkFlowListener() {
 
@@ -232,18 +144,65 @@ public class POIPanel extends DefaultToolPanel {
 				}
 
 			});
-			gotoPanel.addChangeListener(new ChangeListener() {
-
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					fitBodyToPreferredLayoutSize();
-					fitThisToPreferredBodySize();
-				}
-
-			});
+			gotoPanel.addToggleListener(toggleListener);
 
 		}
 		return gotoPanel;
+	}
+
+	/**
+	 * This method initializes optionsPanel
+	 *
+	 * @return {@link FieldsPanel}
+	 */
+	public FieldsPanel getOptionsPanel() {
+		if (optionsPanel == null) {
+			try {
+				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
+				optionsPanel.setExpanded(false);
+				optionsPanel.setPreferredExpandedHeight(80);
+				Utils.setFixedHeight(optionsPanel, 80);
+				optionsPanel.setButtonVisible("toggle", true);
+				optionsPanel.addField(getNameAttr());
+				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
+
+					@Override
+					public void onFlowPerformed(WorkFlowEvent e) {
+
+						// consume?
+						if(!isChangeable()) return;
+
+						// is not dirty?
+						if(!isDirty()) {
+
+							// update
+							setDirty(msoPOI!=null ?
+									msoPOI.getName()!=getNameAttr().getValue() : true);
+
+						}
+
+					}
+
+				});
+				optionsPanel.addToggleListener(toggleListener);
+
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return optionsPanel;
+	}
+
+	/**
+	 * This method initializes nameAttr
+	 *
+	 * @return {@link TextLineField}
+	 */
+	public TextLineField getNameAttr() {
+		if (nameAttr == null) {
+			nameAttr = new TextLineField("Name","Navn",true,50,25,"");
+		}
+		return nameAttr;
 	}
 
 	/**
@@ -254,7 +213,8 @@ public class POIPanel extends DefaultToolPanel {
 	public POITypesPanel getPOITypesPanel() {
 		if (poiTypesPanel == null) {
 			poiTypesPanel = new POITypesPanel();
-			poiTypesPanel.setPreferredSize(new Dimension(290,100));
+			poiTypesPanel.setExpanded(false);
+			poiTypesPanel.setPreferredExpandedHeight(100);
 			poiTypesPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				public void onFlowPerformed(WorkFlowEvent e) {
@@ -274,17 +234,7 @@ public class POIPanel extends DefaultToolPanel {
 				}
 
 			});
-			poiTypesPanel.addChangeListener(new ChangeListener() {
-
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					fitBodyToPreferredLayoutSize();
-					fitThisToPreferredBodySize();
-				}
-
-			});
-
-
+			poiTypesPanel.addToggleListener(toggleListener);
 		}
 		return poiTypesPanel;
 	}
@@ -298,17 +248,10 @@ public class POIPanel extends DefaultToolPanel {
 		if (remarksPanel == null) {
 			try {
 				remarksPanel = new TogglePanel("Merknader",false,false,true);
-				remarksPanel.setPreferredSize(new Dimension(290, 150));
-				remarksPanel.setBodyComponent(getRemarksArea());
-				remarksPanel.addChangeListener(new ChangeListener() {
-
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
-					}
-
-				});
+				remarksPanel.setExpanded(false);
+				remarksPanel.setPreferredExpandedHeight(120);
+				remarksPanel.setContainer(getRemarksArea());
+				remarksPanel.addToggleListener(toggleListener);
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -326,7 +269,6 @@ public class POIPanel extends DefaultToolPanel {
 		if (remarksArea == null) {
 			remarksArea = new JTextArea();
 			remarksArea.setLineWrap(true);
-			remarksArea.setRows(3);
 			remarksArea.getDocument().addDocumentListener(new DocumentListener() {
 
 				public void changedUpdate(DocumentEvent e) { change(); }
@@ -344,63 +286,6 @@ public class POIPanel extends DefaultToolPanel {
 		}
 		return remarksArea;
 	}
-
-	/**
-	 * This method initializes CenterAtButton
-	 *
-	 * @return {@link JButton}
-	 */
-	private JButton getCenterAtButton() {
-		if (centerAtButton == null) {
-			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);
-			centerAtButton.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					// forward
-					centerAt();
-				}
-
-			});
-		}
-		return centerAtButton;
-	}
-
-	/* ===========================================
-	 * Private methods
-	 * ===========================================
-	 */
-
-	private void centerAt() {
-		// has map?
-		if(getTool().getMap()!=null) {
-			// disable update
-			setChangeable(false);
-
-			try {
-				// get position
-				Position p = getGotoPanel().getCoordinatePanel().getPosition();
-				// center at position?
-				if(p!=null) {
-					getTool().getMap().centerAtPosition(p.getGeoPos());
-					getTool().getMap().flashPosition(p.getGeoPos());
-				}
-				else
-					Utils.showWarning("Du må oppgi korrekte koordinater");
-			} catch (Exception ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
-
-			// enable update
-			setChangeable(true);
-
-		}
-	}
-
-	/* ===========================================
-	 * Public methods
-	 * ===========================================
-	 */
 
 	public Point getPoint() {
 		try {
@@ -491,8 +376,7 @@ public class POIPanel extends DefaultToolPanel {
 
 	/* ===========================================
 	 * IPropertyPanel implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	@Override
 	public POITool getTool() {
@@ -619,9 +503,85 @@ public class POIPanel extends DefaultToolPanel {
 	}
 
 	/* ===========================================
-	 * IMsoUpdateListenerIf implementation
-	 * ===========================================
+	 * Private methods
+	 * =========================================== */
+
+	/**
+	 * This method initializes this
+	 *
 	 */
+	private void initialize() {
+
+		// set layout
+		setContainerLayout(new BoxLayout(getContainer(),BoxLayout.Y_AXIS));
+
+		// build container
+		addToContainer(getGotoPanel());
+		addToContainer(Box.createVerticalStrut(5));
+		addToContainer(getOptionsPanel());
+		addToContainer(Box.createVerticalStrut(5));
+		addToContainer(getPOITypesPanel());
+		addToContainer(Box.createVerticalStrut(5));
+		addToContainer(getRemarksPanel());
+
+		// add buttons
+		insertButton("finish",getCenterAtButton(),"centerat");
+
+		// set toggle limits
+		setToggleLimits(280,minimumCollapsedHeight,true);
+
+	}
+
+	/**
+	 * This method initializes CenterAtButton
+	 *
+	 * @return {@link JButton}
+	 */
+	private JButton getCenterAtButton() {
+		if (centerAtButton == null) {
+			centerAtButton = DiskoButtonFactory.createButton("MAP.CENTERAT",ButtonSize.SMALL);
+			centerAtButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					// forward
+					centerAt();
+				}
+
+			});
+		}
+		return centerAtButton;
+	}
+
+	private void centerAt() {
+		// has map?
+		if(getTool().getMap()!=null) {
+			// disable update
+			setChangeable(false);
+
+			try {
+				// get position
+				Position p = getGotoPanel().getCoordinatePanel().getPosition();
+				// center at position?
+				if(p!=null) {
+					getTool().getMap().centerAtPosition(p.getGeoPos());
+					getTool().getMap().flashPosition(p.getGeoPos());
+				}
+				else
+					Utils.showWarning("Du må oppgi korrekte koordinater");
+			} catch (Exception ex) {
+				// TODO Auto-generated catch block
+				ex.printStackTrace();
+			}
+
+			// enable update
+			setChangeable(true);
+
+		}
+	}
+
+	/* ===========================================
+	 * IMsoUpdateListenerIf implementation
+	 * =========================================== */
 
 	@Override
 	protected void msoObjectChanged(IMsoObjectIf msoObject, int mask) {
@@ -636,6 +596,5 @@ public class POIPanel extends DefaultToolPanel {
 		if(msoPOI!=null && msoPOI.equals(msoObject))
 			setPOI(null);
 	}
-
 
 }//  @jve:decl-index=0:visual-constraint="10,10"

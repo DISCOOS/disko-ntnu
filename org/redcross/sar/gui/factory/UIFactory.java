@@ -124,6 +124,7 @@ public class UIFactory {
 			UIManager.put("TableHeader.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("TextField.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("TextPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("EditorPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("TitledBorder.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("ToggleButton.font",DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("ToolBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
@@ -192,6 +193,7 @@ public class UIFactory {
 		scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, UIFactory.createCorner());
 		scrollPane.setVerticalScrollBarPolicy(vScroll);
 		scrollPane.setHorizontalScrollBarPolicy(hScroll);
+		scrollPane.setWheelScrollingEnabled(true);
 		return scrollPane;
 	}
 

@@ -96,14 +96,12 @@ public class UnitStatusPanel extends TogglePanel {
 		});
 		// initialize panel body
     	setNotScrollBars();
-    	// set resize behavior
-    	setFitBodyOnResize(true);
 		// ensure fixed size
     	Utils.setFixedSize(this,FIXED_WIDTH,FIXED_HEIGHT);
 		// add bearing panel to the left side
-		addBodyChild(getBearingPanel(),BorderLayout.WEST);
+		addToContainer(getBearingPanel(),BorderLayout.WEST);
 		// add attributes in the center of panel
-		addBodyChild(getAttribsPanel(),BorderLayout.CENTER);
+		addToContainer(getAttribsPanel(),BorderLayout.CENTER);
 		// forward
 		collapse();
 	}
@@ -206,7 +204,7 @@ public class UnitStatusPanel extends TogglePanel {
         	m_attribsPanel.setHeaderVisible(false);
         	m_attribsPanel.setBorderVisible(false);
         	m_attribsPanel.setNotScrollBars();
-        	m_attribsPanel.setPreferredBodySize(new Dimension(FIXED_WIDTH-90,FIXED_HEIGHT-37));
+        	m_attribsPanel.setPreferredContainerSize(new Dimension(FIXED_WIDTH-90,FIXED_HEIGHT-37));
         	m_attribsPanel.addWorkFlowListener(this);
         }
         return m_attribsPanel;

@@ -33,7 +33,7 @@ public class DiskoTable extends JTable {
 
 	protected boolean m_autoFitWidths;
 
-	protected TableStringConverter m_converter = null;
+	protected TableStringConverter m_converter;
 
 	/* ====================================================
 	 * Constructors

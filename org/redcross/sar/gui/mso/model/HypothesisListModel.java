@@ -41,7 +41,7 @@ public class HypothesisListModel extends AbstractListModel implements
 
 		// clear all data?
         if(events.isClearAllEvent()) {
-        	int max = data!=null ? data.length-1: 0;
+        	int max = Math.max(data!=null ? data.length-1: 0,0);
         	data = null;
 			super.fireIntervalRemoved(this, 0, max);
         }

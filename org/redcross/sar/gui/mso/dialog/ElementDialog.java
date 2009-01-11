@@ -5,7 +5,6 @@ import java.awt.Frame;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.mso.panel.ElementPanel;
-import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
 import javax.swing.JList;
@@ -13,22 +12,25 @@ import javax.swing.JList;
 public class ElementDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
-	
-	private ElementPanel elementPanel = null;
-	
+
+	private ElementPanel elementPanel;
+
 	public ElementDialog(Frame frame) {
+		// forward
 		super(frame);
+		// initialize GUI
 		initialize();
 	}
 
 	/**
 	 * This method initializes this
-	 * 
+	 *
 	 */
 	private void initialize() {
 		try {
             this.setContentPane(getElementPanel());
             this.setPreferredSize(new Dimension(606,440));
+            this.setTrancluentOn(TRANSLUCENT_ONMOUSE);
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -37,20 +39,15 @@ public class ElementDialog extends DefaultDialog {
 	}
 
 	/**
-	 * This method initializes elementPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes elementPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	public ElementPanel getElementPanel() {
 		if (elementPanel == null) {
 			try {
 				elementPanel = new ElementPanel();
-				// never allow scroll bars, this allows the 
-				// lists to manage scrolling
-				elementPanel.setScrollBarPolicies(
-						DefaultPanel.VERTICAL_SCROLLBAR_NEVER, 
-						DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
-				
+
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -61,14 +58,14 @@ public class ElementDialog extends DefaultDialog {
 	public JList getElementList() {
 		return getElementPanel().getTypeList();
 	}
-	
+
 	public JList getObjectList() {
 		return getElementPanel().getObjectList();
 	}
 	public JList getPartList() {
 		return getElementPanel().getPartList();
 	}
-	
+
 	public SearchSubType getSelectedSubType() {
 		Object selected = getElementList().getSelectedValue();
 		if(selected instanceof SearchSubType) {

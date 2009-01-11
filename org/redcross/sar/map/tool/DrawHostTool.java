@@ -37,12 +37,12 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 	protected boolean showDialog = true;
 
 	// current hosted tool
-	private IMapTool tool = null;
+	private IMapTool tool;
 
 	// GUI components
-	protected DiskoMap map = null;
-	protected DrawDialog dialog = null;
-	protected AbstractButton button = null;
+	protected DiskoMap map;
+	protected DrawDialog dialog;
+	protected AbstractButton button;
 
 	/**
 	 * Constructs the DrawHostTool
@@ -75,14 +75,15 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 				// consume?
 				if(dialog == null || !showDialog ) return;
 				// start show/hide
-				dialog.delayedSetVisible(!dialog.isVisible(), 250);
+				dialog.setVisible(!dialog.isVisible());
+				//dialog.delayedSetVisible(!dialog.isVisible(), 250);
 			}
 
 			public void mouseReleased(MouseEvent e) {
 				// consume?
 				if(dialog == null || !showDialog ) return;
 				// stop show if not shown already
-				dialog.cancelSetVisible();
+				//dialog.cancelSetVisible();
 			}
 
 			public void mouseEntered(MouseEvent e) {}

@@ -94,8 +94,8 @@ public class UnitTypeInputPanel extends DefaultPanel
 	
 	private void initialize() {
 		// prepare 		
-		setBodyLayout(new SpringLayout());
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setContainerLayout(new SpringLayout());
+		setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		setNotScrollBars();
 		// forward
 		createButtons();
@@ -132,7 +132,7 @@ public class UnitTypeInputPanel extends DefaultPanel
             int rows = types.length / m_cols + 1;
             
             // apply layout
-            SpringUtilities.makeCompactGrid((JPanel)getBodyComponent(), rows, m_cols, 0, 0, 0, 0);
+            SpringUtilities.makeCompactGrid((JPanel)getContainer(), rows, m_cols, 0, 0, 0, 0);
 			
 		}
 		catch(MissingResourceException e)
@@ -181,7 +181,7 @@ public class UnitTypeInputPanel extends DefaultPanel
 		});
 
 		// add button
-		addBodyChild(button);
+		addToContainer(button);
 
     }
     

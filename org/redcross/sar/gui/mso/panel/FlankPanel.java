@@ -52,7 +52,7 @@ public class FlankPanel extends DefaultPanel {
 	 * 
 	 */
 	private void initialize() {
-		this.setBodyComponent(getCenterPanel());
+		this.setContainer(getCenterPanel());
 	}
 	
 	public void onLoad(IDiskoMap diskoMap) throws IOException {

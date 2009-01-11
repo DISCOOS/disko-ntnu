@@ -1,6 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.table.DiskoTable;
@@ -125,7 +126,7 @@ public class CalloutDetailsPanel extends JPanel
 		// no header
 		m_personnelTable.setTableHeader(null);
 
-		JScrollPane personnelTableScrollPane = new JScrollPane(m_personnelTable);
+		JScrollPane personnelTableScrollPane = UIFactory.createScrollPane(m_personnelTable);
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 2;
 		this.add(personnelTableScrollPane, gbc);

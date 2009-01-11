@@ -1,12 +1,19 @@
 package org.redcross.sar.gui.panel;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.LayoutManager2;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 import org.redcross.sar.gui.IMsoHolder;
 import org.redcross.sar.map.IDiskoMap;
@@ -23,7 +30,7 @@ import org.redcross.sar.work.event.WorkFlowEvent;
 
 import com.esri.arcgis.interop.AutomationException;
 
-public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder {
+public abstract class AbstractPanel extends JPanel implements IPanel, IPanelManager, IMsoHolder {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,11 +44,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	private boolean requestHideOnCancel = true;
 
 	protected IMsoModelIf msoModel;
-
 	protected IMsoObjectIf msoObject;
 
 	protected EnumSet<LayerCode> msoLayers;
 	protected EnumSet<MsoClassCode> msoInterests;
+
+	protected PanelManager manager = new PanelManager(null,this);
 
 	/* ===========================================
 	 * Constructors
@@ -59,12 +67,42 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	}
 
 	/* ===========================================
-	 * IMsoUpdateListenerIf implementation
-	 * ===========================================
-	 */
+	 * Public methods
+	 * =========================================== */
 
-	public EnumSet<MsoClassCode> getInterests() {
-		return msoInterests;
+	public boolean isLoop() {
+		return (loopCount>0);
+	}
+
+	public void setLoop(boolean isLoop) {
+		if(isLoop)
+			loopCount++;
+		else if(loopCount>0)
+			loopCount--;
+	}
+
+	public EnumSet<LayerCode> getMsoLayers() {
+		return msoLayers;
+	}
+
+	public void setMsoLayers(IDiskoMap map, EnumSet<LayerCode> layers) {
+		// unregister?
+		if(this.msoLayers!=null) {
+			// loop over all layers
+			for(LayerCode it: layers) {
+				IMsoFeatureLayer l = map.getMsoLayer(it);
+				if(l!=null) l.removeMsoLayerEventListener(this);
+			}
+		}
+		this.msoLayers = layers!=null ? layers : EnumSet.noneOf(LayerCode.class);
+		// register?
+		if(layers!=null) {
+			// loop over all layers
+			for(LayerCode it: layers) {
+				IMsoFeatureLayer l = map.getMsoLayer(it);
+				if(l!=null) l.addMsoLayerEventListener(this);
+			}
+		}
 	}
 
 	public void setInterests(IMsoModelIf model, EnumSet<MsoClassCode> interests) {
@@ -79,82 +117,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 		if(model!=null) {
 			msoInterests = interests;
 			msoModel.getEventManager().addClientUpdateListener(this);
-		}
-	}
-
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
-
-		// consume?
-		if(!isChangeable()) return;
-
-		// loop over all events
-		for(MsoEvent.Update e : events.getEvents(msoInterests)) {
-
-			// consume loopback updates
-			if(!e.isLoopback()) {
-
-				// get mask
-				int mask = e.getEventTypeMask();
-
-		        // get mso object
-		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-
-		        // get flag
-		        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
-
-		        // clear all?
-		        if(clearAll) {
-		        	msoObjectClearAll(this.msoObject,mask);
-		        }
-		        else {
-		        	// get flags
-			        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
-			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
-			        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
-
-			        // add object?
-					if (createdObject) {
-						msoObjectCreated(msoObj,mask);
-					}
-					// is object modified?
-					if ( (addedReference || removedReference || modifiedObject)) {
-						msoObjectChanged(msoObj,mask);
-					}
-					// delete object?
-					if (deletedObject) {
-						msoObjectDeleted(msoObj,mask);
-					}
-		        }
-
-	        }
-		}
-	}
-
-	/* ===========================================
-	 * IMsoLayerEventListener implementation
-	 * =========================================== */
-
-	public void onSelectionChanged(MsoLayerEvent e) {
-		if (!e.isFinal()) return;
-		try {
-			// initialize
-			IMsoObjectIf msoObj = null;
-			List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
-			// select new?
-			if (selection != null && selection.size() > 0) {
-				// get mso object
-				msoObj = selection.get(0);
-			}
-			// forward
-			setMsoObject(msoObj);
-		} catch (AutomationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
 		}
 	}
 
@@ -185,7 +147,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	}
 
 	/* ===========================================
-	 * IDiskoPanel implementation
+	 * Abstract methods
 	 * =========================================== */
 
 	public abstract void update();
@@ -193,16 +155,17 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	public abstract boolean doAction(String command);
 
 	public abstract void addActionListener(ActionListener listener);
-
 	public abstract void removeActionListener(ActionListener listener);
 
 	public abstract void addWorkFlowListener(IWorkFlowListener listener);
-
 	public abstract void removeWorkFlowListener(IWorkFlowListener listener);
 
-	public abstract IPanelManager getManager();
+    public abstract Container getContainer();
+    public abstract void setContainer(Container container);
 
-	public abstract void setManager(IPanelManager manager, boolean isMainPanel);
+	/* ===========================================
+	 * IPanel implementation
+	 * =========================================== */
 
 	public IMsoObjectIf getMsoObject() {
 		return msoObject;
@@ -319,41 +282,344 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 			consumeCount--;
 	}
 
-	public boolean isLoop() {
-		return (loopCount>0);
+    public Dimension getPreferredContainerSize() {
+        return (getContainer()!=null ? getContainer().getPreferredSize() : new Dimension(0,0));
+    }
+
+    public void setPreferredContainerSize(Dimension size) {
+        if(getContainer()!=null)
+            getContainer().setPreferredSize(size);
+    }
+
+    public Dimension getMinimumContainerSize() {
+        return (getContainer()!=null ? getContainer().getMinimumSize() : new Dimension(0,0));
+    }
+
+    public void setMinimumContainerSize(Dimension size) {
+        if(getContainer()!=null)
+            getContainer().setMinimumSize(size);
+    }
+
+    public Dimension getMaximumContainerSize() {
+        return (getContainer()!=null ? getContainer().getMaximumSize() : new Dimension(0,0));
+    }
+
+    public void setMaximumContainerSize(Dimension size) {
+        if(getContainer()!=null)
+            getContainer().setMaximumSize(size);
+    }
+
+    public LayoutManager getContainerLayout() {
+        return (getContainer()!=null ? getContainer().getLayout() : null);
+    }
+
+    public void setContainerLayout(LayoutManager manager) {
+        if(getContainer()!=null) getContainer().setLayout(manager);
+    }
+
+    public void setContainerBorder(Border border) {
+        if(getContainer() instanceof JComponent)
+            ((JComponent)getContainer()).setBorder(border);
+    }
+
+    public Component addToContainer(Component c) {
+        if(getContainer()!=null) {
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,true);
+    		// add to container
+        	return getContainer().add(c);
+        }
+        return null;
+    }
+
+    public Component addToContainer(Component c, int index) {
+    	if(getContainer()!=null) {
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,true);
+    		// add to container
+        	return getContainer().add(c,index);
+        }
+    	return null;
+    }
+
+	public Component addToContainer(String name, Component c) {
+    	if(getContainer()!=null) {
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,true);
+    		// add to container
+    		return getContainer().add(name,c);
+    	}
+    	return null;
 	}
 
-	public void setLoop(boolean isLoop) {
-		if(isLoop)
-			loopCount++;
-		else if(loopCount>0)
-			loopCount--;
+    public void addToContainer(Component c, Object constraints) {
+    	if(getContainer()!=null) {
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,true);
+    		// add to container
+        	getContainer().add(c,constraints);
+        }
+    }
+
+    public void addToContainer(Component c, Object constraints, int index) {
+    	if(getContainer()!=null) {
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,true);
+    		// add to container
+    		getContainer().add(c,constraints,index);
+    	}
+    }
+
+	public void removeFromContainer(int index) {
+    	if(getContainer()!=null) {
+    		// get component
+    		Component c = getComponent(index);
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,false);
+    		// remove from container
+    		getContainer().remove(index);
+    	}
 	}
 
-	public EnumSet<LayerCode> getMsoLayers() {
-		return msoLayers;
+	public void removeFromContainer(Component c) {
+    	if(getContainer()!=null) {
+        	// register this panel manager?
+    		if(!(getContainer() instanceof IPanelManager))
+    			install(c,false);
+    		// remove from container
+    		getContainer().remove(c);
+    	}
 	}
 
-	public void setMsoLayers(IDiskoMap map, EnumSet<LayerCode> layers) {
-		// unregister?
-		if(this.msoLayers!=null) {
-			// loop over all layers
-			for(LayerCode it: layers) {
-				IMsoFeatureLayer l = map.getMsoLayer(it);
-				if(l!=null) l.removeMsoLayerEventListener(this);
-			}
+	public void removeAllFromToContainer() {
+    	if(getContainer()!=null) {
+    		for(Component it : getContainer().getComponents())
+    			removeFromContainer(it);
+    	}
+	}
+
+	public boolean isContainerEnabled() {
+        return getContainer().isEnabled();
+    }
+
+    public void setContainerEnabled(Boolean isEnabled) {
+        getContainer().setEnabled(isEnabled);
+    }
+
+	public Dimension fitContainerToMinimumLayoutSize() {
+    	Dimension d = null;
+		Container c = getContainer();
+    	if(c!=null && c.getLayout()!=null) {
+    		d = c.getLayout().minimumLayoutSize(c);
+    		c.setSize(new Dimension(d.width,d.height));
+    		//c.setMinimumSize(new Dimension(d.width,d.height));
+    	}
+    	return d;
+    }
+
+	public Dimension fitContainerToPreferredLayoutSize() {
+    	Dimension d = null;
+		Container c = getContainer();
+		if(c!=null && c.getLayout()!=null) {
+    		d = c.getLayout().preferredLayoutSize(c);
+    		c.setSize(new Dimension(d.width,d.height));
+    		//c.setPreferredSize(new Dimension(d.width,d.height));
+    	}
+    	return d;
+    }
+
+	public Dimension fitContainerToMaximumLayoutSize() {
+    	Dimension d = null;
+		Container c = getContainer();
+    	if(c!=null && c.getLayout() instanceof LayoutManager2) {
+        	LayoutManager2 lm2 = (LayoutManager2)c.getLayout();
+    		d = lm2.maximumLayoutSize(c);
+    		c.setSize(new Dimension(d.width,d.height));
+    		//c.setMaximumSize(new Dimension(d.width,d.height));
+    	}
+    	return d;
+    }
+
+    public Dimension fitThisToMinimumContainerSize() {
+    	Dimension d = null;
+        if(getLayout()!=null) {
+        	d = getLayout().minimumLayoutSize(this);
+    		setSize(new Dimension(d.width,d.height));
+    		//setMinimumSize(new Dimension(d.width,d.height));
+        }
+        return d;
+    }
+
+    public Dimension fitThisToPreferredContainerSize() {
+    	Dimension d = null;
+        if(getLayout()!=null) {
+        	d = getLayout().preferredLayoutSize(this);
+    		setSize(new Dimension(d.width,d.height));
+    		//setPreferredSize(new Dimension(d.width,d.height));
+        }
+        return d;
+    }
+
+    public Dimension fitThisToMaximumContainerSize() {
+    	Dimension d = null;
+        if(getLayout() instanceof LayoutManager2) {
+        	LayoutManager2 lm2 = (LayoutManager2)getLayout();
+    		d = lm2.maximumLayoutSize(this);
+    		setSize(new Dimension(d.width,d.height));
+    		//setMaximumSize(new Dimension(d.width,d.height));
+        }
+        return d;
+    }
+
+	public IPanelManager getManager() {
+		return manager;
+	}
+
+	public void setParentManager(IPanelManager parent, boolean requestMoveTo, boolean setAll) {
+		// set parent manager
+		this.manager.setParentManager(parent);
+    	// forward to all descendants of container?
+		if(setAll) setParentManager(getContainer(),parent,requestMoveTo);
+	}
+
+    /* ==========================================================
+     *  IPanelManager interface implementation
+     * ========================================================== */
+
+    public boolean isRootManager() {
+    	return manager.isRootManager();
+    }
+
+	public IPanelManager getParentManager() {
+		return manager.getParentManager();
+	}
+
+	public IPanelManager setParentManager(IPanelManager parent) {
+		// set parent manager
+		IPanelManager old = this.manager.setParentManager(parent);
+    	// forward to all descendants of container
+        setParentManager(getContainer(),parent,false);
+        // finished
+        return old;
+	}
+
+	public boolean requestMoveTo(int x, int y, boolean isRelative) {
+		return getManager()!=null ? getManager().requestMoveTo(x,y,isRelative) : false;
+    }
+
+    public boolean requestResize(int w, int h, boolean isRelative) {
+		return getManager()!=null ? getManager().requestResize(w,h,isRelative) : false;
+    }
+
+	public boolean requestFitToMinimumContentSize(boolean pack) {
+		return (getManager()!=null ? getManager().requestFitToMinimumContentSize(false) : false);
+	}
+
+	public boolean requestFitToPreferredContentSize(boolean pack) {
+		return (getManager()!=null ? getManager().requestFitToPreferredContentSize(false) : false);
+	}
+
+	public boolean requestFitToMaximumContentSize(boolean pack) {
+		return (getManager()!=null ? getManager().requestFitToMaximumContentSize(false) : false);
+	}
+
+	public boolean requestShow() {
+		return (getManager()!=null ? getManager().requestShow() : false);
+    }
+
+    public boolean requestHide() {
+		return (getManager()!=null ? getManager().requestShow() : false);
+    }
+
+	/* ===========================================
+	 * IMsoUpdateListenerIf implementation
+	 * =========================================== */
+
+	public EnumSet<MsoClassCode> getInterests() {
+		return msoInterests;
+	}
+
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		// consume?
+		if(!isChangeable()) return;
+
+		// loop over all events
+		for(MsoEvent.Update e : events.getEvents(msoInterests)) {
+
+			// consume loopback updates
+			if(!e.isLoopback()) {
+
+				// get mask
+				int mask = e.getEventTypeMask();
+
+		        // get mso object
+		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
+
+		        // get flag
+		        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
+
+		        // clear all?
+		        if(clearAll) {
+		        	msoObjectClearAll(this.msoObject,mask);
+		        }
+		        else {
+		        	// get flags
+			        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
+			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
+			        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
+			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
+			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+
+			        // add object?
+					if (createdObject) {
+						msoObjectCreated(msoObj,mask);
+					}
+					// is object modified?
+					if ( (addedReference || removedReference || modifiedObject)) {
+						msoObjectChanged(msoObj,mask);
+					}
+					// delete object?
+					if (deletedObject) {
+						msoObjectDeleted(msoObj,mask);
+					}
+		        }
+
+	        }
 		}
-		this.msoLayers = layers!=null ? layers : EnumSet.noneOf(LayerCode.class);
-		// register?
-		if(layers!=null) {
-			// loop over all layers
-			for(LayerCode it: layers) {
-				IMsoFeatureLayer l = map.getMsoLayer(it);
-				if(l!=null) l.addMsoLayerEventListener(this);
-			}
-		}
 	}
 
+	/* ===========================================
+	 * IMsoLayerEventListener implementation
+	 * =========================================== */
+
+	public void onSelectionChanged(MsoLayerEvent e) {
+		if (!e.isFinal()) return;
+		try {
+			// initialize
+			IMsoObjectIf msoObj = null;
+			List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
+			// select new?
+			if (selection != null && selection.size() > 0) {
+				// get mso object
+				msoObj = selection.get(0);
+			}
+			// forward
+			setMsoObject(msoObj);
+		} catch (AutomationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 
 	/* ===========================================
 	 * ActionListener implementation
@@ -370,10 +636,66 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 	}
 
 	/* ===========================================
+	 * Overridden methods
+	 * =========================================== */
+
+	@Override
+	public Component add(Component comp, int index) {
+		install(comp,true);
+		return super.add(comp, index);
+	}
+
+	@Override
+	public void add(Component comp, Object constraints, int index) {
+		install(comp,true);
+		super.add(comp, constraints, index);
+	}
+
+	@Override
+	public void add(Component comp, Object constraints) {
+		install(comp,true);
+		super.add(comp, constraints);
+	}
+
+	@Override
+	public Component add(Component comp) {
+		install(comp,true);
+		return super.add(comp);
+	}
+
+	@Override
+	public Component add(String name, Component comp) {
+		install(comp,true);
+		return super.add(name, comp);
+	}
+
+	@Override
+	public void remove(Component comp) {
+		install(comp,false);
+		super.remove(comp);
+	}
+
+	@Override
+	public void remove(int index) {
+		install(getComponent(index),false);
+		super.remove(index);
+	}
+
+	@Override
+	public void removeAll() {
+		// loop over all components
+		for(Component it : getComponents()) {
+			install(it,false);
+		}
+		// TODO Auto-generated method stub
+		super.removeAll();
+	}
+
+	/* ===========================================
 	 * Protected methods
 	 * =========================================== */
 
-	protected abstract void fireActionEvent(ActionEvent e);
+	protected abstract void fireActionEvent(ActionEvent e, boolean validate);
 
 	protected abstract void fireOnWorkFinish(Object source, Object data);
 
@@ -390,36 +712,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 			update();
 			setChangeable(true);
 		}
-	}
-
-	protected boolean requestShow() {
-		if(getManager()!=null)
-			return getManager().requestShow();
-		return false;
-	}
-
-	protected boolean requestHide() {
-		if(getManager()!=null)
-			return getManager().requestHide();
-		return false;
-	}
-
-	protected boolean requestMoveTo(int dx, int dy, boolean isRelative) {
-		if(getManager()!=null)
-			return getManager().requestMoveTo(dx, dy, isRelative);
-		return false;
-	}
-
-	protected boolean requestResize(int w, int h, boolean isRelative) {
-		if(getManager()!=null)
-			return getManager().requestResize(w, h, isRelative);
-		return false;
-	}
-
-	protected boolean requestFitToContent() {
-		if(getManager()!=null)
-			return getManager().requestFitToContent();
-		return false;
 	}
 
 	protected boolean beforeFinish() {
@@ -466,4 +758,87 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IMsoHolder
 			setMsoObject(null);
 		}
 	}
+
+	protected void setParentManager(Container container, IPanelManager parent, boolean requestMoveTo) {
+        for(Component it : container.getComponents()) {
+            if(it instanceof IPanel) {
+                ((IPanel)it).setParentManager(parent, false, false);
+            }
+            else if(it instanceof Container){
+            	setParentManager((Container)it,parent,requestMoveTo);
+            }
+        }
+    }
+
+	protected boolean install(Component c, boolean set) {
+		// initialize flag
+		boolean bFlag = false;
+		// instance of IPanel?
+		if(c instanceof IPanel) {
+			// cast to IPanel
+			IPanel panel = (IPanel)c;
+			// set or reset?
+			if(set) {
+				panel.setParentManager(getManager(), false, false);
+				panel.addActionListener(m_listener);
+				bFlag = true;
+			}
+			else {
+				// is managed by this manager?
+				if(panel.getParentManager()==getManager()) {
+					panel.setParentManager(null, false, false);
+					bFlag = true;
+				}
+				panel.removeActionListener(m_listener);
+			}
+		}
+		return bFlag;
+	}
+
+	/* ===========================================
+	 * Anonymous classes
+	 * =========================================== */
+
+	private final ActionListener m_listener = new ActionListener() {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			fireActionEvent(e, false);
+		}
+
+	};
+
+	/**
+	 * The main method.
+	 *
+	 * @param args
+	 */
+	/*
+	public static void main(String[] args)
+	{
+
+		UIFactory.initLookAndFeel();
+
+		// initialize GUI on new thread
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+
+				if(false) {
+
+					final JDialog dialog = new JDialog();
+
+					final JPanel content = new JPanel(new BorderLayout());
+
+					content.setLayout(new BorderLayout());
+					content.add(new JPanel(),BorderLayout.NORTH);
+					content.add(new JPanel(),BorderLayout.CENTER);
+
+
+				}
+			}
+		});
+	}
+	*/
 }

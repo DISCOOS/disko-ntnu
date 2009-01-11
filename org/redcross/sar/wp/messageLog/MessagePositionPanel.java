@@ -87,9 +87,9 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 		// prepare
 		setHeaderVisible(false);
 		setBorderVisible(false);
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		setPreferredSize(new Dimension(400,115));
-		setPreferredBodySize(new Dimension(400,115));
+		setPreferredContainerSize(new Dimension(400,115));
 
 		// hide me
 		setVisible(false);
@@ -111,9 +111,9 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 		outer.add(getOptionsPanel());
 		outer.add(Box.createVerticalStrut(5));
 		outer.add(inner);
-		setBodyLayout(new BorderLayout(5,5));
-		addBodyChild(outer,BorderLayout.CENTER);
-		addBodyChild(getActionsPanel(),BorderLayout.EAST);
+		setContainerLayout(new BorderLayout(5,5));
+		addToContainer(outer,BorderLayout.CENTER);
+		addToContainer(getActionsPanel(),BorderLayout.EAST);
 
 	}
 
@@ -210,8 +210,9 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 		if (m_gotoPanel == null) {
 			// get from position panel
 			m_gotoPanel = getPositionPanel().getGotoPanel();
-			// get hide goto button
+			// hide buttons
 			m_gotoPanel.setGotoButtonVisible(false);
+			m_gotoPanel.setButtonVisible("toggle",false);
 			// turn off vertical scrollbar
 			m_gotoPanel.setNotScrollBars();
 			// set preferred size of body component

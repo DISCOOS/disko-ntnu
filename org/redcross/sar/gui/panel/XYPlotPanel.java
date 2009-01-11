@@ -106,7 +106,7 @@ public class XYPlotPanel extends BasePanel {
 	        ChartPanel panel = createChartPanel(chart);
 	        
 	        // set as body panel
-	        setBodyComponent(panel);
+	        setContainer(panel);
 	        
 	        // set fixed size equal available body size
 	        Utils.setFixedSize(panel,getWidth(),getHeight()-getHeaderPanel().getHeight());

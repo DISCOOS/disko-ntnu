@@ -180,7 +180,7 @@ public class ETEPanel extends JPanel
     		});
 
         	  // add attributes
-        	m_etePanel.setBodyComponent(getEtePropPanel());
+        	m_etePanel.setContainer(getEtePropPanel());
 
         }
         return m_etePanel;

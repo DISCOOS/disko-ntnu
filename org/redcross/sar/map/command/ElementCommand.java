@@ -49,7 +49,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		try {
 			if (obj instanceof JComponent) {
 				ElementDialog elementDialog = (ElementDialog)dialog;
-				elementDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, 0, true);
+				elementDialog.setSnapToLocation((JComponent)obj, DefaultDialog.POS_EAST, 0, true, false);
 			}
 		}
 		catch (Exception e) {

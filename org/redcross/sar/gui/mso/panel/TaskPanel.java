@@ -46,12 +46,12 @@ import org.redcross.sar.wp.tasks.TaskUtilities;
 public class TaskPanel extends DefaultPanel
 {
 	private static final long serialVersionUID = 1L;
-	
-    public final static String bundleName = 
-    	"org.redcross.sar.gui.properties.TaskDialog";    
-    private static final ResourceBundle m_resources = 
+
+    public final static String bundleName =
+    	"org.redcross.sar.gui.properties.TaskDialog";
+    private static final ResourceBundle m_resources =
     	Internationalization.getBundle(TaskPanel.class);
-	
+
 	private ITaskIf m_currentTask;
 
 	private TextLineField m_nameField;
@@ -76,26 +76,26 @@ public class TaskPanel extends DefaultPanel
 	{
 		// forward
     	super("Oppgave");
-    	
+
 		// initialize gui
 		initialize();
 	}
 
-    
-    
-    
+
+
+
 	private void initialize()
 	{
 
 		// prepare
 		this.setNotScrollBars();
-		
+
 		// get body component
-		JPanel panel = (JPanel)getBodyComponent();
+		JPanel panel = (JPanel)getContainer();
 		panel.setPreferredSize(new Dimension(500, 320));
 		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		
+
 		// add panels
 		panel.add(getNameField());
 		panel.add(Box.createVerticalStrut(5));
@@ -105,7 +105,7 @@ public class TaskPanel extends DefaultPanel
 		panel.add(Box.createVerticalGlue());
 
 	}
-	
+
 	private JPanel getNameField() {
 		if(m_nameField==null) {
 			m_nameField = new TextLineField("name",m_resources.getString("Task.text"),true);
@@ -113,9 +113,9 @@ public class TaskPanel extends DefaultPanel
 		}
 		return m_nameField;
 	}
-	
+
 	private JPanel getCenterPanel() {
-		
+
 		if(m_centerPanel == null) {
 			m_centerPanel = new JPanel();
 			m_centerPanel.setLayout(new BoxLayout(m_centerPanel,BoxLayout.X_AXIS));
@@ -125,15 +125,15 @@ public class TaskPanel extends DefaultPanel
 		}
 		return m_centerPanel;
 	}
-	
+
 	private JPanel getWestPanel() {
-		
+
 		if(m_westPanel == null) {
-			
+
 			// create panel
 			m_westPanel = new JPanel();
 			m_westPanel.setLayout(new BoxLayout(m_westPanel,BoxLayout.Y_AXIS));
-		
+
 			// Type (0,0)
 			m_typeCombo = new ComboBoxField("type",m_resources.getString("TaskType.text"),false);
 			m_typeCombo.fill(TaskType.values());
@@ -148,7 +148,7 @@ public class TaskPanel extends DefaultPanel
 			});
 			m_typeCombo.addWorkFlowListener(this);
 			m_westPanel.add(m_typeCombo);
-			
+
 			// Created date
 			m_createdField = new DTGField("created",m_resources.getString("TaskCreated.text"),false);
 			m_createdField.addWorkFlowListener(this);
@@ -165,14 +165,14 @@ public class TaskPanel extends DefaultPanel
 			{
 				e1.printStackTrace();
 			}
-			m_responsibleCombo = new ComboBoxField("responsible", 
+			m_responsibleCombo = new ComboBoxField("responsible",
 					m_resources.getString("TaskResponsible.text"),false);
 			m_responsibleCombo.fill(responsible);
 			m_responsibleCombo.getComboBox().setSelectedIndex(0);
 			m_responsibleCombo.addWorkFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_responsibleCombo);
-			
+
 			// Status
 			TaskStatus[] statusItems =
 			{
@@ -205,15 +205,15 @@ public class TaskPanel extends DefaultPanel
 		}
 		return m_westPanel;
 	}
-	
+
 	private JPanel getEastPanel() {
-		
+
 		if(m_eastPanel==null) {
-			
+
 			// create panel
 			m_eastPanel = new JPanel();
 			m_eastPanel.setLayout(new BoxLayout(m_eastPanel,BoxLayout.Y_AXIS));
-			
+
 			// Priority
 			m_priorityCombo = new ComboBoxField("priority",m_resources.getString("TaskPriority.text"),false);
 			m_priorityCombo.fill(TaskPriority.values());
@@ -240,8 +240,8 @@ public class TaskPanel extends DefaultPanel
 			m_alertCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_alertCombo);
-			
-			// Progress 
+
+			// Progress
 			String[] progressItems = {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "50%", "80%", "90%", "100%"};
 			m_progressCombo = new ComboBoxField("progress",m_resources.getString("TaskProgress.text"),false);
 			m_progressCombo.fill(progressItems);
@@ -249,20 +249,20 @@ public class TaskPanel extends DefaultPanel
 			m_progressCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_progressCombo);
-		
+
 		}
 		return m_eastPanel;
 	}
-	
+
 	private JPanel getBottomPanel() {
-		
+
 		if(m_bottomPanel==null) {
 
 			// create panel
 			m_bottomPanel = new JPanel();
 			m_bottomPanel.setLayout(new BoxLayout(m_bottomPanel,BoxLayout.Y_AXIS));
 			Utils.setFixedSize(m_bottomPanel,490,250);
-			
+
 			// Description
 			m_descriptionArea = new TextAreaField("description",
 					m_resources.getString("TaskDescription.text"),true);
@@ -270,8 +270,8 @@ public class TaskPanel extends DefaultPanel
 			m_descriptionArea.getTextArea().setRows(0);
 
 			// add button
-			String text = m_resources.getString("TaskUseSource.text");
-			m_useSourceButton = DiskoButtonFactory.createButton(text,text,null,getButtonSize());
+			//String text = m_resources.getString("TaskUseSource.text");
+			m_useSourceButton = DiskoButtonFactory.createButton("GENERAL.EQUAL",getButtonSize());
 			m_useSourceButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -293,8 +293,8 @@ public class TaskPanel extends DefaultPanel
 			m_descriptionArea.installButton(m_useSourceButton, true);
 			m_descriptionArea.addWorkFlowListener(this);
 			m_bottomPanel.add(m_descriptionArea);
-			
-			
+
+
 			// Source
 			m_sourceArea = new  TextAreaField("source",
 					m_resources.getString("TaskSource.text"),false);
@@ -313,10 +313,10 @@ public class TaskPanel extends DefaultPanel
 		}
 		return m_bottomPanel;
 	}
-	
+
 	protected boolean beforeFinish() {
 
-		// validate 
+		// validate
 		if(timesValid())  {
 			// apply change
 			saveTask();
@@ -329,10 +329,10 @@ public class TaskPanel extends DefaultPanel
 				m_resources.getString("TimeError.text"));
 		// failed
 		return false;
-		
+
 	}
 
-	
+
 	@Override
 	public void setMsoObject(IMsoObjectIf msoObj) {
 		// forward?
@@ -343,10 +343,10 @@ public class TaskPanel extends DefaultPanel
 	{
 		// forward
 		super.setMsoObject(task);
-		
+
 		// save locally
 		m_currentTask = task;
-		
+
 		// prepare
 		updateFieldContents();
 		updateFieldsEditable();
@@ -546,7 +546,7 @@ public class TaskPanel extends DefaultPanel
 
 			// initialize text
 			String source = m_currentTask.getSourceClassText();
-			
+
 			// get more source information?
 			if(m_currentTask instanceof TaskImpl) {
 				// get source object
@@ -559,18 +559,18 @@ public class TaskPanel extends DefaultPanel
 					source = MsoUtils.getMessageText(message);
 					// default message
 					source = "Melding " + message.getNumber() + ": " + (source!=null && !source.isEmpty() ? source : "<Ingen meldingslinjer>");
-				}				
+				}
 			}
 			else {
 			}
-			
+
 			// save source text
 			m_sourceArea.setValue(source);
 
 			// Object
 			IMsoObjectIf object = m_currentTask.getDependentObject();
 			m_objectField.setValue(object == null ? "" : MsoUtils.getMsoObjectName(object,1));
-			
+
 		}
 		else
 		{
@@ -590,7 +590,7 @@ public class TaskPanel extends DefaultPanel
 		updateDueComboBox();
 		updateAlertComboBox();
 	}
-	
+
 	private void updateDueComboBox()
 	{
 		m_dueCombo.getComboBox().removeAllItems();

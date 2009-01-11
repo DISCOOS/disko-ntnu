@@ -12,8 +12,13 @@ import java.util.List;
  * @author kennetgu
  *
  */
-public class EnumHistory<T extends Enum<T>>
+public class EnumHistory<E extends Enum<E>>
 {
+
+	/**
+	 * Initial enum value
+	 */
+	private Sample m_head;
 
     /**
      * List of status changes since creation
@@ -24,12 +29,30 @@ public class EnumHistory<T extends Enum<T>>
      * Public methods
      * ================================================================== */
 
-    public boolean add(T value, Calendar t)
+    public E getHeadValue() {
+    	return m_head.m_enum;
+    }
+
+    public Calendar getHeadTime() {
+    	return m_head.m_t;
+    }
+
+    /**
+     * set time stamp for initial status
+     */
+    public void setHead(E value, Calendar t) {
+    	if(m_head!=null) {
+    		m_history.remove(m_head);
+    	}
+    	m_history.add(0,new Sample(value,t));
+    }
+
+    public boolean add(E value, Calendar t)
     {
     	return m_history.add(new Sample(value,t));
     }
 
-    public List<Calendar> getHistory(T value) {
+    public List<Calendar> getHistory(E value) {
     	List<Calendar> list = new ArrayList<Calendar>(m_history.size()/2);
     	for(Sample it : m_history) {
     		if(it.m_enum.equals(value))
@@ -38,14 +61,14 @@ public class EnumHistory<T extends Enum<T>>
     	return list;
     }
 
-    public Calendar getFirstTime(T aStatus)
+    public Calendar getFirstTime(E aStatus)
     {
     	List<Calendar> list = getHistory(aStatus);
     	return list.size()>0 ? list.get(0) : null;
     }
 
 
-    public Calendar getLastTime(T aStatus)
+    public Calendar getLastTime(E aStatus)
     {
     	List<Calendar> list = getHistory(aStatus);
     	return list.size()>0 ? list.get(list.size()-1) : null;
@@ -60,9 +83,9 @@ public class EnumHistory<T extends Enum<T>>
      *
      * @return Duration (second)
      */
-	public double getDuration(EnumSet<T> aList, boolean total) {
+	public double getDuration(EnumSet<E> aList, boolean total) {
 		double t = 0.0;
-		for(T it : aList) {
+		for(E it : aList) {
 			t += getDuration(it, total);
 		}
 		return t;
@@ -77,7 +100,7 @@ public class EnumHistory<T extends Enum<T>>
      *
      * @return Duration (second)
      */
-	public double getDuration(T aStatus, boolean total) {
+	public double getDuration(E aStatus, boolean total) {
 
 		// initialize
 		long tic = 0;
@@ -139,10 +162,10 @@ public class EnumHistory<T extends Enum<T>>
     class Sample
     {
 
-    	final T m_enum;
+    	final E m_enum;
     	final Calendar m_t;
 
-    	Sample(T value, Calendar t) {
+    	Sample(E value, Calendar t) {
     		m_enum = value;
     		m_t = t;
 

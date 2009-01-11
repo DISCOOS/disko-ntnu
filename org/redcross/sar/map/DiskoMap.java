@@ -1708,7 +1708,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 			// create
 			elementDialog = new ElementDialog(Utils.getApp().getFrame());
-			elementDialog.setSnapTo(this,DefaultDialog.POS_EAST, 0, true);
+			elementDialog.setSnapToLocation(this,DefaultDialog.POS_EAST, 0, true, false);
 
 		}
 		return elementDialog;
@@ -1738,7 +1738,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 			// create new snap dialog
 	        snapDialog = new SnapDialog(Utils.getApp().getFrame());
-	        snapDialog.setSnapTo(this,DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_LIMIT, true);
+	        snapDialog.setSnapToLocation(this,DefaultDialog.POS_WEST, 0, true, false);
 
 		}
 		return snapDialog;

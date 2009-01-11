@@ -1,14 +1,11 @@
 package org.redcross.sar.gui.mso.panel;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -36,6 +33,10 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	private TextLineField maxStepAttr;
 	private CheckBoxField constraintAttr;
 
+	/* ===========================================
+	 * Constructors
+	 * =========================================== */
+
 	public FreeHandPanel(FreeHandTool tool) {
 		// forward
 		this("Tegne frihånd",tool);
@@ -50,6 +51,10 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		initialize();
 	}
 
+	/* ===========================================
+	 * Private methods
+	 * =========================================== */
+
 	/**
 	 * This method initializes this
 	 *
@@ -57,12 +62,13 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	private void initialize() {
 
 		// prepare
-		setFitBodyOnResize(true);
-		setPreferredSize(new Dimension(300,135));
-		setBodyComponent(getOptionsPanel());
+		setContainer(getOptionsPanel());
 
 		// add buttons
 		insertButton("finish",getSnapToButton(),"snapto");
+
+		// set toggle limits
+		setToggleLimits(280,minimumCollapsedHeight,true);
 
 	}
 
@@ -76,23 +82,13 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 			try {
 
 				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
-				optionsPanel.setFitBodyOnResize(true);
+				optionsPanel.setPreferredExpandedHeight(180);
 				optionsPanel.setButtonVisible("toggle", true);
-				optionsPanel.setPreferredSize(new Dimension(290, 100));
 				optionsPanel.addField(getSnapToAttr());
 				optionsPanel.addField(getConstraintAttr());
 				optionsPanel.addField(getMinStepAttr());
 				optionsPanel.addField(getMaxStepAttr());
-				optionsPanel.addChangeListener(new ChangeListener() {
-
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
-					}
-
-				});
-
+				optionsPanel.addToggleListener(toggleListener);
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -132,7 +128,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 
 				public void actionPerformed(ActionEvent e) {
 					// forward
-					fireActionEvent(e);
+					fireActionEvent(e, true);
 				}
 
 			});
@@ -233,10 +229,6 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		return snapToButton;
 	}
 
-	/* ===========================================
-	 * Private methods
-	 * ===========================================
-	 */
 
 	private void doSnapTo() {
 		// get adapter
@@ -275,14 +267,8 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	}
 
 	/* ===========================================
-	 * Overridden public methods
-	 * ===========================================
-	 */
-
-	/* ===========================================
 	 * SnapListener interface implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	public void onSnapToChanged() {
 		// get adapter
@@ -301,8 +287,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 
 	/* ===========================================
 	 * IPropertyPanel interface implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	@Override
 	public FreeHandTool getTool() {

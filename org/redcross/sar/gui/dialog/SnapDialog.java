@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import org.redcross.sar.gui.panel.SnapPanel;
-import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
@@ -77,22 +76,5 @@ public class SnapDialog extends DefaultDialog  {
 		}
 		return m_snapPanel;
 	}
-
-	@Override
-	public boolean requestFitToContent() {
-		if(getSnapPanel().isExpanded()) {
-			// get size
-			int h = getSnapPanel().getPreferredSize().height;
-			int w = getSnapPanel().getPreferredSize().width;
-			// update
-			Utils.setAnySize(SnapDialog.this,w,h);
-		}
-		else {
-			// update
-			Utils.setAnySize(SnapDialog.this,getSnapPanel().getWidth(),36);
-		}
-		return true;
-	}
-
 
 }  //  @jve:decl-index=0:visual-constraint="23,0"

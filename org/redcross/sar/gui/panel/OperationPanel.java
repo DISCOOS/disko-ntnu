@@ -35,7 +35,7 @@ public class OperationPanel extends DefaultPanel {
 		// insert button
 		insertButton("finish", getCreateButton(), "create");
 		// set table
-		setBodyComponent(getTable());
+		setContainer(getTable());
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class OperationPanel extends DefaultPanel {
 	}
 	
 	@Override
-	public void setPreferredBodySize(Dimension dimension) {
+	public void setPreferredContainerSize(Dimension dimension) {
 		getTable().setPreferredSize(dimension);
 		getTable().setPreferredScrollableViewportSize(dimension);
 		getScrollPane().setPreferredSize(dimension);

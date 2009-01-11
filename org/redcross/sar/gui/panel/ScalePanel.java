@@ -67,8 +67,10 @@ public class ScalePanel extends TogglePanel {
 		try {
 
 			// create content
-			setFitBodyOnResize(true);
-			setBodyComponent(getScaleListPanel());
+			setContainer(getScaleListPanel());
+
+			// set toggle limits
+			setToggleLimits(210,minimumCollapsedHeight,true);
 
 		}
 		catch (java.lang.Throwable e) {

@@ -97,8 +97,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// initialize objects
 		dialogs = new ArrayList<DefaultDialog>();
 
-		// init GUI
+		// initialize GUI
 		initialize();
+
 	}
 
 	private static EnumSet<MsoClassCode> getWpInterests() {
@@ -163,7 +164,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMap().getDrawAdapter().addDrawAdapterListener(this);
 
 		// add map dialogs
-		dialogs.add(getMap().getDrawDialog());
 		dialogs.add(getMap().getElementDialog());
 
 	}
@@ -313,7 +313,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 								e.printStackTrace();
 							}
 							HypothesisDialog dialog = getHypothesesDialog();
-							dialog.setSnapTo((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
+							dialog.setSnapToLocation((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
 							dialog.setVisible(true);
 							return false;
 						}
@@ -548,7 +548,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PromptDialog getDraftListDialog() {
 		if (draftListDialog == null) {
 			draftListDialog = new PromptDialog(this);
-			draftListDialog.setSnapTo((DiskoMap)getMap(),DefaultDialog.POS_CENTER, 0, true);
+			draftListDialog.setSnapToLocation((DiskoMap)getMap(),DefaultDialog.POS_CENTER, 0, true, false);
 			dialogs.add(draftListDialog);
 		}
 		return draftListDialog;
@@ -603,6 +603,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
+							//dialog.setSnapTo(elementToggleButton, ElementDialog.P, sizeTo, snapToInside)
+
 							java.awt.Point p = elementToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
@@ -656,8 +658,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						if (descriptionToggleButton.isSelected() && dialog.isVisible()) {
 							dialog.setVisible(false);
 						} else {
-							dialog.setSnapTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
+							dialog.setSnapToLocation((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -686,7 +688,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							hypotheseToggleButton.setSelected(false);
 						}
 						else {
-							dialog.setSnapTo(mapComp,DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
+							dialog.setSnapToLocation(mapComp,DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -713,7 +715,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setSnapTo(mapComp,DefaultDialog.POS_CENTER, 0, true);
+							dialog.setSnapToLocation(mapComp,DefaultDialog.POS_CENTER, 0, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -740,8 +742,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setSnapTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
+							dialog.setSnapToLocation((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -796,8 +798,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setSnapTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
+							dialog.setSnapToLocation((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -851,8 +853,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setSnapTo((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true);
+							dialog.setSnapToLocation((JComponent) getMap(),
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
 							/*
 							java.awt.Point p = unitToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);

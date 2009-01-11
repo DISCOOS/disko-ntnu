@@ -84,7 +84,7 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 			contentPanel.insertButton("finish", 
 					DiskoButtonFactory.createButton("GENERAL.SYNCHRONIZE",contentPanel.getButtonSize()), 
 					"synchronize");
-			contentPanel.setBodyComponent(getTabbedPane());
+			contentPanel.setContainer(getTabbedPane());
 			contentPanel.setScrollBarPolicies(
 					JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -140,7 +140,7 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 				sourcePanel = new DefaultPanel("",false,false);
 				sourcePanel.setHeaderVisible(false);
 				sourcePanel.setBorderVisible(false);
-				sourcePanel.setBodyComponent(getMapSourceTable());
+				sourcePanel.setContainer(getMapSourceTable());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}		

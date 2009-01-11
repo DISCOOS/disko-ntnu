@@ -65,7 +65,7 @@ public class UnitsPanel extends BasePanel {
 				String cmd = e.getActionCommand();
 				if(cmd.equalsIgnoreCase("toggle")) {
 					// get list
-					JComponent list = (JComponent)getBodyComponent();
+					JComponent list = (JComponent)getContainer();
 					// initialize
 					int w = 0;
 					int h = 0;
@@ -106,7 +106,7 @@ public class UnitsPanel extends BasePanel {
 		setScrollBarPolicies(
 				BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 				BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-		JComponent items = (JComponent)getBodyComponent();
+		JComponent items = (JComponent)getContainer();
 		items.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		items.setLayout(new BoxLayout(items,BoxLayout.Y_AXIS));
 	}
@@ -143,7 +143,7 @@ public class UnitsPanel extends BasePanel {
 
 	private void arrange() {
 		// get items panel
-		JComponent items = (JComponent)getBodyComponent();
+		JComponent items = (JComponent)getContainer();
 		// get total items count
 		int count = items.getComponentCount();
 		// loop over all and remove listeners

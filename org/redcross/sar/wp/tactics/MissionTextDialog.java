@@ -125,7 +125,7 @@ public class MissionTextDialog extends DefaultDialog {
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
-				contentPanel.setBodyComponent(getTextArea());
+				contentPanel.setContainer(getTextArea());
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

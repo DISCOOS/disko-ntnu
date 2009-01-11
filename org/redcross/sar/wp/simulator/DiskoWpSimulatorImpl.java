@@ -282,7 +282,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 
     		});
         	// add attributes
-        	m_controlPanel.setBodyComponent(getSimAttribsPanel());
+        	m_controlPanel.setContainer(getSimAttribsPanel());
 
         }
         return m_controlPanel;

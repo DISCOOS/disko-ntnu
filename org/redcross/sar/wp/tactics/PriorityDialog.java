@@ -134,7 +134,7 @@ public class PriorityDialog extends DefaultDialog {
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
-				contentPanel.setBodyComponent(getPriorityList());
+				contentPanel.setContainer(getPriorityList());
 				
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

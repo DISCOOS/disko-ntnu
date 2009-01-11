@@ -4,21 +4,15 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.redcross.sar.gui.DiskoBorder;
-import org.redcross.sar.gui.panel.AbstractPanel;
-import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.gui.panel.MapFilterPanel;
 import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.map.event.DiskoMapEvent;
 import org.redcross.sar.map.event.IDiskoMapListener;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
 
 import com.esri.arcgis.interop.AutomationException;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
 /**
@@ -27,7 +21,7 @@ import java.io.IOException;
  * @author kennetgu
  *
  */
-public class MapPanel extends AbstractPanel {
+public class MapPanel extends JPanel{
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,6 +31,9 @@ public class MapPanel extends AbstractPanel {
 	private IDiskoMap map;
 	private JPanel northBar;
 	private JPanel southBar;
+
+	//private EnumSet<LayerCode> msoLayers;
+
 	private MapStatusPanel mapStatusBar;
 	private MapFilterPanel mapFilterBar;
 
@@ -55,7 +52,20 @@ public class MapPanel extends AbstractPanel {
 
 		// prepare
 		this.map = map;
-		this.setMsoLayers(map, map.getSupportedLayers());
+
+		/*
+		this.msoLayers = map.getSupportedLayers();
+
+		// register?
+		if(msoLayers!=null) {
+			// loop over all layers
+			for(LayerCode it: msoLayers) {
+				IMsoFeatureLayer l = map.getMsoLayer(it);
+				if(l!=null) l.addMsoLayerEventListener(listener);
+			}
+		}
+		*/
+
 
 		// initialize GUI
 		initialize(showBorder);
@@ -178,90 +188,6 @@ public class MapPanel extends AbstractPanel {
 		getSouthBar().setVisible(isVisible);
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void addActionListener(ActionListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void addWorkFlowListener(IWorkFlowListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean doAction(String command) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	protected void fireActionEvent(ActionEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void fireOnWorkCancel(Object source, Object data) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void fireOnWorkChange(Object source, Object data) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void fireOnWorkFinish(Object source, Object data) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void fireOnWorkPerformed(WorkFlowEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public IPanelManager getManager() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void removeActionListener(ActionListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void removeWorkFlowListener(IWorkFlowListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setManager(IPanelManager manager, boolean isMainPanel) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void update() {
-		// TODO Auto-generated method stub
-
-	}
-
 	/* ===========================================
 	 * IChangeable implementation
 	 * =========================================== */
@@ -273,5 +199,19 @@ public class MapPanel extends AbstractPanel {
 	public void setMarked(int isMarked) {
 		m_isMarked = isMarked;
 	}
+
+	/*
+
+	IMsoLayerEventListener listener = new IMsoLayerEventListener() {
+
+		@Override
+		public void onSelectionChanged(MsoLayerEvent e) throws IOException,
+				AutomationException {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+	*/
 
 }

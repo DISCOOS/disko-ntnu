@@ -30,10 +30,13 @@ public interface IDialog extends IChangeable, IPanelManager {
 	public int isMarkedOn();
 	public int setMarkedOn(int isMarkedOn);
 
+	public boolean isVisible();
+	public void setVisible(boolean isVisible);
+
 	public void cancelSetVisible();
 	public void delayedSetVisible(boolean isVisible, int millisToShow);
 
-	public void setSnapTo(Component buddy, int policy, int sizeTo, boolean snapToInside);
+	public void setSnapToLocation(Component snapTo, int position, int sizeTo, boolean snapToInside, boolean isSnapToLocked);
 
 	public boolean isWorkSupported();
 

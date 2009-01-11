@@ -248,7 +248,7 @@ public class EnumField extends AbstractField {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getSelectorDialog().setSnapTo(getButton(), DefaultDialog.POS_WEST, 0, false);
+				getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
 				Enum<?> value = (Enum<?>)getSelectorDialog().select();
 				if(value!=null) {
 					setValue(value);

@@ -16,6 +16,7 @@ import javax.swing.JTextField;
 
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -116,7 +117,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
         m_releasedTextField.setEditable(false);
         layoutComponent(4, m_resources.getString("Released.text"), m_releasedTextField, gbc, 1);
 
-        JScrollPane mainPanel = new JScrollPane();
+        JScrollPane mainPanel = UIFactory.createScrollPane(this);
         mainPanel.setViewportView(this);
     }
 

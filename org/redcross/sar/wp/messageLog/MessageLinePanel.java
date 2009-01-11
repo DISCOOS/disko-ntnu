@@ -8,6 +8,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import org.redcross.sar.gui.DiskoBorder;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMessageLineIf;
 import org.redcross.sar.mso.data.IMessageLineListIf;
@@ -55,7 +56,7 @@ public class MessageLinePanel extends JPanel implements IEditorIf
 		m_table.setDefaultRenderer(IMessageLineIf.class, new MessageLineTableRenderer());
 		m_table.setTableHeader(null);
 		m_table.setRowHeight(32);
-		m_textScrollPane = new JScrollPane(m_table);
+		m_textScrollPane = UIFactory.createScrollPane(m_table);
 		m_textScrollPane.setBorder(new DiskoBorder());
 		m_table.setFillsViewportHeight(true);
 		m_table.setColumnSelectionAllowed(false);

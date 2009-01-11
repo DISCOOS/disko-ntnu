@@ -38,7 +38,7 @@ public class AssignmentsPanel extends BasePanel {
 		setPreferredSize(d);
 		setMinimumSize(d);
 		// set body component
-		setBodyComponent(getTable());
+		setContainer(getTable());
 		// set scroll bar policies
 		setScrollBarPolicies(
 				BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,

@@ -29,6 +29,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.mso.model.HypothesisListModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
@@ -80,7 +81,7 @@ public class HypothesisDialog extends DefaultDialog {
 		this.wp = wp;
 		// setup objects
 		this.msoModel = wp.getMsoModel();
-		// initialize gu
+		// initialize GUI
 		initialize();
 		// initialize data
 		setup();
@@ -187,7 +188,7 @@ public class HypothesisDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setInterests(msoModel,getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
-				contentPanel.setBodyComponent(getHypothesisPanel());
+				contentPanel.setContainer(getHypothesisPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -295,10 +296,9 @@ public class HypothesisDialog extends DefaultDialog {
 	private JScrollPane getListScrollPane() {
 		if (listScrollPane == null) {
 			try {
-				listScrollPane = new JScrollPane();
+				listScrollPane = UIFactory.createScrollPane(getHypothesisList(),true);
 				listScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				listScrollPane.setPreferredSize(new Dimension(150, 150));
-				listScrollPane.setViewportView(getHypothesisList());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -384,7 +384,7 @@ public class HypothesisDialog extends DefaultDialog {
 		if (descriptionPanel == null) {
 			try {
 				descriptionPanel = new BasePanel("Beskrivelse");
-				descriptionPanel.setBodyComponent(getDescriptionTextArea());
+				descriptionPanel.setContainer(getDescriptionTextArea());
 				descriptionPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 			} catch (java.lang.Throwable e) {
@@ -437,7 +437,6 @@ public class HypothesisDialog extends DefaultDialog {
 			try {
 				attribsPanel = new FieldsPanel("Egenskaper","",false,false);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
-				attribsPanel.setFitBodyOnResize(true);
 				attribsPanel.setNotScrollBars();
 				attribsPanel.addField(getPriorityCombo());
 				attribsPanel.addField(getStatusCombo());

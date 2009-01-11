@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.IOException;
 
-import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -72,11 +72,13 @@ public class POITool extends AbstractMsoDrawTool {
 		p.setX(0);
 		p.setY(0);
 
-		// save dialog
-		this.dialog = (DefaultDialog)dialog;
-
 		// create default property panel
 		toolPanel = addToolPanel();
+
+		// save dialog?
+		if(dialog instanceof IDialog) {
+			this.dialog = (IDialog)dialog;
+		}
 
 		// register me in dialog
 		dialog.register(this);

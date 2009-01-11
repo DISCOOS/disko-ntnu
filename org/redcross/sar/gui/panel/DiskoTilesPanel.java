@@ -94,7 +94,7 @@ public class DiskoTilesPanel extends BasePanel
     {
 
         // set body component
-        setBodyComponent(getTileList());
+        setContainer(getTileList());
 
     	// forward
         getScrollPane().setCorner(JScrollPane.UPPER_LEFT_CORNER, UIFactory.createCorner());
@@ -108,7 +108,7 @@ public class DiskoTilesPanel extends BasePanel
                 resizePanel(false);
             }
         };
-        getBodyComponent().addComponentListener(resizeHandler);
+        getContainer().addComponentListener(resizeHandler);
 
     }
 

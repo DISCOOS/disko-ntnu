@@ -62,7 +62,7 @@ public class MessageDialog extends DefaultDialog {
 		if (msgPanel == null) {
 			msgPanel = new MessagePanel();
 			msgPanel.setPreferredSize(new Dimension(300,150));
-			msgPanel.setPreferredBodySize(new Dimension(270,100));
+			msgPanel.setPreferredContainerSize(new Dimension(270,100));
 			msgPanel.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {

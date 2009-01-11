@@ -28,7 +28,7 @@ public class ColumnPanel extends DefaultPanel {
 	 */
 	private void initialize() {
 		// set table
-		setBodyComponent(getTable());
+		setContainer(getTable());
 	}
 	
 	/**

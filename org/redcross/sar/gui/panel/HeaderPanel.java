@@ -36,7 +36,7 @@ public class HeaderPanel extends JPanel {
 	private int m_y = -1;
 
 	private Insets m_insets;
-	private boolean m_isMainHeader = false;
+	private boolean m_requestMoveTo = false;
 	private boolean m_isBorderVisible = true;
 	private Color m_borderColor = Color.GRAY;
 	private int m_buttonDirection = SwingConstants.RIGHT;
@@ -403,23 +403,27 @@ public class HeaderPanel extends JPanel {
 		m_workListeners.remove(listener);
 	}
 
+	public boolean isRootHeader() {
+		return m_requestMoveTo;
+	}
+
 	public IPanelManager getManager() {
 		return m_manager;
 	}
 
-	public void setManager(IPanelManager manager, boolean isMainHeader) {
+	public void setManager(IPanelManager manager, boolean requestMoveTo) {
 		// unregister?
-		if(this.m_manager!=null && m_isMainHeader) {
+		if(this.m_manager!=null && m_requestMoveTo) {
 			removeMouseListener(m_mouseAdapter);
 			removeMouseMotionListener(m_mouseAdapter);
-			m_isMainHeader = false;
+			m_requestMoveTo = false;
 			this.m_manager = null;
 		}
 		// prepare
 		this.m_manager = manager;
-		this.m_isMainHeader = isMainHeader;
+		this.m_requestMoveTo = requestMoveTo;
 		// register?
-		if(this.m_manager!=null && isMainHeader) {
+		if(this.m_manager!=null && requestMoveTo) {
 			addMouseListener(m_mouseAdapter);
 			addMouseMotionListener(m_mouseAdapter);
 		}

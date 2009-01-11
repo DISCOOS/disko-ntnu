@@ -34,7 +34,7 @@ public class ListSelectorPanel extends DefaultPanel {
 	 */
 	private void initialize() {
 		// set table
-		setBodyComponent(getList());		
+		setContainer(getList());		
 	}
 	
 	/**

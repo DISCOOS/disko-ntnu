@@ -46,7 +46,7 @@ public class ProgressDialog extends DefaultDialog {
 		this.setFocusable(false);
 		this.setFocusableWindowState(false);
 		this.setContentPane(getProgressPanel());
-		this.setSnapTo(getLocationComponent(window), DefaultDialog.POS_CENTER, 0, true);
+		this.setSnapToLocation(getLocationComponent(window), DefaultDialog.POS_CENTER, 0, true, false);
 
 		// set cancel button status
 		getProgressPanel().setButtonVisible(cancel);

@@ -160,7 +160,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));		
 				contentPanel.insertButton("finish", getAssignButton(), "assign");
 				contentPanel.insertButton("finish", getReclaimButton(), "reclaim");				
-				contentPanel.setBodyComponent(getUnitTable());
+				contentPanel.setContainer(getUnitTable());
 				contentPanel.addActionListener(new ActionListener(){
 
 					public void actionPerformed(ActionEvent e) {

@@ -295,6 +295,7 @@ public class FieldsPanel extends TogglePanel {
 			field.addWorkFlowListener(this);
 			// set layout dirty
 			m_isLayoutDirty = true;
+			// forward
 			if(!m_isLayoutSuspended) doLayout();
 			// success
 			bFlag = true;
@@ -356,7 +357,7 @@ public class FieldsPanel extends TogglePanel {
 	@Override
 	public void doLayout() {
 		// need to update view?
-		if(m_isLayoutDirty || true) {
+		if(m_isLayoutDirty) {
 			if(m_isMessageVisible || getFieldCount()==0)
 				createMessage();
 			else
@@ -368,7 +369,7 @@ public class FieldsPanel extends TogglePanel {
 	}
 
 	private void createMessage() {
-		JPanel panel = (JPanel)getBodyComponent();
+		JPanel panel = (JPanel)getContainer();
 		panel.removeAll();
 		panel.setLayout(new GridLayout(5,5));
 		panel.add(getMessageLabel());
@@ -376,7 +377,7 @@ public class FieldsPanel extends TogglePanel {
 
 	private void createGrid() {
 		// clear current
-		JPanel list = (JPanel)getBodyComponent();
+		JPanel list = (JPanel)getContainer();
 		list.removeAll();
 		list.setLayout(new SpringLayout());
 		// add all attributes
@@ -389,6 +390,7 @@ public class FieldsPanel extends TogglePanel {
 		int rows = count/m_columns;
 		// forward
 		SpringUtilities.makeCompactGrid(list, rows, m_columns, 5, 5, 5, 5);
+		//Dimension d = list.getPreferredSize();
 	}
 
 	public void clearFields()  {
@@ -397,7 +399,7 @@ public class FieldsPanel extends TogglePanel {
 			m_fields.clear();
 			m_names.clear();
 			// get list panel
-			JPanel list = (JPanel)getBodyComponent();
+			JPanel list = (JPanel)getContainer();
 			list.removeAll();
 		}
 	}

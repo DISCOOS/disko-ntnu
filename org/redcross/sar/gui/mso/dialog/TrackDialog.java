@@ -97,7 +97,7 @@ public class TrackDialog extends DefaultDialog  {
 			b.setToolTipText("Profile");
 			m_contentPanel.insertButton("finish", 
 					DiskoButtonFactory.createButton("MAP.CENTERAT", ButtonSize.SMALL), "centerat");
-			JComponent c = (JComponent)m_contentPanel.getBodyComponent();
+			JComponent c = (JComponent)m_contentPanel.getContainer();
 			c.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			c.setLayout(new BoxLayout(c,BoxLayout.Y_AXIS));
 			c.add(getPointsPanel());
@@ -171,7 +171,7 @@ public class TrackDialog extends DefaultDialog  {
 	public BasePanel getPointsPanel() {
 		if (m_pointsPanel == null) {
 			m_pointsPanel = new BasePanel("Punkter");
-			m_pointsPanel.setBodyComponent(getTrackTable());
+			m_pointsPanel.setContainer(getTrackTable());
 			Utils.setFixedSize(m_pointsPanel, 490, 250);
 		}
 		return m_pointsPanel;

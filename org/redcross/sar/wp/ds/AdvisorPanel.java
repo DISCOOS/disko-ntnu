@@ -29,9 +29,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.ds.advisor.Advisor;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.AbstractWork;
 import org.redcross.sar.work.IWorkLoop;
-import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.work.IWorkLoop.LoopState;
 
 public class AdvisorPanel extends JPanel
@@ -115,7 +113,7 @@ public class AdvisorPanel extends JPanel
         {
         	m_advisorPanel = new TogglePanel(String.format(CONTROL_CAPTION,"Stoppet"),false,false,ButtonSize.SMALL);
         	m_advisorPanel.setPreferredSize(new Dimension(400,235));
-        	m_advisorPanel.collapse();
+        	m_advisorPanel.setExpanded(false);
         	m_advisorPanel.addButton(getLoadButton(), "load");
         	m_advisorPanel.addButton(getSaveButton(), "save");
         	m_advisorPanel.addButton(getResumeButton(), "resume");
@@ -148,7 +146,7 @@ public class AdvisorPanel extends JPanel
     		});
 
         	  // add attributes
-        	m_advisorPanel.setBodyComponent(getEtePropPanel());
+        	m_advisorPanel.setContainer(getEtePropPanel());
 
         }
         return m_advisorPanel;
@@ -385,69 +383,6 @@ public class AdvisorPanel extends JPanel
 	    	return String.format(CONTROL_CAPTION,"Pause");
 	    default:
 	    	return String.format(CONTROL_CAPTION,"Stoppet");
-		}
-	}
-
-    private boolean doWork(int task) {
-		try {
-			// forward work
-			WorkPool.getInstance().schedule(new DsWork(task));
-			// do work
-			return true;
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	class DsWork extends AbstractWork {
-
-		private int m_task = 0;
-
-		/**
-		 * Constructor
-		 *
-		 * @param task
-		 */
-		DsWork(int task) throws Exception {
-			// forward
-			super(0,true,false,ThreadType.WORK_ON_LOOP,"Vent litt",500,true,false);
-			// prepare
-			m_task = task;
-		}
-
-		@Override
-		public Boolean doWork() {
-			try {
-				// dispatch task
-				switch(m_task) {
-				case 1: start(); return true;
-				}
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-			return false;
-		}
-
-		private void start() {
-			try{
-				// is suspended?
-				if(m_advisor.isLoopState(LoopState.SUSPENDED)) {
-					m_advisor.resume();
-				}
-				else {
-		    		// load data
-					//m_advisor.load();
-		    		// forward
-					m_advisor.start();
-				}
-
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
 		}
 	}
 

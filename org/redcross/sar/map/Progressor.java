@@ -28,7 +28,7 @@ public class Progressor implements IStepProgressor {
 	public Progressor(Component locationAt)  {
 		this.progressDialog = new ProgressDialog(Utils.getApp().getFrame(),false,ProgressStyleType.ICON_STYLE);
 		this.progressDialog.setTrancluent(true);
-		this.progressDialog.setSnapTo(locationAt, DefaultDialog.POS_CENTER, 0, true);
+		this.progressDialog.setSnapToLocation(locationAt, DefaultDialog.POS_CENTER, 0, true, false);
 		this.bar = progressDialog.getProgressPanel().getProgressBar();
 		this.listeners = new EventListenerList();
 		this.bar.setString(DiskoStringFactory.getText(PROGRESS_DEFAULT_MAP_TEXT));

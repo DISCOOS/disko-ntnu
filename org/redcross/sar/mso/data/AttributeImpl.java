@@ -31,8 +31,8 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     protected final AbstractMsoObject m_owner;
     protected final IMsoModelIf m_msoModel;
 
-    protected T m_localValue = null;
-    protected T m_serverValue = null;
+    protected T m_localValue;
+    protected T m_serverValue;
     protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
 
     protected AttributeImpl(Class aClass, AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, T theValue)
@@ -929,6 +929,12 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public static class MsoEnum<E extends Enum<E>> extends AttributeImpl<E> implements IMsoEnumIf<E>
     {
+
+    	/**
+    	 * Initial enum value
+    	 */
+    	private final E m_initialValue;
+
         /**
          * List of status changes since creation
          */
@@ -940,7 +946,10 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
         public MsoEnum(AbstractMsoObject theOwner, String theName, int theCardinality, E anInstance)
         {
+        	// forward
             super(anInstance.getClass(), theOwner, theName, theCardinality, Integer.MAX_VALUE, anInstance);
+            // prepare
+            m_initialValue = anInstance;
         }
 
         /* ====================================================
@@ -1014,6 +1023,14 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             return retVal;
         }
 
+        public E getInitialValue() {
+        	return m_history.getHeadValue();
+        }
+
+        public Calendar getInitialTime() {
+        	return m_history.getHeadTime();
+        }
+
         /**
          * Get history of specified status
          *
@@ -1072,7 +1089,21 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
          * ==================================================== */
 
         /**
-         * Add a status change to status history
+         * set time stamp for initial status
+         *
+         * @param Calendar t - the time of creation
+         */
+        protected void setInitialTime(Calendar t) {
+        	if(m_owner.m_msoModel.isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
+        		m_history.setHead(m_initialValue, t);
+        	}
+        }
+
+
+        /**
+         * Add a status change to status history.
+         *
+         * Only possible if MSO model is in REMOTE_UPDATE_MODE.
          *
          * @param aStatus
          * @param aTime

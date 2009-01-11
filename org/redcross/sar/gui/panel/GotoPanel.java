@@ -138,7 +138,7 @@ public class GotoPanel extends TogglePanel {
 
 	private void initialize() {
 		try {
-			this.setBodyComponent(getTabbedPane());
+			this.setContainer(getTabbedPane());
 			this.setNotScrollBars();
 			this.insertButton("finish", getGotoButton(), "goto");
 			this.formatChanged(1);

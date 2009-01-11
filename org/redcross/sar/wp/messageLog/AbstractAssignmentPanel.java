@@ -218,7 +218,6 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
     protected void initSelectedPanel() {
     	// create panel
     	m_selectedPanel = new FieldsPanel("Oppdragsinformasjon","Ingen oppdrag tilgjengelig",false,false);
-    	m_selectedPanel.setFitBodyOnResize(true);
     	m_selectedPanel.setNotScrollBars();
     	Utils.setFixedWidth(m_selectedPanel,250);
     }
@@ -230,7 +229,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
         m_messageLineList.setCellRenderer(new MessageLineListRenderer());
         m_messageLineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_messageLineList.addListSelectionListener(new AssignmentLineSelectionListener(m_messageLineList, this));
-        m_messageLinesPanel.setBodyComponent(m_messageLineList);
+        m_messageLinesPanel.setContainer(m_messageLineList);
 
         m_cardsPanel.add(m_messageLinesPanel, MESSAGE_LINES_ID);
     }
@@ -262,7 +261,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
         m_nextAssignmentsButtonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_nextAssignmentsButtonPanel.setBackground(Color.WHITE);
 
-        m_nextAssignmentsPanel.setBodyComponent(m_nextAssignmentsButtonPanel);
+        m_nextAssignmentsPanel.setContainer(m_nextAssignmentsButtonPanel);
 
         m_nextAssignmentButtonGroup = new ButtonGroup();
 
@@ -283,7 +282,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
 
         m_assignmentPoolButtonGroup = new ButtonGroup();
 
-        m_assignmentPoolPanel.setBodyComponent(m_assignmentPoolButtonPanel);
+        m_assignmentPoolPanel.setContainer(m_assignmentPoolButtonPanel);
 
         m_cardsPanel.add(m_assignmentPoolPanel, ASSIGNMENT_POOL_ID);
     }

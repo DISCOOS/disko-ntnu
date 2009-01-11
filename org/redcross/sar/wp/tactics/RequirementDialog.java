@@ -171,7 +171,7 @@ public class RequirementDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 								BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-				contentPanel.setBodyComponent(getRequirementPanel());
+				contentPanel.setContainer(getRequirementPanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -214,7 +214,6 @@ public class RequirementDialog extends DefaultDialog {
 				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
-				attribsPanel.setFitBodyOnResize(true);
 				attribsPanel.addField(getPriorityCombo());
 				attribsPanel.addField(getAccuracyCombo());
 				attribsPanel.addField(getPersonnelCombo());
@@ -317,7 +316,7 @@ public class RequirementDialog extends DefaultDialog {
 				remarksPanel = new BasePanel("Beskrivelse");
 				remarksPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
-				remarksPanel.setBodyComponent(getRemarksTextArea());
+				remarksPanel.setContainer(getRemarksTextArea());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 
 import org.redcross.sar.gui.panel.ScalePanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.util.Utils;
 
 public class ScaleDialog extends DefaultDialog {
 
@@ -26,12 +25,16 @@ public class ScaleDialog extends DefaultDialog {
 
 	private void initialize() {
 		try {
+
 			// prepare dialog
 	        this.setContentPane(getScalePanel());
+
 			// set translucency behavior
 			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
+
 			// pack to content size
 	        this.pack();
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -75,23 +78,5 @@ public class ScaleDialog extends DefaultDialog {
 		}
 		return m_scalePanel;
 	}
-
-	@Override
-	public boolean requestFitToContent() {
-		if(getScalePanel().isExpanded()) {
-			// get size
-			int h = getScalePanel().getPreferredSize().height;
-			int w = getScalePanel().getPreferredSize().width;
-			// update
-			Utils.setAnySize(ScaleDialog.this,w,h);
-		}
-		else {
-			// update
-			Utils.setAnySize(ScaleDialog.this,getScalePanel().getWidth(),36);
-		}
-		return true;
-	}
-
-
 
 }

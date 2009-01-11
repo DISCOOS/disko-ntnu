@@ -18,41 +18,42 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 public class AssignmentTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private TableRowSorter<AssignmentTableModel> tableRowSorter = null;
 	private Hashtable<AssignmentStatus, RowFilter<?, ?>> rowFilters = null;
-	
+
 	@SuppressWarnings("unchecked")
 	public AssignmentTable(IMsoModelIf msoModel) {
-		
+
 		// create the model
 		AssignmentTableModel model = new AssignmentTableModel(msoModel);
-		
+
 		// assign the model
 		setModel(model);
-		
+
 		// add row sorter
 		tableRowSorter = new TableRowSorter<AssignmentTableModel>(model);
 		tableRowSorter.setStringConverter(new AssignmentStringConverter());
+		tableRowSorter.setMaxSortKeys(1);
 		setRowSorter(tableRowSorter);
-		
+
 		// set default boolean renderer
 		((JCheckBox)getDefaultRenderer(Boolean.class)).setFocusable(false);
 		setDefaultRenderer(AssignmentImpl.class, new AssignmentCellRenderer());
-		
+
 		// set header
         JTableHeader tableHeader = getTableHeader();
         tableHeader.setResizingAllowed(false);
         tableHeader.setReorderingAllowed(false);
-        
+
         // misc.
 		setRowHeight(34);
 		setColumnSelectionAllowed(false);
 		setColumnWidths();
 		setShowVerticalLines(false);
-		
+
 	}
-	
+
 	private void setColumnWidths() {
 		for (int i = 0; i < 3; i++) {
 			TableColumn column = getColumnModel().getColumn(i);
@@ -65,7 +66,7 @@ public class AssignmentTable extends DiskoTable {
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void showOnly(Object obj) {
 		if (rowFilters == null) {

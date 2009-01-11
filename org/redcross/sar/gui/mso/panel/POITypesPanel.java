@@ -42,7 +42,7 @@ public class POITypesPanel extends TogglePanel {
 	 */
 	private void initialize() {
 		try {
-			this.setBodyComponent(getTypeList());
+			this.setContainer(getTypeList());
 			this.setSelectionAllowed(true);
 		}
 		catch(Exception e) {

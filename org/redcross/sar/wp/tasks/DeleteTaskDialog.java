@@ -118,7 +118,7 @@ public class DeleteTaskDialog extends DefaultDialog
 					
 				});
 				// add components
-				m_contentsPanel.setBodyComponent(getAttributesPanel());
+				m_contentsPanel.setContainer(getAttributesPanel());
 				m_contentsPanel.setScrollBarPolicies(
 						BasePanel.VERTICAL_SCROLLBAR_NEVER, 
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);

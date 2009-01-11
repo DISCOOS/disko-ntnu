@@ -1,14 +1,11 @@
 package org.redcross.sar.gui.mso.panel;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -19,14 +16,13 @@ import org.redcross.sar.gui.field.CheckBoxField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultToolPanel;
-import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.LineTool;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.map.tool.SnapAdapter.SnapListener;
 import org.redcross.sar.util.Utils;
 
-public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListener {
+public class LinePanel extends DefaultToolPanel implements SnapListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -36,6 +32,10 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	private TextLineField minStepAttr;
 	private TextLineField maxStepAttr;
 	private CheckBoxField constraintAttr;
+
+	/* ===========================================
+	 * Constructors
+	 * =========================================== */
 
 	public LinePanel(LineTool tool) {
 		// forward
@@ -47,9 +47,13 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		// forward
 		super(caption,tool);
 
-		// initialize gui
+		// initialize GUI
 		initialize();
 	}
+
+	/* ===========================================
+	 * Private methods
+	 * =========================================== */
 
 	/**
 	 * This method initializes this
@@ -58,12 +62,13 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	private void initialize() {
 
 		// prepare
-		setFitBodyOnResize(true);
-		setPreferredSize(new Dimension(300,135));
-		setBodyComponent(getOptionsPanel());
+		setContainer(getOptionsPanel());
 
 		// add buttons
 		insertButton("finish",getSnapToButton(),"snapto");
+
+		// set toggle limits
+		setToggleLimits(280,minimumCollapsedHeight,true);
 
 	}
 
@@ -77,22 +82,13 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 			try {
 
 				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
-				optionsPanel.setFitBodyOnResize(true);
+				optionsPanel.setPreferredExpandedHeight(180);
 				optionsPanel.setButtonVisible("toggle", true);
-				optionsPanel.setPreferredSize(new Dimension(290, 100));
 				optionsPanel.addField(getSnapToAttr());
 				optionsPanel.addField(getConstraintAttr());
 				optionsPanel.addField(getMinStepAttr());
 				optionsPanel.addField(getMaxStepAttr());
-				optionsPanel.addChangeListener(new ChangeListener() {
-
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
-					}
-
-				});
+				optionsPanel.addToggleListener(toggleListener);
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -132,7 +128,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 
 				public void actionPerformed(ActionEvent e) {
 					// forward
-					fireActionEvent(e);
+					fireActionEvent(e, true);
 				}
 
 			});
@@ -234,11 +230,6 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 		return snapToButton;
 	}
 
-	/* ===========================================
-	 * Private methods
-	 * ===========================================
-	 */
-
 	private void doSnapTo() {
 		// get adapter
 		SnapAdapter snapping = getTool().getSnapAdapter();
@@ -276,28 +267,8 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 	}
 
 	/* ===========================================
-	 * Overridden public methods
-	 * ===========================================
-	 */
-
-	/*
-	@Override
-	public void setFixedSize() {
-		super.setFixedSize();
-		int w = getWidth()-20;
-		int h = getConstraintAttr().getHeight();
-		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
-		Utils.setFixedSize(getSnapToAttr(),w,dim.height);
-		Utils.setFixedSize(getConstraintAttr(),w,h);
-		Utils.setFixedSize(getMinStepAttr(),w,h);
-		Utils.setFixedSize(getMaxStepAttr(),w,h);
-	}
-	*/
-
-	/* ===========================================
 	 * SnapListener interface implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	public void onSnapToChanged() {
 		// get adapter
@@ -316,8 +287,7 @@ public class LinePanel extends DefaultToolPanel implements IToolPanel, SnapListe
 
 	/* ===========================================
 	 * IPropertyPanel interface implementation
-	 * ===========================================
-	 */
+	 * =========================================== */
 
 	@Override
 	public LineTool getTool() {

@@ -9,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -39,6 +40,8 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.mso.data.IMessageIf;
+
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -460,8 +463,20 @@ public class MessageLogPanel
 	        cards.show(m_tablePanel, MAP_ID);
         	SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					// hide map
+					// show map
 			        m_map.setVisible(true);
+			        // refresh?
+					if(getMap().isInitMode()) {
+						try {
+							getMap().refreshMapBase();
+						} catch (AutomationException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
 			});
 		}

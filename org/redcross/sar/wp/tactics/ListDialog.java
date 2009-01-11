@@ -90,10 +90,9 @@ public class ListDialog extends DefaultDialog {
 		if (contentPanel == null) {
 			try {
 				contentPanel = new DefaultPanel("Oppdrag",false,true);
-				contentPanel.setBodyComponent(getCenterPanel());
-				contentPanel.setPreferredBodySize(new Dimension(400, 350));
+				contentPanel.setContainer(getCenterPanel());
+				contentPanel.setPreferredContainerSize(new Dimension(400, 350));
 				contentPanel.setNotScrollBars();
-				contentPanel.setFitBodyOnResize(true);
 				contentPanel.getScrollPane().getViewport().setBackground(Color.white);
 				contentPanel.insertButton("finish",getPrintButton(), "print");
 				contentPanel.insertButton("finish",getMakeDraftButton(), "draft");

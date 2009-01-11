@@ -86,7 +86,6 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 	private static String m_bottomViewId = PERSONNEL_DETAILS_VIEW_ID;
 
 	UnitTypeDialog m_unitTypeDialog;
-
 	ImportCalloutDialog m_importCalloutDialog;
 
 	private static boolean m_newPersonnel = false;
@@ -173,8 +172,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_contentsPanel.add(vertSplit, BorderLayout.CENTER);
 
 		// create dialogs
-		m_unitTypeDialog = new UnitTypeDialog(this, m_overviewTabPane);
-		m_importCalloutDialog = new ImportCalloutDialog(this);
+		m_unitTypeDialog = new UnitTypeDialog(this, getApplication().getFrame());
+		m_importCalloutDialog = new ImportCalloutDialog(this, getApplication().getFrame());
 
 		// initialize
 		setLeftMessage(getBundleText("SelectPersonnel.text"));
@@ -674,8 +673,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 			m_overviewTabPane.setEnabled(false);
 			m_calloutOverviewTable.setEnabled(false);
 			m_importCalloutButton.setSelected(true);
-			m_importCalloutDialog.setSnapTo(
-					m_contentsPanel,DefaultDialog.POS_CENTER, DefaultDialog.SIZE_TO_FIT, true);
+			m_importCalloutDialog.setSnapToLocation(m_contentsPanel,DefaultDialog.POS_CENTER, DefaultDialog.SIZE_TO_OFF, true, false);
 
 			// notify
 			fireOnWorkChange(m_leftViewId);

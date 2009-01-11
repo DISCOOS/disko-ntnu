@@ -6,7 +6,6 @@ import javax.swing.table.TableStringConverter;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.mso.DTG;
 
 public class AssignmentStringConverter extends TableStringConverter {
 
@@ -23,11 +22,11 @@ public class AssignmentStringConverter extends TableStringConverter {
 				text = DiskoEnumFactory.getText(assignment.getStatus());
 			}
 			return text;
-		} 
+		}
 		else if(value!=null)
 			return value.toString();
 		else
 			return null;
 	}
-	
+
 }

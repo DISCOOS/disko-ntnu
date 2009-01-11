@@ -11,7 +11,6 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.work.event.IWorkFlowListener;
 
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -42,7 +41,7 @@ public class UnitTypeDialog extends DefaultDialog
 
 	private IDiskoWpUnit m_wpUnit;
 
-	public UnitTypeDialog(IDiskoWpUnit wpUnit, JComponent parent)
+	public UnitTypeDialog(IDiskoWpUnit wpUnit, Component parent)
 	{
 		// forward
 		super(wpUnit.getApplication().getFrame());
@@ -50,11 +49,11 @@ public class UnitTypeDialog extends DefaultDialog
 		// prepare
 		m_wpUnit = wpUnit;
 
-		// initialize gui
+		// initialize GUI
 		initialize();
 
 		// show in center of parent
-		setSnapTo(parent, DefaultDialog.POS_CENTER, DefaultDialog.SIZE_TO_FIT, true);
+		setSnapToLocation(parent, DefaultDialog.POS_CENTER, DefaultDialog.SIZE_TO_OFF, true, false);
 
 	}
 
@@ -64,16 +63,15 @@ public class UnitTypeDialog extends DefaultDialog
 		// set modal
 		this.setModal(true);
 
-		// prepare dialog
-		this.setPreferredSize(new Dimension(400, 500));
-
 		// create content panel
 		DefaultPanel panel = new DefaultPanel(m_wpUnit.getBundleText("CreateNewUnit.text"));
+		panel.setPreferredContainerSize(new Dimension(300, 400));
 
 		// create unit list
 		m_typeList = new JList();
-		EnumSet<UnitType> data  = EnumSet.of( UnitType.AIRCRAFT, UnitType.BOAT,
-										UnitType.DOG, UnitType.TEAM, UnitType.VEHICLE);
+		m_typeList.setPreferredSize(new Dimension(400, 400));
+
+		EnumSet<UnitType> data  = EnumSet.complementOf(EnumSet.of(UnitType.CP));
 		m_typeList.setListData(data.toArray());
 		m_typeList.setCellRenderer(new UnitTypeCellRenderer());
 		m_typeList.setFixedCellHeight(DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL).height);
@@ -87,6 +85,7 @@ public class UnitTypeDialog extends DefaultDialog
 			}
 
 		});
+		m_typeList.setSelectedIndex(0);
 
 		// add mouse listener
 		m_typeList.addMouseListener(new MouseAdapter() {
@@ -103,7 +102,7 @@ public class UnitTypeDialog extends DefaultDialog
 		});
 
 		// set list as body
-		panel.setBodyComponent(m_typeList);
+		panel.setContainer(m_typeList);
 
 		// add work listener
 		panel.addWorkFlowListener((IWorkFlowListener)m_wpUnit);

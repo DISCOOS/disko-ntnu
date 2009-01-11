@@ -131,8 +131,7 @@ public class AssignmentInfoPanel extends JPanel
 	private BasePanel getRemarksPanel() {
 		if(m_remarksPanel==null) {
 			m_remarksPanel = new BasePanel(m_wp.getBundleText("AsgInfoPanel_hdr_6.text"));
-			m_remarksPanel.setBodyComponent(getRemarksArea());
-			m_remarksPanel.setFitBodyOnResize(true);
+			m_remarksPanel.setContainer(getRemarksArea());
 			m_remarksPanel.setScrollBarPolicies(
 					BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 					BasePanel.HORIZONTAL_SCROLLBAR_NEVER);

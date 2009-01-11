@@ -502,7 +502,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_selectableAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new SpringLayout(), 5, 5, false, m_labelActionHandler, true);
         m_selectableAssignmentsPanel.getHeaderPanel().setPreferredSize(new Dimension(40, 40));
         m_selectableAssignmentsPanel.setMinimumSize(new Dimension(180, 100));
-        m_selectableAssignmentsPanel.setFitBodyOnResize(true);
         m_selectableAssignmentsPanel.setMaximumSize(new Dimension(180, Integer.MAX_VALUE));
         m_selectableAssignmentsPanel.setScrollBarPolicies(
         		ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,

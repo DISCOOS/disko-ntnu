@@ -220,9 +220,9 @@ public class PositionField extends AbstractField {
 				IDiskoMap map = getInstalledMap();
 				getSelectorDialog().onLoad(map);
 				if(map!=null)
-					getSelectorDialog().setSnapTo((JComponent)map, DefaultDialog.POS_EAST, 0, true);
+					getSelectorDialog().setSnapToLocation((JComponent)map, DefaultDialog.POS_EAST, 0, true, false);
 				else
-					getSelectorDialog().setSnapTo(getButton(), DefaultDialog.POS_WEST, 0, false);
+					getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
 				// select position
 				Position p = getSelectorDialog().select(resume);
 				// update or resume?

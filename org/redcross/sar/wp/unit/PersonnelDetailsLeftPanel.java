@@ -4,6 +4,7 @@ import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -207,7 +208,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 //		m_remarksTextArea.setRows(8);
 		m_remarksTextArea.setWrapStyleWord(true);
 		m_remarksTextArea.setLineWrap(true);
-		JScrollPane notesScrollPane = new JScrollPane(m_remarksTextArea);
+		JScrollPane notesScrollPane = UIFactory.createScrollPane(m_remarksTextArea);
 		gbc.gridwidth = 3;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;

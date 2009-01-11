@@ -7,6 +7,8 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.dialog.TaskDialog;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.ITaskIf;
@@ -50,7 +52,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 
 	protected static IDiskoWpMessageLog m_wp;
 
-	protected JPanel m_contentsPanel;
+	protected DefaultPanel m_contentsPanel;
 
 	protected JToggleButton m_sendTransportButton;
 	protected JButton m_changeSendTransportButton;
@@ -106,17 +108,16 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	private void initialize()
 	{
 		// Initialize contents panel
-		m_contentsPanel = new JPanel();
-		m_contentsPanel.setLayout(new BoxLayout(m_contentsPanel, BoxLayout.PAGE_AXIS));
+		m_contentsPanel = new DefaultPanel("Oppgaver",false,true);
+		m_contentsPanel.setRequestHideOnCancel(true);
+		m_contentsPanel.setContainerLayout(new BoxLayout(m_contentsPanel.getContainer(), BoxLayout.PAGE_AXIS));
 		Dimension normDim = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
 		Dimension longDim = DiskoButtonFactory.getButtonSize(ButtonSize.LONG);
-		m_contentsPanel.setPreferredSize(new Dimension(
-				longDim.width + normDim.width + 54,longDim.height*6 + 6));
-		m_contentsPanel.setBorder(BorderFactory.createLineBorder(Color.lightGray));
+		m_contentsPanel.setPreferredSize(new Dimension(longDim.width + normDim.width + 54, m_contentsPanel.getMinimumCollapsedHeight() + longDim.height*6 + 6));
 
 		initButtons();
 
-		this.add(m_contentsPanel);
+		this.setContentPane(m_contentsPanel);
 
 		this.pack();
 	}
@@ -148,7 +149,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		m_changeFindingButton = createChangeButton(TaskSubType.FINDING);
 		addButtonPair(m_findingButton, m_changeFindingButton, TaskSubType.FINDING);
 
-		m_contentsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+		m_contentsPanel.addToContainer(new JSeparator(JSeparator.HORIZONTAL));
 
 		// General
 		m_generalTaskButton = createToggleButton(TaskSubType.GENERAL);
@@ -303,7 +304,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 		buttonPanel.add(task);
 		buttonPanel.add(change);
-		m_contentsPanel.add(buttonPanel);
+		m_contentsPanel.addToContainer(buttonPanel);
 
 		change.setEnabled(false);
 
@@ -318,10 +319,13 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	private void showEditTaskDialog()
 	{
 		TaskDialog taskDialog = m_wp.getApplication().getUIFactory().getTaskDialog();
+		taskDialog.setSnapToLocation(m_wp.getApplication().getFrame(), DefaultDialog.POS_CENTER, DefaultDialog.SIZE_TO_OFF, true, false);
+		/*
 		Point location = getLocationOnScreen();
 		location.y -= (taskDialog.getHeight() - getHeight());
 		location.x -= (taskDialog.getWidth() - getWidth());
 		taskDialog.setLocation(location);
+		*/
 		taskDialog.setVisible(true);
 	}
 
@@ -364,6 +368,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	public void showEditor()
 	{
 		this.setVisible(true);
+		this.getContentPane().setVisible(true);
 	}
 
 	/**

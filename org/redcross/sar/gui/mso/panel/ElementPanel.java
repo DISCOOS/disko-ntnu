@@ -26,8 +26,9 @@ import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -45,7 +46,7 @@ import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 
-public class ElementPanel extends DefaultPanel {
+public class ElementPanel extends TogglePanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -66,26 +67,26 @@ public class ElementPanel extends DefaultPanel {
 
 	private IMsoModelIf msoModel = null;
 
-	private JScrollPane typeScrollPane = null;
-	private JScrollPane objectScrollPane = null;
-	private JScrollPane partScrollPane = null;
+	private JScrollPane typeScrollPane;
+	private JScrollPane objectScrollPane;
+	private JScrollPane partScrollPane;
 
-	private JPanel listsPanel = null;
-	private JPanel typePanel = null;
-	private JPanel objectPanel = null;
-	private JPanel partPanel = null;
+	private JPanel listsPanel;
+	private JPanel typePanel;
+	private JPanel objectPanel;
+	private JPanel partPanel;
 
-	private JPanel objectButtonsPanel = null;
-	private JPanel partButtonsPanel = null;
+	private JPanel objectButtonsPanel;
+	private JPanel partButtonsPanel;
 
-	private JList typeList = null;
-	private JList objectList = null;
-	private JList partList = null;
+	private JList typeList;
+	private JList objectList;
+	private JList partList;
 
-	private List<IElementEventListener> listeners = null;
+	private List<IElementEventListener> listeners;
 
-	private List<IMsoObjectIf> objects = null;
-	private List<IMsoObjectIf> parts = null;
+	private List<IMsoObjectIf> objects;
+	private List<IMsoObjectIf> parts;
 
 	public ElementPanel() {
 
@@ -108,8 +109,8 @@ public class ElementPanel extends DefaultPanel {
 
 	private void initialize() {
 		// set lists panel
-		setBodyComponent(getListsPanel());
-		setPreferredBodySize(new Dimension(620,400));
+		setNotScrollBars();
+		setContainer(getListsPanel());
 	}
 
 	/**
@@ -126,9 +127,9 @@ public class ElementPanel extends DefaultPanel {
 				fl.setAlignment(FlowLayout.LEFT);
 				listsPanel = new JPanel();
 				listsPanel.setLayout(fl);
-				listsPanel.add(getPartPanel(), null);
-				listsPanel.add(getObjectPanel(), null);
-				listsPanel.add(getTypePanel(), null);
+				listsPanel.add(getPartPanel());
+				listsPanel.add(getObjectPanel());
+				listsPanel.add(getTypePanel());
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -144,8 +145,7 @@ public class ElementPanel extends DefaultPanel {
 	public JScrollPane getTypeScrollPane() {
 		if (typeScrollPane == null) {
 			try {
-				typeScrollPane = new JScrollPane(getTypeList());
-				typeScrollPane.setWheelScrollingEnabled(true);
+				typeScrollPane = UIFactory.createScrollPane(getTypeList(),true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -218,8 +218,7 @@ public class ElementPanel extends DefaultPanel {
 	public JScrollPane getObjectScrollPane() {
 		if (objectScrollPane == null) {
 			try {
-				objectScrollPane = new JScrollPane(getObjectList());
-				objectScrollPane.setWheelScrollingEnabled(true);
+				objectScrollPane = UIFactory.createScrollPane(getObjectList(),true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -312,8 +311,7 @@ public class ElementPanel extends DefaultPanel {
 	public JScrollPane getPartScrollPane() {
 		if (partScrollPane == null) {
 			try {
-				partScrollPane = new JScrollPane(getPartList());
-				partScrollPane.setWheelScrollingEnabled(true);
+				partScrollPane = UIFactory.createScrollPane(getPartList(),true);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -536,7 +534,9 @@ public class ElementPanel extends DefaultPanel {
 				getObjectList().setListData(data);
 			// reset flag
 			listsAreChangeing = false;
-			// hide buttons panel
+			// update layout
+			getObjectPanel().setVisible(getObjectList().getModel().getSize()>0);
+			getObjectPanel().setVisible(getObjectList().getModel().getSize()>0);
 			getObjectButtonsPanel().setVisible(false);
 		}
 		// forward
@@ -604,8 +604,13 @@ public class ElementPanel extends DefaultPanel {
 		}
 		// reset flag
 		listsAreChangeing = false;
-		// hide buttons panel
+		// update layout
+		getPartPanel().setVisible(getPartList().getModel().getSize()>0);
+		getPartPanel().setVisible(getPartList().getModel().getSize()>0);
 		getPartButtonsPanel().setVisible(false);
+		// fit container to parent
+		fitContainerToPreferredLayoutSize();
+		requestFitToPreferredContentSize(false);
 	}
 
 	private Selector<IAreaIf> getAreaSelector(final SearchSubType e) {

@@ -14,8 +14,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -26,6 +24,7 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MsoLayerModel;
 import org.redcross.sar.map.WmsLayerModel;
 import org.redcross.sar.map.layer.IMapLayer.LayerCode;
+import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.interop.AutomationException;
@@ -70,26 +69,34 @@ public class TocPanel extends TogglePanel {
 		myInterests.put(LayerCode.POI_LAYER.name(),LayerCode.POI_LAYER.name());
 		myInterests.put(LayerCode.UNIT_LAYER.name(),LayerCode.UNIT_LAYER.name());
 
-		// initialize gui
+		// initialize GUI
 		initialize();
 
 	}
 
 	private void initialize() {
 		try {
-			// prepare
-			setFitBodyOnResize(true);
-			// create content
-			JPanel body = (JPanel)getBodyComponent();
-			body.setPreferredSize(new Dimension(300,500));
-			body.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
-			body.add(getMsoLayersPanel());
-			body.add(Box.createVerticalStrut(5));
-			body.add(getWmsLayersPanel());
-			body.add(Box.createVerticalStrut(5));
-			body.add(getMapLayersPanel());
-			body.add(Box.createVerticalGlue());
+			// allow vertical scroll bar
+			setScrollBarPolicies(
+					VERTICAL_SCROLLBAR_AS_NEEDED,
+					HORIZONTAL_SCROLLBAR_NEVER);
+
+			// set border
+			setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+			// set layout
+			setContainerLayout(new BoxLayout(getContainer(),BoxLayout.Y_AXIS));
+
+			// add content
+			addToContainer(getMsoLayersPanel());
+			addToContainer(Box.createVerticalStrut(5));
+			addToContainer(getWmsLayersPanel());
+			addToContainer(Box.createVerticalStrut(5));
+			addToContainer(getMapLayersPanel());
+
+			// set toggle limits
+			setToggleLimits(280,minimumCollapsedHeight,true);
+
 		}
 		catch (java.lang.Throwable e) {
 			//  Do Something
@@ -101,9 +108,8 @@ public class TocPanel extends TogglePanel {
 		if (msoLayersPanel == null) {
 			try {
 				msoLayersPanel = new TogglePanel("Aksjon",false,false);
-				msoLayersPanel.setFitBodyOnResize(true);
-				msoLayersPanel.setMinimumSize(new Dimension(290, 250));
-				msoLayersPanel.setPreferredSize(new Dimension(290, 250));
+				msoLayersPanel.setPreferredExpandedHeight(240);
+				Utils.setFixedHeight(msoLayersPanel, 240);
 				msoLayersPanel.insertButton("finish",getNoneButton(), "none");
 				msoLayersPanel.insertButton("finish",getAllButton(), "all");
 				msoLayersPanel.addActionListener(new ActionListener() {
@@ -118,16 +124,20 @@ public class TocPanel extends TogglePanel {
 					}
 
 				});
-				msoLayersPanel.addChangeListener(new ChangeListener() {
+				msoLayersPanel.addToggleListener(toggleListener);
+				/*new IToggleListener() {
 
 					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
+					public void toggleChanged(ITogglePanel panel, boolean isExpanded, int dx, int dy) {
+						int h = getMsoLayersPanel().getHeaderPanel().getPreferredSize().height;
+						expandedSize = adjustPreferredSize(expandedSize,minimumCollapsedHeight, isExpanded ? 240 - h: h - 240);
 					}
 
 				});
-				JPanel panel = (JPanel)msoLayersPanel.getBodyComponent();
+				*/
+
+				// prepare container
+				JPanel panel = (JPanel)msoLayersPanel.getContainer();
 				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
 			} catch (java.lang.Throwable e) {
@@ -142,21 +152,23 @@ public class TocPanel extends TogglePanel {
 		if (wmsLayersPanel == null) {
 			try {
 				wmsLayersPanel = new TogglePanel("Tillegg",false,false);
-				wmsLayersPanel.setMinimumSize(new Dimension(290, 100));
-				wmsLayersPanel.setPreferredSize(new Dimension(290, 100));
 				wmsLayersPanel.setExpanded(false);
-				wmsLayersPanel.addChangeListener(new ChangeListener() {
+				wmsLayersPanel.setPreferredExpandedHeight(100);
+				wmsLayersPanel.addToggleListener(toggleListener);
+				/*
+				new IToggleListener() {
 
 					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
+					public void toggleChanged(ITogglePanel panel, boolean isExpanded, int dx, int dy) {
+						int h = getWmsLayersPanel().getHeaderPanel().getPreferredSize().height;
+						expandedSize = adjustPreferredSize(expandedSize,minimumCollapsedHeight, isExpanded ? 100 - h: h - 100);
 					}
 
 				});
-				JPanel panel = (JPanel)wmsLayersPanel.getBodyComponent();
-				panel.setMinimumSize(new Dimension(180, 100));
-				panel.setPreferredSize(new Dimension(180, 100));
+				*/
+
+				// prepare container
+				JPanel panel = (JPanel)wmsLayersPanel.getContainer();
 				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
 			} catch (java.lang.Throwable e) {
@@ -172,20 +184,21 @@ public class TocPanel extends TogglePanel {
 			try {
 				mapLayersPanel = new TogglePanel("Kart",false,false);
 				mapLayersPanel.setExpanded(false);
-				mapLayersPanel.setMinimumSize(new Dimension(290, 100));
-				mapLayersPanel.setPreferredSize(new Dimension(290, 100));
-				mapLayersPanel.addChangeListener(new ChangeListener() {
+				mapLayersPanel.setPreferredExpandedHeight(100);
+				mapLayersPanel.addToggleListener(toggleListener);
+				/*new IToggleListener() {
 
 					@Override
-					public void stateChanged(ChangeEvent e) {
-						fitBodyToPreferredLayoutSize();
-						fitThisToPreferredBodySize();
+					public void toggleChanged(ITogglePanel panel, boolean isExpanded, int dx, int dy) {
+						int h = getMapLayersPanel().getHeaderPanel().getPreferredSize().height;
+						expandedSize = adjustPreferredSize(expandedSize,minimumCollapsedHeight, isExpanded ? 100 - h: h - 100);
 					}
 
 				});
-				JPanel panel = (JPanel)mapLayersPanel.getBodyComponent();
-				panel.setMinimumSize(new Dimension(280, 100));
-				panel.setPreferredSize(new Dimension(280, 100));
+				*/
+
+				// prepare container
+				JPanel panel = (JPanel)mapLayersPanel.getContainer();
 				panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
 			} catch (java.lang.Throwable e) {
@@ -255,9 +268,9 @@ public class TocPanel extends TogglePanel {
 				this.wmsLayerModel = map.getWmsLayerModel();
 
 				// load models into panel
-				load((JPanel)getMsoLayersPanel().getBodyComponent(),msoLayerModel);
-				load((JPanel)getWmsLayersPanel().getBodyComponent(),wmsLayerModel);
-				load((JPanel)getMapLayersPanel().getBodyComponent(),mapLayerModel);
+				load((JPanel)getMsoLayersPanel().getContainer(),msoLayerModel);
+				load((JPanel)getWmsLayersPanel().getContainer(),wmsLayerModel);
+				load((JPanel)getMapLayersPanel().getContainer(),mapLayerModel);
 
 				// success
 				bFlag = true;
@@ -346,9 +359,9 @@ public class TocPanel extends TogglePanel {
 		// clear lists
 		layers.clear();
 		// clear
-		((JPanel)getMsoLayersPanel().getBodyComponent()).removeAll();
-		((JPanel)getWmsLayersPanel().getBodyComponent()).removeAll();
-		((JPanel)getMapLayersPanel().getBodyComponent()).removeAll();
+		((JPanel)getMsoLayersPanel().getContainer()).removeAll();
+		((JPanel)getWmsLayersPanel().getContainer()).removeAll();
+		((JPanel)getMapLayersPanel().getContainer()).removeAll();
 		// loop over all
 		for(JCheckBox it : checkBoxes.values()){
 		    it.setVisible(false);

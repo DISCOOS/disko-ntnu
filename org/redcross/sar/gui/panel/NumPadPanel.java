@@ -178,12 +178,12 @@ public class NumPadPanel extends DefaultPanel {
 	private void initialize(){
 		// prepare
 		setNotScrollBars();
-		setBodyLayout(new BorderLayout(5,5));
+		setContainerLayout(new BorderLayout(5,5));
 		// set body border
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		// add components 
-		addBodyChild(getInputField(),BorderLayout.NORTH);
-		addBodyChild(getButtonsPanel(),BorderLayout.CENTER);
+		addToContainer(getInputField(),BorderLayout.NORTH);
+		addToContainer(getButtonsPanel(),BorderLayout.CENTER);
 	}	
 	
 	/**

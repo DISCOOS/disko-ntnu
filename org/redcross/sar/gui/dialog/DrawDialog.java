@@ -5,13 +5,16 @@ import java.util.Iterator;
 import java.util.HashMap;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Dimension;
-import java.awt.CardLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.IOException;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -37,6 +40,8 @@ import org.redcross.sar.util.Utils;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -50,13 +55,15 @@ import javax.swing.JToggleButton;
  * @author kennetgu
  *
  */
-public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, IMsoToolCollection, ActionListener {
+public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolCollection, IMsoToolCollection, ActionListener {
 
     private static final long serialVersionUID = 1L;
+    //private static final String MSG = "<html><center>%s</center></html>";
 
     private TogglePanel m_contentPanel;
     private JPanel m_buttonsPanel;
     private JPanel m_propertyPanels;
+    private JLabel m_messageLabel;
     private ButtonGroup m_buttonGroup;
     private IHostDiskoTool m_hostTool;
 
@@ -97,7 +104,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
     }
 
     public void setHostTool(IHostDiskoTool tool) {
-        // alredy set?
+        // already set?
         if(m_hostTool==null)
             m_hostTool = tool;
     }
@@ -133,8 +140,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
     public void getToolCaption() {
         if(m_selectedTool!=null) {
             try {
-                getContentPanel().setCaptionText("Tegneverktøy - "
-                        + m_selectedTool.getCaption()); return;
+                getContentPanel().setCaptionText(m_selectedTool.getCaption()); return;
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -145,40 +151,20 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
     public void setup() {
 
         // counters
-        int buttonRows = 1;
         int enabledCount = 0;
         int visibleCount = 0;
 
-        // initialize size
-        int w = 0;
-        int max = m_buttonsPanel.getWidth();
-
         // loop over all tools and update buttons
-        Iterator<IDrawTool> it = m_tools.values().iterator();
-        while(it.hasNext()) {
-            IMapTool tool = it.next();
-            AbstractButton button = tool.getButton();
-            JToggleButton toggle = m_buttons.get(tool.getType());
+        for(IDrawTool it : m_tools.values()) {
+            AbstractButton button = it.getButton();
+            JToggleButton toggle = m_buttons.get(it.getType());
             if(toggle.getIcon()==null) {
-                toggle.setIcon(getIcon(tool.getType(),ButtonSize.SMALL));
+                toggle.setIcon(getIcon(it.getType(),ButtonSize.SMALL));
                 toggle.setToolTipText(button.getToolTipText());
             }
             enabledCount += toggle.isEnabled() ? 1 : 0;
             visibleCount += toggle.isVisible() ? 1 : 0;
-            if(toggle.isVisible()) {
-                w += toggle.getWidth();
-                if(w>=max) {
-                    w = 0;
-                    buttonRows++;
-                }
-            }
         }
-
-        // set button panel height
-        Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
-        m_buttonsPanel.setMinimumSize(new Dimension(300, dim.height+16));
-        m_buttonsPanel.setPreferredSize(new Dimension(300, (dim.height+1)*buttonRows+15));
-        m_buttonsPanel.setMaximumSize(new Dimension(300, (dim.height+1)*buttonRows+15));
 
         // setup host tool button?
         if(m_hostTool!=null) {
@@ -330,7 +316,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
         this.m_map = map;
         // set location relative to map?
         if(map instanceof JComponent) {
-            this.setSnapTo((JComponent)map, DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_LIMIT, true);
+            this.setSnapToLocation((JComponent)map, DefaultDialog.POS_WEST, 0, true, false);
         }
     }
 
@@ -374,12 +360,10 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
 
             // register panel?
             if(panel!=null && (panel instanceof Component)) {
-                // cast to component
-                Component c = (Component)panel;
-                // add to card layout of property panels component
-                getPropertyPanels().add(c,tool.getType().toString());
-                // register this
+                // register action listener
                 panel.addActionListener(this);
+                // register panel manager
+                panel.setParentManager(getContentPanel(), false, false);
             }
 
             // put to panel map
@@ -435,38 +419,18 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
         setup();
     }
 
-    @Override
-    public boolean requestFitToContent() {
-        if(getContentPanel().isExpanded()) {
-            // get tool panel
-            Component panel = m_selectedTool!=null ? (Component)m_panels.get(m_selectedTool.getType()) : null;
-            // update property panel size?
-            if(panel!=null) getPropertyPanels().setPreferredSize(panel.getPreferredSize());
-            // get height
-            int h = getButtonsPanel().getWidth();
-            //h += getSplitPane().getDividerSize();
-            h += getPropertyPanels().getPreferredSize().height;
-            // get width
-            int w = getContentPanel().getPreferredSize().width;
-            // update
-            Utils.setAnySize(DrawDialog.this,w,h);
-        }
-        else {
-            // update
-            Utils.setAnySize(DrawDialog.this,getContentPanel().getWidth(),36);
-        }
-        return true;
-    }
-
     /*==========================================================
      * ActionListener interface
      *========================================================== */
 
     public void actionPerformed(ActionEvent e) {
+        // get action command
+        String cmd = e.getActionCommand();
         // parse action
-        if("editsnap".equalsIgnoreCase(e.getActionCommand())) {
-            getSnapDialog().setVisible(!getSnapDialog().isVisible());
+        if("editsnap".equalsIgnoreCase(cmd)) {
+        	getSnapDialog().setVisible(!getSnapDialog().isVisible());
         }
+
     }
 
     /*==========================================================
@@ -478,14 +442,13 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
             // create button group
             m_buttonGroup = new ButtonGroup();
             // prepare dialog
-            this.setContentPane(getContentPanel());
-            this.setMinimumSize(new Dimension(300,36));
+            setContentPane(getContentPanel());
             // set translucency behavior
             setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
+            // apply
+            pack();
             // forward
             setup();
-            // apply
-            this.pack();
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -501,12 +464,25 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
         if (m_contentPanel == null) {
             m_contentPanel = new TogglePanel("Tegneverktøy",false,true,ButtonSize.SMALL);
             m_contentPanel.setNotScrollBars();
-            m_contentPanel.setFitBodyOnResize(true);
+            m_contentPanel.setBorderColor(Color.BLUE);
             m_contentPanel.setRequestHideOnCancel(true);
-            m_contentPanel.setMinimumSize(new Dimension(300,36));
-            m_contentPanel.setPreferredSize(new Dimension(300,36));
-            m_contentPanel.addBodyChild(getButtonsPanel(),BorderLayout.NORTH);
-            m_contentPanel.addBodyChild(getPropertyPanels(),BorderLayout.CENTER);
+            m_contentPanel.setContainer(new JPanel());
+            m_contentPanel.setContainerLayout(new BoxLayout(m_contentPanel.getContainer(),BoxLayout.Y_AXIS));
+            m_contentPanel.addToContainer(getButtonsPanel());
+            m_contentPanel.addToContainer(Box.createVerticalStrut(5));
+            m_contentPanel.addToContainer(getPropertyPanels());
+            m_contentPanel.addToContainer(Box.createVerticalGlue());
+            m_contentPanel.addComponentListener(new ComponentAdapter() {
+
+                @Override
+                public void componentResized(ComponentEvent e) {
+
+                	// forward
+                	setButtonsPanelSize();
+
+                }
+
+            });
         }
         return m_contentPanel;
     }
@@ -526,7 +502,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
             m_buttonsPanel.setBorder(
                     BorderFactory.createCompoundBorder(
                     BorderFactory.createCompoundBorder(
-                    BorderFactory.createEmptyBorder(5, 5, 5, 5), UIFactory.createBorder()),
+                    BorderFactory.createEmptyBorder(4, 4, 4, 4), UIFactory.createBorder()),
                     BorderFactory.createEmptyBorder(1, 1, 1, 1)));
             m_buttonsPanel.setLayout(fl);
         }
@@ -541,13 +517,20 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
     private JPanel getPropertyPanels() {
         if (m_propertyPanels == null) {
             m_propertyPanels = new JPanel();
-            m_propertyPanels.setBorder(BorderFactory.createEmptyBorder());
-            m_propertyPanels.setLayout(new CardLayout());
-            m_propertyPanels.add(new JLabel("<html><center>&ltIngen egenskaper&gt</center></html>"),"message");
+            m_propertyPanels.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+            m_propertyPanels.setLayout(new BorderLayout());
+            m_propertyPanels.add(getMessageLabel(),BorderLayout.CENTER);
         }
         return m_propertyPanels;
     }
 
+
+    private JLabel getMessageLabel() {
+        if(m_messageLabel == null) {
+            m_messageLabel = new JLabel("");
+        }
+        return m_messageLabel;
+    }
 
     /**
      * This gets current snap dialog
@@ -563,7 +546,7 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
                 // get dialog
                 dialog = m_map.getSnapDialog();
                 // force dialog to snap east to of this dialog
-                dialog.setSnapTo(this, DefaultDialog.POS_EAST, DefaultDialog.SIZE_TO_LIMIT, false);
+                dialog.setSnapToLocation(this, DefaultDialog.POS_EAST, 0, false, false);
             } catch (java.lang.Throwable e) {
                 e.printStackTrace();
             }
@@ -572,6 +555,10 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
     }
 
     private boolean selectTool(IDrawTool tool, boolean activate, boolean force) {
+
+    	// no change?
+    	if(m_selectedTool==tool && false) return false;
+
         // reset old tool?
         if(m_selectedTool!=null && m_selectedTool.isDirty()) {
             // prompt user?
@@ -627,11 +614,26 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
     }
 
     private void showPropertyPanel(Object key) {
-        // show panel from card layout
-        CardLayout cl = (CardLayout)getPropertyPanels().getLayout();
-        cl.show(getPropertyPanels(), key.toString());
-        // forward
-        requestFitToContent();
+        // remove current panel
+        getPropertyPanels().removeAll();
+        // get tool panel
+        IToolPanel panel = m_panels.get(key);
+        // found panel?
+        if(panel!=null) {
+            Component c = (Component)panel;
+            getPropertyPanels().add(c,BorderLayout.CENTER);
+        }
+        else {
+            getPropertyPanels().add(getMessageLabel(),BorderLayout.CENTER);
+        }
+        // fit panel to buttons
+        setButtonsPanelSize();
+        // get preferred size
+        Dimension d = getContentPanel().fitThisToPreferredContainerSize();
+        // update dialog size
+        setSize(d);
+        setPreferredSize(d);
+        validate();
     }
 
     private Icon getIcon(Enum<?> type, ButtonSize size) {
@@ -640,4 +642,36 @@ public class DrawDialog extends DefaultDialog  implements IDrawToolCollection, I
                 DiskoIconFactory.getCatalog(size));
     }
 
-}  //  @jve:decl-index=0:visual-constraint="23,0"
+    private void setButtonsPanelSize() {
+
+    	JPanel buttons = getButtonsPanel();
+    	Insets insets = buttons.getInsets();
+        int max = m_contentPanel.getWidth() - (insets.left+insets.right);
+
+        if(max>0) {
+
+            int w = 0;
+            int rows = 1;
+
+            // loop over all tools and update buttons
+            for(IDrawTool it : m_tools.values()) {
+                JToggleButton b = m_buttons.get(it.getType());
+                if(b.isVisible()) {
+                    w += b.getWidth();
+                    if(w>=max) {
+                        w = 0;
+                        rows++;
+                    }
+                }
+            }
+
+            // set button panel height
+            Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
+            buttons.setMinimumSize(new Dimension(dim.width+16, dim.height+16));
+            buttons.setPreferredSize(new Dimension(dim.width+16, (dim.height+1)*rows+15));
+            buttons.setMaximumSize(new Dimension(Integer.MAX_VALUE, (dim.height+1)*rows+15));
+
+        }
+
+    }
+}

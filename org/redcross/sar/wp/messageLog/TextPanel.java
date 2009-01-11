@@ -51,18 +51,18 @@ public class TextPanel extends DefaultPanel implements IEditorIf
 		setBorderVisible(false);
 				
 		// add empty border
-		setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
 		// disable scrolling
 		setNotScrollBars();
 		
 		// set layout
-		setBodyLayout(new BoxLayout((JComponent)getBodyComponent(),BoxLayout.X_AXIS));
+		setContainerLayout(new BoxLayout((JComponent)getContainer(),BoxLayout.X_AXIS));
 		
 		// add components (BorderLayout is default)
-		addBodyChild(getTextPanel());
-		addBodyChild(Box.createHorizontalStrut(5));
-		addBodyChild(getActionsPanel());		
+		addToContainer(getTextPanel());
+		addToContainer(Box.createHorizontalStrut(5));
+		addToContainer(getActionsPanel());		
 		
 	}
 
@@ -70,7 +70,7 @@ public class TextPanel extends DefaultPanel implements IEditorIf
 	{
 		if(m_textPanel == null) {
 			m_textPanel = new BasePanel("Meldingstekst",ButtonSize.SMALL);
-			m_textPanel.setBodyComponent(getTextArea());
+			m_textPanel.setContainer(getTextArea());
 		}
 		return m_textPanel;
 	}

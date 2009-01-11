@@ -28,13 +28,13 @@ public class LoginDialog extends DefaultDialog {
 	private boolean isLogin = false;
 	private boolean isCancel = false;
 	private boolean exitAppOnCancel = false;
-	
+
 	private DefaultPanel contentPanel = null;
 
 	private TextLineField attrUserName = null;
 	private TextLineField attrPassword = null;
 	private ComboBoxField attrRoles = null;
-	
+
 	/**
 	 * @param owner
 	 */
@@ -44,7 +44,7 @@ public class LoginDialog extends DefaultDialog {
 		// initialize GUI
 		initialize();
 	}
-	
+
 	private void initialize() {
 		try {
             this.setModal(true);
@@ -53,7 +53,7 @@ public class LoginDialog extends DefaultDialog {
             this.setContentPane(getContentPanel());
             this.setPreferredSize(new Dimension(275,132));
             this.pack();
-				
+
 		}
 		catch (java.lang.Throwable e) {
 			e.printStackTrace();
@@ -62,7 +62,7 @@ public class LoginDialog extends DefaultDialog {
 
 	/**
 	 * This method initializes jContentPane
-	 * 
+	 *
 	 * @return javax.swing.JPanel
 	 */
 	private DefaultPanel getContentPanel() {
@@ -71,8 +71,8 @@ public class LoginDialog extends DefaultDialog {
 			contentPanel.setScrollBarPolicies(
 					DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
 					DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
-			contentPanel.setPreferredBodySize(new Dimension(275,80));
-			JPanel panel = (JPanel)contentPanel.getBodyComponent();
+			contentPanel.setPreferredContainerSize(new Dimension(275,80));
+			JPanel panel = (JPanel)contentPanel.getContainer();
 			panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 			panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			panel.add(getRoles());
@@ -88,11 +88,11 @@ public class LoginDialog extends DefaultDialog {
 						authorize();
 					else if("cancel".equalsIgnoreCase(cmd)) {
 						// exit system?
-						if (exitAppOnCancel) System.exit(0);								
+						if (exitAppOnCancel) System.exit(0);
 					}
-										
+
 				}
-				
+
 			});
 		}
 		return contentPanel;
@@ -124,7 +124,7 @@ public class LoginDialog extends DefaultDialog {
 
 	/**
 	 * This method initializes UserName attribute
-	 * 	
+	 *
 	 * @return {@link TextLineField}
 	 */
 	public TextLineField getUserName() {
@@ -137,10 +137,10 @@ public class LoginDialog extends DefaultDialog {
 		}
 		return attrUserName;
 	}
-	
+
 	/**
 	 * This method initializes Password attribute
-	 * 	
+	 *
 	 * @return {@link TextLineField}
 	 */
 	public TextLineField getPassword() {
@@ -153,10 +153,10 @@ public class LoginDialog extends DefaultDialog {
 		}
 		return attrPassword;
 	}
-	
+
 	/**
 	 * This method initializes Roles attribute
-	 * 	
+	 *
 	 * @return {@link ComboBoxField}
 	 */
 	public ComboBoxField getRoles() {
@@ -182,7 +182,7 @@ public class LoginDialog extends DefaultDialog {
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for (int i = 0; i < rolleNames.length; i++) {
 			IDiskoRole currentRolle = app.getCurrentRole();
-			if (currentRolle != null && 
+			if (currentRolle != null &&
 					currentRolle.getTitle().equals(rolleNames[i])) {
 				// skip current rolle
 				continue;
@@ -191,7 +191,7 @@ public class LoginDialog extends DefaultDialog {
 		}
 		getRoles().fill(model);
 	}
-	
+
 	public boolean showLogin(boolean exitAppOnCancel) {
 		// set flags
 		this.isCancel = false;
@@ -202,7 +202,7 @@ public class LoginDialog extends DefaultDialog {
 		// finished
 		return isCancel;
 	}
-	
+
 	public boolean showSwapTo() {
 		// set flags
 		this.isCancel = false;
@@ -213,5 +213,5 @@ public class LoginDialog extends DefaultDialog {
 		// finished
 		return isCancel;
 	}
-	
+
 }  //  @jve:decl-index=0:visual-constraint="10,10"

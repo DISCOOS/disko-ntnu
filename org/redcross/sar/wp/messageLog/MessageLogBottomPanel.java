@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -30,7 +29,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -349,12 +350,13 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 
     	// save header panel as static
     	m_tipPanel = getHeaderPanel();
+    	m_tipPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.INFO", "32x32"));
 
     	// calculate body height
     	int h = PANEL_HEIGHT - 40;
 
     	// prepare to add
-    	JPanel panel = (JPanel)getBodyComponent();
+    	JPanel panel = (JPanel)getContainer();
     	panel.setPreferredSize(new Dimension(SMALL_PANEL_WIDTH*16,h));
 
     	// Add table header
@@ -691,9 +693,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						hideEditPanels(false);
 
 						// place on screen
-						Point location = m_changeDTGButton.getLocationOnScreen();
-	        			location.y -= m_changeDTGDialog.getHeight();
-	        			m_changeDTGDialog.setLocation(location);
+						m_changeDTGDialog.setSnapToLocation(m_changeDTGButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_OFF, false, false);
 
 	        			// show component
 	        			showEditComponents(new IEditorIf[]{m_changeDTGDialog});
@@ -742,9 +742,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						hideEditPanels(false);
 
 						// place on screen
-						Point location = m_changeFromButton.getLocationOnScreen();
-						location.y -= m_changeFromDialog.getHeight();
-						m_changeFromDialog.setLocation(location);
+						m_changeFromDialog.setSnapToLocation(m_changeFromButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_OFF, false, false);
 
 						// show component
 						showEditComponents(new IEditorIf[]{m_changeFromDialog});
@@ -789,9 +787,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						hideEditPanels(false);
 
 						// place on screen
-						Point location = m_changeToButton.getLocationOnScreen();
-						location.y -= m_changeToDialog.getHeight();
-						m_changeToDialog.setLocation(location);
+						m_changeToDialog.setSnapToLocation(m_changeToButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_OFF, false, false);
 
 						// show component
 						showEditComponents(new IEditorIf[]{m_changeToDialog});
@@ -1165,10 +1161,9 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 
 						getChangeTasksDialog();
 						hideEditPanels(false);
-						Point location = m_changeTasksButton.getLocationOnScreen();
-		    			location.y -= m_changeTasksDialog.getHeight();
-		    			location.x -= m_changeTasksDialog.getWidth();
-		    			m_changeTasksDialog.setLocation(location);
+
+						// locate on screen
+						m_changeTasksDialog.setSnapToLocation(m_changeTasksButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_OFF, false, false);
 
 						// show component
 						showEditComponents(new IEditorIf[]{m_changeTasksDialog});

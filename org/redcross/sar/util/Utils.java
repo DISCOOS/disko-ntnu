@@ -145,7 +145,7 @@ public class Utils {
 
 			// create message dialog
 			messageDialog = new MessageDialog(getApp().getFrame());
-			messageDialog.setSnapTo(getApp().getFrame(), DefaultDialog.POS_CENTER, 0, true);
+			messageDialog.setSnapToLocation(getApp().getFrame(), DefaultDialog.POS_CENTER, 0, true, false);
 			messageDialog.addFocusListener(new FocusAdapter() {
             	@Override
                 public void focusGained(FocusEvent e) {
@@ -677,6 +677,29 @@ public class Utils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+	}
+
+	public static String getExtensionRegExp(String extensions, String delimiter) {
+
+		// initialize
+		String regexp = "";
+		String[] list = extensions.split(delimiter);
+
+		// create a union of regular expressions
+		for(String ext : list) {
+			// insert escape characters
+			ext = ext.replaceAll("\\.", "\\\\.");
+			ext = ext.replaceAll("\\*", "\\.*");
+			// build
+			if(regexp.isEmpty())
+				regexp = ext;
+			else
+				regexp = regexp.concat("|"+ext);
+		}
+
+		// finished
+		return regexp;
 
 	}
 

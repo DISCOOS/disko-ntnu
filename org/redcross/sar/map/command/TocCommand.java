@@ -45,7 +45,7 @@ public class TocCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				TocDialog tocDialog = (TocDialog)dialog;
 				tocDialog.onLoad((IDiskoMap)obj);
-				tocDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, DefaultDialog.SIZE_TO_LIMIT, true);
+				tocDialog.setSnapToLocation((JComponent)obj, DefaultDialog.POS_EAST, 0, true, false);
 			}
 		}
 		catch (Exception e) {

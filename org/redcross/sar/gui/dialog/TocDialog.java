@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 
 import org.redcross.sar.gui.panel.TocPanel;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
@@ -44,6 +43,7 @@ public class TocDialog extends DefaultDialog  {
 			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
 			// pack to content size
 	        this.pack();
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -84,22 +84,6 @@ public class TocDialog extends DefaultDialog  {
 			}
 		}
 		return m_tocPanel;
-	}
-
-	@Override
-	public boolean requestFitToContent() {
-		if(getTocPanel().isExpanded()) {
-			// get size
-			int w = getTocPanel().getPreferredSize().width;
-			int h = getTocPanel().getPreferredSize().height;
-			// update
-			Utils.setAnySize(TocDialog.this,w,h);
-		}
-		else {
-			// update
-			Utils.setAnySize(TocDialog.this,getTocPanel().getWidth(),36);
-		}
-		return true;
 	}
 
 

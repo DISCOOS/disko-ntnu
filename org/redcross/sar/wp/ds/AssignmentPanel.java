@@ -96,7 +96,7 @@ public class AssignmentPanel extends BasePanel {
 		setPreferredSize(d);
 		setMinimumSize(d);
 		// set body component
-		setBodyComponent(getTable());
+		setContainer(getTable());
 	}
 
 	private AssignmentTable getTable() {

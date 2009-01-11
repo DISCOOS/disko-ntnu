@@ -2,6 +2,7 @@ package org.redcross.sar.gui.field;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -38,6 +39,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	private static final long serialVersionUID = 1L;
 
+	protected static final int MINIMUM_COMPONENT_WIDTH = 50;
 	protected static final int DEFAULT_CAPTION_WIDTH = 80;
 	protected static final int DEFAULT_MAXIMUM_HEIGHT = 25;
 
@@ -77,7 +79,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		// forward
 		super();
 		// initialize GUI
-		initialize();
+		initialize(width, height);
 		// suspend listeners
 		setChangeable(false);
 		// update
@@ -85,8 +87,6 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		setCaptionText(caption);
 		setValue(value);
 		setEditable(isEditable);
-		setFixedCaptionWidth(width);
-		setFixedHeight(height);
 
 		//setBorder(BorderFactory.createLineBorder(Color.RED)); // USE TO DEBUG LAYOUT PROBLEMS
 
@@ -195,7 +195,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 	 *==================================================================
 	 */
 
-	private void initialize() {
+	private void initialize(int width, int height) {
 		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
 		this.add(getCaption());
 		Component c = getComponent();
@@ -203,9 +203,12 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 			((JComponent)c).setAlignmentX(JComponent.LEFT_ALIGNMENT);
 			((JComponent)c).setAlignmentY(JComponent.CENTER_ALIGNMENT);
 		}
-		this.add(getComponent());
+		this.add(c);
 		this.add(getButton());
 		this.setOpaque(false);
+		// update fixed sizes
+		setFixedCaptionWidth(width);
+		setFixedHeight(height);
 		// do not add before button is made visible
 		m_buttonStrut = Box.createHorizontalStrut(5);
 		// add focus listeners
@@ -292,10 +295,13 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		// save width
 		m_fixedWidth = width;
 		// translate
-		if(width==-1)
-			Utils.setFixedSize(getCaption(),DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT);
-		else
-			Utils.setFixedSize(getCaption(), width, Integer.MAX_VALUE);
+		width = (width==-1 ? DEFAULT_CAPTION_WIDTH : width);
+		// set fixed caption width
+		Utils.setFixedWidth(getCaption(), width);
+		// set minimum size
+		Dimension d = getButton().getPreferredSize();
+		this.setMinimumSize(new Dimension(width+MINIMUM_COMPONENT_WIDTH+d.width,d.height));
+		this.setPreferredSize(new Dimension(width+MINIMUM_COMPONENT_WIDTH+d.width,d.height));
 	}
 
 	public int getFixedHeight() {
@@ -308,10 +314,9 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		// constrain height to button
 		height = m_button!=null && m_button.isVisible() ? Math.max(height,m_button.getPreferredSize().height) : height;
 		// translate
-		if(height==-1)
-			Utils.setFixedHeight(this, DEFAULT_MAXIMUM_HEIGHT);
-		else
-			Utils.setFixedHeight(this, height);
+		height = (height==-1 ? DEFAULT_MAXIMUM_HEIGHT : height);
+		// set fixed height
+		Utils.setFixedHeight(this, height);
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.mso.panel.PositionPanel;
@@ -80,8 +80,10 @@ public class PositionTool extends AbstractMsoDrawTool {
 		p.setX(0);
 		p.setY(0);
 
-		// save dialog
-		this.dialog = (DefaultDialog)dialog;
+		// save dialog?
+		if(dialog instanceof IDialog) {
+			this.dialog = (IDialog)dialog;
+		}
 
 		// create default property panel
 		toolPanel = addToolPanel();

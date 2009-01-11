@@ -47,7 +47,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 			if (obj instanceof IDiskoMap) {
 				GotoDialog gotoDialog = (GotoDialog)dialog;
 				gotoDialog.onLoad((IDiskoMap)obj);
-				gotoDialog.setSnapTo((JComponent)obj, DefaultDialog.POS_EAST, 0, true);
+				gotoDialog.setSnapToLocation((JComponent)obj, DefaultDialog.POS_EAST, 0, true, false);
 			}
 		}
 		catch (Exception e) {

@@ -424,7 +424,7 @@ public class ProgressMonitor {
 
 	public void setProgressSnapTo(final JComponent snapTo) {
 		if(SwingUtilities.isEventDispatchThread()) {
-			getProgressDialog().setSnapTo(snapTo, DefaultDialog.POS_CENTER, 0, true);
+			getProgressDialog().setSnapToLocation(snapTo, DefaultDialog.POS_CENTER, 0, true, false);
 		}
 		else {
 			SwingUtilities.invokeLater(new Runnable() {

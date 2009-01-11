@@ -1,11 +1,14 @@
 package org.redcross.sar.gui.panel;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +43,7 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	private static final long serialVersionUID = 1L;
 
 	private DefaultPanel layersPanel;
-	private DefaultPanel tolerancePanel;
+	private TogglePanel tolerancePanel;
 	private JSlider toleranceSlider;
 	private JPanel messagePanel;
 	private JLabel messageLabel;
@@ -68,7 +71,7 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 		myInterests.put(IMsoFeatureLayer.LayerCode.FLANK_LAYER.name(),IMsoFeatureLayer.LayerCode.FLANK_LAYER.name());
 		myInterests.put(IMsoFeatureLayer.LayerCode.POI_LAYER.name(),IMsoFeatureLayer.LayerCode.POI_LAYER.name());
 
-		// initialize gui
+		// initialize GUI
 		initialize();
 
 	}
@@ -77,15 +80,16 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 		try {
 
 			// prepare
-			setFitBodyOnResize(true);
-			setMinimumSize(new Dimension(300,36));
-			// build body
-			JPanel body = (JPanel)getBodyComponent();
-			body.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-			body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
-			body.add(getTolerancePanel());
-			body.add(Box.createVerticalStrut(5));
-			body.add(getLayersPanel());
+			setContainerBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+			setContainerLayout(new BoxLayout(getContainer(),BoxLayout.Y_AXIS));
+
+			// build container
+			addToContainer(getTolerancePanel());
+			addToContainer(Box.createVerticalStrut(5));
+			addToContainer(getLayersPanel());
+
+			// set toggle limits
+			setToggleLimits(280,true);
 
 		}
 		catch (java.lang.Throwable e) {
@@ -190,6 +194,8 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 			try {
 				// get body component
 				layersPanel = new DefaultPanel("Snap til lag",false,false,ButtonSize.SMALL);
+				layersPanel.setPreferredExpandedHeight(450);
+				layersPanel.setScrollBarPolicies(DefaultPanel.VERTICAL_SCROLLBAR_AS_NEEDED, DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
 				layersPanel.insertButton("finish",getNoneButton(), "none");
 				layersPanel.insertButton("finish",getAllButton(), "all");
 				layersPanel.addActionListener(new ActionListener() {
@@ -205,15 +211,11 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 
 				});
 
+				// build container
+				layersPanel.setContainerLayout(new BoxLayout(layersPanel.getContainer(),BoxLayout.Y_AXIS));
+				layersPanel.addToContainer(getMessagePanel());
+				layersPanel.addToContainer(getSelectorPanel());
 
-				JPanel body = ((JPanel)layersPanel.getBodyComponent());
-				body.setLayout(new BoxLayout(body,BoxLayout.Y_AXIS));
-				body.add(getMessagePanel());
-				body.add(getSelectorPanel());
-				// set preferred size
-				layersPanel.setPreferredSize(new Dimension(300,50));
-				// setup
-				showSelector(false);
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -225,16 +227,16 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	private JPanel getMessagePanel() {
 		if(messagePanel==null) {
 			messagePanel = new JPanel();
-			messagePanel.setLayout(new BoxLayout(messagePanel,BoxLayout.Y_AXIS));
-			messagePanel.add(getMessageLabel());
-			messagePanel.add(Box.createVerticalStrut(5));
+			messagePanel.setLayout(new BorderLayout());
+			messagePanel.setPreferredSize(new Dimension(230,100));
+			messagePanel.add(getMessageLabel(),BorderLayout.CENTER);
 		}
 		return messagePanel;
 	}
 
 	private JLabel getMessageLabel() {
 		if(messageLabel==null) {
-			messageLabel = new JLabel();
+			messageLabel = new JLabel(getMessage());
 			messageLabel.setVerticalAlignment(SwingConstants.CENTER);
 			messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			messageLabel.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -247,9 +249,9 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 		if(selectorPanel==null) {
 			// create selector panel
 			selectorPanel = new JPanel();
+			selectorPanel.setPreferredSize(new Dimension(230,100));
+			selectorPanel.setVisible(false);
 			VerticalFlowLayout vfl = new VerticalFlowLayout();
-			vfl.setVgap(0);
-			vfl.setHgap(0);
 			vfl.setAlignment(VerticalFlowLayout.TOP);
 			selectorPanel.setLayout(vfl);
 
@@ -258,13 +260,18 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	}
 
 
-	private DefaultPanel getTolerancePanel() {
+	private TogglePanel getTolerancePanel() {
 		if (tolerancePanel == null) {
 			try {
-				tolerancePanel = new DefaultPanel("Sett toleranse (meter)",false,false,ButtonSize.SMALL);
-				tolerancePanel.setFitBodyOnResize(true);
-				tolerancePanel.setBodyComponent(getToleranceSlider());
+
+				// create panel
+				tolerancePanel = new TogglePanel("Sett toleranse (meter)",false,false);
+				tolerancePanel.setExpanded(false);
 				Utils.setFixedHeight(tolerancePanel,100);
+				tolerancePanel.setPreferredExpandedHeight(100);
+				tolerancePanel.setContainer(getToleranceSlider());
+				tolerancePanel.addToggleListener(toggleListener);
+
 			} catch (java.lang.Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -313,29 +320,26 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	}
 
 	private void hideAll() {
-		Iterator<JCheckBox> it = checkBoxes.values().iterator();
-		while(it.hasNext()) {
-			it.next().setVisible(false);
+		for(JCheckBox it : checkBoxes.values()) {
+			it.setVisible(false);
 		}
 	}
 
 	private void checkAll() {
-		Iterator<JCheckBox> it = checkBoxes.values().iterator();
-		while(it.hasNext()) {
-			it.next().setSelected(true);
+		for(JCheckBox it : checkBoxes.values()) {
+			it.setSelected(true);
 		}
 	}
 
 	private void checkNone() {
-		Iterator<JCheckBox> it = checkBoxes.values().iterator();
-		while(it.hasNext()) {
-			it.next().setSelected(false);
+		for(JCheckBox it : checkBoxes.values()) {
+			it.setSelected(false);
 		}
 	}
 
 	private String getLayerCaption(String name)
 	{
-		// search for mso layers
+		// search for MSO layers
 		for(int i=0;i<myInterests.size();i++){
 			if(myInterests.containsKey(name)){
 				return DiskoEnumFactory.getText("LayerCode."+name+".text",null);
@@ -366,12 +370,12 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	}
 
 	public void setSnapableLayers(List<IFeatureLayer> list) {
-		// adding checkboxes
 		try {
 			// initialize
 			hideAll();
 			layers.clear();
 			JCheckBox cb = null;
+			int h = 0;
 			// get selector panel
 			JPanel selector = getSelectorPanel();
 			// loop over all
@@ -381,7 +385,6 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 				cb = getCheckBox(name);
 				if (cb == null) {
 					cb = createCheckBox(name);
-					selector.add(cb);
 				}
 				// update text
 				cb.setText(getLayerCaption(name));
@@ -391,13 +394,19 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 				layers.put(name,flayer);
 				// show box
 				cb.setVisible(true);
+				// add to height
+				h += cb.getPreferredSize().height;
 			}
+
+			// sort checkboxes on captions
+			sortOnCaptions();
+
+			// limit height
+			h = Math.max(h,100);
+
 			// set preferred size
-			layersPanel.setPreferredSize(layersPanel.getLayout().preferredLayoutSize(layersPanel));
-			// fit body to data
-			fitBodyToPreferredLayoutSize();
-			// try to fit manager to content
-			requestFitToContent(true);
+			selector.setPreferredSize(new Dimension(230,h));
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -409,14 +418,14 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 		if(isChangeable()) {
 			// unselect all
 			checkNone();
-			// get selector panel
-			JPanel selector = getSelectorPanel();
 			// initialize
 			List<IFeatureLayer> snapTo = null;
 			// get list?
 			if(adapter!=null) snapTo = adapter.getSnapToLayers();
 			// has no layers?
 			if(snapTo==null) return;
+			// initialize height change
+			int dy = 0;
 			// update selection
 			for(int i=0;i<snapTo.size();i++) {
 				IFeatureLayer flayer = snapTo.get(i);
@@ -425,15 +434,16 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 					JCheckBox cb = getCheckBox(name);
 					if (cb == null) {
 						cb = createCheckBox(name);
-						selector.add(cb);
 						// update text
 						cb.setText(getLayerCaption(name));
 						// put combobox
 						checkBoxes.put(name,cb);
 						// put layer
-						this.layers.put(name,flayer);
+						layers.put(name,flayer);
 						// show box
 						cb.setVisible(true);
+						// add height
+						dy += cb.getPreferredSize().height;
 					}
 					cb.setSelected(true);
 				} catch (Exception e) {
@@ -441,15 +451,27 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 					e.printStackTrace();
 				}
 			}
-			// set preferred size
-			layersPanel.setPreferredSize(layersPanel.getLayout().preferredLayoutSize(layersPanel));
-			//getBodyComponent().setPreferredSize(new Dimension(300,h+getTolerancePanel().getPreferredSize().height));
-			// fit body to data
-			fitBodyToPreferredLayoutSize();
-			// try to fit manager to content
-			requestFitToContent(true);
+
+			// sort checkboxes on captions
+			sortOnCaptions();
+
 			// forward
 			setDirty(true);
+		}
+	}
+
+	private void sortOnCaptions() {
+		// get selector panel
+		JPanel selector = getSelectorPanel();
+		// initialize
+		selector.removeAll();
+		// get checkbox array
+		List<JCheckBox> list = new ArrayList<JCheckBox>(checkBoxes.values());
+		// sort checkboxes
+		Collections.sort(list, comparator);
+		// add sorted checkboxes
+		for(JCheckBox it : list) {
+			selector.add(it);
 		}
 	}
 
@@ -468,7 +490,7 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	public void onSnapableChanged() {
 		// get flag
 		boolean bFlag = adapter!=null ? adapter.isSnappingAllowed() : false;
-		// update gui
+		// update
 		if(bFlag) {
 			try {
 				if(adapter!=null)
@@ -480,7 +502,7 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 		}
 		// set state
 		getToleranceSlider().setEnabled(bFlag);
-		// update snappable layers?
+		// update snapable layers?
 		if(adapter!=null) {
 			setSnapableLayers(adapter.getSnapableLayers());
 		}
@@ -491,27 +513,39 @@ public class SnapPanel extends TogglePanel implements SnapListener {
 	}
 
 	private void showSelector(boolean isVisible) {
-		// get panels
-		getSelectorPanel().setVisible(isVisible);
-		showMessage("<html><center>Snapping er kun mulig på <br> kartskala mindre enn 1:"
-				+ ((adapter!=null) ? (int)adapter.getMaxSnapScale() : "<nothing>")
-				+ "</center></html>",!isVisible);
+
+		// any change?
+		if(getSelectorPanel().isVisible()!=isVisible) {
+
+			// set selector status
+			getSelectorPanel().setVisible(isVisible);
+
+			// set message status
+			getMessagePanel().setVisible(!isVisible);
+
+		}
+
+		// update message?
+		if(!isVisible) getMessageLabel().setText(getMessage());
+
 	}
 
-	private void showMessage(String text, boolean isVisible) {
-		// get panels
-		getMessageLabel().setText(text);
-		getMessagePanel().setVisible(isVisible);
-		// set preferred size?
-		if(isVisible) {
-			int h = getMessagePanel().getPreferredSize().height;
-			layersPanel.setPreferredSize(new Dimension(300,h));
-			//getBodyComponent().setPreferredSize(new Dimension(300,h+getTolerancePanel().getPreferredSize().height));
-			// fit body to data
-			fitBodyToPreferredLayoutSize();
-			// try to fit manager to content
-			requestFitToContent(true);
-		}
+	private String getMessage() {
+
+		return "<html><center>Snapping er kun mulig på <br> kartskala mindre enn 1:"
+				+ ((adapter!=null) ? (int)adapter.getMaxSnapScale() : "<nothing>")
+				+ "</center></html>";
+
 	}
+
+	private final Comparator<JCheckBox> comparator = new Comparator<JCheckBox>() {
+
+		@Override
+		public int compare(JCheckBox o1, JCheckBox o2) {
+			return o1.getText().compareTo(o2.getText());
+		}
+
+	};
+
 
 }

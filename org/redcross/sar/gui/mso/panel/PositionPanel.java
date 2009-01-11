@@ -117,20 +117,20 @@ public class PositionPanel extends DefaultToolPanel {
 	private void initialize() {
 		
 		// set preferred body size
-		setPreferredBodySize(new Dimension(200,350));
+		setPreferredContainerSize(new Dimension(200,350));
 		
 		// get body panel
-		JPanel panel = (JPanel)getBodyComponent();
+		JPanel panel = (JPanel)getContainer();
 		
 		// set layout
 		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
 		// build container
-		addBodyChild(Box.createVerticalStrut(5));
-		addBodyChild(getGotoPanel());
-		addBodyChild(Box.createVerticalStrut(5));
-		addBodyChild(getUnitsPanel());
-		addBodyChild(Box.createVerticalStrut(5));
+		addToContainer(Box.createVerticalStrut(5));
+		addToContainer(getGotoPanel());
+		addToContainer(Box.createVerticalStrut(5));
+		addToContainer(getUnitsPanel());
+		addToContainer(Box.createVerticalStrut(5));
 		
 		// add buttons
 		insertButton("finish",getCenterAtButton(),"centerat");
@@ -196,9 +196,9 @@ public class PositionPanel extends DefaultToolPanel {
 			// create
 			unitsPanel = new DefaultPanel(SELECTION_ENABLED,false,false);
 			// replace body component
-			unitsPanel.setBodyComponent(getUnitList());
+			unitsPanel.setContainer(getUnitList());
 			// set preferred body size
-			unitsPanel.setPreferredBodySize(new Dimension(200,200));
+			unitsPanel.setPreferredContainerSize(new Dimension(200,200));
 		}
 		return unitsPanel;
 	}

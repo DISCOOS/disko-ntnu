@@ -40,7 +40,7 @@ public class MessagePanel extends DefaultPanel {
 	 */
 	private void initialize() {
 		// set table
-		setBodyComponent(getMessagePane());
+		setContainer(getMessagePane());
 	}
 
 	/**

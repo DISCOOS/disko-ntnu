@@ -24,6 +24,7 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
 import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
@@ -250,6 +251,14 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      */
     public void setCreatedTime(Date time) {
     	m_MsoObjectId.setCreatedTime(time);
+    	Calendar t = m_MsoObjectId.getCreatedTime();
+        for (AttributeImpl attr : m_attributeList)
+        {
+            if(attr instanceof MsoEnum) {
+            	MsoEnum e = (MsoEnum)attr;
+            	e.setInitialTime(t);
+            }
+        }
     }
 
     public boolean isCreated()
@@ -1086,20 +1095,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	m_changeCount++;
     }
 
-    /*
-    protected void registerAddedReference(Object source, UpdateMode aMode)
-    {
-        System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.ADDED_REFERENCE_EVENT, true, false);
-    }
-
-    protected void registerRemovedReference(Object source, UpdateMode aMode)
-    {
-        System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.REMOVED_REFERENCE_EVENT, true, false);
-    }
-	*/
-
     protected void registerAddedReference(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
     {
         System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
@@ -1262,19 +1257,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return new UnknownAttributeException("Unknown attribute index '" + anIndex + "' of class " + aClass.toString() + " in " + this.getClass().toString());
     }
 
-    /*
-    private AttributeImpl getAttribute(String aName, Class aClass) throws UnknownAttributeException
-    {
-
-        AttributeImpl retVal = getAttribute(aName);
-        if (!retVal.getAttributeClass().isAssignableFrom(aClass))
-        {
-            throw attributeCast(aName, aClass);
-        }
-        return retVal;
-    }
-    */
-
     private AttributeImpl getAttribute(int anIndex) throws UnknownAttributeException
     {
         if (!m_listSorted)
@@ -1308,19 +1290,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         m_listSorted = true;
     }
-
-    /*
-    private void setAttributeValue(AttributeImpl anAttr, Object aValue) throws MsoNullPointerException
-    {
-        if (anAttr != null)
-        {
-            anAttr.set(aValue);
-        } else
-        {
-            throw new MsoNullPointerException("Trying to assign value to null attribute");
-        }
-    }
-    */
 
     /*-------------------------------------------------------------------------------------------
 	 * Inner classes

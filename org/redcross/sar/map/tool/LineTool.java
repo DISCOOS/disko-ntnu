@@ -10,7 +10,7 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.mso.panel.LinePanel;
 import org.redcross.sar.gui.panel.IToolPanel;
@@ -52,7 +52,7 @@ public class LineTool extends AbstractMsoDrawTool {
 			FeatureType.FEATURE_POLYLINE));
 
 		// prepare abstract class BasicTool
-		caption = "Linje (" + DiskoEnumFactory.getText(featureType) + ")";
+		caption = "Linje <small style=\"color:gray\">(" + DiskoEnumFactory.getText(featureType) + ")</small>";
 		category = "Commands";
 		message = "Tegner en linje mellom hvert punkt";
 		name = "CustomCommands_Ployline";
@@ -76,10 +76,12 @@ public class LineTool extends AbstractMsoDrawTool {
 		// create default property panel
 		toolPanel = addToolPanel();
 
-		// save dialog
-		this.dialog = (DefaultDialog)dialog;
+		// save dialog?
+		if(dialog instanceof IDialog) {
+			this.dialog = (IDialog)dialog;
+		}
 
-		// registrate me in dialog
+		// register me in dialog
 		dialog.register(this);
 
 	}
@@ -125,7 +127,7 @@ public class LineTool extends AbstractMsoDrawTool {
 			else
 				featureType=FeatureType.FEATURE_POLYLINE;
 			// update caption
-			caption = DiskoEnumFactory.getText(featureType);
+			caption = "Linje <small style=\"color:gray\">(" + DiskoEnumFactory.getText(featureType) + ")</small>";
 			// finished
 			return;
 		}

@@ -10,7 +10,7 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriTransformDirection;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.DiskoMap;
@@ -46,7 +46,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 	// GUI components
 	protected DiskoMap map;
-	protected DefaultDialog dialog;
+	protected IDialog dialog;
 	protected IToolPanel toolPanel;
 	protected IToolPanel defaultToolPanel;
 	protected AbstractButton button;
@@ -222,7 +222,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 		return false;
 	}
 
-	public DefaultDialog getDialog() {
+	public IDialog getDialog() {
 		return dialog;
 	}
 

@@ -2,12 +2,11 @@ package org.redcross.sar.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
-import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +14,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -31,6 +31,9 @@ import org.redcross.sar.gui.panel.AbstractPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.BaseToolPanel;
 import org.redcross.sar.gui.panel.IPanel;
+import org.redcross.sar.gui.panel.IPanelManager;
+import org.redcross.sar.gui.panel.PanelManager;
+import org.redcross.sar.gui.util.AlignUtils;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
@@ -64,10 +67,12 @@ public class DefaultDialog extends JDialog implements IDialog {
 
     private int position = POS_CENTER;			// position relative to snapToComponent
     private int sizeTo = SIZE_TO_OFF;			// resize behavior when snapping
-    private boolean snapToInside = true;		// if true, snap inside the visible rectangle of snapToComponent
 
-    private int width  = -1;
-    private int height = -1;
+    private boolean snapToInside = true;		// if true, snap inside the visible rectangle of snapToComponent
+    private boolean isSnapToLocked = false;		// if true, this can only move together with snapToComponent
+
+    //private int width  = -1;
+    //private int height = -1;
 
     private Component snapToComponent;
 
@@ -88,6 +93,8 @@ public class DefaultDialog extends JDialog implements IDialog {
     private final Adapter m_adapter = new Adapter();
     private final DialogWorker m_worker = new DialogWorker(MILLIS_TO_SHOW);
 
+    protected final PanelManager m_manager = new PanelManager(null,this);
+
     /* ==========================================================
      *  Constructors
      * ========================================================== */
@@ -105,7 +112,7 @@ public class DefaultDialog extends JDialog implements IDialog {
         initialize();
 
         // set default location
-        setSnapTo(owner,POS_CENTER,0,false);
+        setSnapToLocation(owner,POS_CENTER,0,false, false);
 
         // add global key-event listener
         Utils.getApp().getKeyEventDispatcher().addKeyListener(
@@ -144,14 +151,14 @@ public class DefaultDialog extends JDialog implements IDialog {
         // is old content instance of IPanel?
         if(old instanceof IPanel) {
             IPanel p = (IPanel)old;
-            p.setManager(null, false);
+            p.setParentManager(null, false, false);
         }
         // forward
         super.setContentPane(c);
         // is instance of IPanel?
         if(c instanceof IPanel) {
             IPanel p = (IPanel)c;
-            p.setManager(this, true);
+            p.setParentManager(this, true, false);
         }
 
     }
@@ -170,6 +177,7 @@ public class DefaultDialog extends JDialog implements IDialog {
         super.setVisible(isVisible);
     }
 
+    /*
     @Override
     public void setSize(int w, int h) {
     	width = w;
@@ -182,6 +190,12 @@ public class DefaultDialog extends JDialog implements IDialog {
     	width = d.width;
     	height = d.height;
     	super.setSize(d);
+    }
+    */
+
+    @Override
+    public DiskoGlassPane getGlassPane() {
+        return (DiskoGlassPane)super.getGlassPane();
     }
 
     /* ==========================================================
@@ -322,42 +336,61 @@ public class DefaultDialog extends JDialog implements IDialog {
 
     @Override
     public void setLocationByPlatform(boolean locationByPlatform) {
-        // NOT ALLOWED
+        // NOT IN USE --> Consume
     }
 
     @Override
     public void setLocation(int x, int y) {
-        // reset
-        unregisterSnapToComponent();
-        // forward
-        super.setLocation(x, y);
+        // forward?
+    	if(snapToComponent==null || !isSnapToLocked)
+    		super.setLocation(x, y);
+
     }
 
     @Override
     public void setLocation(Point p) {
-        // reset
-        unregisterSnapToComponent();
-        // forward
-        super.setLocation(p);
+        // forward?
+    	if(snapToComponent==null || !isSnapToLocked)
+    		super.setLocation(p);
     }
 
     @Override
     public void setLocationRelativeTo(Component c) {
-        // reset
-        unregisterSnapToComponent();
-        // forward
-        super.setLocationRelativeTo(c);
+        // forward?
+    	if(snapToComponent==null || !isSnapToLocked)
+    		super.setLocationRelativeTo(c);
     }
 
     /**
-     * Set location relative to component </p>
+     * Set snap location relative to component </p>
      *
-     * @param Component snapTo - Locate and resize relative to snapTo component
+     * @param Component snapTo - Locate and resize relative to snapTo component. Pass <code>null</code> to disable snapping
      * @param int position - Relative position
      * @param int sizeTo - Resizing behavior when snapping
      * @param boolean snapToInside - If <code>true</code>, snap to inside of the visible rectangle of component
      */
-    public void setSnapTo(Component snapTo, int position, int sizeTo, boolean snapToInside) {
+    public void setSnapTo(Component snapTo, int position, int sizeTo) {
+
+        // unregister
+        unregisterSnapToComponent();
+
+        // prepare
+        this.position = position;
+        this.sizeTo = sizeTo;
+
+        // forward
+        registerSnapToComponent(snapTo);
+    }
+
+    /**
+     * Set location relative to component </p>
+     * @param Component snapTo - Locate and resize relative to snapTo component
+     *
+     * @param int position - Relative position
+     * @param int sizeTo - Resizing behavior when snapping
+     * @param boolean snapToInside - If <code>true</code>, snap to inside of the visible rectangle of component
+     */
+    public void setSnapToLocation(Component snapTo, int position, int sizeTo, boolean snapToInside, boolean isSnapToLocked) {
 
         // unregister
         unregisterSnapToComponent();
@@ -366,6 +399,7 @@ public class DefaultDialog extends JDialog implements IDialog {
         this.position = position;
         this.sizeTo = sizeTo;
         this.snapToInside = snapToInside;
+        this.isSnapToLocked = isSnapToLocked;
 
         // forward
         registerSnapToComponent(snapTo);
@@ -451,53 +485,44 @@ public class DefaultDialog extends JDialog implements IDialog {
      *  IPanelManager interface implementation
      * ========================================================== */
 
+	public boolean isRootManager() {
+		return m_manager.isRootManager();
+	}
+
+	public IPanelManager getParentManager() {
+		return m_manager.getParentManager();
+	}
+
+	public IPanelManager setParentManager(IPanelManager parent) {
+		return m_manager.setParentManager(parent);
+	}
+
     public boolean requestMoveTo(int x, int y, boolean isRelative) {
-        if(isMoveable()) {
-            if(isRelative) {
-                super.setLocation(getLocation().x+x,getLocation().y+y);
-            } else {
-                super.setLocation(x,y);
-            }
-            return true;
-        }
-        return false;
+    	return m_manager.requestMoveTo(x, y, isRelative);
     }
 
     public boolean requestResize(int w, int h, boolean isRelative) {
-        if(isResizable() && sizeTo==0) {
-            if(isRelative) {
-                setSize(width+w,height+h);
-            } else {
-                setSize(w, h);
-            }
-            snapTo();
-            pack();
-            return true;
-        }
-        return false;
-
+    	return m_manager.requestResize(w, h, isRelative);
     }
 
-    public boolean requestFitToContent() { return false; }
+    public boolean requestFitToMinimumContentSize(boolean pack) {
+    	return m_manager.requestFitToMinimumContentSize(false);
+    }
+
+    public boolean requestFitToPreferredContentSize(boolean pack) {
+    	return m_manager.requestFitToPreferredContentSize(false);
+    }
+
+    public boolean requestFitToMaximumContentSize(boolean pack) {
+    	return m_manager.requestFitToMaximumContentSize(false);
+    }
 
     public boolean requestShow() {
-        if(isDisplayable()) {
-            setVisible(true);
-            return true;
-        }
-        return false;
+    	return m_manager.requestShow();
     }
 
     public boolean requestHide() {
-        // important!
-        setVisible(false);
-        // finished
-        return !isVisible();
-    }
-
-    @Override
-    public DiskoGlassPane getGlassPane() {
-        return (DiskoGlassPane)super.getGlassPane();
+    	return m_manager.requestHide();
     }
 
     /* ==========================================================
@@ -518,18 +543,76 @@ public class DefaultDialog extends JDialog implements IDialog {
 
     private void snapTo(boolean update, boolean resizeOnly) {
 
+        // not allowed?
+        if (!this.isDisplayable() ||
+             snapToComponent == null ||
+            !snapToComponent.isDisplayable() ||
+            !snapToComponent.isShowing()) {
+
+        	// snapping discarded
+        	return;
+        }
+
         try {
-            // position not defined?
-            if (snapToComponent == null ||
-                    !(snapToComponent.isDisplayable()
-                            && snapToComponent.isShowing())) return;
 
             // initialize size?
+            /*
             if (update || width == -1 || height == -1) {
                 width  = getWidth() !=0 ? getWidth() : -1;
                 height = getHeight() !=0 ? getHeight() : -1;
             }
+            */
 
+            // initialize
+            int offset = 2;
+            int width = getWidth();
+            int height = getHeight();
+
+            // get rectangle of alignment frame
+            Rectangle bounds = snapToComponent.getBounds();
+            bounds.setLocation(snapToComponent.getLocationOnScreen());
+
+            // cast to frame
+            Rectangle2D frame = bounds;
+
+            // get position data
+            switch (position) {
+                case POS_WEST:
+                	if(snapToInside)
+                		frame = AlignUtils.align(frame, AlignUtils.NORTH_WEST, width, height, snapToInside ? offset : 0, AlignUtils.NORTH_WEST, sizeTo!=0 ? AlignUtils.FIT_VERTICAL : 0);
+                	else
+                		frame = AlignUtils.align(frame, AlignUtils.NORTH_WEST, width, height, snapToInside ? offset : 0, AlignUtils.NORTH_EAST, sizeTo!=0 ? AlignUtils.FIT_VERTICAL : 0);
+                    break;
+                case POS_EAST:
+                	if(snapToInside)
+                		frame = AlignUtils.align(frame, AlignUtils.NORTH_EAST, width, height, snapToInside ? offset : 0, AlignUtils.NORTH_EAST, 0); //sizeTo!=0 ? AlignUtils.FIT_VERTICAL : 0);
+                	else
+                		frame = AlignUtils.align(frame, AlignUtils.NORTH_EAST, width, height, snapToInside ? offset : 0, AlignUtils.NORTH_WEST, sizeTo!=0 ? AlignUtils.FIT_VERTICAL : 0);
+                    break;
+                case POS_NORTH:
+                	if(snapToInside)
+                		frame = AlignUtils.align(frame, AlignUtils.NORTH_WEST, width, height, snapToInside ? offset : 0, AlignUtils.NORTH_WEST, sizeTo!=0 ? AlignUtils.FIT_HORIZONTAL : 0);
+                	else
+                		frame = AlignUtils.align(frame, AlignUtils.NORTH_WEST, width, height, snapToInside ? offset : 0, AlignUtils.SOUTH_WEST, sizeTo!=0 ? AlignUtils.FIT_HORIZONTAL : 0);
+                    break;
+                case POS_SOUTH:
+                	if(snapToInside)
+                		frame = AlignUtils.align(frame, AlignUtils.SOUTH_WEST, width, height, snapToInside ? offset : 0, AlignUtils.SOUTH_WEST, sizeTo!=0 ? AlignUtils.FIT_HORIZONTAL : 0);
+                	else
+                		frame = AlignUtils.align(frame, AlignUtils.SOUTH_WEST, width, height, snapToInside ? offset : 0, AlignUtils.NORTH_WEST, sizeTo!=0 ? AlignUtils.FIT_HORIZONTAL : 0);
+                    break;
+                case POS_CENTER:
+                	if(snapToInside)
+                		frame = AlignUtils.align(frame, AlignUtils.CENTER, width, height, snapToInside ? offset : 0, AlignUtils.CENTER, sizeTo!=0 ? AlignUtils.FIT : 0);
+                	else
+                		frame = AlignUtils.align(frame, AlignUtils.CENTER, width, height, snapToInside ? offset : 0, AlignUtils.CENTER, sizeTo!=0 ? AlignUtils.FIT : 0);
+                    break;
+            }
+
+            // apply size
+            this.setBounds(frame.getBounds());
+
+            /*
             // initialize
             int offset = 2;
             int bx = snapToComponent.getLocationOnScreen().x;
@@ -604,11 +687,13 @@ public class DefaultDialog extends JDialog implements IDialog {
                 // update location
                 super.setLocation(x, y);
             }
+             */
+
             // apply location change
-            this.validate();
+            //this.invalidate();
+
         } catch (Exception ex) {
             // Consume
-            //ex.printStackTrace();
         }
 
     }
@@ -714,8 +799,11 @@ public class DefaultDialog extends JDialog implements IDialog {
     }
 
     private boolean handleComponentEvent(Component source, boolean isMove) {
-        if(source==this || source==snapToComponent) {
+        if(source==snapToComponent) {
             return true;
+        }
+        else if(source==this) {
+            return isMove && isSnapToLocked;
         }
         else if(snapToComponent!=null && source==SwingUtilities.getRoot(snapToComponent)) {
             return isMove;
@@ -763,7 +851,6 @@ public class DefaultDialog extends JDialog implements IDialog {
             Component c = (Component)e.getSource();
             // handle?
             if(handleComponentEvent(c,false)) {
-                requestFitToContent();
                 snapTo(false,(c!=snapToComponent));
                 onAutoLayout();
                 setWindowState(true);
@@ -907,4 +994,5 @@ public class DefaultDialog extends JDialog implements IDialog {
             }
         }
     }
+
 }

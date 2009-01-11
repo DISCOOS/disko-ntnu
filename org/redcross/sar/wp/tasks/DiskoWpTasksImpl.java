@@ -311,7 +311,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     {
         hideDialogs();
         TaskDialog taskDialog = this.getApplication().getUIFactory().getTaskDialog();
-        taskDialog.setSnapTo(m_contentsPanel, DefaultDialog.POS_CENTER, 0, true);
+        taskDialog.setSnapToLocation(m_contentsPanel, DefaultDialog.POS_CENTER, 0, true, false);
         taskDialog.getTaskPanel().setTask(null);
         taskDialog.setVisible(true);
     }
@@ -325,7 +325,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         {
             hideDialogs();
             TaskDialog taskDialog = this.getApplication().getUIFactory().getTaskDialog();
-            taskDialog.setSnapTo(m_contentsPanel, DefaultDialog.POS_CENTER, 0, true);
+            taskDialog.setSnapToLocation(m_contentsPanel, DefaultDialog.POS_CENTER, 0, true, false);
             taskDialog.getTaskPanel().setTask(m_currentTask);
             taskDialog.setVisible(true);
         }
@@ -352,7 +352,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
             {
                 hideDialogs();
                 m_deleteTaskDialog.setTask(m_currentTask);
-                m_deleteTaskDialog.setSnapTo(m_contentsPanel, DefaultDialog.POS_CENTER, 0, true);
+                m_deleteTaskDialog.setSnapToLocation(m_contentsPanel, DefaultDialog.POS_CENTER, 0, true, false);
                 m_deleteTaskDialog.setVisible(true);
             }
         }

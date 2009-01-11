@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 
 import org.redcross.sar.gui.IMsoHolder;
-import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.mso.panel.FreeHandPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
@@ -53,7 +53,7 @@ public class FreeHandTool extends AbstractMsoDrawTool {
 			FeatureType.FEATURE_POLYLINE));
 
 		// initialize abstract class BasicTool
-		caption = "Frihånd (" + DiskoEnumFactory.getText(featureType) + ")";
+		caption = "Frihånd <small style=\"color:gray\">(" + DiskoEnumFactory.getText(featureType) + ")</small>";
 		category = "Commands";
 		message = "Tegner en frihåndsstrek";
 		name = "CustomCommands_FreeHand";
@@ -79,8 +79,10 @@ public class FreeHandTool extends AbstractMsoDrawTool {
 		// create default property panel
 		toolPanel = addToolPanel();
 
-		// save dialog
-		this.dialog = (DefaultDialog)dialog;
+		// save dialog?
+		if(dialog instanceof IDialog) {
+			this.dialog = (IDialog)dialog;
+		}
 
 		// registrate me in dialog
 		dialog.register(this);
@@ -130,7 +132,7 @@ public class FreeHandTool extends AbstractMsoDrawTool {
 			else
 				featureType=FeatureType.FEATURE_POLYLINE;
 			// update caption
-			caption = "Frihånd (" + DiskoEnumFactory.getText(featureType) + ")";
+			caption = "Frihånd <small style=\"color:gray\">(" + DiskoEnumFactory.getText(featureType) + ")</small>";
 			// finished
 			return;
 		}

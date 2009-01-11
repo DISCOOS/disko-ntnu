@@ -126,8 +126,7 @@ public class UnitInfoPanel extends JPanel
 	private BasePanel getMembersPanel() {
 		if(m_membersPanel==null) {
 			m_membersPanel = new BasePanel(m_wp.getBundleText("UnitInfoPanel_hdr_6.text"));
-			m_membersPanel.setBodyComponent(getMembersList());
-			m_membersPanel.setFitBodyOnResize(true);
+			m_membersPanel.setContainer(getMembersList());
 			m_membersPanel.setScrollBarPolicies(
 					BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
 					BasePanel.HORIZONTAL_SCROLLBAR_NEVER);

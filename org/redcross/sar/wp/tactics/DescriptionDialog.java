@@ -138,7 +138,7 @@ public class DescriptionDialog extends DefaultDialog {
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
-				contentPanel.setBodyComponent(getPOITable());
+				contentPanel.setContainer(getPOITable());
 
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

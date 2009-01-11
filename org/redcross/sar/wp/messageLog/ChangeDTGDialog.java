@@ -201,10 +201,10 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			};
 			m_contentPanel.setRequestHideOnCancel(true);
 			m_contentPanel.setRequestHideOnFinish(true);
-			m_contentPanel.setBodyLayout(new BorderLayout(5,5));
-			m_contentPanel.setBodyBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			m_contentPanel.addBodyChild(getAttributesPanel(),BorderLayout.CENTER);
-			m_contentPanel.addBodyChild(getNumPadPanel(),BorderLayout.EAST);
+			m_contentPanel.setContainerLayout(new BorderLayout(5,5));
+			m_contentPanel.setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			m_contentPanel.addToContainer(getAttributesPanel(),BorderLayout.CENTER);
+			m_contentPanel.addToContainer(getNumPadPanel(),BorderLayout.EAST);
 			m_contentPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override

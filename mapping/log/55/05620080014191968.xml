@@ -40339,3 +40339,475 @@
 </update>
 
 @END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1227058421921">
+<add_to_op id="05620080014191968">
+<object id="340705590906" name="Area" objectType="test" pos="1">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="1" pos2="999" relTo="340705590906" version="0">
+<str_fact value="Area"/>
+</fact>
+<fact comp="n" edit="y" id="00000000019" label="Remarks" pos1="999" pos2="999" relTo="340705590906" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1227058422125">
+<add_to_op id="05620080014191968">
+<object id="964605590937" name="Search" objectType="test" pos="29">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="29" pos2="999" relTo="964605590937" version="0">
+<str_fact value="Search"/>
+</fact>
+<fact comp="n" edit="y" id="00000000188" label="Priority" pos1="999" pos2="999" relTo="964605590937" version="1">
+<str_fact value="NORMAL"/>
+</fact>
+<fact comp="n" edit="y" id="00000000189" label="Status" pos1="999" pos2="999" relTo="964605590937" version="1">
+<str_fact value="DRAFT"/>
+</fact>
+<fact comp="n" edit="y" id="00000000190" label="Remarks" pos1="999" pos2="999" relTo="964605590937" version="1">
+<str_fact value="reterterterter"/>
+</fact>
+<fact comp="n" edit="y" id="00000000191" label="Number" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="31.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000192" label="PrioritySequence" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000193" label="TimeEstimatedFinished" pos1="999" pos2="999" relTo="964605590937" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000194" label="SubType" pos1="999" pos2="999" relTo="964605590937" version="1">
+<str_fact value="PATROL"/>
+</fact>
+<fact comp="n" edit="y" id="00000000195" label="PlannedAccuracy" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="50.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000196" label="PlannedCoverage" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000197" label="PlannedPersonnel" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000198" label="PlannedProgress" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000199" label="PlannedSearchMethod" pos1="999" pos2="999" relTo="964605590937" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000200" label="ReportedAccuracy" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000201" label="ReportedCoverage" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000202" label="ReportedPersonnel" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000203" label="ReportedProgress" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000204" label="ReportedSearchMethod" pos1="999" pos2="999" relTo="964605590937" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000205" label="Start" pos1="999" pos2="999" relTo="964605590937" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000206" label="Stop" pos1="999" pos2="999" relTo="964605590937" version="1">
+<date_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1227058422203">
+<add_to_op id="05620080014191968">
+<object id="639705591281" name="Route" objectType="test" pos="27">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="27" pos2="999" relTo="639705591281" version="0">
+<str_fact value="Route"/>
+</fact>
+<fact comp="n" edit="y" id="00000000179" label="Remarks" pos1="999" pos2="999" relTo="639705591281" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000180" label="Geodata" pos1="999" pos2="999" relTo="639705591281" version="1">
+<track_fact speed="0" style="aXNQb2x5Z29uPWZhbHNlJg==">
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41719673339188" longitude="10.260743576248418"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41755170716427" longitude="10.261695152783991"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41776373503235" longitude="10.262237401555323"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41804961338186" longitude="10.263056108474359"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41820208254637" longitude="10.263752557975044"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41855703681563" longitude="10.26470420545127"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41883813736202" longitude="10.265379411337825"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41899535877871" longitude="10.266219442095458"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.419038222318264" longitude="10.267511389561745"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41887859281607" longitude="10.268548117140904"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41878327570552" longitude="10.269574210381393"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41884038398103" longitude="10.271296803590081"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.418880823137016" longitude="10.272516978445433"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.418921251894595" longitude="10.273737157168926"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.419171271759225" longitude="10.275427938781544"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41930466684762" longitude="10.275550271294161"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.4192951587435" longitude="10.27526316548416"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41877584021731" longitude="10.275204498162992"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.418389916957786" longitude="10.275268160043343"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41790988981324" longitude="10.2754195076568"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41742986244494" longitude="10.275570849878504"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41705344608288" longitude="10.275921586551142"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41674610244323" longitude="10.27640524702349"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.416333875940055" longitude="10.27762780019314"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415921638663484" longitude="10.278850318393623"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41583574490044" longitude="10.280163347211133"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415878481289354" longitude="10.281455178490681"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415921206021714" longitude="10.282747014097701"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41596391909744" longitude="10.284038854031033"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41590908789859" longitude="10.284336518875806"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41533019513402" longitude="10.284431814922804"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41475130224278" longitude="10.28452710664523"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41412706492977" longitude="10.285207097115554"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41350282409806" longitude="10.285887057554705"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.413007223035336" longitude="10.286545823266513"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41282848517221" longitude="10.28700813884495"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41257594042945" longitude="10.287193985255737"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41239720036979" longitude="10.287656289816717"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41200755468837" longitude="10.288586170388536"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41161790272835" longitude="10.289516025721808"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41150821590465" longitude="10.290111243376092"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.411458110146704" longitude="10.290552367333785"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41151022523892" longitude="10.29213105572179"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41187683118822" longitude="10.293441642101214"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41224342536895" longitude="10.294752262290656"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41285546468591" longitude="10.295661859917924"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41346749849138" longitude="10.29657149607694"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41399391019321" longitude="10.296845839976521"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.414520321424604" longitude="10.297120193575715"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41510395692397" longitude="10.297168693117634"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415687592391116" longitude="10.297217194148917"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.4158852921742" longitude="10.29732905505258"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415974226043964" longitude="10.299046265343865"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41606313934776" longitude="10.300763487119756"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41616292179983" longitude="10.301829503712456"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41626269635293" longitude="10.302895528035748"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41650764708263" longitude="10.304442877079637"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.416752581254606" longitude="10.305990253161621"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41682162784335" longitude="10.306123259397989"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.416900119989215" longitude="10.30654336083244"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41697861091735" longitude="10.306963464608797"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.417374885406524" longitude="10.308197450393445"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41777114949583" longitude="10.309431470501906"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41827804414976" longitude="10.311080393996264"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41854091897293" longitude="10.312191991055139"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41880378530279" longitude="10.313303608753795"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41912237784592" longitude="10.315127786097378"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.419050288699296" longitude="10.31687154701669"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.418678478705566" longitude="10.31736532459486"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41793485324275" longitude="10.31835284094799"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.417439098878646" longitude="10.31901115644188"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.4169386316809" longitude="10.319525898724665"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41653464950725" longitude="10.320024859287704"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.416130665459775" longitude="10.32052380562935"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415768257881744" longitude="10.321304573842246"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41534622790618" longitude="10.32223936892617"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415245816564365" longitude="10.32312162969314"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41513128379291" longitude="10.323573258290788"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41514069455464" longitude="10.323860342369358"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.415338374944064" longitude="10.323972385843225"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="63.41547643511558" longitude="10.324238474072638"/>
+</position_occurrence>
+</track_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000181" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="639705591281" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1227058422296">
+<add_to_op id="05620080014191968">
+<object id="250305591515" name="POI" objectType="test" pos="26">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="26" pos2="999" relTo="250305591515" version="0">
+<str_fact value="POI"/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="Name" pos1="999" pos2="999" relTo="250305591515" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Position" pos1="999" pos2="999" relTo="250305591515" version="1">
+<loc_fact lat_value="63.417196733405966" locationType="0" long_value="10.260743577808483"/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Remarks" pos1="999" pos2="999" relTo="250305591515" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Type" pos1="999" pos2="999" relTo="250305591515" version="1">
+<str_fact value="START"/>
+</fact>
+<fact comp="n" edit="y" id="00000000177" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="250305591515" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1227058422343">
+<add_to_op id="05620080014191968">
+<object id="959905591515" name="POI" objectType="test" pos="26">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="26" pos2="999" relTo="959905591515" version="0">
+<str_fact value="POI"/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="Name" pos1="999" pos2="999" relTo="959905591515" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Position" pos1="999" pos2="999" relTo="959905591515" version="1">
+<loc_fact lat_value="63.415476435128035" locationType="0" long_value="10.324238475470906"/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Remarks" pos1="999" pos2="999" relTo="959905591515" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Type" pos1="999" pos2="999" relTo="959905591515" version="1">
+<str_fact value="STOP"/>
+</fact>
+<fact comp="n" edit="y" id="00000000177" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="959905591515" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1227058422375">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1227058422375" fact_type="-1" field="add_relation" id="05620080014191968.340705590906" origId="">
+<string_array>
+<element>AreaPOIs</element>
+<element>05620080014191968.250305591515</element>
+</string_array>
+<string_array>
+<element>AreaPOIs</element>
+<element>05620080014191968.250305591515</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1227058422437">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1227058422437" fact_type="-1" field="add_relation" id="05620080014191968.340705590906" origId="">
+<string_array>
+<element>AreaPOIs</element>
+<element>05620080014191968.959905591515</element>
+</string_array>
+<string_array>
+<element>AreaPOIs</element>
+<element>05620080014191968.959905591515</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1227058422468">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1227058422468" fact_type="-1" field="add_relation" id="05620080014191968.340705590906" origId="">
+<string_array>
+<element>AreaGeodata</element>
+<element>05620080014191968.639705591281</element>
+</string_array>
+<string_array>
+<element>AreaGeodata</element>
+<element>05620080014191968.639705591281</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1227058422515">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1227058422515" fact_type="-1" field="add_named_relation" id="05620080014191968.964605590937" origId="">
+<string_array>
+<element>PlannedArea</element>
+<element>05620080014191968.340705590906</element>
+</string_array>
+<string_array>
+<element>PlannedArea</element>
+<element>05620080014191968.340705590906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1227059123765">
+<update_object changed_by="kennetgu" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620080014191968.946062784187.00000000190" origId="00000000190">
+<string_data string_val="READY"/>
+<string_data string_val="DRAFT"/>
+</update_object>
+</update>
+
+@END MESSAGE@

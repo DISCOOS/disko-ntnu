@@ -2,7 +2,7 @@ package org.redcross.sar.map.tool;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.event.IToolListener;
@@ -25,75 +25,75 @@ public interface IMapTool extends ITool {
 		ZOOM_OUT_TOOL,
 		PAN_TOOL,
 		ERASE_TOOL
-    }	
-	
+    }
+
 	/*===============================================
 	 * IDiskoTool methods
 	 *===============================================
 	 */
-	
+
 	public String getName();
 	public MapToolType getType();
-	
-	public boolean isHosted();	
+
+	public boolean isHosted();
 	public IHostDiskoTool getHostTool();
-	
+
 	public void onCreate(Object obj);
-	
+
 	public void reset();
 	public boolean finish();
 	public boolean cancel();
-	
+
 	public boolean isActive();
-	public boolean activate(int options);	
+	public boolean activate(int options);
 	public boolean deactivate();
-	
+
 	public boolean isDirty();
 	public boolean resetDirtyFlag();
-		
+
 	public IDiskoMap getMap();
-	
-	public DefaultDialog getDialog();
-	
+
+	public IDialog getDialog();
+
 	public AbstractButton getButton();
-	
-	public void addWorkFlowListener(IWorkFlowListener listener);	
+
+	public void addWorkFlowListener(IWorkFlowListener listener);
 	public void removeDiskoEventListener(IWorkFlowListener listener);
-	
-	public boolean addToolListener(IToolListener listener);	
-	public boolean removeToolListener(IToolListener listener);	
-	
+
+	public boolean addToolListener(IToolListener listener);
+	public boolean removeToolListener(IToolListener listener);
+
 	public Object getAttribute(String attribute);
-	
+
 	public void setAttribute(Object value, String attribute);
-	
+
 	public boolean isShowDialog();
-		
+
 	public void setShowDialog(boolean isShowDialog);
-	
+
 	public boolean setToolPanel(IToolPanel panel);
-	
+
 	public boolean setDefaultPropertyPanel();
-	
+
 	public IToolPanel getDefaultToolPanel();
-	
+
 	public IToolPanel getToolPanel();
-	
+
 	public IToolPanel addToolPanel();
-	
+
 	public boolean removeToolPanel(IToolPanel panel);
-	
+
 	public IMapToolState save();
-	
+
 	public boolean load(IMapToolState state);
-	
+
 	public interface IMapToolState {};
-	
+
 	/*===============================================
 	 * ICommand methods
 	 *===============================================
 	 */
-	
+
 	public String getCaption();
 
 	public String getCategory();
@@ -108,6 +108,6 @@ public interface IMapTool extends ITool {
 
 	public boolean isChecked();
 
-	public boolean isEnabled();	
-	
+	public boolean isEnabled();
+
 }

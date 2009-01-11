@@ -14,6 +14,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.EventListenerList;
@@ -213,14 +214,14 @@ public class NavMenu extends JPanel {
 		for(ICommand it : commands.values()) {
 			if (it instanceof IMapTool) {
 				IMapTool diskoTool = (IMapTool)it;
-				if (diskoTool.getDialog() != null) {
-					factory.register(diskoTool.getDialog());
+				if (diskoTool.getDialog() instanceof JDialog) {
+					factory.register((JDialog)diskoTool.getDialog());
 				}
 			}
 			if (it instanceof IHostDiskoTool) {
 				IHostDiskoTool hostTool = (IHostDiskoTool)it;
-				if (hostTool.getDialog() != null) {
-					factory.register(hostTool.getDialog());
+				if (hostTool.getDialog() instanceof JDialog) {
+					factory.register((JDialog)hostTool.getDialog());
 				}
 			}
 			if (it instanceof IMapCommand) {
@@ -940,8 +941,8 @@ public class NavMenu extends JPanel {
 			}
 			if (command instanceof IHostDiskoTool) {
 				IHostDiskoTool hostTool = (IHostDiskoTool)command;
-				if (hostTool.getDialog() != null) {
-					hostTool.getDialog().setVisible(false);
+				if (hostTool.getDialog() instanceof JDialog) {
+					((JDialog)hostTool.getDialog()).setVisible(false);
 				}
 			}
 			if (command instanceof IMapCommand) {
