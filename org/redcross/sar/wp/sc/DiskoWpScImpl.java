@@ -2,6 +2,8 @@ package org.redcross.sar.wp.sc;
 
 import java.lang.instrument.IllegalClassFormatException;
 
+import javax.swing.BorderFactory;
+
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.util.Utils;
@@ -16,7 +18,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 public class DiskoWpScImpl extends AbstractDiskoWpModule
 		implements IDiskoWpSc {
 
-    private States m_states;
+    private States m_contentsPanel;
 
 	/**
 	 * Constructs a DiskoWpStatesImpl
@@ -28,8 +30,9 @@ public class DiskoWpScImpl extends AbstractDiskoWpModule
 	}
 
 	private void initialize() {
-        m_states = new States();
-        layoutComponent(m_states);
+        m_contentsPanel = new States();
+        m_contentsPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        layoutComponent(m_contentsPanel);
 	}
 
 	public String getCaption() {

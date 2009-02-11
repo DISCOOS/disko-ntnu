@@ -742,7 +742,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						hideEditPanels(false);
 
 						// place on screen
-						m_changeFromDialog.setSnapToLocation(m_changeFromButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_OFF, false, false);
+						m_changeFromDialog.setSnapToLocation(m_changeFromButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_SCREEN, false, false);
 
 						// show component
 						showEditComponents(new IEditorIf[]{m_changeFromDialog});
@@ -787,7 +787,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 						hideEditPanels(false);
 
 						// place on screen
-						m_changeToDialog.setSnapToLocation(m_changeToButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_OFF, false, false);
+						m_changeToDialog.setSnapToLocation(m_changeToButton, DefaultDialog.POS_NORTH, DefaultDialog.SIZE_TO_SCREEN, false, false);
 
 						// show component
 						showEditComponents(new IEditorIf[]{m_changeToDialog});

@@ -85,7 +85,6 @@ public class UnitTypeDialog extends DefaultDialog
 			}
 
 		});
-		m_typeList.setSelectedIndex(0);
 
 		// add mouse listener
 		m_typeList.addMouseListener(new MouseAdapter() {
@@ -110,6 +109,10 @@ public class UnitTypeDialog extends DefaultDialog
 		// add content panel
 		this.setContentPane(panel);
 		this.pack();
+		
+		// select first item in list
+		m_typeList.setSelectedIndex(0);
+		
 	}
 
 	public UnitType getUnitType()

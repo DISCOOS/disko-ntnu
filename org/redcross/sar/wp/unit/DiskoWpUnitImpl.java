@@ -119,6 +119,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 		// Main panels
 		m_contentsPanel = new JPanel(new BorderLayout());
+		m_contentsPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 		layoutComponent(m_contentsPanel);
 
 		// Left panels

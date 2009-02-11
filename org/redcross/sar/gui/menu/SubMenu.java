@@ -129,7 +129,7 @@ public class SubMenu extends JPanel {
 			try {
 				menuPanel = new JPanel();
 				menuPanel.setLayout(new CardLayout());
-				menuPanel.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0));
+				menuPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

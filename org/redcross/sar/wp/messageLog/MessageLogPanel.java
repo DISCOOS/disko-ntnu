@@ -86,7 +86,7 @@ public class MessageLogPanel
         m_splitter1.setContinuousLayout(false);
         m_splitter1.setRequestFocusEnabled(true);
         m_splitter1.setOrientation(0);
-        m_splitter1.setBorder(BorderFactory.createEmptyBorder());
+        m_splitter1.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         m_contentPanel.add(m_splitter1, BorderLayout.CENTER);
 

@@ -61,9 +61,9 @@ public class DefaultDialog extends JDialog implements IDialog {
     public static final int MARKED_ONFOCUS = TRANSLUCENT_ONFOCUS;
     public static final int MARKED_ONMOUSE = TRANSLUCENT_ONMOUSE;
 
-    public static final int SIZE_TO_OFF = 0;
-    public static final int SIZE_TO_FIT = 1;
-    public static final int SIZE_TO_LIMIT = 2;
+    public static final int SIZE_TO_OFF = 0;		// force size off
+    public static final int SIZE_TO_COMPONENT = 1;	// force size to snapping bounds
+    public static final int SIZE_TO_SCREEN = 2;		// force size to screen bounds
 
     private int position = POS_CENTER;			// position relative to snapToComponent
     private int sizeTo = SIZE_TO_OFF;			// resize behavior when snapping
@@ -555,14 +555,6 @@ public class DefaultDialog extends JDialog implements IDialog {
 
         try {
 
-            // initialize size?
-            /*
-            if (update || width == -1 || height == -1) {
-                width  = getWidth() !=0 ? getWidth() : -1;
-                height = getHeight() !=0 ? getHeight() : -1;
-            }
-            */
-
             // initialize
             int offset = 2;
             int width = getWidth();
@@ -609,6 +601,24 @@ public class DefaultDialog extends JDialog implements IDialog {
                     break;
             }
 
+            // size to component?
+            if ((sizeTo & SIZE_TO_COMPONENT) != 0) {
+            	// TODO: Implement resize to component
+            }
+            
+            // size to screen?
+            if((sizeTo & SIZE_TO_SCREEN) != 0) {
+            	// get bounds of screen
+            	Rectangle screen = getGraphicsConfiguration().getBounds();
+            	// get intersection
+            	Rectangle2D intersection = screen.createIntersection(frame);
+            	// has intersection?
+            	if(!intersection.isEmpty()) {
+            		// this imply that the
+            		frame = intersection;
+            	}
+            }
+            
             // apply size
             this.setBounds(frame.getBounds());
 

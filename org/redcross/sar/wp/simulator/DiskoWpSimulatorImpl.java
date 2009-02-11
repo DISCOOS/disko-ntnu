@@ -104,6 +104,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     {
 
 		try {
+			
 			// get properties
 			assignWpBundle(IDiskoWpSimulator.class);
 
@@ -222,7 +223,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_splitPane == null)
         {
         	m_splitPane = new JSplitPane();
-        	m_splitPane.setBorder(BorderFactory.createEmptyBorder());
+        	m_splitPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
         	m_splitPane.setLeftComponent(getMapPanel());
         	m_splitPane.setRightComponent(getSimulatorPanel());
         }

@@ -78,7 +78,7 @@ public class DiskoEnumFactory {
 		// try custom resource
 		String text = BasicDiskoFactory.getText(key, resource);
 		// try DISKO properties?
-		if((text==null || text.isEmpty()) && m_default.containsKey(key))
+		if((text==null || text.isEmpty()) && m_default!=null && m_default.containsKey(key))
 			text = m_default.getString(key);
 		// try installed resources?
 		if((text==null || text.isEmpty())) {

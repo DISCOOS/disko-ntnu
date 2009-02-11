@@ -49,10 +49,10 @@ public class DiskoButtonFactory
 	private final static Font BUTTON_FONT =
 		new Font("DiskoButtonFactoryFont", Font.PLAIN, 12);
 
-	private static Dimension tinySize = null;
-	private static Dimension smallSize = null;
-	private static Dimension normalSize = null;
-	private static Dimension longSize = null;
+	private static Dimension tinySize;
+	private static Dimension smallSize;
+	private static Dimension normalSize;
+	private static Dimension longSize;
 
 	public enum ButtonSize {
 		TINY,
@@ -500,7 +500,7 @@ public class DiskoButtonFactory
 		case LONG: {
 			// create?
 			if(longSize==null) {
-				// get heigth and width
+				// get height and width
 				int width  = parseInt(m_default.getString("BUTTON.LONG.width"),50);
 				int height = parseInt(m_default.getString("BUTTON.LONG.height"),50);
 				longSize = new Dimension(width, height);

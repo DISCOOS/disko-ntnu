@@ -31,7 +31,9 @@ import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * The dialog for selecting unit type and number.
- * Dialog loads unit information from resource file org.redcross.sar.mso.data.properties.Unit.properties
+ * 
+ * Dialog loads unit information from resource file 
+ * org.redcross.sar.mso.data.properties.Unit.properties
  *
  * @author kennetgu
  */

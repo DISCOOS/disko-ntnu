@@ -36,13 +36,13 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
         // install map
         installMap();
 
-        // get message log panel. This panel implements the gui
+        // get message log panel. This panel implements the GUI
         m_logPanel = new MessageLogPanel(this);
 
-        // add the panel as main wp component
+        // add the panel as main work process component
         layoutComponent(m_logPanel.getPanel());
 
-        // ensure tha wp spesific layers are selectable
+        // ensure that work process specific layers are selectable
         m_logPanel.setSelectableLayers();
 
 		// install draw support in map

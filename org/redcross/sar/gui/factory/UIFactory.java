@@ -1,3 +1,4 @@
+
 package org.redcross.sar.gui.factory;
 
 import java.awt.BorderLayout;

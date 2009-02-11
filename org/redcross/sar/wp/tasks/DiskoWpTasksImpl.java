@@ -24,6 +24,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -85,6 +86,8 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         assignWpBundle(IDiskoWpTasks.class);
 
         m_contentsPanel = new JPanel(new BorderLayout());
+        m_contentsPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        
         initTable();
         initButtons();
         layoutComponent(m_contentsPanel);

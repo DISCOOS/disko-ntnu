@@ -476,16 +476,16 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
         // create north part of left side of main split
 		m_mapPanel = new MapPanel(m_map,true);
-		m_mapPanel.setMinimumSize(new Dimension(325, 200));
-        m_mapPanel.setPreferredSize(new Dimension(325, 200));
+		m_mapPanel.setMinimumSize(new Dimension(200, 200));
+        m_mapPanel.setPreferredSize(new Dimension(200, 200));
 		m_mapPanel.setNorthBarVisible(true);
 		m_mapPanel.setSouthBarVisible(true);
         m_leftSplitter.setTopComponent(m_mapPanel);
 
         // create south part of left side of main split
         m_infoPanel = new JPanel();
-        m_infoPanel.setMinimumSize(new Dimension(325, 400));
-        m_infoPanel.setPreferredSize(new Dimension(325, 400));
+        m_infoPanel.setMinimumSize(new Dimension(200, 400));
+        m_infoPanel.setPreferredSize(new Dimension(200, 400));
         m_infoPanel.setLayout(new CardLayout(0, 0));
         m_leftSplitter.setBottomComponent(m_infoPanel);
         m_infoPanelHandler = new InfoPanelHandler(m_infoPanel, m_wpModule, m_listPanelActionHandler);
@@ -501,8 +501,8 @@ public class LogisticsPanel implements IMsoLayerEventListener
         assignments.setLayout(new BoxLayout(assignments,BoxLayout.X_AXIS));
         m_selectableAssignmentsPanel = new AssignmentTilesPanel(m_wpModule, new SpringLayout(), 5, 5, false, m_labelActionHandler, true);
         m_selectableAssignmentsPanel.getHeaderPanel().setPreferredSize(new Dimension(40, 40));
-        m_selectableAssignmentsPanel.setMinimumSize(new Dimension(180, 100));
-        m_selectableAssignmentsPanel.setMaximumSize(new Dimension(180, Integer.MAX_VALUE));
+        m_selectableAssignmentsPanel.setMinimumSize(new Dimension(124, 100));
+        m_selectableAssignmentsPanel.setMaximumSize(new Dimension(124, Integer.MAX_VALUE));
         m_selectableAssignmentsPanel.setScrollBarPolicies(
         		ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

@@ -313,7 +313,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 								e.printStackTrace();
 							}
 							HypothesisDialog dialog = getHypothesesDialog();
-							dialog.setSnapToLocation((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
+							dialog.setSnapToLocation((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							dialog.setVisible(true);
 							return false;
 						}
@@ -659,7 +659,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						} else {
 							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -688,7 +688,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							hypotheseToggleButton.setSelected(false);
 						}
 						else {
-							dialog.setSnapToLocation(mapComp,DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
+							dialog.setSnapToLocation(mapComp,DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -743,7 +743,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						}
 						else {
 							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -799,7 +799,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						}
 						else {
 							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							dialog.setVisible(true);
 						}
 					}
@@ -854,7 +854,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						}
 						else {
 							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_FIT, true, false);
+									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							/*
 							java.awt.Point p = unitToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
