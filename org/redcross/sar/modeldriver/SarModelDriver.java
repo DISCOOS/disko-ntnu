@@ -13,11 +13,13 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import no.cmr.hrs.sar.model.ControllerInterface;
 import no.cmr.hrs.sar.model.Fact;
 import no.cmr.hrs.sar.model.Operation;
 import no.cmr.hrs.sar.model.SarObjectImpl;
 import no.cmr.hrs.sar.tools.ChangeObject;
 import no.cmr.hrs.sar.tools.IDHelper;
+import no.cmr.hrs.sar.tools.SARparse;
 import no.cmr.tools.Log;
 
 import org.redcross.sar.mso.CommitManager;
@@ -417,13 +419,20 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                     prefix = form.substring(0, form.lastIndexOf("-"));
                     number = form.substring(form.lastIndexOf("-") + 1);
                 }
+                /*
+                ControllerInterface c = ((Operation)oper).getController();
+                if(c instanceof SaraApiController) {
+                	SaraApiController sc = (SaraApiController)c;
+                	SARparse p = sc.getParser();
+                }
+                */
                 // get creation date
                 List<?> periods = ((Operation)oper).getActivePeriods();
-            	Calendar c = Calendar.getInstance();
+            	Calendar t = Calendar.getInstance();
                 if(periods.size()>0)
-                	c.setTimeInMillis(Long.valueOf(periods.get(0).toString()));
+                	t.setTimeInMillis(Long.valueOf(periods.get(0).toString()));
 
-                IMsoObjectIf.IObjectIdIf operid = new AbstractMsoObject.ObjectId(oper.getID(),c.getTime());
+                IMsoObjectIf.IObjectIdIf operid = new AbstractMsoObject.ObjectId(oper.getID(),t.getTime());
                 msoManager.createOperation(prefix, number, operid);
                 sarOperation = oper;
                 // notify?
