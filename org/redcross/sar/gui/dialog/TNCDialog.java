@@ -57,8 +57,6 @@ public class TNCDialog extends DefaultDialog  {
 	private JButton connectButton;
 	private JButton disconnectButton;
 	
-	private final IOManager io = IOManager.getInstance();
-	
 	private boolean isCancel;
 	private TNCSession session;
 	
@@ -309,7 +307,7 @@ public class TNCDialog extends DefaultDialog  {
 		// get ports
 		DefaultComboBoxModel model = new DefaultComboBoxModel();                
         try {
-			for(CommPortIdentifier it : io.getSerialPorts(true)) {
+			for(CommPortIdentifier it : IOManager.getSerialPortIdentifiers(true)) {
 				String name = it.getName();
 				model.addElement(name);      
 			}
@@ -358,7 +356,7 @@ public class TNCDialog extends DefaultDialog  {
 			else {
 					
 				// get information about port
-				CommPortIdentifier identifier = io.getPort(setup.port);;
+				CommPortIdentifier identifier = IOManager.getPortIdentifier(setup.port);;
 				// check is available
 				if (identifier.isCurrentlyOwned()) {  
 					Utils.showMessage(setup.port + " er i bruk (" + identifier.getCurrentOwner() + ")");
