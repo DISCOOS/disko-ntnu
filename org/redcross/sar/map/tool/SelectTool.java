@@ -1,5 +1,6 @@
 package org.redcross.sar.map.tool;
 
+import java.awt.Component;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
@@ -27,7 +28,7 @@ import com.esri.arcgis.geometry.Point;
 
 /**
  * A custom draw tool.
- * @author geira
+ * @author geira, kenneth
  *
  */
 public class SelectTool extends AbstractMapTool {
@@ -91,7 +92,7 @@ public class SelectTool extends AbstractMapTool {
 		// is map valid?
 		if (obj instanceof IDiskoMap) {
 			// save map
-			map = (DiskoMap)obj;
+			setMap((DiskoMap)obj);
 		}
 		// forward
 		super.onCreate(obj);
@@ -215,7 +216,9 @@ public class SelectTool extends AbstractMapTool {
 			// load into selection dialog
 			getSelectorDialog().load(objs);
 			// locate dialog
-			getSelectorDialog().setLocation((int)screen.getX()+map.getLocationOnScreen().x, (int)screen.getY()+map.getLocationOnScreen().y);
+			getSelectorDialog().setLocation(
+					(int)screen.getX()+((Component)map).getLocationOnScreen().x, 
+					(int)screen.getY()+((Component)map).getLocationOnScreen().y);
 			// prompt user
 			IMsoObjectIf ans = getSelectorDialog().select();
 			// get feature layer
@@ -305,10 +308,10 @@ public class SelectTool extends AbstractMapTool {
 
 	class SelectFeatureWork extends AbstractToolWork<Boolean> {
 
-		DiskoMap map = null;
-		IMsoFeature msoFeature = null;
+		IDiskoMap map;
+		IMsoFeature msoFeature;
 
-		SelectFeatureWork(DiskoMap map,IMsoFeature msoFeature) throws Exception {
+		SelectFeatureWork(IDiskoMap map,IMsoFeature msoFeature) throws Exception {
 			// forward
 			super(true,true,"Vent litt");
 			// prepare
@@ -322,7 +325,7 @@ public class SelectTool extends AbstractMapTool {
 			try {
 				// forward to map
 				if(msoFeature==null) {
-					if(map.getSelectionCount(true)>0) {
+					if(map.getSelectionCount(true)>0 || true) {
 						map.clearSelected();
 					}
 				}

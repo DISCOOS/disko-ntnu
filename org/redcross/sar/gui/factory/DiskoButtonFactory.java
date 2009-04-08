@@ -564,7 +564,7 @@ public class DiskoButtonFactory
 		button.setToolTipText(getText(BasicDiskoFactory.getKey(name,"tooltip"),resource));
 
 		// get icon key
-		String icon = BasicDiskoFactory.getKey(name,"icon");
+		String icon = getText(BasicDiskoFactory.getKey(name,"icon"),resource);
 
 		// set button text?
 		if(!BasicDiskoFactory.fileExist(DiskoIconFactory.getPath(icon, catalog)))

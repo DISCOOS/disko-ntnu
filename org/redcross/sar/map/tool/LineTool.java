@@ -34,13 +34,13 @@ public class LineTool extends AbstractMsoDrawTool {
 	private static final long serialVersionUID = 1L;
 
 	// holds draw geometry
-	private Point p1 = null;
-	private Point p2 = null;
-	private IGeometry geoSnap1 = null;
-	private IGeometry geoSnap2 = null;
+	private Point p1;
+	private Point p2;
+	private IGeometry geoSnap1;
+	private IGeometry geoSnap2;
 
 	// search type data
-	private Enum<?> subType = null;
+	private Enum<?> subType;
 
 	/**
 	 * Constructs the LineTool
@@ -78,11 +78,8 @@ public class LineTool extends AbstractMsoDrawTool {
 
 		// save dialog?
 		if(dialog instanceof IDialog) {
-			this.dialog = (IDialog)dialog;
+			setDialog((IDialog)dialog);
 		}
-
-		// register me in dialog
-		dialog.register(this);
 
 	}
 

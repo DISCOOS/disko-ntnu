@@ -60,7 +60,7 @@ public class FlankTool extends AbstractMsoTool {
 
 		// save dialog?
 		if(dialog instanceof IDialog) {
-			this.dialog = (IDialog)dialog;
+			setDialog((IDialog)dialog);
 		}
 
 		// create flank panel
@@ -84,8 +84,8 @@ public class FlankTool extends AbstractMsoTool {
 		try {
 			// is valid map?
 			if (obj instanceof IDiskoMap) {
-				map = (DiskoMap)obj;
-				flankPanel.onLoad(map);
+				setMap((DiskoMap)obj);
+				flankPanel.onLoad(getMap());
 			}
 		}
 		catch (Exception e) {
@@ -141,7 +141,7 @@ public class FlankTool extends AbstractMsoTool {
 	private boolean doFlankWork() {
 
 		try {
-			WorkPool.getInstance().schedule(new FlankWork(map,p));
+			WorkPool.getInstance().schedule(new FlankWork(getMap(),p));
 			return true;
 		}
 		catch(Exception e) {
@@ -152,10 +152,10 @@ public class FlankTool extends AbstractMsoTool {
 
 	class FlankWork extends AbstractToolWork<Boolean> {
 
-		private Point p = null;
-		private DiskoMap map = null;
+		private Point p;
+		private IDiskoMap map;
 
-		FlankWork(DiskoMap map,Point p)
+		FlankWork(IDiskoMap map,Point p)
 					throws Exception {
 			super(true);
 			this.map = map;
@@ -168,7 +168,7 @@ public class FlankTool extends AbstractMsoTool {
 			try {
 
 				// get maximum deviation from point
-				double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
+				double max = getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
 				// apply flanks
 				IMsoFeatureLayer editLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.FLANK_LAYER);
 				MsoFeatureModel featureClass = (MsoFeatureModel)editLayer.getFeatureClass();

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?><DiskoApplication>
+<MxdDoc name="C:\DISKO\\Bergen.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="40000.93199355423" XMin="-86838.25152168049" YMax="6788389.587892238" YMin="6684351.554262353"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Bodø.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="560702.0700896494" XMin="363921.97962510213" YMax="7556389.960065199" YMin="7382193.829665856"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Copy of Trondheim.mxd"><MapBase name="MAP_2"/><MapBase name="MAP_1"/><	Extent XMax="337699.48003259953" XMin="216326.11002444942" YMax="7056938.734311327" YMin="6991501.679706603"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\DiskoWMS.mxd"><								Extent XMax="1683649.1407657503" XMin="-428117.8996139085" YMax="8183085.528012334" YMin="6218935.300297928"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Lom.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="241246.87894412264" XMin="42140.23447334884" YMax="6935720.642889734" YMin="6772406.253760956"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\NordAurdal.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="264097.9007690681" XMin="109075.77736195466" YMax="6829454.741524907" YMin="6711662.340668321"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Oslo.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="311459.7777453556" XMin="167889.99038841343" YMax="6733562.169368387" YMin="6615801.096241622"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Tromsø.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="784660.8760827616" XMin="547138.7186883641" YMax="7857044.305801074" YMin="7662220.139372467"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Trondheim.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="341405.54794120655" XMin="210603.44728089724" YMax="7075282.330569701" YMin="6973761.665311901"/></MxdDoc>
+<MxdDoc name="C:\DISKO\\Ulvik.mxd"><MapBase name="MAP_1"/><MapBase name="MAP_2"/><		Extent XMax="155258.07012941726" XMin="-8108.262198198243" YMax="6797745.16575426" YMin="6673612.480166741"/></MxdDoc>
+</DiskoApplication>

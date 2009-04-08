@@ -64,7 +64,7 @@ public class SplitTool extends AbstractMsoTool {
 			if(isWorking()) return;
 			// is map valid?
 			if (obj instanceof IDiskoMap) {
-				map = (DiskoMap)obj;
+				setMap((DiskoMap)obj);
 			}
 		}
 		catch(Exception e) {
@@ -152,11 +152,10 @@ public class SplitTool extends AbstractMsoTool {
 
 	class SplitWork extends AbstractToolWork<Boolean> {
 
-		private Point p = null;
-		private DiskoMap map = null;
+		private Point p;
+		private IDiskoMap map;
 
-		SplitWork(DiskoMap map,Point p)
-					throws Exception {
+		SplitWork(IDiskoMap map,Point p) throws Exception {
 			super(true);
 			this.map = map;
 			this.p = p;
@@ -167,7 +166,7 @@ public class SplitTool extends AbstractMsoTool {
 
 			try {
 				// get maximum deviation from point
-				double max = map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR;
+				double max = map.getExtent().getWidth()/SNAP_TOL_FACTOR;
 				IMsoFeatureLayer editLayer = map.getMsoLayer(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 				MsoFeatureModel featureClass = (MsoFeatureModel)editLayer.getFeatureClass();
 				IFeatureCursor c =  MapUtil.search(featureClass, p,max);

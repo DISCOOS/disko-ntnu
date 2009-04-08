@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1237314777369">
+<operation creator="KYBPC436" datetime_data="1237314777369" id="05620090066777593" state="2">
+<fact comp="n" edit="n" id="00000000000000000" label="Nr" pos1="0" pos2="0" relTo="" version="0">
+        <str_fact value="2009-ERKHK-66777593"/>
+    </fact>
+<fact comp="n" edit="y" id="00000000000000001" label="Hendelsestype" pos1="1" pos2="0" relTo="" version="0">
+<combo_fact selectedItem="MSO">
+<combo_el>Udefinert - LAND</combo_el>
+<combo_el>MSO</combo_el>
+<combo_el>Udefinert - SJØ</combo_el>
+</combo_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000000000002" label="Fase" pos1="2" pos2="0" relTo="" version="0">
+<combo_fact selectedItem="Usikkerhet">
+<combo_el>Usikkerhet</combo_el>
+<combo_el>Beredskap</combo_el>
+<combo_el>Nød</combo_el>
+<combo_el>Avsluttet</combo_el>
+<combo_el>Monitorering</combo_el>
+</combo_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000000000003" label="First alert RCC" pos1="3" pos2="0" relTo="" version="0">
+        <date_fact value="1237314777369"/>
+</fact>
+<fact comp="n" edit="y" id="00000000005" label="CallSign" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000045" label="Released" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000046" label="Telephone1" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000047" label="Telephone2" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000048" label="Telephone3" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000049" label="Established" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000050" label="Shift" pos1="999" pos2="999" relTo="00000000132" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000063" label="Status" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<object id="00000000132" name="CmdPost" objectType="test" pos="33">
+<fact comp="n" edit="y" id="00000000005" label="CallSign" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000045" label="Released" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000046" label="Telephone1" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000047" label="Telephone2" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000048" label="Telephone3" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000049" label="Established" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000050" label="Shift" pos1="999" pos2="999" relTo="00000000132" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000063" label="Status" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+</object>
+<rot>
+ </rot>
+</operation>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1237315062606">
+<add_to_op id="05620090066777593">
+<object id="167367050434" name="OperationArea" objectType="test" pos="23">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="23" pos2="999" relTo="167367050434" version="0">
+<str_fact value="OperationArea"/>
+</fact>
+<fact comp="n" edit="y" id="00000000142" label="Remarks" pos1="999" pos2="999" relTo="167367050434" version="1">
+<str_fact value="ytuytuytuy"/>
+</fact>
+<fact comp="n" edit="y" id="00000000143" label="Geodata" pos1="999" pos2="999" relTo="167367050434" version="1">
+<fact_area name="" state="0">
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246233339948596" longitude="6.345145043497874"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24621848599406" longitude="6.344908594494826"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246250562787154" longitude="6.344142717605185"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24628598390781" longitude="6.343685395624896"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24625079844571" longitude="6.342870164853628"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24621985362169" longitude="6.342122492677605"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24624314610917" longitude="6.341599888988467"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24624085431153" longitude="6.341308222865931"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24629838750652" longitude="6.3409476804612614"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24639653285494" longitude="6.340850533734515"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24653405939559" longitude="6.340742005176124"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24676671684884" longitude="6.340743550970162"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24691742719064" longitude="6.3407171911778875"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24705601512664" longitude="6.340625549429526"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.247187342839716" longitude="6.340673575912668"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24728035080721" longitude="6.340749873965151"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24742017060834" longitude="6.340933018823712"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.247512732630454" longitude="6.341129822770673"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24758166559752" longitude="6.34133345649223"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24765165971431" longitude="6.341553981014805"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.247716346437294" longitude="6.34169005707065"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24782041441251" longitude="6.341814753314901"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24796553982756" longitude="6.3420823565959905"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24804916270062" longitude="6.342264553526179"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24834851550369" longitude="6.343072291772634"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.248427892207836" longitude="6.3431869323340155"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24871115725868" longitude="6.343483422202041"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24882706150922" longitude="6.344051835879638"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24886660736178" longitude="6.344298368819227"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24889509320307" longitude="6.344496505854883"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24889737871221" longitude="6.344788198500883"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24878833379767" longitude="6.3450948551438415"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24855538850434" longitude="6.345471694158785"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.248478908327726" longitude="6.345786134912756"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24843756565689" longitude="6.346021636989548"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.248361084183955" longitude="6.346336075184809"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24826884921652" longitude="6.34665506154904"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24814086482324" longitude="6.346915583570857"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.248038020889396" longitude="6.347065662604615"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24791048686417" longitude="6.34720567438922"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.247741449262094" longitude="6.347323277785011"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24758347007085" longitude="6.347489275446123"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.247408067977105" longitude="6.347505535894431"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24717177611122" longitude="6.347573772042022"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24690761224618" longitude="6.347581271547024"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246746293028224" longitude="6.347438700790683"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246674796164655" longitude="6.34732178025369"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246555272612824" longitude="6.346823225557167"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.24652360791" longitude="6.3465744329540295"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246407874840415" longitude="6.346263941745983"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246322135481684" longitude="6.346047964236136"/>
+</position_occurrence>
+<position_occurrence comment="">
+<loc_data altitude="0.0" latitude="62.246233339948596" longitude="6.345145043497874"/>
+</position_occurrence>
+</fact_area>
+</fact>
+<fact comp="n" edit="y" id="00000000144" label="Assignment" pos1="999" pos2="999" relTo="167367050434" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1237317574256">
+<add_to_op id="05620090066777593">
+<object id="677669565540" name="POI" objectType="test" pos="26">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="26" pos2="999" relTo="677669565540" version="0">
+<str_fact value="POI"/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="Name" pos1="999" pos2="999" relTo="677669565540" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Position" pos1="999" pos2="999" relTo="677669565540" version="1">
+<loc_fact lat_value="62.247795667820164" locationType="0" long_value="6.343500958843636"/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Remarks" pos1="999" pos2="999" relTo="677669565540" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Type" pos1="999" pos2="999" relTo="677669565540" version="1">
+<str_fact value="GENERAL"/>
+</fact>
+<fact comp="n" edit="y" id="00000000177" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="677669565540" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1239157537584">
+<add_to_op id="05620090066777593">
+<object id="857208703662" name="Vehicle" objectType="test" pos="37">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="37" pos2="999" relTo="857208703662" version="0">
+<str_fact value="Vehicle"/>
+</fact>
+<fact comp="n" edit="y" id="00000000251" label="Name" pos1="999" pos2="999" relTo="857208703662" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000252" label="Status" pos1="999" pos2="999" relTo="857208703662" version="1">
+<str_fact value="EMPTY"/>
+</fact>
+<fact comp="n" edit="y" id="00000000253" label="CallSign" pos1="999" pos2="999" relTo="857208703662" version="1">
+<str_fact value="01651"/>
+</fact>
+<fact comp="n" edit="y" id="00000000254" label="Position" pos1="999" pos2="999" relTo="857208703662" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000255" label="Remarks" pos1="999" pos2="999" relTo="857208703662" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000256" label="ToneID" pos1="999" pos2="999" relTo="857208703662" version="1">
+<str_fact value="01651"/>
+</fact>
+<fact comp="n" edit="y" id="00000000257" label="Number" pos1="999" pos2="999" relTo="857208703662" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000258" label="Identifier" pos1="999" pos2="999" relTo="857208703662" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158542324">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158542324" fact_type="5" field="" given_time="1239158542324" id="05620090066777593.857208703662.00000000254" int_val="0" origId="00000000254">
+<FROM string_val=""/>
+<TO double_val="6.342166666666666" float_val="6.342166666666666" int_val="0" lat_val="62.247166666666665" long_val="6.342166666666666" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1239158542824">
+<add_to_op id="05620090066777593">
+<object id="202109699918" name="Track" objectType="test" pos="36">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="36" pos2="999" relTo="202109699918" version="0">
+<str_fact value="Track"/>
+</fact>
+<fact comp="n" edit="y" id="00000000247" label="Remarks" pos1="999" pos2="999" relTo="202109699918" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000248" label="Geodata" pos1="999" pos2="999" relTo="202109699918" version="1">
+<track_fact speed="0">
+<position_occurrence comment="" datetime_data="0">
+<loc_data altitude="0.0" latitude="62.247166666666665" longitude="6.342166666666666"/>
+</position_occurrence>
+</track_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000249" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="202109699918" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1239158542965">
+<add_to_op id="05620090066777593">
+<object id="609309742262" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="609309742262" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000149" label="ID" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000150" label="Photo" pos1="999" pos2="999" relTo="609309742262" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000151" label="Birthdate" pos1="999" pos2="999" relTo="609309742262" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000152" label="Firstname" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="Lastname" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact value="1"/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Residence" pos1="999" pos2="999" relTo="609309742262" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Address" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Telephone1" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Telephone2" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Telephone3" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Gender" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Status" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact value="IDLE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Remarks" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Type" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Arrived" pos1="999" pos2="999" relTo="609309742262" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="CallOut" pos1="999" pos2="999" relTo="609309742262" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="DataSourceID" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="DataSourceName" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="EstimatedArrival" pos1="999" pos2="999" relTo="609309742262" version="1">
+<date_fact value="1239158542278"/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="Released" pos1="999" pos2="999" relTo="609309742262" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="Department" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="Organization" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="ImportStatus" pos1="999" pos2="999" relTo="609309742262" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158543059">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158543059" fact_type="-1" field="add_named_relation" id="05620090066777593.857208703662" origId="">
+<string_array>
+<element>Track</element>
+<element>05620090066777593.202109699918</element>
+</string_array>
+<string_array>
+<element>Track</element>
+<element>05620090066777593.202109699918</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158550199">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158550199" fact_type="5" field="" given_time="1239158550199" id="05620090066777593.609309742262.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158550340">
+<update_object changed_by="kennetgu" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090066777593.609309742262.00000000160" origId="00000000160">
+<string_data string_val="IDLE"/>
+<string_data string_val="ON_ROUTE"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158550496">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1239158550496" id="05620090066777593.609309742262.00000000164" origId="00000000164">
+<datetime_data/>
+<datetime_data date_val="1239158550199"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553090">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158553090" fact_type="5" field="" given_time="1239158553090" id="05620090066777593.609309742262.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553153">
+<update_object changed_by="kennetgu" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090066777593.609309742262.00000000155" origId="00000000155">
+<string_data string_val=""/>
+<string_data string_val=";;"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553231">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1239158553231" id="05620090066777593.609309742262.00000000164" origId="00000000164">
+<datetime_data date_val="1239158550199"/>
+<datetime_data date_val="1239158520000"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553293">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1239158553293" id="05620090066777593.609309742262.00000000167" origId="00000000167">
+<datetime_data date_val="1239158542278"/>
+<datetime_data date_val="1239158553090"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553356">
+<update_object changed_by="kennetgu" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090066777593.857208703662.00000000252" origId="00000000252">
+<string_data string_val="EMPTY"/>
+<string_data string_val="READY"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553450">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158553450" fact_type="5" field="" given_time="1239158553450" id="05620090066777593.857208703662.00000000254" int_val="0" origId="00000000254">
+<FROM double_val="6.342166900634766" float_val="6.342166900634766" lat_val="62.247166666666665" long_val="6.342166900634766" string_val=""/>
+<TO double_val="6.342166900634766" float_val="6.342166900634766" int_val="0" lat_val="62.247166666666665" long_val="6.342166900634766" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158553543">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158553543" fact_type="-1" field="add_relation" id="05620090066777593.857208703662" origId="">
+<string_array>
+<element>UnitPersonnel</element>
+<element>05620090066777593.609309742262</element>
+</string_array>
+<string_array>
+<element>UnitPersonnel</element>
+<element>05620090066777593.609309742262</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158555528">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158555528" fact_type="5" field="" given_time="1239158555528" id="05620090066777593.609309742262.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158555575">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1239158555575" id="05620090066777593.609309742262.00000000167" origId="00000000167">
+<datetime_data date_val="1239158553090"/>
+<datetime_data date_val="1239158555528"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158555621">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158555637" fact_type="5" field="" given_time="1239158555621" id="05620090066777593.857208703662.00000000254" int_val="0" origId="00000000254">
+<FROM double_val="6.342166900634766" float_val="6.342166900634766" lat_val="62.247166666666665" long_val="6.342166900634766" string_val=""/>
+<TO double_val="6.342166900634766" float_val="6.342166900634766" int_val="0" lat_val="62.247166666666665" long_val="6.342166900634766" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1239158555684">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1239158555684" fact_type="-1" field="add_relation" id="05620090066777593.857208703662" origId="">
+<string_array>
+<element>UnitPersonnel</element>
+<element>05620090066777593.609309742262</element>
+</string_array>
+<string_array>
+<element>UnitPersonnel</element>
+<element>05620090066777593.609309742262</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@

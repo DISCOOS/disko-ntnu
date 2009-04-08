@@ -4,8 +4,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.HashMap;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -58,12 +56,11 @@ import javax.swing.JToggleButton;
 public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolCollection, IMsoToolCollection, ActionListener {
 
     private static final long serialVersionUID = 1L;
-    //private static final String MSG = "<html><center>%s</center></html>";
 
     private TogglePanel m_contentPanel;
     private JPanel m_buttonsPanel;
-    private JPanel m_propertyPanels;
     private JLabel m_messageLabel;
+    private Component m_currentPanel;
     private ButtonGroup m_buttonGroup;
     private IHostDiskoTool m_hostTool;
 
@@ -443,8 +440,8 @@ public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolColle
             m_buttonGroup = new ButtonGroup();
             // prepare dialog
             setContentPane(getContentPanel());
-            // set translucency behavior
-            setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
+            // show message 
+            showPropertyPanel(null);
             // apply
             pack();
             // forward
@@ -464,14 +461,10 @@ public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolColle
         if (m_contentPanel == null) {
             m_contentPanel = new TogglePanel("Tegneverktøy",false,true,ButtonSize.SMALL);
             m_contentPanel.setNotScrollBars();
-            m_contentPanel.setBorderColor(Color.BLUE);
             m_contentPanel.setRequestHideOnCancel(true);
-            m_contentPanel.setContainer(new JPanel());
             m_contentPanel.setContainerLayout(new BoxLayout(m_contentPanel.getContainer(),BoxLayout.Y_AXIS));
             m_contentPanel.addToContainer(getButtonsPanel());
             m_contentPanel.addToContainer(Box.createVerticalStrut(5));
-            m_contentPanel.addToContainer(getPropertyPanels());
-            m_contentPanel.addToContainer(Box.createVerticalGlue());
             m_contentPanel.addComponentListener(new ComponentAdapter() {
 
                 @Override
@@ -508,22 +501,6 @@ public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolColle
         }
         return m_buttonsPanel;
     }
-
-    /**
-     * This method initializes m_propertyPanels
-     *
-     * @return javax.swing.JPanel
-     */
-    private JPanel getPropertyPanels() {
-        if (m_propertyPanels == null) {
-            m_propertyPanels = new JPanel();
-            m_propertyPanels.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-            m_propertyPanels.setLayout(new BorderLayout());
-            m_propertyPanels.add(getMessageLabel(),BorderLayout.CENTER);
-        }
-        return m_propertyPanels;
-    }
-
 
     private JLabel getMessageLabel() {
         if(m_messageLabel == null) {
@@ -614,18 +591,17 @@ public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolColle
     }
 
     private void showPropertyPanel(Object key) {
-        // remove current panel
-        getPropertyPanels().removeAll();
+        // remove current panel?
+    	if(m_currentPanel!=null) getContentPanel().removeFromContainer(m_currentPanel);
         // get tool panel
-        IToolPanel panel = m_panels.get(key);
+        IToolPanel panel = m_panels.get(key);        
         // found panel?
-        if(panel!=null) {
-            Component c = (Component)panel;
-            getPropertyPanels().add(c,BorderLayout.CENTER);
-        }
-        else {
-            getPropertyPanels().add(getMessageLabel(),BorderLayout.CENTER);
-        }
+        if(panel!=null)
+        	m_currentPanel = (Component)panel;
+        else
+        	m_currentPanel = getMessageLabel();
+        // add to container
+        getContentPanel().addToContainer(m_currentPanel);
         // fit panel to buttons
         setButtonsPanelSize();
         // get preferred size

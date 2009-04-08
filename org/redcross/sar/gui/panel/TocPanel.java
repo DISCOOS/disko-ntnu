@@ -125,16 +125,6 @@ public class TocPanel extends TogglePanel {
 
 				});
 				msoLayersPanel.addToggleListener(toggleListener);
-				/*new IToggleListener() {
-
-					@Override
-					public void toggleChanged(ITogglePanel panel, boolean isExpanded, int dx, int dy) {
-						int h = getMsoLayersPanel().getHeaderPanel().getPreferredSize().height;
-						expandedSize = adjustPreferredSize(expandedSize,minimumCollapsedHeight, isExpanded ? 240 - h: h - 240);
-					}
-
-				});
-				*/
 
 				// prepare container
 				JPanel panel = (JPanel)msoLayersPanel.getContainer();
@@ -155,17 +145,6 @@ public class TocPanel extends TogglePanel {
 				wmsLayersPanel.setExpanded(false);
 				wmsLayersPanel.setPreferredExpandedHeight(100);
 				wmsLayersPanel.addToggleListener(toggleListener);
-				/*
-				new IToggleListener() {
-
-					@Override
-					public void toggleChanged(ITogglePanel panel, boolean isExpanded, int dx, int dy) {
-						int h = getWmsLayersPanel().getHeaderPanel().getPreferredSize().height;
-						expandedSize = adjustPreferredSize(expandedSize,minimumCollapsedHeight, isExpanded ? 100 - h: h - 100);
-					}
-
-				});
-				*/
 
 				// prepare container
 				JPanel panel = (JPanel)wmsLayersPanel.getContainer();
@@ -186,16 +165,6 @@ public class TocPanel extends TogglePanel {
 				mapLayersPanel.setExpanded(false);
 				mapLayersPanel.setPreferredExpandedHeight(100);
 				mapLayersPanel.addToggleListener(toggleListener);
-				/*new IToggleListener() {
-
-					@Override
-					public void toggleChanged(ITogglePanel panel, boolean isExpanded, int dx, int dy) {
-						int h = getMapLayersPanel().getHeaderPanel().getPreferredSize().height;
-						expandedSize = adjustPreferredSize(expandedSize,minimumCollapsedHeight, isExpanded ? 100 - h: h - 100);
-					}
-
-				});
-				*/
 
 				// prepare container
 				JPanel panel = (JPanel)mapLayersPanel.getContainer();

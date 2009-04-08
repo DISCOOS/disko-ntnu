@@ -175,7 +175,9 @@ public class NumPadPanel extends DefaultPanel {
 	 * Helper methods
 	 * ======================================================== */
 	
-	private void initialize(){
+	protected void initialize() {
+		// forward
+		super.initialize();
 		// prepare
 		setNotScrollBars();
 		setContainerLayout(new BorderLayout(5,5));

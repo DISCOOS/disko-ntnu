@@ -38,8 +38,6 @@ public class SnapDialog extends DefaultDialog  {
 		try {
 			// prepare dialog
 	        this.setContentPane(getSnapPanel());
-			// set translucency behavior
-			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
 			// pack to content size
 	        this.pack();
 		}

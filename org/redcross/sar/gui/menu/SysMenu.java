@@ -1,6 +1,7 @@
 package org.redcross.sar.gui.menu;
 
 import org.redcross.sar.gui.dialog.MapOptionDialog;
+import org.redcross.sar.gui.dialog.ServiceManagerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -31,10 +32,11 @@ public class SysMenu extends JPanel {
 
 	private JButton swapToButton;
 	private JButton mapOptionButton;
-    private JButton newOpButton;
-    private JButton finishOperationButton;
-    private JButton mergeButton;
-    private JButton chooseOperationButton;
+	private JButton newOpButton;
+	private JButton finishOperationButton;
+	private JButton mergeButton;
+	private JButton chooseOperationButton;
+	private JButton networkButton;
 
 	private final ButtonGroup bgroup = new ButtonGroup();
 	private final EventListenerList listeners = new EventListenerList();
@@ -63,84 +65,85 @@ public class SysMenu extends JPanel {
 		addButton(getSwapToButton());
 		addButton(getMapOptionButton());
 		addButton(getFinishOperationButton());
-        addButton(getNewOpButton());
-        addButton(getMergeButton());
-        addButton(getChooseOperationButton());
-   }
+		addButton(getNewOpButton());
+		addButton(getMergeButton());
+		addButton(getChooseOperationButton());
+		addButton(getNetworkButton());
+	}
 
-   private JButton getNewOpButton()
-   {
-      if (newOpButton == null) {
-         try {
-            newOpButton = DiskoButtonFactory.createButton("SYSTEM.CREATE",ButtonSize.NORMAL);
-            newOpButton.setActionCommand("SYSTEM.CREATE");
-            newOpButton.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent e) {
-                  Utils.getApp().createOperation(true);
-               }
-            });
-         } catch (java.lang.Throwable e) {
-            e.printStackTrace();
-         }
-      }
-      return newOpButton;
-   }
+	private JButton getNewOpButton()
+	{
+		if (newOpButton == null) {
+			try {
+				newOpButton = DiskoButtonFactory.createButton("SYSTEM.CREATE",ButtonSize.NORMAL);
+				newOpButton.setActionCommand("SYSTEM.CREATE");
+				newOpButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						Utils.getApp().createOperation(true);
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return newOpButton;
+	}
 
-   private JButton getMergeButton()
-   {
-      if (mergeButton == null) {
-         try {
-            mergeButton = DiskoButtonFactory.createButton("SYSTEM.MERGE",ButtonSize.NORMAL);
-            mergeButton.setActionCommand("SYSTEM.MERGE");
-            mergeButton.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent e) {
-                  Utils.getApp().mergeOperations();
-               }
-            });
-         } catch (java.lang.Throwable e) {
-            e.printStackTrace();
-         }
-      }
-      return mergeButton;
-   }
+	private JButton getMergeButton()
+	{
+		if (mergeButton == null) {
+			try {
+				mergeButton = DiskoButtonFactory.createButton("SYSTEM.MERGE",ButtonSize.NORMAL);
+				mergeButton.setActionCommand("SYSTEM.MERGE");
+				mergeButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						Utils.getApp().mergeOperations();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return mergeButton;
+	}
 
-   private JButton getFinishOperationButton()
-   {
-      if (finishOperationButton == null) {
-         try {
-            finishOperationButton = DiskoButtonFactory.createButton("SYSTEM.TERMINATE",ButtonSize.NORMAL);
-            finishOperationButton.setActionCommand("SYSTEM.TERMINATE");
-            finishOperationButton.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent e) {
-                  Utils.getApp().finishOperation();
-               }
-            });
-         } catch (java.lang.Throwable e) {
-            e.printStackTrace();
-         }
-      }
-      return finishOperationButton;
-   }
+	private JButton getFinishOperationButton()
+	{
+		if (finishOperationButton == null) {
+			try {
+				finishOperationButton = DiskoButtonFactory.createButton("SYSTEM.TERMINATE",ButtonSize.NORMAL);
+				finishOperationButton.setActionCommand("SYSTEM.TERMINATE");
+				finishOperationButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						Utils.getApp().finishOperation();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return finishOperationButton;
+	}
 
-   private JButton getChooseOperationButton()
-   {
-      if (chooseOperationButton == null) {
-         try {
-            chooseOperationButton = DiskoButtonFactory.createButton("SYSTEM.SELECT",ButtonSize.NORMAL);
-            chooseOperationButton.setActionCommand("SYSTEM.SELECT");
-            chooseOperationButton.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent e) {
-                  Utils.getApp().selectActiveOperation(true);
-               }
-            });
-         } catch (java.lang.Throwable e) {
-            e.printStackTrace();
-         }
-      }
-      return chooseOperationButton;
-   }
+	private JButton getChooseOperationButton()
+	{
+		if (chooseOperationButton == null) {
+			try {
+				chooseOperationButton = DiskoButtonFactory.createButton("SYSTEM.SELECT",ButtonSize.NORMAL);
+				chooseOperationButton.setActionCommand("SYSTEM.SELECT");
+				chooseOperationButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						Utils.getApp().selectActiveOperation(true);
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return chooseOperationButton;
+	}
 
-   private JButton getSwapToButton() {
+	private JButton getSwapToButton() {
 		if (swapToButton == null) {
 			try {
 				swapToButton = DiskoButtonFactory.createButton("SYSTEM.SWAPTO",ButtonSize.NORMAL);
@@ -175,6 +178,25 @@ public class SysMenu extends JPanel {
 		}
 		return mapOptionButton;
 	}
+
+	private JButton getNetworkButton()
+	{
+		if (networkButton == null) {
+			try {
+				networkButton = DiskoButtonFactory.createButton("SYSTEM.SERVICES",ButtonSize.NORMAL);
+				networkButton.setActionCommand("SYSTEM.SERVICES");
+				networkButton.addActionListener(new java.awt.event.ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						ServiceManagerDialog dialog = factory.getServiceManagerDialog();
+						dialog.manage();
+					}
+				});
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return networkButton;
+	}	
 
 	public void addButton(AbstractButton button) {
 		add(button);

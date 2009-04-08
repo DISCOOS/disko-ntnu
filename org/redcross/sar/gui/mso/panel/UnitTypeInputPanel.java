@@ -92,7 +92,9 @@ public class UnitTypeInputPanel extends DefaultPanel
 	 * Helper methods
 	 * ==========================================================*/
 	
-	private void initialize() {
+	protected void initialize() {
+		// forward
+		super.initialize();
 		// prepare 		
 		setContainerLayout(new SpringLayout());
 		setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));

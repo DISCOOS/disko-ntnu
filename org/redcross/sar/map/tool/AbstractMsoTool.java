@@ -11,7 +11,7 @@ public abstract class AbstractMsoTool extends AbstractMapTool implements IMsoToo
 	protected IMsoModelIf msoModel;
 	protected IMsoObjectIf msoOwner;
 	protected IMsoObjectIf msoObject;
-	protected IMsoManagerIf.MsoClassCode msoCode = null;
+	protected IMsoManagerIf.MsoClassCode msoCode;
 
 	/*===============================================
 	 * IMsoTool interface implementation

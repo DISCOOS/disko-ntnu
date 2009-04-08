@@ -118,7 +118,7 @@ public class PanelManager implements IPanelManager {
 				// forward
 				boolean isGranted = isManaged ? getParentManager().requestResize(w, h, isRelative) : true;
 				// allowed?
-				if (isGranted) {// && !isManaged) {
+				if (isGranted) {
 					// forward
 					resize(w,h,isRelative || isManaged);
 				}

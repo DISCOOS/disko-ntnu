@@ -39,8 +39,6 @@ public class TocDialog extends DefaultDialog  {
 		try {
 			// prepare dialog
 	        this.setContentPane(getTocPanel());
-			// set translucency behavior
-			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
 			// pack to content size
 	        this.pack();
 

@@ -418,7 +418,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
     	if(c!=null && c.getLayout()!=null) {
     		d = c.getLayout().minimumLayoutSize(c);
     		c.setSize(new Dimension(d.width,d.height));
-    		//c.setMinimumSize(new Dimension(d.width,d.height));
     	}
     	return d;
     }
@@ -429,7 +428,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		if(c!=null && c.getLayout()!=null) {
     		d = c.getLayout().preferredLayoutSize(c);
     		c.setSize(new Dimension(d.width,d.height));
-    		//c.setPreferredSize(new Dimension(d.width,d.height));
     	}
     	return d;
     }
@@ -441,7 +439,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
         	LayoutManager2 lm2 = (LayoutManager2)c.getLayout();
     		d = lm2.maximumLayoutSize(c);
     		c.setSize(new Dimension(d.width,d.height));
-    		//c.setMaximumSize(new Dimension(d.width,d.height));
     	}
     	return d;
     }
@@ -451,7 +448,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
         if(getLayout()!=null) {
         	d = getLayout().minimumLayoutSize(this);
     		setSize(new Dimension(d.width,d.height));
-    		//setMinimumSize(new Dimension(d.width,d.height));
         }
         return d;
     }
@@ -459,9 +455,9 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
     public Dimension fitThisToPreferredContainerSize() {
     	Dimension d = null;
         if(getLayout()!=null) {
+        	//validateTree();
         	d = getLayout().preferredLayoutSize(this);
     		setSize(new Dimension(d.width,d.height));
-    		//setPreferredSize(new Dimension(d.width,d.height));
         }
         return d;
     }
@@ -472,7 +468,6 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
         	LayoutManager2 lm2 = (LayoutManager2)getLayout();
     		d = lm2.maximumLayoutSize(this);
     		setSize(new Dimension(d.width,d.height));
-    		//setMaximumSize(new Dimension(d.width,d.height));
         }
         return d;
     }

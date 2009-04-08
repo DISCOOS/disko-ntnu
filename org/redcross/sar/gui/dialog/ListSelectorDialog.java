@@ -1,6 +1,8 @@
 package org.redcross.sar.gui.dialog;
-
+ 
 import java.awt.Frame;
+
+import javax.swing.DefaultComboBoxModel;
 
 import org.redcross.sar.gui.panel.ListSelectorPanel;
 import org.redcross.sar.util.Utils;
@@ -17,7 +19,7 @@ public class ListSelectorDialog extends DefaultDialog  {
 	
 	private boolean m_cancel = false;
 	
-	private ListSelectorPanel m_listSelectorPanel = null;
+	private ListSelectorPanel m_listSelectorPanel;
 	
 	/**
 	 * Constructor 
@@ -73,9 +75,32 @@ public class ListSelectorDialog extends DefaultDialog  {
 		return m_listSelectorPanel;
 	}
 	
+	public void prepare(String title, Object[] values) {
+		// update selector
+		getListSelectorPanel().setCaptionText(title);
+		getListSelectorPanel().getList().setModel(new DefaultComboBoxModel(values));		
+	}
+	
 	public Object select() {
-		// reset
+		// prepare
 		m_cancel = false;
+		getListSelectorPanel().getList().setSelectedIndex(0);
+		// show
+		setVisible(true);
+		// translate action
+		if(m_cancel)
+			return null;
+		else
+			return getListSelectorPanel().getSelected();
+	}	
+	
+	public Object select(String title, Object[] values) {
+		// prepare
+		m_cancel = false;
+		getListSelectorPanel().getList().setSelectedIndex(0);
+		// update selector
+		getListSelectorPanel().setCaptionText(title);		
+		getListSelectorPanel().getList().setModel(new DefaultComboBoxModel(values));
 		// show
 		setVisible(true);
 		// translate action

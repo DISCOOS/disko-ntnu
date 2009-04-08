@@ -9,8 +9,6 @@ import javax.swing.JToggleButton;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
@@ -603,15 +601,18 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							//dialog.setSnapTo(elementToggleButton, ElementDialog.P, sizeTo, snapToInside)
-
-							java.awt.Point p = elementToggleButton.getLocationOnScreen();
+							dialog.setSnapToLocation(elementToggleButton, 
+									ElementDialog.POS_WEST, ElementDialog.SIZE_TO_OFF,false,true);
+							
+							/*java.awt.Point p = elementToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
+							*/
 							dialog.setVisible(true);
 						}
 					}
 				});
+				/*
 				getApplication().getFrame().addComponentListener(new ComponentListener() {
 					public void componentHidden(ComponentEvent arg0) {
 						update(true);
@@ -637,6 +638,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						}
 					}
 				});
+				*/
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -770,9 +772,15 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
+							dialog.setSnapToLocation(priorityToggleButton, 
+									DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_OFF,false,true);
+							
+							/*
 							java.awt.Point p = priorityToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
 							dialog.setLocation(p);
+							*/
+							
 							dialog.setVisible(true);
 						}
 					}
@@ -825,9 +833,14 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
+							dialog.setSnapToLocation(estimateToggleButton, 
+									DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_OFF,false,true);
+							/*
 							java.awt.Point p = estimateToggleButton.getLocationOnScreen();
 							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
-							dialog.setLocation(p);
+							dialog.setLocation(p);							
+							*/
+							
 							dialog.setVisible(true);
 						}
 					}

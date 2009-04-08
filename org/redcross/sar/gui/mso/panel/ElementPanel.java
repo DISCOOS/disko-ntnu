@@ -193,12 +193,12 @@ public class ElementPanel extends TogglePanel {
 						// is value adjusting?
 						if(e.getValueIsAdjusting() || listsAreChangeing) return;
 
-						// notify
-						fireOnElementSelected(new ElementEvent(typeList,
-								typeList.getSelectedValue(),ElementEventType.SELECTED,ElementType.CLASS));
-
 						// load objects of spesified type
 						loadObjects((Enum<?>)typeList.getSelectedValue());
+						
+						// notify
+						fireOnElementSelected(new ElementEvent(typeList,
+								typeList.getSelectedValue(),ElementEventType.SELECTED,ElementType.CLASS));						
 
 					}
 
@@ -535,8 +535,6 @@ public class ElementPanel extends TogglePanel {
 			// reset flag
 			listsAreChangeing = false;
 			// update layout
-			getObjectPanel().setVisible(getObjectList().getModel().getSize()>0);
-			getObjectPanel().setVisible(getObjectList().getModel().getSize()>0);
 			getObjectButtonsPanel().setVisible(false);
 		}
 		// forward
@@ -605,12 +603,7 @@ public class ElementPanel extends TogglePanel {
 		// reset flag
 		listsAreChangeing = false;
 		// update layout
-		getPartPanel().setVisible(getPartList().getModel().getSize()>0);
-		getPartPanel().setVisible(getPartList().getModel().getSize()>0);
 		getPartButtonsPanel().setVisible(false);
-		// fit container to parent
-		fitContainerToPreferredLayoutSize();
-		requestFitToPreferredContentSize(false);
 	}
 
 	private Selector<IAreaIf> getAreaSelector(final SearchSubType e) {

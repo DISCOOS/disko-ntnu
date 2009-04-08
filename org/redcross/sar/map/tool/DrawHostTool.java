@@ -3,7 +3,6 @@
  */
 package org.redcross.sar.map.tool;
 
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import javax.swing.AbstractButton;
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.DrawDialog;
+import org.redcross.sar.gui.event.DialogToggleListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -58,45 +58,15 @@ public class DrawHostTool extends BaseCommand implements IHostDiskoTool {
 		// create button
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
-		// add show dialog listener
-		button.addMouseListener(new MouseListener() {
-
-			public void mouseClicked(MouseEvent e) {
-				// consume?
-				if(dialog == null || !showDialog ) return;
-				// double click?
-				if(e.getClickCount() >= 2) {
-					dialog.setVisible(!dialog.isVisible());
-					dialog.setPreferredSize(new Dimension(300,35));
-				}
-			}
-
-			public void mousePressed(MouseEvent e) {
-				// consume?
-				if(dialog == null || !showDialog ) return;
-				// start show/hide
-				dialog.setVisible(!dialog.isVisible());
-				//dialog.delayedSetVisible(!dialog.isVisible(), 250);
-			}
-
-			public void mouseReleased(MouseEvent e) {
-				// consume?
-				if(dialog == null || !showDialog ) return;
-				// stop show if not shown already
-				//dialog.cancelSetVisible();
-			}
-
-			public void mouseEntered(MouseEvent e) {}
-			public void mouseExited(MouseEvent e) {}
-
-		});
-
 		// create draw dialog
 		dialog = new DrawDialog(app.getFrame());
 
 		// register me as host tool
 		dialog.setHostTool(this);
 
+		// add dialog toggle listener
+		button.addMouseListener(new DialogToggleListener(dialog));
+		
 		// do not show dialog first time onClick is invoked
 		showDirect = false;
 

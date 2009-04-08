@@ -195,6 +195,9 @@ public interface IDiskoMap {
 
 	public boolean addDiskoMapListener(IDiskoMapListener listener);
 	public boolean removeDiskoMapListener(IDiskoMapListener listener);
-
-
+	
+	public void setMapScale(double scale) throws IOException, AutomationException;
+	
+	public IEnvelope trackRectangle() throws IOException, AutomationException;
+	
 }

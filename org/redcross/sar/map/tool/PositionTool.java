@@ -82,14 +82,11 @@ public class PositionTool extends AbstractMsoDrawTool {
 
 		// save dialog?
 		if(dialog instanceof IDialog) {
-			this.dialog = (IDialog)dialog;
+			setDialog((IDialog)dialog);
 		}
 
 		// create default property panel
 		toolPanel = addToolPanel();
-
-		// register me in dialog
-		dialog.register(this);
 
 	}
 

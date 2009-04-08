@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.util.Utils;
 
 public class ListSelectorPanel extends DefaultPanel {
 
@@ -32,7 +33,9 @@ public class ListSelectorPanel extends DefaultPanel {
 	/**
 	 * Initialize this
 	 */
-	private void initialize() {
+	protected void initialize() {
+		// forward
+		super.initialize();
 		// set table
 		setContainer(getList());		
 	}
@@ -90,5 +93,20 @@ public class ListSelectorPanel extends DefaultPanel {
 		// forward
 		super.update();
 	}
+
+	@Override
+	protected boolean beforeFinish() {
+		// is anything selected?
+		if(getList().getSelectedIndex()!=-1) {
+			// forward
+			return super.beforeFinish();
+		}
+		// notify
+		Utils.showMessage("Du må velge noe i listen");
+		// failed
+		return false;
+	}
+	
+	
 	
 }

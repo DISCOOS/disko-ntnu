@@ -1,5 +1,6 @@
 package org.redcross.sar.map.tool;
 
+import com.esri.arcgis.carto.IActiveView;
 import com.esri.arcgis.controls.BaseTool;
 import com.esri.arcgis.display.IDisplayTransformation;
 import com.esri.arcgis.geometry.GeometryBag;
@@ -10,10 +11,13 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriTransformDirection;
 import com.esri.arcgis.interop.AutomationException;
 
+import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.IDialog;
+import org.redcross.sar.gui.event.DialogToggleListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.DiskoMap;
+import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
@@ -45,7 +49,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	protected IDisplayTransformation transform;
 
 	// GUI components
-	protected DiskoMap map;
+	protected IDiskoMap map;
 	protected IDialog dialog;
 	protected IToolPanel toolPanel;
 	protected IToolPanel defaultToolPanel;
@@ -57,11 +61,11 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 
 	// counter
 	private int workCount = 0;
-
+	
 	// lists
 	protected List<IToolPanel> panels;
 	protected List<IToolListener> toolListeners;
-	protected List<IWorkFlowListener> workListeners;
+	protected List<IWorkFlowListener> workListeners;	
 
 	/**
 	 * Constructor
@@ -70,7 +74,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	protected AbstractMapTool() {
 		// prepare
 		toolListeners = new ArrayList<IToolListener>();
-		workListeners = new ArrayList<IWorkFlowListener>();
+		workListeners = new ArrayList<IWorkFlowListener>();		
 	}
 
 	/*===============================================
@@ -225,9 +229,51 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	public IDialog getDialog() {
 		return dialog;
 	}
+	
+	protected void setDialog(IDialog dialog) {
+		
+		// store
+		this.dialog = dialog;
+		
+		// add dialog toggle listener?
+		if(button!=null) button.addMouseListener(new DialogToggleListener(dialog));
+		
+	}
 
-	public DiskoMap getMap() {
+	public IDiskoMap getMap() {
 		return map;
+	}
+	
+	protected boolean setMap(IDiskoMap map) {
+		
+		try {
+
+			// store
+			this.map = map;
+			
+			// register map in draw dialog?
+			if(dialog instanceof IDrawToolCollection && !isHosted()) {
+				((IDrawToolCollection)dialog).register(map);
+			}
+
+			// set marked button
+			if(button!=null && button.getIcon() instanceof DiskoIcon) {
+				DiskoIcon icon = (DiskoIcon)button.getIcon();
+				icon.setMarked(true);
+			}
+
+			// success
+			return true;
+			
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// failed
+		return false;
 	}
 
 	public String getName() {
@@ -294,12 +340,30 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	 */
 	protected IDisplayTransformation getTransform()
 			throws IOException, AutomationException {
-		//if (transform == null) {
-			transform = map.getActiveView().getScreenDisplay().getDisplayTransformation();
-		//}
+		if(map instanceof DiskoMap) {			
+			transform = getActiveView().getScreenDisplay().getDisplayTransformation();
+		}
+		else {
+			transform = null;
+		}
 		return transform;
 	}
 
+	/**
+	 * Method used to get active view in map
+	 *
+	 * @return Active view
+	 * @throws IOException
+	 * @throws AutomationException
+	 */
+	protected IActiveView getActiveView()
+			throws IOException, AutomationException {
+		if(map instanceof DiskoMap) {			
+			return ((DiskoMap)map).getActiveView();
+		}
+		return null;
+	}
+	
 	/**
 	 * Utility function used to transform screen coordinates to map point
 	 *
@@ -332,7 +396,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	}
 
 	protected int getGeomIndex(GeometryBag geomBag, IPoint p) throws AutomationException, IOException {
-		IEnvelope env = MapUtil.getEnvelope(p, map.getActiveView().getExtent().getWidth()/50);
+		IEnvelope env = MapUtil.getEnvelope(p, getActiveView().getExtent().getWidth()/50);
 		for (int i = 0; i < geomBag.getGeometryCount(); i++) {
 			IRelationalOperator relOp = (IRelationalOperator)geomBag.getGeometry(i);
 			if (!relOp.disjoint(env)) {
@@ -513,7 +577,7 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 	/*=============================================================
 	 * Inner classes
 	 *============================================================= */
-
+	
 	protected abstract class AbstractToolWork<T> extends AbstractWork {
 
 		public AbstractToolWork(boolean notify) throws Exception {

@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
-import org.redcross.sar.map.DiskoMap;
+import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -412,7 +412,7 @@ public class MsoUtils {
         return found;    	
     }
     
-	public static GeometryBag getGeometryBag(DiskoMap map, IAreaIf area) {
+	public static GeometryBag getGeometryBag(IDiskoMap map, IAreaIf area) {
         
         // initialize
 		GeometryBag geomBag = null;
@@ -445,7 +445,7 @@ public class MsoUtils {
 		return geomBag;
 	}	
 	
-	public static void updateAreaPOIs(DiskoMap map, IAreaIf area) throws IOException, AutomationException {
+	public static void updateAreaPOIs(IDiskoMap map, IAreaIf area) throws IOException, AutomationException {
 		// parameters is valid?
 		if (area != null)  {
 			GeometryBag bag = getGeometryBag(map,area);

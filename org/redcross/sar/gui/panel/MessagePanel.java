@@ -38,7 +38,9 @@ public class MessagePanel extends DefaultPanel {
 	/**
 	 * Initialize this
 	 */
-	private void initialize() {
+	protected void initialize() {
+		// forward
+		super.initialize();
 		// set table
 		setContainer(getMessagePane());
 	}

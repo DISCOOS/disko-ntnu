@@ -52,14 +52,14 @@ public class DefaultPanel extends BasePanel {
 	}
 
 	/* ===========================================
-	 * Private methods
+	 * protected methods
 	 * =========================================== */
 
 	/**
 	 * This method initializes the panel
 	 *
 	 */
-	private void initialize() {
+	protected void initialize() {
 
 		// add default buttons
 		addButton(getFinishButton(),"finish");
@@ -76,6 +76,10 @@ public class DefaultPanel extends BasePanel {
 
 	}
 
+	/* ===========================================
+	 * Private methods
+	 * =========================================== */
+	
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
 			try {

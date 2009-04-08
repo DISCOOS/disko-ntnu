@@ -215,6 +215,7 @@ public class POIPanel extends DefaultToolPanel {
 			poiTypesPanel = new POITypesPanel();
 			poiTypesPanel.setExpanded(false);
 			poiTypesPanel.setPreferredExpandedHeight(100);
+			Utils.setFixedHeight(poiTypesPanel, 100);
 			poiTypesPanel.addWorkFlowListener(new IWorkFlowListener() {
 
 				public void onFlowPerformed(WorkFlowEvent e) {

@@ -76,7 +76,7 @@ public class EraseTool extends AbstractMapTool {
 		if (obj instanceof IDiskoMap) {
 
 			// update hook
-			map = (DiskoMap)obj;
+			setMap((DiskoMap)obj);
 
 		}
 

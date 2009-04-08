@@ -20,7 +20,6 @@ import javax.swing.border.Border;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.event.IToggleListener;
-import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.work.event.IWorkFlowListener;
@@ -426,29 +425,29 @@ public class BasePanel extends AbstractPanel {
 	public void setContainer(Container container) {
 
 		// uninstall old?
-				if(getContainer() instanceof IPanel) {
-					install(container, false);
-				}
-				else {
-					((PanelManager)getManager()).removeContainer(container);
-				}
+		if(getContainer() instanceof IPanel) {
+			install(container, false);
+		}
+		else {
+			((PanelManager)getManager()).removeContainer(container);
+		}
 
-				// update viewport
-				getScrollPane().setViewportView(container);
+		// update viewport
+		getScrollPane().setViewportView(container);
 
-				// install new?
-				if(container instanceof IPanel) {
-					install(container, true);
-				}
-				else {
-					((PanelManager)getManager()).addContainer(container);
-				}
+		// install new?
+		if(container instanceof IPanel) {
+			install(container, true);
+		}
+		else {
+			((PanelManager)getManager()).addContainer(container);
+		}
 
-				// save hook
-				this.container = container;
+		// save hook
+		this.container = container;
 
-				// update borders
-				setBorderColor(borderColor);
+		// update borders
+		setBorderColor(borderColor);
 
 	}
 
@@ -494,7 +493,7 @@ public class BasePanel extends AbstractPanel {
     public void setPreferredExpandedHeight(int height) {
         preferredExpandedHeight = height > 0 ? Math.max(height,getHeaderPanel().getPreferredSize().height) : 0;
     }
-
+	
 	/**
 	 * Initialize toggle limits. </p>
 	 *

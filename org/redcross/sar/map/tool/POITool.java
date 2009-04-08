@@ -36,7 +36,7 @@ public class POITool extends AbstractMsoDrawTool {
 	private static final long serialVersionUID = 1L;
 
 	// search type data
-	private Enum<?> subType = null;
+	private Enum<?> subType;
 
 	/**
 	 * Constructs the DrawTool
@@ -77,11 +77,8 @@ public class POITool extends AbstractMsoDrawTool {
 
 		// save dialog?
 		if(dialog instanceof IDialog) {
-			this.dialog = (IDialog)dialog;
+			setDialog((IDialog)dialog);
 		}
-
-		// register me in dialog
-		dialog.register(this);
 
 	}
 

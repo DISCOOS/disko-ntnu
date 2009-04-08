@@ -29,6 +29,7 @@ import org.redcross.sar.gui.dialog.LoginDialog;
 import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.dialog.OperationDialog;
+import org.redcross.sar.gui.dialog.ServiceManagerDialog;
 import org.redcross.sar.gui.menu.MainMenu;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.menu.SubMenu;
@@ -61,6 +62,7 @@ public class UIFactory {
 	private NumPadDialog numPadDialog;
 	private MapOptionDialog mapOptionDialog;
 	private TaskDialog taskDialog;
+	private ServiceManagerDialog serviceManagerDialog;
 
 	private final List<Component> components = new ArrayList<Component>();
 	private final Map<Component,Boolean> states = new HashMap<Component,Boolean>();
@@ -256,7 +258,7 @@ public class UIFactory {
 			mapOptionDialog = new MapOptionDialog(app);
 			register(mapOptionDialog);
 		}
-		mapOptionDialog.setLocation(200, 200);
+		mapOptionDialog.setLocationRelativeTo(contentPanel);
 		return mapOptionDialog;
 	}
 
@@ -268,6 +270,14 @@ public class UIFactory {
 		return taskDialog;
 	}
 
+	public ServiceManagerDialog getServiceManagerDialog(){
+		if (serviceManagerDialog == null) {
+			serviceManagerDialog = new ServiceManagerDialog(app.getFrame());
+			register(serviceManagerDialog);
+		}
+		serviceManagerDialog.setLocationRelativeTo(contentPanel);
+		return serviceManagerDialog;
+	}
 
 
 	/**

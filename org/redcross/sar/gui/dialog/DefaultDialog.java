@@ -177,22 +177,6 @@ public class DefaultDialog extends JDialog implements IDialog {
         super.setVisible(isVisible);
     }
 
-    /*
-    @Override
-    public void setSize(int w, int h) {
-    	width = w;
-    	height = h;
-    	super.setSize(w, h);
-    }
-
-    @Override
-    public void setSize(Dimension d) {
-    	width = d.width;
-    	height = d.height;
-    	super.setSize(d);
-    }
-    */
-
     @Override
     public DiskoGlassPane getGlassPane() {
         return (DiskoGlassPane)super.getGlassPane();
@@ -289,7 +273,7 @@ public class DefaultDialog extends JDialog implements IDialog {
 
     @Override
     public int isTranslucentOn() {
-        return isMarkedOn;
+        return isTranslucentOn;
     }
 
     @Override
@@ -555,6 +539,8 @@ public class DefaultDialog extends JDialog implements IDialog {
 
         try {
 
+    		requestFitToPreferredContentSize(false);        	
+        	
             // initialize
             int offset = 2;
             int width = getWidth();
@@ -621,6 +607,7 @@ public class DefaultDialog extends JDialog implements IDialog {
             
             // apply size
             this.setBounds(frame.getBounds());
+            this.validate();
 
             /*
             // initialize

@@ -177,10 +177,10 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	public void setDirty(boolean isDirty) {
 		if(this.isDirty!=isDirty) {
 			this.isDirty = isDirty;
-			/*
-			if(this instanceof RouteFeature)
+			/**/
+			if(this instanceof UnitFeature)
 				System.out.println(isDirty+"#"+this);
-			*/
+			/**/
 		}
 	}
 

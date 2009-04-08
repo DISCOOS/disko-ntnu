@@ -5,6 +5,8 @@ import java.awt.Frame;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.mso.panel.ElementPanel;
+import org.redcross.sar.gui.mso.panel.ElementPanel.ElementEvent;
+import org.redcross.sar.gui.mso.panel.ElementPanel.IElementEventListener;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 
 import javax.swing.JList;
@@ -28,9 +30,22 @@ public class ElementDialog extends DefaultDialog {
 	 */
 	private void initialize() {
 		try {
-            this.setContentPane(getElementPanel());
             this.setPreferredSize(new Dimension(606,440));
-            this.setTrancluentOn(TRANSLUCENT_ONMOUSE);
+            this.setContentPane(getElementPanel());
+            getElementPanel().addElementListener(new IElementEventListener() {
+
+				public void onElementSelected(ElementEvent e) {
+					// forward
+					getElementPanel().requestFitToPreferredContentSize(false);
+					// forward
+					snapTo();	
+				}
+            	
+				public void onElementCenterAt(ElementEvent e) { /*NOP*/ }
+				public void onElementDelete(ElementEvent e) { /*NOP*/ }
+				public void onElementEdit(ElementEvent e) { /*NOP*/ }
+
+            });
             this.pack();
 		}
 		catch (java.lang.Throwable e) {

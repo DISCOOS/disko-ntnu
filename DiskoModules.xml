@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <DiskoApplication>
+	<DiskoRole name="aprs" title="Tracking">
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" isDefault="true"/>
+	</DiskoRole>
 	<DiskoRole name="al" title="Aksjonsleder">
 		<DiskoModule classname="org.redcross.sar.wp.simulator.DiskoWpSimulatorImpl" />
 		<DiskoModule classname="org.redcross.sar.wp.ds.DiskoWpDsImpl"/>

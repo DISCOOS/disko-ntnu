@@ -29,9 +29,6 @@ public class ScaleDialog extends DefaultDialog {
 			// prepare dialog
 	        this.setContentPane(getScalePanel());
 
-			// set translucency behavior
-			setTrancluentOn(DefaultDialog.TRANSLUCENT_ONMOUSE);
-
 			// pack to content size
 	        this.pack();
 

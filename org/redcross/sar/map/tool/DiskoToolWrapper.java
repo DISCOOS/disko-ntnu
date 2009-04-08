@@ -52,9 +52,9 @@ public class DiskoToolWrapper extends AbstractMapTool {
 		ONDBLCLICK
 	}
 	
-	private ITool tool = null;
-	private IDiskoMap map = null;
-	private ICommand command = null;
+	private ITool tool;
+	private IDiskoMap map;
+	private ICommand command;
 	private WrapAction wrap = WrapAction.NONE;
 	
 	/* ==========================================

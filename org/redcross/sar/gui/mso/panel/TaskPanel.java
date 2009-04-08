@@ -81,11 +81,10 @@ public class TaskPanel extends DefaultPanel
 		initialize();
 	}
 
-
-
-
-	private void initialize()
-	{
+	protected void initialize() {
+		
+		// forward
+		super.initialize();
 
 		// prepare
 		this.setNotScrollBars();

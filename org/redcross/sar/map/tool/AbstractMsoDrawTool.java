@@ -1,14 +1,12 @@
 package org.redcross.sar.map.tool;
 
 import java.awt.Event;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Calendar;
 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
@@ -113,14 +111,14 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected DrawAction onDblClickAction;
 
 	// draw feature constant
-	protected FeatureType featureType = null;
+	protected FeatureType featureType;
 
 	// counters
 	protected int moveCount = 0;
 	protected long previous = 0;
 
 	// point buffers
-	protected Point p = null;
+	protected Point p;
 
 	// holds draw geometry
 	protected Polyline geoPath;
@@ -129,9 +127,9 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected IGeometry geoSnap;
 
 	// adapters
+	protected MapControlAdapter mapAdapter;	
 	protected MsoDrawAdapter drawAdapter;
 	protected SnapAdapter snapAdapter;
-	protected MapControlAdapter mapAdapter;
 
 	// some draw information used to ensure that old draw
 	// geometries are removed from the screen
@@ -143,7 +141,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	protected SimpleLineSymbol snapSymbol;
 
 	// elements
-	protected DrawFrame drawFrame = null;
+	protected DrawFrame drawFrame;
 
 
 	/**
@@ -199,35 +197,10 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 		// create button
 		button = DiskoButtonFactory.createToggleButton(buttonSize);
-
-		// add show dialog listener
-		button.addMouseListener(new MouseListener() {
-
-			public void mouseClicked(MouseEvent e) {
-				// double click?
-				if(e.getClickCount() > 1) {
-					if(dialog!=null) dialog.setVisible(!dialog.isVisible());
-				}
-			}
-
-			public void mousePressed(MouseEvent e) {
-				// start show/hide
-				if(dialog!=null) dialog.delayedSetVisible(!dialog.isVisible(), 250);
-			}
-
-			public void mouseReleased(MouseEvent e) {
-				// stop show if not shown already
-				if(dialog!=null) dialog.cancelSetVisible();
-			}
-
-			public void mouseEntered(MouseEvent e) {}
-			public void mouseExited(MouseEvent e) {}
-
-		});
-
-		// create map control adapter
-		mapAdapter = new MapControlAdapter();
-
+		
+		// create map adapter
+		mapAdapter = new MapControlAdapter();		
+		
 	}
 
 	/* ==================================================
@@ -410,19 +383,8 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 					map.removeIMapControlEvents2Listener(mapAdapter);
 				}
 
-				// initialize map object
-				map = (DiskoMap)obj;
-
-				// register map in draw dialog?
-				if(dialog instanceof IDrawToolCollection && !isHosted()) {
-					((IDrawToolCollection)dialog).register(map);
-				}
-
-				// set marked button
-				if(button!=null && button.getIcon() instanceof DiskoIcon) {
-					DiskoIcon icon = (DiskoIcon)button.getIcon();
-					icon.setMarked(true);
-				}
+				// register map
+				setMap((DiskoMap)obj);
 
 				// add listener to used to draw tool geometries
 				map.addIMapControlEvents2Listener(mapAdapter);
@@ -1257,13 +1219,13 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 
 			// refresh old area?
 			if(lastInvalidArea!=null) {
-				lastInvalidArea.setDisplayByRef(map.getActiveView().getScreenDisplay());
+				lastInvalidArea.setDisplayByRef(getActiveView().getScreenDisplay());
 				lastInvalidArea.invalidate((short) esriScreenCache.esriNoScreenCache);
 			}
 
 			// refresh new area?
 			if(bdirty) {
-				invalidArea.setDisplayByRef(map.getActiveView().getScreenDisplay());
+				invalidArea.setDisplayByRef(getActiveView().getScreenDisplay());
 				invalidArea.invalidate((short) esriScreenCache.esriNoScreenCache);
 				lastInvalidArea = invalidArea;
 			}
@@ -1321,7 +1283,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		if (geoPoint != null && !isMoving) {
 
 			// get screen display and start drawing on it
-			IScreenDisplay screenDisplay = map.getActiveView().getScreenDisplay();
+			IScreenDisplay screenDisplay = getActiveView().getScreenDisplay();
 			screenDisplay.startDrawing(screenDisplay.getHDC(),(short) esriScreenCache.esriNoScreenCache);
 
 			screenDisplay.setSymbol(markerSymbol);
@@ -1337,7 +1299,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 	private void drawLine() throws IOException, AutomationException {
 
 		// get screen display and start drawing on it
-		IScreenDisplay screenDisplay = map.getActiveView().getScreenDisplay();
+		IScreenDisplay screenDisplay = getActiveView().getScreenDisplay();
 		screenDisplay.startDrawing(screenDisplay.getHDC(),(short) esriScreenCache.esriNoScreenCache);
 
 		// get current lines
@@ -1639,10 +1601,25 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 		return null;
 	}
 
+	
+	
 	/* ==================================================
 	 * Inner classes
 	 * ==================================================
 	 */
+
+	@Override
+	protected void setDialog(IDialog dialog) {
+		// forward
+		super.setDialog(dialog);
+		
+		// registrate me in dialog?
+		if(dialog instanceof IDrawToolCollection) {
+			((IDrawToolCollection)dialog).register(this);
+		}
+
+		
+	}
 
 	protected boolean doFinishWork() {
 		try {

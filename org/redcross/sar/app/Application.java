@@ -1,6 +1,8 @@
 package org.redcross.sar.app;
 
 import no.cmr.tools.Log;
+
+import org.disco.io.IOManager;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.gui.DiskoGlassPaneUtils;
 import org.redcross.sar.gui.DiskoKeyEventDispatcher;
@@ -14,6 +16,7 @@ import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.modeldriver.IModelDriverListenerIf;
 import org.redcross.sar.modeldriver.ModelDriverAdapter;
+import org.redcross.sar.mso.APRSMapper;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.output.DiskoReportManager;
@@ -161,6 +164,9 @@ public class Application extends JFrame implements IApplication, WindowListener
 				this.getServices().setAutomatic(AppProps.getText("SERVICES.automatic").equals("true"));
 				this.getServices().setMaster(AppProps.getText("SERVICES.master").equals("true"));
 			}
+			// prepare IO 
+			IOManager.getInstance();
+			APRSMapper.getInstance();
 			// prepare reporting
 			m_diskoReport = new DiskoReportManager(this);
 			// set loading bit

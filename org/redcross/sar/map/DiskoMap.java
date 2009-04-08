@@ -398,9 +398,10 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
         	}
 		}
 		else if(refreshCount==1)
-			refreshGraphics(refreshLayer, getExtent());
+			refreshGeography(refreshLayer, getExtent());
+			//refreshGraphics(refreshLayer, getExtent());
 		else if(refreshCount > 1)
-			refreshGraphics(null, getExtent());
+			refreshGeography(null, getExtent());
 		else
 			refreshDrawFrame();
 
@@ -1266,9 +1267,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 
 		// refresh layer(s)
 		if(count==1)
-			refreshGraphics(msoLayer, extent);
+			refreshGeography(msoLayer, extent); //refreshGraphics(msoLayer, extent);
 		else if(count > 1)
-			refreshGraphics(null, extent);
+			refreshGeography(null, extent); //refreshGraphics(null, extent);
 		else
 			refreshDrawFrame();
 
@@ -1830,7 +1831,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 					// force cached?
 					if(!l.isCached()) {
 						isCacheChanged = true;
-						l.setCached(true);
+						//l.setCached(true);
 					}
 					// update visible state
 					l.setVisible(i==(index-1));

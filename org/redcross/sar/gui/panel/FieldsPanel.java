@@ -88,7 +88,7 @@ public class FieldsPanel extends TogglePanel {
 		setButtonVisible("toggle", false);
 	}
 
-	private void initialize(String message) {
+	protected void initialize(String message) {
 		// prepare message label
 		getMessageLabel().setText(message);
 		// show message (layout manager is set here)
@@ -316,6 +316,16 @@ public class FieldsPanel extends TogglePanel {
 		// failure
 		return null;
 	}
+	
+	public IDiskoField getField(int index) {
+		// has mso object?
+		if(m_names!=null) {
+			// return panel
+			return m_fields.get(m_names.get(index));
+		}
+		// failure
+		return null;
+	}
 
 	public boolean removeField(String name)  {
 		// get panel
@@ -332,7 +342,20 @@ public class FieldsPanel extends TogglePanel {
 		// failure
 		return false;
 	}
+	
+	public List<IDiskoField> getFields() {
+		return new ArrayList<IDiskoField>(m_fields.values());
+	}
 
+	public List<IDiskoField> getFields(String[] names) {
+		List<IDiskoField> list = new ArrayList<IDiskoField>(names.length);
+		for(String name : names) {
+			IDiskoField field = m_fields.get(name);
+			if(field!=null) list.add(field);			
+		}
+		return list;
+	}
+	
 	public boolean isLayoutDirty() {
 		return m_isLayoutDirty;
 	}
