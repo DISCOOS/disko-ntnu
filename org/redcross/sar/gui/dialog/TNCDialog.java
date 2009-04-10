@@ -57,6 +57,8 @@ public class TNCDialog extends DefaultDialog  {
 	private JButton connectButton;
 	private JButton disconnectButton;
 	
+	private ConsoleDialog consoleDialog;
+	
 	private boolean isCancel;
 	private TNCSession session;
 	
@@ -81,7 +83,6 @@ public class TNCDialog extends DefaultDialog  {
 		this.setSize(350, 315);
 		this.setResizable(false);
 		this.setContentPane(getSessionPanel());
-		this.setModal(true);
 		refresh();
 	}
 
@@ -268,6 +269,15 @@ public class TNCDialog extends DefaultDialog  {
 		if(consoleButton == null) {
 			consoleButton = DiskoButtonFactory.createButton("GENERAL.CONSOLE",ButtonSize.SMALL);
 			consoleButton.setToolTipText("Åpne konsoll for å sende kommandoer direkte til TNC");
+			consoleButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					ConsoleDialog dlg = new ConsoleDialog(Utils.getApp().getFrame());
+					dlg.setLocationRelativeTo(Utils.getApp().getFrame());
+					getConsoleDialog().open(session);					
+				}
+				
+			});
 		}
 		return consoleButton;
 	}
@@ -296,6 +306,19 @@ public class TNCDialog extends DefaultDialog  {
 			disconnectButton.setToolTipText("Stopp tjeneste");
 		}
 		return disconnectButton;
+	}	
+	
+	/**
+	 * This method initializes consoleDialog	
+	 * 	
+	 * @return org.redcross.sar.gui.dialog.ConsoleDialog
+	 */	
+	private ConsoleDialog getConsoleDialog() {
+		if(consoleDialog == null) {
+			consoleDialog = new ConsoleDialog(Utils.getApp().getFrame());
+			consoleDialog.setLocationRelativeTo(Utils.getApp().getFrame());
+		}
+		return consoleDialog;
 	}	
 	
 	/* =======================================================

@@ -39,7 +39,6 @@ public class ServiceManagerDialog extends DefaultDialog {
 			this.setSize(350, 315);
 			this.setResizable(false);
 	        this.setContentPane(getServiceManagerPanel());
-	        this.setModal(true);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -60,7 +59,6 @@ public class ServiceManagerDialog extends DefaultDialog {
 	}
 
 	public void manage() {
-		// this will block because dialog is modal
 		setVisible(true);
 	}
 	

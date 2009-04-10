@@ -15,6 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
@@ -30,6 +31,7 @@ import org.disco.io.event.IManagerListener;
 import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
 import org.disco.io.serial.TNCSession;
+import org.redcross.sar.gui.dialog.ConsoleDialog;
 import org.redcross.sar.gui.dialog.ListSelectorDialog;
 import org.redcross.sar.gui.dialog.TNCDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -47,8 +49,10 @@ public class ServiceManagerPanel extends DefaultPanel {
 	
 	private JButton addButton;
 	private JButton removeButton;
+	private JButton consoleButton;
 	
 	private TNCDialog tncDialog;
+	private ConsoleDialog consoleDialog;
 	private ListSelectorDialog selectorDialog;
 	
 	/* ===========================================
@@ -72,6 +76,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 		
 		// set container 
 		setContainer(getServiceTable());
+		insertButton("finish", getConsoleButton(), "console");
 		insertButton("finish", getAddButton(), "add");
 		insertButton("finish", getRemoveButton(), "remove");
 		
@@ -86,6 +91,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 				}
 				else if("remove".equalsIgnoreCase(cmd)) {
 					remove();
+				}
+				else if("console".equalsIgnoreCase(cmd)) {
+					console();
 				}
 
 			}
@@ -109,19 +117,6 @@ public class ServiceManagerPanel extends DefaultPanel {
 			serviceTable.setIntercellSpacing(new Dimension(5,5));
 			serviceTable.setDefaultRenderer(Object.class, new ServiceTableRowRenderer());
 			
-			// add user interaction options
-			/*
-			serviceTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
-				public void valueChanged(ListSelectionEvent e) {
-					// consume?
-					if(!isChangeable()) return;
-					// set dirty flag
-					setDirty(e.getFirstIndex()>=0,false);					
-				}
-				
-			});
-			*/
 			serviceTable.addKeyListener(new KeyAdapter() {
 
 				@Override
@@ -173,6 +168,32 @@ public class ServiceManagerPanel extends DefaultPanel {
 		return removeButton;
 	}	
 	
+	/**
+	 * This method initializes consoleButton	
+	 * 	
+	 * @return javax.swing.JButton
+	 */	
+	private JButton getConsoleButton() {
+		if(consoleButton == null) {
+			consoleButton = DiskoButtonFactory.createButton("GENERAL.CONSOLE",ButtonSize.SMALL);
+			consoleButton.setToolTipText("Åpne konsoll for å sende kommandoer direkte til TNC");
+		}
+		return consoleButton;
+	}
+	
+	/**
+	 * This method initializes consoleDialog	
+	 * 	
+	 * @return org.redcross.sar.gui.dialog.ConsoleDialog
+	 */	
+	private ConsoleDialog getConsoleDialog() {
+		if(consoleDialog == null) {
+			consoleDialog = new ConsoleDialog(Utils.getApp().getFrame());
+			consoleDialog.setLocationRelativeTo(Utils.getApp().getFrame());
+		}
+		return consoleDialog;
+	}		
+		
 	/**
 	 * This method initializes selectorDialog	
 	 * 	
@@ -227,6 +248,30 @@ public class ServiceManagerPanel extends DefaultPanel {
 	
 	private void remove() {
 		
+		// get selection index
+		int row = getServiceTable().getSelectedRow();
+		
+		// get session?
+		if(row!=-1) {
+			ISession session = (ISession)getServiceTable().getValueAt(row, 0);
+			// prompt user
+			int ans = JOptionPane.showConfirmDialog(this, 
+					"Dette vil fjerne tjenesten " + session.getName() 
+					+ ". Vil du fortsette?","Bekreftelse",JOptionPane.YES_NO_OPTION);
+			// remove?
+			if(ans == JOptionPane.YES_OPTION) {
+				session.disconnect();
+				IOManager.getInstance().removeSession(session);				
+			}
+		}
+		JOptionPane.showConfirmDialog(this, "Du må velge en tjeneste først");
+		
+	}
+	
+	private void console() {
+		ConsoleDialog dlg = new ConsoleDialog(Utils.getApp().getFrame());
+		dlg.setLocationRelativeTo(Utils.getApp().getFrame());
+		getConsoleDialog().open();		
 	}
 	
 	/* ===========================================

@@ -12,9 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -29,12 +30,12 @@ import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
 import org.redcross.sar.gui.panel.DefaultPanel;
 
-public class ConsoleDialog1 extends DefaultDialog {
+public class ConsoleDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
 
 	private DefaultPanel contentPanel;
-	private JSplitPane outputPanel;	
+	private JPanel outputPanel;	
 	private JPanel commandPanel;
 	
 	private JScrollPane commandScrollPane;
@@ -64,7 +65,7 @@ public class ConsoleDialog1 extends DefaultDialog {
 	private final String SESSION_CONNECTED = "%1$s CONNECTED to %2$s";
 	private final String SESSION_DISCONNECTED = "%1$s DISCONNECTED from %2$s";
 
-	public ConsoleDialog1(Frame owner) {
+	public ConsoleDialog(Frame owner) {
 		super(owner);
 		initialize();
 		io.addManagerListener(listener);
@@ -76,8 +77,8 @@ public class ConsoleDialog1 extends DefaultDialog {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(800, 600);
-		this.setTitle("Console");
+		this.setSize(600, 400);
+		this.setResizable(false);
 		this.setContentPane(getContentPanel());
 	}
 
@@ -88,11 +89,11 @@ public class ConsoleDialog1 extends DefaultDialog {
 	 */
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
-			contentPanel = new DefaultPanel("Konsoll");
+			contentPanel = new DefaultPanel();
 			contentPanel.setContainerLayout(new BorderLayout(5,5));
-			contentPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 			contentPanel.addToContainer(getOutputPanel(), BorderLayout.CENTER);
-			contentPanel.addToContainer(getCommandPanel(), BorderLayout.SOUTH);			
+			contentPanel.addToContainer(getCommandPanel(), BorderLayout.SOUTH);
+			contentPanel.setNotScrollBars();
 		}
 		return contentPanel;
 	}
@@ -100,13 +101,16 @@ public class ConsoleDialog1 extends DefaultDialog {
 	/**
 	 * This method initializes outputPanel	
 	 * 	
-	 * @return javax.swing.JSplitPane	
+	 * @return javax.swing.JPanel	
 	 */
-	private JSplitPane getOutputPanel() {
+	private JPanel getOutputPanel() {
 		if (outputPanel == null) {
-			outputPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-			outputPanel.setLeftComponent(getConsoleScrollPane());
-			outputPanel.setRightComponent(getCommandScrollPane());
+			outputPanel = new JPanel();
+			outputPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+			outputPanel.setLayout(new BoxLayout(outputPanel,BoxLayout.Y_AXIS));
+			outputPanel.add(getConsoleScrollPane());
+			outputPanel.add(Box.createVerticalStrut(5));
+			outputPanel.add(getCommandScrollPane());
 		}
 		return outputPanel;
 	}	
@@ -121,7 +125,7 @@ public class ConsoleDialog1 extends DefaultDialog {
 			consoleScrollPane = new JScrollPane();
 			consoleScrollPane.setViewportView(getConsoleTextArea());
 			consoleScrollPane.setMinimumSize(new Dimension(0,150));
-			consoleScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(),"IO/events"));			
+			consoleScrollPane.setBorder(BorderFactory.createTitledBorder("IO/events"));			
 		}
 		return consoleScrollPane;
 	}
@@ -149,6 +153,7 @@ public class ConsoleDialog1 extends DefaultDialog {
 	private JPanel getCommandPanel() {
 		if (commandPanel == null) {
 			commandPanel = new JPanel(new BorderLayout(5,5));
+			commandPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 			commandPanel.add(getCommandPrefixLabel(),BorderLayout.WEST);
 			commandPanel.add(getCommandTextField(),BorderLayout.CENTER);
 			commandPanel.add(getExecuteButton(),BorderLayout.EAST);
@@ -165,7 +170,7 @@ public class ConsoleDialog1 extends DefaultDialog {
 		if (commandScrollPane == null) {
 			commandScrollPane = new JScrollPane();
 			commandScrollPane.setViewportView(getCommandTextArea());
-			commandScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(),"Commands"));
+			commandScrollPane.setBorder(BorderFactory.createTitledBorder("Commands"));
 			commandScrollPane.setMinimumSize(new Dimension(0,150));
 		}
 		return commandScrollPane;
@@ -300,6 +305,13 @@ public class ConsoleDialog1 extends DefaultDialog {
 		publish(getCmdSource(io.getCurrentSession()), "", "response");
 		// show 
 		setVisible(true);
+	}
+	
+	public void open(ISession session) {
+		// set as current
+		IOManager.getInstance().setCurrentSession(session.getName());
+		// forward
+		open();
 	}
 	
 	private void validateSession() {
