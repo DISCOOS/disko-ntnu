@@ -151,8 +151,8 @@ public class APRSMapper {
 			// failed
 			return false;
 		}
-  	}
-  	
-  	
 
+		public void onCurrentSessionChanged(ISession session) { /* NOP */ }
+  	}
+  
 }

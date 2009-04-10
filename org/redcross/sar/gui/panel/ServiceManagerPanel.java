@@ -206,7 +206,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 		// add service?
 		if("APRS Sanntidssporing".equals(service)) {
 			// create broker
-			APRSBroker broker = new APRSBroker(service,"resources/io");
+			APRSBroker broker = new APRSBroker("APRS",service,"resources/io");
 			// manage service
 			if (getTNCDialog().manageSession(broker)) {
 				// add to manager
@@ -283,6 +283,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 			fireTableDataChanged();			
 		}
 		
+		public void onCurrentSessionChanged(ISession session) { /* NOP */ }
 		public void onReceive(ISession session, ProtocolEvent e) { /* NOP */ }
 		public void onTransmit(ISession session, ProtocolEvent e) { /* NOP */ }
 		public void onEntityDetected(IBroker broker,EntityEvent e) { /* NOP */ }
