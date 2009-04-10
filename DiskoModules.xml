@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<DiskoApplication>
+	<DiskoRole name="aprs" title="Tracking">
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" isDefault="true"/>
+	</DiskoRole>
+	<DiskoRole name="al" title="Aksjonsleder">
+		<DiskoModule classname="org.redcross.sar.wp.simulator.DiskoWpSimulatorImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.ds.DiskoWpDsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.sc.DiskoWpScImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.logistics.DiskoWpLogisticsImpl" isDefault="true"/>
+		<DiskoModule classname="org.redcross.sar.wp.messageLog.DiskoWpMessageLogImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.tasks.DiskoWpTasksImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+	</DiskoRole>
+	<DiskoRole name="nl" title="Nestleder">
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" isDefault="true"/>
+		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+	</DiskoRole>
+	<DiskoRole name="sb" title="Sambandsleder">
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" />
+		<DiskoModule classname="org.redcross.sar.wp.logistics.DiskoWpLogisticsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.messageLog.DiskoWpMessageLogImpl" isDefault="true"/>
+		<DiskoModule classname="org.redcross.sar.wp.tasks.DiskoWpTasksImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+	</DiskoRole>
+	<DiskoRole name="adm" title="Administrator">
+		<DiskoModule classname="org.redcross.sar.wp.tactics.DiskoWpTacticsImpl" isDefault="true"/>
+		<DiskoModule classname="org.redcross.sar.wp.logistics.DiskoWpLogisticsImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.messageLog.DiskoWpMessageLogImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.tasks.DiskoWpTasksImpl"/>
+		<DiskoModule classname="org.redcross.sar.wp.unit.DiskoWpUnitImpl"/>
+	</DiskoRole>
+</DiskoApplication>

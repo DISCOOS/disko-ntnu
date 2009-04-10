@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000088" name="Dog" objectType="test" pos="11">
+<fact comp="n" edit="y" id="00000000089" label="Name" pos1="999" pos2="999" relTo="00000000088" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000090" label="Status" pos1="999" pos2="999" relTo="00000000088" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000091" label="CallSign" pos1="999" pos2="999" relTo="00000000088" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000092" label="Position" pos1="999" pos2="999" relTo="00000000088" version="1">
+<loc_fact lat_value="" locationType="1" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000093" label="Remarks" pos1="999" pos2="999" relTo="00000000088" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000094" label="ToneID" pos1="999" pos2="999" relTo="00000000088" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000095" label="Number" pos1="999" pos2="999" relTo="00000000088" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+</object>

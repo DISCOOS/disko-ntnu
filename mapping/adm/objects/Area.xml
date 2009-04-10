@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000018" name="Area" objectType="test" pos="1">
+<fact comp="n" edit="y" id="00000000019" label="Remarks" pos1="999" pos2="999" relTo="00000000018" version="1">
+<str_fact/>
+</fact>
+</object>

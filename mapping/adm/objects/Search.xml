@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000187" name="Search" objectType="test" pos="29">
+<fact comp="n" edit="y" id="00000000188" label="Priority" pos1="999" pos2="999" relTo="00000000187" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000189" label="Status" pos1="999" pos2="999" relTo="00000000187" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000190" label="Remarks" pos1="999" pos2="999" relTo="00000000187" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000191" label="Number" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000192" label="PrioritySequence" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000193" label="TimeEstimatedFinished" pos1="999" pos2="999" relTo="00000000187" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000194" label="SubType" pos1="999" pos2="999" relTo="00000000187" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000195" label="PlannedAccuracy" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000196" label="PlannedCoverage" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000197" label="PlannedPersonnel" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000198" label="PlannedProgress" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000199" label="PlannedSearchMethod" pos1="999" pos2="999" relTo="00000000187" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000200" label="ReportedAccuracy" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000201" label="ReportedCoverage" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000202" label="ReportedPersonnel" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000203" label="ReportedProgress" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000204" label="ReportedSearchMethod" pos1="999" pos2="999" relTo="00000000187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000205" label="Start" pos1="999" pos2="999" relTo="00000000187" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000206" label="Stop" pos1="999" pos2="999" relTo="00000000187" version="1">
+<date_fact/>
+</fact>
+</object>

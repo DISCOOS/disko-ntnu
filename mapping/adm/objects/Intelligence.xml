@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object id="00000000120" name="Intelligence" objectType="test" pos="18">
+<fact comp="n" edit="y" id="00000000121" label="Priority" pos1="999" pos2="999" relTo="00000000120" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000122" label="Time" pos1="999" pos2="999" relTo="00000000120" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000123" label="Status" pos1="999" pos2="999" relTo="00000000120" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000124" label="Description" pos1="999" pos2="999" relTo="00000000120" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000125" label="Source" pos1="999" pos2="999" relTo="00000000120" version="1">
+<str_fact/>
+</fact>
+</object>

@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321055515">
+<operation creator="kyb-d201" datetime_data="1220321055515" id="05620080007456328" state="2">
+<fact comp="n" edit="n" id="00000000000000000" label="Nr" pos1="0" pos2="0" relTo="" version="0">
+        <str_fact value="2008-ERKHK-7456328"/>
+    </fact>
+<fact comp="n" edit="y" id="00000000000000001" label="Hendelsestype" pos1="1" pos2="0" relTo="" version="0">
+<combo_fact selectedItem="MSO">
+<combo_el>Udefinert - LAND</combo_el>
+<combo_el>MSO</combo_el>
+<combo_el>Udefinert - SJØ</combo_el>
+</combo_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000000000002" label="Fase" pos1="2" pos2="0" relTo="" version="0">
+<combo_fact selectedItem="Usikkerhet">
+<combo_el>Usikkerhet</combo_el>
+<combo_el>Beredskap</combo_el>
+<combo_el>Nød</combo_el>
+<combo_el>Avsluttet</combo_el>
+<combo_el>Monitorering</combo_el>
+</combo_fact>
+</fact>
+<fact comp="n" edit="y" id="00000000000000003" label="First alert RCC" pos1="3" pos2="0" relTo="" version="0">
+        <date_fact value="1220321055515"/>
+</fact>
+<fact comp="n" edit="y" id="00000000005" label="CallSign" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000045" label="Released" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000046" label="Telephone1" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000047" label="Telephone2" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000048" label="Telephone3" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000049" label="Established" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000050" label="Shift" pos1="999" pos2="999" relTo="00000000132" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000063" label="Status" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<object id="00000000132" name="CmdPost" objectType="test" pos="33">
+<fact comp="n" edit="y" id="00000000005" label="CallSign" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000045" label="Released" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000046" label="Telephone1" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000047" label="Telephone2" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000048" label="Telephone3" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000049" label="Established" pos1="999" pos2="999" relTo="00000000132" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000050" label="Shift" pos1="999" pos2="999" relTo="00000000132" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000063" label="Status" pos1="999" pos2="999" relTo="00000000132" version="1">
+<str_fact/>
+</fact>
+</object>
+<rot>
+ </rot>
+</operation>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321148328">
+<add_to_op id="05620080007456328">
+<object id="489007545062" name="Message" objectType="test" pos="19">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="19" pos2="999" relTo="489007545062" version="0">
+<str_fact value="Message"/>
+</fact>
+<fact comp="n" edit="y" id="00000000137" label="TimeStamp" pos1="999" pos2="999" relTo="489007545062" version="1">
+<date_fact value="1220321145078"/>
+</fact>
+<fact comp="n" edit="y" id="00000000138" label="Visible" pos1="999" pos2="999" relTo="489007545062" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000139" label="Status" pos1="999" pos2="999" relTo="489007545062" version="1">
+<str_fact value="CONFIRMED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000140" label="Number" pos1="999" pos2="999" relTo="489007545062" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000141" label="Created" pos1="999" pos2="999" relTo="489007545062" version="1">
+<date_fact value="1220321145078"/>
+</fact>
+<fact comp="n" edit="y" id="00000000142" label="Broadcast" pos1="999" pos2="999" relTo="489007545062" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000143" label="OccuredTime" pos1="999" pos2="999" relTo="489007545062" version="1">
+<date_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321148375">
+<add_to_op id="05620080007456328">
+<object id="869007545187" name="MessageLine" objectType="test" pos="20">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="20" pos2="999" relTo="869007545187" version="0">
+<str_fact value="MessageLine"/>
+</fact>
+<fact comp="n" edit="y" id="00000000145" label="LineNumber" pos1="999" pos2="999" relTo="869007545187" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000146" label="LineType" pos1="999" pos2="999" relTo="869007545187" version="1">
+<str_fact value="TEXT"/>
+</fact>
+<fact comp="n" edit="y" id="00000000147" label="LineText" pos1="999" pos2="999" relTo="869007545187" version="1">
+<str_fact value="fgdfgdfgdfg"/>
+</fact>
+<fact comp="n" edit="y" id="00000000148" label="OperationTime" pos1="999" pos2="999" relTo="869007545187" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000149" label="LinePosition" pos1="999" pos2="999" relTo="869007545187" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321148406">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321148406" fact_type="-1" field="add_relation" id="05620080007456328.489007545062" origId="">
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321148437">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321148437" fact_type="-1" field="add_relation" id="05620080007456328.489007545062" origId="">
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.869007545187</element>
+</string_array>
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.869007545187</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321148453">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321148453" fact_type="-1" field="add_named_relation" id="05620080007456328.489007545062" origId="">
+<string_array>
+<element>Sender</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>Sender</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321155375">
+<add_to_op id="05620080007456328">
+<object id="457907553781" name="Message" objectType="test" pos="19">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="19" pos2="999" relTo="457907553781" version="0">
+<str_fact value="Message"/>
+</fact>
+<fact comp="n" edit="y" id="00000000137" label="TimeStamp" pos1="999" pos2="999" relTo="457907553781" version="1">
+<date_fact value="1220321153781"/>
+</fact>
+<fact comp="n" edit="y" id="00000000138" label="Visible" pos1="999" pos2="999" relTo="457907553781" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000139" label="Status" pos1="999" pos2="999" relTo="457907553781" version="1">
+<str_fact value="CONFIRMED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000140" label="Number" pos1="999" pos2="999" relTo="457907553781" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="2.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000141" label="Created" pos1="999" pos2="999" relTo="457907553781" version="1">
+<date_fact value="1220321153781"/>
+</fact>
+<fact comp="n" edit="y" id="00000000142" label="Broadcast" pos1="999" pos2="999" relTo="457907553781" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000143" label="OccuredTime" pos1="999" pos2="999" relTo="457907553781" version="1">
+<date_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321155421">
+<add_to_op id="05620080007456328">
+<object id="907307553875" name="MessageLine" objectType="test" pos="20">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="20" pos2="999" relTo="907307553875" version="0">
+<str_fact value="MessageLine"/>
+</fact>
+<fact comp="n" edit="y" id="00000000145" label="LineNumber" pos1="999" pos2="999" relTo="907307553875" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000146" label="LineType" pos1="999" pos2="999" relTo="907307553875" version="1">
+<str_fact value="TEXT"/>
+</fact>
+<fact comp="n" edit="y" id="00000000147" label="LineText" pos1="999" pos2="999" relTo="907307553875" version="1">
+<str_fact value="fgfggfgfdg"/>
+</fact>
+<fact comp="n" edit="y" id="00000000148" label="OperationTime" pos1="999" pos2="999" relTo="907307553875" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000149" label="LinePosition" pos1="999" pos2="999" relTo="907307553875" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321155453">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321155453" fact_type="-1" field="add_relation" id="05620080007456328.457907553781" origId="">
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321155468">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321155468" fact_type="-1" field="add_relation" id="05620080007456328.457907553781" origId="">
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.907307553875</element>
+</string_array>
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.907307553875</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321155484">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321155484" fact_type="-1" field="add_named_relation" id="05620080007456328.457907553781" origId="">
+<string_array>
+<element>Sender</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>Sender</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321182875">
+<add_to_op id="05620080007456328">
+<object id="397507575312" name="POI" objectType="test" pos="26">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="26" pos2="999" relTo="397507575312" version="0">
+<str_fact value="POI"/>
+</fact>
+<fact comp="n" edit="y" id="00000000185" label="Position" pos1="999" pos2="999" relTo="397507575312" version="1">
+<loc_fact lat_value="63.27936673001794" locationType="0" long_value="10.532385106044787"/>
+</fact>
+<fact comp="n" edit="y" id="00000000186" label="Remarks" pos1="999" pos2="999" relTo="397507575312" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000187" label="Type" pos1="999" pos2="999" relTo="397507575312" version="1">
+<str_fact value="FINDING"/>
+</fact>
+<fact comp="n" edit="y" id="00000000188" label="AreaSequenceNumber" pos1="999" pos2="999" relTo="397507575312" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321182921">
+<add_to_op id="05620080007456328">
+<object id="485707575703" name="Message" objectType="test" pos="19">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="19" pos2="999" relTo="485707575703" version="0">
+<str_fact value="Message"/>
+</fact>
+<fact comp="n" edit="y" id="00000000137" label="TimeStamp" pos1="999" pos2="999" relTo="485707575703" version="1">
+<date_fact value="1220321175703"/>
+</fact>
+<fact comp="n" edit="y" id="00000000138" label="Visible" pos1="999" pos2="999" relTo="485707575703" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000139" label="Status" pos1="999" pos2="999" relTo="485707575703" version="1">
+<str_fact value="CONFIRMED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000140" label="Number" pos1="999" pos2="999" relTo="485707575703" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="3.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000141" label="Created" pos1="999" pos2="999" relTo="485707575703" version="1">
+<date_fact value="1220321175703"/>
+</fact>
+<fact comp="n" edit="y" id="00000000142" label="Broadcast" pos1="999" pos2="999" relTo="485707575703" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000143" label="OccuredTime" pos1="999" pos2="999" relTo="485707575703" version="1">
+<date_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321182968">
+<add_to_op id="05620080007456328">
+<object id="627307575765" name="MessageLine" objectType="test" pos="20">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="20" pos2="999" relTo="627307575765" version="0">
+<str_fact value="MessageLine"/>
+</fact>
+<fact comp="n" edit="y" id="00000000145" label="LineNumber" pos1="999" pos2="999" relTo="627307575765" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000146" label="LineType" pos1="999" pos2="999" relTo="627307575765" version="1">
+<str_fact value="POI"/>
+</fact>
+<fact comp="n" edit="y" id="00000000147" label="LineText" pos1="999" pos2="999" relTo="627307575765" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000148" label="OperationTime" pos1="999" pos2="999" relTo="627307575765" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000149" label="LinePosition" pos1="999" pos2="999" relTo="627307575765" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321183031">
+<add_to_op id="05620080007456328">
+<object id="620707575781" name="Task" objectType="test" pos="32">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="32" pos2="999" relTo="620707575781" version="0">
+<str_fact value="Task"/>
+</fact>
+<fact comp="n" edit="y" id="00000000232" label="TimeStamp" pos1="999" pos2="999" relTo="620707575781" version="1">
+<date_fact value="1220321175781"/>
+</fact>
+<fact comp="n" edit="y" id="00000000233" label="Visible" pos1="999" pos2="999" relTo="620707575781" version="1">
+<num_fact antdec="0" max="1.0" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000234" label="Priority" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact value="HIGH"/>
+</fact>
+<fact comp="n" edit="y" id="00000000235" label="Status" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact value="UNPROCESSED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000236" label="Number" pos1="999" pos2="999" relTo="620707575781" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="1.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000237" label="Type" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact value="INTELLIGENCE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000238" label="Description" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact value="Funn 1 i kartref. 32V NR 76871 17634"/>
+</fact>
+<fact comp="n" edit="y" id="00000000239" label="Created" pos1="999" pos2="999" relTo="620707575781" version="1">
+<date_fact value="1220321175781"/>
+</fact>
+<fact comp="n" edit="y" id="00000000240" label="Progress" pos1="999" pos2="999" relTo="620707575781" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000241" label="ResponsibleRole" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000242" label="TaskText" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact value="Hendelse: Funn"/>
+</fact>
+<fact comp="n" edit="y" id="00000000243" label="Alert" pos1="999" pos2="999" relTo="620707575781" version="1">
+<date_fact value="1220321175781"/>
+</fact>
+<fact comp="n" edit="y" id="00000000244" label="CreatingWorkProcess" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000245" label="SourceClass" pos1="999" pos2="999" relTo="620707575781" version="1">
+<str_fact value="CLASSCODE_MESSAGE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000246" label="DueTime" pos1="999" pos2="999" relTo="620707575781" version="1">
+<date_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1220321183062">
+<add_to_op id="05620080007456328">
+<object id="506407580296" name="MessageLine" objectType="test" pos="20">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="20" pos2="999" relTo="506407580296" version="0">
+<str_fact value="MessageLine"/>
+</fact>
+<fact comp="n" edit="y" id="00000000145" label="LineNumber" pos1="999" pos2="999" relTo="506407580296" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="2.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000146" label="LineType" pos1="999" pos2="999" relTo="506407580296" version="1">
+<str_fact value="TEXT"/>
+</fact>
+<fact comp="n" edit="y" id="00000000147" label="LineText" pos1="999" pos2="999" relTo="506407580296" version="1">
+<str_fact value="fgdfgdfgdfg"/>
+</fact>
+<fact comp="n" edit="y" id="00000000148" label="OperationTime" pos1="999" pos2="999" relTo="506407580296" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000149" label="LinePosition" pos1="999" pos2="999" relTo="506407580296" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183093">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183093" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183140">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183140" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>MessageTasks</element>
+<element>05620080007456328.620707575781</element>
+</string_array>
+<string_array>
+<element>MessageTasks</element>
+<element>05620080007456328.620707575781</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183156">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183156" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.627307575765</element>
+</string_array>
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.627307575765</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183171">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183171" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.506407580296</element>
+</string_array>
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.506407580296</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183203">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183203" fact_type="-1" field="add_named_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>Sender</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>Sender</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183218">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183218" fact_type="-1" field="add_named_relation" id="05620080007456328.627307575765" origId="">
+<string_array>
+<element>LinePOI</element>
+<element>05620080007456328.397507575312</element>
+</string_array>
+<string_array>
+<element>LinePOI</element>
+<element>05620080007456328.397507575312</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321183265">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321183265" fact_type="-1" field="add_named_relation" id="05620080007456328.620707575781" origId="">
+<string_array>
+<element>DependentObject</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>DependentObject</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321313187">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321313187" fact_type="5" field="" given_time="1220321313187" id="05620080007456328.397507575312.00000000185" int_val="0" origId="00000000185">
+<FROM double_val="10.532385106044787" float_val="10.532385106044787" lat_val="63.27936673001794" long_val="10.532385106044787" string_val=""/>
+<TO double_val="10.532385107009524" float_val="10.532385107009524" int_val="0" lat_val="63.2793667300262" long_val="10.532385107009524" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321313234">
+<update_object changed_by="kennetgu" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620080007456328.397507575312.00000000187" origId="00000000187">
+<string_data string_val="FINDING"/>
+<string_data string_val="OBSERVATION"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321313265">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321313265" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+<string_array>
+<element>ConfirmedReceivers</element>
+<element>05620080007456328.00000000132</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321313281">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321313281" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>MessageTasks</element>
+<element>05620080007456328.620707575781</element>
+</string_array>
+<string_array>
+<element>MessageTasks</element>
+<element>05620080007456328.620707575781</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321313312">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321313312" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.627307575765</element>
+</string_array>
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.627307575765</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321313328">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" datetime_data="1220321313328" fact_type="-1" field="add_relation" id="05620080007456328.485707575703" origId="">
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.506407580296</element>
+</string_array>
+<string_array>
+<element>MessageLines</element>
+<element>05620080007456328.506407580296</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321326718">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1220321326718" id="05620080007456328.620707575781.00000000232" origId="00000000232">
+<datetime_data date_val="1220321175781"/>
+<datetime_data date_val="1220321160000"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1220321326750">
+<update_object changed_by="kennetgu" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1220321326750" id="05620080007456328.620707575781.00000000243" origId="00000000243">
+<datetime_data date_val="1220321175781"/>
+<datetime_data/>
+</update_object>
+</update>
+
+@END MESSAGE@
