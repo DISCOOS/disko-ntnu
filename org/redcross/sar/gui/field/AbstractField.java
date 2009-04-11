@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -157,7 +158,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	protected IDiskoMap getInstalledMap() {
 		// try to get map from current
-		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+		IDiskoWpModule module = Application.getInstance().getCurrentRole().getCurrentDiskoWpModule();
 		if(module!=null) {
 			if(module.isMapInstalled())
 				return module.getMap();

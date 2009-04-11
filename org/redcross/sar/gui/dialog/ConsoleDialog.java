@@ -28,6 +28,8 @@ import org.disco.io.event.EntityEvent;
 import org.disco.io.event.IManagerListener;
 import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
+import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 
 public class ConsoleDialog extends DefaultDialog {
@@ -242,7 +244,8 @@ public class ConsoleDialog extends DefaultDialog {
 	 */
 	private JButton getExecuteButton() {
 		if (executeButton == null) {
-			executeButton = new JButton("Execute");
+			executeButton = DiskoButtonFactory.createButton(
+					"GENERAL.APPLY",ButtonSize.SMALL);			
 			executeButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {

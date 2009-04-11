@@ -1,4 +1,4 @@
-package org.redcross.sar.mso;
+package org.redcross.sar.io;
 
 import org.disco.io.IBroker;
 import org.disco.io.IEntity;
@@ -13,6 +13,8 @@ import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
 import org.redcross.sar.data.event.ISourceListener;
 import org.redcross.sar.data.event.SourceEvent;
+import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;

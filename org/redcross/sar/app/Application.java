@@ -9,15 +9,15 @@ import org.redcross.sar.gui.DiskoKeyEventDispatcher;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.menu.SysMenu;
+import org.redcross.sar.io.APRSMapper;
 import org.redcross.sar.map.DiskoMapManagerImpl;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.modeldriver.IModelDriverListenerIf;
-import org.redcross.sar.modeldriver.ModelDriverAdapter;
-import org.redcross.sar.mso.APRSMapper;
+import org.redcross.sar.mso.IDispatcherListenerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.DispatcherAdapter;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.AppProps;
@@ -92,6 +92,13 @@ public class Application extends JFrame implements IApplication, WindowListener
 	private boolean isLoading = false;
 	private boolean waitingForNewOp = false;
 
+	// login information
+	private Object[] loggedin=new Object[3];
+	
+	/*========================================================
+  	 * Program startup
+  	 *======================================================== */
+	
 	/**
 	 * The main method.
 	 *
@@ -108,28 +115,80 @@ public class Application extends JFrame implements IApplication, WindowListener
 		{
 			public void run()
 			{
-				Application thisClass = new Application();
-				thisClass.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); //EXIT_ON_CLOSE);
+				Application.getInstance().setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); 
 			}
 		});
 	}
 
-	private Object[] loggedin=new Object[3];
-
-	/**
+	/*========================================================
+  	 * Constructors
+  	 *======================================================== */
+	
+  	/**
 	 * This is the default constructor
 	 */
-	public Application()
+	private Application()
 	{
 		super();
 		// register me
 		Utils.setApp(this);
-		// initialize ArcGIS
-		initializeArcGISLicenses();
-		// initialize GUI
-		initialize();
+		// initialize later
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				// initialize ArcGIS
+				initializeArcGISLicenses();
+				// initialize GUI
+				initialize();
+			}			
+		});
 	}
+	
+	 static {
+         System.loadLibrary("rxtxSerial");
+         System.loadLibrary("rxtxParallel");
+     }
+ 	
 
+
+	/*========================================================
+  	 * The singleton code
+  	 *======================================================== */
+
+	private static Application m_this;
+	
+	/**
+	 * Get singleton instance of class
+	 *
+	 * @return Returns singleton instance of class
+	 */
+    public static Application getInstance() {
+  		if (m_this == null) {
+  			try {
+  	  			// it's ok, we can call this constructor
+				m_this = new Application();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+  		}
+  		return m_this;
+  	}
+
+	/**
+	 * Method overridden to protect singleton
+	 *
+	 * @throws CloneNotSupportedException
+	 * @return Returns nothing. Method overridden to protect singleton
+	 */
+  	public Object clone() throws CloneNotSupportedException{
+  		throw new CloneNotSupportedException();
+  		// that'll teach 'em
+  	}
+
+	/*========================================================
+  	 * *Initializing code
+  	 *======================================================== */
+	
 	private void initialize()
 	{
 		try
@@ -156,8 +215,8 @@ public class Application extends JFrame implements IApplication, WindowListener
 			// show me
 			this.setVisible(true);
 			//initiate model driver
-			this.getMsoModel().getModelDriver().initiate();
-			this.getMsoModel().getModelDriver().addModelDriverListener(m_driverAdapter);
+			this.getMsoModel().getDispatcher().initiate();
+			this.getMsoModel().getDispatcher().addDispatcherListener(m_dispatcherAdapter);
 			// load services?
 			if(AppProps.getText("SERVICES.initialize").equals("true")) {
 				this.getServices().installFromXmlFile(new File("DiskoServices.xml"));
@@ -402,7 +461,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 			loggedin[1] = user;
 			loggedin[2] = password;
 			// is model driver initiated?
-			if (getMsoModel().getModelDriver().isInitiated()) {
+			if (getMsoModel().getDispatcher().isInitiated()) {
 				// forward
 				selectActiveOperation(false);
 			} else {
@@ -473,7 +532,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 		// switch operation?
 		if(ans == JOptionPane.YES_OPTION) {
 
-			String oprId = Utils.getApp().getMsoModel().getModelDriver().getActiveOperationID();
+			String oprId = Application.getInstance().getMsoModel().getDispatcher().getActiveOperationID();
 
 			// forward
 			return getUIFactory().getOperationDialog().selectOperation(isLoading() || oprId==null);
@@ -527,7 +586,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 						null);
 				if(ans==JOptionPane.YES_OPTION) {
 					// forward
-					getMsoModel().getModelDriver().finishActiveOperation();
+					getMsoModel().getDispatcher().finishActiveOperation();
 				}
 			}
 		}
@@ -559,7 +618,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 		// create?
 		if(ans==JOptionPane.YES_OPTION) {
 			waitingForNewOp = true;
-			getMsoModel().getModelDriver().createNewOperation();
+			getMsoModel().getDispatcher().createNewOperation();
 			return true;
 		}
 
@@ -571,9 +630,11 @@ public class Application extends JFrame implements IApplication, WindowListener
 
 	public void shutdown()
 	{
+		// cleanup
+		IOManager.getInstance().disconnectAll();
+		getMsoModel().getDispatcher().shutDown();
 		// forward
 		dispose();
-		getMsoModel().getModelDriver().shutDown();
 
 	}
 
@@ -695,7 +756,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 				// loop until maximum milliseconds is reached
 				while ((tic - schedule) < m_millisToWait) {
 					// is initiated
-					if(m_msoModel.getModelDriver().isInitiated())
+					if(m_msoModel.getDispatcher().isInitiated())
 						//Get back onto awt thread
 						return true;
 					else
@@ -814,7 +875,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 				{
 
 					// return status
-					boolean flag = MsoModelImpl.getInstance().getModelDriver().setActiveOperation(m_opID);
+					boolean flag = MsoModelImpl.getInstance().getDispatcher().setActiveOperation(m_opID);
 
 					// return flag
 					return flag;
@@ -1016,7 +1077,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 		return false;
 	}
 
-	private final IModelDriverListenerIf m_driverAdapter = new ModelDriverAdapter() {
+	private final IDispatcherListenerIf m_dispatcherAdapter = new DispatcherAdapter() {
 
 		public void onOperationCreated(final String oprId, final boolean current)
 		{
@@ -1058,7 +1119,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 					e.printStackTrace();
 				}
 				// get active operations
-				java.util.List<String[]> opList = getMsoModel().getModelDriver()
+				java.util.List<String[]> opList = getMsoModel().getDispatcher()
 						.getActiveOperations();
 				// prompt user for actions
 				String[] options = { bundle.getString("QUIT.APPLICATION.TEXT"),

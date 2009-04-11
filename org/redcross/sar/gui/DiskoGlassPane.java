@@ -28,6 +28,7 @@ import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.gui.event.GlassPaneEvent;
 import org.redcross.sar.gui.event.IGlassPaneListener;
@@ -120,7 +121,7 @@ public class DiskoGlassPane extends JPanel {
 		 * not fire AWTEvent to the default toolset (ArcGIS
 		 * MapBean is one such component).
 		 * ================================================= */
-        Utils.getApp().getMapManager().addDiskoMapListener(m_mapListener);
+        Application.getInstance().getMapManager().addDiskoMapListener(m_mapListener);
 
     }
 
@@ -330,7 +331,7 @@ public class DiskoGlassPane extends JPanel {
                 Component c = ke.getComponent();
                 Component root = SwingUtilities.getRoot(c);
             	// do not belong to this application?
-                if (!(Utils.inApp(c) || Utils.getApp().getMapManager().isMap(root))) return;
+                if (!(Utils.inApp(c) || Application.getInstance().getMapManager().isMap(root))) return;
                 // consume?
                 if(m_isLocked) {
                 	if(Utils.isMessageDialog(root)) {
@@ -345,7 +346,7 @@ public class DiskoGlassPane extends JPanel {
                 Component c = me.getComponent();
                 Component root = SwingUtilities.getRoot(c);
             	// do not belong to this application?
-                if (!(Utils.inApp(c) || Utils.getApp().getMapManager().isMap(root))) return;
+                if (!(Utils.inApp(c) || Application.getInstance().getMapManager().isMap(root))) return;
                 // consume? (allow message dialog boxes)
                 if(m_isLocked) {
                 	if(Utils.isMessageDialog(root) || Utils.isMessageDialogShown()) {
@@ -394,7 +395,7 @@ public class DiskoGlassPane extends JPanel {
                 Component c = fe.getComponent();
                 Component root = SwingUtilities.getRoot(c);
             	// do not belong to this application?
-                if (!(Utils.inApp(c) || Utils.getApp().getMapManager().isMap(root))) return;
+                if (!(Utils.inApp(c) || Application.getInstance().getMapManager().isMap(root))) return;
                 // set flag
                 if(!(m_window==c || SwingUtilities.isDescendingFrom(c, m_window))) {
                 	setFocusInWindow(false,fe);

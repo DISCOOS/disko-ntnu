@@ -10,36 +10,48 @@ disko_??????.jar
   +  GUI
   + =====================================
   + 
-  + --> jbcl.jar							- Borland Java Beans Component Library. Only used for Vertical flow layout. 
-  + 					  					  (*.VerticalFlowLayout). Should be replaced by a vertical *.BoxLayout.
+  + --> jbcl.jar				- Borland Java Beans Component Library. Only used for Vertical flow layout. 
+  + 					  		(*.VerticalFlowLayout). Should be replaced by a vertical *.BoxLayout.
   + 					  
+  + =====================================
+  +  IO
+  + =====================================
+  +
+  + --> disco-io.jar				- DISCO IO api abtracts serial communication. 
+  +   +
+  +   + --> RXTXcomm.jar				- Open source OS-independent implementation of IO communication (serial/parallel)
+  +       +
+  +       + -->	rxtxParallel.dll				- native library for access to parallel ports
+  +       + --> rxtxSerial.dll					- native library for access to serial ports
+  +
+  +
   + =====================================
   +  Message Queue
   + =====================================
   + 
-  + --> SaraApi.jar 						- Search and Rescue Application API
+  + --> SaraApi.jar 				- Search and Rescue Application API
   +   +
-  +   +	--> wmscommons.jar 					- CMR dependency?
-  +   + --> apache-activemq-4.1.1.jar	 	- A Java Message Queue implementation
+  +   +	--> wmscommon.jar 				- CMR dependency?
+  +   + --> apache-activemq-4.1.1.jar	 		- A Java Message Queue implementation
   +   +	--> castor-0.9.5.jar 				- Castor is an Open Source data binding framework for Java
-  +   +	--> ekit10.jar 						- Ekit is a Java HTML editor applet and application
-  +   +	--> infobus.jar						- InfoBus is an optional package in Java 2 Platform, Standard 
-  +   +										  Edition (J2SE) that extends JavaBeans component API by 
-  +   +										  providing a set of enhanced interfaces to share and exchange 
-  +   +										  dynamic data.	
-  +   +	--> jdic.jar						- Desktop Integration for Java Applications. To enable better native platform 
-  +   +		 								  integration, Sun is launching the JDesktop Integration Components (JDIC) 
-  +	  +										  project, an open-source project hosted on javadesktop.org. Its mission is to 
-  +   +										  take cross-platform Java desktop integration to the next level. JDIC is a set 
-  +	  +										  of cross-platform APIs that abstract the contracts between an application and 
-  +	  +										  the desktop it runs on. JDIC-based applications will run on any platform 
-  +	  +										  JDIC is ported to and will realize the behavior associated with these 
-  +	  +										  contracts in a way that's suitable for each particular desktop environment.
+  +   +	--> ekit10.jar 					- Ekit is a Java HTML editor applet and application
+  +   +	--> infobus.jar					- InfoBus is an optional package in Java 2 Platform, Standard 
+  +   +								Edition (J2SE) that extends JavaBeans component API by 
+  +   +								providing a set of enhanced interfaces to share and exchange 
+  +   +								dynamic data.	
+  +   +	--> jdic.jar					- Desktop Integration for Java Applications. To enable better native platform 
+  +   +		 						integration, Sun is launching the JDesktop Integration Components (JDIC) 
+  +	  +							project, an open-source project hosted on javadesktop.org. Its mission is to 
+  +       +							take cross-platform Java desktop integration to the next level. JDIC is a set 
+  +	  +							of cross-platform APIs that abstract the contracts between an application and 
+  +	  +							the desktop it runs on. JDIC-based applications will run on any platform 
+  +	  +							JDIC is ported to and will realize the behavior associated with these 
+  +	  +							contracts in a way that's suitable for each particular desktop environment.
   +	  + --> jdic-native.jar					- Window dependent jar file 									  						  
-  +	  + --> jms.jar							- CMR/ActiveMQ dependency?
+  +	  + --> jms.jar						- CMR/ActiveMQ dependency?
   +   + --> jndi.jar						- Java Naming and Directory Interface (JNDI)
   +   + --> junit-4.1.jar					- JUnit is a simple framework for writing and running automated tests.
-  +   +										  As a political gesture, it celebrates programmers testing their own software.
+  +   +									As a political gesture, it celebrates programmers testing their own software.
   +   + --> ldap.jar						- Wrapper of the LDAP implementation. OpenLDAP is the current implementation.
   +   
   + 
@@ -47,54 +59,55 @@ disko_??????.jar
   +  Reporting
   + =====================================
   + 
-  + --> jasperreports-1.3.4.jar				- Embeddable open source Java reporting library
+  + --> jasperreports-1.3.4.jar			- Embeddable open source Java reporting library
   +   + 
-  +   + --> Commons-beanutils-1.7.jar   	- Jakarta Commons BeanUtils Component (version 1.7 or later)
-  +   + --> Commons-collections-2.1.jar 	- Jakarta Commons Collections Component (version 2.1 or later)
-  +   + --> Commons-digester-1.7.jar 		- Jakarta Commons Digester Component (version 1.7 or later) 
-  +   + --> Commons-logging-api-1.0.2.jar 	- Jakarta Commons Logging Component (version 1.0 or later)
+  +   + --> Commons-beanutils-1.7.jar   		- Jakarta Commons BeanUtils Component (version 1.7 or later)
+  +   + --> Commons-collections-2.1.jar 		- Jakarta Commons Collections Component (version 2.1 or later)
+  +   + --> Commons-digester-1.7.jar 			- Jakarta Commons Digester Component (version 1.7 or later) 
+  +   + --> Commons-logging-api-1.0.2.jar 		- Jakarta Commons Logging Component (version 1.0 or later)
   +  	 
-  + --> jfreechart-1.0.9.jar				- JFreeChart is a free 100% Java chart library that makes it easy for developers
-  +   +										  to display professional quality charts in their applications
+  + --> jfreechart-1.0.9.jar			- JFreeChart is a free 100% Java chart library that makes it easy for developers
+  +   +							to display professional quality charts in their applications
+  +   +		
   +   + --> jcommon-1.0.12.jar				- Common is a collection of useful classes used by JFreeChart, JFreeReport 
-  +   										  and other projects.  
+  +   								and other projects.  
   + 
   + =====================================
   +  Mapping
   + =====================================
   + 
-  + --> arcobjects.jar 						- ArcObjects 9.3 SP 5, ArcGIS Runtime Engine.
+  + --> arcobjects.jar 				- ArcObjects 9.3 SP 5, ArcGIS Runtime Engine.
   + 
   + =====================================
   +  Orphans
   + =====================================
   + 
-  + --> spring-2.0.jar						- Unknown dependency
+  + --> spring-2.0.jar				- Unknown dependency
   + 
 
 *****************************************
  Links
 *****************************************
 
-jbcl.jar						--> http://www.castor.org/
-wmscommons.jar					--> http://??
+jbcl.jar				--> http://www.castor.org/
+wmscommons.jar				--> http://??
 apache-activemq-4.1.1.jar 		--> http://activemq.apache.org/
-castor-0.9.5.jar 				--> http://www.castor.org/
-jdic.jar						--> http://javadesktop.org/articles/jdic/
-infobus.jar						--> http://java.sun.com/products/archive/javabeans/infobus/
-ekit10.jar 						--> http://sourceforge.net/projects/ekit/
-jms.jar							--> http://??
-jndi.jar						--> http://java.sun.com/products/jndi/
-arcobjects.jar					--> http://www.esri.com/software/arcgis/arcgisengine/index.html
-junit-4.1.jar					--> http://sourceforge.net/projects/junit/
-ldap.jar						--> http://??
-spring-2.0.jar					--> http://www.springframework.org/
+castor-0.9.5.jar 			--> http://www.castor.org/
+jdic.jar				--> http://javadesktop.org/articles/jdic/
+infobus.jar				--> http://java.sun.com/products/archive/javabeans/infobus/
+ekit10.jar 				--> http://sourceforge.net/projects/ekit/
+jms.jar					--> http://??
+jndi.jar				--> http://java.sun.com/products/jndi/
+arcobjects.jar				--> http://www.esri.com/software/arcgis/arcgisengine/index.html
+junit-4.1.jar				--> http://sourceforge.net/projects/junit/
+ldap.jar				--> http://??
+spring-2.0.jar				--> http://www.springframework.org/
 jasperreports-1.3.4.jar			--> http://jasperforge.org/plugins/project/project_home.php?group_id=102
 Commons-beanutils-1.7.jar 		--> http://commons.apache.org/beanutils/
-Commons-collections-2.1.jar 	--> http://commons.apache.org/collections/
+Commons-collections-2.1.jar 		--> http://commons.apache.org/collections/
 Commons-digester-1.7.jar 		--> http://commons.apache.org/digester/
-Commons-logging-api-1.0.2.jar 	--> http://commons.apache.org/logging/
+Commons-logging-api-1.0.2.jar 		--> http://commons.apache.org/logging/
 jfreechart-1.0.9.jar			--> http://www.jfree.org/jfreechart/
-jcommon-1.0.12.jar				--> http://www.jfree.org/jcommon/index.php
-rxtx.jar 						--> http://www.rxtx.org/
-comm.jar						--> http://java.sun.com/products/javacomm/
+jcommon-1.0.12.jar			--> http://www.jfree.org/jcommon/index.php
+rxtx.jar 				--> http://www.rxtx.org/
+comm.jar				--> http://java.sun.com/products/javacomm/

@@ -3,6 +3,7 @@ package org.redcross.sar.wp.simulator;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -47,7 +48,7 @@ public class AssignmentsPanel extends BasePanel {
 
 	private AssignmentTable getTable() {
 		if(m_table==null) {
-			m_table = new AssignmentTable(Utils.getApp().getMsoModel(),m_archived);
+			m_table = new AssignmentTable(Application.getInstance().getMsoModel(),m_archived);
 			int width = m_table.getMinimumColumnTotalWidth();
 			m_table.setMinimumSize(new Dimension(width,35));
 			m_table.addMouseListener(new DiskoMouseAdapter() {
@@ -101,7 +102,7 @@ public class AssignmentsPanel extends BasePanel {
 
 	private static IDiskoMap getInstalledMap() {
 		// try to get map from current
-		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+		IDiskoWpModule module = Application.getInstance().getCurrentRole().getCurrentDiskoWpModule();
 		if(module!=null) {
 			if(module.isMapInstalled())
 				return module.getMap();

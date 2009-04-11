@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
+import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -66,7 +66,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	/**
 	 * Model driver
 	 */
-	protected IModelDriverIf m_driver;
+	protected IDispatcherIf m_driver;
 
 	/**
 	 * MSO model
@@ -137,7 +137,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			// prepare
 			m_model = model;
 			m_comitter = (ICommitManagerIf)m_model;
-			m_driver = m_model.getModelDriver();
+			m_driver = m_model.getDispatcher();
 
 			// listen for changes
 			m_model.getEventManager().addClientUpdateListener(m_msoAdapter);

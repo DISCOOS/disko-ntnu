@@ -8,6 +8,7 @@ import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -64,7 +65,7 @@ public class FlankTool extends AbstractMsoTool {
 		}
 
 		// create flank panel
-		flankPanel = new FlankPanel(Utils.getApp(), this);
+		flankPanel = new FlankPanel(Application.getInstance(), this);
 
 		// registrate me in dialog
 		//dialog.register((IDrawTool)this, (JPanel)flankPanel);

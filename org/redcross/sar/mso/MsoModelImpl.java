@@ -21,9 +21,6 @@ import java.util.Stack;
 
 import org.redcross.sar.data.DataSourceImpl;
 import org.redcross.sar.data.event.SourceEvent;
-import org.redcross.sar.modeldriver.IModelDriverIf;
-import org.redcross.sar.modeldriver.ModelDriver;
-import org.redcross.sar.modeldriver.SarModelDriver;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoListIf;
@@ -47,9 +44,9 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
 							implements IMsoModelIf, ICommitManagerIf
 {
     private static MsoModelImpl m_this;
-
+    
     private final WorkLoop m_workLoop;
-    private final IModelDriverIf m_modelDriver;
+    private final IDispatcherIf m_dispatcher;
     private final MsoManagerImpl m_msoManager;
     private final MsoEventManagerImpl m_msoEventManager;
     private final CommitManager m_commitManager;
@@ -59,6 +56,7 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
     private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
 
     private int m_suspendClientUpdate = 0;
+    private boolean m_isEditable = true;
 
   	/*========================================================
   	 * The singleton code
@@ -115,7 +113,7 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
         boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
-        m_modelDriver = integrate ? new SarModelDriver() : new ModelDriver();
+        m_dispatcher = integrate ? new SaraDispatcher() : new Dispatcher();
         // create update event repeater
         m_updateRepeater = new IMsoUpdateListenerIf() {
 
@@ -140,6 +138,10 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
      * IMsoModelIf Implementation
      * ==================================================================== */
 
+	public boolean isEditable() {
+		return m_isEditable;
+	}
+	
     public IMsoManagerIf getMsoManager()
     {
         return m_msoManager;
@@ -150,9 +152,9 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
         return m_msoEventManager;
     }
 
-    public IModelDriverIf getModelDriver()
+    public IDispatcherIf getDispatcher()
     {
-        return m_modelDriver;
+        return m_dispatcher;
     }
 
     /**
@@ -392,5 +394,6 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
 	public long schedule(IMsoWork work) {
 		return m_workLoop.schedule(work);
 	}
+
 
 }

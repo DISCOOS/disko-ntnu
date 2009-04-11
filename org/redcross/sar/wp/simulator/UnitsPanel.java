@@ -14,6 +14,7 @@ import javax.swing.JComponent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.Utils;
@@ -33,7 +34,7 @@ public class UnitsPanel extends BasePanel {
 		super();
 
 		// prepare
-		m_model = new UnitTableModel(Utils.getApp().getMsoModel(),archived);
+		m_model = new UnitTableModel(Application.getInstance().getMsoModel(),archived);
 		m_struts = new HashMap<IUnitIf,Component>();
 		m_units = new HashMap<IUnitIf,UnitStatusPanel>();
 

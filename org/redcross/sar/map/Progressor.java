@@ -6,6 +6,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ProgressDialog;
@@ -26,7 +27,7 @@ public class Progressor implements IStepProgressor {
 	private ProgressDialog progressDialog;
 
 	public Progressor(Component locationAt)  {
-		this.progressDialog = new ProgressDialog(Utils.getApp().getFrame(),false,ProgressStyleType.ICON_STYLE);
+		this.progressDialog = new ProgressDialog(Application.getInstance(),false,ProgressStyleType.ICON_STYLE);
 		this.progressDialog.setTrancluent(true);
 		this.progressDialog.setSnapToLocation(locationAt, DefaultDialog.POS_CENTER, 0, true, false);
 		this.bar = progressDialog.getProgressPanel().getProgressBar();

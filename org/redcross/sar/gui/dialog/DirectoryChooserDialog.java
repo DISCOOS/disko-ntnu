@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.model.FileTreeModel;
@@ -37,7 +38,7 @@ public class DirectoryChooserDialog extends DefaultDialog {
 
 	public DirectoryChooserDialog() {
 		// forward
-		super(Utils.getApp().getFrame());
+		super(Application.getInstance());
 		// initialize GUI
 		initialize();
 	}

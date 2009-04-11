@@ -8,6 +8,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.OperationPanel;
 import org.redcross.sar.util.Utils;
@@ -64,7 +65,7 @@ public class OperationDialog extends DefaultDialog {
 					// get values
 					String opId = getContentPanel().getSelectedOperation();
 					// forward
-					auth = Utils.getApp().activateOperation(opId);
+					auth = Application.getInstance().activateOperation(opId);
 					// is not authorized?
 					if(!auth) 
 						Utils.showWarning(DiskoStringFactory.getText("WARNING_SELECT_OPERATION_FAILED"));
@@ -90,7 +91,7 @@ public class OperationDialog extends DefaultDialog {
 					String cmd = e.getActionCommand();
 					if("create".equalsIgnoreCase(cmd)) {
 						// forward
-						if(Utils.getApp().createOperation(true))
+						if(Application.getInstance().createOperation(true))
 							setVisible(false);						
 					}					
 					else if("cancel".equalsIgnoreCase(cmd)) {

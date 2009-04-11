@@ -15,6 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
@@ -163,7 +164,7 @@ public abstract class AbstractDiskoWpModule
 
     public IApplication getApplication()
     {
-        return Utils.getApp();
+        return Application.getInstance();
     }
 
     /* (non-Javadoc)
@@ -399,7 +400,7 @@ public abstract class AbstractDiskoWpModule
     public void setFrameText(String text)
     {
         String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + getBundleText(getName()) +"> - ";
-        String o = "<Aksjon: " + getApplication().getMsoModel().getModelDriver().getActiveOperationName() + ">";
+        String o = "<Aksjon: " + getApplication().getMsoModel().getDispatcher().getActiveOperationName() + ">";
         if (text != null && !text.isEmpty()) {
             s += text + " - " + o;
         }
@@ -521,7 +522,7 @@ public abstract class AbstractDiskoWpModule
 	}
 
 	public void suspendUpdate() {
-		Utils.getApp().getMsoModel().suspendClientUpdate();
+		Application.getInstance().getMsoModel().suspendClientUpdate();
 		if(map!=null) {
 			map.suspendNotify();
 			map.setSupressDrawing(true);
@@ -529,7 +530,7 @@ public abstract class AbstractDiskoWpModule
 	}
 
 	public void resumeUpdate() {
-		Utils.getApp().getMsoModel().resumeClientUpdate(true);
+		Application.getInstance().getMsoModel().resumeClientUpdate(true);
 		if(map!=null) {
 			try {
 				map.setSupressDrawing(false);

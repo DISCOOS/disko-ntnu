@@ -4,6 +4,7 @@ import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.geometry.*;
 import com.esri.arcgis.interop.AutomationException;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
@@ -332,11 +333,11 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	}
 
 	protected void suspendUpdate() {
-		Utils.getApp().getMsoModel().suspendClientUpdate();
+		Application.getInstance().getMsoModel().suspendClientUpdate();
 	}
 
 	protected void resumeUpdate() {
-		Utils.getApp().getMsoModel().resumeClientUpdate(true);
+		Application.getInstance().getMsoModel().resumeClientUpdate(true);
 	}
 
 	public Object getAttribute(String attribute) {

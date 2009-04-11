@@ -15,6 +15,7 @@ import org.disco.io.PortInUseException;
 import org.disco.io.UnsupportedCommOperationException;
 import org.disco.io.serial.SerialLink;
 import org.disco.io.serial.TNCSession;
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
@@ -272,8 +273,8 @@ public class TNCDialog extends DefaultDialog  {
 			consoleButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					ConsoleDialog dlg = new ConsoleDialog(Utils.getApp().getFrame());
-					dlg.setLocationRelativeTo(Utils.getApp().getFrame());
+					ConsoleDialog dlg = new ConsoleDialog(Application.getInstance());
+					dlg.setLocationRelativeTo(Application.getInstance());
 					getConsoleDialog().open(session);					
 				}
 				
@@ -315,8 +316,8 @@ public class TNCDialog extends DefaultDialog  {
 	 */	
 	private ConsoleDialog getConsoleDialog() {
 		if(consoleDialog == null) {
-			consoleDialog = new ConsoleDialog(Utils.getApp().getFrame());
-			consoleDialog.setLocationRelativeTo(Utils.getApp().getFrame());
+			consoleDialog = new ConsoleDialog(Application.getInstance());
+			consoleDialog.setLocationRelativeTo(Application.getInstance());
 		}
 		return consoleDialog;
 	}	

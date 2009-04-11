@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.ds.AbstractDsMso;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -389,7 +390,7 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 
 	private RouteCost createCost(IAssignmentIf assignment, Route route) {
 		// create new route cost object
-		RouteCost cost = new RouteCost(assignment,route,0,Utils.getApp().getMapManager().getPrintMap());
+		RouteCost cost = new RouteCost(assignment,route,0,Application.getInstance().getMapManager().getPrintMap());
 		// forward
 		add(assignment,cost);
 		// finished

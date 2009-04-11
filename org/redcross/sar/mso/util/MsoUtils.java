@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.map.IDiskoMap;
@@ -343,7 +344,7 @@ public class MsoUtils {
     	if(anRoute!=null) {
 			
     		// get model
-    		IMsoModelIf anModel = Utils.getApp().getMsoModel();
+    		IMsoModelIf anModel = Application.getInstance().getMsoModel();
     		
     		// can get command post?
     		if(!anModel.getMsoManager().isOperationDeleted()) {
@@ -380,7 +381,7 @@ public class MsoUtils {
     	if(anPOI!=null) {
     		
     		// get model
-    		IMsoModelIf anModel = Utils.getApp().getMsoModel();
+    		IMsoModelIf anModel = Application.getInstance().getMsoModel();
     		
     		// can get command post?
     		if(!anModel.getMsoManager().isOperationDeleted()) {
@@ -479,7 +480,7 @@ public class MsoUtils {
 			// has no poi of requested type?
 			if (poi == null) {
 				// get command post
-				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
+				ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 				// get global poi list
 				IPOIListIf poiList = cmdPost.getPOIList();
 				// create new poi

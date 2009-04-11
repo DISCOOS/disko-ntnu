@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.swing.JComponent;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ScaleDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -36,7 +37,7 @@ public class ScaleCommand extends AbstractDiskoCommand {
 		showDirect = true;
 
 		// create dialog
-		dialog = new ScaleDialog(Utils.getApp().getFrame());
+		dialog = new ScaleDialog(Application.getInstance());
 
 	}
 

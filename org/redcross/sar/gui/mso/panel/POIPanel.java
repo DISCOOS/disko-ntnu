@@ -12,6 +12,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.TextLineField;
@@ -67,7 +68,7 @@ public class POIPanel extends DefaultToolPanel {
 		super(caption,tool);
 
 		// listen for IPOIIf changes
-		setInterests(Utils.getApp().getMsoModel(),
+		setInterests(Application.getInstance().getMsoModel(),
 				EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI));
 
 		// initialize GUI

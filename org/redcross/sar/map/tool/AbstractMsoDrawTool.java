@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 import javax.swing.SwingUtilities;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.map.DiskoMap;
@@ -1760,7 +1761,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				Polygon polygon = MapUtil.getPolygon(polyline);
 
 				// get command post
-				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
+				ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 
 				// dispatch the mso draw data
 				if (msoCode == MsoClassCode.CLASSCODE_OPERATIONAREA) {
@@ -1865,7 +1866,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 				}
 
 				// get command post
-				ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
+				ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 
 				// only route is polyline
 				if (msoCode == MsoClassCode.CLASSCODE_ROUTE) {
@@ -1949,7 +1950,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 							|| msoCode == MsoClassCode.CLASSCODE_POI) {
 
 						// get command post
-						ICmdPostIf cmdPost = Utils.getApp().getMsoModel().getMsoManager().getCmdPost();
+						ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 
 						// get POI list
 						IPOIListIf poiList = cmdPost.getPOIList();
@@ -2038,7 +2039,7 @@ public abstract class AbstractMsoDrawTool extends AbstractMsoTool implements IDr
 						// create track?
 						if(track==null && (bLogPosition || timePos!=null)) {
 							// get command post
-							ICmdPostIf cmdPost = Utils.getApp().getMsoModel()
+							ICmdPostIf cmdPost = Application.getInstance().getMsoModel()
 															   .getMsoManager().getCmdPost();
 							// create new track
 							track = cmdPost.getTrackList().createTrack();

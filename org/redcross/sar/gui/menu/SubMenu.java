@@ -18,6 +18,7 @@ import javax.swing.event.EventListenerList;
 
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWp;
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -154,7 +155,7 @@ public class SubMenu extends JPanel {
 			rollbackButton.setActionCommand("SYSTEM.ROLLBACK");
 			rollbackButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					IDiskoWp wp = (IDiskoWp)Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+					IDiskoWp wp = (IDiskoWp)Application.getInstance().getCurrentRole().getCurrentDiskoWpModule();
 		    		// forward
 					boolean isCanceled = wp.rollback();
 					// forward to draw adapter?
@@ -194,7 +195,7 @@ public class SubMenu extends JPanel {
 			commitButton.setActionCommand("SYSTEM.COMMIT");
 			commitButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					IDiskoWp wp = (IDiskoWp)Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+					IDiskoWp wp = (IDiskoWp)Application.getInstance().getCurrentRole().getCurrentDiskoWpModule();
 		    		// forward
 					wp.commit();
 				}

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.swing.JComponent;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.GotoDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -37,7 +38,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 		showDirect = true;
 
 		// create dialog
-		dialog = new GotoDialog(Utils.getApp().getFrame());
+		dialog = new GotoDialog(Application.getInstance());
 
 	}
 
@@ -62,7 +63,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 			// update on center of map
 			((GotoDialog)dialog).getPoint();
 			// activate SelectFeatureTool
-			Utils.getApp().invoke(MapToolType.SELECT_TOOL,false);
+			Application.getInstance().invoke(MapToolType.SELECT_TOOL,false);
 		}
 		// forward
 		super.onClick();

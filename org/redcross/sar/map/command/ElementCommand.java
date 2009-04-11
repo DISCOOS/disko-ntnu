@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.swing.JComponent;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -36,7 +37,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		button.setFocusable(false);
 
 		// create dialog
-		dialog = new ElementDialog(Utils.getApp().getFrame());
+		dialog = new ElementDialog(Application.getInstance());
 		showDirect = true; // shows dialog first time onClick is invoked
 
 		// add listener

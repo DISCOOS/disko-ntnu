@@ -13,6 +13,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -344,7 +345,7 @@ public class UnitStatusPanel extends TogglePanel {
 
 	private static IDiskoMap getInstalledMap() {
 		// try to get map from current
-		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+		IDiskoWpModule module = Application.getInstance().getCurrentRole().getCurrentDiskoWpModule();
 		if(module!=null) {
 			if(module.isMapInstalled())
 				return module.getMap();

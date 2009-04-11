@@ -1,4 +1,4 @@
-package org.redcross.sar.math.mso;
+package org.redcross.sar.math;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
-import org.redcross.sar.math.AbstractInput;
-import org.redcross.sar.math.Change;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAttributeIf.IMsoEnumIf;

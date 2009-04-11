@@ -5,8 +5,9 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
-import org.redcross.sar.modeldriver.IModelDriverIf;
-import org.redcross.sar.modeldriver.ModelDriverAdapter;
+import org.redcross.sar.app.Application;
+import org.redcross.sar.mso.IDispatcherIf;
+import org.redcross.sar.mso.DispatcherAdapter;
 import org.redcross.sar.util.Utils;
 
 public class OperationTableModel extends AbstractTableModel {
@@ -14,15 +15,15 @@ public class OperationTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 
 	private Object[] rows = null;
-	private IModelDriverIf modelDriver = null;
+	private IDispatcherIf modelDriver = null;
 
 	public OperationTableModel() {
 		// forward
 		super();
 		// prepare
-		modelDriver = Utils.getApp().getMsoModel().getModelDriver();
+		modelDriver = Application.getInstance().getMsoModel().getDispatcher();
 		// add to listeners
-		modelDriver.addModelDriverListener(m_adapter);
+		modelDriver.addDispatcherListener(m_adapter);
 	}
 
 	public int update() {
@@ -86,7 +87,7 @@ public class OperationTableModel extends AbstractTableModel {
 		}
 	}
 
-	private final ModelDriverAdapter m_adapter = new ModelDriverAdapter() {
+	private final DispatcherAdapter m_adapter = new DispatcherAdapter() {
 
 		@Override
 		public void onOperationCreated(String oprID, boolean current) {

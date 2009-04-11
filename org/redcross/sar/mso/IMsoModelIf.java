@@ -12,7 +12,6 @@ package org.redcross.sar.mso;
 import java.util.List;
 
 import org.redcross.sar.data.IDataSource;
-import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -63,11 +62,11 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
     public IMsoEventManagerIf getEventManager();
 
     /**
-     * Get the {@link org.redcross.sar.modeldriver.IModelDriverIf Model driver}
+     * Get the {@link org.redcross.sar.mso.IDispatcherIf Model driver}
      *
      * @return The Model driver.
      */
-    public IModelDriverIf getModelDriver();
+    public IDispatcherIf getDispatcher();
 
     /**
      * Set update mode to {@link UpdateMode#LOCAL_UPDATE_MODE LOCAL_UPDATE_MODE}.
@@ -142,5 +141,15 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
     public boolean isUpdateSuspended();
 
     public long schedule(IMsoWork work);
+    
+    /**
+     * Get editable state of mode
+     * 
+     * @return Returns <code>true</code> if model is editable, otherwise <code>false</code>
+     */
+    
+    public boolean isEditable();
+    
+    
 
 }

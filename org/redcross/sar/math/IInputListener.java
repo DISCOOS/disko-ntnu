@@ -1,4 +1,4 @@
-package org.redcross.sar.ds.advisor.event;
+package org.redcross.sar.math;
 
 import java.util.EventListener;
 

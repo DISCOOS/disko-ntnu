@@ -11,6 +11,7 @@ import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.geometry.esriTransformDirection;
 import com.esri.arcgis.interop.AutomationException;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.event.DialogToggleListener;
@@ -465,12 +466,12 @@ public abstract class AbstractMapTool extends BaseTool implements IMapTool {
 				e.printStackTrace();
 			}
 		}
-		Utils.getApp().getMsoModel().suspendClientUpdate();
+		Application.getInstance().getMsoModel().suspendClientUpdate();
 	}
 
 	protected void resumeUpdate() {
 		// start with notifying all mso listeners
-		Utils.getApp().getMsoModel().resumeClientUpdate(true);
+		Application.getInstance().getMsoModel().resumeClientUpdate(true);
 		// allow map to update
 		if(map!=null) {
 			try {

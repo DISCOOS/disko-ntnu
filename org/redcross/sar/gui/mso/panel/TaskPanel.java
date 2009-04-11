@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.ResourceBundle;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -158,7 +159,7 @@ public class TaskPanel extends DefaultPanel
 			Object[] responsible = {};
 			try
 			{
-				responsible = Utils.getApp().getModuleManager().getRoleTitles(false);
+				responsible = Application.getInstance().getModuleManager().getRoleTitles(false);
 			}
 			catch (Exception e1)
 			{
@@ -394,7 +395,7 @@ public class TaskPanel extends DefaultPanel
 	{
 		// Check status
 		TaskStatus status = (TaskStatus)m_statusCombo.getValue();
-		IDiskoRole role = Utils.getApp().getCurrentRole();
+		IDiskoRole role = Application.getInstance().getCurrentRole();
 		boolean canChangeFields = TaskUtilities.canChangeFields(status);
 		boolean canChangeStatus = TaskUtilities.canChangeStatus(role, m_currentTask);
 		boolean editable =  canChangeFields && canChangeStatus;
@@ -433,7 +434,7 @@ public class TaskPanel extends DefaultPanel
 		// Create new task if current is set to null
 		if(m_currentTask == null)
 		{
-			m_currentTask = Utils.getApp().getMsoModel().getMsoManager().createTask(dueTime);
+			m_currentTask = Application.getInstance().getMsoModel().getMsoManager().createTask(dueTime);
 			m_currentTask.setCreated(Calendar.getInstance());
 		}
 		else
@@ -491,7 +492,7 @@ public class TaskPanel extends DefaultPanel
 		m_currentTask.setDescription(description);
 
 		// update mso model
-		Utils.getApp().getMsoModel().commit();
+		Application.getInstance().getMsoModel().commit();
 
 		// Clean up
 		m_currentTask = null;

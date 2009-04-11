@@ -1,5 +1,6 @@
 package org.redcross.sar.gui.menu;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.ServiceManagerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -79,7 +80,7 @@ public class SysMenu extends JPanel {
 				newOpButton.setActionCommand("SYSTEM.CREATE");
 				newOpButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						Utils.getApp().createOperation(true);
+						Application.getInstance().createOperation(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -97,7 +98,7 @@ public class SysMenu extends JPanel {
 				mergeButton.setActionCommand("SYSTEM.MERGE");
 				mergeButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						Utils.getApp().mergeOperations();
+						Application.getInstance().mergeOperations();
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -115,7 +116,7 @@ public class SysMenu extends JPanel {
 				finishOperationButton.setActionCommand("SYSTEM.TERMINATE");
 				finishOperationButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						Utils.getApp().finishOperation();
+						Application.getInstance().finishOperation();
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -133,7 +134,7 @@ public class SysMenu extends JPanel {
 				chooseOperationButton.setActionCommand("SYSTEM.SELECT");
 				chooseOperationButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						Utils.getApp().selectActiveOperation(true);
+						Application.getInstance().selectActiveOperation(true);
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -150,7 +151,7 @@ public class SysMenu extends JPanel {
 				swapToButton.setActionCommand("SYSTEM.SWAPTO");
 				swapToButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
-						Utils.getApp().getUIFactory().getLoginDialog().showSwapTo();
+						Application.getInstance().getUIFactory().getLoginDialog().showSwapTo();
 					}
 				});
 			} catch (java.lang.Throwable e) {
@@ -169,7 +170,7 @@ public class SysMenu extends JPanel {
 				mapOptionButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						MapOptionDialog dialog = factory.getMapOptionDialog();
-						dialog.selectMap("Velg kart", Utils.getApp().getMapManager().getMapInfoList());
+						dialog.selectMap("Velg kart", Application.getInstance().getMapManager().getMapInfoList());
 					}
 				});
 			} catch (java.lang.Throwable e) {

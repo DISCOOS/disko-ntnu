@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.dialog.DefaultDialog;
@@ -169,7 +170,7 @@ public class EstimateDialog extends DefaultDialog {
 						if(getMsoObject()!=null) {
 							try {
 								IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
-								String oprID = Utils.getApp().getMsoModel().getModelDriver().getActiveOperationID();
+								String oprID = Application.getInstance().getMsoModel().getDispatcher().getActiveOperationID();
 								RouteCostEstimator estimator = (RouteCostEstimator)DsPool.getInstance().getItem(RouteCostEstimator.class, oprID);
 								getTrackDialog().load(wp.getMap(),assignment,estimator.getCost(assignment).getEstimatedTrack());
 								getTrackDialog().setVisible(true);
@@ -199,8 +200,8 @@ public class EstimateDialog extends DefaultDialog {
 	public TrackDialog getTrackDialog() {
 		if (trackDialog == null) {
 			// create panels
-			trackDialog = new TrackDialog(Utils.getApp().getFrame());
-			trackDialog.setLocationRelativeTo(Utils.getApp().getFrame());
+			trackDialog = new TrackDialog(Application.getInstance());
+			trackDialog.setLocationRelativeTo(Application.getInstance());
 
 		}
 		return trackDialog;

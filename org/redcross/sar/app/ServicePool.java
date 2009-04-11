@@ -18,8 +18,8 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.redcross.sar.modeldriver.IModelDriverIf;
-import org.redcross.sar.modeldriver.ModelDriverAdapter;
+import org.redcross.sar.mso.IDispatcherIf;
+import org.redcross.sar.mso.DispatcherAdapter;
 import org.redcross.sar.mso.MsoModelImpl;
 
 import org.w3c.dom.Document;
@@ -41,7 +41,7 @@ public class ServicePool {
 	private boolean m_isAutomatic = true;
 
 	private final ClassLoader m_loader;
-	private final IModelDriverIf m_driver;
+	private final IDispatcherIf m_driver;
 
 	private final Set<Class<? extends IService>>
 	m_installed = new HashSet<Class<? extends IService>>();
@@ -58,10 +58,10 @@ public class ServicePool {
 
 		// get singletons
 		m_loader = ClassLoader.getSystemClassLoader();
-		m_driver = MsoModelImpl.getInstance().getModelDriver();
+		m_driver = MsoModelImpl.getInstance().getDispatcher();
 
 		// add listener
-		m_driver.addModelDriverListener(new ModelDriverAdapter() {
+		m_driver.addDispatcherListener(new DispatcherAdapter() {
 
 			@Override
 			public void onOperationCreated(String oprID, boolean current) {

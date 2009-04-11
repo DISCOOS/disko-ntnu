@@ -13,8 +13,8 @@ import org.redcross.sar.data.IData;
 import org.redcross.sar.ds.AbstractDs;
 import org.redcross.sar.ds.IDsObject;
 import org.redcross.sar.ds.event.DsEvent;
-import org.redcross.sar.modeldriver.IModelDriverIf;
 import org.redcross.sar.mso.ICommitManagerIf;
+import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -46,7 +46,7 @@ public class Advisor extends AbstractDs<ICue,IDsObject,EventObject> {
 	/**
 	 * Model driver
 	 */
-	protected IModelDriverIf m_driver;
+	protected IDispatcherIf m_driver;
 
 	/**
 	 * MSO model
@@ -121,7 +121,7 @@ public class Advisor extends AbstractDs<ICue,IDsObject,EventObject> {
 			// prepare
 			m_model = model;
 			m_comitter = (ICommitManagerIf)m_model;
-			m_driver = m_model.getModelDriver();
+			m_driver = m_model.getDispatcher();
 
 			// listen for changes
 			m_model.getEventManager().addClientUpdateListener(m_msoAdapter);

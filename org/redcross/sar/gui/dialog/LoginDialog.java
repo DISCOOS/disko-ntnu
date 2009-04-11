@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
@@ -108,13 +109,13 @@ public class LoginDialog extends DefaultDialog {
 		// login or change role?
 		if(isLogin) {
 			// forward
-			auth = Utils.getApp().login(role, user, pwd);
+			auth = Application.getInstance().login(role, user, pwd);
 			// is not authorized?
 			if(!auth) Utils.showWarning(DiskoStringFactory.getText("WARNING_LOGIN_FAILED"));
 		}
 		else {
 			// forward
-			auth = Utils.getApp().swapTo(role,user,pwd);
+			auth = Application.getInstance().swapTo(role,user,pwd);
 			// is not authorized?
 			if(!auth) Utils.showWarning(DiskoStringFactory.getText("WARNING_LOGIN_FAILED"));
 		}
@@ -172,7 +173,7 @@ public class LoginDialog extends DefaultDialog {
 
 	public void load() {
 		String[] rolleNames = null;
-		IApplication app = Utils.getApp();
+		IApplication app = Application.getInstance();
 		try {
 			rolleNames = app.getModuleManager().getRoleTitles(false);
 		} catch (Exception e) {

@@ -86,7 +86,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new DuplicateIdException("An operation already exists");
         }
-        IMsoObjectIf.IObjectIdIf operationId = m_msoModel.getModelDriver().makeObjectId();
+        IMsoObjectIf.IObjectIdIf operationId = m_msoModel.getDispatcher().makeObjectId();
         return createOperation(aNumberPrefix, aNumber, operationId);
     }
 

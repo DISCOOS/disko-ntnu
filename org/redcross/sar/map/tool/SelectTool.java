@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.SelectMsoObjectDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -68,7 +69,7 @@ public class SelectTool extends AbstractMapTool {
 		button = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL);
 
 		// add global keyevent listener
-		Utils.getApp().getKeyEventDispatcher().addKeyListener(
+		Application.getInstance().getKeyEventDispatcher().addKeyListener(
 				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
 
 			@Override
@@ -237,7 +238,7 @@ public class SelectTool extends AbstractMapTool {
 
 	private SelectMsoObjectDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
-			m_selectorDialog = new SelectMsoObjectDialog(Utils.getApp().getFrame());
+			m_selectorDialog = new SelectMsoObjectDialog(Application.getInstance());
 			m_selectorDialog.getListSelectorPanel().setCaptionText("Velg objekt");
 		}
 		return m_selectorDialog;

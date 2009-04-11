@@ -347,7 +347,7 @@ public class ETEPanel extends JPanel
     }
 
     private String getActiveOprID() {
-    	return m_model.getModelDriver().getActiveOperationID();
+    	return m_model.getDispatcher().getActiveOperationID();
     }
 
     public void connect() {

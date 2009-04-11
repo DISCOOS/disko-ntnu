@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.PositionSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -201,7 +202,7 @@ public class PositionField extends AbstractField {
 
 	private PositionSelectorDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
-			m_selectorDialog = new PositionSelectorDialog(Utils.getApp().getFrame());
+			m_selectorDialog = new PositionSelectorDialog(Application.getInstance());
 		}
 		return m_selectorDialog;
 	}

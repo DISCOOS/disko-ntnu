@@ -72,12 +72,23 @@ public interface IApplication {
 	 */
 	public UIFactory getUIFactory();
 
+	/**
+	 * Get navigation menu object.
+	 * 
+	 * @return The NavMenu object
+	 */
 	public NavMenu getNavMenu();
 
+	/**
+	 * Get system menu object.
+	 * 
+	 * @return The SysMenu object
+	 */	
 	public SysMenu getSysMenu();
 
 	/**
 	 * Get a reference to the DiskoMapManager.
+	 * 
 	 * @return
 	 */
 	public IDiskoMapManager getMapManager();
@@ -112,9 +123,9 @@ public interface IApplication {
 	public boolean swapTo(String role, String user, char[] password);
 
     /**
-     * Get a reference to the MsoModel.
-     * This class is responsible for all communication with the data model and data server (SARA).
-     * @return A reference to the MsoModel.
+     * Get a reference current (active) MSO Model</p>
+     * 
+     * @return A reference to the model.
      */
     public IMsoModelIf getMsoModel();
 
@@ -156,10 +167,24 @@ public interface IApplication {
      */
     public ServicePool getServices();
 
+    /**
+     * Requests a system shutdown
+     *
+     */
     public void shutdown();
 
+    /**
+     * Get user input lock state
+     * 
+     * @return Returns <code>true</code> if user input is locked, <code>false</code> otherwise. 
+     */
     public boolean isLocked();
-
+    
+    /**
+     * Set user input lock state
+     * 
+     * @param isLocked - if <code>true</code>, user input is locked.
+     */    
 	public void setLocked(boolean isLocked);
 
 	public boolean isLoading();

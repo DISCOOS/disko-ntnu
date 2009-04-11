@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.swing.JComponent;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.TocDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -36,7 +37,7 @@ public class TocCommand extends AbstractDiskoCommand {
 		showDirect = true;
 
 		// create dialog
-		dialog = new TocDialog(Utils.getApp().getFrame());
+		dialog = new TocDialog(Application.getInstance());
 
 	}
 

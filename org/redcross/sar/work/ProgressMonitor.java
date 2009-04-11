@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoProgressPanel;
 import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
@@ -488,7 +489,7 @@ public class ProgressMonitor {
 		// forward event to listeners
 		fireUpdateProgressEvent(ProgressEventType.EVENT_FINISH);
 		// reset position
-		setProgressSnapTo(Utils.getApp().getFrame().getLayeredPane());
+		setProgressSnapTo(Application.getInstance().getLayeredPane());
 	}
 
 
@@ -556,7 +557,7 @@ public class ProgressMonitor {
 	 */
 	private DiskoGlassPane getGlassPane() {
     	if(m_glassPane==null) {
-    		m_glassPane = (DiskoGlassPane)Utils.getApp().getFrame().getGlassPane();
+    		m_glassPane = (DiskoGlassPane)Application.getInstance().getGlassPane();
     	}
     	return m_glassPane;
     }
@@ -569,7 +570,7 @@ public class ProgressMonitor {
 	private ProgressDialog getProgressDialog() {
 		// initialize?
 		if(m_progressDialog==null) {
-			m_progressDialog = new ProgressDialog(Utils.getApp().getFrame(),false,ProgressStyleType.BAR_STYLE);
+			m_progressDialog = new ProgressDialog(Application.getInstance(),false,ProgressStyleType.BAR_STYLE);
 			getGlassPane().setProgressDialog(m_progressDialog);
 		}
 		return m_progressDialog;

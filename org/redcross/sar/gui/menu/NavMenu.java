@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.ButtonState;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -877,7 +878,7 @@ public class NavMenu extends JPanel {
 			// initialize
 			boolean isAnySelected = false;
 			// get map
-			IDiskoMap map = Utils.getApp().getCurrentMap();
+			IDiskoMap map = Application.getInstance().getCurrentMap();
 			// load
 			Iterator<ICommand> commandIter = commands.values().iterator();
 			Iterator<AbstractButton> buttonIter  = buttons.values().iterator();
@@ -1145,7 +1146,7 @@ public class NavMenu extends JPanel {
 			try {
 				// translate into action
 				if(tool!=null) {
-					IDiskoMap map = Utils.getApp().getCurrentMap();
+					IDiskoMap map = Application.getInstance().getCurrentMap();
 					if(map!=null)
 						map.setActiveTool(tool,options);
 				}

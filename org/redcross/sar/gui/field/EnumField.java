@@ -9,6 +9,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFormattedTextField;
 import javax.swing.JList;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ListSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -233,7 +234,7 @@ public class EnumField extends AbstractField {
 
 	private ListSelectorDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
-			m_selectorDialog = new ListSelectorDialog(Utils.getApp().getFrame());
+			m_selectorDialog = new ListSelectorDialog(Application.getInstance());
 		}
 		return m_selectorDialog;
 	}

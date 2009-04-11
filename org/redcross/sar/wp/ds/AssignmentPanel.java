@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.EnumSet;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.ds.ete.RouteCost;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
@@ -175,7 +176,7 @@ public class AssignmentPanel extends BasePanel {
 
 	private static IDiskoMap getInstalledMap() {
 		// try to get map from current
-		IDiskoWpModule module = Utils.getApp().getCurrentRole().getCurrentDiskoWpModule();
+		IDiskoWpModule module = Application.getInstance().getCurrentRole().getCurrentDiskoWpModule();
 		if(module!=null) {
 			if(module.isMapInstalled())
 				return module.getMap();

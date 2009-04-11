@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
@@ -82,10 +83,10 @@ public class PositionPanel extends DefaultToolPanel {
 		super(caption,tool);
 		
 		// prepare
-		this.msoModel = Utils.getApp().getMsoModel();
+		this.msoModel = Application.getInstance().getMsoModel();
 		
 		// listen for IUnitIf changes
-		setInterests(Utils.getApp().getMsoModel(),
+		setInterests(Application.getInstance().getMsoModel(),
 				EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT));
 		
 		// initialize gui

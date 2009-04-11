@@ -43,6 +43,7 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
@@ -1695,7 +1696,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		if(drawDialog == null) {
 
 			// get draw dialog
-	        NavMenu navBar = Utils.getApp().getNavMenu();
+	        NavMenu navBar = Application.getInstance().getNavMenu();
 			drawDialog = (DrawDialog)navBar.getDrawHostTool().getDialog();
 		}
 		return drawDialog;
@@ -1708,7 +1709,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		if (elementDialog == null) {
 
 			// create
-			elementDialog = new ElementDialog(Utils.getApp().getFrame());
+			elementDialog = new ElementDialog(Application.getInstance());
 			elementDialog.setSnapToLocation(this,DefaultDialog.POS_EAST, 0, true, false);
 
 		}
@@ -1738,7 +1739,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		if(snapDialog == null) {
 
 			// create new snap dialog
-	        snapDialog = new SnapDialog(Utils.getApp().getFrame());
+	        snapDialog = new SnapDialog(Application.getInstance());
 	        snapDialog.setSnapToLocation(this,DefaultDialog.POS_WEST, 0, true, false);
 
 		}

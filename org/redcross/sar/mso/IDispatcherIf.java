@@ -1,11 +1,11 @@
-package org.redcross.sar.modeldriver;
+package org.redcross.sar.mso;
 
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
  *  Specification of the Model Driver API.
  */
-public interface IModelDriverIf
+public interface IDispatcherIf
 {
     /**
      * Make an assumably unique Object Id
@@ -70,8 +70,8 @@ public interface IModelDriverIf
     */
    public void shutDown();
 
-   public boolean addModelDriverListener(IModelDriverListenerIf listener);
+   public boolean addDispatcherListener(IDispatcherListenerIf listener);
 
-   public boolean removeModelDriverListener(IModelDriverListenerIf listener);
+   public boolean removeDispatcherListener(IDispatcherListenerIf listener);
 
 }

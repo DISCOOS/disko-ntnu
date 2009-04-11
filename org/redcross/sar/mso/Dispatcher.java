@@ -1,4 +1,4 @@
-package org.redcross.sar.modeldriver;
+package org.redcross.sar.mso;
 
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.mso.CommitManager;
@@ -10,14 +10,17 @@ import org.redcross.sar.mso.event.IMsoCommitListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 /**
- * For documentation, see {@link  org.redcross.sar.modeldriver.IModelDriverIf}
+ * Simple dispatcher implementation. For testing purposes only!
+ * 
+ * For documentation, see {@link  org.redcross.sar.modelDriver.IModelDriverIf}
  */
-public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
+public class Dispatcher implements IDispatcherIf, IMsoCommitListenerIf
 {
     Random m_rand = new Random(89652467667623L);
 
@@ -25,7 +28,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
     {
         int rand = m_rand.nextInt(1000);
         long time = new Date().getTime();
-        return new AbstractMsoObject.ObjectId(Long.toString(time) + "." + Integer.toString(rand),null);
+        return new AbstractMsoObject.ObjectId(Long.toString(time) + "." + Integer.toString(rand), Calendar.getInstance().getTime());
 
     }
 
@@ -41,7 +44,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
 
     public List<String[]> getActiveOperations()
     {
-        java.util.List<String[]> list = new ArrayList<String[]>();
+        List<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"2", "2"});
         return list;
     }
@@ -59,8 +62,8 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
 	public String getActiveOperationName() {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
+	}    
+	
 	public void finishActiveOperation()
     {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -86,6 +89,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @SuppressWarnings("unused")
     public void handleMsoCommitEvent(MsoEvent.Commit e)
     {
         //Iterer gjennom objektene
@@ -101,7 +105,7 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
         List<ICommittableIf.ICommitReferenceIf> attrList = wrapper.getAttributeReferences();
         for (ICommittableIf.ICommitReferenceIf ico : attrList)
         {
-            CommitManager.CommitType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
+			CommitManager.CommitType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
             String attName = ico.getReferenceName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf attribute = ico.getReferredObject();
@@ -118,14 +122,12 @@ public class ModelDriver implements IModelDriverIf, IMsoCommitListenerIf
 
     }
 
-	@Override
-	public boolean addModelDriverListener(IModelDriverListenerIf listener) {
+	public boolean addDispatcherListener(IDispatcherListenerIf listener) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
-	public boolean removeModelDriverListener(IModelDriverListenerIf listener) {
+	public boolean removeDispatcherListener(IDispatcherListenerIf listener) {
 		// TODO Auto-generated method stub
 		return false;
 	}

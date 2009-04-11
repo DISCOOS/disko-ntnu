@@ -24,6 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -94,7 +95,7 @@ public class ElementPanel extends TogglePanel {
 		super("Elementer",false,true,ButtonSize.SMALL);
 
 		// prepare
-		this.msoModel = Utils.getApp().getMsoModel();
+		this.msoModel = Application.getInstance().getMsoModel();
 		this.listeners = new ArrayList<IElementEventListener>();
 		this.objects = new ArrayList<IMsoObjectIf>();
 		this.parts = new ArrayList<IMsoObjectIf>();

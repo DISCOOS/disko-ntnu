@@ -6,7 +6,6 @@ import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.ds.advisor.event.IInputListener;
 
 public abstract class AbstractInput<I,C extends Number> implements IInput<I,C> {
 

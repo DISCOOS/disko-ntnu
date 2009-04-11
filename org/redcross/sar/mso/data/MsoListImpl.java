@@ -828,7 +828,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         IMsoObjectIf.IObjectIdIf retVal;
         do
         {
-            retVal = m_msoModel.getModelDriver().makeObjectId();
+            retVal = m_msoModel.getDispatcher().makeObjectId();
         }
         while (m_items.get(retVal.getId()) != null || m_added.get(retVal.getId()) != null || m_deleted.get(retVal.getId()) != null);
         return retVal;

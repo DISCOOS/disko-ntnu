@@ -20,6 +20,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.AWTUtilitiesWrapper;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoGlassPaneUtils;
@@ -100,7 +101,7 @@ public class DefaultDialog extends JDialog implements IDialog {
      * ========================================================== */
 
     public DefaultDialog() {
-        this(Utils.getApp().getFrame());
+        this(Application.getInstance());
     }
 
     public DefaultDialog(Window owner) {
@@ -115,7 +116,7 @@ public class DefaultDialog extends JDialog implements IDialog {
         setSnapToLocation(owner,POS_CENTER,0,false, false);
 
         // add global key-event listener
-        Utils.getApp().getKeyEventDispatcher().addKeyListener(
+        Application.getInstance().getKeyEventDispatcher().addKeyListener(
                 KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, new KeyAdapter() {
 
             @Override

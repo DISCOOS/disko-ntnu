@@ -1,6 +1,6 @@
-package org.redcross.sar.modeldriver;
+package org.redcross.sar.mso;
 
-public class ModelDriverAdapter implements IModelDriverListenerIf {
+public class DispatcherAdapter implements IDispatcherListenerIf {
 
 	public void onOperationActivated(String oprID) {
 		// TODO Auto-generated method stub

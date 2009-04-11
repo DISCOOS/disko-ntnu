@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
@@ -65,7 +66,7 @@ public class Utils {
 
 	public static int showConfirm(String title, String msg,int option) {
 		// get frame (if frame is locked use null)
-		Frame frame = Utils.getApp().isLocked() ? null : getApp().getFrame();
+		Frame frame = Application.getInstance().isLocked() ? null : Application.getInstance();
 		// set isMessageDialog flag
 		messageDialog = new MessageDialog(frame);
 		// forwar
@@ -144,8 +145,8 @@ public class Utils {
 			catch(Exception e) { e.printStackTrace(); }
 
 			// create message dialog
-			messageDialog = new MessageDialog(getApp().getFrame());
-			messageDialog.setSnapToLocation(getApp().getFrame(), DefaultDialog.POS_CENTER, 0, true, false);
+			messageDialog = new MessageDialog(Application.getInstance());
+			messageDialog.setLocationRelativeTo(Application.getInstance());
 			messageDialog.addFocusListener(new FocusAdapter() {
             	@Override
                 public void focusGained(FocusEvent e) {

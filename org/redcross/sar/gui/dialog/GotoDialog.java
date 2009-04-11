@@ -7,6 +7,7 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
@@ -40,7 +41,7 @@ public class GotoDialog extends DefaultDialog {
 			@Override
 			public void windowGainedFocus(WindowEvent e) {
 				// activate selection tool
-				Utils.getApp().invoke(MapToolType.SELECT_TOOL,false);
+				Application.getInstance().invoke(MapToolType.SELECT_TOOL,false);
 			}
 
 			@Override

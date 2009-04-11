@@ -1,7 +1,7 @@
 package org.redcross.sar.ds.advisor;
 
 import org.redcross.sar.ds.advisor.Advisor.ID;
-import org.redcross.sar.math.mso.MsoStatusInput;
+import org.redcross.sar.math.MsoStatusInput;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 

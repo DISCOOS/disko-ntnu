@@ -1,4 +1,4 @@
-package org.redcross.sar.modeldriver;
+package org.redcross.sar.mso;
 
 import no.cmr.geo.PositionOccurrence;
 import no.cmr.tools.Log;
@@ -21,7 +21,7 @@ import java.util.List;
  * Time: 13:54:03
  * To change this template use File | Settings | File Templates.
  */
-public class SarMsoMapper {
+public class SaraMsoMapper {
 
     public static void mapMsoAttrToSarFact(SarObject sarObj, SarFact sarFact, IAttributeIf<?> msoAttr, boolean distribute) {
         try

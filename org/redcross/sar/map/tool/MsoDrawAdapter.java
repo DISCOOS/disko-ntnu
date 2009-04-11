@@ -13,6 +13,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.redcross.sar.app.Application;
 import org.redcross.sar.app.IApplication;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -107,7 +108,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	public MsoDrawAdapter() {
 
 		// prepare
-		this.app = Utils.getApp();
+		this.app = Application.getInstance();
 		this.myInterests = getMyInterests();
 		this.msoModel = app.getMsoModel();
 		this.drawListeners = new ArrayList<IDrawAdapterListener> ();
@@ -633,7 +634,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		try {
 
 			// consume?
-			if(Utils.getApp().isLoading()) return;
+			if(Application.getInstance().isLoading()) return;
 
 			// get frame?
 			if(isDirty) {

@@ -31,6 +31,7 @@ import org.disco.io.event.IManagerListener;
 import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
 import org.disco.io.serial.TNCSession;
+import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.ConsoleDialog;
 import org.redcross.sar.gui.dialog.ListSelectorDialog;
 import org.redcross.sar.gui.dialog.TNCDialog;
@@ -188,8 +189,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private ConsoleDialog getConsoleDialog() {
 		if(consoleDialog == null) {
-			consoleDialog = new ConsoleDialog(Utils.getApp().getFrame());
-			consoleDialog.setLocationRelativeTo(Utils.getApp().getFrame());
+			consoleDialog = new ConsoleDialog(Application.getInstance());
+			consoleDialog.setLocationRelativeTo(Application.getInstance());
 		}
 		return consoleDialog;
 	}		
@@ -201,7 +202,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private ListSelectorDialog getSelectorDialog() {
 		if(selectorDialog == null) {
-			selectorDialog = new ListSelectorDialog(Utils.getApp().getFrame());
+			selectorDialog = new ListSelectorDialog(Application.getInstance());
 			selectorDialog.prepare("Velg tjeneste", new String[]{"APRS Sanntidssporing"});
 		}
 		return selectorDialog;
@@ -214,7 +215,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private TNCDialog getTNCDialog() {
 		if(tncDialog == null) {
-			tncDialog = new TNCDialog(Utils.getApp().getFrame());
+			tncDialog = new TNCDialog(Application.getInstance());
+			tncDialog.setLocationRelativeTo(Application.getInstance());			
 		}
 		return tncDialog;
 	}		
@@ -263,14 +265,15 @@ public class ServiceManagerPanel extends DefaultPanel {
 				session.disconnect();
 				IOManager.getInstance().removeSession(session);				
 			}
+			return;
 		}
-		JOptionPane.showConfirmDialog(this, "Du må velge en tjeneste først");
+		Utils.showMessage("Du må velge en tjeneste først");
 		
 	}
 	
 	private void console() {
-		ConsoleDialog dlg = new ConsoleDialog(Utils.getApp().getFrame());
-		dlg.setLocationRelativeTo(Utils.getApp().getFrame());
+		ConsoleDialog dlg = new ConsoleDialog(Application.getInstance());
+		dlg.setLocationRelativeTo(Application.getInstance());
 		getConsoleDialog().open();		
 	}
 	
@@ -321,7 +324,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 		}
 		
 		public void onConnect(SessionEvent e) {
-			fireTableDataChanged();			
+			fireTableDataChanged();
 		}
 
 		public void onDisconnect(SessionEvent e) {
@@ -387,8 +390,15 @@ public class ServiceManagerPanel extends DefaultPanel {
 	        // update
 	        renderer.setText(text);
 	        renderer.setIcon(m_icon);
-	        renderer.setForeground(f);
-	        renderer.setBackground(b);	        
+			// update selection state?
+			if (isSelected){
+				renderer.setBackground(table.getSelectionBackground());
+				renderer.setForeground(table.getSelectionForeground());
+			}
+			else {
+		        renderer.setForeground(f);
+		        renderer.setBackground(b);	        
+			}
 	    	setBorder(m_border);
 
 	        // finished

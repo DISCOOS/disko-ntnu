@@ -65,8 +65,7 @@ public class DiskoTableCellRenderer extends DefaultTableCellRenderer {
 		// update?
 		if(update) update(renderer, renderer.getIcon());
 
-		// TODO: update selection state?
-		/*
+		// update selection state?
 		if (isSelected){
 			renderer.setBackground(table.getSelectionBackground());
 			renderer.setForeground(table.getSelectionForeground());
@@ -75,7 +74,6 @@ public class DiskoTableCellRenderer extends DefaultTableCellRenderer {
 			renderer.setBackground(table.getBackground());
 			renderer.setForeground(table.getForeground());
 		}
-		*/
 
 		// finished
 		return renderer;

@@ -1,4 +1,4 @@
-package org.redcross.sar.modeldriver;
+package org.redcross.sar.mso;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -9,23 +9,16 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import no.cmr.hrs.sar.model.ControllerInterface;
 import no.cmr.hrs.sar.model.Fact;
 import no.cmr.hrs.sar.model.Operation;
 import no.cmr.hrs.sar.model.SarObjectImpl;
 import no.cmr.hrs.sar.tools.ChangeObject;
 import no.cmr.hrs.sar.tools.IDHelper;
-import no.cmr.hrs.sar.tools.SARparse;
 import no.cmr.tools.Log;
 
-import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.mso.committer.ICommittableIf.ICommitObjectIf;
@@ -42,35 +35,122 @@ import org.rescuenorway.saraccess.except.SaraException;
 import org.rescuenorway.saraccess.model.*;
 
 /**
- * For documentation, see {@link  IModelDriverIf}
+ * For documentation, see {@link  IDispatcherIf}
  */
-public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, SaraChangeListener
+public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, SaraChangeListener
 {
 
-	final static int SARA_CHANGE_EVENT_BUFFER_DELAY = 2000;	// wait 2 seconds after each update before notifying MSO model
-	final static int SARA_COMMIT_DELAY_TIC = 500;			// Delay 500 ms per step
-	final static int MINIMUM_SARA_COMMIT_TIMEOUT = 10000;	// Wait minimum 10 seconds before timeout
+	/** 
+	 * <b>SaraChangeEvent arrival buffer stategy</b></p>
+	 * 
+	 * Do to the SARA and MSO model implementations, events arrive in "trains".
+	 * The reason is the transaction nature of the commit process. Changes in 
+	 * local instances of MSO model is commited as a group. 
+	 * 
+	 * This property can be exploited. Since changes comes in "trains", a 
+	 * arrival buffer strategy reduses the amount of model and UI updates 
+	 * required locally. In this implementation, a 2 second buffer is 
+	 * hardcoded. The following rules is applied
+	 * 
+	 * 1. Changes are added as long as it is less than 2 seconds since last
+	 *    time the mso model was updated
+	 * 2. The buffer will empty every 2 seconds, regardless of the arrivals
+	 * 3. It is assumed that the buffer is of sufficently large capacity with
+	 *    respect to the operational requirements of the system.
+	 * 
+	 * IMPORTANT! It is not implemented any recovery mechanisms if the buffer
+	 * overruns. This voulnarbility should be adressed in the future.
+	 * 
+	 **/
+	final static int SARA_CHANGE_EVENT_BUFFER_DELAY = 2000;
+	
+	/**
+	 * <b>Timer used to implement the arrival buffer</b></p>
+	 * 
+	 * For internal use.
+	 */
+    private Timer timer = new Timer();
 
-    boolean loadingOperation = false;
-    Random m_rand = new Random(89652467667623L);
+    
+    /**
+	 * <b>Delay schedule (buffer) implementation </b></p>
+	 * 
+	 * Implements the arrival buffer.
+	 */
+    private DelaySchedule schedule = null;
+
+    
+	/**
+	 * <b>The work pool instance</b></p>
+	 * 
+	 * For internal use.
+	 */
+    private WorkPool m_workPool;
+    
+	
+	/** 
+	 * <b>Initalization of SARA dispatcher </b></p> 
+	 * 
+	 * When the dispatcher is initialized, background threads are started. 
+	 * These threads loads available operations asynchronously. Hence, 
+	 * enumration should be delayed until all operations are loaded in SARA. 
+	 **/
+    boolean m_isInitiated = false;
+    
+    
+    /**
+     * <b>Initialization of active operation</b></p>
+     * 
+     * Each time a operation opened locally, the dispatchers has to build the
+     * model representing it. This take time. 
+     */   
+    boolean m_isLoading = false;
+
+    
+	/**
+	 * <b>SARA access service</b></p>
+	 * 
+	 * Access to SARA is supplied through the SARA access service. This 
+	 * service returns a SARA session, which all traffic is handed through. 
+	 */
     SarAccessService sarSvc;
+    
+    
+	/**
+	 * <b>Sar operation </b></p>
+	 * 
+	 * Each sar operation is represented by the  
+	 */    
     SarOperation sarOperation = null;
+    
+    
+    /**
+     * <b>SARA to MSO object mapping</b></p>
+     * 
+     * For internal use.
+     */
     Map<SarBaseObject, IMsoObjectIf> saraMsoMap = new HashMap<SarBaseObject, IMsoObjectIf>();
+
+    /**
+     * <b>MAS to SARA object mapping</b></p>
+     * 
+     * For internal use.
+     */
     Map<IMsoObjectIf, SarBaseObject> msoSaraMap = new HashMap<IMsoObjectIf, SarBaseObject>();
 
-    List<IModelDriverListenerIf> listeners = new ArrayList<IModelDriverListenerIf>();
+    /**
+     * <b>Dispatch listeners</b>
+     * 
+     * Through the {@link IDispatchListenerIf} interface, the dispatcher is able to notify
+     * listeners of system critical changes. If these events are not listened for and handled
+     * propertly, the system may misserably fail...
+     */
+    List<IDispatcherListenerIf> listeners = new ArrayList<IDispatcherListenerIf>();
 
-    long saraChangeTic = System.currentTimeMillis();
-
-    boolean initiated = false;
-
-    Timer timer = new Timer();
-    DelaySchedule schedule = null;
-
-    WorkPool m_workPool;
+    
     IMsoModelIf m_msoModel;
 
-    public SarModelDriver()
+    public SaraDispatcher()
     {
         // setUpService();
     }
@@ -87,26 +167,29 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     public void initiate()
     {
-        setUpService();
-        IMsoModelIf imm = MsoModelImpl.getInstance();
-        imm.getEventManager().addCommitListener(this);
-        initiated = true;
-        if (sarSvc.getSession().isFinishedLoading()
-        		&& sarSvc.getSession().getOperations().getOperations().size() == 0)
-        {
-            loadingOperation = true;
-            sarSvc.getSession().createNewOperation("MSO", true);
-        }
+    	if(!m_isInitiated) {
+    		
+	        setUpService();
+	        IMsoModelIf imm = MsoModelImpl.getInstance();
+	        imm.getEventManager().addCommitListener(this);
+	        m_isInitiated = true;
+	        if (sarSvc.getSession().isFinishedLoading()
+	        		&& sarSvc.getSession().getOperations().getOperations().size() == 0)
+	        {
+	            m_isLoading = true;
+	            sarSvc.getSession().createNewOperation("MSO", true);
+	        }
+    	}
     }
 
     public boolean isInitiated()
     {
-        if (!loadingOperation && sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
+        if (!m_isLoading && sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
         {
-            loadingOperation = true;
+            m_isLoading = true;
             sarSvc.getSession().createNewOperation("MSO", true);
         }
-        return sarSvc.getSession().isFinishedLoading() && !loadingOperation;
+        return sarSvc.getSession().isFinishedLoading() && !m_isLoading;
     }
 
     public List<String[]> getActiveOperations()
@@ -189,7 +272,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     {
     	String name = null;
     	if(sarOperation != null)
-    		name = sarOperation.getName();
+    		name = IDHelper.formatOperationID(getActiveOperationID());
     	return name;
     }
 
@@ -388,7 +471,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 
     public void createNewOperation()
     {
-        loadingOperation = true;
+        m_isLoading = true;
         sarSvc.getSession().createNewOperation("MSO", true);
     }
 
@@ -639,7 +722,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	                    // found attribute?
 	                    if (msoAttr != null)
 	                    {
-	                        SarMsoMapper.mapMsoAttrToSarFact(sbo, (SarFact) so, msoAttr, submitChanges);
+	                        SaraMsoMapper.mapMsoAttrToSarFact(sbo, (SarFact) so, msoAttr, submitChanges);
 	                    } else if (!attrName.equalsIgnoreCase("Objektnavn"))
 	                    {
 	                        Log.warning("Attribute " + attrName + " not found for " + sbo.getName());
@@ -688,10 +771,9 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
     {
         sarSvc = SarAccessService.getInstance();
         Credentials creds = new UserPasswordCredentials("Operatør", "Operatør");
-        SarSession s = null;
         try
         {
-            s = sarSvc.createSession(creds);
+        	sarSvc.createSession(creds);
         }
         catch (Exception e)
         {
@@ -745,8 +827,8 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
         {
             if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
             {
-            	boolean current = loadingOperation;
-                loadingOperation = false;
+            	boolean current = m_isLoading;
+                m_isLoading = false;
                 fireOnOperationCreated(((SarOperation) change.getSource()).getID(), current);
             }
         }
@@ -871,7 +953,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                 attr = (AttributeImpl<?>) attrs.get(((SarFact) so).getLabel().toLowerCase());
                 if (attr != null)
                 {
-                    SarMsoMapper.mapSarFactToMsoAttr(attr, (SarFact) so, co.getGivenTime());
+                    SaraMsoMapper.mapSarFactToMsoAttr(attr, (SarFact) so, co.getGivenTime());
                 }
 
                 // detect loopback
@@ -1009,7 +1091,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
                     if (attr != null)
                     {
                     	Date date = sarObject.getCreationDate();
-                        SarMsoMapper.mapSarFactToMsoAttr(attr, (SarFact) fact, date!=null ? date.getTime() : 0);
+                        SaraMsoMapper.mapSarFactToMsoAttr(attr, (SarFact) fact, date!=null ? date.getTime() : 0);
                     }
                 }
                 catch (Exception ex)
@@ -1144,31 +1226,31 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	}
 
 	private void fireOnOperationCreated(final String oprId, final boolean current) {
-		for (IModelDriverListenerIf it : listeners) {
+		for (IDispatcherListenerIf it : listeners) {
 			it.onOperationCreated(oprId, current);
 		}
 	}
 
 	private void fireOnOperationFinished(final String oprId, final boolean current) {
-		for (IModelDriverListenerIf it : listeners) {
+		for (IDispatcherListenerIf it : listeners) {
 			it.onOperationFinished(oprId, current);
 		}
 	}
 
 	private void fireOnOperationActivated(final String oprId) {
-		for (IModelDriverListenerIf it : listeners) {
+		for (IDispatcherListenerIf it : listeners) {
 			it.onOperationActivated(oprId);
 		}
 	}
 
 	private void fireOnOperationDeactivated(final String oprId) {
-		for (IModelDriverListenerIf it : listeners) {
+		for (IDispatcherListenerIf it : listeners) {
 			it.onOperationDeactivated(oprId);
 		}
 	}
 
 	@Override
-	public boolean addModelDriverListener(IModelDriverListenerIf listener) {
+	public boolean addDispatcherListener(IDispatcherListenerIf listener) {
 		if(!listeners.contains(listener)) {
 			return listeners.add(listener);
 		}
@@ -1176,7 +1258,7 @@ public class SarModelDriver implements IModelDriverIf, IMsoCommitListenerIf, Sar
 	}
 
 	@Override
-	public boolean removeModelDriverListener(IModelDriverListenerIf listener) {
+	public boolean removeDispatcherListener(IDispatcherListenerIf listener) {
 		if(listeners.contains(listener)) {
 			return listeners.remove(listener);
 		}
