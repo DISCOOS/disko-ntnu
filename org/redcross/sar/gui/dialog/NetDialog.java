@@ -380,7 +380,7 @@ public class NetDialog extends DefaultDialog  {
 				password = session.getPassword(); 
 			}
 			else {
-				Setup setup = new Setup("APRS Sanntidssporing (NET)", 
+				Setup setup = new Setup("APRS Sanntidssporing (APRS-IS)", 
 						"ahubswe.net", 14579, "DISKO", "-1");
 				protocol = setup.protocol;
 				host = setup.host;
