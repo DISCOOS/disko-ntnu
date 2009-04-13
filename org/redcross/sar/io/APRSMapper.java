@@ -71,7 +71,7 @@ public class APRSMapper {
   		public void onSourceChanged(SourceEvent<UpdateList> e) {
 			if(e.getInformation().isClearAllEvent()) {
 				// loop over all identities
-				for(IBroker broker : m_io.getBrokers()) {
+				for(IBroker<?> broker : m_io.getBrokers()) {
 					for(IEntity it : broker.getKnownEntities()) {
 						it.setIdentity(null);
 					}
@@ -79,8 +79,8 @@ public class APRSMapper {
 			}
 		}
   		
-  		public void onConnect(SessionEvent e) { /*NOP*/ }
-		public void onDisconnect(SessionEvent e) { /*NOP*/ }
+  		public void onOpen(SessionEvent e) { /*NOP*/ }
+		public void onClose(SessionEvent e) { /*NOP*/ }
 		public void onSessionAdded(ISession session) { /*NOP*/ }
 		public void onSessionRemoved(ISession session) { /*NOP*/ }
 		public void onTransmit(ISession session, ProtocolEvent e) { /*NOP*/ }
@@ -125,7 +125,7 @@ public class APRSMapper {
 			}
 		}
 		
-		public void onEntityDetected(IBroker broker, EntityEvent e) {
+		public void onEntityDetected(IBroker<?> broker, EntityEvent e) {
 			// try to identify entity
 			identify(e.getEntity());
 		}  		
@@ -155,6 +155,7 @@ public class APRSMapper {
 		}
 
 		public void onCurrentSessionChanged(ISession session) { /* NOP */ }
+		public void onBufferOverflow(ISession session, ProtocolEvent e) { /* NOP */}
   	}
   
 }

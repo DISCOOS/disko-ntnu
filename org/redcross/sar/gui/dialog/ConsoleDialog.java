@@ -2,19 +2,21 @@ package org.redcross.sar.gui.dialog;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
@@ -39,6 +41,8 @@ public class ConsoleDialog extends DefaultDialog {
 	private DefaultPanel contentPanel;
 	private JPanel outputPanel;	
 	private JPanel commandPanel;
+
+	private JComboBox streamComboBox;
 	
 	private JScrollPane commandScrollPane;
 	private JScrollPane consoleScrollPane;
@@ -57,6 +61,7 @@ public class ConsoleDialog extends DefaultDialog {
 	private List<String> history = new ArrayList<String>();
 	
 	private final String RX = "RX: %1$s";
+	private final String RX_EX = "RX: EXCEPTION %1$s => %1$s";
 	private final String TX = "TX: %1$s";
 	private final String ENTITY = "Entity %1$s detected";
 	private final String LINE_TO = "%1$s < %2$s";
@@ -79,7 +84,7 @@ public class ConsoleDialog extends DefaultDialog {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(600, 400);
+		this.setSize(700, 500);
 		this.setResizable(false);
 		this.setContentPane(getContentPanel());
 	}
@@ -93,12 +98,34 @@ public class ConsoleDialog extends DefaultDialog {
 		if (contentPanel == null) {
 			contentPanel = new DefaultPanel();
 			contentPanel.setContainerLayout(new BorderLayout(5,5));
+			contentPanel.addToContainer(getStreamComboBox(), BorderLayout.NORTH);
 			contentPanel.addToContainer(getOutputPanel(), BorderLayout.CENTER);
 			contentPanel.addToContainer(getCommandPanel(), BorderLayout.SOUTH);
 			contentPanel.setNotScrollBars();
 		}
 		return contentPanel;
 	}
+	
+	/**
+	 * This method initializes selectStreamComboBox	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JComboBox getStreamComboBox() {
+		if (streamComboBox == null) {
+			streamComboBox = new JComboBox(new String[]{"Command","IO/Event"});
+			streamComboBox.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					CardLayout cl = (CardLayout)getOutputPanel().getLayout();
+					cl.show(getOutputPanel(), e.getItem().toString());					
+				}
+				
+			});
+		}
+		return streamComboBox;
+	}	
+	
 
 	/**
 	 * This method initializes outputPanel	
@@ -109,10 +136,9 @@ public class ConsoleDialog extends DefaultDialog {
 		if (outputPanel == null) {
 			outputPanel = new JPanel();
 			outputPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-			outputPanel.setLayout(new BoxLayout(outputPanel,BoxLayout.Y_AXIS));
-			outputPanel.add(getConsoleScrollPane());
-			outputPanel.add(Box.createVerticalStrut(5));
-			outputPanel.add(getCommandScrollPane());
+			outputPanel.setLayout(new CardLayout());
+			outputPanel.add(getConsoleScrollPane(),"IO/Event");
+			outputPanel.add(getCommandScrollPane(),"Command");
 		}
 		return outputPanel;
 	}	
@@ -126,8 +152,9 @@ public class ConsoleDialog extends DefaultDialog {
 		if (consoleScrollPane == null) {
 			consoleScrollPane = new JScrollPane();
 			consoleScrollPane.setViewportView(getConsoleTextArea());
-			consoleScrollPane.setMinimumSize(new Dimension(0,150));
 			consoleScrollPane.setBorder(BorderFactory.createTitledBorder("IO/events"));			
+			consoleScrollPane.setMinimumSize(new Dimension(0,0));
+			consoleScrollPane.setMaximumSize(new Dimension(680,450));
 		}
 		return consoleScrollPane;
 	}
@@ -173,7 +200,8 @@ public class ConsoleDialog extends DefaultDialog {
 			commandScrollPane = new JScrollPane();
 			commandScrollPane.setViewportView(getCommandTextArea());
 			commandScrollPane.setBorder(BorderFactory.createTitledBorder("Commands"));
-			commandScrollPane.setMinimumSize(new Dimension(0,150));
+			commandScrollPane.setMinimumSize(new Dimension(0,0));
+			commandScrollPane.setMaximumSize(new Dimension(680,450));
 		}
 		return commandScrollPane;
 	}
@@ -361,7 +389,7 @@ public class ConsoleDialog extends DefaultDialog {
 	
 	private IManagerListener listener = new IManagerListener() {
 
-		public void onConnect(SessionEvent e) {
+		public void onOpen(SessionEvent e) {
 			// get session
 			ISession session = e.getSource();
 			// forward
@@ -370,7 +398,7 @@ public class ConsoleDialog extends DefaultDialog {
 			publish("Event",String.format(SESSION_CONNECTED,session.getName(),session.getLink().getName()),"stream");
 		}
 
-		public void onDisconnect(SessionEvent e) {
+		public void onClose(SessionEvent e) {
 			// get session
 			ISession session = e.getSource();
 			// notify user
@@ -385,7 +413,12 @@ public class ConsoleDialog extends DefaultDialog {
 			publish(session.getName(), String.format(TX,e.getPacket().getMessage()),"stream");			
 		}
 
-		public void onEntityDetected(IBroker broker, EntityEvent e) {
+		@Override
+		public void onBufferOverflow(ISession session, ProtocolEvent e) {
+			publish(session.getName(), String.format(RX_EX,"BufferOverflow", e.getPacket().getMessage()),"stream");						
+		}
+		
+		public void onEntityDetected(IBroker<?> broker, EntityEvent e) {
 			publish(broker.getName(), String.format(ENTITY,e.getEntity().getCue()),"stream");						
 		}
 
@@ -408,6 +441,7 @@ public class ConsoleDialog extends DefaultDialog {
 			// forward
 			validateSession();
 		}
+
 		
 	};
 

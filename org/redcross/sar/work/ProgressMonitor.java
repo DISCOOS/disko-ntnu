@@ -18,7 +18,6 @@ import org.redcross.sar.gui.DiskoProgressPanel;
 import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ProgressDialog;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IProgressListener;
 import org.redcross.sar.work.event.ProgressEvent;
 import org.redcross.sar.work.event.ProgressEvent.ProgressEventType;

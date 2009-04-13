@@ -59,7 +59,7 @@ public class DefaultPanel extends BasePanel {
 	 * This method initializes the panel
 	 *
 	 */
-	protected void initialize() {
+	private void initialize() {
 
 		// add default buttons
 		addButton(getFinishButton(),"finish");

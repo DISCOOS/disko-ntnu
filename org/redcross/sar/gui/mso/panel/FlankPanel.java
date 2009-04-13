@@ -51,9 +51,7 @@ public class FlankPanel extends DefaultPanel {
 	 * This method initializes this
 	 * 
 	 */
-	protected void initialize() {
-		// forward
-		super.initialize();
+	private void initialize() {
 		// initialize this
 		this.setContainer(getCenterPanel());
 	}

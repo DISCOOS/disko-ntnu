@@ -417,7 +417,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		Container c = getContainer();
     	if(c!=null && c.getLayout()!=null) {
     		d = c.getLayout().minimumLayoutSize(c);
-    		c.setSize(new Dimension(d.width,d.height));
+    		if(d!=null) c.setSize(new Dimension(d.width,d.height));
     	}
     	return d;
     }
@@ -427,7 +427,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		Container c = getContainer();
 		if(c!=null && c.getLayout()!=null) {
     		d = c.getLayout().preferredLayoutSize(c);
-    		c.setSize(new Dimension(d.width,d.height));
+    		if(d!=null) c.setSize(new Dimension(d.width,d.height));
     	}
     	return d;
     }
@@ -438,7 +438,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
     	if(c!=null && c.getLayout() instanceof LayoutManager2) {
         	LayoutManager2 lm2 = (LayoutManager2)c.getLayout();
     		d = lm2.maximumLayoutSize(c);
-    		c.setSize(new Dimension(d.width,d.height));
+    		if(d!=null) c.setSize(new Dimension(d.width,d.height));
     	}
     	return d;
     }
@@ -447,7 +447,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
     	Dimension d = null;
         if(getLayout()!=null) {
         	d = getLayout().minimumLayoutSize(this);
-    		setSize(new Dimension(d.width,d.height));
+        	if(d!=null) setSize(new Dimension(d.width,d.height));
         }
         return d;
     }
@@ -457,7 +457,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
         if(getLayout()!=null) {
         	//validateTree();
         	d = getLayout().preferredLayoutSize(this);
-    		setSize(new Dimension(d.width,d.height));
+        	if(d!=null) setSize(new Dimension(d.width,d.height));
         }
         return d;
     }
@@ -467,7 +467,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
         if(getLayout() instanceof LayoutManager2) {
         	LayoutManager2 lm2 = (LayoutManager2)getLayout();
     		d = lm2.maximumLayoutSize(this);
-    		setSize(new Dimension(d.width,d.height));
+    		if(d!=null) setSize(new Dimension(d.width,d.height));
         }
         return d;
     }

@@ -8,28 +8,27 @@ import javax.swing.table.AbstractTableModel;
 import org.redcross.sar.app.Application;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.DispatcherAdapter;
-import org.redcross.sar.util.Utils;
 
 public class OperationTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = 1L;
 
 	private Object[] rows = null;
-	private IDispatcherIf modelDriver = null;
+	private IDispatcherIf dispatcher = null;
 
 	public OperationTableModel() {
 		// forward
 		super();
 		// prepare
-		modelDriver = Application.getInstance().getMsoModel().getDispatcher();
+		dispatcher = Application.getInstance().getMsoModel().getDispatcher();
 		// add to listeners
-		modelDriver.addDispatcherListener(m_adapter);
+		dispatcher.addDispatcherListener(m_adapter);
 	}
 
 	public int update() {
 		int current = -1;
 		// get active operations locally / on sara server
-		List<String[]> data = modelDriver.getActiveOperations();
+		List<String[]> data = dispatcher.getActiveOperations();
 		// has active operations?
 		if(data!=null) {
 			// allocate memory
@@ -39,11 +38,11 @@ public class OperationTableModel extends AbstractTableModel {
 				// allocate memory
 				Object[] row = new Object[1];
 				// get operation id
-				String oprID = (String)data.get(i)[0];
+				String oprID = (String)data.get(i)[1];
 				// update row
 				row[0] = oprID;
 				// is current?
-				if(modelDriver.getActiveOperationID()==oprID)
+				if(dispatcher.getActiveOperationID()==oprID)
 					current = i;
 				// save row
 				rows[i] = row;

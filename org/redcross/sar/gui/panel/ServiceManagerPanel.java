@@ -2,6 +2,7 @@ package org.redcross.sar.gui.panel;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -26,18 +27,23 @@ import org.disco.io.IBroker;
 import org.disco.io.IOManager;
 import org.disco.io.ISession;
 import org.disco.io.aprs.APRSBroker;
+import org.disco.io.aprs.APRSParser;
 import org.disco.io.event.EntityEvent;
 import org.disco.io.event.IManagerListener;
 import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
+import org.disco.io.net.NetSession;
 import org.disco.io.serial.TNCSession;
 import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.dialog.ConsoleDialog;
+import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ListSelectorDialog;
+import org.redcross.sar.gui.dialog.NetDialog;
 import org.redcross.sar.gui.dialog.TNCDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.util.Utils;
@@ -53,6 +59,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	private JButton consoleButton;
 	
 	private TNCDialog tncDialog;
+	private NetDialog netDialog;
+	private LoginDialog loginDialog;
 	private ConsoleDialog consoleDialog;
 	private ListSelectorDialog selectorDialog;
 	
@@ -63,17 +71,15 @@ public class ServiceManagerPanel extends DefaultPanel {
 	public ServiceManagerPanel() {
 		// forward
 		super("Tjenester",false,true);
+		// initialize GUI
+		initialize();
 	}
 
 	/* ===========================================
 	 * Protected methods
 	 * =========================================== */
 	
-	@Override
-	protected void initialize() {
-		
-		// forward
-		super.initialize();
+	private void initialize() {
 		
 		// set container 
 		setContainer(getServiceTable());
@@ -203,7 +209,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 	private ListSelectorDialog getSelectorDialog() {
 		if(selectorDialog == null) {
 			selectorDialog = new ListSelectorDialog(Application.getInstance());
-			selectorDialog.prepare("Velg tjeneste", new String[]{"APRS Sanntidssporing"});
+			selectorDialog.prepare("Velg tjeneste", new String[]{
+					"Sanntidssporing (APRS-COM)",
+					"Sanntidssporing (APRS-IS)"});
 		}
 		return selectorDialog;
 	}	
@@ -220,6 +228,32 @@ public class ServiceManagerPanel extends DefaultPanel {
 		}
 		return tncDialog;
 	}		
+	
+	/**
+	 * This method initializes netDialog	
+	 * 	
+	 * @return org.redcross.sar.gui.dialog.NetDialog
+	 */	
+	private NetDialog getNetDialog() {
+		if(netDialog == null) {
+			netDialog = new NetDialog(Application.getInstance());
+			netDialog.setLocationRelativeTo(Application.getInstance());			
+		}
+		return netDialog;
+	}			
+	
+	/**
+	 * This method initializes loginDialog	
+	 * 	
+	 * @return org.redcross.sar.gui.panel.ServiceManagerPanel.LoginDialog
+	 */	
+	private LoginDialog getLoginDialog() {
+		if(loginDialog == null) {
+			loginDialog = new LoginDialog();
+			loginDialog.setLocationRelativeTo(Application.getInstance());			
+		}
+		return loginDialog;
+	}			
 
 	private void add() {
 		
@@ -227,11 +261,28 @@ public class ServiceManagerPanel extends DefaultPanel {
 		String service = (String)getSelectorDialog().select();
 		
 		// add service?
-		if("APRS Sanntidssporing".equals(service)) {
+		if("Sanntidssporing (APRS-COM)".equals(service)) {
+			// create APRS parser
+			APRSParser parser = new APRSParser("APRS parser",'\r','\n');			
+			// create a TNC session
+			TNCSession session = new TNCSession("APRS",parser,"-","resources/io");
 			// create broker
-			APRSBroker broker = new APRSBroker("APRS",service,"resources/io");
+			APRSBroker broker = new APRSBroker(session);
 			// manage service
-			if (getTNCDialog().manageSession(broker)) {
+			if (getTNCDialog().manage(session)) {
+				// add to manager
+				IOManager.getInstance().addSession(broker);
+			}
+		}
+		else if("Sanntidssporing (APRS-IS)".equals(service)) {
+			// create APRS parser
+			APRSParser parser = new APRSParser("APRS parser",'\r','\n');			
+			// create a NET session
+			NetSession session = new NetSession("APRS-IS",parser,"-",APRSBroker.APRS_IS_LOGIN);
+			// create broker
+			APRSBroker broker = new APRSBroker(session);
+			// manage service
+			if (getNetDialog().manage(session)) {
 				// add to manager
 				IOManager.getInstance().addSession(broker);
 			}
@@ -242,32 +293,46 @@ public class ServiceManagerPanel extends DefaultPanel {
 		int selRow = getServiceTable().getSelectedRow();
 		if(selRow>-1) {
 			Object selected = getServiceTable().getValueAt(selRow, 0);
-			if(selected instanceof TNCSession) {
-				getTNCDialog().manageSession((TNCSession)selected);
+			if(selected instanceof IBroker<?>) {
+				IBroker<?> broker = (IBroker<?>)selected;
+				if(broker.getSession() instanceof TNCSession) {
+					getTNCDialog().manage((TNCSession)broker.getSession());
+				}
+				else if(broker.getSession() instanceof NetSession) {
+					getNetDialog().manage((NetSession)broker.getSession());
+				}
 			}
 		}
 	}
 	
 	private void remove() {
 		
-		// get selection index
-		int row = getServiceTable().getSelectedRow();
-		
-		// get session?
-		if(row!=-1) {
-			ISession session = (ISession)getServiceTable().getValueAt(row, 0);
-			// prompt user
-			int ans = JOptionPane.showConfirmDialog(this, 
-					"Dette vil fjerne tjenesten " + session.getName() 
-					+ ". Vil du fortsette?","Bekreftelse",JOptionPane.YES_NO_OPTION);
-			// remove?
-			if(ans == JOptionPane.YES_OPTION) {
-				session.disconnect();
-				IOManager.getInstance().removeSession(session);				
+		try {
+			// get selection index
+			int row = getServiceTable().getSelectedRow();
+			
+			// get session?
+			if(row!=-1) {
+				ISession session = (ISession)getServiceTable().getValueAt(row, 0);
+				// prompt user
+				int ans = JOptionPane.showConfirmDialog(this, 
+						"Dette vil fjerne tjenesten " + session.getName() 
+						+ ". Vil du fortsette?","Bekreftelse",JOptionPane.YES_NO_OPTION);
+				// remove?
+				if(ans == JOptionPane.YES_OPTION) {
+					session.close();
+					IOManager.getInstance().removeSession(session);				
+				}
+				return;
 			}
-			return;
+			Utils.showMessage("Du må velge en tjeneste først");
+		} catch (HeadlessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		Utils.showMessage("Du må velge en tjeneste først");
 		
 	}
 	
@@ -281,7 +346,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 * Private classes
 	 * =========================================== */
 	
-	private static class ServiceTableModel extends AbstractTableModel implements IManagerListener {
+	private class ServiceTableModel extends AbstractTableModel implements IManagerListener {
 		
 		private static final long serialVersionUID = 1L;
 
@@ -323,19 +388,140 @@ public class ServiceManagerPanel extends DefaultPanel {
 			}
 		}
 		
-		public void onConnect(SessionEvent e) {
+		public void onOpen(SessionEvent e) {
+			if(e.getSource() instanceof NetSession) {
+				// prepare
+				NetSession session = (NetSession)e.getSource();				
+				// prompt user
+				String[] login = getLoginDialog().prompt(
+						session.getUsername(),
+						session.getPassword(),
+						"filter r/64/10/25");
+				// login supplied?
+				if(login!=null) {
+					session.login(login[0],login[1],login[2]);
+				}
+			}
 			fireTableDataChanged();
 		}
 
-		public void onDisconnect(SessionEvent e) {
+		public void onClose(SessionEvent e) {
 			fireTableDataChanged();			
 		}
 		
 		public void onCurrentSessionChanged(ISession session) { /* NOP */ }
 		public void onReceive(ISession session, ProtocolEvent e) { /* NOP */ }
 		public void onTransmit(ISession session, ProtocolEvent e) { /* NOP */ }
-		public void onEntityDetected(IBroker broker,EntityEvent e) { /* NOP */ }
+		public void onEntityDetected(IBroker<?> broker,EntityEvent e) { /* NOP */ }
+		public void onBufferOverflow(ISession session, ProtocolEvent e) {  /* NOP */ }
 
+		
+	}
+	
+	private class LoginDialog extends DefaultDialog {
+
+		private static final long serialVersionUID = 1L;
+		
+		FieldsPanel fieldsPanel;
+		TextLineField userNameField;
+		TextLineField passwordField;
+		TextLineField commandField;
+		
+		boolean isCancel = false;
+		
+		public String[] prompt(String username, String password, String command) {
+			// prepare
+			isCancel = false;
+			// show med
+			setVisible(true);
+			// return selection
+			return isCancel ? null: 
+				new String[]{getUserNameField().getValue().toString(),
+				           getPasswordField().getValue().toString(),
+				           getCommandField().getValue().toString()}; 
+		}
+		
+		public LoginDialog() {
+			// forward
+			super(Application.getInstance());
+			// initialize gui
+			initialize();
+		}
+
+		private void initialize() {
+			this.setSize(250, 150);
+			this.setResizable(false);
+			this.setContentPane(getLoginPanel());
+			this.setModal(true);
+			
+		}
+		
+		private FieldsPanel getLoginPanel() {
+			if(fieldsPanel==null) {
+				fieldsPanel = new FieldsPanel("Login");
+				fieldsPanel.setScrollBarPolicies(
+						DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
+						DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
+				fieldsPanel.setCaptionWidth(100);
+				fieldsPanel.addField(getUserNameField());
+				fieldsPanel.addField(getPasswordField());
+				fieldsPanel.addField(getCommandField());
+				
+				// add action listener
+				fieldsPanel.addActionListener(new ActionListener() {
+		
+					public void actionPerformed(ActionEvent e) {
+						String cmd = e.getActionCommand();
+						if("cancel".equalsIgnoreCase(cmd)) {
+							// set flag
+							isCancel = true;
+						}
+					}
+		
+				});				
+				
+			}
+			return fieldsPanel;
+		}
+		
+		/**
+		 * This method initializes userNameField	
+		 * 	
+		 * @return org.redcross.sar.gui.field.TextLineField
+		 */
+		private TextLineField getUserNameField() {
+			if (userNameField == null) {
+				userNameField = new TextLineField("username","Brukernavn",true);			
+				userNameField.setValue("DISKO");
+			}
+			return userNameField;
+		}		
+		
+		/**
+		 * This method initializes hostModeField	
+		 * 	
+		 * @return org.redcross.sar.gui.field.TextLineField	
+		 */
+		private TextLineField getPasswordField() {
+			if (passwordField == null) {
+				passwordField = new TextLineField("password","Passord",true);			
+				passwordField.setValue("-1");
+			}
+			return passwordField;
+		}				
+		
+		/**
+		 * This method initializes hostModeField	
+		 * 	
+		 * @return org.redcross.sar.gui.field.TextLineField	
+		 */
+		private TextLineField getCommandField() {
+			if (commandField == null) {
+				commandField = new TextLineField("command","Kommando",true);			
+				commandField.setValue("filter r/64/10/200");
+			}
+			return commandField;
+		}				
 		
 	}
 	
@@ -377,7 +563,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 				if(value instanceof ISession)
 				{
 					ISession session = (ISession)value;
-					if(session.isConnected()) {
+					if(session.isOpen()) {
 						text = ((ISession)value).getName() + " (tilkoblet::" + session.getLink().getName().replace("//./","") +")";
 						b = Color.GREEN;
 					}

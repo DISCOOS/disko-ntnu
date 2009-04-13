@@ -26,9 +26,7 @@ public class ColumnPanel extends DefaultPanel {
 	/**
 	 * Initialize this
 	 */
-	protected void initialize() {
-		// forward
-		super.initialize();
+	private void initialize() {
 		// set table
 		setContainer(getTable());
 	}

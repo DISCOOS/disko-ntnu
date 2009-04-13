@@ -43,7 +43,6 @@ public class NumPadPanel extends DefaultPanel {
 	private JButton zeroButton;
 	private JButton delButton;
 	private JFormattedTextField inputField;
-	private ButtonSize buttonSize = ButtonSize.NORMAL;
 	
 	private boolean m_isInputVisible = true;
 
@@ -175,9 +174,7 @@ public class NumPadPanel extends DefaultPanel {
 	 * Helper methods
 	 * ======================================================== */
 	
-	protected void initialize() {
-		// forward
-		super.initialize();
+	private void initialize() {
 		// prepare
 		setNotScrollBars();
 		setContainerLayout(new BorderLayout(5,5));

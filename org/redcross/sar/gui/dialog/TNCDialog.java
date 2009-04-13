@@ -98,7 +98,7 @@ public class TNCDialog extends DefaultDialog  {
 			sessionPanel.setScrollBarPolicies(
 					DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
 					DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
-			sessionPanel.setCaptionWidth(100);
+			sessionPanel.setCaptionWidth(150);
 			sessionPanel.addField(getProtocolField());
 			sessionPanel.addField(getPortField());
 			sessionPanel.addField(getTNCField());
@@ -124,7 +124,7 @@ public class TNCDialog extends DefaultDialog  {
 						connect();
 					}
 					else if("disconnect".equalsIgnoreCase(cmd)) {
-						disconnect();
+						close();
 					}
 					else if("cancel".equalsIgnoreCase(cmd)) {
 						// set flag
@@ -174,8 +174,8 @@ public class TNCDialog extends DefaultDialog  {
 	 */
 	private ComboBoxField getTNCField() {
 		if (tncField == null) {
-			tncField = new ComboBoxField("tnc","Protokoll",true);
-			tncField.fill(new String[]{"APRS Sanntidssporing"});
+			tncField = new ComboBoxField("tnc","TNC",true);
+			tncField.fill(new String[]{"Any"});
 		}
 		return tncField;
 	}	
@@ -256,7 +256,7 @@ public class TNCDialog extends DefaultDialog  {
 	private ComboBoxField getHostModeField() {
 		if (hostModeField == null) {
 			hostModeField = new ComboBoxField("hostMode","TNC modus",true);			
-			hostModeField.fill(new String[]{"Ingen","KISS"});
+			hostModeField.fill(new String[]{"Terminal"});
 		}
 		return hostModeField;
 	}		
@@ -353,7 +353,7 @@ public class TNCDialog extends DefaultDialog  {
 	}
 	
 	private void setTitle() {
-        getSessionPanel().setCaptionText("Tjeneste (" + (session!=null && session.isConnected() ? "tilkoblet)" : "frakoblet)"));
+        getSessionPanel().setCaptionText("Tjeneste (" + (session!=null && session.isOpen() ? "tilkoblet)" : "frakoblet)"));
 		
 	}
 
@@ -369,7 +369,7 @@ public class TNCDialog extends DefaultDialog  {
 		try {
 
 			// disconnect current
-			session.disconnect();
+			session.close();
 			
 			// get setup parameters
 			Setup setup = getSetup();
@@ -387,7 +387,7 @@ public class TNCDialog extends DefaultDialog  {
 				} else {
 					
 					// try to connect session to TNC device
-					session.connect(setup.tnc, setup.port, 
+					session.open(setup.tnc, setup.port, 
 							setup.baudRate, setup.dataBits, 
 							setup.stopBits, setup.parity, 
 							setup.flowCtrl, setup.hostMode, false); 
@@ -433,10 +433,10 @@ public class TNCDialog extends DefaultDialog  {
 			
 	}
 	
-	private void disconnect() {
+	private void close() {
 
 		// forward
-		session.disconnect(true);
+		session.close(true);
 				
 	}
 	
@@ -475,8 +475,7 @@ public class TNCDialog extends DefaultDialog  {
 	}
 	*/
 
-	
-	public boolean manageSession(TNCSession session) {
+	public boolean manage(TNCSession session) {
 		// prepare
 		this.isCancel = false;
 		this.session = session;
@@ -531,7 +530,7 @@ public class TNCDialog extends DefaultDialog  {
 		}
 		
 		public Setup(TNCSession session) {
-			if(session.isConnected()) {
+			if(session.isOpen()) {
 				protocol = session.getProtocol().getName();
 				port = session.getLink().getName().replace("//./", "");
 				tnc = session.getType();
@@ -543,7 +542,7 @@ public class TNCDialog extends DefaultDialog  {
 				hostMode = session.getLink().getHostMode();
 			}
 			else {
-				Setup setup = new Setup("APRS Sanntidssporing", "COM1", "TNC", "Ingen");
+				Setup setup = new Setup("APRS Sanntidssporing (COM)", "COM1", "TNC", "Ingen");
 				protocol = setup.protocol;
 				port = setup.port;
 				tnc = setup.tnc;

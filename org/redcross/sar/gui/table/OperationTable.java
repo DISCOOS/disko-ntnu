@@ -1,17 +1,67 @@
 package org.redcross.sar.gui.table;
 
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.table.TableStringConverter;
+
+import no.cmr.hrs.sar.tools.IDHelper;
 
 import org.redcross.sar.gui.model.OperationTableModel;
+import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 
 public class OperationTable extends DiskoTable {
 
 	private static final long serialVersionUID = 1L;
 	
 	private TableRowSorter<OperationTableModel> tableRowSorter = null;
+	private TableStringConverter converter = new TableStringConverter() {
+
+		@Override
+		public String toString(TableModel model, int row, int col) {
+			return IDHelper.formatOperationID((String)model.getValueAt(row, col));
+		}
+		
+	};
+	
+	private DiskoTableCellRenderer renderer = new DiskoTableCellRenderer() {
+
+		private static final long serialVersionUID = 1L;
+		
+		/* ==================================================
+		 * TableCellRenderer implementation
+		 * ================================================== */
+
+		public JLabel getTableCellRendererComponent(JTable table, Object value,
+				boolean isSelected, boolean hasFocus, int row, int col) {
+
+			// initialize
+			String text = "";
+
+			// get model info
+			super.initialize(table, row, col);
+
+			// convert value to text?
+			if(m_rowInModel!=-1 && m_colInModel!=-1) {
+
+				text = converter.toString(getModel(),m_rowInModel,m_colInModel);
+
+			}
+
+			// forward
+			JLabel renderer = super.prepare(table, text, isSelected, hasFocus, row, col, false, false);
+
+			// update alignment and borders
+			update(renderer,renderer.getIcon());
+
+
+			// finished
+			return renderer;
+		}
+	};	
 	
 	public OperationTable() {
 		
@@ -24,6 +74,8 @@ public class OperationTable extends DiskoTable {
 		// add row sorter
 		tableRowSorter = new TableRowSorter<OperationTableModel>(model);
 		setRowSorter(tableRowSorter);		
+		setStringConverter(converter);
+		setDefaultRenderer(Object.class, renderer);
 		
 		// prepare table
 		setRowHeight(25);
@@ -59,7 +111,7 @@ public class OperationTable extends DiskoTable {
 		}
 		// update
 		validate();
-		// finshed
+		// finished
 		return select;		
 	}
 }

@@ -42,7 +42,6 @@ public class UnitTypeInputPanel extends DefaultPanel
 	private int m_cols;
 	private UnitType m_selected;
 	
-
 	/* ==========================================================
 	 * Constructors
 	 * ==========================================================*/
@@ -50,7 +49,7 @@ public class UnitTypeInputPanel extends DefaultPanel
 	public UnitTypeInputPanel()
 	{
 		// forward
-		this("Type",3);		
+		this("Type",3);
 	}
 
 	public UnitTypeInputPanel(String caption, int cols)
@@ -92,9 +91,7 @@ public class UnitTypeInputPanel extends DefaultPanel
 	 * Helper methods
 	 * ==========================================================*/
 	
-	protected void initialize() {
-		// forward
-		super.initialize();
+	private void initialize() {
 		// prepare 		
 		setContainerLayout(new SpringLayout());
 		setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));

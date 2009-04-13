@@ -31,9 +31,7 @@ public class OperationPanel extends DefaultPanel {
 	/**
 	 * Initialize this
 	 */
-	protected void initialize() {
-		// forward
-		super.initialize();
+	private void initialize() {
 		// insert button
 		insertButton("finish", getCreateButton(), "create");
 		// set table

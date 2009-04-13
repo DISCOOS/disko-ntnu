@@ -27,7 +27,7 @@ public interface IDispatcherIf
 
    /**
     * Fetch a list of currently active operations with name and id
-    * @return a List of the currentlig active operations as String[2]:{Name,Id} pairs
+    * @return a List of the currently active operations as String[2]:{Name,Id} pairs
     */
    public java.util.List<String[]> getActiveOperations();
 

@@ -1,5 +1,6 @@
 package org.redcross.sar.app;
 
+import no.cmr.hrs.sar.tools.IDHelper;
 import no.cmr.tools.Log;
 
 import org.disco.io.IOManager;
@@ -130,11 +131,11 @@ public class Application extends JFrame implements IApplication, WindowListener
 	private Application()
 	{
 		super();
-		// register me
-		Utils.setApp(this);
 		// initialize later
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				// register me
+				Utils.setApp(Application.this);
 				// initialize ArcGIS
 				initializeArcGISLicenses();
 				// initialize GUI
@@ -631,7 +632,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 	public void shutdown()
 	{
 		// cleanup
-		IOManager.getInstance().disconnectAll();
+		IOManager.getInstance().closeAll();
 		getMsoModel().getDispatcher().shutDown();
 		// forward
 		dispose();
@@ -848,7 +849,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 		 */
 		SetActiveOperation(String opId) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + opId,0,true,true);
+			super(0,false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + IDHelper.formatOperationID(opId),0,true,true);
 			// save
 			m_opID = opId;
 			// set loading bit

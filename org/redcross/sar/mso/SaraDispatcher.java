@@ -198,7 +198,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         List<SarOperation> opers = sarSvc.getSession().getOperations().getOperations();
         for (SarOperation soper : opers)
         {
-            String[] descr = {soper.getName(), soper.getID()};
+            String[] descr = {IDHelper.formatOperationID(soper.getID()), soper.getID()};
             ops.add(descr);
         }
         return ops;
