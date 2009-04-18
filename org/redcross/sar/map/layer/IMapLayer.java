@@ -9,6 +9,7 @@ public interface IMapLayer {
 	public enum LayerCode {
 		AREA_LAYER,
 		ROUTE_LAYER,
+		TRACK_LAYER,
 		OPERATION_AREA_LAYER,
 		SEARCH_AREA_LAYER,
 		POI_LAYER,

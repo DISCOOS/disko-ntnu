@@ -1,8 +1,8 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -533,7 +533,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public static List<IHierarchicalUnitIf> getSubOrdinates(IHierarchicalUnitIf aUnit)
 	{
 		ArrayList<IHierarchicalUnitIf> resultList = new ArrayList<IHierarchicalUnitIf>();
-		IUnitListIf mainList = MsoModelImpl.getInstance().getMsoManager().getCmdPost().getUnitList();
+		IUnitListIf mainList = Application.getInstance().getMsoModel().getMsoManager().getCmdPost().getUnitList();
 		for (IUnitIf u : mainList.getItems())
 		{
 			if (u.getSuperiorUnit() == aUnit)
@@ -867,7 +867,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// create track?
 		if(msoTrack==null) {
 			// get command post
-			ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
+			ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 			// create new track
 			msoTrack = cmdPost.getTrackList().createTrack();
 			// set geodata
@@ -913,7 +913,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public Set<IMessageIf> getReferringMessages()
 	{
 		simpleReferringMesssageSelector.setSelfObject(this);
-		ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
+		ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 		return cmdPost != null ? cmdPost.getMessageLog().selectItems(simpleReferringMesssageSelector) : null;
 	}
 

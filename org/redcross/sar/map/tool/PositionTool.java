@@ -25,7 +25,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public class PositionTool extends AbstractMsoDrawTool {
+public class PositionTool extends BaseMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -265,7 +265,7 @@ public class PositionTool extends AbstractMsoDrawTool {
 	 * ==================================================
 	 */
 
-	public class PositionToolState extends AbstractMsoDrawTool.DrawToolState {
+	public class PositionToolState extends BaseMsoDrawTool.DrawToolState {
 
 		private IUnitIf unit = null;
 		private boolean isDirty = false;
@@ -275,11 +275,11 @@ public class PositionTool extends AbstractMsoDrawTool {
 
 		// create state
 		public PositionToolState(PositionTool tool) {
-			super((AbstractMsoDrawTool)tool);
+			super((BaseMsoDrawTool)tool);
 			save(tool);
 		}
 		public void save(PositionTool tool) {
-			super.save((AbstractMapTool)tool);
+			super.save((BaseMapTool)tool);
 			this.logPosition = tool.logPosition;
 			this.logTimeStamp = tool.logTimeStamp;
 			this.updateTrackPosition = tool.updateTrackPosition;
@@ -295,7 +295,7 @@ public class PositionTool extends AbstractMsoDrawTool {
 			tool.getPositionPanel().setUnit(this.unit);
 			tool.getPositionPanel().setChangeable(true);
 			tool.getPositionPanel().setDirty(isDirty);
-			super.load((AbstractMsoDrawTool)tool);
+			super.load((BaseMsoDrawTool)tool);
 		}
 	}
 

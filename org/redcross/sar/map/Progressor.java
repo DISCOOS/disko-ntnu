@@ -6,7 +6,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ProgressDialog;

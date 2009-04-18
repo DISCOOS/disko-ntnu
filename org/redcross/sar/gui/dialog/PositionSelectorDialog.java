@@ -5,7 +5,7 @@ package org.redcross.sar.gui.dialog;
 
 import java.awt.Frame;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;

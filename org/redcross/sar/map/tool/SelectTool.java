@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.SelectMsoObjectDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -19,7 +19,6 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.IWork;
 
 import com.esri.arcgis.geodatabase.IFeature;
@@ -32,7 +31,7 @@ import com.esri.arcgis.geometry.Point;
  * @author geira, kenneth
  *
  */
-public class SelectTool extends AbstractMapTool {
+public class SelectTool extends BaseMapTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 100;
@@ -275,11 +274,11 @@ public class SelectTool extends AbstractMapTool {
 
 		// create state
 		public SelectFeatureToolState(SelectTool tool) {
-			super((AbstractMapTool)tool);
+			super((BaseMapTool)tool);
 			save(tool);
 		}
 		public void save(SelectTool tool) {
-			super.save((AbstractMapTool)tool);
+			super.save((BaseMapTool)tool);
 			this.p = tool.p;
 			this.extent = tool.extent;
 			this.isSelectByPoint = tool.isSelectByPoint;
@@ -287,7 +286,7 @@ public class SelectTool extends AbstractMapTool {
 		}
 
 		public void load(SelectTool tool) {
-			super.load((AbstractMapTool)tool);
+			super.load((BaseMapTool)tool);
 			tool.p = this.p;
 			tool.extent = this.extent;
 			tool.isSelectByPoint = this.isSelectByPoint;

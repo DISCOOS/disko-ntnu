@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.redcross.sar.data.DataSourceImpl;
+import org.redcross.sar.data.AbstractDataSource;
 import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
@@ -31,7 +31,6 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.mso.work.IMsoWork;
-import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.CommitException;
 import org.redcross.sar.work.WorkLoop;
@@ -40,11 +39,9 @@ import org.redcross.sar.work.WorkPool;
 /**
  * Singleton class for accessing the MSO model
  */
-public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
+public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 							implements IMsoModelIf, ICommitManagerIf
 {
-    private static MsoModelImpl m_this;
-    
     private final WorkLoop m_workLoop;
     private final IDispatcherIf m_dispatcher;
     private final MsoManagerImpl m_msoManager;
@@ -59,50 +56,18 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
     private boolean m_isEditable = true;
 
   	/*========================================================
-  	 * The singleton code
-  	 *======================================================== */
-
-	/**
-	 * Get singleton instance of class
-	 *
-	 * @return Returns singleton instance of class
-	 */
-    public static MsoModelImpl getInstance() {
-  		if (m_this == null) {
-  			try {
-  	  			// it's ok, we can call this constructor
-				m_this = new MsoModelImpl();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-  		}
-  		return m_this;
-  	}
-
-	/**
-	 * Method overridden to protect singleton
-	 *
-	 * @throws CloneNotSupportedException
-	 * @return Returns nothing. Method overridden to protect singleton
-	 */
-  	public Object clone() throws CloneNotSupportedException{
-  		throw new CloneNotSupportedException();
-  		// that'll teach 'em
-  	}
-
-  	/*========================================================
   	 * Constructors
   	 *======================================================== */
 
     /**
      * Constructor.
      * <p/>
-     * Initializes other classes that are accessed via this object..
      * @throws Exception
      */
-    private MsoModelImpl() throws Exception
+    public MsoModelImpl(IDispatcherIf dispatcher) throws Exception
     {
+    	// prepare
+    	m_dispatcher = dispatcher;
     	// create objects
         m_msoEventManager = new MsoEventManagerImpl();
         m_msoManager = new MsoManagerImpl(this,m_msoEventManager);
@@ -112,8 +77,6 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
         WorkPool.getInstance().add(m_workLoop);
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
-        boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
-        m_dispatcher = integrate ? new SaraDispatcher() : new Dispatcher();
         // create update event repeater
         m_updateRepeater = new IMsoUpdateListenerIf() {
 
@@ -135,7 +98,15 @@ public class MsoModelImpl 	extends DataSourceImpl<MsoEvent.UpdateList>
     }
 
     /* ====================================================================
-     * IMsoModelIf Implementation
+     * IDataSource implementation
+     * ==================================================================== */
+    
+    public String getID() {
+    	return m_dispatcher.getActiveOperationID();
+    }
+    
+    /* ====================================================================
+     * IMsoModelIf implementation
      * ==================================================================== */
 
 	public boolean isEditable() {

@@ -16,9 +16,9 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWp;
-import org.redcross.sar.app.Application;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;

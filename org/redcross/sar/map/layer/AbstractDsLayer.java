@@ -2,13 +2,13 @@ package org.redcross.sar.map.layer;
 
 import java.io.IOException;
 
-import org.redcross.sar.app.event.ICatalogListener;
-import org.redcross.sar.app.event.CatalogEvent.Instance;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.IDs;
 import org.redcross.sar.ds.IDsObject;
 import org.redcross.sar.ds.event.IDsChangeListener;
 import org.redcross.sar.ds.event.DsEvent.Update;
+import org.redcross.sar.event.ICatalogListener;
+import org.redcross.sar.event.CatalogEvent.Instance;
 
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.ISpatialReference;

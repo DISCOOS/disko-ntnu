@@ -20,7 +20,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.AWTUtilitiesWrapper;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoGlassPaneUtils;

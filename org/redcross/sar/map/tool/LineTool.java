@@ -29,7 +29,7 @@ import org.redcross.sar.util.Utils;
  * @author geira
  *
  */
-public class LineTool extends AbstractMsoDrawTool {
+public class LineTool extends BaseMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -540,7 +540,7 @@ public class LineTool extends AbstractMsoDrawTool {
 	 * ==================================================
 	 */
 
-	public class LineToolState extends AbstractMsoDrawTool.DrawToolState {
+	public class LineToolState extends BaseMsoDrawTool.DrawToolState {
 
 		// points
 		private Point p1 = null;
@@ -553,11 +553,11 @@ public class LineTool extends AbstractMsoDrawTool {
 
 		// create state
 		public LineToolState(LineTool tool) {
-			super((AbstractMsoDrawTool)tool);
+			super((BaseMsoDrawTool)tool);
 			save(tool);
 		}
 		public void save(LineTool tool) {
-			super.save((AbstractMsoDrawTool)tool);
+			super.save((BaseMsoDrawTool)tool);
 			this.p1 = tool.p1;
 			this.p2 = tool.p2;
 			this.geoSnap1 = tool.geoSnap1;
@@ -571,7 +571,7 @@ public class LineTool extends AbstractMsoDrawTool {
 			tool.geoSnap1 = this.geoSnap1;
 			tool.geoSnap1 = this.geoSnap2;
 			tool.subType = this.subType;
-			super.load((AbstractMsoDrawTool)tool);
+			super.load((BaseMsoDrawTool)tool);
 		}
 	}
 }

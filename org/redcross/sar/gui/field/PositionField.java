@@ -10,7 +10,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.PositionSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;

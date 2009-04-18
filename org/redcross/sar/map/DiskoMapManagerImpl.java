@@ -29,7 +29,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.redcross.sar.app.IApplication;
+import org.apache.log4j.Logger;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.map.event.DiskoMapEvent;
 import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
@@ -66,6 +67,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	private int isWorking = 0;
 	private boolean keepTmpMap = false;
 
+	private final Logger logger = Logger.getLogger(getClass());
 	private final List<IDiskoMap> maps = new ArrayList<IDiskoMap>();
 	private final Map<String,MapSourceInfo> mxdDocs = new HashMap<String,MapSourceInfo>();
 	private final WorkLoop m_loop = new WorkLoop(500,2000);
@@ -138,7 +140,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		try {
 
 			// notify
-			System.out.println("loadXmlFile()::started");
+			logger.info("loadXmlFile()::started");
 
 			// clear current
 			mxdDocs.clear();
@@ -198,7 +200,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			setKeepTmpMap(false);
 
 			// notify
-			System.out.println("loadXmlFile()::finished, antall mxd'er installert: " +  mxdDocs.size());
+			logger.info("loadXmlFile()::finished, antall mxd'er installert: " +  mxdDocs.size());
 
 			return true;
 		} catch (FileNotFoundException e) {

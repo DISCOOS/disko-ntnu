@@ -19,6 +19,7 @@ import no.cmr.hrs.sar.tools.ChangeObject;
 import no.cmr.hrs.sar.tools.IDHelper;
 import no.cmr.tools.Log;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.mso.committer.ICommittableIf.ICommitObjectIf;
@@ -170,7 +171,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
     	if(!m_isInitiated) {
     		
 	        setUpService();
-	        IMsoModelIf imm = MsoModelImpl.getInstance();
+	        IMsoModelIf imm = Application.getInstance().getMsoModel();
 	        imm.getEventManager().addCommitListener(this);
 	        m_isInitiated = true;
 	        if (sarSvc.getSession().isFinishedLoading()
@@ -291,7 +292,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         try {
 
 	    	// get manager
-	        IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
+	        IMsoManagerIf msoManager = Application.getInstance().getMsoModel().getMsoManager();
 
 	        // get operation?
 	    	IOperationIf opr = msoManager.operationExists() ? msoManager.getOperation() : null;
@@ -335,7 +336,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
 
 	        	// notify all listeners?
 		    	if(opr!=null) {
-		    		MsoModelImpl.getInstance().getEventManager().notifyClearAll(opr);
+		    		Application.getInstance().getMsoModel().getEventManager().notifyClearAll(opr);
 		    	}
 
 	    	}
@@ -433,7 +434,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
 
     private IMsoModelIf getMsoModel() {
     	if(m_msoModel==null) {
-			m_msoModel = MsoModelImpl.getInstance();
+			m_msoModel = Application.getInstance().getMsoModel();
     	}
     	return m_msoModel;
     }
@@ -481,7 +482,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         //TODO
     }
 
-    public void shutDown()
+    public void shutdown()
     {
         sarSvc.getSession().shutDown();
     }
@@ -489,7 +490,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
     private void createMsoOperation(SarOperation oper, boolean notify)
     {
         // only one active MSO operation allowed
-        IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
+        IMsoManagerIf msoManager = Application.getInstance().getMsoModel().getMsoManager();
         if (!msoManager.operationExists())
         {
             try
@@ -880,7 +881,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
     {
 
         Object co = change.getSource();
-        IMsoManagerIf msoManager = MsoModelImpl.getInstance().getMsoManager();
+        IMsoManagerIf msoManager = Application.getInstance().getMsoModel().getMsoManager();
 
         if(msoManager.operationExists()) {
 
@@ -968,7 +969,8 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         }
     }
 
-    private void updateMsoReference(SarBaseObject so, SarObjectImpl rel, String relName, String fieldName)
+    @SuppressWarnings("unchecked")
+	private void updateMsoReference(SarBaseObject so, SarObjectImpl rel, String relName, String fieldName)
     {
     	// get reference objects
         IMsoObjectIf source = saraMsoMap.get(so);
@@ -1024,7 +1026,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
     {
         // initialize
     	IMsoObjectIf msoObj = null;
-        IMsoManagerIf msoMgr = MsoModelImpl.getInstance().getMsoManager();
+        IMsoManagerIf msoMgr = Application.getInstance().getMsoModel().getMsoManager();
 
         /* ======================================================
          * MSO Object creation
@@ -1169,7 +1171,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
 
 		protected void beforePrepare() {
         	// set remote update mode
-			MsoModelImpl.getInstance().setRemoteUpdateMode();
+			Application.getInstance().getMsoModel().setRemoteUpdateMode();
 		}
 
 		/**
@@ -1220,7 +1222,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
 
 		protected void afterDone() {
             // resume to old mode
-			MsoModelImpl.getInstance().restoreUpdateMode();
+			Application.getInstance().getMsoModel().restoreUpdateMode();
 		}
 
 	}

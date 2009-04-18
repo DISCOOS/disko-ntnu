@@ -7,7 +7,7 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;

@@ -15,7 +15,7 @@ import org.disco.io.PortInUseException;
 import org.disco.io.UnsupportedCommOperationException;
 import org.disco.io.serial.SerialLink;
 import org.disco.io.serial.TNCSession;
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
@@ -290,7 +290,7 @@ public class TNCDialog extends DefaultDialog  {
 	 */	
 	private JButton getConnectButton() {
 		if(connectButton == null) {
-			connectButton = DiskoButtonFactory.createButton("GENERAL.PLAY",ButtonSize.SMALL);
+			connectButton = DiskoButtonFactory.createButton("GENERAL.CONNECT",ButtonSize.SMALL);
 			connectButton.setToolTipText("Start tjeneste");
 		}
 		return connectButton;
@@ -303,7 +303,7 @@ public class TNCDialog extends DefaultDialog  {
 	 */	
 	private JButton getDisconnectButton() {
 		if(disconnectButton == null) {
-			disconnectButton = DiskoButtonFactory.createButton("GENERAL.STOP",ButtonSize.SMALL);
+			disconnectButton = DiskoButtonFactory.createButton("GENERAL.DISCONNECT",ButtonSize.SMALL);
 			disconnectButton.setToolTipText("Stopp tjeneste");
 		}
 		return disconnectButton;

@@ -47,7 +47,7 @@ public class SaraObjectCreator
 
    private int counter = 0;
    int result = 0;
-   private ArrayList notcreated = new ArrayList();
+   private List<File> notCreated = new ArrayList<File>();
    private String PACKAGENAME = "org.redcross.sar.mso.data";
 
    public int generateSARAObjects(String classDir, String aOutDir)
@@ -80,7 +80,7 @@ public class SaraObjectCreator
                   }
                   else
                   {
-                     notcreated.add(fil);
+                     notCreated.add(fil);
                   }
                }
                catch (ClassNotFoundException e)
@@ -92,12 +92,12 @@ public class SaraObjectCreator
          }
 
          boolean done = false;
-         while (notcreated.size() > 0 && !done)
+         while (notCreated.size() > 0 && !done)
          {
             ArrayList notCr = new ArrayList();
-            int startresult = notcreated.size();
-            ListIterator it = (ListIterator) notcreated.listIterator();
-            System.out.println("---- Remaining objects not created" + notcreated.size() + "----");
+            int startresult = notCreated.size();
+            ListIterator it = (ListIterator) notCreated.listIterator();
+            System.out.println("---- Remaining objects not created" + notCreated.size() + "----");
             while (it.hasNext())
             {
                File fil = (File) it.next();
@@ -126,8 +126,8 @@ public class SaraObjectCreator
             }
             else
             {
-               notcreated.clear();
-               notcreated.addAll(notCr);
+               notCreated.clear();
+               notCreated.addAll(notCr);
             }
          }
       }

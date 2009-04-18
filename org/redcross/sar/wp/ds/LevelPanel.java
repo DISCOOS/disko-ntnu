@@ -2,7 +2,7 @@ package org.redcross.sar.wp.ds;
 
 import java.awt.Dimension;
 
-import org.redcross.sar.ds.advisor.Advisor;
+import org.redcross.sar.ds.mso.MsoAdvisor;
 import org.redcross.sar.gui.panel.BasePanel;
 
 public class LevelPanel extends BasePanel {
@@ -30,7 +30,7 @@ public class LevelPanel extends BasePanel {
 	 * Public methods
 	 * ============================================================================= */
 
-	public void connect(Advisor source) {
+	public void connect(MsoAdvisor source) {
 		m_data.connect(LevelTableModel.createBinder(source));
 		m_data.load();
 

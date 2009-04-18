@@ -1,14 +1,14 @@
 package org.redcross.sar.ds;
-
-import java.lang.reflect.InvocationTargetException;
-
+ 
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.AbstractCatalog;
+import org.apache.log4j.Logger;
+import org.redcross.sar.AbstractCatalog;
 
 public class DsPool extends AbstractCatalog<IDs<?>> {
 
 	private static DsPool m_this;
+	private final static Logger m_logger = Logger.getLogger(DsPool.class);
 
 	/*========================================================
   	 * Constructors
@@ -59,34 +59,23 @@ public class DsPool extends AbstractCatalog<IDs<?>> {
   		return IDs.class.isAssignableFrom(service);
   	}
 
-	public IDs<?> create(Class<? extends IDs<?>> service, String oprID) {
-		IDs<?> e = getItem(service, oprID);
+	public IDs<?> create(Class<? extends IDs<?>> service, Object id) {
+		IDs<?> e = getItem(service, id);
 		if(e!=null) {
 			return e;
 		}
 		else {
+			// get name
+			String name = service.getSimpleName();
 			try {
 				// get new instance
-				Object obj = service.getConstructors()[0].newInstance(oprID);
+				Object obj = service.getConstructors()[0].newInstance(id);
 				if(obj instanceof IDs<?>) {
 					e = (IDs<?>)obj;
-					create((IDs<?>)obj,oprID);
+					create((IDs<?>)obj,id);
 				}
-			} catch (IllegalArgumentException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			} catch (SecurityException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			} catch (InstantiationException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			} catch (IllegalAccessException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			} catch (InvocationTargetException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
+			} catch (Exception ex) {
+				m_logger.error("Failed to create " + name + " instance", ex);
 			}
 		}
 		return e;

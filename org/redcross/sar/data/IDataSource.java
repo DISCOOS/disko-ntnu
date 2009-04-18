@@ -6,6 +6,8 @@ import org.redcross.sar.data.event.ISourceListener;
 
 public interface IDataSource<I> {
 
+	public Object getID();
+	
 	public void addSourceListener(ISourceListener<I> listener);
 	public void removeSourceListener(ISourceListener<I> listener);
 

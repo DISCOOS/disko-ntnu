@@ -16,11 +16,11 @@ import java.util.Vector;
  */
 
 /**
- * Class for internationational texts (and icons in the future).
+ * Class for internationalization of texts (and icons in the future).
  */
 public class Internationalization
 {
-    private static Map<Class, ResourceBundle> bundles = new LinkedHashMap<Class, ResourceBundle>();
+    private static Map<Class<?>, ResourceBundle> bundles = new LinkedHashMap<Class<?>, ResourceBundle>();
 
     /**
      * Get international text from a given java.util.ResourceBundle.
@@ -100,7 +100,7 @@ public class Internationalization
      * @param anEnum  Lookup value
      * @return The found value, or Enum.name() if not found.
      */
-    public static String getEnumText(ResourceBundle aBundle, Enum anEnum)
+    public static String getEnumText(ResourceBundle aBundle, Enum<?> anEnum)
     {
         String retVal = getText(aBundle, anEnum.getClass().getSimpleName() + "." + anEnum.name() + ".text");
         return retVal != null ? retVal : anEnum.name();
@@ -124,7 +124,7 @@ public class Internationalization
         }
         if (obj instanceof Enum)
         {
-            return getEnumText(aBundle, (Enum) obj);
+            return getEnumText(aBundle, (Enum<?>) obj);
         }
         return getText(aBundle, obj.toString()+ ".text");
     }
@@ -138,7 +138,7 @@ public class Internationalization
      *
      * The loaded bundles are stored in a static Map for later use.
      */
-    public static ResourceBundle getBundle(Class aClass)
+    public static ResourceBundle getBundle(Class<?> aClass)
     {
         if (aClass == null)
         {
@@ -187,7 +187,7 @@ public class Internationalization
      *
      * It is assumed  that the enum is defined in declaring class or interface that has a defined properties-file. See {@link #getBundle(Class)}.
      */
-    public static ResourceBundle getBundle(Enum anEnum)
+    public static ResourceBundle getBundle(Enum<?> anEnum)
     {
         return getBundle(anEnum.getClass().getDeclaringClass());
     }
@@ -201,7 +201,7 @@ public class Internationalization
      * @return Same as {@link #getEnumText(java.util.ResourceBundle,Enum)} or {@link #getText(java.util.ResourceBundle,String)}, depending on type of obj.
      */
 
-    public static String translate(Enum anEnum)
+    public static String translate(Enum<?> anEnum)
     {
         ResourceBundle bundle = getBundle(anEnum);
         return translate(bundle, anEnum);

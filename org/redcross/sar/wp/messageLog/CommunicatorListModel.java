@@ -9,10 +9,10 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -154,7 +154,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 		clear();
 
 		// get model
-		IMsoModelIf model = MsoModelImpl.getInstance();
+		IMsoModelIf model = Application.getInstance().getMsoModel();
 
 		// allowed?
 		if(model.getMsoManager().operationExists()) {

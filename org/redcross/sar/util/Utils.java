@@ -32,8 +32,8 @@ import java.util.StringTokenizer;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Application;
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.Application;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;

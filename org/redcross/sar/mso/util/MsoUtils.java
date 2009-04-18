@@ -10,11 +10,12 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoModelImpl;
@@ -44,7 +45,6 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -471,7 +471,7 @@ public class MsoUtils {
 	public static void setPOI(IAreaIf area, Point point, POIType poiType, boolean force)
 									throws IOException, AutomationException {
 		// can get command post?
-		if(!MsoModelImpl.getInstance().getMsoManager().isOperationDeleted()) {
+		if(!Application.getInstance().getMsoModel().getMsoManager().isOperationDeleted()) {
 
 			// try to get poi
 			IPOIIf poi = null;
@@ -590,12 +590,12 @@ public class MsoUtils {
 	public static String getOperationAreaName(IOperationAreaIf area, boolean include) {
 		String name = "<Unknown>";
 		// can get command post?
-		if(!MsoModelImpl.getInstance().getMsoManager().isOperationDeleted()) {
+		if(!Application.getInstance().getMsoModel().getMsoManager().isOperationDeleted()) {
 			if(area!=null) {
 				name = DiskoEnumFactory.getText(MsoClassCode.CLASSCODE_OPERATIONAREA);
 				if(include) {
 					int i = 0;
-					IMsoModelIf model = MsoModelImpl.getInstance();
+					IMsoModelIf model = Application.getInstance().getMsoModel();
 					Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
 					Iterator<IOperationAreaIf> it = c.iterator();
 					while(it.hasNext()) {
@@ -612,10 +612,10 @@ public class MsoUtils {
 	
 	public static int getOperationNumber(IOperationAreaIf operationArea) {
 		// can get command post?
-		if(!MsoModelImpl.getInstance().getMsoManager().isOperationDeleted()) {
+		if(!Application.getInstance().getMsoModel().getMsoManager().isOperationDeleted()) {
 			if(operationArea!=null) {
 				int i = 0;
-				IMsoModelIf model = MsoModelImpl.getInstance();
+				IMsoModelIf model = Application.getInstance().getMsoModel();
 				Collection<IOperationAreaIf> c = model.getMsoManager().getCmdPost().getOperationAreaListItems();
 				Iterator<IOperationAreaIf> it = c.iterator();
 				while(it.hasNext()) {
@@ -1135,6 +1135,29 @@ public class MsoUtils {
 		}
 		// failed
 		return false;
-	}		
+	}
+	
+	public static LayerCode translate(MsoClassCode code) {
+		switch(code) {
+			case CLASSCODE_OPERATIONAREA: return LayerCode.OPERATION_AREA_LAYER;
+			case CLASSCODE_SEARCHAREA: return LayerCode.SEARCH_AREA_LAYER;
+			case CLASSCODE_AREA: return LayerCode.OPERATION_AREA_LAYER;
+			case CLASSCODE_ROUTE: return LayerCode.ROUTE_LAYER;
+			case CLASSCODE_TRACK: return LayerCode.TRACK_LAYER;
+			case CLASSCODE_POI: return LayerCode.POI_LAYER;
+			case CLASSCODE_UNIT: return LayerCode.UNIT_LAYER;
+		}
+		return null;	
+	}
+	
+	public static EnumSet<LayerCode> translate(EnumSet<MsoClassCode> codes) {
+		EnumSet<LayerCode> myLayers = EnumSet.noneOf(LayerCode.class);
+		for(MsoClassCode it : codes) {
+			LayerCode code = translate(it);
+			if(code!=null) myLayers.add(code);
+		}		
+		return myLayers;
+	}
+	
 	
 }

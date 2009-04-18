@@ -13,10 +13,11 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
-import org.redcross.sar.app.event.IServiceListener;
-import org.redcross.sar.app.event.ServiceEvent.Execute;
+import org.redcross.sar.Application;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
+import org.redcross.sar.event.IServiceListener;
+import org.redcross.sar.event.ServiceEvent.Execute;
 import org.redcross.sar.gui.dialog.DirectoryChooserDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -28,7 +29,6 @@ import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
@@ -116,7 +116,7 @@ public class ETEPanel extends JPanel
         if (m_pendingAssignmentPanel == null)
         {
         	m_pendingAssignmentPanel = new AssignmentPanel(m_map,0);
-        	m_pendingAssignmentPanel.connect(MsoModelImpl.getInstance());
+        	m_pendingAssignmentPanel.connect(Application.getInstance().getMsoModel());
         }
         return m_pendingAssignmentPanel;
     }
@@ -126,7 +126,7 @@ public class ETEPanel extends JPanel
         if (m_activeAssignmentPanel == null)
         {
         	m_activeAssignmentPanel = new AssignmentPanel(m_map,1);
-        	m_activeAssignmentPanel.connect(MsoModelImpl.getInstance());
+        	m_activeAssignmentPanel.connect(Application.getInstance().getMsoModel());
         }
         return m_activeAssignmentPanel;
     }
@@ -136,7 +136,7 @@ public class ETEPanel extends JPanel
         if (m_archivedAssignmentPanel == null)
         {
         	m_archivedAssignmentPanel = new AssignmentPanel(m_map,2);
-        	m_archivedAssignmentPanel.connect(MsoModelImpl.getInstance());
+        	m_archivedAssignmentPanel.connect(Application.getInstance().getMsoModel());
         }
         return m_archivedAssignmentPanel;
     }

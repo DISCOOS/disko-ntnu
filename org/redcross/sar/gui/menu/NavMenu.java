@@ -19,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.ButtonState;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -273,7 +273,7 @@ public class NavMenu extends JPanel {
 	public LineTool getLineTool() {
 		if (lineTool == null) {
 			try {
-				lineTool = new LineTool(MsoModelImpl.getInstance(),getDrawHostTool().getDialog(),false);
+				lineTool = new LineTool(Application.getInstance().getMsoModel(),getDrawHostTool().getDialog(),false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -285,7 +285,7 @@ public class NavMenu extends JPanel {
 	public FreeHandTool getFreeHandTool() {
 		if (freeHandTool == null) {
 			try {
-				freeHandTool = new FreeHandTool(MsoModelImpl.getInstance(),getDrawHostTool().getDialog(),false);
+				freeHandTool = new FreeHandTool(Application.getInstance().getMsoModel(),getDrawHostTool().getDialog(),false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -309,7 +309,7 @@ public class NavMenu extends JPanel {
 	public FlankTool getFlankTool() {
 		if (flankTool == null) {
 			try {
-				flankTool = new FlankTool(MsoModelImpl.getInstance(),
+				flankTool = new FlankTool(Application.getInstance().getMsoModel(),
 						(IToolCollection)getDrawHostTool().getDialog());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -358,7 +358,7 @@ public class NavMenu extends JPanel {
 	public SplitTool getSplitTool() {
 		if (splitTool == null) {
 			try {
-				splitTool = new SplitTool(MsoModelImpl.getInstance());
+				splitTool = new SplitTool(Application.getInstance().getMsoModel());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -370,7 +370,7 @@ public class NavMenu extends JPanel {
 	public POITool getPOITool() {
 		if (puiTool == null) {
 			try {
-				puiTool = new POITool(MsoModelImpl.getInstance(),getDrawHostTool().getDialog());
+				puiTool = new POITool(Application.getInstance().getMsoModel(),getDrawHostTool().getDialog());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -382,7 +382,7 @@ public class NavMenu extends JPanel {
 	public PositionTool getPositionTool() {
 		if (positionTool == null) {
 			try {
-				positionTool = new PositionTool(MsoModelImpl.getInstance(),getDrawHostTool().getDialog());
+				positionTool = new PositionTool(Application.getInstance().getMsoModel(),getDrawHostTool().getDialog());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

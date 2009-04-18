@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -36,7 +37,6 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.HeaderPanel;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -1397,7 +1397,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		if(m_currentMessage != null && !m_currentMessage.isBroadcast())
 		{
 			// suspend updates
-			MsoModelImpl.getInstance().suspendClientUpdate();
+			Application.getInstance().getMsoModel().suspendClientUpdate();
 
 			// initialize
 			List<IMessageLineIf> lines = new LinkedList<IMessageLineIf>();
@@ -1454,7 +1454,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			AbstractAssignmentPanel.removeAddedLines(null,false);
 
 			// resume updates
-			MsoModelImpl.getInstance().resumeClientUpdate(true);
+			Application.getInstance().getMsoModel().resumeClientUpdate(true);
 
 		}
 	}

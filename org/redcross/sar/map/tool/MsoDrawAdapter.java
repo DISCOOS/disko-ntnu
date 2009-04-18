@@ -6,15 +6,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Application;
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.Application;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
@@ -97,7 +96,8 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	private DrawDialog drawDialog;
 	private ElementDialog elementDialog;
 
-	private EnumSet<MsoClassCode> myInterests;
+	private EnumSet<LayerCode> layers;
+	private EnumSet<MsoClassCode> editable;
 
 	private MapControlAdapter mapListener;
 	private KeyToWorkAdapter keyToWorkAdapter;
@@ -106,12 +106,17 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	private ArrayList<IWorkFlowListener> workListeners;
 
 	public MsoDrawAdapter() {
-
+		this(getSupport());
+	}
+		
+	public MsoDrawAdapter(EnumSet<MsoClassCode> editable) {
+		
 		// prepare
 		this.app = Application.getInstance();
-		this.myInterests = getMyInterests();
+		this.editable = editable;
+		this.layers = MsoUtils.translate(editable);
 		this.msoModel = app.getMsoModel();
-		this.drawListeners = new ArrayList<IDrawAdapterListener> ();
+		this.drawListeners = new ArrayList<IDrawAdapterListener>();
 		this.workListeners = new ArrayList<IWorkFlowListener>();
 		this.mapListener = new MapControlAdapter();
 		this.keyToWorkAdapter = new KeyToWorkAdapter();
@@ -122,7 +127,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		// add listeners
 		msoModel.getEventManager().addClientUpdateListener(this);
 
-		// add global keyevent listeners
+		// add global key event listeners
 		app.getKeyEventDispatcher().addKeyListener(
 				KeyEvent.KEY_PRESSED, KeyEvent.VK_ESCAPE, keyToWorkAdapter);
 		app.getKeyEventDispatcher().addKeyListener(
@@ -131,50 +136,35 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				KeyEvent.KEY_PRESSED, KeyEvent.VK_DELETE, keyToWorkAdapter);
 
 	}
-
-	private static EnumSet<MsoClassCode> getMyInterests() {
-		EnumSet<MsoClassCode> myInterests =
+	
+	public static EnumSet<MsoClassCode> getSupport() {
+		EnumSet<MsoClassCode> editable =
 			EnumSet.of(MsoClassCode.CLASSCODE_OPERATIONAREA);
-		myInterests.add(MsoClassCode.CLASSCODE_SEARCHAREA);
-		myInterests.add(MsoClassCode.CLASSCODE_AREA);
-		myInterests.add(MsoClassCode.CLASSCODE_ROUTE);
-		myInterests.add(MsoClassCode.CLASSCODE_TRACK);
-		myInterests.add(MsoClassCode.CLASSCODE_POI);
-		myInterests.add(MsoClassCode.CLASSCODE_UNIT);
-		return myInterests;
+		editable.add(MsoClassCode.CLASSCODE_SEARCHAREA);
+		editable.add(MsoClassCode.CLASSCODE_AREA);
+		editable.add(MsoClassCode.CLASSCODE_ROUTE);
+		editable.add(MsoClassCode.CLASSCODE_TRACK);
+		editable.add(MsoClassCode.CLASSCODE_POI);
+		editable.add(MsoClassCode.CLASSCODE_UNIT);
+		return editable;
 	}
-
-	private static EnumSet<LayerCode> getMyLayers() {
-		EnumSet<LayerCode> myLayers =
-			EnumSet.of(LayerCode.OPERATION_AREA_LAYER);
-		myLayers.add(LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(LayerCode.AREA_LAYER);
-		myLayers.add(LayerCode.ROUTE_LAYER);
-		myLayers.add(LayerCode.POI_LAYER);
-		myLayers.add(LayerCode.UNIT_LAYER);
-		return myLayers;
-	}
-
+	
 	public void register(DiskoMap map) {
 
 		// is not supporting this?
 		if(!map.isEditSupportInstalled()) return;
 
-		// initialize
-		Iterator<LayerCode> it = null;
-
 		// unregister?
 		if(this.map!=null) {
 			// remove current listeners
 			try {
-				it = getMyLayers().iterator();
-				while(it.hasNext()) {
-					IMsoFeatureLayer msoLayer = this.map.getMsoLayer(it.next());
+				for(LayerCode it : layers) {
+					IMsoFeatureLayer msoLayer = this.map.getMsoLayer(it);
 					if(msoLayer!=null) msoLayer.removeMsoLayerEventListener(this);
 				}
-				// remove map control adapater
+				// remove map control adapter
 				this.map.removeIMapControlEvents2Listener(mapListener);
-				// remove disko work listener
+				// remove DISKO work listener
 				map.removeWorkEventListener(this);
 				// add me as listener
 			} catch (Exception e) {
@@ -188,9 +178,8 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		if(map!=null) {
 			// add listeners
 			try {
-				it = getMyLayers().iterator();
-				while(it.hasNext()) {
-					IMsoFeatureLayer msoLayer = map.getMsoLayer(it.next());
+				for(LayerCode it : layers) {
+					IMsoFeatureLayer msoLayer = map.getMsoLayer(it);
 					if(msoLayer!=null)
 						msoLayer.addMsoLayerEventListener(this);
 				}
@@ -238,6 +227,10 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	private void register(DrawDialog dialog) {
 		// save dialog
 		this.drawDialog = dialog;
+	}
+	
+	public boolean isSupported(MsoClassCode code) {
+		return editable.contains(code);
 	}
 
 	public void addDrawAdapterListener(IDrawAdapterListener listener) {
@@ -993,7 +986,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	 */
 
 	public EnumSet<MsoClassCode> getInterests() {
-		return myInterests;
+		return editable;
 	}
 
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
@@ -1006,7 +999,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
         else {
 
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(myInterests)) {
+			for(MsoEvent.Update e : events.getEvents(editable)) {
 
 		        // get mso object
 		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();

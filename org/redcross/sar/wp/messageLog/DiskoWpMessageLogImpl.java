@@ -1,14 +1,16 @@
 package org.redcross.sar.wp.messageLog;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -45,8 +47,8 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
         // ensure that work process specific layers are selectable
         m_logPanel.setSelectableLayers();
 
-		// install draw support in map
-		getMap().installEditSupport();
+		// install draw support for changing unit position in map
+		getMap().installEditSupport(EnumSet.of(MsoClassCode.CLASSCODE_UNIT));
 
 		// hide map
 		getMap().setVisible(false);

@@ -32,7 +32,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public class FreeHandTool extends AbstractMsoDrawTool {
+public class FreeHandTool extends BaseMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -362,7 +362,7 @@ public class FreeHandTool extends AbstractMsoDrawTool {
 	 * ==================================================
 	 */
 
-	public class FreeHandToolState extends AbstractMsoDrawTool.DrawToolState {
+	public class FreeHandToolState extends BaseMsoDrawTool.DrawToolState {
 
 		// holds draw geometry
 		private Point p1 = null;
@@ -373,12 +373,12 @@ public class FreeHandTool extends AbstractMsoDrawTool {
 
 		// create state
 		public FreeHandToolState(FreeHandTool tool) {
-			super((AbstractMsoDrawTool)tool);
+			super((BaseMsoDrawTool)tool);
 			save(tool);
 		}
 
 		public void save(FreeHandTool tool) {
-			super.save((AbstractMsoDrawTool)tool);
+			super.save((BaseMsoDrawTool)tool);
 			this.p1 = tool.p1;
 			this.p2 = tool.p2;
 			this.subType = tool.subType;
@@ -389,7 +389,7 @@ public class FreeHandTool extends AbstractMsoDrawTool {
 			tool.p2 = this.p2;
 			tool.subType = this.subType;
 			tool.getToolPanel().update();
-			super.load((AbstractMsoDrawTool)tool);
+			super.load((BaseMsoDrawTool)tool);
 		}
 	}
 

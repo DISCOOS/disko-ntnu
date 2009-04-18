@@ -2,8 +2,8 @@ package org.redcross.sar.wp;
 
 import java.util.List;
 
-import org.redcross.sar.app.IApplication;
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IApplication;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;

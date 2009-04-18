@@ -46,6 +46,13 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
         STATE_LOCAL
     }
 
+    /**
+     * Get the data source id
+     *
+     * @return The data source id
+     */
+    @Override
+    public String getID();
 
     /**
      * Get the {@link IMsoManagerIf MSO manager}

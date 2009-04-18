@@ -1,6 +1,6 @@
 package org.redcross.sar.wp.tasks;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 

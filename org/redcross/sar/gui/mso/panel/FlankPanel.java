@@ -15,7 +15,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.ScaleBar;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.map.IDiskoMap;

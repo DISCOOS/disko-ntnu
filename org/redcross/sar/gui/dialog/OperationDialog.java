@@ -8,7 +8,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.OperationPanel;
 import org.redcross.sar.util.Utils;
@@ -96,7 +96,10 @@ public class OperationDialog extends DefaultDialog {
 					}					
 					else if("cancel".equalsIgnoreCase(cmd)) {
 						// exit system?
-						if (exitAppOnCancel) System.exit(0);		
+						if (exitAppOnCancel) {
+							// yes, shutdown safely
+							Application.getInstance().shutdown();		
+						}
 					}										
 				}
 				

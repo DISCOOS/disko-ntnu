@@ -14,8 +14,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.ResourceBundle;
 
-import org.redcross.sar.app.Application;
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.Application;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.field.ComboBoxField;

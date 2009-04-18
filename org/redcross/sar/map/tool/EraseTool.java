@@ -6,7 +6,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.SelectMsoObjectDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -29,7 +29,7 @@ import com.esri.arcgis.geometry.IPoint;
  * @author geira
  *
  */
-public class EraseTool extends AbstractMapTool {
+public class EraseTool extends BaseMapTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -312,18 +312,18 @@ public class EraseTool extends AbstractMapTool {
 
 		// create state
 		public EraseToolState(EraseTool tool) {
-			super((AbstractMapTool)tool);
+			super((BaseMapTool)tool);
 			save(tool);
 		}
 		public void save(EraseTool tool) {
-			super.save((AbstractMapTool)tool);
+			super.save((BaseMapTool)tool);
 			this.p = tool.p;
 			this.extent = tool.extent;
 			this.isSelectByPoint = tool.isSelectByPoint;
 		}
 
 		public void load(EraseTool tool) {
-			super.load((AbstractMapTool)tool);
+			super.load((BaseMapTool)tool);
 			tool.p = this.p;
 			tool.extent = this.extent;
 			tool.isSelectByPoint = this.isSelectByPoint;

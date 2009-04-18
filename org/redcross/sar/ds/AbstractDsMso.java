@@ -5,10 +5,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
+import org.redcross.sar.Application;
+import org.redcross.sar.data.IDataSource;
 import org.redcross.sar.mso.ICommitManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -28,7 +29,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	/**
 	 * Listen for Updates of assignments, routes and units
 	 */
-	protected final EnumSet<MsoClassCode> m_msoInterests;
+	protected final EnumSet<MsoClassCode> m_interests;
 
 	/* ============================================================
 	 * Declaration of local lists
@@ -86,27 +87,29 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	/**
 	 * The work that is looped
 	 */
-	protected final LoopWork m_loopWork;
+	protected final LoopWork m_work;
 
 	/* ============================================================
 	 * Constructors
 	 * ============================================================ */
 
 	public AbstractDsMso(Class<T> dataClass, String oprID,
-			EnumSet<MsoClassCode> msoInterests, int dutyCycle,
+			EnumSet<MsoClassCode> interests, int dutyCycle,
 			int timeOut, Map<MsoClassCode,List<String>> attributes) throws Exception {
 
 		// forward
 		super(dataClass, oprID, dutyCycle, timeOut);
 
 		// prepare
-		m_msoInterests = msoInterests;
+		m_interests = interests;
 		m_attributes = attributes;
-		m_loopWork = new LoopWork(timeOut);
-		m_workLoop.schedule(m_loopWork);
+		m_work = new LoopWork(timeOut);
+		
+		// schedule work on loop
+		m_workLoop.schedule(m_work);
 
 		// connect to MSO model
-		connect(MsoModelImpl.getInstance());
+		connect(Application.getInstance().getMsoModel());
 
 	}
 
@@ -128,14 +131,16 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	 * Public methods
 	 * ============================================================ */
 
-	public boolean connect(IMsoModelIf model) {
-		// forward
-		disconnect();
+	/* ============================================================
+	 * Protected methods
+	 * ============================================================ */
+
+	protected boolean doConnect(IDataSource<?> source) {
 		// allowed?
-		if(model!=null) {
+		if(source instanceof IMsoModelIf) {
 
 			// prepare
-			m_model = model;
+			m_model = (IMsoModelIf)source;
 			m_comitter = (ICommitManagerIf)m_model;
 			m_driver = m_model.getDispatcher();
 
@@ -148,7 +153,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		return false;
 	}
 
-	public boolean disconnect() {
+	protected boolean doDisconnect() {
 		// allowed?
 		if(m_model!=null) {
 			// remove listener
@@ -161,13 +166,8 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			return true;
 		}
 		return false;
-
-	}
-
-	/* ============================================================
-	 * Protected methods
-	 * ============================================================ */
-
+	}	
+	
 	@Override
 	protected T getDsObject(Object id) {
 		if(id instanceof IMsoObjectIf) {
@@ -201,20 +201,20 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
     	@Override
     	public EnumSet<MsoClassCode> getInterests() {
-    		return m_msoInterests;
+    		return m_interests;
     	}
 
     	@Override
     	public void handleMsoUpdateEvent(UpdateList list) {
 
     		// consume?
-    		if(!m_oprID.equals(m_driver.getActiveOperationID()) || m_dsObjs.isEmpty()) return;
+    		if(!getID().equals(m_driver.getActiveOperationID()) || m_dsObjs.isEmpty()) return;
 
     		// not a clear all event?
     		if(!list.isClearAllEvent()) {
 
     			// loop over all events
-    			for(Update e : list.getEvents(m_msoInterests)) {
+    			for(Update e : list.getEvents(m_interests)) {
 
     				// consume?
     				if(!e.isLoopback()) {

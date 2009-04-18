@@ -18,7 +18,7 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JasperViewer;
 import net.sf.jasperreports.engine.JRPrintPage;
 
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.IMapDataListener;

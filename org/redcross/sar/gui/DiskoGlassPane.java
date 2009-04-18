@@ -28,7 +28,7 @@ import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.gui.event.GlassPaneEvent;
 import org.redcross.sar.gui.event.IGlassPaneListener;

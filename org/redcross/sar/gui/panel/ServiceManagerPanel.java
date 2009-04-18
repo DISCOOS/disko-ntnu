@@ -34,7 +34,7 @@ import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
 import org.disco.io.net.NetSession;
 import org.disco.io.serial.TNCSession;
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.ConsoleDialog;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ListSelectorDialog;

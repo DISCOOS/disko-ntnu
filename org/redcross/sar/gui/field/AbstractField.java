@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -139,7 +139,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		if(!isChangeable()) return;
 
 		if(m_autoSave) {
-			MsoModelImpl.getInstance().suspendClientUpdate();
+			Application.getInstance().getMsoModel().suspendClientUpdate();
 			if(finish()) {
 				fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_FINISH));
 			}
@@ -148,7 +148,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 				m_isDirty = true;
 				fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_CHANGE));
 			}
-			MsoModelImpl.getInstance().resumeClientUpdate(true);
+			Application.getInstance().getMsoModel().resumeClientUpdate(true);
 		}
 		else {
 			m_isDirty = true;

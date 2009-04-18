@@ -152,7 +152,7 @@ public interface IDiskoMap {
 	public void removeIMapControlEvents2Listener(IMapControlEvents2Adapter listener) throws IOException, AutomationException;
 
 	public boolean isEditSupportInstalled();
-	public void installEditSupport();
+	public void installEditSupport(EnumSet<MsoClassCode> editable);
 	public MsoDrawAdapter getDrawAdapter();
 	public DrawDialog getDrawDialog();
 	public DrawFrame getDrawFrame();

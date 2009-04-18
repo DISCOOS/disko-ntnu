@@ -5,7 +5,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.DispatcherAdapter;
 

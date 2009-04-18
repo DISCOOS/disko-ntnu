@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.event.IMsoDerivedUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
@@ -28,7 +28,7 @@ public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMs
     public AbstractDerivedList(int aSize)
     {
         m_items = new LinkedHashMap<String, M>(aSize);
-        MsoModelImpl.getInstance().getEventManager().addDerivedUpdateListener(this);
+        Application.getInstance().getMsoModel().getEventManager().addDerivedUpdateListener(this);
     }
 
     public Collection<M> getItems()

@@ -8,7 +8,7 @@ import com.esri.arcgis.geometry.GeometryBag;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
@@ -34,7 +34,7 @@ import org.redcross.sar.work.WorkPool;
  * @author geira
  *
  */
-public class FlankTool extends AbstractMsoTool {
+public class FlankTool extends BaseMsoTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 200;
@@ -252,21 +252,21 @@ public class FlankTool extends AbstractMsoTool {
 		}
 	}
 
-	public class FlankToolState extends AbstractMsoTool.MsoToolState {
+	public class FlankToolState extends BaseMsoTool.MsoToolState {
 		private Point p = null;
 
 		// create state
 		public FlankToolState(FlankTool tool) {
-			super((AbstractMsoTool)tool);
+			super((BaseMsoTool)tool);
 			save(tool);
 		}
 		public void save(FlankTool tool) {
-			super.save((AbstractMsoTool)tool);
+			super.save((BaseMsoTool)tool);
 			this.p = tool.p;
 		}
 
 		public void load(FlankTool tool) {
-			super.load((AbstractMsoTool)tool);
+			super.load((BaseMsoTool)tool);
 			tool.p = this.p;
 		}
 	}

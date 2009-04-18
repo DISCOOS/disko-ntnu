@@ -6,6 +6,7 @@ import com.esri.arcgis.geometry.*;
 import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -15,7 +16,6 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -31,7 +31,7 @@ import java.io.IOException;
  * @author geira
  *
  */
-public class SplitTool extends AbstractMsoTool {
+public class SplitTool extends BaseMsoTool {
 
 	private static final long serialVersionUID = 1L;
 	private static final int SNAP_TOL_FACTOR = 200;
@@ -184,8 +184,8 @@ public class SplitTool extends AbstractMsoTool {
 								IMsoObjectIf msoObj = editFeature.getMsoObject();
 								IAreaIf area = MsoUtils.getOwningArea(msoObj);
 								if(area!=null) {
-									if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
-				                        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
+									if(Application.getInstance().getMsoModel().getMsoManager().operationExists()) {
+				                        ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
 				                        IRouteIf route = cmdPost.getRouteList().createRoute(MapUtil.getMsoRoute(result[0]));
 				                        area.setAreaGeodataItem(index,route);
 				                        route = cmdPost.getRouteList().createRoute(MapUtil.getMsoRoute(result[1]));
@@ -247,17 +247,17 @@ public class SplitTool extends AbstractMsoTool {
 
 		// create state
 		public SplitToolState(SplitTool tool) {
-			super((AbstractMsoTool)tool);
+			super((BaseMsoTool)tool);
 			save(tool);
 		}
 		public void save(SplitTool tool) {
-			super.save((AbstractMsoTool)tool);
+			super.save((BaseMsoTool)tool);
 			this.p = tool.p;
 		}
 
 		public void load(SplitTool tool) {
 			tool.p = this.p;
-			super.load((AbstractMsoTool)tool);
+			super.load((BaseMsoTool)tool);
 		}
 	}
 

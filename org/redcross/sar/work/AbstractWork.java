@@ -9,7 +9,7 @@ import java.util.Calendar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IWorkListener;
@@ -238,7 +238,7 @@ public abstract class AbstractWork implements IWork {
             // is user input prevention required? (keeps work pool concurrent)
             if (m_isModal) Application.getInstance().setLocked(true);
             // increment suspend counter?
-            if (m_suspend) MsoModelImpl.getInstance().suspendClientUpdate();
+            if (m_suspend) Application.getInstance().getMsoModel().suspendClientUpdate();
             // forward
             afterPrepare();
         } else {
@@ -322,7 +322,7 @@ public abstract class AbstractWork implements IWork {
             beforeDone();
             // decrement resume suspend counter?
             if (m_suspend)
-                MsoModelImpl.getInstance().resumeClientUpdate(true);
+                Application.getInstance().getMsoModel().resumeClientUpdate(true);
             // resume previous state?
             if (m_isModal) Application.getInstance().setLocked(false);
             // forward

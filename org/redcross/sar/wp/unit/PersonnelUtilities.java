@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.unit;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
@@ -40,7 +40,7 @@ public class PersonnelUtilities
 		if(nextOccurence.getStatus() == PersonnelStatus.RELEASED)
 		{
 			// Reinstate resource
-			IPersonnelIf newPersonnel = MsoModelImpl.getInstance().getMsoManager().createPersonnel();
+			IPersonnelIf newPersonnel = Application.getInstance().getMsoModel().getMsoManager().createPersonnel();
 			newPersonnel.suspendClientUpdate();
 
 			// Copy fields
@@ -176,7 +176,7 @@ public class PersonnelUtilities
 			return false;
 		}
 
-		IMsoManagerIf manager = MsoModelImpl.getInstance().getMsoManager();
+		IMsoManagerIf manager = Application.getInstance().getMsoModel().getMsoManager();
 
 		if(manager.operationExists()) {
 			// TODO: replace with more general method

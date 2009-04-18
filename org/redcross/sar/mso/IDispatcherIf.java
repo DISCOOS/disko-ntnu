@@ -68,7 +68,7 @@ public interface IDispatcherIf
    /**
     * Shut down model driver
     */
-   public void shutDown();
+   public void shutdown();
 
    public boolean addDispatcherListener(IDispatcherListenerIf listener);
 

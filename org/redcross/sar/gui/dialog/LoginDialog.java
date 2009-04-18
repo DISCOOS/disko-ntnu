@@ -13,9 +13,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 
-import org.redcross.sar.app.Application;
-import org.redcross.sar.app.IApplication;
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.Application;
+import org.redcross.sar.IApplication;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.TextLineField;
@@ -89,7 +89,10 @@ public class LoginDialog extends DefaultDialog {
 						authorize();
 					else if("cancel".equalsIgnoreCase(cmd)) {
 						// exit system?
-						if (exitAppOnCancel) System.exit(0);
+						if (exitAppOnCancel) {
+							// yes, shutdown safely
+							Application.getInstance().shutdown();
+						}
 					}
 
 				}

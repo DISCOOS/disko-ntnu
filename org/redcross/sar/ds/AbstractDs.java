@@ -13,8 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.filechooser.FileSystemView;
 
-import org.redcross.sar.app.AbstractService;
-import org.redcross.sar.data.DataSourceImpl;
+import org.redcross.sar.AbstractService;
+import org.redcross.sar.data.AbstractDataSource;
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.event.ISourceListener;
 import org.redcross.sar.data.event.SourceEvent;
@@ -224,7 +224,7 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	public synchronized String exportSamples(String path) {
 		String stamp = Utils.toString(Calendar.getInstance());
 		stamp = stamp.replace(":", "").replace(".","").replace("+", "").replace(" ", "-");
-		exportSamplesToFile(path + getOprID() + "-" +  stamp + ".dss");
+		exportSamplesToFile(path + getID() + "-" +  stamp + ".dss");
 		return stamp;
 	}
 
@@ -295,7 +295,7 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 			if (file.substring(file.lastIndexOf(".")).equalsIgnoreCase(".dss")){
 				String[] split = file.split(" ");
 				// only load samples from current operation
-				if(split.length>0 && split[0]==getOprID()) {
+				if(split.length>0 && split[0]==getID()) {
 					return true;
 				}
 			}
@@ -327,6 +327,10 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	 * IDataSourceIf implementation
 	 * =========================================== */
 
+	public Object getID() {
+		return m_source.getID();
+	}
+	
 	public Collection<?> getItems(Class<?> c) {
 		return m_source.getItems(c);
 	}
@@ -494,7 +498,13 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	/**
 	 * IDataSourceIf implementation
 	 */
-	protected final DataSourceImpl<DsEvent.Update> m_source = new DataSourceImpl<DsEvent.Update>() {
+	protected final AbstractDataSource<DsEvent.Update> m_source = new AbstractDataSource<DsEvent.Update>() {
+
+		@Override
+		public Object getID() {
+			// TODO Auto-generated method stub
+			return m_id;
+		}
 
 		@SuppressWarnings("unchecked")
 		public Collection<?> getItems(Class<?> c) {

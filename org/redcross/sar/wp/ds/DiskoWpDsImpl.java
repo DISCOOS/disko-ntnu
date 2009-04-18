@@ -13,7 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.Application;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -25,7 +26,6 @@ import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.IMapLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
@@ -175,7 +175,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_etePanel == null)
         {
         	try {
-				m_etePanel = new ETEPanel(getMap(),MsoModelImpl.getInstance());
+				m_etePanel = new ETEPanel(getMap(),Application.getInstance().getMsoModel());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -189,7 +189,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
         if (m_advisorPanel == null)
         {
         	try {
-        		m_advisorPanel = new AdvisorPanel(MsoModelImpl.getInstance());
+        		m_advisorPanel = new AdvisorPanel(Application.getInstance().getMsoModel());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -14,7 +14,7 @@ import javax.swing.JComponent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.Utils;

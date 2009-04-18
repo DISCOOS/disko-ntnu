@@ -1,6 +1,6 @@
 package org.redcross.sar.mso;
 
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.mso.CommitManager;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.committer.ICommittableIf;
@@ -84,7 +84,7 @@ public class Dispatcher implements IDispatcherIf, IMsoCommitListenerIf
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void shutDown()
+    public void shutdown()
     {
         //To change body of implemented methods use File | Settings | File Templates.
     }

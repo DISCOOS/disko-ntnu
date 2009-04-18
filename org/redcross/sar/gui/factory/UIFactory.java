@@ -19,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.DiskoCorner;
 import org.redcross.sar.gui.DiskoGlassPane;

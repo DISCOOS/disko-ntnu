@@ -3,9 +3,9 @@
  */
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 
 import java.util.Collection;
 
@@ -170,15 +170,15 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     @Override
     public boolean delete()
     {
-        MsoModelImpl.getInstance().suspendClientUpdate();
+        Application.getInstance().getMsoModel().suspendClientUpdate();
         m_cmdPostList.deleteAll();
         doDelete();
-        MsoModelImpl.getInstance().resumeClientUpdate(true);
+        Application.getInstance().getMsoModel().resumeClientUpdate(true);
         return true;
     }
 
     public ISystemIf createSystem() {
-    	IObjectIdIf id = MsoModelImpl.getInstance().getDispatcher().makeObjectId();
+    	IObjectIdIf id = Application.getInstance().getMsoModel().getDispatcher().makeObjectId();
         return createSystem(id);
     }
 

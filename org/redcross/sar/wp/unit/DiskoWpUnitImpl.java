@@ -29,7 +29,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;

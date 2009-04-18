@@ -4,7 +4,7 @@ import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.geometry.*;
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;

@@ -1,8 +1,8 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.Position;
@@ -228,7 +228,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
     public Set<IMessageLineIf> getReferringMessageLines()
     {
         referringMesssageLineSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getMessageLines().selectItems(referringMesssageLineSelector);
+        return Application.getInstance().getMsoModel().getMsoManager().getCmdPost().getMessageLines().selectItems(referringMesssageLineSelector);
     }
 
     public Set<IMessageLineIf> getReferringMessageLines(Collection<IMessageLineIf> aCollection)

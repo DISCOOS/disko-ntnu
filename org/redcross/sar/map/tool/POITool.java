@@ -31,7 +31,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  *
  */
-public class POITool extends AbstractMsoDrawTool {
+public class POITool extends BaseMsoDrawTool {
 
 	private static final long serialVersionUID = 1L;
 
@@ -366,7 +366,7 @@ public class POITool extends AbstractMsoDrawTool {
 	 * ==================================================
 	 */
 
-	public class POIToolState extends AbstractMsoDrawTool.DrawToolState {
+	public class POIToolState extends BaseMsoDrawTool.DrawToolState {
 
 		private POIType type;
 		private POIType[] types;
@@ -377,12 +377,12 @@ public class POITool extends AbstractMsoDrawTool {
 
 		// create state
 		public POIToolState(POITool tool) {
-			super((AbstractMsoDrawTool)tool);
+			super((BaseMsoDrawTool)tool);
 			save(tool);
 		}
 
 		public void save(POITool tool) {
-			super.save((AbstractMsoDrawTool)tool);
+			super.save((BaseMsoDrawTool)tool);
 			subType = tool.subType;
 			types = tool.getPOIPanel().getPOITypes();
 			type = tool.getPOIPanel().getPOIType();
@@ -400,7 +400,7 @@ public class POITool extends AbstractMsoDrawTool {
 			tool.getPOIPanel().setPOIName(name);
 			tool.getPOIPanel().setChangeable(true);
 			tool.getPOIPanel().setDirty(isDirty);
-			super.load((AbstractMsoDrawTool)tool);
+			super.load((BaseMsoDrawTool)tool);
 		}
 	}
 }

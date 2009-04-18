@@ -4,7 +4,7 @@ import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.BorderFactory;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;

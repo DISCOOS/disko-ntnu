@@ -2,7 +2,7 @@ package org.redcross.sar.mso.event;
 
 import no.cmr.tools.Log;
 
-import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.committer.ICommitWrapperIf;
@@ -89,7 +89,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     {
         // notify
         fireUpdate(m_clientUpdateListeners,
-        		getUpdateEvents(root,MsoModelImpl.getInstance().getUpdateMode(),
+        		getUpdateEvents(root,Application.getInstance().getMsoModel().getUpdateMode(),
         				false, MsoEventType.CLEAR_ALL_EVENT.maskValue()));
     }
 

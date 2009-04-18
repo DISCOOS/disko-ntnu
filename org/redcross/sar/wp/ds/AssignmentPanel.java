@@ -6,7 +6,7 @@ import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.EnumSet;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.ds.ete.RouteCost;
 import org.redcross.sar.ds.ete.RouteCostEstimator;

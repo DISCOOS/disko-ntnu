@@ -15,9 +15,10 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
-import org.redcross.sar.app.IApplication;
-import org.redcross.sar.app.IDiskoRole;
+import org.apache.log4j.Logger;
+import org.redcross.sar.Application;
+import org.redcross.sar.IApplication;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.UIFactory.State;
@@ -55,7 +56,7 @@ public abstract class AbstractDiskoWpModule
     private IDiskoMap map;
     private boolean hasSubMenu = false;
     private boolean isNavMenuSetupNeeded = true;
-    private State m_mainState;
+    private State mainState;
 	private EnumSet<IMsoFeatureLayer.LayerCode> mapLayers;
 
     protected String callingWp;
@@ -64,9 +65,10 @@ public abstract class AbstractDiskoWpModule
 
     private int isWorking = 0;
 
+    protected final Logger logger = Logger.getLogger(getClass());
     protected final WorkFlowEventRepeater repeater = new WorkFlowEventRepeater();
     protected final List<WorkFlowEvent> changeStack = new ArrayList<WorkFlowEvent>();
-	protected final EnumSet<IMsoManagerIf.MsoClassCode> wpInterests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
+	protected final EnumSet<IMsoManagerIf.MsoClassCode> interests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
 
     public AbstractDiskoWpModule() throws IllegalClassFormatException
     {
@@ -81,13 +83,14 @@ public abstract class AbstractDiskoWpModule
 
 		// initialize timers
         initTickTimer();
+        
 
     }
 
     /**
      * @param role
      */
-    public AbstractDiskoWpModule(EnumSet<IMsoManagerIf.MsoClassCode> wpInterests,
+    public AbstractDiskoWpModule(EnumSet<IMsoManagerIf.MsoClassCode> interests,
     		EnumSet<IMsoFeatureLayer.LayerCode> mapLayers) throws IllegalClassFormatException
     {
 
@@ -99,25 +102,26 @@ public abstract class AbstractDiskoWpModule
         this.mapLayers = mapLayers;
 
         // add listeners?
-    	if(wpInterests.size()>0) {
+    	if(interests.size()>0) {
     		getApplication().getMsoModel().
     			getEventManager().addClientUpdateListener(this);
     	}
 
         // initialize timer
 		initTickTimer();
+
     }
 
 	private static EnumSet<IMsoFeatureLayer.LayerCode> getDefaultMapLayers() {
-		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
-		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-	    return myLayers;
+		EnumSet<IMsoFeatureLayer.LayerCode> list;
+		list = EnumSet.of(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+	    return list;
 	}
 
     public IDiskoRole getDiskoRole()
@@ -146,8 +150,7 @@ public abstract class AbstractDiskoWpModule
             }
             catch (Exception e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("Failed to install map",e);
             }
         }
         // failed
@@ -314,11 +317,9 @@ public abstract class AbstractDiskoWpModule
 						try {
 							getMap().refreshMapBase();
 						} catch (AutomationException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							logger.error("Failed to active map",e);
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							logger.error("Failed to active map",e);
 						}
 					}
 
@@ -347,8 +348,8 @@ public abstract class AbstractDiskoWpModule
 
 
     	// load state saved when deactived?
-    	if(m_mainState!=null) {
-        	getApplication().getUIFactory().load(m_mainState);
+    	if(mainState!=null) {
+        	getApplication().getUIFactory().load(mainState);
     	}
     }
 
@@ -363,7 +364,7 @@ public abstract class AbstractDiskoWpModule
     		getMap().setVisible(false);
     	}
     	// save current state
-    	m_mainState = getApplication().getUIFactory().save();
+    	mainState = getApplication().getUIFactory().save();
     	// hide all registered dialogs
     	getApplication().getUIFactory().hideDialogs();
 		// reset flags and title
@@ -392,7 +393,7 @@ public abstract class AbstractDiskoWpModule
 		// get nav button
 		getApplication().getUIFactory().setNavMenuVisible(isVisible);
     	// save state
-		m_mainState =  getApplication().getUIFactory().save();
+		mainState =  getApplication().getUIFactory().save();
 		// do not need to do setup any more
 		isNavMenuSetupNeeded = false;
     }
@@ -488,7 +489,7 @@ public abstract class AbstractDiskoWpModule
     }
 
 	public EnumSet<MsoClassCode> getInterests() {
-		return wpInterests;
+		return interests;
 	}
 
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
@@ -514,7 +515,7 @@ public abstract class AbstractDiskoWpModule
 				map.resumeNotify();
 			}
 			catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to refresh map",e);
 			}
 		}
 		// update title bar text?
@@ -538,7 +539,7 @@ public abstract class AbstractDiskoWpModule
 				map.resumeNotify();
 			}
 			catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to resume update",e);
 			}
 		}
 	}
@@ -712,8 +713,8 @@ public abstract class AbstractDiskoWpModule
 		}
 
 		/**
-		 * Implement the work in this method. Rember to call
-		 * set(*) before returning the result
+		 * Implement the work in this method. Remember to call
+		 * ModuleWork::set() before returning the result
 		 */
 		public abstract Object doWork();
 
@@ -732,7 +733,7 @@ public abstract class AbstractDiskoWpModule
 		        setIsNotWorking();
 			}
 			catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to resume suspended update",e);
 			}
 		}
 	}

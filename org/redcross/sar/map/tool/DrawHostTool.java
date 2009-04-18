@@ -9,8 +9,8 @@ import java.io.IOException;
 
 import javax.swing.AbstractButton;
 
-import org.redcross.sar.app.Application;
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.Application;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.event.DialogToggleListener;

@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.gui.dialog.DefaultDialog;

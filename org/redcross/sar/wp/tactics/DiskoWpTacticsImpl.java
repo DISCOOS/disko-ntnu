@@ -18,7 +18,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 import com.esri.arcgis.interop.AutomationException;
-import org.redcross.sar.app.IDiskoRole;
+
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
@@ -30,6 +31,7 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.map.tool.MsoDrawAdapter;
 import org.redcross.sar.map.tool.MsoDrawAdapter.IDrawAdapterListener;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
@@ -154,8 +156,14 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getHypothesesDialog();
 		getRequirementDialog();
 
+		// get default codes
+		EnumSet<MsoClassCode> defaults = MsoDrawAdapter.getSupport();
+		
+		// remove unit support
+		defaults.remove(MsoClassCode.CLASSCODE_UNIT);
+		
 		// install draw support
-		getMap().installEditSupport();
+		getMap().installEditSupport(defaults);
 
 		// register listeners
 		getMap().getDrawAdapter().addWorkFlowListener(this);
@@ -592,7 +600,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (elementToggleButton == null) {
 			try {
 				Enum<?> e = TacticsActionType.MANAGE_ELEMENTS;
-				elementToggleButton = DiskoButtonFactory.createToggleButton(e, ButtonSize.NORMAL,wpBundle);
+				elementToggleButton = DiskoButtonFactory.createToggleButton(e,ButtonSize.NORMAL,wpBundle);
 				elementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						ElementDialog dialog = getMap().getElementDialog();
@@ -601,44 +609,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setSnapToLocation(elementToggleButton, 
-									ElementDialog.POS_WEST, ElementDialog.SIZE_TO_OFF,false,true);
-							
-							/*java.awt.Point p = elementToggleButton.getLocationOnScreen();
-							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
-							dialog.setLocation(p);
-							*/
+							dialog.setSnapToLocation(
+									elementToggleButton, ElementDialog.POS_WEST, 
+									ElementDialog.SIZE_TO_OFF,false,true);
 							dialog.setVisible(true);
 						}
 					}
 				});
-				/*
-				getApplication().getFrame().addComponentListener(new ComponentListener() {
-					public void componentHidden(ComponentEvent arg0) {
-						update(true);
-					}
-					public void componentMoved(ComponentEvent arg0) {
-						update(false);
-					}
-					public void componentResized(ComponentEvent arg0) {
-						update(false);
-					}
-					public void componentShown(ComponentEvent arg0) {
-						update(false);
-					}
-					private void update(boolean hidden) {
-						ElementDialog dialog = getMap().getElementDialog();
-						if (hidden) {
-							dialog.setVisible(false);
-						}
-						else if(elementToggleButton.isSelected() && dialog.isVisible() && elementToggleButton.isVisible()) {
-							java.awt.Point p = elementToggleButton.getLocationOnScreen();
-							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
-							dialog.setLocation(p);
-						}
-					}
-				});
-				*/
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -866,13 +843,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							dialog.setVisible(false);
 						}
 						else {
-							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
-							/*
-							java.awt.Point p = unitToggleButton.getLocationOnScreen();
-							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
-							dialog.setLocation(p);
-							*/
+							dialog.setSnapToLocation(
+									(JComponent) getMap(), DefaultDialog.POS_SOUTH, 
+									DefaultDialog.SIZE_TO_COMPONENT, true, false);
 							dialog.setVisible(true);
 						}
 					}

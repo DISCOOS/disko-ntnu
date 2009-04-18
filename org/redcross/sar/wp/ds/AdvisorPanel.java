@@ -13,8 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
-import org.redcross.sar.app.event.IServiceListener;
-import org.redcross.sar.app.event.ServiceEvent.Execute;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.gui.dialog.DirectoryChooserDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -26,7 +24,9 @@ import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.ds.advisor.Advisor;
+import org.redcross.sar.ds.mso.MsoAdvisor;
+import org.redcross.sar.event.IServiceListener;
+import org.redcross.sar.event.ServiceEvent.Execute;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.IWorkLoop;
@@ -56,7 +56,7 @@ public class AdvisorPanel extends JPanel
 
 
 	private DsPool m_ds;
-	private Advisor m_advisor;
+	private MsoAdvisor m_advisor;
 	private IMsoModelIf m_model;
 
     public AdvisorPanel(IMsoModelIf model)
@@ -322,7 +322,7 @@ public class AdvisorPanel extends JPanel
     	// disconnect from advisor?
     	if(m_advisor!=null) m_advisor.removeServiceListener(m_serviceListener);
     	// get advisor from pool
-    	Advisor advisor = (Advisor)getDs().getItem(Advisor.class, oprID);
+    	MsoAdvisor advisor = (MsoAdvisor)getDs().getItem(MsoAdvisor.class, oprID);
     	// found?
     	if(advisor!=null) {
 	    	// connect to advisor
@@ -365,12 +365,12 @@ public class AdvisorPanel extends JPanel
 
     private void suspend() {
     	// forward
-    	getDs().suspend(Advisor.class, getActiveOprID());
+    	getDs().suspend(MsoAdvisor.class, getActiveOprID());
     }
 
     private void stop() {
     	// forward
-    	getDs().stop(Advisor.class, getActiveOprID());
+    	getDs().stop(MsoAdvisor.class, getActiveOprID());
     }
 
 	private String getCaption(LoopState state) {

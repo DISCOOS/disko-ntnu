@@ -4,7 +4,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;

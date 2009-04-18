@@ -43,7 +43,7 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.systemUI.ITool;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.DrawDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
@@ -96,6 +96,9 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 	private int currentBase = 0;
 	private boolean isCacheChanged = false;
 	private boolean isEditSupportInstalled = false;
+	
+	// draw support
+	private EnumSet<MsoClassCode> editable;
 
 	// models
 	private MsoLayerModel msoLayerModel;
@@ -1649,11 +1652,13 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		return isEditSupportInstalled;
 	}
 
-	public void installEditSupport() {
+	public void installEditSupport(EnumSet<MsoClassCode> editable) {
 		// install?
 		if(!isEditSupportInstalled) {
 			// set flag
 			isEditSupportInstalled = true;
+			// save editable objects
+			this.editable = editable;
 			// initialize draw adapter
 			getDrawAdapter();
 			getSnapAdapter();
@@ -1682,7 +1687,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		// initialize?
 		if(drawAdapter == null) {
 			// create draw adapter
-			drawAdapter = new MsoDrawAdapter();
+			drawAdapter = new MsoDrawAdapter(editable);
 			// register objects
 			drawAdapter.register(this);
 		}

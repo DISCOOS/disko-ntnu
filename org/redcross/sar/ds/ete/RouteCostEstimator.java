@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.ds.AbstractDsMso;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -19,7 +19,6 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.util.MsoCompareRoute;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;

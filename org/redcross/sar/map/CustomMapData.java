@@ -2,7 +2,7 @@ package org.redcross.sar.map;
 
 import java.io.File;
 
-import org.redcross.sar.app.IApplication;
+import org.redcross.sar.IApplication;
 
 import com.esri.arcgis.carto.RasterLayer;
 

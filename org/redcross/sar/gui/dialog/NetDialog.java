@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import org.disco.io.net.NetSession;
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
@@ -215,7 +215,7 @@ public class NetDialog extends DefaultDialog  {
 	 */	
 	private JButton getConnectButton() {
 		if(connectButton == null) {
-			connectButton = DiskoButtonFactory.createButton("GENERAL.PLAY",ButtonSize.SMALL);
+			connectButton = DiskoButtonFactory.createButton("GENERAL.CONNECT",ButtonSize.SMALL);
 			connectButton.setToolTipText("Start tjeneste");
 		}
 		return connectButton;
@@ -228,7 +228,7 @@ public class NetDialog extends DefaultDialog  {
 	 */	
 	private JButton getDisconnectButton() {
 		if(disconnectButton == null) {
-			disconnectButton = DiskoButtonFactory.createButton("GENERAL.STOP",ButtonSize.SMALL);
+			disconnectButton = DiskoButtonFactory.createButton("GENERAL.DISCONNECT",ButtonSize.SMALL);
 			disconnectButton.setToolTipText("Stopp tjeneste");
 		}
 		return disconnectButton;
@@ -324,7 +324,18 @@ public class NetDialog extends DefaultDialog  {
 	private void close() {
 
 		// forward
-		session.close(true);
+		try {
+			session.close();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 				
 	}
 	

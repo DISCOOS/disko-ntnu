@@ -5,6 +5,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
+
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 
 import javax.swing.table.JTableHeader;
@@ -23,7 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.redcross.sar.app.IDiskoRole;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupAdapter;
 import org.redcross.sar.mso.data.ITaskIf;

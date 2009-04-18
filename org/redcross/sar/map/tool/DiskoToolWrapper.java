@@ -38,7 +38,7 @@ import com.esri.arcgis.systemUI.ITool;
  *
  */
 
-public class DiskoToolWrapper extends AbstractMapTool {
+public class DiskoToolWrapper extends BaseMapTool {
 
 	private static final long serialVersionUID = 1L;
 

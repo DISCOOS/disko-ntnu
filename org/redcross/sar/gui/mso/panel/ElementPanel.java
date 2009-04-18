@@ -24,7 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -33,7 +33,6 @@ import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -45,7 +44,6 @@ import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.Utils;
 
 public class ElementPanel extends TogglePanel {
 
@@ -460,7 +458,7 @@ public class ElementPanel extends TogglePanel {
 		// get values
 		ISearchIf.SearchSubType[] values = ISearchIf.SearchSubType.values();
 		// allocate memory
-		Object[] listData = new Object[values.length + 3];
+		Object[] listData = new Object[values.length + 4];
 		// fill list data
 		listData[0] = IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA;
 		listData[1] = IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA;
@@ -468,6 +466,7 @@ public class ElementPanel extends TogglePanel {
 		for (int i = 0; i < values.length; i++) {
 			listData[i + 3] = values[i];
 		}
+		listData[listData.length-1] = IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT;
 		getTypeList().setListData(listData);
 	}
 
@@ -480,7 +479,8 @@ public class ElementPanel extends TogglePanel {
 		// clear buffer
 		objects.clear();
 
-		if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+		if(msoModel.getMsoManager().operationExists()) {
+			
 			// get command post
 			ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();
 
@@ -516,7 +516,17 @@ public class ElementPanel extends TogglePanel {
 					// get areas
 					c = new ArrayList<IMsoObjectIf>(cp.getPOIList().selectItems(getPOISelector(),null));
 				}
+				else if(MsoClassCode.CLASSCODE_UNIT.equals(e)) {
+					// get search areas
+					c = new ArrayList<IMsoObjectIf>(cp.getUnitListItems());
+					// get data?
+					if(!c.isEmpty()) {
+						data = c.toArray();
+						objects.addAll(c);
+					}
+				}				
 			}
+			
 			// set flag
 			listsAreChangeing = true;
 
@@ -556,7 +566,7 @@ public class ElementPanel extends TogglePanel {
 		// has selected item?
 		if(msoObject!=null) {
 
-			if(MsoModelImpl.getInstance().getMsoManager().operationExists()) {
+			if(Application.getInstance().getMsoModel().getMsoManager().operationExists()) {
 
 				// get command post
 				ICmdPostIf cp = msoModel.getMsoManager().getCmdPost();

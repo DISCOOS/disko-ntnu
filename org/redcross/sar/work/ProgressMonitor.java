@@ -12,7 +12,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoProgressPanel;
 import org.redcross.sar.gui.DiskoProgressPanel.ProgressStyleType;

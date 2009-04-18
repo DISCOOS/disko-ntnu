@@ -1,10 +1,10 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.BasicDiskoFactory;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
@@ -364,7 +364,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     public IMessageIf getOwningMessage()
     {
         owningMessageSelector.setSelfObject(this);
-        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
+        ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
         return cmdPost != null ? cmdPost.getMessageLog().selectSingleItem(owningMessageSelector) : null;
     }
 

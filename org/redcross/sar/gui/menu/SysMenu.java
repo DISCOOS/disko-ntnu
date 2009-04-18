@@ -1,6 +1,6 @@
 package org.redcross.sar.gui.menu;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.ServiceManagerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;

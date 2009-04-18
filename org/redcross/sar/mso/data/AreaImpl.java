@@ -6,10 +6,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoCastException;
@@ -274,7 +274,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     public IAssignmentIf getOwningAssignment()
     {
         owningAssigmentSelector.setSelfObject(this);
-        ICmdPostIf cmdPost = MsoModelImpl.getInstance().getMsoManager().getCmdPost();
+        ICmdPostIf cmdPost = Application.getInstance().getMsoModel().getMsoManager().getCmdPost();
         return cmdPost != null ? cmdPost.getAssignmentList().selectSingleItem(owningAssigmentSelector) : null;
     }
 

@@ -3,7 +3,7 @@ package org.redcross.sar.wp.simulator;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 
-import org.redcross.sar.app.Application;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.panel.BasePanel;

@@ -1,9 +1,9 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoManagerImpl;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoCastException;
@@ -494,6 +494,6 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     private IMessageIf getOwningMessage()
     {
         referringMessageSelector.setSelfObject(this);
-        return  MsoModelImpl.getInstance().getMsoManager().getCmdPost().getMessageLog().selectSingleItem(referringMessageSelector);
+        return  Application.getInstance().getMsoModel().getMsoManager().getCmdPost().getMessageLog().selectSingleItem(referringMessageSelector);
     }
 }

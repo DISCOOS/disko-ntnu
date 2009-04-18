@@ -2,13 +2,10 @@ package org.redcross.sar.gui.dialog;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -16,8 +13,8 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -39,13 +36,11 @@ public class ConsoleDialog extends DefaultDialog {
 	private static final long serialVersionUID = 1L;
 
 	private DefaultPanel contentPanel;
-	private JPanel outputPanel;	
+	private JTabbedPane outputPane;
 	private JPanel commandPanel;
 
-	private JComboBox streamComboBox;
-	
 	private JScrollPane commandScrollPane;
-	private JScrollPane consoleScrollPane;
+	private JScrollPane eventsScrollPane;
 
 	private JLabel commandPrefixLabel;
 	
@@ -98,8 +93,8 @@ public class ConsoleDialog extends DefaultDialog {
 		if (contentPanel == null) {
 			contentPanel = new DefaultPanel();
 			contentPanel.setContainerLayout(new BorderLayout(5,5));
-			contentPanel.addToContainer(getStreamComboBox(), BorderLayout.NORTH);
-			contentPanel.addToContainer(getOutputPanel(), BorderLayout.CENTER);
+			contentPanel.setContainerBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+			contentPanel.addToContainer(getOutputPane(), BorderLayout.CENTER);
 			contentPanel.addToContainer(getCommandPanel(), BorderLayout.SOUTH);
 			contentPanel.setNotScrollBars();
 		}
@@ -107,56 +102,35 @@ public class ConsoleDialog extends DefaultDialog {
 	}
 	
 	/**
-	 * This method initializes selectStreamComboBox	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes outputPane
+	 *
+	 * @return javax.swing.JTabbedPane
 	 */
-	private JComboBox getStreamComboBox() {
-		if (streamComboBox == null) {
-			streamComboBox = new JComboBox(new String[]{"Command","IO/Event"});
-			streamComboBox.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					CardLayout cl = (CardLayout)getOutputPanel().getLayout();
-					cl.show(getOutputPanel(), e.getItem().toString());					
-				}
-				
-			});
+	private JTabbedPane getOutputPane() {
+		if (outputPane == null) {
+			outputPane = new JTabbedPane();
+			outputPane.addTab("IO and events", null, getEventsScrollPane(), null);
+			outputPane.addTab("Console history", null, getCommandScrollPane(), null);
+			outputPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		}
-		return streamComboBox;
-	}	
-	
+		return outputPane;
 
-	/**
-	 * This method initializes outputPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getOutputPanel() {
-		if (outputPanel == null) {
-			outputPanel = new JPanel();
-			outputPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-			outputPanel.setLayout(new CardLayout());
-			outputPanel.add(getConsoleScrollPane(),"IO/Event");
-			outputPanel.add(getCommandScrollPane(),"Command");
-		}
-		return outputPanel;
 	}	
 	
 	/**
-	 * This method initializes consoleScrollPane	
+	 * This method initializes eventsScrollPane	
 	 * 	
 	 * @return javax.swing.JScrollPane	
 	 */
-	private JScrollPane getConsoleScrollPane() {
-		if (consoleScrollPane == null) {
-			consoleScrollPane = new JScrollPane();
-			consoleScrollPane.setViewportView(getConsoleTextArea());
-			consoleScrollPane.setBorder(BorderFactory.createTitledBorder("IO/events"));			
-			consoleScrollPane.setMinimumSize(new Dimension(0,0));
-			consoleScrollPane.setMaximumSize(new Dimension(680,450));
+	private JScrollPane getEventsScrollPane() {
+		if (eventsScrollPane == null) {
+			eventsScrollPane = new JScrollPane();
+			eventsScrollPane.setViewportView(getConsoleTextArea());
+			eventsScrollPane.setBorder(BorderFactory.createTitledBorder("IO/events"));			
+			eventsScrollPane.setMinimumSize(new Dimension(0,0));
+			eventsScrollPane.setMaximumSize(new Dimension(680,450));
 		}
-		return consoleScrollPane;
+		return eventsScrollPane;
 	}
 
 	/**

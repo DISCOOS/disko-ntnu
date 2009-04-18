@@ -1,8 +1,8 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.util.AssignmentUtilities;
@@ -403,7 +403,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public IUnitIf getOwningUnit()
     {
         owningUnitSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getUnitList().selectSingleItem(owningUnitSelector);
+        return Application.getInstance().getMsoModel().getMsoManager().getCmdPost().getUnitList().selectSingleItem(owningUnitSelector);
     }
 
     public void setOwningUnit(AssignmentStatus aStatus, IUnitIf aUnit) throws IllegalOperationException
@@ -587,7 +587,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public Set<IMessageLineIf> getReferringMessageLines()
     {
         referringMesssageLineSelector.setSelfObject(this);
-        return MsoModelImpl.getInstance().getMsoManager().getCmdPost().getMessageLines().selectItems(referringMesssageLineSelector);
+        return Application.getInstance().getMsoModel().getMsoManager().getCmdPost().getMessageLines().selectItems(referringMesssageLineSelector);
     }
 
     public Set<IMessageLineIf> getReferringMessageLines(Collection<IMessageLineIf> aCollection)

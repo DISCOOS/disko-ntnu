@@ -17,7 +17,7 @@ import javax.swing.TransferHandler;
 
 import com.esri.arcgis.interop.AutomationException;
 
-import org.redcross.sar.app.IDiskoRole;
+import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.panel.HeaderPanel;
