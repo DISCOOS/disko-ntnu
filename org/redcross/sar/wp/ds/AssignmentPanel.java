@@ -162,8 +162,8 @@ public class AssignmentPanel extends BasePanel {
 			try {
 				// center at position?
 				if(assignment!=null) {
-					map.centerAtMsoObject(assignment);
-					map.flashMsoObject(assignment);
+					map.centerAt(assignment);
+					map.flash(assignment);
 				}
 				else
 					Utils.showWarning("Ingen oppdrag funnet");

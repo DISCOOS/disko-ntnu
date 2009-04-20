@@ -1,4 +1,4 @@
-package org.redcross.sar.wp.TestData;
+package org.redcross.sar.test;
 
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;

@@ -11,7 +11,7 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.redcross.sar.gui.format.DTGFormat;
+import org.redcross.sar.gui.format.DTGFormatter;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
@@ -207,9 +207,9 @@ public class DTGField extends AbstractField {
 
 		@Override
 		public AbstractFormatter getFormatter(JFormattedTextField t) {
-			DTGFormat mf1 = null;
+			DTGFormatter mf1 = null;
 			try {
-				mf1 = new DTGFormat();
+				mf1 = new DTGFormatter();
 			}
 			catch (Exception e) {
 				e.printStackTrace();

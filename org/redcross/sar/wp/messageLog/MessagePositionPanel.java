@@ -591,7 +591,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
                 	IDiskoMap map = m_wp.getMap();
                 	map.suspendNotify();
 					map.setSelected(unit, isSelected);
-					if(isSelected) map.centerAtMsoObject(unit);
+					if(isSelected) map.centerAt(unit);
 					map.refreshMsoLayers();
                 	map.consumeNotify();
 				}

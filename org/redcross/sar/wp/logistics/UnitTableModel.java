@@ -344,7 +344,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
         catch (IndexOutOfBoundsException e)
         {
         	e.printStackTrace();
-            }
+        }
     }
 
     public EnumSet<IUnitIf.UnitType> getUnitTypeSelection()

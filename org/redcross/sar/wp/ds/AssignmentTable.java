@@ -256,8 +256,8 @@ public class AssignmentTable extends DiskoTable {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					try {
-						map.centerAtPosition(p);
-						map.flashPosition(p);
+						map.centerAt(p);
+						map.flash(p);
 					} catch (AutomationException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -276,8 +276,8 @@ public class AssignmentTable extends DiskoTable {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					try {
-						map.centerAtMsoObject(msoObj);
-						map.flashMsoObject(msoObj);
+						map.centerAt(msoObj);
+						map.flash(msoObj);
 					} catch (AutomationException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

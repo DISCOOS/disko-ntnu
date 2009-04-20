@@ -75,7 +75,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private MissionTextDialog missionTextDialog;
 	private HypothesisDialog hypothesesDialog;
 	private PriorityDialog priorityDialog;
-	private UnitSelectionDialog unitSelectionDialog;
+	private UnitAllocationDialog unitSelectionDialog;
 	private RequirementDialog requirementDialog;
 	private EstimateDialog estimateDialog;
 	private ListDialog listDialog;
@@ -155,11 +155,11 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMissionTextDialog();
 		getHypothesesDialog();
 		getRequirementDialog();
-
+		
 		// get default codes
 		EnumSet<MsoClassCode> defaults = MsoDrawAdapter.getSupport();
 		
-		// remove unit support
+		// remove edit support for units
 		defaults.remove(MsoClassCode.CLASSCODE_UNIT);
 		
 		// install draw support
@@ -169,8 +169,14 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		getMap().getDrawAdapter().addWorkFlowListener(this);
 		getMap().getDrawAdapter().addDrawAdapterListener(this);
 
-		// add map dialogs
-		dialogs.add(getMap().getElementDialog());
+		// get element dialog
+		ElementDialog dlg = getMap().getElementDialog();
+		
+		// make unit not editable
+		dlg.getElementPanel().setEditable(MsoClassCode.CLASSCODE_UNIT, false);		
+		
+		// add edit dialog to dialog list
+		dialogs.add(dlg);
 
 	}
 
@@ -533,9 +539,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		return descriptionDialog;
 	}
 
-	private UnitSelectionDialog getUnitSelectionDialog() {
+	private UnitAllocationDialog getUnitSelectionDialog() {
 		if (unitSelectionDialog == null) {
-			unitSelectionDialog = new UnitSelectionDialog(this);
+			unitSelectionDialog = new UnitAllocationDialog(this);
 			dialogs.add(unitSelectionDialog);
 			unitSelectionDialog.addWorkFlowListener(this);
 		}
@@ -837,7 +843,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				unitToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
 				unitToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						UnitSelectionDialog dialog = getUnitSelectionDialog();
+						UnitAllocationDialog dialog = getUnitSelectionDialog();
 						hideDialogs(dialog);
 						if (unitToggleButton.isSelected() && dialog.isVisible()) {
 							dialog.setVisible(false);

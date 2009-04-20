@@ -338,7 +338,7 @@ public class TogglePanel extends BasePanel implements ITogglePanel {
 
         // consume?
         if(isLoop()) return;
-
+        
         // prevent re-entry
         setLoop(true);
 

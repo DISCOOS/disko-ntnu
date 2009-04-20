@@ -15,7 +15,7 @@ import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
-import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
@@ -26,12 +26,13 @@ public class AssignmentInfoPanel extends JPanel
 {
 	private final static long serialVersionUID = 1L;
 
-	private final static String ASG_RETURN = "AsgReturn";
-	private final static String ASG_PRINT = "AsgPrint";
-	private final static String ASG_CHANGE = "AsgChange";
+    public final static String ASG_RESULT = "AsgResult";
+	public final static String ASG_RETURN = "AsgReturn";
+	public final static String ASG_PRINT = "AsgPrint";
+	public final static String ASG_CHANGE = "AsgChange";
 
 	private FieldsPanel m_infoPanel;
-	private BasePanel m_remarksPanel;
+	private TogglePanel m_remarksPanel;
 	private JTextArea m_remarksArea;
 
 	private ActionListener m_listener;
@@ -113,7 +114,8 @@ public class AssignmentInfoPanel extends JPanel
 	private FieldsPanel getInfoPanel() {
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
-			m_infoPanel.setColumns(2);
+			m_infoPanel.setPreferredExpandedHeight(175);
+			m_infoPanel.setColumns(1);
 			m_infoPanel.addField(createEnumField("priority",0));
 			m_infoPanel.addField(createDTGField("eta",1));
 			m_infoPanel.addField(createTextField("unit",2));
@@ -128,13 +130,14 @@ public class AssignmentInfoPanel extends JPanel
 		return m_infoPanel;
 	}
 
-	private BasePanel getRemarksPanel() {
+	private TogglePanel getRemarksPanel() {
 		if(m_remarksPanel==null) {
-			m_remarksPanel = new BasePanel(m_wp.getBundleText("AsgInfoPanel_hdr_6.text"));
+			m_remarksPanel = new TogglePanel(m_wp.getBundleText("AsgInfoPanel_hdr_6.text"),false,false);
+			m_remarksPanel.setPreferredExpandedHeight(150);
 			m_remarksPanel.setContainer(getRemarksArea());
 			m_remarksPanel.setScrollBarPolicies(
-					BasePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
-					BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
+					TogglePanel.VERTICAL_SCROLLBAR_AS_NEEDED,
+					TogglePanel.HORIZONTAL_SCROLLBAR_NEVER);
 		}
 		return m_remarksPanel;
 	}

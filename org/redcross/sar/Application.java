@@ -32,7 +32,6 @@ import org.redcross.sar.work.AbstractWork;
 import org.redcross.sar.work.ProgressMonitor;
 import org.redcross.sar.work.WorkPool;
 
-import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.esriLicenseProductCode;
@@ -43,7 +42,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -267,6 +265,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 	{
 		try
 		{
+			// Initialize ArcObjects at appropriate product level.
 			if (getArcGisSystem().isProductCodeAvailable(esriLicenseProductCode.esriLicenseProductCodeEngine) == com.esri.arcgis.system.esriLicenseStatus.esriLicenseAvailable)
 			{
 				getArcGisSystem().initialize(esriLicenseProductCode.esriLicenseProductCodeEngine);
@@ -752,8 +751,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 		// notify
 		Utils.showError(title, message);
 		// shutdown application safely
-		shutdown();
-		
+		shutdown();		
 	}
 
 	/* (non-Javadoc)

@@ -311,8 +311,8 @@ public class UnitStatusPanel extends TogglePanel {
 			try {
 				// center at position?
 				if(p!=null) {
-					map.centerAtPosition(p.getGeoPos());
-					map.flashPosition(p.getGeoPos());
+					map.centerAt(p.getGeoPos());
+					map.flash(p.getGeoPos());
 				}
 				else
 					Utils.showWarning("Ingen posisjon funnet");
@@ -331,8 +331,8 @@ public class UnitStatusPanel extends TogglePanel {
 			try {
 				// center at position?
 				if(msoObj!=null) {
-					map.centerAtMsoObject(msoObj);
-					map.flashMsoObject(msoObj);
+					map.centerAt(msoObj);
+					map.flash(msoObj);
 				}
 				else
 					Utils.showWarning("Ingen posisjon funnet");

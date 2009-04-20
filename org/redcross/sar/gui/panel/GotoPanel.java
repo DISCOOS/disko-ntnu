@@ -390,8 +390,8 @@ public class GotoPanel extends TogglePanel {
 				Position p = getCoordinatePanel().getPosition();
 				// center at position?
 				if(p!=null) {
-					m_map.centerAtPosition(p.getGeoPos());
-					m_map.flashPosition(p.getGeoPos());
+					m_map.centerAt(p.getGeoPos());
+					m_map.flash(p.getGeoPos());
 				}
 				else
 					Utils.showWarning("Du må oppgi korrekte koordinater");

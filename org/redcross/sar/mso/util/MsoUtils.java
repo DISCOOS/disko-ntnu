@@ -18,7 +18,6 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -533,6 +532,10 @@ public class MsoUtils {
 			name = DiskoEnumFactory.getText(assignment.getStatus());
 		}
 		return name;
+	}
+	
+	public static String getUnitName(IUnitIf unit) {
+		return getUnitName(unit,false);
 	}
 	
 	public static String getUnitName(IUnitIf unit, boolean include) {

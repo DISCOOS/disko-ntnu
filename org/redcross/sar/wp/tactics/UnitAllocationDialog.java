@@ -32,7 +32,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
 
 import java.util.Collection;
 
-public class UnitSelectionDialog extends DefaultDialog {
+public class UnitAllocationDialog extends DefaultDialog {
 
 	private enum MessageBoxType {
 		MESSAGE_ALLOCATE,
@@ -48,17 +48,17 @@ public class UnitSelectionDialog extends DefaultDialog {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private DefaultPanel contentPanel = null;
-	private UnitTable unitTable = null;
+	private DefaultPanel contentPanel;
+	private UnitTable unitTable;
 
-	private JButton assignButton = null;
-	private JButton reclaimButton = null;
+	private JButton assignButton;
+	private JButton reclaimButton;
 
-	private IDiskoWpModule wp = null;
-	private IMsoModelIf msoModel = null;
+	private IDiskoWpModule wp;
+	private IMsoModelIf msoModel;
 	
 	
-	public UnitSelectionDialog(IDiskoWpModule wp) {
+	public UnitAllocationDialog(IDiskoWpModule wp) {
 		
 		// forward
 		super(wp.getApplication().getFrame());
@@ -188,8 +188,7 @@ public class UnitSelectionDialog extends DefaultDialog {
 		if (assignButton == null) {
 			try {
 				assignButton = DiskoButtonFactory.createButton(
-						"STATUS.QUEUED",
-						getContentPanel().getButtonSize());
+						"STATUS.QUEUED",getContentPanel().getButtonSize());
 				assignButton.setToolTipText("Legg oppdrag i kø til valgt enhet");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -440,56 +439,60 @@ public class UnitSelectionDialog extends DefaultDialog {
 	private int prompt(MessageBoxType type) {
 		int ans = JOptionPane.NO_OPTION;
 		if(type == MessageBoxType.MESSAGE_ALLOCATE) {
-			// notfiy user
+			// notify user
 			ans = JOptionPane.showConfirmDialog(getOwner(),
                 "Dette vil legge oppdraget til bakerst i køen av oppdrag for valgt enhet. Vil du fortsette?",
                 "Bekreft valgt enhet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);								
 		}
 		if(type == MessageBoxType.MESSAGE_REALLOCATE) {
-			// notfiy user
+			// notify user
 			ans = JOptionPane.showConfirmDialog(getOwner(),
                 "Dette vil flytte oppdraget fra nåværende enhet til valg enhet. Vil du fortsette?",
                 "Bekreft flytting", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);								
 		}
 		else if(type == MessageBoxType.MESSAGE_CLEAR) {
-			// notfiy user
+			// notify user
 			ans = JOptionPane.showConfirmDialog(getOwner(),
                 "Dette vil legge fjerne bakerste oppdrag fra køen til valgt enhet. Vil du fortsette?",
                 "Bekreft fjerning", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);								
 		}
 		else if(type == MessageBoxType.MESSAGE_INVALID_STATUS) {
-			// notfiy user
+			// notify user
 			JOptionPane.showMessageDialog(getOwner(),
                 "Oppdrag som er tomme, tildelt, startet eller rapportert kan ikke legges i kø",
                 "Ulovlig handling", JOptionPane.INFORMATION_MESSAGE);
 
 		}
 		else if(type == MessageBoxType.MESSAGE_SAME_UNIT) {
-			// notfiy user
+			// notify user
 			Utils.showMessage("Begrensning",
 					"Oppdrag er allerede lagt til enhetens kø av oppdrag", 
 					MessageDialog.INFORMATION_MESSAGE);
 
 		}
 		else if(type == MessageBoxType.MESSAGE_ASSIGNMENT_MISSING) {			
+			// notify user
 			Utils.showMessage("Begrensning",
 	                "Du må først velge et oppdrag",
 	                MessageDialog.INFORMATION_MESSAGE);
 
 		}
 		else if(type == MessageBoxType.MESSAGE_UNIT_RELEASED) {			
+			// notify user
 			Utils.showMessage("Begrensning",
 	                "Enheten du har valgt er oppløst og kan derfor ikke tildeles oppdrag",
 	                MessageDialog.INFORMATION_MESSAGE);
 
 		}
 		else if(type == MessageBoxType.MESSAGE_UNIT_MISSING) {			
+			// notify user
 			Utils.showMessage("Begrensning",
 	                "Du må først velge en enhet i listen",
 	                MessageDialog.INFORMATION_MESSAGE);
 
 		}
 		else if(type == MessageBoxType.MESSAGE_NOTHING_ALLOCATED) {			
+			// notify user
 			Utils.showMessage("Begrensning",
 	                "Enheten har ingen oppdrag i kø",
 	                MessageDialog.INFORMATION_MESSAGE);
@@ -540,15 +543,17 @@ public class UnitSelectionDialog extends DefaultDialog {
 	}
 	
 	private void setup() {
+
 		// consume?
 		if(!isChangeable()) return;
 		
 		// consume changes
 		setChangeable(false);
 		
-		// try to get mso object?
-		if(getMsoObject()==null) 
+		// try to get MSO object?
+		if(getMsoObject()==null) {
 			getContentPanel().setSelectedMsoFeature(wp.getMap());
+		}
 		
 		// get assignment
 		IAssignmentIf assignment = (IAssignmentIf)getMsoObject();

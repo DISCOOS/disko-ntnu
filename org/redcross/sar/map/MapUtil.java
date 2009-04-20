@@ -32,6 +32,7 @@ import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.AppProps;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Position;
@@ -172,19 +173,29 @@ public class MapUtil {
 		return p;
 	}
 
-	public static String pointToText(Point p, int max, int presision){
+	public static String pointToText(Point p, int max, int digits){
+		return pointToText(p, max, digits, false);
+	}
+
+	public static String pointToText(Point p, int max, int digits, boolean isBold){
+		return pointToText(p, max, digits, 0, isBold?digits:0);		
+	}
+	
+	public static String pointToText(Point p, int max, int digits, int sIdx, int eIdx) {
 		String text = new String();
 		try{
-			String west = formatCoord(p.getX(),max,presision);
-			String north = formatCoord(p.getY(),max,presision);
-			text = west + " " + north;
+			String e = formatCoord(p.getX(),max,digits,sIdx,eIdx);
+			String n = formatCoord(p.getY(),max,digits,sIdx,eIdx);
+			text = e + "E " + n + "N";
 
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		return text;
+		
 	}
-
+	
+	
 	public static String[] getCoords(String text) {
 		// remove any directions
 		String coords = text.replace("E", "").replace("N", "");
@@ -196,36 +207,97 @@ public class MapUtil {
 		// finished
 		return new String[]{x,y};
 	}
-
-	public static String formatCoord(double coord, int max, int presision){
+	
+	/*
+	public static void main(String[] args)
+	{
+		System.out.println(formatCoord(151.0,5,3));
+	}
+	*/
+	
+	/**
+	 * 
+	 * @param coord - the coordinate value 
+	 * @param max - maximum number of digits in coordinate value
+	 * @param digits - the number of digits to format as string
+	 * @param isBold - formats coordinate as bold text (html)
+	 * @return The coordinate value formatted as string. If number of digits are 
+	 * less than the precision, then zeros are padded at the beginning of the string.
+	 */
+	public static String formatCoord(double coord, int max, int digits, boolean isBold) {
+		return formatCoord(coord, max, digits, 0, isBold?digits:0);
+	}
+	
+	/**
+	 * 
+	 * @param coord - the coordinate value 
+	 * @param max - maximum number of digits in coordinate value
+	 * @param digits - the number of digits to format as string
+	 * @param sIdx - inserts a bold text start tag before digit index (html)
+	 * @param eIdx - inserts a bold text end tag after digit index (html). 
+	 * @return The coordinate value formatted as string. If number of digits are 
+	 * less than the precision, then zeros are padded at the beginning of the string.
+	 */
+	public static String formatCoord(double coord, int max, int digits, int sIdx, int eIdx) {
 		// round up to nearest long value
 		long c = Math.round(coord);
-		// limit precision to [1,max]
-		presision = Math.max(1,Math.min(max, presision));
-		// get minimum of limited max and precision
-		int min = Math.max(1,Math.min(max, presision));
+		// limit digits
+		digits = (digits>max ? max : digits);
 		// divide on precision
-		String s = Long.toString(Math.round(c/Math.pow(10,max-min)));
+		String s = Long.toString(Math.round(c/Math.pow(10,max-digits)));
 		// cut to precision if coordinate value was to long
-		if(s.length() > presision){
-			s = s.substring(s.length()-presision);
+		if(s.length() > max){
+			s = s.substring(s.length()-max);
 		}
 		else {
 			// get length of padding
-			int num = presision-s.length();
-			// add padding
+			int num = digits-s.length();
+			// add padding in front of number
 			for(int i=0;i<num;i++)
 				s = "0"+ s;
 		}
-		return s;
+		return Utils.insertHtml(s, sIdx, eIdx, "b");
 	}
 
-	public static String formatMGRS(String mgrs, int max, int precision){
-		return formatMGRS(mgrs,max,precision,false);
+	/**
+	 * <b>Formats MGRS string</b></p>
+	 * 
+	 * @param mgrs - the MGRS string to format
+	 * @param max - the number of digits each coordinate in the mgrs string is codified with
+	 * @param digits - the number of digits to print
+	 * @return MGRS string formated according to the supplied arguments.
+	 */
+	public static String formatMGRS(String mgrs, int max, int digits){
+		return formatMGRS(mgrs,max,digits,false);
 	}
 
-	public static String formatMGRS(String mgrs, int max, int precision, boolean html){
+	/**
+	 * <b>Formats MGRS string (as html)</b></p>
+	 * 
+	 * @param mgrs - the MGRS string to format
+	 * @param max - the number of digits each coordinate in the mgrs string is codified with
+	 * @param digits - the number of digits to print
+	 * @param isBold - coordinates are formatted bold with html tags if <code>true</code>
+	 * @return MGRS string formated according to the supplied arguments.
+	 */	
+	public static String formatMGRS(String mgrs, int max, int digits, boolean isBold){
+		return formatMGRS(mgrs, max, digits, 0, isBold?digits:0);	
+	}
+
+	/**
+	 * <b>Formats MGRS string (as html)</b></p>
+	 * 
+	 * @param mgrs - the MGRS string to format
+	 * @param max - the number of digits each coordinate in the mgrs string is codified with
+	 * @param digits - the number of digits to print
+	 * @param sIdx - inserts a bold text start tag before digit index (html)
+	 * @param eIdx - inserts a bold text end tag after digit index (html). 
+	 * @return UTM string formated according to the supplied arguments.
+	 */	
+	public static String formatMGRS(String mgrs, int max, int digits, int sIdx, int eIdx){	
+	
 		String s = null;
+		
 		// is not null?
 		if (mgrs != null) {
 			// is empty?
@@ -238,22 +310,54 @@ public class MapUtil {
 				// get x and y coordinates
 				double x = Double.valueOf(coords[0]);
 				double y = Double.valueOf(coords[1]);
-				// build formated mgrs
-				if(html) {
-					s = zone + " " + square + " <b>" + formatCoord(x,5,precision)
-						+ " " + formatCoord(y,max,precision);
-				}
-				else {
-					s = zone + " " + square + " " + formatCoord(x,5,precision)
-							+ " " +formatCoord(y,max,precision);
-				}
+				// build formated MGRS
+				s = zone + " " + square + " " + 
+					formatCoord(x,max,digits,sIdx,eIdx) + " " + 
+					formatCoord(y,max,digits,sIdx,eIdx);
 			}
 		}
 		return s;
 	}
 
-	public static String formatUTM(String utm, boolean html){
+	/**
+	 * <b>Formats UTM string</b></p>
+	 *  
+	 * @param utm - the UTM string to format
+	 * @param max - the number of digits each coordinate in the mgrs string is codified with
+	 * @param digits - the number of digits to print
+	 * @return UTM string formated according to the supplied arguments.
+	 */
+	public static String formatUTM(String utm, int max, int digits){
+		return formatUTM(utm,max,digits,false);
+	}
+	
+	/**
+	 * <b>Formats UTM string (as html)</b></p>
+	 * 
+	 * @param utm - the UTM string to format
+	 * @param max - the number of digits each coordinate in the mgrs string is codified with
+	 * @param digits - the number of digits to print
+	 * @param isBold - coordinates are formatted bold with html tags if <code>true</code>
+	 * @return UTM string formated according to the supplied arguments.
+	 */	
+	public static String formatUTM(String utm, int max, int digits, boolean isBold){
+		return formatUTM(utm, max, digits, 0, isBold?digits:0);
+	}
+	
+	/**
+	 * <b>Formats UTM string (as html)</b></p>
+	 * 
+	 * @param utm - the UTM string to format
+	 * @param max - the number of digits each coordinate in the UTM string is codified with
+	 * @param digits - the number of digits to print
+	 * @param sIdx - inserts a bold text start tag before digit index (html)
+	 * @param eIdx - inserts a bold text end tag after digit index (html). 
+	 * @return UTM string formated according to the supplied arguments.
+	 */	
+	public static String formatUTM(String utm, int max, int digits, int sIdx, int eIdx){
+	
 		String s = null;
+		
 		// is not null?
 		if (utm != null) {
 			// is empty?
@@ -262,15 +366,10 @@ public class MapUtil {
 				String zone = utm.subSequence(0, 3).toString();
 				double x = Double.valueOf(utm.subSequence(3, 9).toString());
 				double y = Double.valueOf(utm.subSequence(10, 16).toString());
-				// build formated mgrs
-				if(html) {
-					s = zone + " <b>" + formatCoord(x,7,7)
-						+ "E " + formatCoord(y,7,7) + "N";
-				}
-				else {
-					s = zone + " " + formatCoord(x,7,7)
-					+ "E " + formatCoord(y,7,7) + "N";
-				}
+				// build formated UTM
+				s = zone + " " + 
+					formatCoord(x,max,digits,sIdx,eIdx) + "E " + 
+					formatCoord(y,max,digits,sIdx,eIdx) + "N";
 			}
 		}
 		return s;
@@ -555,18 +654,45 @@ public class MapUtil {
 		return env;
 	}
 
-	public static String getMGRSfromPoint(Point p, int precision)
+	public static String getMGRSfromPoint(Point p, int digits) throws Exception {
+		return getMGRSfromPoint(p,digits,false);
+	}
+	
+	public static String getMGRSfromPoint(Point p, int digits, boolean isBold)
 			throws Exception {
-		return p.createMGRS(precision, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		return getMGRSfromPoint(p,digits,0,isBold?5:0);
+	}
+	
+	public static String getMGRSfromPoint(Point p, int digits, int sIdx, int eIdx)
+		throws Exception {
+		if(p!=null) {
+			// get mgrs format
+			String mgrs = p.createMGRS(digits, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+			// insert html?
+			if(sIdx>=0&&sIdx<eIdx) {
+				mgrs = mgrs.substring(0, 4) + 
+					Utils.insertHtml(mgrs.substring(5, 9), sIdx, eIdx, "b") + 
+					Utils.insertHtml(mgrs.substring(10, 4), sIdx, eIdx, "b");
+			}
+			return mgrs;
+		}
+		return null;
 	}
 
-	public static String getUTMfromPoint(Point p)
-			throws Exception {
+	public static String getUTMfromPoint(Point p) throws Exception {
+		return getUTMfromPoint(p,false);
+	}
+	
+	public static String getUTMfromPoint(Point p, boolean isBold) throws Exception {
+		return getUTMfromPoint(p,0,isBold?7:0);
+	}
+	
+	public static String getUTMfromPoint(Point p, int sIdx, int eIdx) throws Exception {	
 		String mgrs = p.createMGRS(5, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 		String zone = mgrs.substring(0,3);
 		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(getSRProjCS_WGS1984UTM_Zone(zone));
 		p.project(outgoingCoordSystem);
-		return zone + formatCoord(p.getX(),7,7)+ "E" + formatCoord(p.getY(),7,7) + "N";
+		return zone + formatCoord(p.getX(),7,7,sIdx,eIdx)+ "E" + formatCoord(p.getY(),7,7,sIdx,eIdx) + "N";
 
 	}
 
@@ -668,10 +794,10 @@ public class MapUtil {
 
 	}
 
-	public static String getMGRSfromPosition(Position pos, int precision)
+	public static String getMGRSfromPosition(Position pos, int digits)
 		throws Exception {
 		if(pos!=null)
-			return getMGRSfromPosition(pos.getPosition(),precision);
+			return getMGRSfromPosition(pos.getPosition(),digits);
 		else
 			return null;
 	}
@@ -696,16 +822,24 @@ public class MapUtil {
 		return getDEMfromPosition(pos.getPosition());
 	}
 
-	public static String getMGRSfromPosition(Point2D p,int precision)
+	public static String getMGRSfromPosition(Point2D p,int digits)
 		throws Exception {
 		Point point = new Point();
 		point.setSpatialReferenceByRef(getGeographicCS());
 		point.setX(p.getX());
 		point.setY(p.getY());
-		return point.createMGRS(precision, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
+		return point.createMGRS(digits, true, esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 	}
 
-	public static String getUTMfromPosition(Point2D p)
+	public static String getUTMfromPosition(Point2D p) throws Exception {
+		return getUTMfromPosition(p,false);
+	}
+	
+	public static String getUTMfromPosition(Point2D p, boolean isBold) throws Exception {
+		return getUTMfromPosition(p,0,isBold?7:0);
+	}
+	
+	public static String getUTMfromPosition(Point2D p, int sIdx, int eIdx)
 		throws Exception {
 		Point point = new Point();
 		point.setSpatialReferenceByRef(getGeographicCS());
@@ -715,7 +849,8 @@ public class MapUtil {
 		String zone = mgrs.substring(0,3);
 		ISpatialReference outgoingCoordSystem = getProjectedSpatialReference(getSRProjCS_WGS1984UTM_Zone(zone));
 		point.project(outgoingCoordSystem);
-		return zone + formatCoord(point.getX(),7,7)+ "E" + formatCoord(point.getY(),7,7) + "N";
+		return zone + formatCoord(point.getX(),7,7,sIdx,eIdx) + "E" 
+		            + formatCoord(point.getY(),7,7,sIdx,eIdx) + "N";
 	}
 
 	public static String getDEGfromPosition(Point2D p)
@@ -734,222 +869,6 @@ public class MapUtil {
 		return fromDEStoDEM(p.getX())+ "E" + fromDEStoDEM(p.getY()) + "N";
 	}
 
-	/**
-	 * Converts a MGRS position string to a point in decimal degress
-	 *
-	 * @param mgrs 	A MGRS string on the strict format ZZZSS(-)######N(-)######E, where
-	 * 				zzz equals zone, SS equals 100-km square, x = ######E equals
-	 * 				east direction (x) and y = ######N equals north direction (y)
-	 * @return {@link Point}
-	 * @throws Exception
-	 */
-	/*
-	public static Point getEsriPointFromMGRS(String mgrs, ISpatialReference srs)
-		throws Exception {
-		// trim
-		mgrs = mgrs.trim();
-		String prefix = mgrs.substring(0,5);
-		String suffix = mgrs.substring(5,mgrs.length());
-		suffix = suffix.toUpperCase().replace("E", "").replace("N", "");
-		Point p = new Point();
-		p.setSpatialReferenceByRef(getGeographicCS());
-		p.putCoordsFromMGRS(prefix.concat(suffix), esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
-		p.project(srs);
-		return p;
-	}
-	*/
-
-	/**
-	 * Converts a UTM position string to a point in decimal degress
-	 *
-	 * IMPORTANT: Only a subset of all UTM strings are supported (32-36 N)
-	 *
-	 * @param utm 	A UTM string on the strict format ZZZ(-)########N(-)########E, where
-	 * 				zzz equals zone, x = ########E equals east direction (x)
-	 * 				and y = ########N equals north direction (y)
-	 * @return {@link Point}
-	 * @throws Exception
-	 */
-	/*
-	public static Point getEsriPointFromUTM(String utm, ISpatialReference srs)
-		throws Exception {
-		utm = utm.trim();
-		String zone = utm.subSequence(0, 3).toString();
-		zone = getSRProjCS_WGS1984UTM_Zone(zone);
-		String suffix = utm.substring(3,utm.length()).toUpperCase().replace("E", "").replace("N", "");
-		String x = suffix.subSequence(0, 7).toString();
-		String y = suffix.subSequence(7, 14).toString();
-		Point p = new Point();
-		ISpatialReference incommingCoordSystem = getProjectedSpatialReference(zone);
-		p.setSpatialReferenceByRef(incommingCoordSystem);
-		p.setX(Double.valueOf(x));
-		p.setY(Double.valueOf(y));
-		p.project(srs);
-		return p;
-	}
-	*/
-
-	/**
-	 * Converts a DEGREE position string to a point in decimal degress
-	 *
-	 * @param deg	A DEGREE string on the strict format (-)##*##'##''E(-)##*##'##''N, where
-	 * 				x = ##*##'##''E equals east direction (x)
-	 * 				and y = ##*##'##''N equals north direction (y)
-	 * @return {@link Point}
-	 * @throws Exception
-	 */
-	/*
-	public static Point getEsriPointFromDEG(String deg, ISpatialReference srs)
-		throws Exception {
-
-		// remove any spaces
-		deg = deg.trim().toUpperCase();
-
-		// split into longitude and latitude
-		String[] split = deg.split("E");
-
-		// get sub strings
-		String lat = split[0];
-		String lon = split[1].replace("N", "0");
-
-		// account for sign
-		int offset = lat.startsWith("-") ? 1 : 0;
-
-		// parse longitude (E)
-		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m1 = Double.valueOf(lat.subSequence(3+offset, 5+offset).toString().replace(",", "."));
-		double s1 = Double.valueOf(lat.subSequence(6+offset, 8+offset).toString().replace(",", "."));
-
-		// account for sign
-		offset = lon.startsWith("-") ? 1 : 0;
-
-		// parse latitude (N)
-		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m2 = Double.valueOf(lon.subSequence(3+offset, 5+offset).toString().replace(",", "."));
-		double s2 = Double.valueOf(lon.subSequence(6+offset, 8+offset).toString().replace(",", "."));
-
-		// Determine longitude fraction from minutes and seconds
-		double f1 = Double.valueOf(m1) / 60 + Double.valueOf(s1) / 3600;
-
-		// Be careful to get the sign right.
-		double dec1 = ( d1 < 0 ) ? d1 - f1 : d1 + f1;
-
-		// Determine latitude fraction from minutes and seconds
-		double f2 = Double.valueOf(m2) / 60 + Double.valueOf(s2) / 3600;
-
-		// Be careful to get the sign right.
-		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
-
-		// create point
-		Point p = new Point();
-		p.setSpatialReferenceByRef(getGeographicCS());
-		p.setX(dec1);
-		p.setY(dec2);
-		p.project(srs);
-		return p;
-
-	}
-	*/
-
-	/**
-	 * Converts a DECIMAL DEGREE position string to a point in decimal degress
-	 *
-	 * @param deg	A DEGREE string on the strict format ##,#[#-->#]E##,#[#-->#]N, where
-	 * 				x = ##,#[#-->#]E equals east direction (x)
-	 * 				and y = ##,#[#-->#]N equals north direction (y)
-	 * @return {@link Point}
-	 * @throws Exception
-	 */
-	/*
-	public static Point getEsriPointFromDES(String des, ISpatialReference srs)
-		throws Exception {
-
-		// remove any spaces
-		des = des.trim().toUpperCase();
-
-		// split into longitude and latitude
-		String[] split = des.split("E");
-		String lon = split[0];
-		split = split[1].split("N");
-		String lat = split[0];
-
-		// parse longitude (E)
-		double x = Double.valueOf(lon.replace(",", "."));
-
-		// parse latitude (N)
-		double y = Double.valueOf(lat.replace(",", "."));
-
-		// create point
-		Point p = new Point();
-		p.setSpatialReferenceByRef(getGeographicCS());
-		p.setX(x);
-		p.setY(y);
-		p.project(srs);
-		return p;
-
-	}
-	*/
-
-	/**
-	 * Converts a DECIMAL DEGREE position string to a point in decimal degress
-	 *
-	 * @param deg	A DEGREE string on the strict format ##-##,[#-->#]E##-##,[#-->#]N, where
-	 * 				x = ##-##,[#-->#]E equals east direction (x)
-	 * 				and y = ##-##,#[#-->#]N equals north direction (y)
-	 * @return {@link Point}
-	 * @throws Exception
-	 */
-	/*
-	public static Point getEsriPointFromDEM(String dem, ISpatialReference srs)
-		throws Exception {
-
-		// remove any spaces
-		dem = dem.trim().toUpperCase();
-
-		// split into longitude and latitude
-		String[] split = dem.split("E");
-
-		// get sub strings
-		String lat = split[0];
-		String lon = split[1].replace("N", "0");
-
-		// account for sign
-		int offset = lat.startsWith("-") ? 1 : 0;
-
-		// parse longitude (E)
-		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m1 = Double.valueOf(lat.subSequence(3+offset, lat.length()).toString().replace(",", "."));
-
-		// account for sign
-		offset = lon.startsWith("-") ? 1 : 0;
-
-		// parse latitude (N)
-		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m2 = Double.valueOf(lon.subSequence(3+offset, lon.length()).toString().replace(",", "."));
-
-		// Determine longitude fraction from minutes and seconds
-		double f1 = Double.valueOf(m1) / 60;
-
-		// Be careful to get the sign right.
-		double dec1 = ( d1 < 0 ) ? d1 - f1 : d1 + f1;
-
-		// Determine latitude fraction from minutes and seconds
-		double f2 = Double.valueOf(m2) / 60;
-
-		// Be careful to get the sign right.
-		double dec2 = ( d2 < 0 ) ? d2 - f2 : d2 + f2;
-
-		// create point
-		Point p = new Point();
-		p.setSpatialReferenceByRef(getGeographicCS());
-		p.setX(dec1);
-		p.setY(dec2);
-		p.project(srs);
-		return p;
-
-	}
-	*/
-
 	public static Position getPositionFromMGRS(String mgrs)
 			throws Exception {
 
@@ -963,8 +882,6 @@ public class MapUtil {
 		p.putCoordsFromMGRS(prefix.concat(suffix), esriMGRSModeEnum.esriMGRSMode_NewWith180InZone01);
 		p.project(getGeographicCS());
 		return new Position(null, p.getX(), p.getY());
-
-		//getEsriPointFromMGRS(mgrs,getGeographicCS())
 	}
 
 	public static Position getPositionFromUTM(String utm)
@@ -983,7 +900,6 @@ public class MapUtil {
 		p.setY(Double.valueOf(y));
 		p.project(getGeographicCS());
 
-		//Point point = getEsriPointFromUTM(utm,getGeographicCS());
 		return new Position(null,p.getX(),p.getY());
 	}
 
@@ -1002,20 +918,32 @@ public class MapUtil {
 
 		// account for sign
 		int offset = lat.startsWith("-") ? 1 : 0;
+		
+		// remove invalid characters
+		lat = lat.replaceAll(",","\\.").replaceAll("-", "");
 
 		// parse longitude (E)
-		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m1 = Double.valueOf(lat.subSequence(3+offset, 5+offset).toString().replace(",", "."));
-		double s1 = Double.valueOf(lat.subSequence(6+offset, 8+offset).toString().replace(",", "."));
+		double d1 = Double.valueOf(lat.substring(0, 2));
+		double m1 = Double.valueOf(lat.substring(3, 5));
+		double s1 = Double.valueOf(lat.substring(6, 8));
 
+		// negate?
+		d1 = (offset>0? -d1 : d1);
+		
 		// account for sign
 		offset = lon.startsWith("-") ? 1 : 0;
 
+		// remove invalid characters
+		lon = lon.replaceAll(",","\\.").replaceAll("-", "");
+		
 		// parse latitude (N)
-		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m2 = Double.valueOf(lon.subSequence(3+offset, 5+offset).toString().replace(",", "."));
-		double s2 = Double.valueOf(lon.subSequence(6+offset, 8+offset).toString().replace(",", "."));
+		double d2 = Double.valueOf(lon.substring(0, 2));
+		double m2 = Double.valueOf(lon.substring(3, 5));
+		double s2 = Double.valueOf(lon.substring(6, 8));
 
+		// negate?
+		d2 = (offset>0? -d2 : d2);
+		
 		// Determine longitude fraction from minutes and seconds
 		double f1 = Double.valueOf(m1) / 60 + Double.valueOf(s1) / 3600;
 
@@ -1035,7 +963,7 @@ public class MapUtil {
 		p.setY(dec2);
 		p.project(getGeographicCS());
 
-		//Point point = getEsriPointFromDEG(deg,getGeographicCS());
+		// finished
 		return new Position(null,p.getX(),p.getY());
 	}
 
@@ -1085,17 +1013,29 @@ public class MapUtil {
 		// account for sign
 		int offset = lat.startsWith("-") ? 1 : 0;
 
+		// remove invalid characters
+		lat = lat.replaceAll(",","\\.").replaceAll("-", "");
+		
 		// parse longitude (E)
-		double d1 = Double.valueOf(lat.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m1 = Double.valueOf(lat.subSequence(3+offset, lat.length()).toString().replace(",", "."));
+		double d1 = Double.valueOf(lat.substring(0, 2));
+		double m1 = Double.valueOf(lat.substring(3));
 
+		// negate?
+		d1 = (offset>0? -d1 : d1);
+		
 		// account for sign
 		offset = lon.startsWith("-") ? 1 : 0;
 
+		// remove invalid characters
+		lon = lon.replaceAll(",","\\.").replaceAll("-", "");
+		
 		// parse latitude (N)
-		double d2 = Double.valueOf(lon.subSequence(0, 2+offset).toString().replace(",", "."));
-		double m2 = Double.valueOf(lon.subSequence(3+offset, lon.length()).toString().replace(",", "."));
-
+		double d2 = Double.valueOf(lon.substring(0, 2));
+		double m2 = Double.valueOf(lon.substring(3));
+		
+		// negate?
+		d2 = (offset>0? -d2 : d2);
+		
 		// Determine longitude fraction from minutes and seconds
 		double f1 = Double.valueOf(m1) / 60;
 

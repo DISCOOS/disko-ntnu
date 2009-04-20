@@ -9,9 +9,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -31,7 +34,6 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
-import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -51,7 +53,7 @@ public class ElementPanel extends TogglePanel {
 
 	public enum ElementEventType {
 		SELECTED,
-		CENTER_AT,
+		CENTERAT,
 		EDIT,
 		DELETE
 	}
@@ -75,8 +77,8 @@ public class ElementPanel extends TogglePanel {
 	private JPanel objectPanel;
 	private JPanel partPanel;
 
-	private JPanel objectButtonsPanel;
-	private JPanel partButtonsPanel;
+	private ButtonPanel objectButtonsPanel;
+	private ButtonPanel partButtonsPanel;
 
 	private JList typeList;
 	private JList objectList;
@@ -86,6 +88,9 @@ public class ElementPanel extends TogglePanel {
 
 	private List<IMsoObjectIf> objects;
 	private List<IMsoObjectIf> parts;
+	
+	private List<Enum<?>> types;
+	private Map<Enum<?>,Boolean> editable;
 
 	public ElementPanel() {
 
@@ -387,7 +392,7 @@ public class ElementPanel extends TogglePanel {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	public JPanel getObjectButtonsPanel() {
+	public ButtonPanel getObjectButtonsPanel() {
 		if (objectButtonsPanel == null) {
 			try {
 				objectButtonsPanel = new ButtonPanel(getObjectList(),ElementType.OBJECT);
@@ -403,7 +408,7 @@ public class ElementPanel extends TogglePanel {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	public JPanel getPartButtonsPanel() {
+	public ButtonPanel getPartButtonsPanel() {
 		if (partButtonsPanel == null) {
 			try {
 				partButtonsPanel = new ButtonPanel(getPartList(),ElementType.PART);
@@ -454,19 +459,50 @@ public class ElementPanel extends TogglePanel {
         }
     }
 
+	public List<Enum<?>> getTypes() {
+		return new ArrayList<Enum<?>>(types);
+	}
+	
+	public boolean contains(Enum<?> type) {
+		return types.contains(type);
+	}
+	
+	public boolean isEditable(Enum<?> type) {
+		if(editable.containsKey(type)) {
+			return editable.get(type); 
+		}
+		return false;
+	}
+	
+	public void setEditable(Enum<?> type, boolean isEditable) {
+		editable.put(type,isEditable);		
+	}
+	
+	public void setEditable(EnumSet<?> types, boolean isEditable) {
+		for(Enum<?> it : types)
+			setEditable(it, isEditable);
+	}
+	
+	
 	private void loadTypes() {
 		// get values
 		ISearchIf.SearchSubType[] values = ISearchIf.SearchSubType.values();
 		// allocate memory
-		Object[] listData = new Object[values.length + 4];
+		Enum<?>[] listData = new Enum<?>[values.length + 4];
 		// fill list data
-		listData[0] = IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA;
-		listData[1] = IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA;
-		listData[2] = IMsoManagerIf.MsoClassCode.CLASSCODE_POI;
+		listData[0] = MsoClassCode.CLASSCODE_OPERATIONAREA;
+		listData[1] = MsoClassCode.CLASSCODE_SEARCHAREA;
+		listData[2] = MsoClassCode.CLASSCODE_POI;
 		for (int i = 0; i < values.length; i++) {
 			listData[i + 3] = values[i];
 		}
-		listData[listData.length-1] = IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT;
+		listData[listData.length-1] = MsoClassCode.CLASSCODE_UNIT;
+		types = new ArrayList<Enum<?>>();
+		editable = new HashMap<Enum<?>,Boolean>();
+		for(Enum it : listData) {
+			types.add(it);
+			editable.put(it, true);
+		}
 		getTypeList().setListData(listData);
 	}
 
@@ -495,7 +531,6 @@ public class ElementPanel extends TogglePanel {
 						data = c.toArray();
 						objects.addAll(c);
 					}
-
 				}
 				else if(MsoClassCode.CLASSCODE_SEARCHAREA.equals(e)) {
 					// get search areas
@@ -505,7 +540,6 @@ public class ElementPanel extends TogglePanel {
 						data = c.toArray();
 						objects.addAll(c);
 					}
-
 				}
 				else if(e instanceof SearchSubType ||
 						MsoClassCode.CLASSCODE_AREA.equals(e) ) {
@@ -536,6 +570,8 @@ public class ElementPanel extends TogglePanel {
 				MsoUtils.sortByName(c,1);
 				data = c.toArray();
 				objects.addAll(c);
+				// update button state
+				getObjectButtonsPanel().setEditableFromType(e);
 			}
 
 			// update model
@@ -595,6 +631,8 @@ public class ElementPanel extends TogglePanel {
 						// parts
 						getPartList().setEnabled(true);
 					}
+					// update button state
+					getPartButtonsPanel().setEditableFromType(msoObject.getMsoClassCode());
 				}
 			}
 		}
@@ -653,7 +691,8 @@ public class ElementPanel extends TogglePanel {
 			MsoClassCode code = msoObject.getMsoClassCode();
 			// dispatch class code
 			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
-					MsoClassCode.CLASSCODE_SEARCHAREA.equals(code)) {
+					MsoClassCode.CLASSCODE_SEARCHAREA.equals(code) ||
+					MsoClassCode.CLASSCODE_UNIT.equals(code)) {
 				// get selected element class
 				Enum<?> e = (Enum<?>)typeList.getSelectedValue();
 				// belongs object to selected class?
@@ -755,7 +794,8 @@ public class ElementPanel extends TogglePanel {
 		// dispatch class code
 		if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
 				MsoClassCode.CLASSCODE_SEARCHAREA.equals(code) ||
-				MsoClassCode.CLASSCODE_AREA.equals(code)) {
+				MsoClassCode.CLASSCODE_AREA.equals(code) ||
+				MsoClassCode.CLASSCODE_UNIT.equals(code)) {
 			// get list
 			list = objects;
 		}
@@ -974,7 +1014,7 @@ public class ElementPanel extends TogglePanel {
 
 							// notify
 							fireOnElementCenterAt(new ElementEvent(centerAtButton,
-									msoObject,ElementEventType.CENTER_AT,type));
+									msoObject,ElementEventType.CENTERAT,type));
 
 						}
 
@@ -984,6 +1024,12 @@ public class ElementPanel extends TogglePanel {
 				}
 			}
 			return centerAtButton;
+		}
+		
+		public void setEditableFromType(Enum<?> type) {
+			boolean isEditable = isEditable(type);
+			getEditButton().setEnabled(isEditable);
+			getDeleteButton().setEnabled(isEditable);
 		}
 
 	}
@@ -1021,7 +1067,7 @@ public class ElementPanel extends TogglePanel {
 		}
 
 		public boolean isCenterAtEvent() {
-			return (event== ElementEventType.CENTER_AT);
+			return (event== ElementEventType.CENTERAT);
 		}
 
 		public boolean isDeleteEvent() {

@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.ProgressMonitor;
@@ -32,18 +33,20 @@ import org.w3c.dom.NodeList;
 
 public class DiskoModuleManager {
 
-	private final IApplication app;
+	private final Application app;
 	private final Document doc;
 	private String[] rolleNames;
 	private final ClassLoader classLoader;
 	private final Map<String,IDiskoWpModule> modules;
+	
+	private final Logger logger = Logger.getLogger(DiskoModuleManager.class);
 
 	/**
 	 * Constructs a DiskoModuleManager
 	 * @param app A reference to the Disko application.
 	 * @param file A xml file containing roles and modules.
 	 */
-	public DiskoModuleManager(IApplication app, File file) throws Exception {
+	public DiskoModuleManager(Application app, File file) throws Exception {
 
 		// prepare
 		this.app = app;
@@ -139,10 +142,10 @@ public class DiskoModuleManager {
 						}
 						else throw new Exception("Unsupported class was found");
 					} catch (Exception e) { /* NOP */
-						// TODO: Handle failed load of work modules
-						Utils.showError("Feil i arbeidsprosess", "Følgende feil funnet i "+ className + ":",e);
-						System.out.println("Error"+e.getMessage());
-						e.printStackTrace();
+						// archive
+						logger.error("Failed to load work process " + className,e);
+						// notify
+						Utils.showError("Lasting av arbeidsprosess ikke fullført", "Følgende feil funnet i "+ className + ":",e);
 					}
 				}
 				// add module?

@@ -3,10 +3,11 @@
  */
 package org.redcross.sar.gui.panel;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +38,14 @@ public class MapStatusPanel extends JPanel {
 		BAR_ITEM_USERDEFINED
 	}
 	
-	private JPanel statusPanel = null;
 	private BarItem clickLabel = null;
 	private BarItem mouseOverLabel = null;
 	private BarItem selectedLabel = null;	
 	private BarItem scaleLabel = null;	
 	
 	private HashMap<String,BarItem> bars = null;
+
+	private int rows;
 	
 	/**
 	 * Constructor 
@@ -53,38 +55,54 @@ public class MapStatusPanel extends JPanel {
 		// initialize
 		bars = new HashMap<String,BarItem>(BarItemType.values().length);
 		
-		// add status panel
-		setLayout(new BorderLayout());
-		add(getStatusPanel(),BorderLayout.NORTH);
+		FlowLayout fl = new FlowLayout();
+		fl.setVgap(0);
+		fl.setHgap(10);
+		fl.setAlignment(FlowLayout.LEFT);
+		setLayout(fl);
+		setFocusable(false);
+		setRows(1);
+		setBackground(Color.WHITE);
+		add(getClickLabel());
+		add(getMouseOverLabel());
+		add(getScaleLabel());
+		add(getSelectedLabel());
+		
+		// listen for show event
+		addComponentListener(new ComponentAdapter() {
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				// forward
+				fitHightToRows();
+			}
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// forward
+				fitHightToRows();
+			}
+			
+		});
 		
 		// is not focusable
 		setFocusable(false);
 		
 	}
-
-	private JPanel getStatusPanel() {
-		if (statusPanel == null) {
-			try {
-				FlowLayout fl = new FlowLayout();
-				fl.setVgap(0);
-				fl.setHgap(10);
-				fl.setAlignment(FlowLayout.LEFT);
-				statusPanel = new JPanel();
-				statusPanel.setLayout(fl);
-				statusPanel.setFocusable(false);
-				statusPanel.setPreferredSize(new Dimension(20,20));
-				statusPanel.setBackground(Color.WHITE);
-				statusPanel.add(getClickLabel());
-				statusPanel.add(getMouseOverLabel());
-				statusPanel.add(getScaleLabel());
-				statusPanel.add(getSelectedLabel());
-			} catch (java.lang.Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return statusPanel;
+	
+	public int getRows() {
+		return rows;
 	}
 	
+	public void setRows(int rows) {
+		rows = Math.max(1,rows);
+		int h = 20*rows;
+		setMinimumSize(new Dimension(20,h));
+		setPreferredSize(new Dimension(20,h));
+		setMaximumSize(new Dimension(Integer.MAX_VALUE,h));
+		this.rows = rows;
+	}
+
 	private JLabel getClickLabel() {
 		if (clickLabel == null) {
 			clickLabel = new BarItem("Siste", "","",
@@ -153,7 +171,7 @@ public class MapStatusPanel extends JPanel {
 	
 	public void onSelectionChanged(List<IMsoFeature> list) {
 		// update status panel?
-		if(getStatusPanel().isVisible()) {
+		if(isVisible()) {
 			IMsoObjectIf msoObj = list.size()>0 ? list.get(0).getMsoObject() :null;
 			if(msoObj!=null) {
 				selectedLabel.setValue(MsoUtils.getCompleteMsoObjectName(msoObj,1)); 									
@@ -166,7 +184,7 @@ public class MapStatusPanel extends JPanel {
 
 	public void setScale(double scale) {
 		// update status panel?
-		if(getStatusPanel().isVisible()) {
+		if(isVisible()) {
 			scaleLabel.setValue(Integer.toString((int)scale)); 				
 		}		
 	}
@@ -208,7 +226,7 @@ public class MapStatusPanel extends JPanel {
 		if (item.getType().equals(BarItemType.BAR_ITEM_USERDEFINED))
 			throw new CanNotRemoveItemException();
 		bars.remove(key);
-		getStatusPanel().remove(item);
+		MapStatusPanel.this.remove(item);
 	}
 	
 	public void reset() {
@@ -216,6 +234,29 @@ public class MapStatusPanel extends JPanel {
 		for(BarItem it : c) {
 			it.setEmpty();
 		}
+	}
+	
+	private void fitHightToRows() {
+		if(isShowing()) {
+			int rows = calculateRowCount();
+			if(getRows()!=rows) setRows(rows);
+		}
+	}
+	
+	private int calculateRowCount() {
+		int y = -1;
+		int rows = 0;
+		int count = getComponentCount();
+		for(int i=0;i<count;i++) {
+			if(getComponent(i) instanceof BarItem) {
+				BarItem item = (BarItem)getComponent(i);
+				if(item.getY()!=y) {
+					y = item.getY();
+					rows++;
+				}
+			}
+		}
+		return rows;
 	}
 	
 	public class BarItem extends JLabel {
@@ -252,7 +293,7 @@ public class MapStatusPanel extends JPanel {
 			setFocusable(false);
 			bars.put(key, this);
 			setEmpty();
-			getStatusPanel().add(this);
+			MapStatusPanel.this.add(this);
 		}
 		
 		BarItem(String label, String prefix, String postfix, 
@@ -267,7 +308,7 @@ public class MapStatusPanel extends JPanel {
 			setFocusable(false);
 			bars.put(type.toString(), this);
 			setEmpty();
-			getStatusPanel().add(this);
+			MapStatusPanel.this.add(this);
 		}		
 		
 		public BarItemType getType () {
@@ -327,15 +368,12 @@ public class MapStatusPanel extends JPanel {
 				setText(OPEN_TAG+label+SEMICOLON+SPACE+prefix+this.value+postfix+CLOSE_TAG);
 			else
 				setText(label+SEMICOLON+SPACE+prefix+this.value+postfix);
-			
+			// forward
+			fitHightToRows();
 		}
 		
 		public void setEmpty() {
-			this.value = empty;
-			if(isHtml)
-				setText(OPEN_TAG+label+SEMICOLON+SPACE+prefix+empty+postfix+CLOSE_TAG);
-			else
-				setText(label+SEMICOLON+SPACE+prefix+empty+postfix);
+			setValue(empty);
 		}
 	}
 	

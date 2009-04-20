@@ -88,28 +88,28 @@ public interface IDiskoMap {
 	public List<IMsoFeatureLayer> clearSelected() throws IOException, AutomationException;
 
 	public void flashSelected();
-	public void flashPoint(IPoint p);
-	public void flashPosition(GeoPos p);
-	public void flashEnvelope(IEnvelope extent);
-	public void flashPolygon(IPolygon p);
-	public void flashPolyline(IPolyline p);
-	public void flashFeature(IFeature feature);
-	public void flashMsoObject(IMsoObjectIf msoObject);
+	public void flash(IPoint p);
+	public void flash(GeoPos p);
+	public void flash(IEnvelope extent);
+	public void flash(IPolygon p);
+	public void flash(IPolyline p);
+	public void flash(IFeature feature);
+	public void flash(IMsoObjectIf msoObject);
 
 	public void centerAt(IPoint p) throws IOException, AutomationException;
-	public void centerAtPosition(GeoPos p) throws IOException, AutomationException;
-	public void centerAtSelected () throws IOException, AutomationException;
-	public void centerAtFeature(IFeature feature) throws IOException, AutomationException;
-	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
+	public void centerAt(GeoPos p) throws IOException, AutomationException;
+	public void centerAtSelected() throws IOException, AutomationException;
+	public void centerAt(IFeature feature) throws IOException, AutomationException;
+	public void centerAt(IMsoObjectIf msoObject) throws IOException, AutomationException;
 
 	public void zoomTo(IGeometry geom,double ratio) throws IOException, AutomationException;
-	public void zoomToPosition(GeoPos p,double ratio) throws IOException, AutomationException;
-	public void zoomToSelected () throws IOException, AutomationException;
-	public void zoomToSelected (double ratio) throws IOException, AutomationException;
-	public void zoomToFeature(IFeature feature) throws IOException, AutomationException;
-	public void zoomToFeature(IFeature feature, double ratio) throws IOException, AutomationException;
-	public void zoomToMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException;
-	public void zoomToMsoObject(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException;
+	public void zoomTo(GeoPos p,double ratio) throws IOException, AutomationException;
+	public void zoomToSelected() throws IOException, AutomationException;
+	public void zoomToSelected(double ratio) throws IOException, AutomationException;
+	public void zoomTo(IFeature feature) throws IOException, AutomationException;
+	public void zoomTo(IFeature feature, double ratio) throws IOException, AutomationException;
+	public void zoomTo(IMsoObjectIf msoObject) throws IOException, AutomationException;
+	public void zoomTo(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException;
 
 	public IEnvelope getMsoObjectExtent(IMsoObjectIf msoObj) throws IOException, AutomationException;
 

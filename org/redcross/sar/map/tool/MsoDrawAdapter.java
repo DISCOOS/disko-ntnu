@@ -1277,24 +1277,27 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				// not supported!
 				e = null;
 			}
-			// save element
-			MsoDrawAdapter.this.element = e;
-			// notify?
-			if (e != null) {
-				// set MSO data
-				setMsoData(msoOwner, msoObject, code);
-				// select object?
-				if(msoObject!=null) {
-					refresh = (ensureIsSelected(msoObject,true)!=null);
+			// supported?
+			if(isSupported(code)) {
+				// save element
+				MsoDrawAdapter.this.element = e;
+				// notify?
+				if (e != null) {
+					// set MSO data
+					setMsoData(msoOwner, msoObject, code);
+					// select object?
+					if(msoObject!=null) {
+						refresh = (ensureIsSelected(msoObject,true)!=null);
+					}
+					// set draw mode
+					setDrawMode(mode);
+					// select default tool?
+					if (!app.isLoading() && setTool) setDefaultTool(defaultTool);
+					// forward
+					syncLists();
+					// notify
+					fireOnElementChange(element, msoObject);
 				}
-				// set draw mode
-				setDrawMode(mode);
-				// select default tool?
-				if (!app.isLoading() && setTool) setDefaultTool(defaultTool);
-				// forward
-				syncLists();
-				// notify
-				fireOnElementChange(element, msoObject);
 			}
 
 			// forward

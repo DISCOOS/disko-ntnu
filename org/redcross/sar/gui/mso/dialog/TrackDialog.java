@@ -130,7 +130,7 @@ public class TrackDialog extends DefaultDialog  {
 											TimePos p2 = track.get(idx[0]+1);
 											line = MapUtil.getEsriPolyline(p1,p2,m_map.getSpatialReference());
 											m_map.zoomTo(line.getEnvelope(),2.0);
-											m_map.flashEnvelope(line.getEnvelope());
+											m_map.flash(line.getEnvelope());
 										}
 										else {
 											int count = idx.length;
@@ -141,7 +141,7 @@ public class TrackDialog extends DefaultDialog  {
 											points.add(track.get(idx[count-1]+1));
 											line = MapUtil.getEsriPolyline(points,m_map.getSpatialReference());;
 											m_map.zoomTo(line.getEnvelope(),2.0);
-											m_map.flashPolyline(line);
+											m_map.flash(line);
 										}
 									} catch (UnknownHostException ex) {
 										// TODO Auto-generated catch block

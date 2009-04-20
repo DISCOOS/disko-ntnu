@@ -726,7 +726,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 			super.centerAt(p);
 	}
 
-	public void centerAtPosition(GeoPos p) throws IOException, AutomationException {
+	public void centerAt(GeoPos p) throws IOException, AutomationException {
 		// get esri point
 		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
 		if (!point.isEmpty()) {
@@ -741,7 +741,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void centerAtFeature(IFeature feature) throws IOException, AutomationException {
+	public void centerAt(IFeature feature) throws IOException, AutomationException {
 		if(feature!=null) {
 			IEnvelope env = feature.getExtent();
 			if(env!=null && !env.isEmpty()) {
@@ -750,7 +750,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void centerAtMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
+	public void centerAt(IMsoObjectIf msoObject) throws IOException, AutomationException {
 		IEnvelope env = getMsoObjectExtent(msoObject);
 		if(env!=null && !env.isEmpty()) {
 			centerAt(MapUtil.getCenter(env));
@@ -761,7 +761,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		try {
 			List<IFeature> list = getSelection();
 			for(IFeature it : list)
-				flashFeature(it);
+				flash(it);
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -771,16 +771,16 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void flashPoint(IPoint p) {
+	public void flash(IPoint p) {
 		flashShape(p);
 	}
 
-	public void flashPosition(GeoPos p) {
+	public void flash(GeoPos p) {
 		try {
 			// get esri point
 			IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
 			if (!point.isEmpty()) {
-				flashPoint(point);
+				flash(point);
 			}
 		} catch (AutomationException e) {
 			// TODO Auto-generated catch block
@@ -791,7 +791,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void flashFeature(IFeature feature) {
+	public void flash(IFeature feature) {
 		// forward?
 		if(feature!=null) {
 			try {
@@ -826,7 +826,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		return flashable;
 	}
 
-	public void flashMsoObject(IMsoObjectIf msoObj) {
+	public void flash(IMsoObjectIf msoObj) {
 		try {
 			// forward?
 			msoObj = getGeodataMsoObject(msoObj);
@@ -836,7 +836,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 					IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 					MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
 					for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObj))
-						flashFeature(msoFC.getFeature(it.getObjectId()));
+						flash(msoFC.getFeature(it.getObjectId()));
 				}
 			}
 		} catch (AutomationException e) {
@@ -848,15 +848,15 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void flashEnvelope(IEnvelope extent) {
+	public void flash(IEnvelope extent) {
 		flashShape(extent);
 	}
 
-	public void flashPolygon(IPolygon p) {
+	public void flash(IPolygon p) {
 		flashShape(p);
 	}
 
-	public void flashPolyline(IPolyline p) {
+	public void flash(IPolyline p) {
 		flashShape(p);
 	}
 
@@ -895,7 +895,7 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		setExtent(MapUtil.expand(ratio,geom.getEnvelope()));
 	}
 
-	public void zoomToPosition(GeoPos p, double ratio) throws IOException, AutomationException {
+	public void zoomTo(GeoPos p, double ratio) throws IOException, AutomationException {
 		// get esri point
 		IPoint point = MapUtil.getEsriPoint(p, getSpatialReference());
 		if (!point.isEmpty()) {
@@ -914,11 +914,11 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void zoomToFeature(IFeature feature) throws IOException, AutomationException {
-		zoomToFeature(feature,ZOOM_RATIO);
+	public void zoomTo(IFeature feature) throws IOException, AutomationException {
+		zoomTo(feature,ZOOM_RATIO);
 	}
 
-	public void zoomToFeature(IFeature feature, double ratio) throws IOException, AutomationException {
+	public void zoomTo(IFeature feature, double ratio) throws IOException, AutomationException {
 		if(feature!=null) {
 			IEnvelope env = feature.getExtent();
 			if(env!=null) {
@@ -927,14 +927,14 @@ public final class DiskoMap extends MapBean implements IDiskoMap {
 		}
 	}
 
-	public void zoomToMsoObject(IMsoObjectIf msoObject) throws IOException, AutomationException {
-		zoomToMsoObject(msoObject,ZOOM_RATIO);
+	public void zoomTo(IMsoObjectIf msoObject) throws IOException, AutomationException {
+		zoomTo(msoObject,ZOOM_RATIO);
 	}
 
-	public void zoomToMsoObject(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException {
+	public void zoomTo(IMsoObjectIf msoObject, double ratio) throws IOException, AutomationException {
 		// is poi?
 		if(msoObject instanceof IPOIIf) {
-			centerAtMsoObject(msoObject);
+			centerAt(msoObject);
 		}
 		else {
 			IEnvelope env = getMsoObjectExtent(msoObject);

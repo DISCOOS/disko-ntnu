@@ -23,7 +23,6 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -88,8 +87,6 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		setCaptionText(caption);
 		setValue(value);
 		setEditable(isEditable);
-
-		//setBorder(BorderFactory.createLineBorder(Color.RED)); // USE TO DEBUG LAYOUT PROBLEMS
 
 		// resume listeners
 		setChangeable(true);
@@ -215,7 +212,8 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		// add focus listeners
 		getComponent().addFocusListener(m_focusListener);
 		getButton().addFocusListener(m_focusListener);
-
+		// USE TO DEBUG LAYOUT PROBLEMS
+		// setBorder(BorderFactory.createLineBorder(Color.RED)); 		
 	}
 
 	private void fireOnWorkChange(WorkFlowEvent e) {

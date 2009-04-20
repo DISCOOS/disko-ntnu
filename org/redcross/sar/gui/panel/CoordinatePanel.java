@@ -22,12 +22,14 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.document.UpperCaseDocument;
-import org.redcross.sar.gui.format.DEGFormat;
-import org.redcross.sar.gui.format.DEMFormat;
-import org.redcross.sar.gui.format.DESFormat;
-import org.redcross.sar.gui.format.MGRSFormat;
-import org.redcross.sar.gui.format.UTMFormat;
+import org.redcross.sar.gui.format.CoordinateFormatter;
+import org.redcross.sar.gui.format.DEGFormatter;
+import org.redcross.sar.gui.format.DEMFormatter;
+import org.redcross.sar.gui.format.DESFormatter;
+import org.redcross.sar.gui.format.MGRSFormatter;
+import org.redcross.sar.gui.format.UTMFormatter;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
@@ -46,6 +48,14 @@ import java.beans.PropertyChangeListener;
  */
 public class CoordinatePanel extends JPanel {
 
+	public static final int MGRS_FORMAT = 1;
+	public static final int UTM_FORMAT = 2;
+	public static final int DES_FORMAT = 3;
+	public static final int DEM_FORMAT = 4;
+	public static final int DEG_FORMAT = 5;
+	
+	public static final int DEFAULT_PRECISION = -1;
+	
 	private static final long serialVersionUID = 1L;
 	private static final String NULL_POSITION = "Ingen posisjon";
 	
@@ -77,17 +87,22 @@ public class CoordinatePanel extends JPanel {
 	private JLabel m_zoneLabel = null;
 	private JLabel m_squareLabel = null;
 	
-	private int m_format = 1; // MGRS
+	private int m_format = MGRS_FORMAT;
+	private int m_digits = DEFAULT_PRECISION;
 	
-	private JComboBox m_ZoneCombo = null;
-	private JComboBox m_SquareCombo = null;
+	private boolean m_isHtml = true;
 	
-	private int workCount = 0;	
-	private boolean isInvalid = true;
+	private JComboBox m_zoneCombo = null;
+	private JComboBox m_squareCombo = null;
 	
-	private Position current = null;
+	private int m_workCount = 0;	
+	private boolean m_isInvalid = true;
+	
+	private Position m_current = null;
 	
 	private List<ChangeListener> m_listeners = null;
+	
+	private static Logger m_logger = Logger.getLogger(CoordinatePanel.class);
 	
 	/**
 	 * Constructor
@@ -120,10 +135,10 @@ public class CoordinatePanel extends JPanel {
 	}
 	
 	public void setEditable(boolean isEditable) {
-		m_ZoneCombo.setEditable(isEditable);
-		m_SquareCombo.setEditable(isEditable);
-		m_ZoneCombo.setEnabled(isEditable);
-		m_SquareCombo.setEnabled(isEditable);
+		m_zoneCombo.setEditable(isEditable);
+		m_squareCombo.setEditable(isEditable);
+		m_zoneCombo.setEnabled(isEditable);
+		m_squareCombo.setEnabled(isEditable);
 		m_latitudeText.setEditable(isEditable);
 		m_longetudeText.setEditable(isEditable);		
 	}
@@ -133,15 +148,17 @@ public class CoordinatePanel extends JPanel {
 	}
 	
 	public boolean isPositionValid() {
-		return !isInvalid;
+		return !m_isInvalid;
 	}
 	
-	private void setInvalidPosiiton(boolean isInvalid) {
-		this.isInvalid = isInvalid;
+	private void setInvalidPosition(boolean isInvalid) {
+		this.m_isInvalid = isInvalid;
 	}
 	
 	/**
-	 * This method set mgrs from text
+	 * <b>This method set position from text</b></p>
+	 * 
+	 * @param text - position formated as text.
 	 * 
 	 * @return void
 	 */
@@ -150,7 +167,7 @@ public class CoordinatePanel extends JPanel {
 		// consume?
 		if(isWorking()) return;
 		
-		// prevent reentry
+		// prevent re-entry
 		setIsWorking();
 		
 		// initialize flag
@@ -161,7 +178,7 @@ public class CoordinatePanel extends JPanel {
 		int iy = m_latitudeText.getCaretPosition();
 		
 		// assume valid position
-		setInvalidPosiiton(false);
+		setInvalidPosition(false);
 		
 		try {
 			// is not null?
@@ -169,7 +186,7 @@ public class CoordinatePanel extends JPanel {
 				// is empty?
 				if (text.length() > 0) { 
 					switch(getFormat()) {
-					case 1: // MGRS						
+					case MGRS_FORMAT:						
 						String zone = text.subSequence(0, 3).toString();
 						String square = text.subSequence(3, 5).toString();
 						// get coordinates
@@ -184,7 +201,7 @@ public class CoordinatePanel extends JPanel {
 						getLongetudeText().setValue(y);
 						bEmpty = false;
 						break;
-					case 2: // UTM
+					case UTM_FORMAT: 
 						zone = text.subSequence(0, 3).toString();
 						// get coordinates
 						coords = MapUtil.getCoords(text.subSequence(3, text.length()).toString());						
@@ -197,14 +214,14 @@ public class CoordinatePanel extends JPanel {
 						getLongetudeText().setValue(y);
 						bEmpty = false;
 						break;					
-					case 3: // DES
+					case DES_FORMAT: 
 						String[] split = text.split("E");
 						getLatitudeText().setValue(split[0]);
 						split = split[1].split("N");
 						getLongetudeText().setValue(split[0]);
 						bEmpty = false;
 						break;					
-					case 4: // DEM
+					case DEM_FORMAT: 
 						split = text.split("E");
 						x = MapUtil.unformatDEM(split[0]);
 						getLatitudeText().setValue(x);
@@ -213,7 +230,7 @@ public class CoordinatePanel extends JPanel {
 						getLongetudeText().setValue(y);
 						bEmpty = false;
 						break;
-					case 5: // DEG
+					case DEG_FORMAT: 
 						split = text.split("E");
 						x = MapUtil.unformatDEG(split[0]);
 						getLatitudeText().setValue(x);
@@ -229,7 +246,7 @@ public class CoordinatePanel extends JPanel {
 			}
 		}
 		catch(Exception e) {
-			setInvalidPosiiton(true);
+			setInvalidPosition(true);
 		}
 		
 		if (bEmpty) {
@@ -240,7 +257,7 @@ public class CoordinatePanel extends JPanel {
 		}	
 		
 		// get current position
-		current = getPositionFromText();
+		m_current = getPositionFromText();
 		
 		// resume caret positions
 		text = m_longetudeText.getText();		
@@ -273,25 +290,25 @@ public class CoordinatePanel extends JPanel {
 			
 			// translate to format
 			switch(getFormat()) {
-			case 1: // MGRS
+			case MGRS_FORMAT:
 				text = (getZoneCombo().getSelectedItem()==null ? "" : 
 						getZoneCombo().getSelectedItem().toString()) +
 						(getSquareCombo().getSelectedItem()==null ? "" : 
 							getSquareCombo().getSelectedItem().toString()) +
 					getLatitudeText().getText() + getLongetudeText().getText();
 				break;	
-			case 2:	// UTM
+			case UTM_FORMAT:	
 				text = (getZoneCombo().getSelectedItem()==null ? "" : 
 					getZoneCombo().getSelectedItem().toString()) +
 					getLatitudeText().getText() + getLongetudeText().getText();
 				break;	
-			case 3: // DES
+			case DES_FORMAT: 
 				text = getLatitudeText().getText() + getLongetudeText().getText();
 				break;	
-			case 4: // DEM
+			case DEM_FORMAT: 
 				text = getLatitudeText().getText() + getLongetudeText().getText();
 				break;	
-			case 5: // DEG
+			case DEG_FORMAT: 
 				text = getLatitudeText().getText() + getLongetudeText().getText();
 				break;	
 			}
@@ -436,7 +453,7 @@ public class CoordinatePanel extends JPanel {
 				    // consume?
 					if(isWorking()) return;
 					// get position
-					current = getPositionFromText();
+					m_current = getPositionFromText();
 					// notify
 					fireChangeEvent(e.getSource());
 				}		
@@ -459,7 +476,7 @@ public class CoordinatePanel extends JPanel {
 				    // consume?
 					if(isWorking()) return;
 					// get position
-					current = getPositionFromText();
+					m_current = getPositionFromText();
 					// notify
 					fireChangeEvent(e.getSource());
 				}		
@@ -474,29 +491,29 @@ public class CoordinatePanel extends JPanel {
 	 * @return javax.swing.JComboBox	
 	 */
 	private JComboBox getZoneCombo() {
-		if (m_ZoneCombo == null) {
+		if (m_zoneCombo == null) {
 			Arrays.sort(zones);
-			m_ZoneCombo = new JComboBox(zones);
+			m_zoneCombo = new JComboBox(zones);
 			//m_ZoneCombo.setEditable(true);
-			m_ZoneCombo.setPreferredSize(new Dimension(60, 20));
-			m_ZoneCombo.getModel().addListDataListener(m_listDataListener);
-			JTextField editor = (JTextField)m_ZoneCombo.getEditor().getEditorComponent();
+			m_zoneCombo.setPreferredSize(new Dimension(60, 20));
+			m_zoneCombo.getModel().addListDataListener(m_listDataListener);
+			JTextField editor = (JTextField)m_zoneCombo.getEditor().getEditorComponent();
 			editor.setDocument( new UpperCaseDocument() );		
-			m_ZoneCombo.addFocusListener(new FocusListener() {
+			m_zoneCombo.addFocusListener(new FocusListener() {
 
 				@Override
 				public void focusLost(FocusEvent arg0) { /* NOP */ }
 				
 				@Override
 				public void focusGained(FocusEvent e) {
-					JTextField editor = (JTextField)m_ZoneCombo.getEditor().getEditorComponent();
+					JTextField editor = (JTextField)m_zoneCombo.getEditor().getEditorComponent();
 					editor.selectAll();
 				}
 
 			});
-			m_ZoneCombo.setSelectedIndex(0);
+			m_zoneCombo.setSelectedIndex(0);
 		}
-		return m_ZoneCombo;
+		return m_zoneCombo;
 	}
 
 	/**
@@ -505,29 +522,29 @@ public class CoordinatePanel extends JPanel {
 	 * @return javax.swing.JComboBox	
 	 */
 	private JComboBox getSquareCombo() {
-		if (m_SquareCombo == null) {
+		if (m_squareCombo == null) {
 			Arrays.sort(squares);
-			m_SquareCombo = new JComboBox(squares);
+			m_squareCombo = new JComboBox(squares);
 			//m_SquareCombo.setEditable(true);
-			m_SquareCombo.setPreferredSize(new Dimension(60, 20));
-			m_SquareCombo.getModel().addListDataListener(m_listDataListener);
-			JTextField editor = (JTextField)m_SquareCombo.getEditor().getEditorComponent();
+			m_squareCombo.setPreferredSize(new Dimension(60, 20));
+			m_squareCombo.getModel().addListDataListener(m_listDataListener);
+			JTextField editor = (JTextField)m_squareCombo.getEditor().getEditorComponent();
 			editor.setDocument( new UpperCaseDocument() );		
-			m_SquareCombo.addFocusListener(new FocusListener() {
+			m_squareCombo.addFocusListener(new FocusListener() {
 
 				@Override
 				public void focusLost(FocusEvent arg0) { /* NOP */ }
 				
 				@Override
 				public void focusGained(FocusEvent e) {
-					JTextField editor = (JTextField)m_SquareCombo.getEditor().getEditorComponent();
+					JTextField editor = (JTextField)m_squareCombo.getEditor().getEditorComponent();
 					editor.selectAll();
 				}
 
 			});
-			m_SquareCombo.setSelectedIndex(0);
+			m_squareCombo.setSelectedIndex(0);
 		}
-		return m_SquareCombo;
+		return m_squareCombo;
 	}
 	
 	public int getFormat() {
@@ -539,41 +556,67 @@ public class CoordinatePanel extends JPanel {
 		if(isWorking()) return;
 		// limit format to legal range of [1,5]
 		m_format = Math.min(5,Math.max(1,format));
-		// get formaters
+		// get formatters
 		switch(format) {
-		case 1: // MGRS
-			m_SquareCombo.setVisible(true);
+		case MGRS_FORMAT:
+			m_squareCombo.setVisible(true);
 			m_squareLabel.setVisible(true);
-			m_ZoneCombo.setVisible(true);
+			m_zoneCombo.setVisible(true);
 			m_zoneLabel.setVisible(true);
 			break;
-		case 2: // UTM
-			m_SquareCombo.setVisible(false);
+		case UTM_FORMAT: 
+			m_squareCombo.setVisible(false);
 			m_squareLabel.setVisible(false);
-			m_ZoneCombo.setVisible(true);
+			m_zoneCombo.setVisible(true);
 			m_zoneLabel.setVisible(true);
 			break;
-		case 3: // DES
-			m_SquareCombo.setVisible(false);
+		case DES_FORMAT: 
+			m_squareCombo.setVisible(false);
 			m_squareLabel.setVisible(false);
-			m_ZoneCombo.setVisible(false);
+			m_zoneCombo.setVisible(false);
 			m_zoneLabel.setVisible(false);
 			break;
-		case 4: // DEM
-			m_SquareCombo.setVisible(false);
+		case DEM_FORMAT: 
+			m_squareCombo.setVisible(false);
 			m_squareLabel.setVisible(false);
-			m_ZoneCombo.setVisible(false);
+			m_zoneCombo.setVisible(false);
 			m_zoneLabel.setVisible(false);
 			break;
-		case 5: // DEG
-			m_SquareCombo.setVisible(false);
+		case DEG_FORMAT: 
+			m_squareCombo.setVisible(false);
 			m_squareLabel.setVisible(false);
-			m_ZoneCombo.setVisible(false);
+			m_zoneCombo.setVisible(false);
 			m_zoneLabel.setVisible(false);
 			break;
 		}		
 		// apply current position again
-		setPosition(current);
+		setPosition(m_current);
+		// notify
+		fireChangeEvent(this);
+	}
+	
+	public int getDigits() {
+		return m_digits;
+	}
+	
+	public void setDigits(int digits) {
+		// prepare
+		m_digits = digits;
+		// apply current position again
+		setPosition(m_current);
+		// notify
+		fireChangeEvent(this);
+	}
+
+	public boolean isHtml() {
+		return m_isHtml;
+	}
+	
+	public void setHtml(boolean isHtml) {
+		// prepare
+		m_isHtml = isHtml;
+		// apply current position again
+		setPosition(m_current);
 		// notify
 		fireChangeEvent(this);
 	}
@@ -588,19 +631,19 @@ public class CoordinatePanel extends JPanel {
 
 		try {
 			switch(getFormat()) {
-			case 1: // MGRS
+			case MGRS_FORMAT:
 				p = MapUtil.getPositionFromMGRS(text);
 				break;
-			case 2: // UTM
+			case UTM_FORMAT: 
 				p = MapUtil.getPositionFromUTM(text);
 				break;
-			case 3: // DES
+			case DES_FORMAT: 
 				p = MapUtil.getPositionFromDES(text);
 				break;
-			case 4: // DEM
+			case DEM_FORMAT: 
 				p = MapUtil.getPositionFromDEM(text);
 				break;
-			case 5: // DEG
+			case DEG_FORMAT: 
 				p = MapUtil.getPositionFromDEG(text);
 				break;
 			}
@@ -614,32 +657,32 @@ public class CoordinatePanel extends JPanel {
 	}
 	
 	public Position getPosition() {
-		return current;
+		return m_current;
 	}
 		
 	private Position getPositionFromText() {
 		// assume valid position
-		setInvalidPosiiton(false);
+		setInvalidPosition(false);
 		
 		// get text
 		String text = getText();
 		
 		try {
 			switch(getFormat()) {
-			case 1: // MGRS
+			case MGRS_FORMAT:
 				return MapUtil.getPositionFromMGRS(text);
-			case 2: // UTM
+			case UTM_FORMAT: 
 				return MapUtil.getPositionFromUTM(text);
-			case 3: // DES
+			case DES_FORMAT: 
 				return MapUtil.getPositionFromDES(text);
-			case 4: // DEM
+			case DEM_FORMAT: 
 				return MapUtil.getPositionFromDEM(text);
-			case 5: // DEG
+			case DEG_FORMAT: 
 				return MapUtil.getPositionFromDEG(text);
 			}
 		}
 		catch (Exception e) {
-			setInvalidPosiiton(true);		
+			setInvalidPosition(true);		
 		}
 
 		return null;
@@ -648,37 +691,37 @@ public class CoordinatePanel extends JPanel {
 	public void setPosition(Position p) {
 		
 		// assume valid position
-		setInvalidPosiiton(false);
+		setInvalidPosition(false);
 		
 		// is convertable
 		if(p==null) {
 			setText(null);
-			current = null;
+			m_current = null;
 		}
 		else {
 			try {
 				switch(getFormat()) {
-				case 1: // MGRS
+				case MGRS_FORMAT:
 					setText(MapUtil.getMGRSfromPosition(p,5));
 					break;
-				case 2: // UTM
+				case UTM_FORMAT: 
 					setText(MapUtil.getUTMfromPosition(p));
 					break;
-				case 3: // DEG
+				case DES_FORMAT: 
 					setText(MapUtil.getDESfromPosition(p));
 					break;
-				case 4: // DEM
+				case DEM_FORMAT: 
 					setText(MapUtil.getDEMfromPosition(p));
 					break;
-				case 5: // DEG
+				case DEG_FORMAT: 
 					setText(MapUtil.getDEGfromPosition(p));
 					break;
 				}
 				// get current position
-				current = p;
+				m_current = p;
 			}
 			catch (Exception e) {
-				setInvalidPosiiton(true);
+				setInvalidPosition(true);
 			}
 		}
 	}	
@@ -686,37 +729,37 @@ public class CoordinatePanel extends JPanel {
 	public void setPoint(Point p) {
 		
 		// assume valid position
-		setInvalidPosiiton(false);
+		setInvalidPosition(false);
 		
 		// is convertable
 		if(p==null) {
 			setText(null);
-			current = null;
+			m_current = null;
 		}
 		else {
 			try {
 				switch(getFormat()) {
-				case 1: // MGRS
+				case MGRS_FORMAT:
 					setText(MapUtil.getMGRSfromPoint(p,5));
 					break;
-				case 2: // UTM
+				case UTM_FORMAT: 
 					setText(MapUtil.getUTMfromPoint(p));
 					break;
-				case 3: // DES
+				case DES_FORMAT: 
 					setText(MapUtil.getDESfromPoint(p));
 					break;
-				case 4: // DEM
+				case DEM_FORMAT: 
 					setText(MapUtil.getDEMfromPoint(p));
 					break;
-				case 5: // DEG
+				case DEG_FORMAT: 
 					setText(MapUtil.getDEGfromPoint(p));
 					break;
 				}
 				// get current position
-				current = MapUtil.getMsoPosistion(p);
+				m_current = MapUtil.getMsoPosistion(p);
 			}
 			catch (Exception e) {
-				setInvalidPosiiton(true);
+				setInvalidPosition(true);
 			}
 		}
 	}
@@ -740,57 +783,59 @@ public class CoordinatePanel extends JPanel {
 	}
 	
     private boolean isWorking() {
-		return (workCount>0);
+		return (m_workCount>0);
 	}
 
     private int setIsWorking() {
-		workCount++;
-		return workCount; 
+		m_workCount++;
+		return m_workCount; 
 	}
 	
     private int setIsNotWorking() {
-		if(workCount>0) {
-			workCount--;
+		if(m_workCount>0) {
+			m_workCount--;
 		}
-		return workCount; 
+		return m_workCount; 
 	}
 	
     
-    class FormatFactory extends JFormattedTextField.AbstractFormatterFactory {
+    private class FormatFactory extends JFormattedTextField.AbstractFormatterFactory {
 
-    	private String direction = null;
+    	private String hemisphere = null;
     	
-    	public FormatFactory(String direction) {
-    		this.direction = direction;
+    	public FormatFactory(String hemisphere) {
+    		this.hemisphere = hemisphere;
     	}
     	
 		@Override
 		public AbstractFormatter getFormatter(JFormattedTextField tf) {
-			try {
-				// create formatter
-				switch(getFormat()) {
-				case 1: // MGRS
-					return new MGRSFormat(direction);
-				case 2: // UTM
-					return new UTMFormat(direction);
-				case 3: // DES
-					return new DESFormat(direction);
-				case 4: // DEM
-					return new DEMFormat(direction);
-				case 5: // DEG
-					return new DEGFormat(direction);
-				}
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// failed
-			return null;
-		}
-	   
+			return getCoordinateFormatter(hemisphere,m_format,m_digits);
+		}	
     }
 	
-    private final ListDataListener m_listDataListener = new ListDataListener() {
+	private static CoordinateFormatter getCoordinateFormatter(String hemisphere, int format, int digits) {
+		try {
+			// create formatter
+			switch(format) {
+			case MGRS_FORMAT:
+				return new MGRSFormatter(hemisphere,digits);
+			case UTM_FORMAT: 
+				return new UTMFormatter(hemisphere,digits);
+			case DES_FORMAT: 
+				return new DESFormatter(hemisphere,digits);
+			case DEM_FORMAT: 
+				return new DEMFormatter(hemisphere,digits);
+			case DEG_FORMAT: 
+				return new DEGFormatter(hemisphere);
+			}
+		} catch (ParseException e) {
+			m_logger.error("Failed to create CoordinateFormatter",e);
+		}
+		// failed
+		return null;			
+	}    
+	
+	private final ListDataListener m_listDataListener = new ListDataListener() {
 
 		public void contentsChanged(ListDataEvent e) {
 			if(isWorking()) return;

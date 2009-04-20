@@ -34,7 +34,6 @@ import javax.swing.SwingUtilities;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.IApplication;
-import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.MessageDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
@@ -534,12 +533,26 @@ public class Utils {
 	}
 
 	public static String getBold(String text) {
-    	return "<b>"+text+"</b>";
+    	return insertHtml(text, 0, text.length(), "b");
     }
 
+	private static final String WRAP_HTML = "<html>%1$s</html>";
+	
 	public static String getHtml(String text) {
-    	return "<html>"+text+"</html>";
+    	return String.format(WRAP_HTML,text);
     }
+	
+	private static final String INSERT_HTML = "%1$s<%4$s>%2$s</%4$s>%3$s";
+	
+	public static String insertHtml(String text, int sIdx, int eIdx, String tag) {
+		if(sIdx>=0&&sIdx<eIdx) {
+			String prefix = sIdx>0?text.substring(0,sIdx):"";
+			String body = eIdx>0?text.substring(sIdx,eIdx):"";
+			String postfix = sIdx<text.length()?text.substring(eIdx):"";
+			return String.format(INSERT_HTML,prefix,body,postfix,tag); 
+		}
+		return text;
+	}
 
 	public static int getStringWidth(Graphics g, Object value) {
 		String text;

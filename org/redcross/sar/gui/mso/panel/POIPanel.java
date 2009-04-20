@@ -565,8 +565,8 @@ public class POIPanel extends DefaultToolPanel {
 				Position p = getGotoPanel().getCoordinatePanel().getPosition();
 				// center at position?
 				if(p!=null) {
-					getTool().getMap().centerAtPosition(p.getGeoPos());
-					getTool().getMap().flashPosition(p.getGeoPos());
+					getTool().getMap().centerAt(p.getGeoPos());
+					getTool().getMap().flash(p.getGeoPos());
 				}
 				else
 					Utils.showWarning("Du må oppgi korrekte koordinater");

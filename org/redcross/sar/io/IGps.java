@@ -1,4 +1,4 @@
-package org.redcross.sar.gps;
+package org.redcross.sar.io;
 
 public interface IGps {
 

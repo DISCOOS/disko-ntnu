@@ -484,8 +484,8 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
 					try {
 						IDiskoMap map = m_aWp.getMap();
 						map.suspendNotify();
-						map.centerAtMsoObject(m_selectedAssignment);
-						map.flashMsoObject(m_selectedAssignment);
+						map.centerAt(m_selectedAssignment);
+						map.flash(m_selectedAssignment);
 						map.refreshMsoLayers();
 						map.resumeNotify();
 					} catch (AutomationException e1) {

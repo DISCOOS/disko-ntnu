@@ -3,21 +3,30 @@
  */
 package org.redcross.sar.gui.field;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.PositionSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
+import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.format.MGRSFormatter;
+import org.redcross.sar.gui.format.UTMFormatter;
 import org.redcross.sar.gui.panel.CoordinatePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
@@ -38,7 +47,13 @@ public class PositionField extends AbstractField {
 
 	private CoordinatePanel m_coordinatePanel;
 	private GotoPanel m_gotoPanel;
+	private JLabel m_fieldLabel;
 	private PositionSelectorDialog m_selectorDialog;
+	
+	private int m_digits = 5;
+	private int m_sIdx = 0;
+	private int m_eIdx = 3;
+	private boolean m_isHtml = true;
 
 	/*==================================================================
 	 * Constructors
@@ -109,16 +124,18 @@ public class PositionField extends AbstractField {
 
 	public Component getComponent() {
 		if(m_component==null) {
-			JFormattedTextField field = new JFormattedTextField();
-			field.setEditable(false);
+			JPanel panel = new JPanel(new BorderLayout());
+			m_fieldLabel = new JLabel();
+			m_fieldLabel.setBorder((new JTextField()).getBorder());
+			panel.add(m_fieldLabel,BorderLayout.CENTER);
 			// save the component
-			m_component = field;
+			m_component = panel;
 		}
 		return m_component;
 	}
 
-	public JFormattedTextField getTextField() {
-		return (JFormattedTextField)m_component;
+	public JLabel getLabel() {
+		return m_fieldLabel;
 	}
 
 	public void setAutoSave(boolean auto) {
@@ -128,8 +145,8 @@ public class PositionField extends AbstractField {
 	public boolean getAutoSave() {
 		return m_autoSave;
 	}
-
-	public CoordinatePanel getCoordinatePanel() {
+	
+	private CoordinatePanel getCoordinatePanel() {
 		if(m_coordinatePanel==null) {
 			m_coordinatePanel = getGotoPanel().getCoordinatePanel();
 		}
@@ -148,16 +165,34 @@ public class PositionField extends AbstractField {
 			getCoordinatePanel().setPosition((Position)value);
 		else if(value instanceof String)
 			getCoordinatePanel().setText((String)value);
+		else if(value == null)
+			getCoordinatePanel().setText(null);
 		else {
 			// failure
 			return false;
 		}
-		// update text panel
-		getTextField().setText(getCoordinatePanel().getText());
+		// set formatted text
+		getLabel().setText(getFormattedText());
 		// notify change?
 		if(isChangeable()) fireOnWorkChange();
 		// success
 		return true;
+	}
+	
+	public String getFormattedText() {
+		String text = getCoordinatePanel().getText();		
+		if(getCoordinatePanel().isPositionValid() && m_isHtml) {
+			switch(getCoordinatePanel().getFormat()) {
+			case CoordinatePanel.MGRS_FORMAT:
+				text = MapUtil.formatMGRS(text, MGRSFormatter.MAX_DIGITS, m_digits, m_sIdx, m_eIdx);
+				break;
+			case CoordinatePanel.UTM_FORMAT:
+				text = MapUtil.formatUTM(text, UTMFormatter.MAX_DIGITS, m_digits, m_sIdx, m_eIdx);
+				break;
+			}		
+		}
+		// finished
+		return Utils.getHtml(text);		
 	}
 
 	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
@@ -178,16 +213,46 @@ public class PositionField extends AbstractField {
 		return false;
 	}
 
-	public void setFormat(int format) {
-		// save format
-		getCoordinatePanel().setFormat(format);
-	}
-
 	public int getFormat() {
-		// get format
 		return getCoordinatePanel().getFormat();
 	}
 
+	public void setFormat(int format) {
+		switch(format) {
+		case CoordinatePanel.MGRS_FORMAT:
+			m_sIdx = 0; m_eIdx = 3; break;
+		case CoordinatePanel.UTM_FORMAT:
+			m_sIdx = 2; m_eIdx = 5; break;
+		}
+		// update format
+		getCoordinatePanel().setFormat(format);
+		// set formatted text
+		getLabel().setText(getFormattedText());
+	}
+	
+	public int getDigits() {
+		return m_digits;
+	}
+	
+	public void setDigits(int digits) {
+		// prepare
+		m_digits = digits;
+		// set formatted text
+		getLabel().setText(getFormattedText());
+	}
+
+	public boolean isHtml() {
+		return m_isHtml;
+	}
+	
+	public void setHtml(boolean isHtml) {
+		// prepare
+		m_isHtml = isHtml;
+		// set formatted text
+		getLabel().setText(getFormattedText());
+	}
+	
+	
 	/*==================================================================
 	 * Private methods
 	 *==================================================================
@@ -208,7 +273,7 @@ public class PositionField extends AbstractField {
 	}
 
 	private void initalizeEdit() {
-		// initialize gui
+		// initialize GUI
 		installButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
 		// handle actions
 		getButton().addActionListener(new ActionListener() {
@@ -219,25 +284,27 @@ public class PositionField extends AbstractField {
 				Position resume = (Position)getValue();
 				// get install map and prepare goto panel
 				IDiskoMap map = getInstalledMap();
-				getSelectorDialog().onLoad(map);
-				if(map!=null)
-					getSelectorDialog().setSnapToLocation((JComponent)map, DefaultDialog.POS_EAST, 0, true, false);
-				else
-					getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
-				// select position
-				Position p = getSelectorDialog().select(resume);
-				// update or resume?
-				if(p!=null)
-					setValue(p);
-				else {
-					// consume
-					setChangeable(false);
-					// forward
-					setValue(resume);
-					// resume
-					setChangeable(true);
+				// map installed?
+				if(map!=null) {
+					getSelectorDialog().onLoad(map);
+					if(map!=null)
+						getSelectorDialog().setSnapToLocation((JComponent)map, DefaultDialog.POS_EAST, 0, true, false);
+					else
+						getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
+					// select position
+					Position p = getSelectorDialog().select(resume);
+					// update or resume?
+					if(p!=null)
+						setValue(p);
+					else {
+						// consume
+						setChangeable(false);
+						// forward
+						setValue(resume);
+						// resume
+						setChangeable(true);
+					}
 				}
-
 			}
 
 		});

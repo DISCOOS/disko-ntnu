@@ -206,7 +206,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 					if (anUnit != null) {
 						m_mapSelectedUnit = anUnit;
 						m_map.setSelected(m_mapSelectedUnit, true);
-						m_map.zoomToMsoObject(m_mapSelectedUnit);
+						m_map.zoomTo(m_mapSelectedUnit);
 					}
 
 					// resume events
@@ -254,7 +254,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 						m_mapSelectedAssignment = anAssignment;
 						m_map.suspendNotify();
 						m_map.setSelected(m_mapSelectedAssignment, true);
-						m_map.zoomToMsoObject(m_mapSelectedAssignment);
+						m_map.zoomTo(m_mapSelectedAssignment);
 						m_map.resumeNotify();
 					}
 
@@ -427,7 +427,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 			                    setSelectedAssignmentInPanels(m_mapSelectedAssignment);
 		                        getInfoPanelHandler().setAssignment(m_mapSelectedAssignment, false);
 		                    }
-		                    m_map.zoomToMsoObject(m_mapSelectedAssignment);
+		                    m_map.zoomTo(m_mapSelectedAssignment);
 	                    }
 	                }
             	}
@@ -436,7 +436,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
                 if (!m_mapSelectedByButton)
                 {
                     m_unitTableModel.setSelected(msoObject, MsoLayerEventType.SELECTED_EVENT.equals(e.getEventType()));
-                	m_map.zoomToMsoObject(msoObject);
+                	m_map.zoomTo(msoObject);
                 }
             }
         }
@@ -477,15 +477,15 @@ public class LogisticsPanel implements IMsoLayerEventListener
         // create north part of left side of main split
 		m_mapPanel = new MapPanel(m_map,true);
 		m_mapPanel.setMinimumSize(new Dimension(200, 200));
-        m_mapPanel.setPreferredSize(new Dimension(200, 200));
+        m_mapPanel.setPreferredSize(new Dimension(200, 300));
 		m_mapPanel.setNorthBarVisible(true);
 		m_mapPanel.setSouthBarVisible(true);
         m_leftSplitter.setTopComponent(m_mapPanel);
 
         // create south part of left side of main split
         m_infoPanel = new JPanel();
-        m_infoPanel.setMinimumSize(new Dimension(200, 400));
-        m_infoPanel.setPreferredSize(new Dimension(200, 400));
+        m_infoPanel.setMinimumSize(new Dimension(200, 200));
+        m_infoPanel.setPreferredSize(new Dimension(200, 300));
         m_infoPanel.setLayout(new CardLayout(0, 0));
         m_leftSplitter.setBottomComponent(m_infoPanel);
         m_infoPanelHandler = new InfoPanelHandler(m_infoPanel, m_wpModule, m_listPanelActionHandler);
@@ -543,8 +543,6 @@ public class LogisticsPanel implements IMsoLayerEventListener
         // reset splitter divider locations
         m_mainSplitter.resetToPreferredSizes();
         m_leftSplitter.resetToPreferredSizes();
-
-
 
     }
 
