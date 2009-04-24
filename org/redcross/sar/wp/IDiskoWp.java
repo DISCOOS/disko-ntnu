@@ -2,7 +2,7 @@ package org.redcross.sar.wp;
 
 /**
  * Provides access to properties and methods for all members that 
- * implements this interface.  All work processes (arbeidsprosesser) 
+ * implements this interface.  All work processes  
  * must implement this interface.
  * @author geira
  *

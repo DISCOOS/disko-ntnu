@@ -15,7 +15,7 @@ public class MsoLayerModel extends LayerModel {
 
 	private List<IMsoFeatureLayer> msoLayers = new ArrayList<IMsoFeatureLayer>();
 
-	public MsoLayerModel(DiskoMap map) throws IOException {
+	protected MsoLayerModel(DiskoMap map) throws IOException {
 		super(map);
 		initialize();
 	}
@@ -90,7 +90,7 @@ public class MsoLayerModel extends LayerModel {
 
 	private void initialize() throws IOException {
 
-		IMap focusMap = map.getActiveView().getFocusMap();
+		IMap focusMap = map.getMapImpl().getActiveView().getFocusMap();
 		for (int i = 0; i < focusMap.getLayerCount(); i++) {
 			addMsoFeatureLayer(msoLayers,focusMap.getLayer(i),true);
 		}

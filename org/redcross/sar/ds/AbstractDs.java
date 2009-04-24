@@ -44,6 +44,11 @@ import org.redcross.sar.util.Utils;
 public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends EventObject>
 			extends AbstractService implements IDs<T> {
 
+	public enum DsClassCode {
+		CLASSCODE_CUE,
+		CLASSCODE_DECISION
+	}
+	
 	/* ============================================================
 	 * Declaration of local lists
 	 * ============================================================
@@ -142,18 +147,6 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
         // connect repeater to client update events
         addChangeListener(m_dsUpdateRepeater);
 
-	}
-
-	/* ============================================================
-	 * IDataSourceIf implementation
-	 * ============================================================ */
-
-	public Class<T> getDataClass() {
-		return m_dataClass;
-	}
-
-	public boolean isSupported(Class<?> dataClass) {
-		return m_dataClass.equals(dataClass);
 	}
 
 	/* ============================================================
@@ -327,6 +320,18 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	 * IDataSourceIf implementation
 	 * =========================================== */
 
+    public boolean isAvailable() {
+    	return m_source.isAvailable();
+    }
+	
+	public Class<T> getDataClass() {
+		return m_dataClass;
+	}
+
+	public boolean isSupported(Class<?> dataClass) {
+		return m_dataClass.equals(dataClass);
+	}
+
 	public Object getID() {
 		return m_source.getID();
 	}
@@ -334,6 +339,11 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	public Collection<?> getItems(Class<?> c) {
 		return m_source.getItems(c);
 	}
+	
+    public Collection<?> getItems(Enum<?> e) {
+    	return m_source.getItems(e);
+    }
+	
 
 	public void addSourceListener(ISourceListener<DsEvent.Update> listener) {
 		m_source.addSourceListener(listener);
@@ -505,6 +515,10 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 			// TODO Auto-generated method stub
 			return m_id;
 		}
+		
+	    public boolean isAvailable() {
+	    	return true;
+	    }
 
 		@SuppressWarnings("unchecked")
 		public Collection<?> getItems(Class<?> c) {

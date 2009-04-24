@@ -12,8 +12,8 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.mso.panel.LinePanel;
 import org.redcross.sar.gui.panel.IToolPanel;
+import org.redcross.sar.gui.panel.LinePanel;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;

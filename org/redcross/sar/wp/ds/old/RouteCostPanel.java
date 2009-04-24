@@ -4,10 +4,7 @@
 package org.redcross.sar.wp.ds.old;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
@@ -17,29 +14,19 @@ import java.text.DecimalFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
 import javax.swing.JProgressBar;
 import javax.swing.JSplitPane;
 
 import org.redcross.sar.ds.ete.RouteCost;
-import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.menu.NavMenu;
-import org.redcross.sar.gui.panel.MapStatusPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.DiskoMap;
-import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapPanel;
-import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.event.MsoLayerEvent;
-import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.layer.AreaLayer;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -47,15 +34,11 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.util.mso.Route;
-import org.redcross.sar.mso.data.RouteImpl;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
-import org.redcross.sar.wp.tactics.AssignmentTable;
 
-import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.interop.AutomationException;
 import java.awt.GridLayout;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 /**

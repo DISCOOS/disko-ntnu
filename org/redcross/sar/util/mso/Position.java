@@ -2,6 +2,8 @@ package org.redcross.sar.util.mso;
 
 import java.awt.geom.Point2D;
 
+import org.redcross.sar.data.IData;
+
 /**
  *
  */
@@ -19,7 +21,7 @@ public class Position extends AbstractGeodata
 
     public Position(String anId)
     {
-    	super(anId);
+    	super(anId,GeoClassCode.CLASSCODE_POSITION);
         m_position = new GeoPos();
     }
 
@@ -31,7 +33,7 @@ public class Position extends AbstractGeodata
      */
     public Position(String anId, Point2D.Double aPosition)
     {
-    	super(anId);
+    	super(anId,GeoClassCode.CLASSCODE_POSITION);
     	m_type = 1;
         m_position = new GeoPos(aPosition);
 
@@ -46,7 +48,7 @@ public class Position extends AbstractGeodata
      */
     public Position(String anId, Point2D.Double aPosition, int aType)
     {
-    	super(anId);
+    	super(anId,GeoClassCode.CLASSCODE_POSITION);
     	m_type = aType;
         m_position = new GeoPos(aPosition);
 
@@ -62,7 +64,7 @@ public class Position extends AbstractGeodata
      */
     public Position(String anId, double aLong, double aLat)
     {
-    	super(anId);
+    	super(anId,GeoClassCode.CLASSCODE_POSITION);
     	m_type = 1;
         m_position = new GeoPos(aLong, aLat);
     }
@@ -77,7 +79,7 @@ public class Position extends AbstractGeodata
      */
     public Position(String anId, double aLong, double aLat, int aType)
     {
-    	super(anId);
+    	super(anId,GeoClassCode.CLASSCODE_POSITION);
     	m_type = aType;
         m_position = new GeoPos(aLong, aLat);
     }
@@ -199,5 +201,13 @@ public class Position extends AbstractGeodata
 		return new Position(m_id,m_position.getPosition(),m_type);
 	}
 
+	@Override
+	public int compareTo(IData data) {
+		if(data instanceof Position) {
+			if(equals(data)) return 0;
+			else return (int)distance((Position)data);
+		}
+		return -1;
+	}	
 
 }

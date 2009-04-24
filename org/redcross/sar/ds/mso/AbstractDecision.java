@@ -1,6 +1,8 @@
 package org.redcross.sar.ds.mso;
 
 import org.redcross.sar.ds.AbstractDsObject;
+import org.redcross.sar.ds.ICue;
+import org.redcross.sar.ds.IDecision;
 
 public abstract class AbstractDecision extends AbstractDsObject implements IDecision {
 

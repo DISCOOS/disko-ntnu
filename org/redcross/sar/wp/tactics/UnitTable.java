@@ -11,7 +11,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.mso.model.UnitTableModel;
+import org.redcross.sar.gui.model.UnitTableModel;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.AbstractUnit;

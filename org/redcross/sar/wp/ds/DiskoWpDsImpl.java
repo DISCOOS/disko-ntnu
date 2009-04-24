@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -23,7 +24,7 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
-import org.redcross.sar.map.layer.IMapLayer;
+import org.redcross.sar.map.layer.IDsObjectLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -68,16 +69,16 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
 		return myInterests;
 	}
 
-	private static EnumSet<IMsoFeatureLayer.LayerCode> getMapLayers() {
-		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
-		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-		myLayers.add(IMapLayer.LayerCode.ESTIMATED_POSITION_LAYER);
-	    return myLayers;
+	private static List<Enum<?>> getMapLayers() {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+		list.add(IDsObjectLayer.LayerCode.ESTIMATED_POSITION_LAYER);
+	    return list;
 	}
 
 	private List<Enum<?>> getDefaultNavBarButtons() {

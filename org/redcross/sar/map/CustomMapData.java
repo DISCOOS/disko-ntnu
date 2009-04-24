@@ -58,7 +58,7 @@ public class CustomMapData {
 		try{
 			//map
 			FeatureLayer fl = new FeatureLayer();
-			map.addShapeFile(path, fname);	
+			map.getMapImpl().addShapeFile(path, fname);	
 			return true;
 			//map.save(mxd, false);//må ha tak i mxd dokumentet
 			//mapDocument.save(mapDocument.isUsesRelativePaths(), false);
@@ -77,7 +77,7 @@ public class CustomMapData {
 			RasterLayer rl = new RasterLayer();
 			rl.createFromFilePath(fullpath);			
 			//adds on top
-			map.addLayer(rl, 0);
+			map.getMapImpl().addLayer(rl, 0);
 			//adds in bottom
 			//map.addLayer(rl, map.getLayerCount());
 			
@@ -95,7 +95,7 @@ public class CustomMapData {
 			System.out.println("Skal legge til WMSLayer");
 			WMSLayer wmsl = new WMSLayer(wmsurl);
 			//adds on top	
-			map.addLayer(wmsl,0);
+			map.getMapImpl().addLayer(wmsl,0);
 			
 			return true;
 			

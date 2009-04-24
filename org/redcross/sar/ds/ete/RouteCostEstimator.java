@@ -25,6 +25,10 @@ import org.redcross.sar.util.mso.Track;
 
 public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 
+	public enum ETEClassCode {
+		CLASSCODE_ROUTECOST
+	}
+	
 	/**
 	 * Route Comparator
 	 */

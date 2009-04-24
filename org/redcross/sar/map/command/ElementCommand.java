@@ -6,14 +6,13 @@ import javax.swing.JComponent;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.mso.dialog.ElementDialog;
-import org.redcross.sar.gui.mso.panel.ElementPanel.ElementEvent;
-import org.redcross.sar.gui.mso.panel.ElementPanel.IElementEventListener;
-import org.redcross.sar.util.Utils;
+import org.redcross.sar.gui.panel.ElementPanel.ElementEvent;
+import org.redcross.sar.gui.panel.ElementPanel.IElementEventListener;
 
 import com.esri.arcgis.interop.AutomationException;
 

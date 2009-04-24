@@ -39,10 +39,10 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 	private TextSymbol textSymbol = null;
 	private BalloonCallout textBackground = null;
 
- 	public UnitLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 	public UnitLayer(ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryPoint, MsoClassCode.CLASSCODE_UNIT,
  				EnumSet.noneOf(MsoClassCode.class), LayerCode.UNIT_LAYER,
- 				srs, eventStack, manager);
+ 				srs, eventStack);
  		symbols = new Hashtable<UnitType, PictureMarkerSymbol>();
  		createSymbols();
 	}

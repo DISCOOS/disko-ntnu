@@ -1,135 +1,118 @@
 package org.redcross.sar.map.layer;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
-import javax.swing.event.ChangeEvent;
+import org.apache.log4j.Logger;
 
-import org.redcross.sar.map.event.IMapFeatureListener;
-import org.redcross.sar.map.feature.IMapFeature;
+import org.redcross.sar.data.IData;
+import org.redcross.sar.data.Selector;
+import org.redcross.sar.map.IDiskoMapManager;
+import org.redcross.sar.map.element.IMapElement;
+import org.redcross.sar.map.event.IMapElementListener;
+import org.redcross.sar.map.event.IMapLayerEventListener;
+import org.redcross.sar.map.event.MapElementEvent;
+import org.redcross.sar.map.event.MapLayerEventStack;
+import org.redcross.sar.map.event.MapLayerEvent.MapLayerEventType;
 
-import com.esri.arcgis.carto.CompositeGraphicsLayer;
-import com.esri.arcgis.carto.IElement;
-import com.esri.arcgis.carto.IElementCollection;
-import com.esri.arcgis.carto.IEnumElement;
-import com.esri.arcgis.carto.IGroupElement;
-import com.esri.arcgis.carto.esriViewDrawPhase;
-import com.esri.arcgis.display.IScreenDisplay;
 import com.esri.arcgis.geometry.IEnvelope;
-import com.esri.arcgis.geometry.IGeometry;
-import com.esri.arcgis.geometry.ISpatialReference;
-import com.esri.arcgis.interop.AutomationException;
 
-public abstract class AbstractMapLayer extends
-					CompositeGraphicsLayer implements IMapLayer {
+/**
+ * Abstract helper class for implementation of IMapLayer classes.</p>
+ * 
+ * 1. Extend this class with appropriate parameters.</p>
+ * 
+ * This include selection of a map layer class (type I) that is supported by the {@link IMap} implementation, 
+ * selection of layer element class (type E) that is supported by the map layer class, and selection
+ * of data class (type D) that implements the geodata structures required to create element objects.</p>
+ * 
+ * 2. Implement abstract methods </p>
+ * 
+ * The are three groups of nested methods to implement. The first group of methods (addDataObject, removeDataObject,
+ * updateDataObject and clearDataObjects) implements loading, addition, update and removal of data objects 
+ * (of type D). The second group of methods (addElementImpl, removeElementImpl, clearElementImpl) implements 
+ * addition and removal of the objects (of type E) that implement the IMapElement interface. For example, the 
+ * addDataObject
+ * method calls  
+ * 
+ * The last group of methods </p>
+ * 
+ * @author kenneth
+ *
+ * @param <I> - The class or interface that implements the element class E. 
+ * @param <E> - The class or interface that implements the IMapElement interface
+ * @param <D> - The class or interface that implements the object containing the geodata used to create each IMapElement object
+ * @param <D> - The class or interface that implements the geodata used to create each IMapElement object
+ */
 
-	protected boolean isActive;
-	protected LayerCode layerCode;
-	protected ISpatialReference srs;
-	protected IScreenDisplay display;
-	protected List<IMapFeature> features;
+public abstract class AbstractMapLayer<I, E, D extends IData, G extends IData> implements IElementLayer<I,E,D,G> {
 
-	private int refreshRate;
-	private long refreshTime;
-	private IEnvelope refreshExtent;
+	private static Logger logger = Logger.getLogger(AbstractMapLayer.class);  
+	
+	protected int suspendedCount = 0;
+	protected int selectionCount = 0;
+	protected int visibleCount = 0;
+
+	protected boolean isInterestChanged = false;
+	protected boolean isSelectable = true;
+	protected boolean isCaptionShown = true;
+	
+	protected Enum<?> classCode;
+	protected Enum<?> layerCode;
+	protected List<IMapElement<E,D,G>> elementList;
+	protected Map<Object,IMapElement<E,D,G>> elementMap;
+	
+	protected IDiskoMapManager manager;
+	protected MapLayerEventStack eventStack;
+
+	protected int refreshRate;
+	protected long refreshTime;
+	protected IEnvelope dirtyExtent;
+	
+	protected final Map<Integer,Selector<D>> selectors = new HashMap<Integer,Selector<D>>();
+	
 
 	/* ===============================================================
 	 * Constructors
 	 * =============================================================== */
 
-	public AbstractMapLayer(String name, LayerCode layerCode,
-			ISpatialReference srs) throws UnknownHostException, IOException {
+	public AbstractMapLayer(String name, Enum<?> classCode, 
+			Enum<?> layerCode, MapLayerEventStack eventStack) {
 
 		// forward
 		super();
 
 		// prepare
-		this.isActive = false;
+		this.classCode = classCode;
 		this.layerCode = layerCode;
-		this.srs = srs;
-		this.features = new ArrayList<IMapFeature>();
+		this.eventStack = eventStack;
+		this.elementList = new ArrayList<IMapElement<E,D,G>>();
+		this.elementMap = new HashMap<Object,IMapElement<E,D,G>>();
+		
+		// initialize refresh state
 		this.refreshRate = -1;
 		this.refreshTime = System.currentTimeMillis();
-		this.refreshExtent = null;
+		
+		// nothing to refresh
+		this.dirtyExtent = null;
 
-		// forward
-		setName(name);
-
-	}
-
-	/* ===============================================================
-	 * Public methods
-	 * =============================================================== */
-
-	public IScreenDisplay display() {
-		return display;
-	}
-
-	public boolean isActive() {
-		return isActive;
-	}
-
-	@Override
-	public void activate(IScreenDisplay display) throws IOException,
-			AutomationException {
-		// any change?
-		if(!isActive) {
-			// prepare
-			this.display = display;
-			// forward
-			for(IMapFeature it : features) {
-				if(it.isVisible() && it instanceof IElement) {
-					((IElement)it).activate(display);
-				}
-			}
-			// set flag
-			isActive = true;
-			// forward
-			super.activate(display);
-			super.setVisible(true);
-		}
-	}
-
-	@Override
-	public void deactivate() throws IOException, AutomationException {
-		// any change?
-		if(!isActive) {
-			// forward
-			for(IMapFeature it : features) {
-				if(it instanceof IElement) {
-					((IElement)it).deactivate();
-				}
-			}
-			// reset flag
-			isActive = false;
-			// forward
-			super.deactivate();
-			super.setVisible(false);
-		}
-	}
-
-	@Override
-	public ISpatialReference getSpatialReference() throws IOException,
-			AutomationException {
-		return srs;
-	}
-
-	@Override
-	public void setSpatialReferenceByRef(ISpatialReference srs)
-			throws IOException, AutomationException {
-		// prepare
-		this.srs = srs;
-		// forward
-		super.setSpatialReferenceByRef(srs);
 	}
 
 	/* ===============================================================
 	 * IMapLayer implementation
 	 * =============================================================== */
 
-	public LayerCode getLayerCode() {
+	public abstract I getLayerImpl();
+	public abstract List<G> getGeodataObjects(D dataObj);
+	
+	public Enum<?> getClassCode() {
+		return classCode;
+	}
+	
+	public Enum<?> getLayerCode() {
 		return layerCode;
 	}
 
@@ -140,216 +123,510 @@ public abstract class AbstractMapLayer extends
 	public void setRefreshRate(int inMillis) {
 		refreshRate = inMillis;
 	}
-
-	/* ===============================================================
-	 * Protected methods
-	 * =============================================================== */
-
-	protected void addFeature(IMapFeature feature) {
-		if(feature instanceof IElement) {
-			if(!features.contains(feature) && features.add(feature)) {
-				addElement((IElement)feature, feature.isVisible());
-			}
-		}
+	
+	public boolean isSelectable() {
+		return isSelectable;
 	}
 
-	protected void addElement(IElement element, boolean isVisible) {
+	public void setSelectable(boolean isSelectable) {
+		this.isSelectable = isSelectable;
+	}
+	
+	public List<IMapElement<E,D,G>> loadDataObjects(List<D> dataObjs)  {
+
+		// initialize list
+		List<IMapElement<E,D,G>> elements = new Vector<IMapElement<E,D,G>>(dataObjs.size());
+
 		try {
-			if(isVisible) {
-				addElement(element, 0);
-				if(element instanceof IGroupElement) {
-					IEnumElement items = ((IGroupElement)element).getElements();
-					items.reset();
-					IElement it = null;
-					while((it = items.next())!=null) {
-						addElement(it,0);
-					}
-				}
-				if(isActive) element.activate(display());
+			// remove all elements
+			setDirtyExtent(clearDataObjects());
+			// add data object to layer
+			for (D it : dataObjs) {
+				// update refresh extent
+				setDirtyExtent(addDataObject(it));
+				// add element to work list
+				elements.add(getElement(it));
 			}
-			else {
-				addOverflowElement(element);
-				if(element instanceof IGroupElement) {
-					IEnumElement items = ((IGroupElement)element).getElements();
-					items.reset();
-					IElement it = null;
-					while((it = items.next())!=null) {
-						addOverflowElement(it);
-					}
-				}
-			}
-		} catch (AutomationException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
+			
+			// forward
+			refresh();
+
+			// finished
+			return elements;
+			
+		} catch (Exception e) {
+			logger.error("Failed to load objects");
 		}
 
-	}
+		// failed
+		return null;
 
-	protected void removeFeature(IMapFeature feature) {
-		if(feature instanceof IElement) {
-			if(features.contains(feature) && features.remove(feature)) {
-				removeElement((IElement)feature, feature.isVisible());
-			}
-		}
 	}
+	
+	/** Add an IMapElement<E,D,G> object to layer */
+	public IMapElement<E,D,G> addDataObject(D dataObj) {
+		// create implementation
+		IMapElement<E,D,G> element = createElementImpl(dataObj);
+		// add element to layer
+		IEnvelope extent = addElement(element);
+		// append extent
+		setDirtyExtent(extent);
+		// forward
+		refresh();
+		// finished
+		return element;
+	}
+	
+	/** Update an IMapElement<E,D,G> object with new data*/
+	public IMapElement<E,D,G> updateDataObject(D dataObj) {
+		// get implementation
+		IMapElement<E, D, G> element = getElement(dataObj);
+		// update implementation
+		IEnvelope extent = updateElement(element);
+		// append extent
+		setDirtyExtent(extent);
+		// forward
+		refresh();
+		// finished
+		return element;		
+	}
+	
+	/** Remove an IMapElement<E,D,G> object from layer */
+	public IMapElement<E,D,G> removeDataObject(D dataObj) {
+		// get element
+		IMapElement<E,D,G> element = getElement(dataObj);
+		// remove implementation
+		IEnvelope extent = removeElement(element);
+		// append extent
+		setDirtyExtent(extent);
+		// forward
+		refresh();
+		// finished
+		return element;		
+	}
+	
+	public boolean removeAll() {
+		return clearDataObjects().size()>0;
+	}
+	
+	/** Remove all IMapElement<E,D,G> objects from layer */
+	public List<IMapElement<E,D,G>> clearDataObjects() {
+		
+		// initialize list
+		List<IMapElement<E,D,G>> elements = new Vector<IMapElement<E,D,G>>(elementList);
 
-	protected void removeElement(IElement element, boolean isVisible) {
 		try {
-			if(isVisible) {
-				deleteElement(element);
-				if(element instanceof IGroupElement) {
-					IEnumElement items = ((IGroupElement)element).getElements();
-					items.reset();
-					IElement it = null;
-					while((it = items.next())!=null) {
-						deleteElement(it);
-					}
-				}
-				element.deactivate();
+			// remove all elements
+			for (IMapElement<E,D,G> it : elements) {
+				setDirtyExtent(removeElement(it));
 			}
-			else {
-				deleteOverflowElement(element);
-				if(element instanceof IGroupElement) {
-					IEnumElement items = ((IGroupElement)element).getElements();
-					items.reset();
-					IElement it = null;
-					while((it = items.next())!=null) {
-						deleteOverflowElement(it);
-					}
-				}
-			}
-		} catch (AutomationException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
+			
+			// forward
+			refresh();
+
+			// finished
+			return elements;
+			
+		} catch (Exception e) {
+			logger.error("Failed to clear objects");
 		}
 
+		// failed
+		return null;
+		
+	}	
+	
+	public void refresh() {
+		
+		// forward
+		refresh(dirtyExtent);
+		
+		// reset
+		clearDirtyExtent();
+		
 	}
 
-	protected static IEnvelope getExtent(IElement element) {
-		if(element!=null) {
-			try {
-				if(element instanceof IGroupElement) {
-					IEnumElement items = ((IGroupElement)element).getElements();
-					IElement it = items.next();
-					IEnvelope extent = null;
-					while(it!=null) {
-						if(extent==null)
-							extent = getExtent(it);
-						else
-							extent.union(getExtent(it));
-						// get next
-						it = items.next();
-					}
-					return extent;
-				}
-				else {
-					IGeometry geom = element.getGeometry();
-					return geom!=null ? geom.getEnvelope() : null;
-				}
-			} catch (AutomationException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			} catch (IOException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
+	public void addMapLayerEventListener(IMapLayerEventListener listener) {
+		if (eventStack!=null) {
+			eventStack.addMapLayerEventListener(listener);
+		}
+	}
+
+	public void removeMapLayerEventListener(IMapLayerEventListener listener) {
+		if (eventStack!=null) {
+			eventStack.removeMapLayerEventListener(listener);
+		}
+	}	
+	
+	public IMapElement<E,D,G> getElement(int index) {
+		return elementList.get(index);
+	}
+
+	public IMapElement<E,D,G> getElement(Object id) {
+		return elementMap.get(id);
+	}
+	
+	public IMapElement<E,D,G> getElement(D dataObj) {
+		for(IMapElement<E,D,G> it : elementList) {
+			if(it.getDataObject().equals(dataObj)) return it;
 		}
 		return null;
 	}
+	
+	public int getElementCount() {
+		return elementList.size();
+	}
+	
+	public void setSelected(IMapElement<E,D,G> element, boolean selected) {
+		if(element==null) return;
+		if (!element.isSelected() && selected) {
+			selectionCount++;
+			element.setSelected(true);
+			setDirtyExtent(element.getExtent());
+			fireOnSelectionChanged(MapLayerEventType.SELECTED_EVENT);
+		} else if (element.isSelected() && !selected) {
+			selectionCount--;
+			element.setSelected(false);
+			setDirtyExtent(element.getExtent());
+			fireOnSelectionChanged(MapLayerEventType.DESELECTED_EVENT);
+		}
+		refresh();
+	}
 
-	protected void refresh(IEnvelope extent) {
-		try {
-			long tic = System.currentTimeMillis();
-			if(refreshRate==-1 || tic-refreshTime>refreshRate) {
-				if(extent!=null) {
-					display().invalidate(setRefreshExtent(extent), false, (short)esriViewDrawPhase.esriViewGeography);
-					setRefreshExtent(null);
+	public int clearSelected() {
+		int count = 0;
+		for (IMapElement<E,D,G> it : elementList) {
+			if (it.isSelected()) {
+				selectionCount--;
+				count++;
+				it.setSelected(false);
+				setDirtyExtent(it.getExtent());
+			}
+		}
+		refresh();
+		selectionCount = 0;
+		if(count>0) {
+			fireOnSelectionChanged(MapLayerEventType.DESELECTED_EVENT);
+		}
+		return count;
+	}
 
+	public List<IMapElement<E,D,G>> getSelectedElements() {
+		ArrayList<IMapElement<E,D,G>> selection = new ArrayList<IMapElement<E,D,G>>();
+		for (IMapElement<E,D,G> it : elementList) {
+			if (it.isSelected()) {
+				selection.add(it);
+			}
+		}
+		return selection;
+	}	
+	
+	public List<D> getSelectedObjects() {
+		ArrayList<D> selection = new ArrayList<D>();
+		for (IMapElement<E,D,G> it : elementList) {
+			if (it.isSelected()) {
+				selection.add(it.getDataObject());
+			}
+		}
+		return selection;
+	}	
+	
+	public int getSelectionCount(boolean update) {
+		return getSelectedObjects().size();
+	}
+
+	public Selector<D> getSelector(int id) {
+		return selectors.get(id);
+	}
+
+	public boolean addSelector(Selector<D> selector,int id) {
+		// replace existing
+		selectors.put(id,selector);
+		// finished
+		return true;
+	}
+
+	public boolean removeSelector(int id) {
+		if(selectors.containsKey(id)) {
+			selectors.remove(id);
+			// finished
+			return true;
+		}
+		// failure
+		return false;
+	}
+
+	public boolean isCaptionShown() {
+		return isCaptionShown;
+	}
+
+	public void setCaptionShown(boolean isVisible) {
+		isCaptionShown = isVisible;
+		// TODO: Loop over all elements
+		
+	}
+	
+	public IEnvelope getVisibleElementsExtent() {
+
+		// initialize
+		IEnvelope extent = null;
+
+		// loop over all elements
+		for (IMapElement<E,D,G> it : elementList) {
+			// is visible?
+			if(it.isVisible()) {
+				extent = getUnion(extent,it);
+			}
+		}
+		// finished!
+		return extent;
+	}
+
+	public void setVisibleElements(boolean isVisible) {
+
+		// loop over all elements
+		for (IMapElement<E,D,G> it : elementList) {
+			// make visible
+			if(!it.isVisible() && isVisible) {
+				visibleCount++;
+				it.setVisible(true);
+			} else if(it.isVisible() && !isVisible) {
+				visibleCount--;
+				it.setVisible(false);
+			}
+		}
+		
+	}
+
+	public void setVisibleElements(D dataObj, boolean match, boolean others) {
+
+		// get id
+		IMapElement<E,D,G> element = getElement(dataObj);
+
+		// loop over all elements
+		for (IMapElement<E,D,G> it : elementList) {
+			// make visible?
+			if(it.getID().equals(element.getID())) {
+				// make visible
+				if(!it.isVisible() && match) {
+					visibleCount++;
+					it.setVisible(true);
+				} else if(it.isVisible() && !match) {
+					visibleCount--;
+					it.setVisible(false);
 				}
-				refreshTime = tic;
 			}
 			else {
-				setRefreshExtent(extent);
+				// make visible
+				if(!it.isVisible() && others) {
+					visibleCount++;
+					it.setVisible(true);
+				} else if(it.isVisible() && !others) {
+					visibleCount--;
+					it.setVisible(false);
+				}
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
+	public void setVisibleElements(List<D> dataObjs, boolean match, boolean others) {
+
+		// loop over all data objects
+		for (D it : dataObjs) {
+			// forward
+			setVisibleElements(it, match, others);
+		}
+	}
+
+	public int getVisibleElementCount(boolean update) {
+		if(update) {
+			// reset
+			visibleCount = 0;
+			// loop over all elements
+			// loop over all elements
+			for (IMapElement<E,D,G> it : elementList) {
+				// visible?
+				if(it.isVisible()) visibleCount++;
+			}
+
+		}
+		// return count
+		return visibleCount;
+	}	
+	
+	public boolean isDirty() {
+		try {
+			return dirtyExtent!=null && !dirtyExtent.isEmpty();
+		} catch (Exception e) {
+			logger.error("Failed to get dirty flag",e);
+		}
+		return false;
+	}
+	
+	public IEnvelope getDirtyExtent() {
+		return dirtyExtent;
+	}
+	
+	public boolean isSuspended() {
+		return suspendedCount>0;
+	}
+
+	public void suspend() {
+		// increment
+		suspendedCount++;
+	}
+
+	public void resume() {
+		// decrement?
+		if(suspendedCount>1)
+			suspendedCount--;
+		// only resume on last decrement
+		if(suspendedCount==1){
+			try {
+				// clear count
+				suspendedCount = 0;
+				// has event stack?
+				if (eventStack!=null) {
+					eventStack.fire(this);
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void consume() {
+		// clear stack
+		eventStack.consume(this);
+	}	
+	
+	/* ===============================================================
+	 * Protected methods
+	 * =============================================================== */
+	
+	protected abstract IMapElement<E,D,G> createElementImpl(D dataObj);
+
+	protected abstract IEnvelope addElementImpl(IMapElement<E,D,G> element);
+	protected abstract IEnvelope updateElementImpl(IMapElement<E, D, G> element, List<G> geodata);
+	protected abstract IEnvelope removeElementImpl(IMapElement<E,D,G> element);
+	
+	protected abstract void onElementChanged(MapElementEvent e);
+	
+	protected abstract void refresh(IEnvelope extent);
+	
+	protected IEnvelope getUnion(IEnvelope extent, IMapElement<E,D,G> element) {
+		if(element!=null) {
+			try {
+				
+				if(extent==null) {
+					extent = element.getExtent();
+				} else {
+					extent.union(element.getExtent());
+				}
+				
+				// finished
+				return extent;
+				
+			} catch (Exception ex) {
+				logger.error("Failed to get extent of IElement object",ex);
+			}
+		}
+		return null;		
+	}
+	
+	protected void fireOnSelectionChanged(MapLayerEventType type) {
+		if (eventStack!=null) {
+			eventStack.push(this, type);
+		}
+	}
+
+	protected boolean select(IMapElement<E,D,G> element) {
+		if(element!=null) {
+			for(Selector<D> it : selectors.values()) {
+				// select?
+				if(it.select(element.getDataObject())) return true;
+			}
+			// select element is no selectors are defined
+			return selectors.isEmpty();
+		}
+		return false;
+	}
+	
+	protected IEnvelope setDirtyExtent(List<IMapElement<E,D,G>> list) {
+		for(IMapElement<E,D,G> it : list) {
+			setDirtyExtent(it.getExtent());
+		}
+		return dirtyExtent;
+	}
+	
+	protected IEnvelope setDirtyExtent(IMapElement<E,D,G> element) {		
+		return setDirtyExtent(element.getExtent());
+	}
+		
+	protected IEnvelope setDirtyExtent(IEnvelope extent) {
+		try {
+			if(extent!=null) {
+				if(dirtyExtent == null)
+					dirtyExtent = extent;
+				else
+					dirtyExtent.union(extent);
+			}
+		} catch (Exception e) {
+			logger.error("Failed to set refresh extent",e);
+		}
+		return dirtyExtent;
+
+	}
+	
+	protected IEnvelope clearDirtyExtent() {
+		IEnvelope extent = dirtyExtent;
+		dirtyExtent = null;
+		return extent;
+	}
+	
 	/* ===============================================================
 	 * Helper methods
 	 * =============================================================== */
 
-	private IEnvelope setRefreshExtent(IEnvelope extent) {
-		try {
-			if(extent==null)
-				refreshExtent = null;
-			else if(refreshExtent == null)
-				refreshExtent = extent;
-			else
-				refreshExtent.union(extent);
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private IEnvelope addElement(IMapElement<E,D,G> element) {
+		if(!elementList.contains(element) || elementMap.containsKey(element.getID())) {
+			elementList.add(element);
+			elementMap.put(element.getID(),element);
+			element.addMapElementListener(listener);
+			return addElementImpl(element);
 		}
-		return refreshExtent;
-
+		return null;
 	}
 
-	private boolean exists(IElement element, boolean inOverflow) {
-		try {
-			IElementCollection container = (inOverflow ? getOverflowElements() : (IElementCollection)this);
-			int count = container.getCount();
-			IElement[] it = new IElement[1];
-			for(int i=0;i<count;i++) {
-				container.queryItem(i, it, null);
-				if(it[0]==element) return true;
-			}
-		} catch (AutomationException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
+	private IEnvelope updateElement(IMapElement<E, D, G> element) {
+		List<G> geodata = element.getGeodataObjects();
+		if(element!=null) {
+			return updateElementImpl(element,geodata);
+
 		}
-		// not found
-		return false;
+		return null;
 	}
 
+	private IEnvelope removeElement(IMapElement<E,D,G> element) {
+		if(elementList.contains(element) && elementMap.containsKey(element.getID())) {
+			elementList.remove(element);
+			elementMap.remove(element.getID());
+			element.removeMapElementListener(listener);
+			return removeElementImpl(element);
+		}
+		return null;
+	}
+	
 	/* ===============================================================
 	 * Anonymous classes
 	 * =============================================================== */
 
-	IMapFeatureListener listener = new IMapFeatureListener() {
+	IMapElementListener listener = new IMapElementListener() {
 
-		public void onFeatureChanged(ChangeEvent e) {
-			// get element
-			IElement it = (IElement)e.getSource();
-			// supported?
-			if(it instanceof IMapFeature) {
-				IMapFeature feature = (IMapFeature)it;
-				if(feature.isVisible() && exists(it,true)) {
-					removeElement(it,false);
-					addElement(it,true);
-				}
-				else if(!feature.isVisible() && exists(it,false)) {
-					removeElement(it,true);
-					addElement(it,false);
-				}
-			}
+		public void onElementChanged(MapElementEvent e) {
+			// forward
+			AbstractMapLayer.this.onElementChanged(e);
 		}
 
 	};

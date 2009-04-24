@@ -30,11 +30,11 @@ public class FlankLayer extends AbstractMsoFeatureLayer {
 	private LineFillSymbol redFill  = null;
 
 	public FlankLayer(ISpatialReference srs,
-			MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+			MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryPolygon,
  				MsoClassCode.CLASSCODE_ROUTE,
  				EnumSet.of(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_ASSIGNMENT),
- 				LayerCode.FLANK_LAYER, srs, eventStack, manager);
+ 				LayerCode.FLANK_LAYER, srs, eventStack);
  		// forward
 		createSymbols();
 	}

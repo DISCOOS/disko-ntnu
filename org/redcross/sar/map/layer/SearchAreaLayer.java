@@ -36,10 +36,10 @@ public class SearchAreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol selectionSymbol = null;
 	private TextSymbol textSymbol = null;
 
- 	public SearchAreaLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 	public SearchAreaLayer(ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryPolygon, MsoClassCode.CLASSCODE_SEARCHAREA,
  				EnumSet.noneOf(MsoClassCode.class), LayerCode.SEARCH_AREA_LAYER,
- 				srs, eventStack, manager);
+ 				srs, eventStack);
  		createSymbols();
 	}
 

@@ -25,6 +25,7 @@ import java.util.Vector;
  * The event provides access to MSO data structures that shall be committed  by passing a {@link org.redcross.sar.mso.committer.ICommitWrapperIf} object
  * to the listeners.
  */
+@SuppressWarnings("unchecked")
 public class CommitManager implements ICommitManagerIf
 {
     /**

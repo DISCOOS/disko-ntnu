@@ -1,126 +1,141 @@
 package org.redcross.sar.map.layer;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.ds.ete.RouteCost;
-import org.redcross.sar.ds.ete.RouteCostEstimator;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.map.element.IGeodataCreator;
+import org.redcross.sar.map.element.IMapElement;
 import org.redcross.sar.map.element.PositionElement;
+import org.redcross.sar.map.event.MapLayerEventStack;
+import org.redcross.sar.map.layer.IDsObjectLayer.LayerCode;
 import org.redcross.sar.util.mso.GeoPos;
 
+import com.esri.arcgis.carto.IElement;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.geometry.ISpatialReference;
-import com.esri.arcgis.interop.AutomationException;
 
-public class EstimatedPositionLayer extends AbstractDsLayer<RouteCost> {
+public class EstimatedPositionLayer extends AbstractCompositeGraphicsLayer<RouteCost, GeoPos> {
 
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Costs
-	 */
-	private final Map<RouteCost,PositionElement> costs
-		= new HashMap<RouteCost, PositionElement>();
-
+	private static Logger logger = Logger.getLogger(EstimatedPositionLayer.class);
+	
 	/* =======================================================
 	 * Constructor
 	 * ======================================================= */
 
-	public EstimatedPositionLayer(ISpatialReference srs) throws Exception {
+	public EstimatedPositionLayer(
+			MapLayerEventStack eventStack,
+			ISpatialReference srs) {
 
 		// forward
-		super(RouteCostEstimator.class,"ESTIMATEDPOSITIONLAYER",LayerCode.ESTIMATED_POSITION_LAYER,srs);
+		super("ESTIMATEDPOSITIONLAYER",null,LayerCode.ESTIMATED_POSITION_LAYER,srs,eventStack);
 
 		// prepare
-		setMinimumScale(50000);
+		try {
+			getLayerImpl().setMinimumScale(50000);
+		} catch (Exception e) {
+			logger.error("Failed to set minimum scale",e);
+		}
 		setRefreshRate(10000);
 
 	}
 
 	/* =======================================================
-	 * Required methods
+	 * IMapLayer implementation
 	 * ======================================================= */
 
-	protected void clear() {
-		try {
-			deleteAllElements();
-			features.clear();
-			costs.clear();
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	protected IEnvelope add(RouteCost cost) {
-		try {
-			PositionElement p = new PositionElement();
-			addFeature(p);
-			setPosition(p, cost);
-			costs.put(cost, p);
-			return getExtent(p);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	protected IEnvelope update(RouteCost cost) {
-		PositionElement p = getFeature(cost);
-		if(p!=null) {
-			return setPosition(p,cost);
-
-		}
-		return null;
-	}
-
-	protected IEnvelope remove(RouteCost cost) {
-		PositionElement p = getFeature(cost);
-		IEnvelope e = getExtent(p);
-		removeFeature(p);
-		costs.remove(cost);
-		return e;
-	}
-
+	public List<GeoPos> getGeodataObjects(RouteCost cost) {
+		List<GeoPos> geodata = new ArrayList<GeoPos>(1);
+		geodata.add(cost.ecp());
+		return geodata;
+	}	
+	
 	/* =======================================================
-	 * Helper methods
+	 * protected methods
 	 * ======================================================= */
 
-	private PositionElement getFeature(RouteCost cost) {
-		return costs.get(cost);
+	protected IMapElement<IElement, RouteCost, GeoPos> createElementImpl(RouteCost dataObj) {		
+		return new PositionElement<RouteCost, GeoPos>(dataObj.getId(),dataObj,new GeoPosCreator());
 	}
 
-	private IEnvelope setPosition(PositionElement p, RouteCost cost) {
-		GeoPos ecp = cost.ecp();
-		if(ecp!=null) {
-			try {
-				IEnvelope extent = getExtent(p);
-				p.setPoint(MapUtil.getEsriPoint(ecp.getPosition(), srs));
-				extent.union(getExtent(p));
-				return extent;
-			} catch (AutomationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	protected IEnvelope updateElementImpl(IMapElement<IElement, RouteCost, GeoPos> element, List<GeoPos> geodata) {
+		if(element instanceof PositionElement) {
+			// has geodate data?
+			if(geodata.size()==1) {
+				try {
+					PositionElement<RouteCost, GeoPos> impl = (PositionElement<RouteCost, GeoPos>)element;
+					IEnvelope extent = getExtent((IElement)element);
+					impl.setPoint(MapUtil.getEsriPoint(geodata.get(0), srs));
+					extent.union(getExtent((IElement)element));
+					return extent;
+				} catch (Exception e) {
+					logger.error("Failed to set position",e);
+				}
 			}
 		}
 		return null;
 	}
 
+	
+	
+	/* =======================================================
+	 * Helper methods
+	 * ======================================================= */
+	
+	private class GeoPosCreator implements IGeodataCreator<RouteCost, GeoPos> {
+
+		RouteCost cost;
+		List<GeoPos> geodata;		
+		
+		public List<GeoPos> create(RouteCost dataObj) {
+			cost = dataObj;
+			return getGeodataObjects();
+		}
+
+		public List<GeoPos> getGeodataObjects() {
+			// collect geodata
+			List<GeoPos> current = EstimatedPositionLayer.this.getGeodataObjects(cost);
+			// update?
+			if(!isEqualTo(current)) geodata = current;
+			// finished
+			return geodata;
+		}
+
+		public int getGeodataObjectsCount() {
+			return geodata!=null ? geodata.size() : 0;
+		}
+
+		public boolean isChanged() {
+			// collect geodata
+			List<GeoPos> current = EstimatedPositionLayer.this.getGeodataObjects(cost);
+			// compare
+			return isEqualTo(current);
+		}
+		
+		public boolean isEqualTo(List<GeoPos> list) {
+			if(geodata!=null && geodata!=list) {
+				if(geodata.size()>0&&geodata.size()==list.size()) {
+					return geodata.get(0).equals(list.get(0));
+				}
+				return false;
+			}
+			return false;
+		}
+		
+	}
+
+
+
+	@Override
+	public Collection<IMapElement<IElement, RouteCost, GeoPos>> load(
+			Collection<RouteCost> dataObjs) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

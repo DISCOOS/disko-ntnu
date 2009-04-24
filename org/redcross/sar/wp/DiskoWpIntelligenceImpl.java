@@ -5,11 +5,12 @@ import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.JButton;
 
-import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 
+import com.esri.arcgis.beans.map.MapBean;
+ 
 /**
  *
  */

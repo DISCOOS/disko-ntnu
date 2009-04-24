@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 
 import com.esri.arcgis.carto.GroupLayer;
@@ -13,15 +14,17 @@ import com.esri.arcgis.carto.IWMSLayer;
 import com.esri.arcgis.carto.IWMSMapLayer;
 import com.esri.arcgis.interop.AutomationException;
 
-public abstract class LayerModel {
+public abstract class LayerModel implements IMapLayerModel<ILayer> {
 
 	protected DiskoMap map;
 	protected ILayer[] layers;
 	protected boolean[] included;
-
+	
 	public abstract String getName();
+	
+	protected static final Logger logger = Logger.getLogger(LayerModel.class);
 
-	public LayerModel(DiskoMap map) throws IOException {
+	protected LayerModel(DiskoMap map) throws IOException {
 		this.map = map;
 	}
 
@@ -68,8 +71,7 @@ public abstract class LayerModel {
 		}
 	}
 
-	public void setIncluded(int[] index, boolean isIncluded)
-		throws IOException, AutomationException{
+	public void setIncluded(int[] index, boolean isIncluded) {
 			for (int i = 0; i < index.length; i++) {
 				int idx = index[i];
 				setIncluded(idx, isIncluded);
@@ -96,40 +98,33 @@ public abstract class LayerModel {
 	 * Sets visibility, true/false, for given layer
 	 * @param isVisible
 	 * @param index
-	 * @throws IOException
-	 * @throws AutomationException
 	 */
-	public void setVisible(boolean isVisible, int index)
-		throws IOException, AutomationException{
+	public void setVisible(boolean isVisible, int index) {
+		try {
 			layers[index].setVisible(isVisible);
+		} catch (Exception e) {
+			logger.error("Invocation of setVisible() failed",e);
+		}
 	}
 
 	/**
 	 * Loops through list of layers and sets all visible true/false
 	 * @param isVisible
-	 * @throws IOException
-	 * @throws AutomationException
 	 */
-	public void setAllVisible(boolean isVisible)
-		throws IOException, AutomationException{
-			//System.out.println("setLayerVisibility");
-			for (int i = 0; i < layers.length; i++){
-				layers[i].setVisible(isVisible);
-			}
+	public void setAllVisible(boolean isVisible) {
+		for (int i = 0; i < layers.length; i++){
+			setVisible(isVisible,i);
+		}
 	}
 
 	/**
 	 * Loops through vector of chosen layers and sets visibility true/false
 	 * @param isVisible
 	 * @param index
-	 * @throws IOException
-	 * @throws AutomationException
 	 */
-	public void setVisible(boolean isVisible, int[] index)
-		throws IOException, AutomationException{
+	public void setVisible(boolean isVisible, int[] index) {
 			for (int i = 0; i < index.length; i++){
-				int idx = index[i];
-				layers[idx].setVisible(isVisible);
+				setVisible(isVisible,index[i]);
 			}
 	}
 
@@ -143,12 +138,8 @@ public abstract class LayerModel {
 					included[i] = layers[i].isVisible();
 				}
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Invocation of isVisible() failed",e);
 		}
 	}
 

@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,21 +85,21 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		WorkPool.getInstance().add(m_loop);
 	}
 
-	private EnumSet<IMsoFeatureLayer.LayerCode> getPrintMapLayers() {
-		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
-		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.AREA_LAYER);
-	    return myLayers;
+	private List<Enum<?>> getPrintMapLayers() {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.AREA_LAYER);
+	    return list;
 	}
 
-	public IDiskoMap createMap(EnumSet<IMsoFeatureLayer.LayerCode> myLayers) {
+	public IDiskoMap createMap(List<Enum<?>> layers) {
 		DiskoMap map = null;
 		try {
 
-			// create new disko map instance
-			map = new DiskoMap(this, app.getMsoModel(), myLayers);
+			// create new map instance
+			map = new DiskoMap(this, app.getMsoModel(), layers);
 
 			// add to internal collection
 			maps.add(map);
@@ -1124,6 +1123,17 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 							new ArrayList<MapSourceInfo>(mxdDocs.values()));
 			}
 
+		}
+
+		@Override
+		public int size() {
+			return mxdDocs.size();
+		}
+
+		@Override
+		public void merge(Map work) {
+			// TODO Auto-generated method stub
+			
 		}
 
 	}

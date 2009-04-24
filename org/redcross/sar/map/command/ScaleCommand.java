@@ -10,7 +10,6 @@ import org.redcross.sar.gui.dialog.ScaleDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.interop.AutomationException;
 

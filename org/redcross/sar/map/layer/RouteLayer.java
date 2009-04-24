@@ -43,10 +43,10 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol defaultSymbol = null;
 	private TextSymbol textSymbol = null;
 
- 	public RouteLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 	public RouteLayer(ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryPolyline, MsoClassCode.CLASSCODE_ROUTE,
  				EnumSet.of(MsoClassCode.CLASSCODE_ASSIGNMENT), LayerCode.ROUTE_LAYER,
- 				srs, eventStack, manager);
+ 				srs, eventStack);
  		symbols = new Hashtable<SearchSubType, SimpleFillSymbol>();
  		createSymbols();
 	}

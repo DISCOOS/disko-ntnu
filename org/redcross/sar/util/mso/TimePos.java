@@ -3,12 +3,14 @@ package org.redcross.sar.util.mso;
 import java.awt.geom.Point2D;
 import java.util.Calendar;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.util.mso.IGeodataIf.GeoClassCode;
 
 /**
  * Class for handling a position object with time
  */
-public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
+public class TimePos extends GeoPos implements Comparable<IData>, Cloneable
 {
     private final Calendar m_time;
 
@@ -61,7 +63,12 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
     	return aCalendar!=null ? (Calendar)aCalendar.clone() : Calendar.getInstance();
     }
 
-    public String getDTG()
+    @Override
+	public GeoClassCode getClassCode() {
+		return GeoClassCode.CLASSCODE_TIMEPOS;
+	}
+
+	public String getDTG()
     {
         return DTG.CalToDTG(m_time);
     }
@@ -109,6 +116,15 @@ public class TimePos extends GeoPos implements Comparable<TimePos>, Cloneable
         return new GeoPos(getPosition());
     }
 
+    @Override
+	public int compareTo(IData data) {
+		if(data instanceof TimePos) {
+			if(equals(data)) return 0;
+			else return (int)distance((GeoPos) data);
+		}
+		return -1;
+	}
+    
     public boolean equals(Object obj)
     {
 

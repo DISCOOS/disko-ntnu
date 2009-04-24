@@ -17,6 +17,14 @@ import org.redcross.sar.data.event.IBinderListener;
 import org.redcross.sar.data.event.ISourceListener;
 import org.redcross.sar.data.event.SourceEvent;
 
+/**
+ * 
+ * @author Administrator
+ *
+ * @param <S> - the class or interface that implements the data id object
+ * @param <T> - the class or interface that implements the data object
+ * @param <I> - the class or interface that implements the source event information
+ */
 @SuppressWarnings("unchecked")
 public abstract class AbstractBinder<S,T extends IData, I>
 										 implements IDataBinder<S,T,I>, ISourceListener<I> {
@@ -64,14 +72,23 @@ public abstract class AbstractBinder<S,T extends IData, I>
 	 * IDataBinderIf implementation
 	 * ============================================================================= */
 
+	public abstract boolean clear();
 	public abstract boolean load(Collection<T> objects, boolean append);
 
+	public boolean load() {
+		// has model?
+		if(source!=null) {
+			// forward
+			return load(query(),false);
+		}
+		// failure
+		return false;
+	}
+	
 	public boolean load(Collection<T> objects) {
 		return load(objects,false);
 	}
-
-	public abstract boolean clear();
-
+	
 	public boolean connect(IDataSource<I> source) {
 		if(source!=null && this.source==null && source.isSupported(dataClass)) {
 			this.source = source;
@@ -81,20 +98,13 @@ public abstract class AbstractBinder<S,T extends IData, I>
 		return false;
 	}
 
-	public void disconnect() {
+	public boolean disconnect() {
 		if(source!=null) {
+			clear();
 			source.removeSourceListener(this);
 			source=null;
+			return true;
 		}
-	}
-
-	public boolean load() {
-		// has model?
-		if(source!=null) {
-			// forward
-			return load(query(),false);
-		}
-		// failure
 		return false;
 	}
 
@@ -184,10 +194,10 @@ public abstract class AbstractBinder<S,T extends IData, I>
 	 * Helper methods
 	 * ============================================================================= */
 
-	protected abstract T[] getData(Collection<T> items);
+	//protected abstract T[] getData(Collection<T> items);
 
 	protected Collection<T> query() {
-		if(source!=null)
+		if(source!=null && source.isAvailable())
 			return (Collection<T>)getSource().getItems(getDataClass());
 		else
 			return null;

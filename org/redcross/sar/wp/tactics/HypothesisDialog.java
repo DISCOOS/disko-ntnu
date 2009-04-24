@@ -31,7 +31,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
-import org.redcross.sar.gui.mso.model.HypothesisListModel;
+import org.redcross.sar.gui.model.HypothesisListModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;

@@ -24,7 +24,6 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.util.Utils;
 
-import com.esri.arcgis.beans.map.MapBean;
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.controls.IMapControlEvents2OnMapReplacedEvent;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
@@ -221,15 +220,15 @@ public class ScalePanel extends TogglePanel {
 			// is new scale valid?
 			if(newScale!=0) {
 				// get current scale
-				double oldScale = ((MapBean)m_map).getMapScale();
+				double oldScale = m_map.getMapScale();
 				// any change?
 				if(newScale != oldScale) {
 					// notify
 					doAction("finish");
 					// apply new scale
-					((MapBean)m_map).setMapScale((int)newScale);
+					m_map.setMapScale((int)newScale);
 					// a full refresh is needed!
-					m_map.refresh();
+					m_map.refreshMapBase();
 					// set button
 					gotoItem("1:"+(int)newScale);
 				}
@@ -253,7 +252,7 @@ public class ScalePanel extends TogglePanel {
 
 		try {
 			// get current map scale
-			double scale = ((MapBean)m_map).getMapScale();
+			double scale = m_map.getMapScale();
 			// goto item
 			gotoItem("1:"+(int)scale);
 		}
@@ -344,13 +343,13 @@ public class ScalePanel extends TogglePanel {
 		try {
 			// remove old?
 			if(m_map!=null)
-				((MapBean)m_map).removeIMapControlEvents2Listener(adapter);
+				m_map.removeIMapControlEvents2Listener(adapter);
 
-			// save m_map instanse
+			// save m_map instance
 			m_map = map;
 
 			//listen to do actions when the m_map is loaded
-			((MapBean)m_map).addIMapControlEvents2Listener(adapter);
+			m_map.addIMapControlEvents2Listener(adapter);
 
 			// forward
 			update();

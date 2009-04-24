@@ -44,10 +44,10 @@ public class POILayer extends AbstractMsoFeatureLayer {
 	private BalloonCallout textBackground = null;
 	private Hashtable<POIType, IDisplayName> symbols = null;
 
- 	public POILayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 	public POILayer(ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryPoint, MsoClassCode.CLASSCODE_POI,
- 				EnumSet.noneOf(MsoClassCode.class),  LayerCode.POI_LAYER,
- 				srs, eventStack, manager);
+ 				EnumSet.noneOf(MsoClassCode.class), LayerCode.POI_LAYER,
+ 				srs, eventStack);
  		symbols = new Hashtable<POIType, IDisplayName>();
  		createSymbols();
 	}

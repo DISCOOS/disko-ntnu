@@ -57,7 +57,7 @@ public abstract class AbstractDiskoWpModule
     private boolean hasSubMenu = false;
     private boolean isNavMenuSetupNeeded = true;
     private State mainState;
-	private EnumSet<IMsoFeatureLayer.LayerCode> mapLayers;
+	private List<Enum<?>> mapLayers;
 
     protected String callingWp;
     protected ResourceBundle wpBundle;
@@ -90,8 +90,10 @@ public abstract class AbstractDiskoWpModule
     /**
      * @param role
      */
-    public AbstractDiskoWpModule(EnumSet<IMsoManagerIf.MsoClassCode> interests,
-    		EnumSet<IMsoFeatureLayer.LayerCode> mapLayers) throws IllegalClassFormatException
+    public AbstractDiskoWpModule(
+    		EnumSet<MsoClassCode> interests,
+    		List<Enum<?>> mapLayers) 
+    throws IllegalClassFormatException
     {
 
     	// valid package name?
@@ -112,9 +114,9 @@ public abstract class AbstractDiskoWpModule
 
     }
 
-	private static EnumSet<IMsoFeatureLayer.LayerCode> getDefaultMapLayers() {
-		EnumSet<IMsoFeatureLayer.LayerCode> list;
-		list = EnumSet.of(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+	private static List<Enum<?>> getDefaultMapLayers() {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		list.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
 		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
 		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
 		list.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);

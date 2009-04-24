@@ -36,6 +36,7 @@ public abstract class AbstractDataSource<I> implements IDataSource<I> {
      * ================================================================================= */
 
     public abstract Object getID();
+    public abstract boolean isAvailable();
     
 	public boolean isSupported(Class<?> dataClass) {
 		// TODO Auto-generated method stub
@@ -45,6 +46,10 @@ public abstract class AbstractDataSource<I> implements IDataSource<I> {
     public Collection<?> getItems(Class<?> c) {
     	return null;
     }
+    
+    public Collection<?> getItems(Enum<?> e) {
+    	return null;
+    }    
 
     public void addSourceListener(ISourceListener<I> listener) {
 		m_sourceListeners.add(ISourceListener.class,listener);

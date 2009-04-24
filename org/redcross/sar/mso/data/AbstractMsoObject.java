@@ -1432,6 +1432,10 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
+	public MsoClassCode getClassCode() {
+		return getMsoClassCode();
+	}
+
 
 
 

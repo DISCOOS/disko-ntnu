@@ -26,10 +26,10 @@ public class OperationAreaMaskLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol fill = null;
 	private TransparencyDisplayFilter filter = null;
 
-	public OperationAreaMaskLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+	public OperationAreaMaskLayer(ISpatialReference srs, MsoLayerEventStack eventStack) {
 		super(esriGeometryType.esriGeometryPolygon, MsoClassCode.CLASSCODE_OPERATIONAREA,
 				EnumSet.noneOf(MsoClassCode.class), LayerCode.OPERATION_AREA_MASK_LAYER,
-				srs, eventStack, manager);
+				srs, eventStack);
 
 		// prepare
 		isVisible = false;

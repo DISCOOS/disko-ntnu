@@ -75,12 +75,12 @@ public class MapPanel extends JPanel{
 
 			@Override
 			public void onExtentChanged(DiskoMapEvent e) {
-				getMapStatusBar().setScale(e.getSource().getScale());
+				getMapStatusBar().setScale(e.getSource().getMapScale());
 			}
 
 			@Override
 			public void onMapReplaced(DiskoMapEvent e) {
-				getMapStatusBar().setScale(e.getSource().getScale());
+				getMapStatusBar().setScale(e.getSource().getMapScale());
 			}
 
 			@Override

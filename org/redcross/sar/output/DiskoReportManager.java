@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -88,7 +87,7 @@ public class DiskoReportManager {
 			// get spatial reference?
 			if(m_srs==null) m_srs = m_map.getSpatialReference();
 			// update active view
-			m_activeView = m_map.getActiveView();
+			m_activeView = m_map.getMapImpl().getActiveView();
 			// update map?
 			m_map.execute(true,true);
 		}catch(Exception e){

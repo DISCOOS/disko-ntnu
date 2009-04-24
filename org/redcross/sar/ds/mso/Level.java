@@ -3,6 +3,7 @@ package org.redcross.sar.ds.mso;
 import java.util.Calendar;
 
 import org.redcross.sar.data.IData;
+import org.redcross.sar.ds.AbstractDs.DsClassCode;
 import org.redcross.sar.math.IInput;
 import org.redcross.sar.math.ILevel;
 
@@ -121,6 +122,11 @@ public class Level<S extends IData, T, D extends Number>
 	 */
 	public void setInput(IInput<T, D> input) {
 		m_level.setInput(input);
+	}
+
+
+	public DsClassCode getClassCode() {
+		return DsClassCode.CLASSCODE_CUE;
 	}
 
 }

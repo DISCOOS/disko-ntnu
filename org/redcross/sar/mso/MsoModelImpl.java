@@ -105,6 +105,10 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     	return m_dispatcher.getActiveOperationID();
     }
     
+    public boolean isAvailable() {
+    	return getMsoManager().operationExists();
+    }
+    
     /* ====================================================================
      * IMsoModelIf implementation
      * ==================================================================== */
@@ -335,9 +339,25 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 	@SuppressWarnings("unchecked")
 	public Collection<IMsoObjectIf> getItems(Class<?> c) {
 		// allowed?
-		if(getMsoManager().operationExists()) {
+		if(isAvailable()) {
 			List list = new ArrayList(100);
 			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getReferenceLists(c, true);
+			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
+				list.addAll(it.getItems());
+			}
+			// success
+			return list;
+		}
+		// failed
+		return null;
+	}
+	
+    @SuppressWarnings("unchecked")
+	public Collection<?> getItems(Enum<?> e) {
+    	// allowed?
+		if(isAvailable() && e instanceof MsoClassCode) {
+			List list = new ArrayList(100);
+			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getReferenceLists((MsoClassCode)e);
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
 				list.addAll(it.getItems());
 			}

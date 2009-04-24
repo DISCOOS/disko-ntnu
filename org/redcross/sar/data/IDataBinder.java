@@ -5,12 +5,20 @@ import java.util.Comparator;
 
 import org.redcross.sar.data.event.IBinderListener;
 
+/**
+ * 
+ * @author Administrator
+ *
+ * @param <S> - the class or interface that implements the id object
+ * @param <T> - the class or interface that implements the data object 
+ * @param <I> - the class or interface that implements the source event information
+ */
 public interface IDataBinder<S,T extends IData,I> {
 
 	public Class<T> getDataClass();
 
 	public boolean connect(IDataSource<I> source);
-	public void disconnect();
+	public boolean disconnect();
 
 	public boolean isSupported(Class<?> dataClass);
 

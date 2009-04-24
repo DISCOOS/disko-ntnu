@@ -21,11 +21,11 @@ import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.dialog.DefaultDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapPanel;
@@ -103,26 +103,26 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 
 	private static EnumSet<MsoClassCode> getWpInterests() {
-		EnumSet<MsoClassCode> myInterests = EnumSet.of(MsoClassCode.CLASSCODE_OPERATION);
-    	myInterests.add(MsoClassCode.CLASSCODE_AREA);
-    	myInterests.add(MsoClassCode.CLASSCODE_ROUTE);
-    	myInterests.add(MsoClassCode.CLASSCODE_POI);
-    	myInterests.add(MsoClassCode.CLASSCODE_SEARCHAREA);
-    	myInterests.add(MsoClassCode.CLASSCODE_OPERATIONAREA);
-    	myInterests.add(MsoClassCode.CLASSCODE_ASSIGNMENT);
-		return myInterests;
+		EnumSet<MsoClassCode> list = EnumSet.of(MsoClassCode.CLASSCODE_OPERATION);
+    	list.add(MsoClassCode.CLASSCODE_AREA);
+    	list.add(MsoClassCode.CLASSCODE_ROUTE);
+    	list.add(MsoClassCode.CLASSCODE_POI);
+    	list.add(MsoClassCode.CLASSCODE_SEARCHAREA);
+    	list.add(MsoClassCode.CLASSCODE_OPERATIONAREA);
+    	list.add(MsoClassCode.CLASSCODE_ASSIGNMENT);
+    	list.add(MsoClassCode.CLASSCODE_UNIT);
+		return list;
 	}
 
-	private static EnumSet<IMsoFeatureLayer.LayerCode> getMapLayers() {
-		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
-		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-	    return myLayers;
+	private static List<Enum<?>> getMapLayers() {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+	    return list;
 	}
 
 	private void initialize() {

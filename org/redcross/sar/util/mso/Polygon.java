@@ -3,6 +3,8 @@ package org.redcross.sar.util.mso;
 import java.util.Collection;
 import java.util.Vector;
 
+import org.redcross.sar.data.IData;
+
 /**
  * Class for holding polygon information
  */
@@ -28,7 +30,7 @@ public class Polygon extends AbstractGeodata
 	 */
 	public Polygon(String anId, String aName)
 	{
-		super(anId,aName);
+		super(anId,aName,GeoClassCode.CLASSCODE_POLYGON);
 		m_polygon = new Vector<GeoPos>();
 	}
 
@@ -41,7 +43,7 @@ public class Polygon extends AbstractGeodata
 	 */
 	public Polygon(String anId, String aName, int aSize)
 	{
-		super(anId,aName);
+		super(anId,aName,GeoClassCode.CLASSCODE_POLYGON);
 		m_polygon = new Vector<GeoPos>(aSize);
 	}
 
@@ -125,4 +127,13 @@ public class Polygon extends AbstractGeodata
 		return retVal;
 	}
 
+	@Override
+	public int compareTo(IData data) {
+		if(data instanceof Polygon) {
+			if(equals(data)) return 0;
+			else return 1;
+		}
+		return -1;
+	}	
+	
 }

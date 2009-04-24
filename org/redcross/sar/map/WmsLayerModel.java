@@ -13,7 +13,7 @@ public class WmsLayerModel extends LayerModel {
 
 	private ArrayList<ILayer> wmsLayers = new ArrayList<ILayer>();
 
-	public WmsLayerModel(DiskoMap map) throws IOException {
+	protected WmsLayerModel(DiskoMap map) throws IOException {
 		super(map);
 		initialize();
 	}
@@ -23,7 +23,7 @@ public class WmsLayerModel extends LayerModel {
 	}
 
 	private void initialize() throws IOException {
-		IMap focusMap = map.getActiveView().getFocusMap();
+		IMap focusMap = map.getMapImpl().getActiveView().getFocusMap();
 		for (int i = 0; i < focusMap.getLayerCount(); i++) {
 			ILayer l = focusMap.getLayer(i);
 			if(l instanceof IWMSLayer || l instanceof IWMSMapLayer)

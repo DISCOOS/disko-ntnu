@@ -13,6 +13,7 @@ import org.redcross.sar.Application;
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.IDataSource;
 import org.redcross.sar.ds.AbstractDs;
+import org.redcross.sar.ds.ICue;
 import org.redcross.sar.ds.IDsObject;
 import org.redcross.sar.ds.event.DsEvent;
 import org.redcross.sar.mso.ICommitManagerIf;
@@ -438,6 +439,10 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 				throw new IllegalArgumentException("Objects not comparable");
 			// compare
 			return m_number - ((ID)data).m_number;
+		}
+
+		public DsClassCode getClassCode() {
+			return DsClassCode.CLASSCODE_CUE;
 		}
 
     }

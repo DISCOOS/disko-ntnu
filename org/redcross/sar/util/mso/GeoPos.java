@@ -2,12 +2,14 @@ package org.redcross.sar.util.mso;
 
 import java.awt.geom.Point2D;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.util.mso.IGeodataIf.GeoClassCode;
 
 /**
  *
  */
-public class GeoPos implements Cloneable
+public class GeoPos implements Cloneable, IData
 {
 
     /* ===================================================================
@@ -114,7 +116,15 @@ public class GeoPos implements Cloneable
         setAltitude(aAlt);
     }
 
+    
     /**
+     * Get geodata class code 
+     */
+	public GeoClassCode getClassCode() {
+		return GeoClassCode.CLASSCODE_GEOPOS;
+	}
+
+	/**
      * Get position as a point
      */
     public Point2D.Double getPosition()
@@ -232,6 +242,8 @@ public class GeoPos implements Cloneable
 
         return distance(in)<MAX_EQUALITY_DISTANCE;
     }
+    
+    
 
     /*
     protected boolean floatEquals(Point2D.Double aPoint)
@@ -244,7 +256,15 @@ public class GeoPos implements Cloneable
     }
 	*/
 
-    public int hashCode()
+	public int compareTo(IData data) {
+		if(data instanceof GeoPos) {
+			if(equals(data)) return 0;
+			else return (int)distance((GeoPos) data);
+		}
+		return -1;
+	}
+
+	public int hashCode()
     {
         int result = 0;
         if (m_position != null)

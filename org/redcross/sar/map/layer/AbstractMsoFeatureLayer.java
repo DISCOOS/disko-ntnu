@@ -43,8 +43,7 @@ import com.esri.arcgis.system.IVariantStream;
 
 public abstract class AbstractMsoFeatureLayer
 				implements IMsoFeatureLayer, IGeoDataset, IPersistVariant, ILayerGeneralProperties {
-
-
+	
 	protected int notifySuspended = 0;
 	protected int selectionCount = 0;
 	protected int visibleCount = 0;
@@ -66,11 +65,13 @@ public abstract class AbstractMsoFeatureLayer
 	protected IEnvelope extent;
 	protected ISpatialReference srs;
 	protected MsoFeatureModel featureClass;
-	protected EnumSet<MsoClassCode> myInterests;
+	protected EnumSet<MsoClassCode> interests;
 	protected MsoLayerEventStack eventStack;
 	protected IDiskoMapManager manager;
 
 	protected final Map<Integer,Selector<IMsoObjectIf>> selectors = new HashMap<Integer,Selector<IMsoObjectIf>>();
+	
+	//private static final Logger logger = Logger.getLogger(AbstractMsoFeatureLayer.class);
 
 	/* ===============================================================
 	 * Constructors
@@ -82,21 +83,19 @@ public abstract class AbstractMsoFeatureLayer
 			EnumSet<MsoClassCode> coClasses,
 			LayerCode layerCode,
 			ISpatialReference srs,
-			MsoLayerEventStack eventStack,
-			IDiskoMapManager manager) {
+			MsoLayerEventStack eventStack) {
 
 		// prepare
 		this.classCode = classCode;
 		this.layerCode = layerCode;
 		this.srs = srs;
 		this.eventStack = eventStack;
-		this.manager = manager;
 		this.featureClass = new MsoFeatureModel(shapeType);
 		this.name = DiskoEnumFactory.getText(layerCode);
 
 		// event handling
-		myInterests =  EnumSet.of(classCode);
-		myInterests.addAll(coClasses);
+		interests = EnumSet.of(classCode);
+		interests.addAll(coClasses);
 
 	}
 
@@ -333,11 +332,11 @@ public abstract class AbstractMsoFeatureLayer
 		setDirty(true);
 	}
 
-	public boolean isVisible() throws IOException, AutomationException {
+	public boolean isVisible() {
 		return isVisible;
 	}
 
-	public void setVisible(boolean isVisible) throws IOException, AutomationException {
+	public void setVisible(boolean isVisible) {
 		if(this.isVisible != isVisible) {
 			this.isVisible = isVisible;
 			setDirty(true);
@@ -706,12 +705,30 @@ public abstract class AbstractMsoFeatureLayer
 	}
 
 	@SuppressWarnings("unchecked")
-	public IMsoFeature getFeature(int index) throws AutomationException, IOException {
-		return (IMsoFeature)featureClass.getFeature(index);
+	public IMsoFeature getFeature(int index) {
+		try {
+			return (IMsoFeature)featureClass.getFeature(index);
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
-	public int getFeatureCount() throws AutomationException, IOException {
-		return featureClass.featureCount(null);
+	public int getFeatureCount() {
+		try {
+			return featureClass.featureCount(null);
+		} catch (AutomationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	public Selector<IMsoObjectIf> getSelector(int id) {
@@ -774,7 +791,7 @@ public abstract class AbstractMsoFeatureLayer
 	 * =============================================================== */
 
 	public EnumSet<MsoClassCode> getInterests() {
-		return myInterests;
+		return interests;
 	}
 
 	public void handleMsoUpdateEvent(UpdateList events) {
@@ -811,7 +828,7 @@ public abstract class AbstractMsoFeatureLayer
 	        else {
 
 				// loop over all events
-				for(MsoEvent.Update e : events.getEvents(myInterests)) {
+				for(MsoEvent.Update e : events.getEvents(interests)) {
 
 					// consume loopback updates
 					if(!e.isLoopback()) {

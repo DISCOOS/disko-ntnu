@@ -1,11 +1,9 @@
 package org.redcross.sar.map;
 
 import java.awt.Component;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.redcross.sar.map.event.IDiskoMapListener;
-import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.work.IMapWork;
 
 import com.esri.arcgis.controls.MapControl;
@@ -29,7 +27,7 @@ public interface IDiskoMapManager {
 	public boolean setMxdDoc(String mxdDoc);
 	public boolean loadMxdDoc();
 
-	public IDiskoMap createMap(EnumSet<IMsoFeatureLayer.LayerCode> myLayers);
+	public IDiskoMap createMap(List<Enum<?>> layers);
 
 	public IDiskoMap getCurrentMap();
 

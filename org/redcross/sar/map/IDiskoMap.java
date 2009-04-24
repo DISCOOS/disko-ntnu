@@ -1,20 +1,22 @@
 package org.redcross.sar.map;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
 import org.redcross.sar.gui.dialog.DrawDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.dialog.SnapDialog;
-import org.redcross.sar.gui.mso.dialog.ElementDialog;
 import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMapLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMapLayer.LayerCode;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.map.tool.MsoDrawAdapter;
 import org.redcross.sar.map.tool.IMapTool;
 import org.redcross.sar.map.tool.SnapAdapter;
+import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.GeoPos;
@@ -30,7 +32,7 @@ import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.IPolygon;
 import com.esri.arcgis.geometry.IPolyline;
 import com.esri.arcgis.geometry.ISpatialReference;
-import com.esri.arcgis.geometry.Point;
+//import com.esri.arcgis.geometry.Point;
 import com.esri.arcgis.interop.AutomationException;
 
 public interface IDiskoMap {
@@ -42,7 +44,12 @@ public interface IDiskoMap {
 		FORMAT_DEM,
 		FORMAT_DES
 	}
+	
+	public Object getMapImpl();
 
+	public boolean connect(IMsoModelIf model);
+	public MsoFeatureBinder getMsoBinder();
+	
 	public boolean isActive();
 	public boolean activate();
 	public boolean deactivate();
@@ -52,15 +59,15 @@ public interface IDiskoMap {
 	public IMapTool getActiveTool();
 	public boolean setActiveTool(IMapTool tool, int options) throws IOException, AutomationException;
 
-	public EnumSet<LayerCode> getSupportedLayers();
+	public List<Enum<?>> getSupportedLayers();
 
-	public List<IMapLayer> getDiskoLayers();
-	public IMapLayer getDiskoLayer(LayerCode layerCode);
+	public List<IMapLayer> getLayers();
+	public IMapLayer getLayer(Enum<?> layerCode);
 
 	public List<IMsoFeatureLayer> getMsoLayers();
 	public List<IMsoFeatureLayer> getMsoLayers(MsoClassCode classCode);
 
-	public IMsoFeatureLayer getMsoLayer(LayerCode layerCode);
+	public IMsoFeatureLayer getMsoLayer(Enum<LayerCode> layerCode);
 
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;
 
@@ -136,11 +143,11 @@ public interface IDiskoMap {
 
 	public List<IFeatureLayer> getSnappableLayers() throws IOException, AutomationException;
 
-	public Point getClickPoint();
-	public Point getCenterPoint();
-	public Point getMovePoint();
+	public IPoint getClickPoint();
+	public IPoint getCenterPoint();
+	public IPoint getMovePoint();
 
-	public double getScale();
+	public double getMapScale();
 
 	public double getMaxSnapScale();
 	public boolean isSnapAllowed();
@@ -199,5 +206,20 @@ public interface IDiskoMap {
 	public void setMapScale(double scale) throws IOException, AutomationException;
 	
 	public IEnvelope trackRectangle() throws IOException, AutomationException;
+	public IGeometry trackLine() throws IOException, AutomationException;
+	public IGeometry trackPolygon() throws IOException, AutomationException;
+	public IGeometry trackCircle() throws IOException, AutomationException;
+	
+	/** Calculates a map distance corresponding to a point (1/72) distance */
+	public double fromPoints(int pointDistance); 
+	
+	/** Calculates a distance in points (1/72 inch) corresponding to the map distance */
+	public double toPoints(int mapDistance); 
+	
+	/** Calculates device coordinates corresponding to the map point */
+	public Point fromMapPoint(IPoint mapPoint);
+	
+	/** Calculates a point in map coordinates corresponding to the device point */
+	public IPoint toMapPoint(Point devicePoint);
 	
 }

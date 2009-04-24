@@ -6,6 +6,15 @@ package org.redcross.sar.util.mso;
 public interface IGeodataIf
 {
 
+	public enum GeoClassCode {
+		CLASSCODE_GEOPOS,
+		CLASSCODE_TIMEPOS,
+		CLASSCODE_ROUTE,
+		CLASSCODE_TRACK,
+		CLASSCODE_POLYGON,
+		CLASSCODE_POSITION
+	}
+	
     /**
      * Get Id of object
      *

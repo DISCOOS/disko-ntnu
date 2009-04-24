@@ -129,7 +129,7 @@ public class OldDiskoReport {
 			assignment = assignments.get(i);
 			makePrintMap(assignment);
 			try{
-				activeView = diskoMap_print.getActiveView();
+				activeView = diskoMap_print.getMapImpl().getActiveView();
 			}
 			catch(IOException ioe){
 				ioe.printStackTrace();

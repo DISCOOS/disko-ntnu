@@ -38,12 +38,20 @@ public class SimpleDataSource<I> implements IDataSource<I> {
     	return m_id;
     }
     
+    public boolean isAvailable() {
+    	return true;
+    }
+    
 	public boolean isSupported(Class<?> dataClass) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
     public Collection<?> getItems(Class<?> c) {
+    	return null;
+    }
+    
+    public Collection<?> getItems(Enum<?> e) {
     	return null;
     }
 

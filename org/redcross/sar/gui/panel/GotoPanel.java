@@ -319,7 +319,7 @@ public class GotoPanel extends TogglePanel {
 		// forward
 		unregisterMouseListener();
 		// prepare
-		this.m_map = map;
+		m_map = map;
 		// Enable goto button?
 		getGotoButton().setEnabled(m_map!=null);
 		// forward
@@ -369,17 +369,17 @@ public class GotoPanel extends TogglePanel {
 
 	public void setCenterPoint() {
 		if(m_map!=null)
-			getCoordinatePanel().setPoint(m_map.getCenterPoint());
+			getCoordinatePanel().setPoint((Point)m_map.getCenterPoint());
 	}
 
 	public void setClickPoint() {
 		if(m_map!=null)
-			getCoordinatePanel().setPoint(m_map.getClickPoint());
+			getCoordinatePanel().setPoint((Point)m_map.getClickPoint());
 	}
 
 	public void setMovePoint() {
 		if(m_map!=null)
-			getCoordinatePanel().setPoint(m_map.getMovePoint());
+			getCoordinatePanel().setPoint((Point)m_map.getMovePoint());
 	}
 
 	private void centerAt() {
@@ -513,7 +513,7 @@ public class GotoPanel extends TogglePanel {
 				// draw in screen display
 				if (p != null && !p.isEmpty()) {
 					// get active view
-					IActiveView activeView = ((MapBean)m_map).getActiveView();
+					IActiveView activeView = ((MapBean)m_map.getMapImpl()).getActiveView();
 					// get invalid area
 					InvalidArea invalidArea = new InvalidArea();
 					// add current?
@@ -555,7 +555,7 @@ public class GotoPanel extends TogglePanel {
 			if (p != null && !p.isEmpty()) {
 
 				// get active view
-				IActiveView activeView = ((MapBean)m_map).getActiveView();
+				IActiveView activeView = ((MapBean)m_map.getMapImpl()).getActiveView();
 
 				// get screen display and start drawing on it
 				IScreenDisplay screenDisplay = activeView.getScreenDisplay();

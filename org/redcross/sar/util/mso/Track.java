@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.map.MapUtil;
 
 /**
@@ -39,7 +40,7 @@ public class Track extends AbstractGeodata
      */
     public Track(String anId, String aName)
     {
-        super(anId, aName);
+        super(anId,aName,GeoClassCode.CLASSCODE_ROUTE);
         m_track = new ArrayList<TimePos>();
         m_distance = new Vector<Double>();
     }
@@ -53,7 +54,7 @@ public class Track extends AbstractGeodata
      */
     public Track(String anId, String aName, int aSize)
     {
-        super(anId, aName);
+        super(anId,aName,GeoClassCode.CLASSCODE_ROUTE);
         m_track = new ArrayList<TimePos>(aSize);
         m_distance = new Vector<Double>();
     }
@@ -568,4 +569,13 @@ public class Track extends AbstractGeodata
 		m_distance.clear();
 	}
 
+	@Override
+	public int compareTo(IData data) {
+		if(data instanceof Track) {
+			if(equals(data)) return 0;
+			else return (int)(getDistance() - ((Track)data).getDistance());
+		}
+		return -1;
+	}	
+	
 }

@@ -12,6 +12,7 @@ import java.util.List;
 /**
  * Base class for managing committable objects
  */
+@SuppressWarnings("unchecked")
 public abstract class CommittableImpl implements ICommittableIf
 {
     public final Calendar m_timestamp;

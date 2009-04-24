@@ -11,7 +11,7 @@ import javax.swing.SwingUtilities;
 import org.redcross.sar.gui.IMsoHolder;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.mso.panel.FreeHandPanel;
+import org.redcross.sar.gui.panel.FreeHandPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;

@@ -29,6 +29,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
     public static final EnumSet<UnitStatus> OCCUPIED_RANGE = EnumSet.range(UnitStatus.INITIALIZING, UnitStatus.PENDING);
     public static final EnumSet<UnitStatus> IDLE_RANGE = EnumSet.of(UnitStatus.READY, UnitStatus.PAUSED);
     public static final EnumSet<UnitStatus> MANAGED_RANGE = ACTIVE_RANGE.clone();
+    public static final EnumSet<UnitStatus> DELETEABLE_SET = EnumSet.of(UnitStatus.EMPTY);
 
     /**
      * Often used selectors

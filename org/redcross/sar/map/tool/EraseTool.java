@@ -240,11 +240,11 @@ public class EraseTool extends BaseMapTool {
 		// found?
 		if(selected!=null) {
 			// only one selected?
-			if(selected.size()==0) {
+			if(selected.size()==1) {
 				// get feature
 				return (IMsoFeature)selected.get(0)[0];
 			}
-			else {
+			else if(selected.size()>1){
 				// user decision is required
 				IMsoObjectIf objs[] = new IMsoObjectIf[selected.size()];
 				// get mso objects

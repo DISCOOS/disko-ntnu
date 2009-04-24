@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
@@ -312,7 +313,7 @@ public class SnapAdapter {
 		// is snapping allowed?
 		if(map.isSnapAllowed()) {
 			// set snap tolerance of tool
-			setSnapTolerance(map.getActiveView().getExtent().getWidth()/SNAP_TOL_FACTOR);
+			setSnapTolerance(map.getExtent().getWidth()/SNAP_TOL_FACTOR);
 		}
 		// get available snappable layers from map
 		snappable = map.getSnappableLayers();
@@ -328,7 +329,7 @@ public class SnapAdapter {
 				// any selected?
 				if(snapTo.size()>0) {
 					// get current extent
-					Envelope extent = (Envelope)map.getActiveView().getExtent();
+					Envelope extent = (Envelope)map.getExtent();
 					// forward
 					scheduleSnapWork(extent);
 				}
@@ -523,6 +524,17 @@ public class SnapAdapter {
 			catch(Exception e) {
 				e.printStackTrace();
 			}
+		}
+
+		@Override
+		public int size() {
+			return snapTo.size();
+		}
+
+		@Override
+		public void merge(Map work) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 

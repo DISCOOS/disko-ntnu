@@ -17,7 +17,6 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureModel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -2020,31 +2019,31 @@ public class MapUtil {
 		// initialize
 		IEnvelope extent = null;
 		// get layer
-		IMsoFeatureLayer l = map.getMsoLayer(LayerCode.OPERATION_AREA_LAYER);
+		IMsoFeatureLayer l = map.getMsoLayer(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
 		// get extent?
 		if(l!=null) {
 			extent = getUnion(extent,l.getVisibleFeaturesExtent());
 		}
 		// get layer
-		l = map.getMsoLayer(LayerCode.SEARCH_AREA_LAYER);
+		l = map.getMsoLayer(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
 		// get extent?
 		if(l!=null) {
 			extent = getUnion(extent,l.getVisibleFeaturesExtent());
 		}
 		// get layer
-		l = map.getMsoLayer(LayerCode.AREA_LAYER);
+		l = map.getMsoLayer(IMsoFeatureLayer.LayerCode.AREA_LAYER);
 		// get extent?
 		if(l!=null) {
 			extent = getUnion(extent,l.getVisibleFeaturesExtent());
 		}
 		// get layer
-		l = map.getMsoLayer(LayerCode.ROUTE_LAYER);
+		l = map.getMsoLayer(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
 		// get extent?
 		if(l!=null) {
 			extent = getUnion(extent,l.getVisibleFeaturesExtent());
 		}
 		// get layer
-		l = map.getMsoLayer(LayerCode.POI_LAYER);
+		l = map.getMsoLayer(IMsoFeatureLayer.LayerCode.POI_LAYER);
 		// get extent?
 		if(l!=null) {
 			extent = getUnion(extent,l.getVisibleFeaturesExtent());

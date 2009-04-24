@@ -23,7 +23,7 @@ import org.redcross.sar.map.MapLayerModel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MsoLayerModel;
 import org.redcross.sar.map.WmsLayerModel;
-import org.redcross.sar.map.layer.IMapLayer.LayerCode;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.carto.ILayer;

@@ -4,6 +4,12 @@ import java.util.EventObject;
 
 import org.redcross.sar.data.IDataSource;
 
+/**
+ * 
+ * @author Administrator
+ *
+ * @param <I> - the class or interface that implements the source event information
+ */
 public class SourceEvent<I> extends EventObject {
 
 	private static final long serialVersionUID = 1L;

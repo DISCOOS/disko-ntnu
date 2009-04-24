@@ -253,7 +253,7 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
 	}
 
 	public boolean setPointFromMap(boolean isDirty) {
-		return setPoint(map.getClickPoint(),isDirty);
+		return setPoint((Point)map.getClickPoint(),isDirty);
 	}
 
 	/* =========================================================
@@ -408,7 +408,7 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
 			isMoving=false;
 
 			// forward
-			super.onCreate(obj);
+			super.onCreate(map.getMapImpl());
 
 		}
 		catch(Exception e) {

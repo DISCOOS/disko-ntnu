@@ -20,6 +20,7 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
 
+import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
 
 /**
@@ -138,10 +139,10 @@ public class MapStatusPanel extends JPanel {
 		return scaleLabel;
 	}
 	
-	public void onMouseClick(Point p) {
+	public void onMouseClick(IPoint p) {
 		try {
 			if(p!=null && !p.isEmpty())
-				clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p,5),5,3,true));		
+				clickLabel.setValue(MapUtil.formatMGRS(MapUtil.getMGRSfromPoint((Point)p,5),5,3,true));		
 			else {
 				mouseOverLabel.setEmpty();
 			}
@@ -152,10 +153,10 @@ public class MapStatusPanel extends JPanel {
 		}
 	}
 	
-	public void onMouseMove(Point p) {
+	public void onMouseMove(IPoint p) {
 		try {
 			if(p!=null && !p.isEmpty()) {
-				String text = MapUtil.formatMGRS(MapUtil.getMGRSfromPoint(p,5),5,3,true);
+				String text = MapUtil.formatMGRS(MapUtil.getMGRSfromPoint((Point)p,5),5,3,true);
 				mouseOverLabel.setValue(text);
 				mouseOverLabel.updateUI();
 			}

@@ -15,20 +15,20 @@ import javax.swing.SwingUtilities;
 import org.redcross.sar.Application;
 import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.dialog.DrawDialog;
+import org.redcross.sar.gui.dialog.ElementDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.menu.NavMenu;
-import org.redcross.sar.gui.mso.dialog.ElementDialog;
-import org.redcross.sar.gui.mso.panel.ElementPanel.ElementEvent;
-import org.redcross.sar.gui.mso.panel.ElementPanel.IElementEventListener;
+import org.redcross.sar.gui.panel.ElementPanel.ElementEvent;
+import org.redcross.sar.gui.panel.ElementPanel.IElementEventListener;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.DrawFrame;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
+import org.redcross.sar.map.layer.IMapLayer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMapLayer.LayerCode;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.map.tool.IDrawTool.DrawMode;
 import org.redcross.sar.map.tool.IDrawTool.FeatureType;
@@ -96,7 +96,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	private DrawDialog drawDialog;
 	private ElementDialog elementDialog;
 
-	private EnumSet<LayerCode> layers;
+	private List<Enum<?>> layers;
 	private EnumSet<MsoClassCode> editable;
 
 	private MapControlAdapter mapListener;
@@ -158,9 +158,11 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		if(this.map!=null) {
 			// remove current listeners
 			try {
-				for(LayerCode it : layers) {
-					IMsoFeatureLayer msoLayer = this.map.getMsoLayer(it);
-					if(msoLayer!=null) msoLayer.removeMsoLayerEventListener(this);
+				for(Enum<?> it : layers) {
+					IMapLayer layer = this.map.getLayer(it);
+					if(layer instanceof IMsoFeatureLayer) { 
+						((IMsoFeatureLayer)layer).removeMsoLayerEventListener(this);
+					}
 				}
 				// remove map control adapter
 				this.map.removeIMapControlEvents2Listener(mapListener);
@@ -178,10 +180,10 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		if(map!=null) {
 			// add listeners
 			try {
-				for(LayerCode it : layers) {
-					IMsoFeatureLayer msoLayer = map.getMsoLayer(it);
-					if(msoLayer!=null)
-						msoLayer.addMsoLayerEventListener(this);
+				for(Enum<?> it : layers) {
+					IMapLayer layer = map.getLayer(it);
+					if(layer instanceof IMsoFeatureLayer)
+						((IMsoFeatureLayer)layer).addMsoLayerEventListener(this);
 				}
 				// enable automatic update of draw frame
 				map.addIMapControlEvents2Listener(mapListener);
@@ -594,8 +596,8 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 			// has frame?
 			if(geoFrame!=null) {
 				// get screen display and start drawing on it
-				IDisplay display = drawFrame.display(); map.getActiveView().getScreenDisplay();
-				// enable draeing
+				IDisplay display = drawFrame.display(); //map.getActiveView().getScreenDisplay();
+				// enable drawing
 				display.startDrawing(display.getHDC(),(short) esriScreenCache.esriNoScreenCache);
 				// expand?
 				double d = display.getDisplayTransformation().fromPoints(15);
@@ -1070,7 +1072,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	 * IMsoLayerEventListener implementation
 	 * ===========================================
 	 */
-	public void onSelectionChanged(MsoLayerEvent e) throws IOException, AutomationException {
+	public void onSelectionChanged(MsoLayerEvent e) {
 
 		// consume?
 		if(isSelectionConsumed() || !e.isFinal()) return;
@@ -1910,7 +1912,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 					if(map!=null) {
 						try {
 							// get flag
-							resume = (map.getCurrentTool() instanceof SelectTool);
+							resume = (map.getActiveTool() instanceof SelectTool);
 						}
 						catch(Exception ex) {
 							ex.printStackTrace();

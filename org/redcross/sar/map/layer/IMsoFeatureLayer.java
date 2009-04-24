@@ -7,7 +7,7 @@ import java.util.List;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.feature.IMsoFeature;
-import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
@@ -16,9 +16,21 @@ import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
-public interface IMsoFeatureLayer extends IFeatureLayer, IMapLayer, IMsoUpdateListenerIf {
+public interface IMsoFeatureLayer extends IMapLayer<IMsoObjectIf,IMsoFeature>, IFeatureLayer, IMsoUpdateListenerIf {
 
-	public IMsoManagerIf.MsoClassCode getClassCode();
+	public enum LayerCode {
+		AREA_LAYER,
+		ROUTE_LAYER,
+		TRACK_LAYER,
+		OPERATION_AREA_LAYER,
+		SEARCH_AREA_LAYER,
+		POI_LAYER,
+		FLANK_LAYER,
+		OPERATION_AREA_MASK_LAYER,
+		UNIT_LAYER
+    }
+	
+	public MsoClassCode getClassCode();
 
 	public LayerCode getLayerCode();
 
@@ -56,8 +68,8 @@ public interface IMsoFeatureLayer extends IFeatureLayer, IMapLayer, IMsoUpdateLi
 	public void setVisibleFeatures(List<IMsoObjectIf> msoObjs, boolean match, boolean others);
 	public int getVisibleFeatureCount(boolean update) throws AutomationException, IOException;
 
-	public int getFeatureCount() throws AutomationException, IOException;
-	public IMsoFeature getFeature(int index) throws AutomationException, IOException;
+	public int getFeatureCount();
+	public IMsoFeature getFeature(int index);
 	public IMsoFeature getFeature(IMsoObjectIf msoObj) throws AutomationException, IOException;
 
 	public Selector<IMsoObjectIf> getSelector(int id);

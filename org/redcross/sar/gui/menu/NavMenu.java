@@ -50,7 +50,6 @@ import org.redcross.sar.map.tool.SplitTool;
 import org.redcross.sar.map.tool.DiskoToolWrapper.WrapAction;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.map.tool.IMapTool.IMapToolState;
-import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.controls.ControlsMapFullExtentCommand;

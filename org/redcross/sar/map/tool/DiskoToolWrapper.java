@@ -269,17 +269,18 @@ public class DiskoToolWrapper extends BaseMapTool {
 	
 	@Override
 	public void onCreate(Object arg0) {
-		if(arg0 instanceof IDiskoMap)
-			map = (IDiskoMap)arg0;
 		if(command==null) return;
-		try {
-			command.onCreate(arg0);
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(arg0 instanceof IDiskoMap) {
+			map = (IDiskoMap)arg0;
+			try {
+				command.onCreate(map.getMapImpl());
+			} catch (AutomationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	

@@ -15,7 +15,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.map.layer.IMapLayer.LayerCode;
+import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -73,8 +73,8 @@ public class MsoUtils {
 			if(assignment!=null)
 				return IAssignmentIf.DELETABLE_SET.contains(assignment.getStatus());
 		}
-		else {
-			
+		else if (msoObj instanceof IUnitIf) {
+			return IUnitIf.DELETEABLE_SET.contains(((IUnitIf)msoObj).getStatus());
 		}
 		return true;
 	}
@@ -93,6 +93,9 @@ public class MsoUtils {
 			return isEditable(msoObj);
 		}					
 		else if (msoObj instanceof IPOIIf) {
+			return isEditable(msoObj);
+		}		
+		else if (msoObj instanceof IUnitIf) {
 			return isEditable(msoObj);
 		}		
 		// all else is deletable
@@ -204,6 +207,10 @@ public class MsoUtils {
 					// get message
 					message ="Dette vil slette " + MsoUtils.getMsoObjectName(msoObj, 1) + ". Vil du fortsette?";
 				
+			}
+			else if (msoObj instanceof IPOIIf) {
+				// get message
+				message ="Dette vil slette " + MsoUtils.getUnitName((IUnitIf)msoObj) + ". Vil du fortsette?";				
 			}
 		}		
 		// finished
@@ -1140,26 +1147,26 @@ public class MsoUtils {
 		return false;
 	}
 	
-	public static LayerCode translate(MsoClassCode code) {
+	public static Enum<?> translate(MsoClassCode code) {
 		switch(code) {
-			case CLASSCODE_OPERATIONAREA: return LayerCode.OPERATION_AREA_LAYER;
-			case CLASSCODE_SEARCHAREA: return LayerCode.SEARCH_AREA_LAYER;
-			case CLASSCODE_AREA: return LayerCode.OPERATION_AREA_LAYER;
-			case CLASSCODE_ROUTE: return LayerCode.ROUTE_LAYER;
-			case CLASSCODE_TRACK: return LayerCode.TRACK_LAYER;
-			case CLASSCODE_POI: return LayerCode.POI_LAYER;
-			case CLASSCODE_UNIT: return LayerCode.UNIT_LAYER;
+			case CLASSCODE_OPERATIONAREA: return IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER;
+			case CLASSCODE_SEARCHAREA: return IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER;
+			case CLASSCODE_AREA: return IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER;
+			case CLASSCODE_ROUTE: return IMsoFeatureLayer.LayerCode.ROUTE_LAYER;
+			case CLASSCODE_TRACK: return IMsoFeatureLayer.LayerCode.TRACK_LAYER;
+			case CLASSCODE_POI: return IMsoFeatureLayer.LayerCode.POI_LAYER;
+			case CLASSCODE_UNIT: return IMsoFeatureLayer.LayerCode.UNIT_LAYER;
 		}
 		return null;	
 	}
 	
-	public static EnumSet<LayerCode> translate(EnumSet<MsoClassCode> codes) {
-		EnumSet<LayerCode> myLayers = EnumSet.noneOf(LayerCode.class);
+	public static List<Enum<?>> translate(EnumSet<MsoClassCode> codes) {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
 		for(MsoClassCode it : codes) {
-			LayerCode code = translate(it);
-			if(code!=null) myLayers.add(code);
+			Enum<?> code = translate(it);
+			if(code!=null) list.add(code);
 		}		
-		return myLayers;
+		return list;
 	}
 	
 	

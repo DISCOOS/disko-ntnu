@@ -1,5 +1,6 @@
 package org.redcross.sar.map.tool;
 
+import com.esri.arcgis.beans.map.MapBean;
 import com.esri.arcgis.carto.IActiveView;
 import com.esri.arcgis.controls.BaseTool;
 import com.esri.arcgis.display.IDisplayTransformation;
@@ -360,10 +361,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 	 */
 	protected IActiveView getActiveView()
 			throws IOException, AutomationException {
-		if(map instanceof DiskoMap) {			
-			return ((DiskoMap)map).getActiveView();
-		}
-		return null;
+		return ((MapBean)map.getMapImpl()).getActiveView();
 	}
 	
 	/**

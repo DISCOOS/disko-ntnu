@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
@@ -89,15 +90,15 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 		return myInterests;
 	}
 
-	private static EnumSet<IMsoFeatureLayer.LayerCode> getMapLayers() {
-		EnumSet<IMsoFeatureLayer.LayerCode> myLayers;
-		myLayers = EnumSet.of(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
-		myLayers.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
-	    return myLayers;
+	private static List<Enum<?>> getMapLayers() {
+		List<Enum<?>> list = new ArrayList<Enum<?>>();
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.ROUTE_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.POI_LAYER);
+		list.add(IMsoFeatureLayer.LayerCode.UNIT_LAYER);
+	    return list;
 	}
 
     private void initialize()

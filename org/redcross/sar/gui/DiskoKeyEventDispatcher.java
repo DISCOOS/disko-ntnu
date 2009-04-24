@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class DiskoKeyEventDispatcher implements KeyEventDispatcher {
 
 	private List<Class> passed = null;

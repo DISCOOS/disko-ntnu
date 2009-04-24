@@ -1,8 +1,8 @@
 package org.redcross.sar.wp.ds;
 
 import org.redcross.sar.ds.DsBinder;
+import org.redcross.sar.ds.ICue;
 import org.redcross.sar.ds.IDsObject;
-import org.redcross.sar.ds.mso.ICue;
 import org.redcross.sar.ds.mso.MsoAdvisor;
 import org.redcross.sar.gui.model.AbstractDsTableModel;
 

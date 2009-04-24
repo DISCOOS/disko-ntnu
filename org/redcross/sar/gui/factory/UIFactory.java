@@ -30,11 +30,11 @@ import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.dialog.OperationDialog;
 import org.redcross.sar.gui.dialog.ServiceManagerDialog;
+import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.menu.MainMenu;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.menu.SubMenu;
 import org.redcross.sar.gui.menu.SysMenu;
-import org.redcross.sar.gui.mso.dialog.TaskDialog;
 import org.redcross.sar.gui.panel.MainPanel;
 
 public class UIFactory {

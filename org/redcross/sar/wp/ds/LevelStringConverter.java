@@ -6,7 +6,7 @@ import java.text.NumberFormat;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
-import org.redcross.sar.ds.mso.ICue;
+import org.redcross.sar.ds.ICue;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.math.ILevel;
 import org.redcross.sar.util.Utils;

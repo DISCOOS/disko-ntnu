@@ -34,10 +34,10 @@ public class OperationAreaLayer extends AbstractMsoFeatureLayer {
 	private SimpleFillSymbol disabledSymbol = null;
 	private SimpleFillSymbol selectionSymbol = null;
 
- 	public OperationAreaLayer(ISpatialReference srs, MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 	public OperationAreaLayer(ISpatialReference srs, MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryPolygon, MsoClassCode.CLASSCODE_OPERATIONAREA,
  				EnumSet.noneOf(MsoClassCode.class), LayerCode.OPERATION_AREA_LAYER,
- 				srs, eventStack, manager);
+ 				srs, eventStack);
  		createSymbols();
 	}
 

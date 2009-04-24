@@ -20,7 +20,7 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.event.MsoLayerEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.map.layer.IMapLayer.LayerCode;
+import org.redcross.sar.map.layer.IMsoFeatureLayer.LayerCode;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -46,7 +46,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	protected IMsoModelIf msoModel;
 	protected IMsoObjectIf msoObject;
 
-	protected EnumSet<LayerCode> msoLayers;
+	protected EnumSet<?> msoLayers;
 	protected EnumSet<MsoClassCode> msoInterests;
 
 	protected PanelManager manager = new PanelManager(null,this);
@@ -81,7 +81,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 			loopCount--;
 	}
 
-	public EnumSet<LayerCode> getMsoLayers() {
+	public EnumSet<?> getMsoLayers() {
 		return msoLayers;
 	}
 

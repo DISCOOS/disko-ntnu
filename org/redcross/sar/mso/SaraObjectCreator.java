@@ -30,6 +30,7 @@ import java.util.ListIterator;
  * Time: 13:27:44
  * To change this template use File | Settings | File Templates.
  */
+@SuppressWarnings("unchecked")
 public class SaraObjectCreator
 {
    public static final int LOC_POI = 0;

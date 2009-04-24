@@ -2,6 +2,7 @@ package org.redcross.sar.ds.mso;
 
 import org.redcross.sar.data.IData;
 import org.redcross.sar.ds.AbstractDsObject;
+import org.redcross.sar.ds.ICue;
 import org.redcross.sar.util.Utils;
 
 public abstract class AbstractClue<S extends IData> extends AbstractDsObject implements ICue {

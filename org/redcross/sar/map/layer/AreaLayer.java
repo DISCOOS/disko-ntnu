@@ -46,11 +46,11 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
 	private TextSymbol textSymbol = null;
 
  	public AreaLayer(ISpatialReference srs,
- 			MsoLayerEventStack eventStack, IDiskoMapManager manager) {
+ 			MsoLayerEventStack eventStack) {
  		super(esriGeometryType.esriGeometryBag,
  				MsoClassCode.CLASSCODE_AREA,
  				EnumSet.of(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_ASSIGNMENT),
- 				LayerCode.AREA_LAYER, srs, eventStack, manager);
+ 				LayerCode.AREA_LAYER, srs, eventStack);
  		// prepare
  		symbols = new Hashtable<SearchSubType, SimpleLineSymbol>();
  		// forward
