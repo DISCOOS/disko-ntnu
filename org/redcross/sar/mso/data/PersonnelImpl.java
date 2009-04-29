@@ -16,8 +16,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     private final AttributeImpl.MsoCalendar m_estimatedArrival = new AttributeImpl.MsoCalendar(this, "EstimatedArrival");
     private final AttributeImpl.MsoCalendar m_released = new AttributeImpl.MsoCalendar(this, "Released");
     private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
-    private final AttributeImpl.MsoString m_department = new AttributeImpl.MsoString(this, "Department");
     private final AttributeImpl.MsoString m_organization = new AttributeImpl.MsoString(this, "Organization");
+    private final AttributeImpl.MsoString m_division = new AttributeImpl.MsoString(this, "Division");
+    private final AttributeImpl.MsoString m_department = new AttributeImpl.MsoString(this, "Department");    
 
     private final AttributeImpl.MsoEnum<PersonnelStatus> m_status = new AttributeImpl.MsoEnum<PersonnelStatus>(this, "Status", 1, PersonnelStatus.IDLE);
     private final AttributeImpl.MsoEnum<PersonnelType> m_type = new AttributeImpl.MsoEnum<PersonnelType>(this, "Type", 1, PersonnelType.VOLUNTEER);
@@ -41,8 +42,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         addAttribute(m_estimatedArrival);
         addAttribute(m_released);
         addAttribute(m_remarks);
-        addAttribute(m_department);
         addAttribute(m_organization);
+        addAttribute(m_division);
+        addAttribute(m_department);
         addAttribute(m_status);
         addAttribute(m_type);
         addAttribute(m_importStatus);
@@ -225,26 +227,6 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_remarks;
     }
 
-    public void setDepartment(String aDepartment)
-    {
-        m_department.setValue(aDepartment);
-    }
-
-    public String getDepartment()
-    {
-        return m_department.getString();
-    }
-
-    public IMsoModelIf.ModificationState getDepartmentState()
-    {
-        return m_department.getState();
-    }
-
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute()
-    {
-        return m_department;
-    }
-
     public void setOrganization(String anOrganization)
     {
         m_organization.setValue(anOrganization);
@@ -265,6 +247,46 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_organization;
     }
 
+    public void setDivision(String division)
+    {
+    	m_division.setValue(division);
+    }
+
+	public String getDivision()
+	{
+		return m_division.getString();
+	}
+
+	public IMsoModelIf.ModificationState getDivisionState()
+	{
+		return m_division.getState();
+	}
+
+    public IAttributeIf.IMsoStringIf getDivisionAttribute()
+    {
+    	return m_division;
+    }
+    
+    public void setDepartment(String aDepartment)
+    {
+        m_department.setValue(aDepartment);
+    }
+
+    public String getDepartment()
+    {
+        return m_department.getString();
+    }
+
+    public IMsoModelIf.ModificationState getDepartmentState()
+    {
+        return m_department.getState();
+    }
+
+    public IAttributeIf.IMsoStringIf getDepartmentAttribute()
+    {
+        return m_department;
+    }
+    
     public void setStatus(PersonnelStatus aStatus)
     {
         m_status.setValue(aStatus);

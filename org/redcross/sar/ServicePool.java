@@ -21,6 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.log4j.Logger;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.DispatcherAdapter;
+import org.redcross.sar.util.Utils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -347,12 +348,7 @@ public class ServicePool {
 		// notify
 		m_logger.info("installFromXmlFile()::started...");
 		// load xml document
-		FileInputStream instream = new FileInputStream(file);
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-		dbf.setValidating(false);
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document doc = db.parse(instream);
+		Document doc = Utils.getXmlDoc(file);
 		// get all service catalogs
 		NodeList catalogs = doc.getElementsByTagName("IServiceCatalog");
 		// install service catalogs
@@ -527,12 +523,7 @@ public class ServicePool {
 	 */
 	public void createFromXmlFile(File file, Object id) throws Exception {
 		// load xml document
-		FileInputStream instream = new FileInputStream(file);
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-		dbf.setValidating(false);
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document doc = db.parse(instream);
+		Document doc = Utils.getXmlDoc(file);
 		// get all service catalogs
 		NodeList catalogs = doc.getElementsByTagName("DiskoService");
 		// install service catalogs

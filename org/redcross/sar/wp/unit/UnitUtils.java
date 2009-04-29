@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 /**
  * Handles personnel logic
  */
-public class PersonnelUtilities
+public class UnitUtils
 {
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
@@ -211,5 +211,5 @@ public class PersonnelUtilities
 		{
 			throw new IllegalOperationException("Failed to delete personnel object");
 		}
-	}
+	}	
 }

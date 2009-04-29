@@ -130,7 +130,7 @@ public class UnitTypeInputPanel extends DefaultPanel
             int rows = types.length / m_cols + 1;
             
             // apply layout
-            SpringUtilities.makeCompactGrid((JPanel)getContainer(), rows, m_cols, 0, 0, 0, 0);
+            SpringUtilities.makeCompactGrid((JPanel)getContainer(), rows, m_cols, 0, 0, 0, 0, true, true);
 			
 		}
 		catch(MissingResourceException e)

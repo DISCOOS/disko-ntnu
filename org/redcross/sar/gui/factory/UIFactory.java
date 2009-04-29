@@ -18,6 +18,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.DiskoBorder;
@@ -182,12 +183,20 @@ public class UIFactory {
 	}
 
 	public static JScrollPane createScrollPane(Component view, boolean hasBorder) {
-		return createScrollPane(view,hasBorder,
+		return createScrollPane(view,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED,
+				hasBorder);
 	}
 
-	public static JScrollPane createScrollPane(Component view, boolean hasBorder, int vScroll, int hScroll) {
+	public static JScrollPane createScrollPane(Component view, boolean hasBorder, int top, int left, int bottom, int right) {
+		return createScrollPane(view,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED,
+				hasBorder, top, left, bottom, right);
+	}
+	
+	public static JScrollPane createScrollPane(Component view, int vScroll, int hScroll, boolean hasBorder) {
 		JScrollPane scrollPane = new JScrollPane(view);
 		scrollPane.setOpaque(true);
 		scrollPane.setBorder(hasBorder ? new DiskoBorder() : BorderFactory.createEmptyBorder());
@@ -197,6 +206,15 @@ public class UIFactory {
 		scrollPane.setVerticalScrollBarPolicy(vScroll);
 		scrollPane.setHorizontalScrollBarPolicy(hScroll);
 		scrollPane.setWheelScrollingEnabled(true);
+		return scrollPane;		
+	}
+	
+	public static JScrollPane createScrollPane(Component view, int vScroll, int hScroll, boolean hasBorder, int top, int left, int bottom, int right) {
+		JScrollPane scrollPane = createScrollPane(view, vScroll, hScroll, hasBorder);
+		scrollPane.setOpaque(true);
+		Border border = scrollPane.getBorder();
+		scrollPane.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(top, left, bottom, right), border));
 		return scrollPane;
 	}
 

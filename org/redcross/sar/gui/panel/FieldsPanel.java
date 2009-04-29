@@ -48,6 +48,7 @@ public class FieldsPanel extends TogglePanel {
 
 	private List<String> m_names;
 	private Map<String,IDiskoField> m_fields;
+	private Map<String,Integer[]> m_fieldSpan;
 
 	private JLabel m_messageLabel;
 
@@ -57,6 +58,8 @@ public class FieldsPanel extends TogglePanel {
 	private boolean m_isLayoutDirty = true;
 	private boolean m_isLayoutSuspended = true;
 	private boolean m_isMessageVisible = false;
+	private boolean m_autoResizeX = true;
+	private boolean m_autoResizeY = false;
 
 	private int m_columns;
 
@@ -82,6 +85,7 @@ public class FieldsPanel extends TogglePanel {
 		m_columns = columns;
 		m_names = new ArrayList<String>();
 		m_fields = new HashMap<String, IDiskoField>();
+		m_fieldSpan = new HashMap<String, Integer[]>();
 		// initialize GUI
 		initialize(message);
 		// hide toggle button
@@ -117,6 +121,30 @@ public class FieldsPanel extends TogglePanel {
 		if(m_isMessageVisible!=isVisible) {
 			m_isMessageVisible = isVisible;
 			validate();
+		}
+	}
+	
+	public boolean isAutoResizeX() {
+		return m_autoResizeX;
+	}
+
+	public void setAutoResizeX(boolean isAutoResizeX)  {
+		// any change?
+		if(m_autoResizeX!=isAutoResizeX) {
+			m_autoResizeX = isAutoResizeX;
+			createGrid();
+		}
+	}
+	
+	public boolean isAutoResizeY() {
+		return m_autoResizeY;
+	}
+
+	public void setAutoResizeY(boolean isAutoResizeY)  {
+		// any change?
+		if(m_autoResizeY!=isAutoResizeY) {
+			m_autoResizeY = isAutoResizeY;
+			createGrid();
 		}
 	}
 
@@ -291,6 +319,7 @@ public class FieldsPanel extends TogglePanel {
 			// add to list
 			m_names.add(name);
 			m_fields.put(name,field);
+			m_fieldSpan.put(name,new Integer[]{1,1});
 			// add listener
 			field.addWorkFlowListener(this);
 			// set layout dirty
@@ -335,6 +364,7 @@ public class FieldsPanel extends TogglePanel {
 			// remove
 			m_fields.remove(name);
 			m_names.remove(name);
+			m_fieldSpan.remove(name);
 			// set layout dirty
 			m_isLayoutDirty = true;
 		}
@@ -399,6 +429,12 @@ public class FieldsPanel extends TogglePanel {
 	}
 
 	private void createGrid() {
+		// initialize
+		int i = 0;
+		int s = 0;
+		int count = getFieldCount();
+		int[] cellSpanX = new int[count];
+		int[] cellSpanY = new int[count];
 		// clear current
 		JPanel list = (JPanel)getContainer();
 		list.removeAll();
@@ -406,14 +442,19 @@ public class FieldsPanel extends TogglePanel {
 		// add all attributes
 		for(String name : m_names) {
 			list.add((Component)m_fields.get(name));
+			cellSpanX[i] = getFieldSpanX(name);
+			s += cellSpanX[i] - 1;
+			cellSpanY[i] = getFieldSpanY(name);
+			s += cellSpanY[i] - 1;
+			i++;
 		}
-		// get number of attributes
-		int count = m_names.size();
 		// calculate rows
-		int rows = count/m_columns;
-		// forward
-		SpringUtilities.makeCompactGrid(list, rows, m_columns, 5, 5, 5, 5);
-		//Dimension d = list.getPreferredSize();
+		int rows = (count+s)/m_columns;
+		// forward?
+		if(count>0) {
+			SpringUtilities.makeSpannedGrid(list, rows, m_columns, 5, 5, 5, 5, 
+					cellSpanX, cellSpanY, m_autoResizeX, m_autoResizeY);
+		}
 	}
 
 	public void clearFields()  {
@@ -443,7 +484,36 @@ public class FieldsPanel extends TogglePanel {
 	public void setCaptionWidth(String name, int width) {
 		m_fields.get(name).setFixedCaptionWidth(width);
 	}
+	
+	public int getFixedHeight(String name) {
+		return m_fields.get(name).getFixedHeight();
+	}
+	
+	public void setFixedHeight(int heigth) {
+		for(IDiskoField it: m_fields.values())
+			it.setFixedHeight(heigth);
+	}
+	
+	public void setFixedHeight(String name, int heigth) {
+		m_fields.get(name).setFixedHeight(heigth);
+	}
 
+	public int getFieldSpanX(String name) {
+		return m_fieldSpan.get(name)[0];
+	}
+	
+	public void setFieldSpanX(String name, int span) {
+		m_fieldSpan.get(name)[0] = span;
+	}
+	
+	public int getFieldSpanY(String name) {
+		return m_fieldSpan.get(name)[1];
+	}
+	
+	public void setFieldSpanY(String name, int span) {
+		m_fieldSpan.get(name)[1] = span;
+	}
+	
 	public Object getValue(String name) {
 		return getField(name).getValue();
 	}

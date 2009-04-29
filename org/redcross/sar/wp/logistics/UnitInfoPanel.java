@@ -128,16 +128,19 @@ public class UnitInfoPanel extends JPanel
 	private FieldsPanel getInfoPanel() {
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
-			m_infoPanel.setColumns(1);
+			m_infoPanel.setColumns(2);
 			m_infoPanel.setPreferredExpandedHeight(200);
 			m_infoPanel.setButtonVisible("toggle", true);
 			m_infoPanel.addField(createPositionField("position",0));
 			m_infoPanel.addField(createTextField("leader",1));
 			m_infoPanel.addField(createTextField("assignment",2));
-			m_infoPanel.addField(createTextField("5-tone",3));
 			m_infoPanel.addField(createTextField("ete",4));
+			m_infoPanel.addField(createTextField("5-tone",3));
 			m_infoPanel.addField(createEnumField("status",5));
 			m_infoPanel.addField(createTextField("worktime",6));
+			m_infoPanel.setFieldSpanX("position", 2);
+			m_infoPanel.setFieldSpanX("leader", 2);
+			m_infoPanel.setFieldSpanX("assignment", 2);
 			ButtonSize size = m_infoPanel.getButtonSize();
 			m_infoPanel.addButton(DiskoButtonFactory.createButton("GENERAL.EDIT",size), UNIT_CHANGE);
 			m_infoPanel.addButton(DiskoButtonFactory.createButton("GENERAL.PRINT",size), UNIT_PRINT);

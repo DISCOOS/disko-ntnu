@@ -15,6 +15,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 	private final AttributeImpl.MsoString m_title = new AttributeImpl.MsoString(this, "Title");
 	private final AttributeImpl.MsoCalendar m_created = new AttributeImpl.MsoCalendar(this, "Created");
 	private final AttributeImpl.MsoString m_organization = new AttributeImpl.MsoString(this, "Organization");
+	private final AttributeImpl.MsoString m_division = new AttributeImpl.MsoString(this, "Division");	
 	private final AttributeImpl.MsoString m_department = new AttributeImpl.MsoString(this, "Department");
 
 	// Lists
@@ -30,6 +31,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
     	addAttribute(m_title);
     	addAttribute(m_created);
     	addAttribute(m_organization);
+    	addAttribute(m_division);
     	addAttribute(m_department);
     }
 
@@ -171,7 +173,26 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
     	return m_organization;
     }
 
+    public void setDivision(String division)
+    {
+    	m_division.setValue(division);
+    }
 
+	public String getDivision()
+	{
+		return m_division.getString();
+	}
+
+	public IMsoModelIf.ModificationState getDivisionState()
+	{
+		return m_division.getState();
+	}
+
+    public IAttributeIf.IMsoStringIf getDivisionAttribute()
+    {
+    	return m_division;
+    }
+    
 	public void setDepartment(String department)
 	{
 		m_department.setValue(department);

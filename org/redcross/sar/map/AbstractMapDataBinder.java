@@ -27,7 +27,7 @@ import org.redcross.sar.work.IWork.WorkState;
  *
  * @param <S> - the class or interface that implements the data id object
  * @param <T> - the class or interface that implements the data object
- * @param <I> - the class or interface that implements the source event information
+ * @param <I> - the class or interface that implements the source event information object
  * @param <L> - the class or interface that implements the IMapLayer interface
  */
 
@@ -190,7 +190,7 @@ public abstract class AbstractMapDataBinder<S, T extends IData, I, L extends IMa
 			// get items from MSO class code
 			Collection<T> items = batch.get(it);
 			// found items?
-			if(items.size()>0) {
+			if(items!=null && items.size()>0) {
 				work.put(it, it.load(items));
 			}
 		}

@@ -9,7 +9,7 @@ import java.util.Comparator;
 /**
  *
  */
-public interface IPersonnelIf extends IPersonIf
+public interface IPersonnelIf extends IPersonIf, IAssociationIf
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Personnel";
 
@@ -126,22 +126,6 @@ public interface IPersonnelIf extends IPersonIf
     public IMsoModelIf.ModificationState getRemarksState();
 
     public IAttributeIf.IMsoStringIf getRemarksAttribute();
-
-    public void setDepartment(String aDepartment);
-
-    public String getDepartment();
-
-    public IMsoModelIf.ModificationState getDepartmentState();
-
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute();
-
-    public void setOrganization(String anOrganization);
-
-    public String getOrganization();
-
-    public IMsoModelIf.ModificationState getOrganizationState();
-
-    public IAttributeIf.IMsoStringIf getOrganizationAttribute();
 
     public void setStatus(PersonnelStatus aStatus);
 

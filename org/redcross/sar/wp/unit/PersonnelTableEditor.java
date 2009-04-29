@@ -173,7 +173,7 @@ public class PersonnelTableEditor
 
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
-					PersonnelUtilities.callOutPersonnel(personnel);
+					UnitUtils.callOutPersonnel(personnel);
 
 					if(!m_wpUnit.getNewPersonnel())
 					{
@@ -197,7 +197,7 @@ public class PersonnelTableEditor
 
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
-					PersonnelUtilities.arrivedPersonnel(personnel);
+					UnitUtils.arrivedPersonnel(personnel);
 
 					if(!m_wpUnit.getNewPersonnel())
 					{
@@ -221,7 +221,7 @@ public class PersonnelTableEditor
 
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
-					PersonnelUtilities.releasePersonnel(personnel);
+					UnitUtils.releasePersonnel(personnel);
 
 					if(!m_wpUnit.getNewPersonnel())
 					{

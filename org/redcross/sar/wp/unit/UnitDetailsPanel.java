@@ -1,43 +1,48 @@
 package org.redcross.sar.wp.unit;
 
 import javax.swing.AbstractCellEditor;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
+
+import org.apache.log4j.Logger;
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
+import org.redcross.sar.gui.panel.BasePanel;
+import org.redcross.sar.gui.panel.FieldsPanel;
 
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
+import org.redcross.sar.gui.dialog.AssociationDialog;
+import org.redcross.sar.gui.document.AutoCompleteDocument;
+import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -52,8 +57,10 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.output.DiskoReportManager;
+import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
 
@@ -65,220 +72,340 @@ import org.redcross.sar.util.mso.DTG;
 public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, ITickEventListenerIf
 {
     private static final long serialVersionUID = 1L;
+    private static final long UPDATE_INTERVAL = 60000;
 
+    private static final Logger m_logger = Logger.getLogger(UnitDetailsPanel.class);
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
+
+    private final ImageIcon m_pauseIcon = DiskoIconFactory.getIcon("GENERAL.PAUSE", "32x32");
+    private final ImageIcon m_resumeIcon = DiskoIconFactory.getIcon("GENERAL.PLAY", "32x32");
 
     private IUnitIf m_currentUnit;
 
-    private JLabel m_topPanelLabel;
+    private FieldsPanel m_infoPanel;
     private JToggleButton m_pauseToggleButton;
-    private JButton m_releaseButton;
+    private JToggleButton m_releaseToggleButton;
     private JButton m_showReportButton;
-
-    private JTextField m_leaderTextField;
-    private JTextField m_cellPhoneTextField;
-    private JTextField m_toneIDTextField;
-    private JTextField m_createdTextField;
-    private JTextField m_callsignTextField;
-    private JTextField m_workTimeTextField;
-    private JTextField m_assignmentTextField;
-    private JTextField m_stopTimeTextField;
-    private JTable m_personnelTable;
+    private TextLineField m_leaderTextField;
+    private TextLineField m_cellPhoneTextField;
+    private TextLineField m_toneIDTextField;
+    private TextLineField m_trackingIDTextField;
+    private TextLineField m_createdTextField;
+    private TextLineField m_callSignTextField;
+    private TextLineField m_workTimeTextField;
+    private TextLineField m_assignmentTextField;
+    private TextLineField m_stopTimeTextField;
+    private TextLineField m_associationTextField;
+    
+    private BasePanel m_personnelPanel;
+    private DiskoTable m_personnelTable;
 
     private IDiskoWpUnit m_wp;
 
-    private static final long UPDATE_INTERVAL = 60000;
     private long m_timeCounter;
 
     public UnitDetailsPanel(IDiskoWpUnit wp)
     {
+    	// prepare
         m_wp = wp;
-        wp.getMsoEventManager().addClientUpdateListener(this);
+        // initialize GUI
         initialize();
+        // add listeners
+        wp.addTickEventListener(this);
+        wp.getMsoEventManager().addClientUpdateListener(this);
+        wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
     }
 
     private void initialize()
     {
-        this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(4, 4, 4, 4);
-
-        // Top panel
-        JPanel topPanel = new JPanel(new BorderLayout());
-        JPanel topButtonsPanel = new JPanel();
-        topButtonsPanel.setBorder(null);
-        m_topPanelLabel = new JLabel();
-        topPanel.add(m_topPanelLabel, BorderLayout.CENTER);
-
-        // add pause button
-        String text = m_resources.getString("PauseButton.text");
-        String letter = m_resources.getString("PauseButton.letter");
-        m_pauseToggleButton = DiskoButtonFactory.createToggleButton(letter,text,null,ButtonSize.NORMAL);
-        m_pauseToggleButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                if (m_currentUnit != null)
-                {
-                    try
-                    {
-                    	if(m_currentUnit.isPaused())
-                    		m_currentUnit.resume();
-                    	else
-                    		m_currentUnit.pause();
-
-                        // Commit small changes right away if new unit has been committed
-                        if (!m_wp.getNewUnit())
-                        {
-                            m_wp.commit();
-                        }
-                    }
-                    catch (IllegalOperationException ex)
-                    {
-                    	Utils.showWarning("Enhet kan ikke endre status");
-                    }
-                }
-            }
-        });
-        topButtonsPanel.add(m_pauseToggleButton);
-
-        // add release button
-        text = m_resources.getString("DissolveButton.text");
-        letter = m_resources.getString("DissolveButton.letter");
-        m_releaseButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.NORMAL);
-        m_releaseButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent arg0)
-            {
-                // Try to release unit
-                IUnitIf unit = m_wp.getEditingUnit();
-
-                try
-                {
-                    UnitUtilities.releaseUnit(unit);
-
-                    // Commit
-                    if (!m_wp.getNewUnit())
-                    {
-                        m_wp.getMsoModel().commit();
-                    }
-                }
-                catch (IllegalOperationException e)
-                {
-                	Utils.showError(m_resources.getString("ReleaseUnitError.header"),
-                            m_resources.getString("ReleaseUnitError.text"));
-                }
-            }
-        });
-        topButtonsPanel.add(m_releaseButton);
-        m_showReportButton = DiskoButtonFactory.createButton("GENERAL.PRINT",ButtonSize.NORMAL);
-        m_showReportButton.addActionListener(new ActionListener()
-         {
-             public void actionPerformed(ActionEvent arg0)
-             {
-             	IUnitIf unit = m_wp.getEditingUnit();
-             	DiskoReportManager diskoReport = m_wp.getApplication().getReportManager();
-             	diskoReport.printUnitLog(unit);
-             }
-         });
-        topButtonsPanel.add(m_showReportButton);
-        topPanel.add(topButtonsPanel, BorderLayout.EAST);
-        gbc.gridwidth = 4;
-        this.add(topPanel, gbc);
-        gbc.gridy++;
-
-        // Leader
-        m_leaderTextField = new JTextField();
-        m_leaderTextField.setEditable(false);
-        gbc.gridwidth = 3;
-        layoutComponent(0, m_resources.getString("Leader.text"), m_leaderTextField, gbc, 1);
-
-        // Cell phone
-        m_cellPhoneTextField = new JTextField();
-        m_cellPhoneTextField.setEditable(false);
-        gbc.gridwidth = 3;
-        layoutComponent(0, m_resources.getString("CellularPhone.text"), m_cellPhoneTextField, gbc, 1);
-
-        // 5-tone
-        m_toneIDTextField = new JTextField();
-        layoutComponent(0, m_resources.getString("FiveTone.text"), m_toneIDTextField, gbc, 0);
-
-        // Created
-        m_createdTextField = new JTextField();
-        m_createdTextField.setEditable(false);
-        layoutComponent(2, m_resources.getString("Created.text"), m_createdTextField, gbc, 1);
-
-        // Call sign
-        m_callsignTextField = new JTextField();
-        layoutComponent(0, m_resources.getString("CallSign.text"), m_callsignTextField, gbc, 0);
-
-        // Field time
-        m_workTimeTextField = new JTextField();
-        m_workTimeTextField.setEditable(false);
-        layoutComponent(2, m_resources.getString("FieldTime.text"), m_workTimeTextField, gbc, 1);
-
-        // Assignment
-        m_assignmentTextField = new JTextField();
-        m_assignmentTextField.setEditable(false);
-        layoutComponent(0, m_resources.getString("Assignment.text"), m_assignmentTextField, gbc, 0);
-
-        // Stop time
-        m_stopTimeTextField = new JTextField();
-        m_stopTimeTextField.setEditable(false);
-        layoutComponent(2, m_resources.getString("StopTime.text"), m_stopTimeTextField, gbc, 1);
-
-        // Personnel table
-        m_personnelTable = new DiskoTable();
-        m_personnelTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        m_personnelTable.addMouseListener(new UnitPersonnelMouseListener());
-        m_personnelTable.setFillsViewportHeight(true);
-        m_personnelTable.setModel(new UnitPersonnelTableModel());
-        m_personnelTable.setDragEnabled(true);
-        try
-        {
-            m_personnelTable.setTransferHandler(new PersonnelTransferHandler(m_wp));
-        }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        UnitLeaderColumnRenderer leaderRenderer = new UnitLeaderColumnRenderer();
-        leaderRenderer.setTable(m_personnelTable);
-
-        JTableHeader tableHeader = m_personnelTable.getTableHeader();
-        tableHeader.setResizingAllowed(false);
-        tableHeader.setReorderingAllowed(false);
-
-        JScrollPane personnelTableScrollPane = UIFactory.createScrollPane(m_personnelTable,true);
-        gbc.gridwidth = 4;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridx = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        this.add(personnelTableScrollPane, gbc);
+    	// prepare
+        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+        
+        // add panels
+        add(getInfoPanel());
+        add(Box.createVerticalStrut(5));
+        add(getPersonnelPanel());        
+        
+    }
+        
+    private FieldsPanel getInfoPanel() {
+    	if(m_infoPanel==null) {
+    		m_infoPanel = new FieldsPanel(m_resources.getString("UnitInfo.text"),"",false,false);
+    		m_infoPanel.setColumns(2);
+			m_infoPanel.setPreferredExpandedHeight(400);
+			m_infoPanel.setMinimumSize(new Dimension(400,200));
+    		m_infoPanel.addButton(getPauseButton(), "pause");
+    		m_infoPanel.addButton(getShowReportButton(), "report");
+    		m_infoPanel.addButton(getReleaseButton(), "release");
+    		m_infoPanel.suspendLayout();
+    		m_infoPanel.addField(getLeaderTextField());
+    		m_infoPanel.addField(getCellPhoneTextField());
+    		m_infoPanel.addField(getCallSignTextField());
+    		m_infoPanel.addField(getWorkTimeTextField());
+    		m_infoPanel.addField(getToneIDTextField());
+    		m_infoPanel.addField(getStopTimeTextField());
+    		m_infoPanel.addField(getTrackingIDTextField());
+    		m_infoPanel.addField(getCreatedTextField());
+    		m_infoPanel.addField(getAssociationTextField());    		
+    		m_infoPanel.setFieldSpanX("leader", 2);
+    		m_infoPanel.setFieldSpanX("cellphone", 2);
+    		m_infoPanel.setFieldSpanX("association", 2);
+    		m_infoPanel.resumeLayout();
+    		m_infoPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_UNIT));
+    	}
+    	return m_infoPanel;
+    }
+    
+    private JToggleButton getPauseButton() {
+    	if(m_pauseToggleButton==null) {
+	        m_pauseToggleButton = DiskoButtonFactory.createToggleButton("GENERAL.PAUSE",ButtonSize.SMALL);
+	        m_pauseToggleButton.addActionListener(new ActionListener()
+	        {
+	            public void actionPerformed(ActionEvent e)
+	            {
+	                if (m_currentUnit != null)
+	                {
+	                    try
+	                    {
+	                    	if(m_currentUnit.isPaused()) {
+	                    		m_currentUnit.resume();
+	                    		m_pauseToggleButton.setIcon(m_pauseIcon);
+	                    	} else {
+	                    		m_currentUnit.pause();
+	                    		m_pauseToggleButton.setIcon(m_resumeIcon);
+	                    	}
+	
+	                        // Commit small changes right away if new unit has been committed
+	                        if (!m_wp.getNewUnit())
+	                        {
+	                            m_wp.commit();
+	                        }
+	                    }
+	                    catch (IllegalOperationException ex)
+	                    {
+	                    	Utils.showWarning("Enhet kan ikke endre status");
+	                    }
+	                }
+	            }
+	        });	        
+    	}
+    	return m_pauseToggleButton;
     }
 
-    private void layoutComponent(int column, String label, JComponent component, GridBagConstraints gbc, int height)
-    {
-        gbc.weightx = 1.0;
-        gbc.gridheight = Math.max(1, height);
-        gbc.gridx = column + 1;
-        this.add(component, gbc);
-
-        gbc.weightx = 0.0;
-        gbc.gridx = column;
-        gbc.gridwidth = 1;
-        this.add(new JLabel(label), gbc);
-
-        gbc.gridy += height;
+    private JToggleButton getReleaseButton() {
+    	if(m_releaseToggleButton==null) {
+	        // add release button
+	        String text = m_resources.getString("DissolveButton.text");
+	        String letter = m_resources.getString("DissolveButton.letter");
+	        ImageIcon icon = DiskoIconFactory.getIcon("GENERAL.CANCEL", "32x32");
+	        m_releaseToggleButton = DiskoButtonFactory.createToggleButton(letter,text,icon,ButtonSize.SMALL);
+	        m_releaseToggleButton.addActionListener(new ActionListener()
+	        {
+	            public void actionPerformed(ActionEvent arg0)
+	            {
+	                // Try to release unit
+	                IUnitIf unit = m_wp.getEditingUnit();
+	
+	                try
+	                {
+	                    UnitUtilities.releaseUnit(unit);
+	
+	                    // Commit
+	                    if (!m_wp.getNewUnit())
+	                    {
+	                        m_wp.getMsoModel().commit();
+	                    }
+	                }
+	                catch (IllegalOperationException e)
+	                {
+	                	Utils.showError(m_resources.getString("ReleaseUnitError.header"),
+	                            m_resources.getString("ReleaseUnitError.text"));
+	                }
+	            }
+	        });
+    	}
+    	return m_releaseToggleButton;
+    }
+    
+    private JButton getShowReportButton() {
+    	if(m_showReportButton==null) {
+	        m_showReportButton = DiskoButtonFactory.createButton("GENERAL.PRINT",ButtonSize.SMALL);
+	        m_showReportButton.addActionListener(new ActionListener()
+	         {
+	             public void actionPerformed(ActionEvent arg0)
+	             {
+	             	IUnitIf unit = m_wp.getEditingUnit();
+	             	DiskoReportManager diskoReport = m_wp.getApplication().getReportManager();
+	             	diskoReport.printUnitLog(unit);
+	             }
+	         });
+    	}
+    	return m_showReportButton;
+    }
+        
+    private TextLineField getLeaderTextField() {
+    	if(m_leaderTextField==null) {
+            m_leaderTextField = new TextLineField("leader",m_resources.getString("Leader.text"),false);    		
+    	}
+    	return m_leaderTextField;
     }
 
+    private TextLineField getCellPhoneTextField() {
+    	if(m_cellPhoneTextField==null) {
+    		m_cellPhoneTextField = new TextLineField("cellphone",m_resources.getString("CellularPhone.text"),true);    		
+    	}
+    	return m_cellPhoneTextField;
+    }
+
+    private TextLineField getToneIDTextField() {
+    	if(m_toneIDTextField==null) {
+    		m_toneIDTextField = new TextLineField("toneid",m_resources.getString("FiveTone.text"),true);    		
+    	}
+    	return m_toneIDTextField;
+    }
+
+    private TextLineField getTrackingIDTextField() {
+    	if(m_trackingIDTextField==null) {
+    		m_trackingIDTextField = new TextLineField("trackingid",m_resources.getString("TrackingID.text"),true);    		
+    	}
+    	return m_trackingIDTextField;
+    }
+    
+    private TextLineField getCreatedTextField() {
+    	if(m_createdTextField==null) {
+    		m_createdTextField = new TextLineField("created",m_resources.getString("Created.text"),false);    		
+    	}
+    	return m_createdTextField;
+    }
+    
+    private TextLineField getCallSignTextField() {
+    	if(m_callSignTextField==null) {
+    		m_callSignTextField = new TextLineField("callsign",m_resources.getString("CallSign.text"),true);    		
+    	}
+    	return m_callSignTextField;
+    }
+
+    private TextLineField getWorkTimeTextField() {
+    	if(m_workTimeTextField==null) {
+    		m_workTimeTextField = new TextLineField("worktime",m_resources.getString("WorkTime.text"),false);    		
+    	}
+    	return m_workTimeTextField;
+    }
+    
+    private TextLineField getAssignmentTextField() {
+    	if(m_assignmentTextField==null) {
+    		m_assignmentTextField = new TextLineField("Assignment",m_resources.getString("Assignment.text"),false);    		
+    	}
+    	return m_assignmentTextField;
+    }
+    
+    private TextLineField getStopTimeTextField() {
+    	if(m_stopTimeTextField==null) {
+    		m_stopTimeTextField = new TextLineField("stoptime",m_resources.getString("StopTime.text"),false);    		
+    	}
+    	return m_stopTimeTextField;
+    }
+
+    private TextLineField getAssociationTextField() {
+		if(m_associationTextField==null) {
+		    m_associationTextField = new TextLineField("association","Tilhørighet",true);
+			JTextField inputField = m_associationTextField.getTextField();
+			AutoCompleteDocument doc = new AutoCompleteDocument(AssocUtils.getAssociations(-1,"{l:n} {l:s}"),inputField);
+			inputField.setDocument(doc);
+			doc.addAutoCompleteListener(new IAutoCompleteListener() {
+
+				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
+					if(!m_associationTextField.isChangeable()) return;
+					Association[] items = null;
+					if(suggestion!=null) {
+						items = AssocUtils.parse(suggestion,false,false);
+					}
+					if(m_currentUnit!=null) {
+						m_associationTextField.setChangeable(false);
+						m_currentUnit.suspendClientUpdate();
+						if(items!=null) {
+							m_currentUnit.setOrganization(items[0].getName());
+							m_currentUnit.setDivision(items[0].getName());
+							m_currentUnit.setDepartment(items[0].getName());
+						} else {
+							m_currentUnit.setOrganization(null);
+							m_currentUnit.setDivision(null);
+							m_currentUnit.setDepartment(null);
+						}
+						m_currentUnit.resumeClientUpdate(false);
+						m_associationTextField.setChangeable(true);
+					}
+				}
+				
+			});
+			m_associationTextField.setButtonVisible(true);
+			m_associationTextField.addButtonActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					if(m_currentUnit!=null) {
+						AssociationDialog dlg = new AssociationDialog(Application.getInstance());
+						dlg.setLocationRelativeTo(Application.getInstance());
+						if(dlg.associate(getAssociationTextField().getValue(),m_currentUnit)) {
+							updateFieldContents();
+						}
+					}
+				}
+				
+			});
+		}
+		return m_associationTextField;
+	}	
+    
+    private BasePanel getPersonnelPanel() {
+    	if(m_personnelPanel==null) {
+    		m_personnelPanel = new BasePanel(m_resources.getString("Personnel.text"),ButtonSize.SMALL);
+    		m_personnelPanel.setHeaderVisible(false);
+    		m_personnelPanel.setContainer(getPersonnelTable());
+    	}
+    	return m_personnelPanel;
+    }
+    
+    private DiskoTable getPersonnelTable() {
+    	if(m_personnelTable==null) {
+            m_personnelTable = new DiskoTable();
+            m_personnelTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            m_personnelTable.addMouseListener(new UnitPersonnelMouseListener());
+            m_personnelTable.setFillsViewportHeight(true);
+            m_personnelTable.setModel(new UnitPersonnelTableModel());
+            m_personnelTable.setDragEnabled(true);
+            try
+            {
+                m_personnelTable.setTransferHandler(new PersonnelTransferHandler(m_wp));
+            }
+            catch (ClassNotFoundException e)
+            {
+                m_logger.error("Failed to set transfer handler",e);
+            }
+            UnitLeaderColumnRenderer leaderRenderer = new UnitLeaderColumnRenderer();
+            leaderRenderer.setTable(m_personnelTable);
+
+            JTableHeader tableHeader = m_personnelTable.getTableHeader();
+            tableHeader.setResizingAllowed(false);
+            tableHeader.setReorderingAllowed(false);
+    	}
+    	return m_personnelTable;
+    }
+    
     public void setUnit(IUnitIf unit)
     {
         m_currentUnit = unit;
+        if(unit!=null) {
+        	getCallSignTextField().setMsoAttribute(unit.getCallSignAttribute());
+        	getToneIDTextField().setMsoAttribute(unit.getToneIDAttribute());
+        	getTrackingIDTextField().setMsoAttribute(unit.getTrackingIDAttribute());
+        	getCallSignTextField().reset();
+        	getToneIDTextField().reset();
+        	getTrackingIDTextField().reset();
+        }  else {
+        	getCallSignTextField().clearMsoAttribute("");
+        	getToneIDTextField().clearMsoAttribute("");
+        	getTrackingIDTextField().clearMsoAttribute("");
+        }
     }
 
     public void updateContents()
@@ -291,52 +418,70 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     {
         if (m_currentUnit != null)
         {
-            // Fill in fields with unit values
-            String topText = m_currentUnit.getInternationalTypeName() + " " + m_currentUnit.getNumber() +
-                    " (" + m_currentUnit.getStatusText() + ")";
-            m_topPanelLabel.setText(topText);
+            // update caption
+            getInfoPanel().setCaptionText(MsoUtils.getUnitName(m_currentUnit,true));
 
-            // Pause button
+            // update pause button
             m_pauseToggleButton.setSelected(m_currentUnit.getStatus() == UnitStatus.PAUSED);
+            m_pauseToggleButton.setIcon(m_pauseToggleButton.isSelected()?m_resumeIcon:m_pauseIcon);
 
-            // Released button
-            m_releaseButton.setSelected(m_currentUnit.getStatus() == UnitStatus.RELEASED);
+            // update released button
+            m_releaseToggleButton.setSelected(m_currentUnit.getStatus() == UnitStatus.RELEASED);
+            m_pauseToggleButton.setEnabled(!m_releaseToggleButton.isSelected());
 
+            // update info panel
             IPersonnelIf leader = m_currentUnit.getUnitLeader();
             String leaderName = leader == null ? "" : leader.getFirstName() + " " + leader.getLastName();
-            m_leaderTextField.setText(leaderName);
+            getLeaderTextField().setValue(leaderName);
 
             String cell = leader == null ? "" : leader.getTelephone1();
-            m_cellPhoneTextField.setText(cell);
-
-            String toneId = m_currentUnit.getToneID();
-            m_toneIDTextField.setText(toneId);
-
+            getCellPhoneTextField().setValue(cell);
+            
+            if(getAssociationTextField().isChangeable()) {
+	            if(m_currentUnit.getOrganization()!=null) {
+		            Association assoc = AssocUtils.getOrganization(m_currentUnit.getOrganization());
+		            assoc.setPattern("{1:n}");
+		            if(m_currentUnit.getDivision()!=null) {
+		            	assoc = AssocUtils.getDivision(assoc,m_currentUnit.getDivision());
+			            assoc.setPattern("{2:n} {2:s}");
+		                if(m_currentUnit.getDepartment()!=null) { 
+		                	assoc = AssocUtils.getDepartment(assoc,m_currentUnit.getDepartment());
+				            assoc.setPattern("{3:n} {3:s}");
+		                }
+		            }
+		            getAssociationTextField().setChangeable(false);
+		            getAssociationTextField().setValue(assoc.getText());
+		            getAssociationTextField().setChangeable(true);
+	        	} else {
+		            getAssociationTextField().setChangeable(false);
+		            getAssociationTextField().setValue("");
+		            getAssociationTextField().setChangeable(true);        		
+	        	}
+            }
+            
             String created = DTG.CalToDTG(m_currentUnit.getCreatedTime());
-			m_createdTextField.setText(created);
-
-            String callsign = m_currentUnit.getCallSign();
-            m_callsignTextField.setText(callsign);
+			getCreatedTextField().setValue(created);
 
             IAssignmentIf assignment = m_currentUnit.getActiveAssignment();
             String assignmentString = assignment == null ? "" : assignment.getDefaultName();
-            m_assignmentTextField.setText(assignmentString);
-
+            getAssignmentTextField().setValue(assignmentString);                        
+            
             updateWorkTime();
-
             updateStopTime();
 
         } else {
-            // Unit is null, clear fields
-            m_topPanelLabel.setText("");
-            m_leaderTextField.setText("");
-            m_cellPhoneTextField.setText("");
-            m_toneIDTextField.setText("");
-            m_createdTextField.setText("");
-            m_callsignTextField.setText("");
-            m_workTimeTextField.setText("");
-            m_assignmentTextField.setText("");
-            m_stopTimeTextField.setText("");
+            // No unit selected, clear fields
+            getInfoPanel().setCaptionText(m_resources.getString("NoUnitSelected.text"));
+            getLeaderTextField().setValue("");
+            getCellPhoneTextField().setValue("");
+            getToneIDTextField().setValue("");
+            getTrackingIDTextField().setValue("");
+            getCreatedTextField().setValue("");
+            getCallSignTextField().setValue("");
+            getWorkTimeTextField().setValue("");
+            getAssociationTextField().setValue("");
+            getAssignmentTextField().setValue("");
+            getStopTimeTextField().setValue("");
         }
     }
 
@@ -361,11 +506,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         if (m_currentUnit != null)
         {
         	double t = m_currentUnit.getDuration(IUnitIf.OCCUPIED_RANGE,true);
-        	m_workTimeTextField.setText(Utils.getTime((int)t));
+        	m_workTimeTextField.setValue(Utils.getTime((int)t));
         }
         else
         {
-        	m_workTimeTextField.setText(Utils.getTime(0));
+        	m_workTimeTextField.setValue(Utils.getTime(0));
         }
     }
 
@@ -374,11 +519,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         if (m_currentUnit != null)
         {
         	double t = m_currentUnit.getDuration(IUnitIf.IDLE_RANGE,true);
-        	m_stopTimeTextField.setText(Utils.getTime((int)t));
+        	m_stopTimeTextField.setValue(Utils.getTime((int)t));
         }
         else
         {
-        	m_stopTimeTextField.setText(Utils.getTime(0));
+        	m_stopTimeTextField.setValue(Utils.getTime(0));
         }
     }
 
@@ -440,7 +585,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
      *
      * @author thomasl
      */
-    private class UnitPersonnelMouseListener implements MouseListener
+    private class UnitPersonnelMouseListener extends MouseAdapter
     {
         public void mouseClicked(MouseEvent me)
         {
@@ -489,22 +634,6 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                 m_wp.setPersonnelBottom(personnel);
                 m_wp.setBottomView(IDiskoWpUnit.PERSONNEL_ADDITIONAL_VIEW_ID);
             }
-        }
-
-        public void mouseEntered(MouseEvent arg0)
-        {
-        }
-
-        public void mouseExited(MouseEvent arg0)
-        {
-        }
-
-        public void mousePressed(MouseEvent arg0)
-        {
-        }
-
-        public void mouseReleased(MouseEvent arg0)
-        {
         }
     }
 
@@ -632,7 +761,8 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
             String letter = m_resources.getString("LeaderButton.letter");
             String text = m_resources.getString("LeaderButton.text");
-            m_leaderButton = DiskoButtonFactory.createButton(letter,text,null,ButtonSize.SMALL);
+            ImageIcon icon = DiskoIconFactory.getIcon("GENERAL.EDIT", "32x32");
+            m_leaderButton = DiskoButtonFactory.createButton(letter,text,icon,ButtonSize.SMALL);
             m_leaderButton.addActionListener(new ActionListener()
             {
                 public void actionPerformed(ActionEvent arg0)
@@ -681,8 +811,8 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         }
 
 
-        public Component getTableCellEditorComponent(JTable arg0, Object arg1,
-                                                     boolean arg2, int row, int column)
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int column)
         {
             m_editingRow = row;
             return m_panel;
@@ -722,15 +852,18 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     {
         if (m_currentUnit != null)
         {
-            String toneId = m_toneIDTextField.getText();
-            String callSign = m_callsignTextField.getText();
+            String toneId = getToneIDTextField().getValue();
+            String callSign = getCallSignTextField().getValue();
+            String trackingId = getTrackingIDTextField().getValue();
 
             m_currentUnit.suspendClientUpdate();
 
             m_currentUnit.setToneID(toneId);
             m_currentUnit.setCallSign(callSign);
+            m_currentUnit.setTrackingID(trackingId);
 
             m_currentUnit.resumeClientUpdate(true);
+            
         }
         // success!
     	return true;
@@ -751,13 +884,12 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
      */
     public void handleTick(TickEvent e)
     {
-    	if(m_wp.getMsoManager().operationExists()) {
-	        ICmdPostIf cmdPost = m_wp.getCmdPost();
-	        if (cmdPost == null)
-	        {
-	            return;
-	        }
-
+    	if(isShowing() && m_wp.getMsoManager().operationExists()) {
+            ICmdPostIf cmdPost = m_wp.getMsoManager().getCmdPost();
+            if (cmdPost == null)
+            {
+                return;
+            }
 	        updateWorkTime();
 	        updateStopTime();
     	}

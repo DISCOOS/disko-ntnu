@@ -469,6 +469,18 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		return m_attribute;
 	}
 
+	public IAttributeIf<?> clearMsoAttribute() {
+		IAttributeIf<?> attr = m_attribute;
+		m_attribute = null;
+		return attr;
+	}
+	
+	public IAttributeIf<?> clearMsoAttribute(Object setValue) {
+		IAttributeIf<?> attr = clearMsoAttribute();
+		setValue(setValue);
+		return attr;		
+	}
+	
   	public static boolean isMsoAttributeSupported(IAttributeIf<?> attribute) {
 		return !(attribute instanceof AttributeImpl.MsoPolygon ||
 				attribute instanceof AttributeImpl.MsoRoute ||
@@ -585,8 +597,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	/*==================================================================
 	 * Abstract public methods
-	 *==================================================================
-	 */
+	 *================================================================== */
 
 
 	public abstract Object getValue();

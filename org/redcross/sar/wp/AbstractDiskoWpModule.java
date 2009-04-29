@@ -666,7 +666,7 @@ public abstract class AbstractDiskoWpModule
     /**
      * Class that embeds a runnable that performs the GUI updates by firing the ticks to the listeners.
      *
-     * The class is not thread-safe. The run() method is run with the latest given elapsed time.
+     * The run() method is run with the latest given elapsed time.
      */
     private static class WpTicker implements Runnable
     {
@@ -679,7 +679,12 @@ public abstract class AbstractDiskoWpModule
 
         public void run()
         {
-            fireTick(m_elapsedTime);
+            SwingUtilities.invokeLater(new Runnable() {
+				
+            	public void run() {
+					fireTick(m_elapsedTime);
+				
+			}});
         }
     }
 

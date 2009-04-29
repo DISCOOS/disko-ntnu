@@ -185,9 +185,9 @@ public class ListDialog extends DefaultDialog {
 			centerPanel = new JPanel(bl);
 			centerPanel.add(getOptionsPanel(),BorderLayout.NORTH);
 			JScrollPane pane = UIFactory.createScrollPane(
-					getAssignmentTable(),false,
+					getAssignmentTable(),
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER,false);
 			centerPanel.add(pane,BorderLayout.CENTER);
 		}
 		return centerPanel;

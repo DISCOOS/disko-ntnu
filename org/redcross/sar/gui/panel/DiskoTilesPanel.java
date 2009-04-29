@@ -314,7 +314,7 @@ public class DiskoTilesPanel extends BasePanel
     private void layoutSpring(int rows, int cols, int aPanelWidth)
     {
     	// forward
-    	SpringUtilities.makeCompactGrid(getTileList(), rows, cols, m_hgap, m_vgap, m_hgap, m_vgap);
+    	SpringUtilities.makeCompactGrid(getTileList(), rows, cols, m_hgap, m_vgap, m_hgap, m_vgap, true, true);
 
     	/*
     	if(false) {

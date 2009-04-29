@@ -98,7 +98,7 @@ public class PersonnelTransferHandler extends TransferHandler
         try
 		{
 			IPersonnelIf personnel = (IPersonnelIf)support.getTransferable().getTransferData(m_personnelFlavor);
-			return PersonnelUtilities.canAssignPersonnelToUnit(personnel);
+			return UnitUtils.canAssignPersonnelToUnit(personnel);
 		}
         catch (UnsupportedFlavorException e)
 		{

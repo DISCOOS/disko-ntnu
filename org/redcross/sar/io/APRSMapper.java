@@ -352,15 +352,14 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 		private boolean identify(IEntity e) {
 			// only parse APRS stations...
 			if(e instanceof APRSStation) {
-				// get ssid of station
-				String ssid = (String)e.getCue();
-				// has ssid?
-				if(ssid!=null) {
+				// get station identity cue 
+				String cue = (String)e.getCue();
+				// has cue?
+				if(cue!=null) {
 					// loop over all units
 					for(Object it : m_model.getItems(IUnitIf.class)) {
 						IUnitIf unit = (IUnitIf)it;
-						if(ssid.endsWith(unit.getToneID()) ||
-								ssid.endsWith(unit.getCallSign())) {
+						if(isUnit(unit,cue)) {
 							// unit is identified
 							e.setIdentity(unit.getObjectId());
 							// log
@@ -378,6 +377,12 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 			// failed
 			return false;
 		}		
+		
+		private boolean isUnit(IUnitIf unit, String cue) {
+			return cue.equalsIgnoreCase(unit.getTrackingID()) 
+				|| cue.endsWith(unit.getToneID())
+				|| cue.endsWith(unit.getCallSign());			
+		}
 
     }
 

@@ -158,7 +158,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
      * <p/>
      * Update GUI due to tick events. Shall only update GUI objects that are depending on current time.
      *
-     * @param e The evet object, not used.
+     * @param e The event object, not used.
      */
     public void handleTick(TickEvent e)
     {
@@ -168,7 +168,6 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 	        {
 	            return;
 	        }
-
 	        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
 	        {
 	            renderAssignment();

@@ -40811,3 +40811,21 @@
 </update>
 
 @END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1240495072000">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1240495072000" fact_type="5" field="" given_time="1240495072000" id="05620080014191968.555722654125.00000000242" int_val="0" origId="00000000242">
+<FROM double_val="10.252330780029297" float_val="10.252330780029297" lat_val="63.42032457966999" long_val="10.252330780029297" string_val=""/>
+<TO double_val="10.252330780029297" float_val="10.252330780029297" int_val="0" lat_val="63.42032457966999" long_val="10.252330780029297" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1240495072281">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620080014191968.555722654125.00000000244" origId="00000000244">
+<string_data string_val=""/>
+<string_data string_val="LA7ECA"/>
+</update_object>
+</update>
+
+@END MESSAGE@

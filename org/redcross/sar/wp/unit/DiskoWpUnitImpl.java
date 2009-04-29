@@ -124,7 +124,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 		// Left panels
 		m_leftPanel = new JPanel(new CardLayout());
-		m_leftPanel.setBorder(null);
+		m_leftPanel.setBorder(BorderFactory.createEmptyBorder());
 		m_leftPanel.setMinimumSize(new Dimension(300, 550));
 		m_leftPanel.setPreferredSize(new Dimension(390, 550));
 		m_personnelDetailsLeftPanel = new PersonnelDetailsLeftPanel(this);
@@ -144,7 +144,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		// Bottom panels
 		Dimension bottomPanelDimension = new Dimension(100, 150);
 		m_bottomPanel = new JPanel(new CardLayout());
-		m_bottomPanel.setBorder(null);
+		m_bottomPanel.setBorder(BorderFactory.createEmptyBorder());
 		m_personnelBottomDetailsPanel = new PersonnelDetailsBottomPanel(this);
 		m_personnelBottomDetailsPanel.setPreferredSize(bottomPanelDimension);
 		m_bottomPanel.add(m_personnelBottomDetailsPanel, PERSONNEL_DETAILS_VIEW_ID);
@@ -159,6 +159,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 		// Overview panels
 		m_overviewTabPane = new JTabbedPane();
+		m_overviewTabPane.setTabPlacement(JTabbedPane.BOTTOM);
 
 		// Set up splitters
 		JSplitPane horSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -167,6 +168,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		horSplit.setLeftComponent(m_leftPanel);
 		horSplit.setRightComponent(m_overviewTabPane);
 		JSplitPane vertSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		vertSplit.setBorder(BorderFactory.createEmptyBorder());
 		vertSplit.setLeftComponent(horSplit);
 		vertSplit.setRightComponent(m_bottomPanel);
 		vertSplit.setResizeWeight(1.0);
@@ -176,12 +178,12 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_unitTypeDialog = new UnitTypeDialog(this, getApplication().getFrame());
 		m_importCalloutDialog = new ImportCalloutDialog(this, getApplication().getFrame());
 
-		// initialize
+		// initialize view
 		setLeftMessage(getBundleText("SelectPersonnel.text"));
 		setBottomMessage(getBundleText("SelectPersonnel.text"));
 		setLeftView(MESSAGE_VIEW_ID);
 		setBottomView(MESSAGE_VIEW_ID);
-
+		
 	}
 
 	private void initTables()
@@ -243,7 +245,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		header.setResizingAllowed(false);
 		header.setReorderingAllowed(false);
 
-		JScrollPane scrollPane = UIFactory.createScrollPane(m_personnelOverviewTable,true);
+		JScrollPane scrollPane = UIFactory.createScrollPane(m_personnelOverviewTable,true,5,5,5,5);
 		m_overviewTabPane.addTab(getBundleText("Personnel.text"),
 				DiskoIconFactory.getIcon("GENERAL.PERSONNELLIST", "32x32"), scrollPane);
 
@@ -274,7 +276,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		header.setResizingAllowed(false);
 		header.setReorderingAllowed(false);
 
-		scrollPane = UIFactory.createScrollPane(m_unitOverviewTable,true);
+		scrollPane = UIFactory.createScrollPane(m_unitOverviewTable,true,5,5,5,5);
 		m_overviewTabPane.addTab(getBundleText("Unit.text"),
 				DiskoIconFactory.getIcon("GENERAL.UNITLIST", "32x32"), scrollPane);
 
@@ -295,7 +297,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		header.setResizingAllowed(false);
 		header.setReorderingAllowed(false);
 
-		scrollPane = UIFactory.createScrollPane(m_calloutOverviewTable,true);
+		scrollPane = UIFactory.createScrollPane(m_calloutOverviewTable,true,5,5,5,5);
 		m_overviewTabPane.addTab(getBundleText("CallOut.text"),
 				DiskoIconFactory.getIcon("GENERAL.CALLOUTLIST", "32x32"), scrollPane);
 	}
@@ -606,7 +608,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 			m_personnelDetailsLeftPanel.setPersonnel(null);
 			m_personnelDetailsLeftPanel.updateFieldContents();
-			m_personnelDetailsLeftPanel.setTopLabelText("(" + this.getBundleText("New.text") + ")");
+			m_personnelDetailsLeftPanel.setCaptionText("(" + this.getBundleText("New.text") + ")");
 
 			// set flag
 			m_newPersonnel = true;
@@ -715,7 +717,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 				{
 					try
 					{
-						PersonnelUtilities.deletePersonnel(personnel);
+						UnitUtils.deletePersonnel(personnel);
 
 						// Commit
 						this.getMsoModel().commit();

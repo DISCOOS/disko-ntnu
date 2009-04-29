@@ -303,9 +303,9 @@ public class MessageLogPanel
         installHeader();
 
         // create table scroll pane
-        m_scrollPane = UIFactory.createScrollPane(m_logTable, true,
+        m_scrollPane = UIFactory.createScrollPane(m_logTable,
         		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-        		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, true);
         m_scrollPane.setOpaque(false);
 
         // add table scroll pane to card layout

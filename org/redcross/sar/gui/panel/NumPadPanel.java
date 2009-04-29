@@ -210,7 +210,7 @@ public class NumPadPanel extends DefaultPanel {
 			b.setIcon(DiskoIconFactory.getIcon("GENERAL.FINISH", 
 					DiskoIconFactory.getCatalog(ButtonSize.NORMAL)));
 			// layout buttons
-			SpringUtilities.makeCompactGrid(buttonsPanel, 4, 3, 0, 0, 0, 0);
+			SpringUtilities.makeCompactGrid(buttonsPanel, 4, 3, 0, 0, 0, 0, true, true);
 			
 		}
 		return buttonsPanel;

@@ -7,7 +7,7 @@ import java.util.Comparator;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 
-public interface ICalloutIf extends IMsoObjectIf
+public interface ICalloutIf extends IAssociationIf
 {
 	public enum CalloutType
 	{
@@ -66,14 +66,6 @@ public interface ICalloutIf extends IMsoObjectIf
 
     public IAttributeIf.IMsoStringIf getOrganizationAttribute();
 
-
-	public void setDepartment(String department);
-
-	public String getDepartment();
-
-	public IMsoModelIf.ModificationState getDepartmentState();
-
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute();
 
 	/*-------------------------------------------------------------------------------------------
 	 * Methods for lists

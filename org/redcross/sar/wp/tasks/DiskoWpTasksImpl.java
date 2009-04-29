@@ -416,7 +416,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		@Override
 		public Boolean doWork() {
 			try {
-
+				
                 ICmdPostIf cmdPost = getCmdPost();
                 if (cmdPost == null)
                 {

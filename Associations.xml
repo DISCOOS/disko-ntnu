@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Organizations>
+	<Organization tracking="1" name="Norsk Grotteforbund" suffix="NG" />
+	<Organization tracking="2" name="Norsk Aero Klubb" suffix="NAK" />
+	<Organization tracking="3" name="Norske Alpine Redningsgrupper" suffix="NAR" />
+	<Organization tracking="4" name="Norske Redningshunder" suffix="NRH" />
+	<Organization tracking="5" name="Norsk Folkehjelp" suffix="NF" />
+	<Organization tracking="6" name="Norges Røde Kors" suffix="RK">
+		<Division id="0" tracking="P00" name="Landsråd" suffix="RKH"/>
+		<Division id="1" tracking="B00" name="Østfold" suffix="RKH">
+			<Department id="1" name="Fredrikstad"/>
+			<Department id="2" name="Gresvik"/>
+			<Department id="3" name="Halden"/>
+			<Department id="4" name="Moss"/>
+			<Department id="5" name="Mysen"/>
+			<Department id="6" name="Sarpsborg"/>
+		</Division>
+		<Division id="2" tracking="C00" name="Akershus" suffix="RKH">
+			<Department id="7" name="Asker"/>
+			<Department id="8" name="Bærum"/>
+			<Department id="9" name="Eidsvoll og Hurdal"/>
+			<Department id="10" name="Nannestad og Gjerdrum"/>
+			<Department id="11" name="Nesodden"/>
+			<Department id="12" name="Nittedal"/>
+			<Department id="13" name="Oppegård"/>
+			<Department id="14" name="Skedsmo"/>
+			<Department id="15" name="Ski"/>
+			<Department id="16" name="Ullensaker"/>
+			<Department id="17" name="Vestby og Ås"/>			
+		</Division>
+		<Division id="3" tracking="A00" name="Oslo" suffix="RKH">
+			<Department id="18" name="Oslo"/>
+		</Division>
+		<Division id="4" name="Hedmark" suffix="RKH">
+			<Department id="19" name="Brummunddal"/>
+			<Department id="20" name="Brøttum"/>
+			<Department id="21" name="Elverum"/>
+			<Department id="22" name="Eidskog"/>
+			<Department id="23" name="Hamar"/>
+			<Department id="24" name="Kongsvinger"/>
+			<Department id="25" name="Løten"/>
+			<Department id="26" name="Nes"/>
+			<Department id="27" name="Trysil"/>
+			<Department id="28" name="Folldal"/>
+			<Department id="29" name="Os"/>
+			<Department id="30" name="Rendalen"/>
+			<Department id="31" name="Sollia"/>
+			<Department id="32" name="Stor-Elvdal"/>
+			<Department id="33" name="Tolga"/>
+			<Department id="34" name="Tynset"/>
+		</Division>
+		<Division id="5" tracking="E00" name="Oppland" suffix="RKH">
+			<Department id="35" name="Bagn"/>
+			<Department id="36" name="Brandbu"/>
+			<Department id="37" name="Brennhaug"/>
+			<Department id="38" name="Dombås"/>
+			<Department id="39" name="Etnedal"/>
+			<Department id="40" name="Fåvang"/>
+			<Department id="41" name="Gausdal"/>
+			<Department id="42" name="Gjøvik"/>
+			<Department id="43" name="Gran"/>
+			<Department id="44" name="Grindaheim"/>
+			<Department id="45" name="Hedalen"/>
+			<Department id="46" name="Høre"/>
+			<Department id="47" name="Jenvnaker"/>
+			<Department id="48" name="Lesja"/>
+			<Department id="49" name="Lillehammer"/>
+			<Department id="50" name="Lom og Bøverdalen"/>
+			<Department id="51" name="Lunner"/>
+			<Department id="52" name="Nord-Aurdal"/>
+			<Department id="53" name="Nord-Fron"/>
+			<Department id="54" name="Nordre Land"/>
+			<Department id="55" name="Otta"/>
+			<Department id="56" name="Redalen"/>
+			<Department id="57" name="Skjåk"/>
+			<Department id="58" name="Skåbu og Espedalen"/>
+			<Department id="59" name="Sør-Fron"/>
+			<Department id="60" name="Venabygd"/>
+			<Department id="61" name="Vågå"/>
+			<Department id="62" name="Østre Toten"/>
+			<Department id="63" name="Øyer og Tretten"/>
+			<Department id="64" name="Øystre Slidre"/>
+		</Division>	
+		<Division id="6" tracking="F00" name="Buskerud" suffix="RKH">
+			<Department id="65" name="Drammen"/>
+			<Department id="66" name="Flesberg"/>
+			<Department id="67" name="Flå"/>
+			<Department id="68" name="Geilo"/>
+			<Department id="69" name="Gol og Hemsedal"/>
+			<Department id="70" name="Hovet og Hol"/>
+			<Department id="71" name="Hurum"/>
+			<Department id="72" name="Kongsberg"/>
+			<Department id="73" name="Krødsherad"/>
+			<Department id="74" name="Lier"/>
+			<Department id="75" name="Modum"/>
+			<Department id="76" name="Nedre Eiker"/>
+			<Department id="77" name="Nesbyen"/>
+			<Department id="78" name="Nore og Uvdal"/>
+			<Department id="79" name="Ringerike"/>
+			<Department id="80" name="Sigdal"/>
+			<Department id="81" name="Vats"/>
+			<Department id="82" name="Øvre Eiker"/>
+			<Department id="83" name="Ål"/>
+		</Division>
+		<Division id="7" tracking="Z00" name="Vestfold" suffix="RKH">
+			<Department id="84" name="Holmestrand"/>
+			<Department id="85" name="Horten"/>
+			<Department id="86" name="Lardal"/>
+			<Department id="87" name="Larvik"/>
+			<Department id="88" name="Sandefjord"/>
+			<Department id="89" name="Svelvik"/>
+			<Department id="90" name="Tjøme og Hvasser"/>
+			<Department id="91" name="Tønsberg"/>
+		</Division>
+		<Division id="8" tracking="H00" name="Telemark" suffix="RKH">
+			<Department id="92" name="Bamle"/>
+			<Department id="93" name="Drangedal"/>
+			<Department id="94" name="Fyresdal"/>
+			<Department id="95" name="Gvarv"/>
+			<Department id="95" name="Haukeli"/>
+			<Department id="96" name="Hjartdal"/>
+			<Department id="97" name="Kragerø"/>
+			<Department id="98" name="Nissedal"/>
+			<Department id="99" name="Nome"/>
+			<Department id="101" name="Notodden"/>
+			<Department id="102" name="Porsgrunn"/>
+			<Department id="103" name="Rjukan og Tinn"/>
+			<Department id="104" name="Seljord"/>
+			<Department id="105" name="Skien"/>
+			<Department id="106" name="Tokke"/>
+			<Department id="107" name="Vinje"/>
+		</Division>			
+		<Division id="9" tracking="I00" name="Aust-Agder" suffix="RKH">
+			<Department id="108" name="Arendal"/>
+			<Department id="109" name="Froland"/>
+			<Department id="110" name="Grimstad"/>
+			<Department id="111" name="Lillesand"/>
+			<Department id="112" name="Nedre Setesdal"/>
+		</Division>
+		<Division id="10" tracking="K00" name="Vest-Agder" suffix="RKH">
+			<Department id="113" name="Kristiansand"/>
+			<Department id="114" name="Kvinesdal"/>
+			<Department id="115" name="Lista"/>
+			<Department id="116" name="Lyngdal"/>
+			<Department id="117" name="Mandal"/>
+			<Department id="118" name="Moi"/>
+			<Department id="119" name="Songdalen"/>
+			<Department id="120" name="Søgne"/>
+			<Department id="121" name="Vennesla"/>	
+		</Division>
+		<Division id="11" tracking="L00" name="Rogaland" suffix="RKH">
+			<Department id="122" name="Bokn"/>
+			<Department id="123" name="Bryne"/>
+			<Department id="124" name="Egersund"/>
+			<Department id="125" name="Flekkefjord"/>
+			<Department id="126" name="Grydland"/>
+			<Department id="127" name="Haugesund"/>
+			<Department id="128" name="Hjelmeland"/>
+			<Department id="129" name="Karmøy"/>
+			<Department id="130" name="Kverneland"/>
+			<Department id="131" name="Moi"/>
+			<Department id="132" name="Nærbø"/>
+			<Department id="133" name="Sandnes"/>
+			<Department id="134" name="Sauda"/>
+			<Department id="135" name="Sokndal"/>
+			<Department id="136" name="Sola"/>
+			<Department id="137" name="Stavanger"/>
+			<Department id="138" name="Suldal"/>
+			<Department id="139" name="Tysvær"/>
+			<Department id="140" name="Vindafjord"/>
+		</Division>
+		<Division id="12" tracking="R00" name="Hordaland" suffix="RKH">
+			<Department id="141" name="Arna og Åsane"/>
+			<Department id="142" name="Austevoll"/>
+			<Department id="143" name="Bergen"/>
+			<Department id="144" name="Bømlo"/>
+			<Department id="145" name="Dale"/>
+			<Department id="146" name="Eidfjord"/>
+			<Department id="147" name="Etne"/>
+			<Department id="148" name="Fana"/>
+			<Department id="149" name="Finse"/>
+			<Department id="150" name="Folgefonn"/>
+			<Department id="151" name="Fusa"/>
+			<Department id="152" name="Jondal"/>
+			<Department id="153" name="Kvinherad"/>
+			<Department id="154" name="Laksevåg"/>
+			<Department id="155" name="Nordheimsund"/>
+			<Department id="156" name="Nordhordland"/>
+			<Department id="157" name="Odda"/>
+			<Department id="158" name="Os"/>			
+			<Department id="159" name="Osterøy"/>
+			<Department id="160" name="Røldal"/>
+			<Department id="161" name="Samnanger"/>
+			<Department id="162" name="Sotra"/>
+			<Department id="163" name="Stord og Fitjar"/>
+			<Department id="164" name="Tysnes"/>
+			<Department id="165" name="Tyssedal"/>
+			<Department id="166" name="Ulvik"/>
+			<Department id="167" name="Vaksdal"/>
+			<Department id="168" name="Voss"/>
+			<Department id="169" name="Vossestrand"/>
+			<Department id="170" name="Øygarden"/>
+			<Department id="171" name="Øystese"/>
+			<Department id="172" name="Ålvik"/>
+		</Division>
+		<Division id="14" tracking="S00" name="Sogn og Fjordane" suffix="RKH">
+			<Department id="173" name="Askvoll"/>
+			<Department id="174" name="Aurland"/>
+			<Department id="175" name="Balestrand"/>
+			<Department id="176" name="Bremanger"/>
+			<Department id="177" name="Eid"/>
+			<Department id="178" name="Fjaler"/>
+			<Department id="179" name="Fjærland"/>
+			<Department id="180" name="Flora"/>
+			<Department id="181" name="Førde"/>
+			<Department id="182" name="Gaular"/>
+			<Department id="183" name="Gloppen"/>
+			<Department id="184" name="Gulen"/>
+			<Department id="185" name="Hafslo"/>
+			<Department id="186" name="Hornindal"/>
+			<Department id="187" name="Hyen"/>
+			<Department id="188" name="Hyllestad"/>
+			<Department id="189" name="Høyanger"/>
+			<Department id="190" name="Jølster"/>
+			<Department id="191" name="Lavik"/>
+			<Department id="192" name="Leikanger"/>
+			<Department id="193" name="Luster"/>
+			<Department id="194" name="Lærdal"/>
+			<Department id="195" name="Naustdal"/>
+			<Department id="196" name="Olden"/>
+			<Department id="197" name="Selje"/>
+			<Department id="198" name="Sogndal"/>
+			<Department id="199" name="Stryn"/>
+			<Department id="200" name="Svelgen"/>
+			<Department id="201" name="Vadheim"/>
+			<Department id="202" name="Vik"/>
+			<Department id="203" name="Vikane"/>
+			<Department id="204" name="Vågsøy"/>
+		</Division>
+		<Division id="15" tracking="T00" name="Møre og Romsdal" suffix="RKH">
+			<Department id="205" name="Brattvåg"/>
+			<Department id="206" name="Eidsdal-Nordal"/>
+			<Department id="207" name="Kristiansund"/>
+			<Department id="208" name="Langevåg"/>
+			<Department id="209" name="Molde"/>
+			<Department id="210" name="Rauma"/>
+			<Department id="211" name="Spjelkavik"/>
+			<Department id="212" name="Stranda"/>
+			<Department id="213" name="Sunndal"/>
+			<Department id="214" name="Sykkylven"/>
+			<Department id="215" name="Tingvoll"/>
+			<Department id="216" name="Tresfjord"/>
+			<Department id="217" name="Ulstein"/>
+			<Department id="218" name="Vanylven"/>
+			<Department id="219" name="Vatne og Tennfjord"/>
+			<Department id="220" name="Volda"/>
+			<Department id="221" name="Ørskog"/>
+			<Department id="222" name="Ørsta"/>
+			<Department id="223" name="Ålesund"/>
+		</Division>
+		<Division id="16" tracking="U00" name="Sør-Trøndelag" suffix="RKH">
+			<Department id="224" name="Agdenes"/>
+			<Department id="225" name="Bjugn"/>
+			<Department id="226" name="Budal"/>
+			<Department id="227" name="Hemne"/>
+			<Department id="228" name="Malvik"/>
+			<Department id="229" name="Meldal"/>
+			<Department id="230" name="Melhus"/>
+			<Department id="231" name="Oppdal"/>
+			<Department id="232" name="Orkdal"/>
+			<Department id="233" name="Osen"/>
+			<Department id="234" name="Rennebu"/>
+			<Department id="235" name="Rindal"/>
+			<Department id="236" name="Rissa"/>
+			<Department id="237" name="Røros"/>
+			<Department id="238" name="Selbu"/>
+			<Department id="239" name="Singsås"/>
+			<Department id="240" name="Soknedal"/>
+			<Department id="241" name="Surnadal"/>
+			<Department id="242" name="Trondheim"/>
+			<Department id="243" name="Ørland"/>
+			<Department id="244" name="Åfjord"/>
+			<Department id="245" name="Ølen"/>
+		</Division>		
+		<Division id="17" tracking="V00" name="Nord-Trøndelag" suffix="RKH">
+			<Department id="246" name="Grong"/>
+			<Department id="247" name="Inderøy"/>
+			<Department id="248" name="Kolvereid"/>
+			<Department id="249" name="Leksvik og Mosvik"/>
+			<Department id="250" name="Levanger"/>
+			<Department id="251" name="Lierne"/>
+			<Department id="252" name="Malm"/>
+			<Department id="253" name="Namdalseid"/>
+			<Department id="254" name="Namsos"/>
+			<Department id="255" name="Namsskogan"/>
+			<Department id="256" name="Overhalla"/>
+			<Department id="257" name="Røyrvik"/>
+			<Department id="258" name="Skorovas"/>
+			<Department id="259" name="Snåsa"/>
+			<Department id="260" name="Steinkjer"/>
+			<Department id="261" name="Stjørdal"/>
+			<Department id="262" name="Verdal"/>
+		</Division>
+		<Division id="18" tracking="W00" name="Nordland" suffix="RKH">
+			<Department id="263" name="Ankenes"/>
+			<Department id="264" name="Ballangen"/>
+			<Department id="265" name="Beiarn"/>
+			<Department id="266" name="Bodø"/>
+			<Department id="267" name="Br?nn?ysund"/>
+			<Department id="268" name="Fauske"/>
+			<Department id="269" name="Gildeskål"/>
+			<Department id="270" name="Glomfjord"/>
+			<Department id="271" name="Hattfjelldal"/>
+			<Department id="272" name="Hadsel"/>
+			<Department id="273" name="Lødingen"/>
+			<Department id="274" name="Narvik"/>
+			<Department id="275" name="Rana"/>
+			<Department id="276" name="Saltdal"/>
+			<Department id="277" name="Sandnessjøen"/>
+			<Department id="278" name="Sortland"/>
+			<Department id="279" name="Steigen"/>
+			<Department id="280" name="Sulitjelma"/>
+			<Department id="281" name="Svolvær"/>			
+			<Department id="282" name="Vefsn"/>
+			<Department id="283" name="Vestvågøy"/>
+			<Department id="284" name="Øksnes"/>
+		</Division>
+		<Division id="19" tracking="X00" name="Troms" suffix="RKH">
+			<Department id="285" name="Harstad"/>
+			<Department id="286" name="Kvæfjord"/>
+			<Department id="287" name="Skånland"/>
+			<Department id="288" name="Bardu"/>
+			<Department id="289" name="Berg"/>
+			<Department id="290" name="Finnsnes"/>
+			<Department id="291" name="Balsfjord"/>
+			<Department id="292" name="Birtavarre"/>
+			<Department id="293" name="Lyngen"/>
+			<Department id="294" name="Tromsø"/>
+			<Department id="295" name="Skjervøy"/>
+			<Department id="296" name="Svalbard"/>
+		</Division>
+		<Division id="20" tracking="X00" name="Finnmark" suffix="RKH">
+			<Department id="297" name="Alta"/>
+			<Department id="298" name="Hammerfest"/>
+			<Department id="299" name="Havøysund"/>
+			<Department id="300" name="Kautokeino"/>
+			<Department id="301" name="Kjøllefjord"/>
+			<Department id="302" name="Lakselv"/>
+			<Department id="303" name="Nesseby"/>
+			<Department id="304" name="Nordkapp"/>
+			<Department id="305" name="Sør-Varanger"/>
+			<Department id="306" name="Vadsø"/>
+			<Department id="307" name="Vardø"/>
+		</Division>
+	</Organization>
+	<Organization tracking="7" name="Speidernes Beredskapsgrupper" suffix="SB" />
+	<Organization tracking="8" name="Redningsselskapet" suffix="NSSR" />
+	<Organization tracking="9" name="Norsk Radio Relæ Liga" suffix="NRRL" />
+	<Organization tracking="B" name="Brann og redning" suffix="BR" />
+	<Organization tracking="F" name="Forsvaret" suffix="F" />
+	<Organization tracking="P" name="Politiet" suffix="P" />
+	<Organization tracking="S" name="Sivilforsvaret" suffix="S" />	
+</Organizations>

@@ -84,9 +84,11 @@ public class ComboBoxField extends AbstractField {
 	public boolean fill(Object values) {
 		try {
 			if(values instanceof Object[])
-				((JComboBox)m_component).setModel(new DefaultComboBoxModel((Object[])values));
-			else
-				((JComboBox)m_component).setModel((ComboBoxModel)values);
+				getComboBox().setModel(new DefaultComboBoxModel((Object[])values));
+			else if(values instanceof ComboBoxModel)
+				getComboBox().setModel((ComboBoxModel)values);
+			else 
+				getComboBox().setModel(new DefaultComboBoxModel());
 			return true;
 		}
 		catch(Exception e) {
@@ -101,7 +103,11 @@ public class ComboBoxField extends AbstractField {
 
 	public boolean setValue(Object value) {
 		// update
-		((JComboBox)m_component).setSelectedItem(value);
+		if(value==null) {
+			getComboBox().setSelectedIndex(-1);
+		} else {
+			getComboBox().setSelectedItem(value);
+		}
 		// success
 		return true;
 	}

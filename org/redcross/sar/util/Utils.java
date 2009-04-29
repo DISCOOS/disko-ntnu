@@ -12,6 +12,7 @@ import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -28,9 +29,13 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.IApplication;
@@ -42,6 +47,10 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.work.ProgressMonitor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Utility class containing access to methods for handling properties.
@@ -732,4 +741,67 @@ public class Utils {
         if (s.length() == 0) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
+	
+	public static Document getXmlDoc(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
+		FileInputStream instream = new FileInputStream(xmlFile);
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setNamespaceAware(true);
+		dbf.setValidating(false);
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		return db.parse(instream);				
+	}
+	
+	public static Document getXmlDoc(String xmlFile) throws ParserConfigurationException, SAXException, IOException {
+		FileInputStream instream = new FileInputStream(xmlFile);
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setNamespaceAware(true);
+		dbf.setValidating(false);
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		return db.parse(instream);				
+	}
+	
+	public static String[] getXmlAttrs(Element node, String tagName, String attrName) {
+		return getXmlAttrs(node, tagName, attrName,"");
+	}
+	
+	public static String[] getXmlAttrs(Element node, String tagName, String attrName, String suffix) {
+		
+		// load map source data
+		NodeList elems = node.getElementsByTagName(tagName);
+		// get size
+		int size = elems.getLength();
+		// allocate memory
+		String[] attrs = new String[size];
+		// locate and update
+		for (int i = 0; i < size; i++) {
+			// get organization name
+			attrs[i] = ((Element)elems.item(i)).getAttribute(attrName) + suffix;
+		}
+		// finished
+		return attrs;
+	}
+	
+	public static Element[] getXmlNode(Element node, String tagName, String attrName, String attrValue, boolean isStrict, boolean isCaseSensitive) {
+		List<Element> list = new Vector<Element>();
+		if(tagName!=null&&attrName!=null&&attrValue!=null) {
+			String pattern = (isStrict ? attrValue : attrValue + ".*");
+			pattern = isCaseSensitive?pattern:pattern.toLowerCase();
+			// load map source data
+			NodeList elems = node.getElementsByTagName(tagName);
+			// get size
+			int size = elems.getLength();
+			// locate and update
+			for (int i = 0; i < size; i++) {
+				// get node
+				Element e = ((Element)elems.item(i));
+				// get attribute value
+				String attr = e.getAttribute(attrName);
+				// get attribute value
+				String match = isCaseSensitive?attr:attr.toLowerCase();
+				if(match.matches(pattern)) list.add(e);
+			}
+		}
+		// finished
+		return list.size()>0?list.toArray(new Element[list.size()]):null;
+	}	
 }

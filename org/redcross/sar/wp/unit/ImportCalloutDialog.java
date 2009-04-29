@@ -446,7 +446,7 @@ public class ImportCalloutDialog extends DefaultDialog
 						// Reinstate released personnel
 						if(msoPersonnel.getStatus() == PersonnelStatus.RELEASED)
 						{
-							msoPersonnel = PersonnelUtilities.reinstateResource(msoPersonnel, PersonnelStatus.ON_ROUTE);
+							msoPersonnel = UnitUtils.reinstateResource(msoPersonnel, PersonnelStatus.ON_ROUTE);
 						}
 						else if(msoPersonnel.getStatus() != PersonnelStatus.ARRIVED)
 						{

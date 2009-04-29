@@ -115,7 +115,7 @@ public class AssignmentInfoPanel extends JPanel
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
 			m_infoPanel.setPreferredExpandedHeight(175);
-			m_infoPanel.setColumns(1);
+			m_infoPanel.setColumns(2);
 			m_infoPanel.addField(createEnumField("priority",0));
 			m_infoPanel.addField(createDTGField("eta",1));
 			m_infoPanel.addField(createTextField("unit",2));

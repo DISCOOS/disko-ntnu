@@ -37,7 +37,6 @@ import org.redcross.sar.gui.panel.PanelManager;
 import org.redcross.sar.gui.util.AlignUtils;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.AppProps;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;
 

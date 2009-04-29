@@ -49,7 +49,6 @@ public class LoginDialog extends DefaultDialog {
 	private void initialize() {
 		try {
             this.setModal(true);
-            this.setUndecorated(true);
             this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             this.setContentPane(getContentPanel());
             this.setPreferredSize(new Dimension(275,132));
@@ -69,9 +68,7 @@ public class LoginDialog extends DefaultDialog {
 	private DefaultPanel getContentPanel() {
 		if (contentPanel == null) {
 			contentPanel = new DefaultPanel("Innlogging");
-			contentPanel.setScrollBarPolicies(
-					DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
-					DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
+			contentPanel.setNotScrollBars();
 			contentPanel.setPreferredContainerSize(new Dimension(275,80));
 			JPanel panel = (JPanel)contentPanel.getContainer();
 			panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));

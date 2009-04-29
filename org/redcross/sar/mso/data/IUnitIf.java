@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  *
  */
-public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNumberedIf, IEnumStatusHolder<IUnitIf.UnitStatus>
+public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunicatorIf, ISerialNumberedIf, IEnumStatusHolder<IUnitIf.UnitStatus>
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Unit";
 
@@ -161,6 +161,22 @@ public interface IUnitIf extends IHierarchicalUnitIf, ICommunicatorIf, ISerialNu
 
     public IAttributeIf.IMsoStringIf getCallSignAttribute();
 
+	public void setToneID(String toneId);
+
+	public String getToneID();
+
+	public IMsoModelIf.ModificationState getToneIDState();
+
+	public IAttributeIf.IMsoStringIf getToneIDAttribute();
+	
+    public void setTrackingID(String aTrackingID);
+
+    public String getTrackingID();
+
+    public IMsoModelIf.ModificationState getTrackingIDState();
+
+    public IAttributeIf.IMsoStringIf getTrackingIDAttribute();
+    
     public void setPosition(Position aPosition);
 
     public Position getPosition();

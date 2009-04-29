@@ -176,7 +176,9 @@ public class CalloutDetailsPanel extends JPanel
 
 			CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 			model.setPersonnelList(m_wp.getMsoModel(),m_callout.getPersonnelList());
+			
 		}
+		
 	}
 
 	/*
@@ -347,7 +349,7 @@ public class CalloutDetailsPanel extends JPanel
 					int index = m_personnelTable.convertRowIndexToModel(m_editingRow);
 					if(index==-1) return;
 					IPersonnelIf personnel = (IPersonnelIf)model.getValueAt(index, 2);
-					IPersonnelIf newPersonnelInstance = PersonnelUtilities.arrivedPersonnel(personnel);
+					IPersonnelIf newPersonnelInstance = UnitUtils.arrivedPersonnel(personnel);
 					if(newPersonnelInstance != personnel)
 					{
 						// Personnel was reinstated. Replace reference in call-out
@@ -381,7 +383,7 @@ public class CalloutDetailsPanel extends JPanel
 					int index = m_personnelTable.convertRowIndexToModel(m_editingRow);
 					if(index==-1) return;
 					IPersonnelIf personnel = (IPersonnelIf)model.getValueAt(index, 2);
-					PersonnelUtilities.releasePersonnel(personnel);
+					UnitUtils.releasePersonnel(personnel);
 					if(!m_wp.getNewCallOut())
 					{
 						// Commit right away if not new call-out

@@ -54,12 +54,7 @@ public class DiskoModuleManager {
 		this.modules = new HashMap<String,IDiskoWpModule>();
 
 		// load xml document
-		FileInputStream instream = new FileInputStream(file);
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-		dbf.setValidating(false);
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		this.doc = db.parse(instream);
+		this.doc = Utils.getXmlDoc(file);
 
 	}
 

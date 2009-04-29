@@ -35,6 +35,7 @@ import org.redcross.sar.map.event.IDiskoMapListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.work.IMapWork;
 import org.redcross.sar.util.MapInfoComparator;
+import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.work.AbstractWork;
 import org.redcross.sar.work.WorkLoop;
@@ -147,13 +148,9 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			// keep temporary map between uses
 			setKeepTmpMap(true);
 
-			// load xml document
-			FileInputStream instream = new FileInputStream(xmlFile);
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			dbf.setValidating(false);
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			this.xmlDoc = db.parse(instream);
+			// load xml document					
+			this.xmlDoc = Utils.getXmlDoc(xmlFile);
+			
 			// load map source data
 			NodeList elems = xmlDoc.getElementsByTagName("MxdDoc");
 			// locate and update

@@ -29,12 +29,16 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	private final AttributeImpl.MsoString m_name = new AttributeImpl.MsoString(this, "Name",0,0,"");
 	private final AttributeImpl.MsoString m_callSign = new AttributeImpl.MsoString(this, "CallSign");
 	private final AttributeImpl.MsoString m_toneId = new AttributeImpl.MsoString(this, "ToneID");
+	private final AttributeImpl.MsoString m_trackingId = new AttributeImpl.MsoString(this, "TrackingID");
 	private final AttributeImpl.MsoInteger m_number = new AttributeImpl.MsoInteger(this, "Number", true);
 	private final AttributeImpl.MsoPosition m_position = new AttributeImpl.MsoPosition(this, "Position");
 	private final AttributeImpl.MsoString m_remarks = new AttributeImpl.MsoString(this, "Remarks");
 	private final AttributeImpl.MsoEnum<UnitType> m_type = new AttributeImpl.MsoEnum<UnitType>(this, "Type", 1, UnitType.CP);
 	private final AttributeImpl.MsoEnum<UnitStatus> m_status = new AttributeImpl.MsoEnum<UnitStatus>(this, "Status", 1, UnitStatus.EMPTY);
-
+    private final AttributeImpl.MsoString m_organization = new AttributeImpl.MsoString(this, "Organization");
+    private final AttributeImpl.MsoString m_division = new AttributeImpl.MsoString(this, "Division");
+    private final AttributeImpl.MsoString m_department = new AttributeImpl.MsoString(this, "Department");    
+    
 	private final AssignmentListImpl m_unitAssignments = new AssignmentListImpl(this, "UnitAssignments", false);
 	private final PersonnelListImpl m_unitPersonnel = new PersonnelListImpl(this, "UnitPersonnel", false);
 
@@ -104,11 +108,15 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		addAttribute(m_name);
 		addAttribute(m_callSign);
 		addAttribute(m_toneId);
+		addAttribute(m_trackingId);
 		addAttribute(m_number);
 		addAttribute(m_position);
 		addAttribute(m_remarks);
 		addAttribute(m_type);
 		addAttribute(m_status);
+        addAttribute(m_organization);
+        addAttribute(m_division);
+        addAttribute(m_department);
 
 	}
 
@@ -260,6 +268,66 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		return m_status.getInternationalName();
 	}
+	
+    public void setOrganization(String anOrganization)
+    {
+        m_organization.setValue(anOrganization);
+    }
+
+    public String getOrganization()
+    {
+        return m_organization.getString();
+    }
+
+    public IMsoModelIf.ModificationState getOrganizationState()
+    {
+        return m_organization.getState();
+    }
+
+    public IAttributeIf.IMsoStringIf getOrganizationAttribute()
+    {
+        return m_organization;
+    }
+
+    public void setDivision(String division)
+    {
+    	m_division.setValue(division);
+    }
+
+	public String getDivision()
+	{
+		return m_division.getString();
+	}
+
+	public IMsoModelIf.ModificationState getDivisionState()
+	{
+		return m_division.getState();
+	}
+
+    public IAttributeIf.IMsoStringIf getDivisionAttribute()
+    {
+    	return m_division;
+    }
+    
+    public void setDepartment(String aDepartment)
+    {
+        m_department.setValue(aDepartment);
+    }
+
+    public String getDepartment()
+    {
+        return m_department.getString();
+    }
+
+    public IMsoModelIf.ModificationState getDepartmentState()
+    {
+        return m_department.getState();
+    }
+
+    public IAttributeIf.IMsoStringIf getDepartmentAttribute()
+    {
+        return m_department;
+    }	
 
 	/*-------------------------------------------------------------------------------------------
 	 * Methods for attributes
@@ -325,6 +393,26 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_toneId;
 	}
 
+	public void setTrackingID(String trackingId)
+	{
+		m_trackingId.setValue(trackingId);
+	}
+
+	public String getTrackingID()
+	{
+		return m_trackingId.getString();
+	}
+
+	public IMsoModelIf.ModificationState getTrackingIDState()
+	{
+		return m_trackingId.getState();
+	}
+
+	public IAttributeIf.IMsoStringIf getTrackingIDAttribute()
+	{
+		return m_trackingId;
+	}
+	
 	public void setPosition(Position aPosition)
 	{
 
