@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.redcross.sar.mso.ITransactionIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -244,7 +244,7 @@ public class MsoEvent extends java.util.EventObject
     {
 		private static final long serialVersionUID = 1L;
 
-        public Commit(ICommitWrapperIf aSource, int anEventTypeMask)
+        public Commit(ITransactionIf aSource, int anEventTypeMask)
         {
             super(aSource, anEventTypeMask);
         }

@@ -9,21 +9,15 @@
  */
 package org.redcross.sar.mso;
 
-import java.util.List;
-
 import org.redcross.sar.data.IDataSource;
-import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.committer.IUpdateHolderIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.work.IMsoWork;
 
-
 /**
  * Interface for singleton class for accessing the MSO model
  */
-public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
+public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTransactionManagerIf
 {
     /**
      * Update modes, to be used when updating local data in order to inform the GUI how data have been updated.
@@ -109,37 +103,13 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>
      * @return
      */
     public boolean isUpdateMode(UpdateMode mode);
-
+    
     /**
-     * Perform commit.
-     * <p/>
-     * Local modifications since previous commit or rollback are sent to server.
+     * Get the transaction manager.
+     * 
+     * @return Reference to IMsoTransactionManagerIf instance
      */
-    public void commit();
-
-    /**
-     * Perform a partial commit. <p/>Only possible to perform on
-     * objects that are created and modified. Object and list references
-     * are not affected, only the marked attributes. See
-     * {@link org.redcross.sar.mso.committer.IUpdateHolderIf} for more information.
-     *
-     * @param List<UpdateHolder> updates - holder for updates.
-     *
-     */
-    public void commit(List<IUpdateHolderIf> updates);
-
-    /**
-     * Perform rollback.
-     * <p/>
-     * Local modifications since previous commit or rollback are ignored.
-     */
-    public void rollback();
-
-    public boolean hasUncommitedChanges();
-
-    public boolean hasUncommitedChanges(MsoClassCode code);
-
-    public boolean hasUncommitedChanges(IMsoObjectIf msoObj);
+    public IMsoTransactionManagerIf getMsoTransactionManager();
 
     public void suspendClientUpdate();
 

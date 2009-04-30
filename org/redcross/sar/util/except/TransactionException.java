@@ -5,14 +5,16 @@ import java.util.List;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
- * Indicates that an error during commit.
+ * Indicates that an error during commits and rollbacks.
  */
-public class CommitException  extends MsoException
+public class TransactionException  extends MsoException
 {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private final List<IMsoObjectIf> residue;
 	
-    public CommitException(String aMessage, List<IMsoObjectIf> residue)
+    public TransactionException(String aMessage, List<IMsoObjectIf> residue)
     {
         super(aMessage);
         this.residue = residue;

@@ -1,5 +1,6 @@
 package org.redcross.sar.test;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.*;
@@ -7,6 +8,7 @@ import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.except.MsoException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.Position;
 
 /**
@@ -21,6 +23,8 @@ import org.redcross.sar.util.mso.Position;
  */
 public class BuildTestData
 {
+    private static final Logger m_logger = Logger.getLogger(BuildTestData.class);
+
     public static void createCmdPost(IMsoModelIf aMsoModel)
     {
         aMsoModel.setLocalUpdateMode();
@@ -54,7 +58,12 @@ public class BuildTestData
             cmdPost.setStatus(ICmdPostIf.CmdPostStatus.OPERATING);
         }
         aMsoModel.restoreUpdateMode();
-        aMsoModel.commit();
+        try {
+            aMsoModel.commit();
+		} catch (TransactionException ex) {
+			m_logger.error("Failed to commit test data",ex);
+		}
+		
     }
 
     public static void createUnits(IMsoModelIf aMsoModel)
@@ -86,7 +95,11 @@ public class BuildTestData
 		}
 
         aMsoModel.restoreUpdateMode();
-        aMsoModel.commit();
+        try {
+            aMsoModel.commit();
+		} catch (TransactionException ex) {
+			m_logger.error("Failed to commit test data changes",ex);
+		}            
     }
 
     public static void createUnitsAndAssignments(IMsoModelIf aMsoModel)
@@ -212,7 +225,11 @@ public class BuildTestData
         }
 
         aMsoModel.restoreUpdateMode();
-        aMsoModel.commit();
+        try {
+            aMsoModel.commit();
+		} catch (TransactionException ex) {
+			m_logger.error("Failed to commit test data changes",ex);
+		}            
     }
 
     public static void createMessages(IMsoModelIf aMsoModel)
@@ -263,7 +280,11 @@ public class BuildTestData
         messageLine = message.findMessageLine(MessageLineType.POI, true);
 
         aMsoModel.restoreUpdateMode();
-        aMsoModel.commit();
+        try {
+            aMsoModel.commit();
+		} catch (TransactionException ex) {
+			m_logger.error("Failed to commit test data changes",ex);
+		}            
     }
 
 }

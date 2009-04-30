@@ -2,13 +2,14 @@ package org.redcross.sar.mso.event;
 
 import no.cmr.tools.Log;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
+import org.redcross.sar.mso.ITransactionIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
-import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.ProgressMonitor;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 	/**
 	 * Collections of commit listeners
 	 */
-    private final Collection<IMsoCommitListenerIf> m_commitListeners = new Vector<IMsoCommitListenerIf>();
+    private final Collection<IMsoTransactionListenerIf> m_commitListeners = new Vector<IMsoTransactionListenerIf>();
 
 	/**
 	 * Collections of derived update listeners
@@ -64,6 +65,11 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
      * Pending updates
      */
     private final Collection<MsoEvent.Update> m_buffer = new Vector<MsoEvent.Update>(100);
+    
+    /**
+     * Logging object
+     */
+    private final Logger m_logger = Logger.getLogger(MsoEventManagerImpl.class);
 
     /* ------------------------------------------------------------------
      * IMsoEventManagerIf implementation
@@ -149,7 +155,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     /**
      * Add a listener in the {@link #m_commitListeners} queue.
      */
-    public void addCommitListener(IMsoCommitListenerIf aListener)
+    public void addCommitListener(IMsoTransactionListenerIf aListener)
     {
         m_commitListeners.add(aListener);
     }
@@ -157,12 +163,12 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     /**
      * Remove a listener in the {@link #m_commitListeners} queue.
      */
-    public void removeCommitListener(IMsoCommitListenerIf aListener)
+    public void removeCommitListener(IMsoTransactionListenerIf aListener)
     {
         m_commitListeners.remove(aListener);
     }
 
-    public void notifyCommit(ICommitWrapperIf aSource)  throws CommitException
+    public void notifyCommit(ITransactionIf aSource)  throws TransactionException
     {
         fireCommit(m_commitListeners, aSource, MsoEvent.MsoEventType.COMMIT_EVENT.maskValue());
     }
@@ -238,8 +244,9 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
             }
             catch (Exception ex)
             {
-                ex.printStackTrace();
-                Log.printStackTrace("Exception in fireUpdate, listener: " + listener.toString(),ex);
+            	String msg = "Exception in fireUpdate, listener: " + listener.toString();
+            	m_logger.error(msg,ex);
+                Log.printStackTrace(msg,ex);
             }
 
             // update progress monitor?
@@ -252,14 +259,14 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         }
     }
 
-    private void fireCommit(Collection<IMsoCommitListenerIf> theListeners, ICommitWrapperIf aSource, int anEventTypeMask) throws CommitException
+    private void fireCommit(Collection<IMsoTransactionListenerIf> theListeners, ITransactionIf aSource, int anEventTypeMask) throws TransactionException
     {
         if (theListeners.size() == 0 || anEventTypeMask == 0)
         {
             return;
         }
         MsoEvent.Commit event = new MsoEvent.Commit(aSource, anEventTypeMask);
-        for (IMsoCommitListenerIf listener : theListeners)
+        for (IMsoTransactionListenerIf listener : theListeners)
         {
             try
             {
@@ -267,10 +274,13 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
             }
             catch (Exception e)
             {
-                Log.printStackTrace("Exception in fireCommit, listener: " + listener.toString(),e);
-                if (e instanceof  CommitException)
+            	
+            	String msg = "Exception in fireCommit, listener: " + listener.toString();
+            	m_logger.error(msg,e);
+                Log.printStackTrace(msg,e);
+                if (e instanceof  TransactionException)
                 {
-                    throw (CommitException)e;
+                    throw (TransactionException)e;
                 }
             }
         }
@@ -314,7 +324,9 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
             }
             catch (Exception e)
             {
-                Log.printStackTrace("Exception in notifyDerivedUpdate, listener: " + listener.toString(),e);
+            	String msg = "Exception in notifyDerivedUpdate, listener: " + listener.toString();
+            	m_logger.error(msg,e); // local log
+                Log.printStackTrace(msg,e); // distributed log (message queue server)
             }
         }
     }

@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.esri.arcgis.interop.AutomationException;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ElementDialog;
@@ -47,7 +48,7 @@ import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.event.MsoEvent.Commit;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;
@@ -62,6 +63,8 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		implements IDiskoWpTactics, IDrawAdapterListener {
 
+	private static final Logger m_logger = Logger.getLogger(DiskoWpTacticsImpl.class);	
+	
 	private JToggleButton elementToggleButton;
 	private JToggleButton listToggleButton;
 	private JToggleButton missionToggleButton;
@@ -873,7 +876,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if(isActive()) setFrameText("<" + getElementToggleButton().getToolTipText() + ">");
 	}
 
-	public void handleMsoCommitEvent(Commit e) throws CommitException {
+	public void handleMsoCommitEvent(Commit e) throws TransactionException {
 		if(!isChanged()) {
 			//select next element
 			getMap().getDrawAdapter().nextElement();
@@ -1024,21 +1027,23 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 
 		private void commit() {
-			try{
-				getMsoModel().commit();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
+        	if(isChanged()) {
+                try {
+                    getMsoModel().commit(getMsoModel().getChanges(getUncomittedChanges()));
+        		} catch (TransactionException ex) {
+        			m_logger.error("Failed to commit tactics data",ex);
+        		}            
+        	}
 		}
 
 		private void rollback() {
-			try{
-				getMsoModel().rollback();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
+        	if(isChanged()) {
+                try {
+                    getMsoModel().rollback(getMsoModel().getChanges(getUncomittedChanges()));
+        		} catch (TransactionException ex) {
+        			m_logger.error("Failed to roll back tactics data",ex);
+        		}            
+        	}
 		}
 	}
 

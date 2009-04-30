@@ -14,11 +14,11 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.CommitManager;
+import org.redcross.sar.mso.ChangeImpl;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
-import org.redcross.sar.mso.committer.CommittableImpl;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoRuntimeException;
@@ -834,18 +834,18 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
         return retVal;
     }
 
-    public Collection<CommittableImpl.CommitReference> getCommittableRelations()
+    public Collection<ChangeImpl.ChangeReference> getCommittableRelations()
     {
-        Vector<CommittableImpl.CommitReference> retVal = new Vector<CommittableImpl.CommitReference>();
+        Vector<ChangeImpl.ChangeReference> retVal = new Vector<ChangeImpl.ChangeReference>();
         for (M item : m_added.values())
         {
-            retVal.add(new CommittableImpl.CommitReference(m_name, m_owner, item, CommitManager.CommitType.COMMIT_CREATED));
+            retVal.add(new ChangeImpl.ChangeReference(m_name, m_owner, item, ChangeType.CREATED));
         }
         for (M item : m_deleted.values())
         {
             if (!item.hasBeenDeleted())
             {
-                retVal.add(new CommittableImpl.CommitReference(m_name, m_owner, item, CommitManager.CommitType.COMMIT_DELETED));
+                retVal.add(new ChangeImpl.ChangeReference(m_name, m_owner, item, ChangeType.DELETED));
             }
         }
         return retVal;

@@ -42,6 +42,7 @@ import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -62,7 +63,10 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.DTG;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * JPanel displaying unit details
@@ -90,7 +94,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     private TextLineField m_cellPhoneTextField;
     private TextLineField m_toneIDTextField;
     private TextLineField m_trackingIDTextField;
-    private TextLineField m_createdTextField;
+    private DTGField m_createdDTGField;
     private TextLineField m_callSignTextField;
     private TextLineField m_workTimeTextField;
     private TextLineField m_assignmentTextField;
@@ -114,6 +118,13 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         wp.addTickEventListener(this);
         wp.getMsoEventManager().addClientUpdateListener(this);
         wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
+        getInfoPanel().addWorkFlowListener(new IWorkFlowListener() {
+			public void onFlowPerformed(WorkFlowEvent e) {
+				// only forward MSO changes
+				if(e.isMsoData()) 
+					m_wp.onFlowPerformed(e);				
+			}        	
+        });
     }
 
     private void initialize()
@@ -145,7 +156,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     		m_infoPanel.addField(getToneIDTextField());
     		m_infoPanel.addField(getStopTimeTextField());
     		m_infoPanel.addField(getTrackingIDTextField());
-    		m_infoPanel.addField(getCreatedTextField());
+    		m_infoPanel.addField(getCreatedDTGField());
     		m_infoPanel.addField(getAssociationTextField());    		
     		m_infoPanel.setFieldSpanX("leader", 2);
     		m_infoPanel.setFieldSpanX("cellphone", 2);
@@ -176,9 +187,13 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	                    	}
 	
 	                        // Commit small changes right away if new unit has been committed
-	                        if (!m_wp.getNewUnit())
+	                        if (!m_wp.isNewUnit())
 	                        {
-	                            m_wp.commit();
+	                            try {
+	                				m_wp.getMsoModel().commit(m_wp.getCommitManager().getChanges(m_currentUnit));
+	                			} catch (TransactionException ex) {
+	                				m_logger.error("Failed to commit unit detail changes",ex);
+	                			}            
 	                        }
 	                    }
 	                    catch (IllegalOperationException ex)
@@ -211,9 +226,13 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	                    UnitUtilities.releaseUnit(unit);
 	
 	                    // Commit
-	                    if (!m_wp.getNewUnit())
+	                    if (!m_wp.isNewUnit())
 	                    {
-	                        m_wp.getMsoModel().commit();
+                            try {
+                				m_wp.getMsoModel().commit(m_wp.getCommitManager().getChanges(m_currentUnit));
+                			} catch (TransactionException ex) {
+                				m_logger.error("Failed to commit unit detail changes",ex);
+                			}            
 	                    }
 	                }
 	                catch (IllegalOperationException e)
@@ -271,11 +290,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     	return m_trackingIDTextField;
     }
     
-    private TextLineField getCreatedTextField() {
-    	if(m_createdTextField==null) {
-    		m_createdTextField = new TextLineField("created",m_resources.getString("Created.text"),false);    		
+    private DTGField getCreatedDTGField() {
+    	if(m_createdDTGField==null) {
+    		m_createdDTGField = new DTGField("created",m_resources.getString("Created.text"),false);    		
     	}
-    	return m_createdTextField;
+    	return m_createdDTGField;
     }
     
     private TextLineField getCallSignTextField() {
@@ -334,6 +353,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 						}
 						m_currentUnit.resumeClientUpdate(false);
 						m_associationTextField.setChangeable(true);
+						m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentUnit,WorkFlowEvent.EVENT_CHANGE));
 					}
 				}
 				
@@ -391,6 +411,57 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     	return m_personnelTable;
     }
     
+    public boolean isChanged() {
+    	return m_currentUnit!=null?m_currentUnit.isChanged():false;
+    }
+    
+    public boolean isNew() {
+    	return m_currentUnit!=null?!m_currentUnit.isCreated():false;
+    }
+    
+    public boolean isSet() {
+    	return m_currentUnit!=null;
+    }
+    
+    
+    /**
+     * validate input data
+     */
+    public boolean isInputValid()
+    {
+        if (m_currentUnit != null)
+        {            
+            // success
+        	return getIDs(true)!=null;
+        }
+        // failure
+    	return false;
+    }    
+
+	private String[] getIDs(boolean validate) {
+		
+        String callSign = getCallSignTextField().getValue();
+        String toneId = getToneIDTextField().getValue();
+        String trackingId = getTrackingIDTextField().getValue();
+
+		// validate
+		if (!validate || (callSign!=null && !callSign.isEmpty()))
+		{
+			// finished!
+			return new String[]{callSign,toneId,trackingId};
+		}
+		return null;
+	}
+
+    
+    /**
+     * @return Current unit
+     */
+    public IUnitIf getUnit()
+    {
+        return m_currentUnit;
+    }
+
     public void setUnit(IUnitIf unit)
     {
         m_currentUnit = unit;
@@ -460,7 +531,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             }
             
             String created = DTG.CalToDTG(m_currentUnit.getCreatedTime());
-			getCreatedTextField().setValue(created);
+			getCreatedDTGField().setValue(created);
 
             IAssignmentIf assignment = m_currentUnit.getActiveAssignment();
             String assignmentString = assignment == null ? "" : assignment.getDefaultName();
@@ -476,7 +547,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             getCellPhoneTextField().setValue("");
             getToneIDTextField().setValue("");
             getTrackingIDTextField().setValue("");
-            getCreatedTextField().setValue("");
+            getCreatedDTGField().setValue("");
             getCallSignTextField().setValue("");
             getWorkTimeTextField().setValue("");
             getAssociationTextField().setValue("");
@@ -527,25 +598,17 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         }
     }
 
-    /**
-     * @return Current unit
-     */
-    public IUnitIf getUnit()
-    {
-        return m_currentUnit;
-    }
-
 	public EnumSet<MsoClassCode> getInterests() {
 		return EnumSet.of(MsoClassCode.CLASSCODE_UNIT);
 	}
-
+    
     /**
      * Update field contents if MSO object changes
      */
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
 
 		if(events.isClearAllEvent()) {
-    		m_currentUnit = null;
+    		setUnit(null);
             updateContents();
 		}
 		else
@@ -571,7 +634,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
 					// delete object?
 					if (e.isDeleteObjectEvent() && unit == m_currentUnit) {
-			    		m_currentUnit = null;
+			    		setUnit(null);
 			            updateContents();
 					}
 				}
@@ -579,6 +642,37 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 		}
 	}
 
+    public long getInterval()
+    {
+        return UPDATE_INTERVAL;
+    }
+
+    public long getTimeCounter()
+    {
+        return m_timeCounter;
+    }
+
+    /**
+     * Update time dependent fields
+     */
+    public void handleTick(TickEvent e)
+    {
+    	if(isShowing() && m_wp.getMsoManager().operationExists()) {
+            ICmdPostIf cmdPost = m_wp.getMsoManager().getCmdPost();
+            if (cmdPost == null)
+            {
+                return;
+            }
+	        updateWorkTime();
+	        updateStopTime();
+    	}
+    }
+
+    public void setTimeCounter(long counter)
+    {
+        m_timeCounter = counter;
+	}
+    
     /**
      * Single click displays all personnel details in bottom panel.
      * Double click changes to personnel display
@@ -606,7 +700,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             } else if (clickCount == 2)
             {
                 // Check if unit is new
-                if (m_wp.getNewUnit())
+                if (m_wp.isNewUnit())
                 {
                     String[] options = {m_resources.getString("Yes.text"), m_resources.getString("No.text")};
                     int n = JOptionPane.showOptionDialog(null,
@@ -619,8 +713,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
                             options[0]);
                     if (n == JOptionPane.YES_OPTION)
                     {
-                        // Commit unit
-                        m_wp.getMsoModel().commit();
+                        try {
+            				m_wp.getMsoModel().commit(m_wp.getCommitManager().getChanges(m_currentUnit));
+            			} catch (TransactionException ex) {
+            				m_logger.error("Failed to commit unit detail changes",ex);
+            			}            
                     } else
                     {
                         // Abort view change
@@ -784,9 +881,13 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	                    	editingUnit.setUnitLeader(newLeader);
 
 	                    // Commit changes¨
-	                    if (!m_wp.getNewUnit())
+	                    if (!m_wp.isNewUnit())
 	                    {
-	                        m_wp.getMsoModel().commit();
+                            try {
+                				m_wp.getMsoModel().commit(m_wp.getCommitManager().getChanges(m_currentUnit));
+                			} catch (TransactionException ex) {
+                				m_logger.error("Failed to commit unit detail changes",ex);
+                			}            
 	                    }
 
 	                    fireEditingStopped();
@@ -844,59 +945,5 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             return m_panel;
         }
     }
-
-    /**
-     * Saves field contents in unit MSO object
-     */
-    public boolean saveUnit()
-    {
-        if (m_currentUnit != null)
-        {
-            String toneId = getToneIDTextField().getValue();
-            String callSign = getCallSignTextField().getValue();
-            String trackingId = getTrackingIDTextField().getValue();
-
-            m_currentUnit.suspendClientUpdate();
-
-            m_currentUnit.setToneID(toneId);
-            m_currentUnit.setCallSign(callSign);
-            m_currentUnit.setTrackingID(trackingId);
-
-            m_currentUnit.resumeClientUpdate(true);
-            
-        }
-        // success!
-    	return true;
-    }
-
-    public long getInterval()
-    {
-        return UPDATE_INTERVAL;
-    }
-
-    public long getTimeCounter()
-    {
-        return m_timeCounter;
-    }
-
-    /**
-     * Update time dependent fields
-     */
-    public void handleTick(TickEvent e)
-    {
-    	if(isShowing() && m_wp.getMsoManager().operationExists()) {
-            ICmdPostIf cmdPost = m_wp.getMsoManager().getCmdPost();
-            if (cmdPost == null)
-            {
-                return;
-            }
-	        updateWorkTime();
-	        updateStopTime();
-    	}
-    }
-
-    public void setTimeCounter(long counter)
-    {
-        m_timeCounter = counter;
-	}
+    
 }

@@ -17,13 +17,14 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
-import org.redcross.sar.mso.Dispatcher;
+import org.redcross.sar.mso.DispatcherImpl;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IDispatcherListenerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.DispatcherAdapter;
 import org.redcross.sar.mso.MsoModelImpl;
-import org.redcross.sar.mso.SaraDispatcher;
+import org.redcross.sar.mso.SaraDispatcherImpl;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Internationalization;
@@ -394,7 +395,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 	public IDispatcherIf getDispatcher() {
 		if(m_dispatcher == null) {
 	        boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
-	        m_dispatcher = integrate ? new SaraDispatcher() : new Dispatcher();
+	        m_dispatcher = integrate ? new SaraDispatcherImpl() : new DispatcherImpl();
 		}
 		return m_dispatcher;
 	}
@@ -411,7 +412,11 @@ public class Application extends JFrame implements IApplication, WindowListener
 		}
 		return m_msoModel;
 	}
-
+	
+	public IMsoTransactionManagerIf getTransactionManager() {
+		return (IMsoTransactionManagerIf)getMsoModel();
+	}
+	
 	public DiskoReportManager getReportManager(){
 		return this.m_diskoReport;
 	}

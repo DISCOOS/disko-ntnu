@@ -14,7 +14,9 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.ResourceBundle;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
+import org.redcross.sar.IApplication;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
@@ -34,6 +36,7 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.wp.tasks.TaskUtilities;
 
@@ -51,6 +54,8 @@ public class TaskPanel extends DefaultPanel
     	"org.redcross.sar.gui.properties.TaskDialog";
     private static final ResourceBundle m_resources =
     	Internationalization.getBundle(TaskPanel.class);
+    
+    private static final Logger m_logger = Logger.getLogger(TaskPanel.class);
 
 	private ITaskIf m_currentTask;
 
@@ -71,6 +76,8 @@ public class TaskPanel extends DefaultPanel
 	private JPanel m_westPanel;
 	private JPanel m_eastPanel;
 	private JPanel m_bottomPanel;
+	
+	
 
     public TaskPanel()
 	{
@@ -487,8 +494,12 @@ public class TaskPanel extends DefaultPanel
 		String description = (String)m_descriptionArea.getValue();
 		m_currentTask.setDescription(description);
 
-		// update mso model
-		Application.getInstance().getMsoModel().commit();
+        try {
+        	IApplication app = Application.getInstance();
+        	app.getMsoModel().commit(app.getTransactionManager().getChanges(m_currentTask));
+		} catch (TransactionException ex) {
+			m_logger.error("Failed to commit unit detail changes",ex);
+		}            
 
 		// Clean up
 		m_currentTask = null;

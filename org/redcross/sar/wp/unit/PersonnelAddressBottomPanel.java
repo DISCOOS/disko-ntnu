@@ -2,26 +2,29 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IPersonnelIf;
+import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
  * Bottom panel displaying summary info about personnel
  *
- * @author thomasl
+ * @author thomasl, kenneth
  */
-public class PersonnelAddressBottomPanel extends JPanel
+public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -30,83 +33,103 @@ public class PersonnelAddressBottomPanel extends JPanel
 
 	private IPersonnelIf m_currentPersonnel;
 
-	private JTextField m_addressTextField;
-	private JTextField m_postAreaTextField;
-	private JTextField m_postNumberTextField;
-	private JButton m_showInMapButton;
+	private FieldsPanel m_infoPanel;
+	private TextLineField m_addressTextField;
+	private TextLineField m_postAreaTextField;
+	private TextLineField m_postNumberTextField;
+	private JButton m_centerAtButton;
+	
+	IDiskoWpUnit m_wp;
 
-	public PersonnelAddressBottomPanel()
+	public PersonnelAddressBottomPanel(IDiskoWpUnit wp)
 	{
+		// prepare
+		m_wp = wp;
+		// initialize GUI
 		initialize();
+		// add listeners
+		wp.getMsoEventManager().addClientUpdateListener(this);
 	}
 
 	private void initialize()
 	{
-		this.setLayout(new GridBagLayout());
-		GridBagConstraints topLevelConstraints = new GridBagConstraints();
-		topLevelConstraints.fill = GridBagConstraints.BOTH;
-		topLevelConstraints.gridheight = 1;
-		topLevelConstraints.weightx = 1.0;
+		// prepare
+		setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
-		// Top left
-		JPanel topLeftPanel = new JPanel(new GridBagLayout());
-		GridBagConstraints topLeftConstraints = new GridBagConstraints();
-		topLeftConstraints.insets = new Insets(4, 4, 4, 4);
-		topLeftConstraints.fill = GridBagConstraints.HORIZONTAL;
+		// add panels
+		add(getInfoPanel());
 
-		topLeftConstraints.weightx = 0.0;
-		topLeftPanel.add(new JLabel(m_resources.getString("Address.text")), topLeftConstraints);
-		topLeftConstraints.gridwidth = 3;
-		topLeftConstraints.gridx = 1;
-		topLeftConstraints.weightx = 1.0;
-		m_addressTextField = new JTextField();
-		topLeftPanel.add(m_addressTextField, topLeftConstraints);
-
-		topLeftConstraints.gridy = 1;
-		topLeftConstraints.gridx = 0;
-		topLeftConstraints.gridwidth = 1;
-		topLeftConstraints.weightx = 0.0;
-		topLeftPanel.add(new JLabel(m_resources.getString("PostArea.text")), topLeftConstraints);
-		topLeftConstraints.gridx = 1;
-		topLeftConstraints.weightx = 1.0;
-		m_postAreaTextField = new JTextField();
-		topLeftPanel.add(m_postAreaTextField, topLeftConstraints);
-
-		topLeftConstraints.gridx = 2;
-		topLeftConstraints.weightx = 0.0;
-		topLeftPanel.add(new JLabel(m_resources.getString("PostNumber.text")), topLeftConstraints);
-		topLeftConstraints.gridx = 3;
-		topLeftConstraints.weightx = 1.0;
-		m_postNumberTextField = new JTextField();
-		topLeftPanel.add(m_postNumberTextField, topLeftConstraints);
-
-		topLeftConstraints.gridx = 4;
-		topLeftConstraints.gridy = 0;
-		topLeftConstraints.gridheight = 2;
-		topLeftConstraints.weightx = 0.0;
-		m_showInMapButton = DiskoButtonFactory.createButton("MAP.GOTO", ButtonSize.NORMAL);
-		m_showInMapButton.setVisible(false);
-		topLeftPanel.add(m_showInMapButton, topLeftConstraints);
-
-		topLevelConstraints.gridwidth = 2;
-		topLevelConstraints.weighty = 0.5;
-		this.add(topLeftPanel, topLevelConstraints);
-
-		// Bottom left
-		JPanel bottomLeftPanel = new JPanel();
-		topLevelConstraints.gridy = 1;
-		topLevelConstraints.weighty = 1.0;
-		this.add(bottomLeftPanel, topLevelConstraints);
-
-		// Right
-		JPanel rightPanel = new JPanel();
-
-		topLevelConstraints.gridx = 2;
-		topLevelConstraints.gridy = 0;
-		topLevelConstraints.gridwidth = 1;
-		topLeftConstraints.gridheight = 3;
-		this.add(rightPanel, topLevelConstraints);
 	}
+	
+	private FieldsPanel getInfoPanel() {
+		if(m_infoPanel==null) {
+			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
+			m_infoPanel.setColumns(3);
+			m_infoPanel.setPreferredExpandedHeight(275);
+			m_infoPanel.addButton(getCenterAtButton(), "centerat");
+			m_infoPanel.suspendLayout();
+			m_infoPanel.addField(getAddressTextField());
+			m_infoPanel.addField(getPostNumberTextField());
+			m_infoPanel.addField(getPostAreaTextField());
+			m_infoPanel.setFieldSpanX("address", 3);
+			m_infoPanel.setFieldSpanX("postnumber", 1);
+			m_infoPanel.setFieldSpanX("postarea", 2);
+			m_infoPanel.resumeLayout();
+			m_infoPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL));
+		}
+		return m_infoPanel;
+	}
+	
+	private JButton getCenterAtButton() {
+		if(m_centerAtButton==null) {
+			m_centerAtButton = DiskoButtonFactory.createButton("MAP.GOTO",ButtonSize.SMALL);
+			m_centerAtButton.setEnabled(false);
+		}
+		return m_centerAtButton;
+	}	
+	
+	private TextLineField getAddressTextField() {
+		if(m_addressTextField==null) {
+			m_addressTextField = new TextLineField("address",m_resources.getString("Address.text"),true);
+			m_addressTextField.addWorkFlowListener(new IWorkFlowListener() {
+				public void onFlowPerformed(WorkFlowEvent e) {
+					if(m_addressTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+						setAddress();
+					}					
+				}				
+			});
+		}
+		return m_addressTextField;
+	}	
+
+	private TextLineField getPostAreaTextField() {
+		if(m_postAreaTextField==null) {
+			m_postAreaTextField = new TextLineField("postarea",m_resources.getString("PostArea.text"),true);  
+			m_postAreaTextField.addWorkFlowListener(new IWorkFlowListener() {
+				public void onFlowPerformed(WorkFlowEvent e) {
+					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+						setAddress();
+					}					
+				}
+			});
+		}
+		return m_postAreaTextField;
+	}	
+	
+	private TextLineField getPostNumberTextField() {
+		if(m_postNumberTextField==null) {
+			m_postNumberTextField = new TextLineField("postnumber",m_resources.getString("PostNumber.text"),true);    		
+			m_postNumberTextField.addWorkFlowListener(new IWorkFlowListener() {
+				public void onFlowPerformed(WorkFlowEvent e) {
+					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+						setAddress();
+					}					
+				}
+			});
+		}
+		return m_postNumberTextField;
+	}	
+		
 
 	/**
 	 * Set the personnel the panel is currently displaying
@@ -124,10 +147,9 @@ public class PersonnelAddressBottomPanel extends JPanel
 	{
 		if(m_currentPersonnel == null)
 		{
-			m_addressTextField.setText("");
-			m_postAreaTextField.setText("");
-			m_postNumberTextField.setText("");
-			m_showInMapButton.setEnabled(false);
+			m_addressTextField.setValue("");
+			m_postAreaTextField.setValue("");
+			m_postNumberTextField.setValue("");
 		}
 		else
 		{
@@ -135,40 +157,102 @@ public class PersonnelAddressBottomPanel extends JPanel
 
 			if(address.length == 3)
 			{
-				m_addressTextField.setText(address[0]);
-				m_postAreaTextField.setText(address[1]);
-				m_postNumberTextField.setText(address[2]);
+				m_addressTextField.setValue(address[0]);
+				m_postAreaTextField.setValue(address[1]);
+				m_postNumberTextField.setValue(address[2]);
 			}
 			else
 			{
-				m_addressTextField.setText("");
-				m_postAreaTextField.setText("");
-				m_postNumberTextField.setText("");
+				m_addressTextField.setValue("");
+				m_postAreaTextField.setValue("");
+				m_postNumberTextField.setValue("");
 			}
-
-			m_showInMapButton.setEnabled(true);
 		}
 	}
 
+    public boolean isChanged() {
+    	return m_currentPersonnel!=null?m_currentPersonnel.isChanged():false;
+    }
+    
+    public boolean isNew() {
+    	return m_currentPersonnel!=null?!m_currentPersonnel.isCreated():false;
+    }
+    
+    public boolean isSet() {
+    	return m_currentPersonnel!=null;
+    }
+    
 	/**
-	 * Save field contents to current personnel
+	 * validate input data
 	 */
-	public boolean savePersonnel()
+	public boolean isInputValid()
 	{
 		if(m_currentPersonnel != null)
 		{
-			m_currentPersonnel.suspendClientUpdate();
-
-			// Store address fields in single string, separated by ;
-			String address = m_addressTextField.getText() + ";" +
-				m_postAreaTextField.getText() + ";" + m_postNumberTextField.getText();
-
-			m_currentPersonnel.setAddress(address);
-
-			m_currentPersonnel.resumeClientUpdate(true);
+			// validate
+			return true;
 		}
-		// success!
+		// failure
 		return true;
 	}
+	
+	private String getAddress() {
+		// Store address fields in single string, separated by ;
+		return  m_addressTextField.getValue() + ";" +
+				m_postAreaTextField.getValue() + ";" + 
+				m_postNumberTextField.getValue();
+	}
+	
+	private void setAddress() {
+		// Store address fields in single string, separated by ;
+		m_currentPersonnel.suspendClientUpdate();
+		m_currentPersonnel.setAddress(getAddress());
+		m_currentPersonnel.resumeClientUpdate(true);
+		m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
+	}
+	
+	public EnumSet<MsoClassCode> getInterests() {
+		return EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL);
+	}
+
+	/**
+	 * Update fields if any changes occur in the personnel object
+	 */
+	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+
+		if(events.isClearAllEvent()) {
+			setPersonnel(null);
+			updateFieldContents();
+		}
+		else {
+			// loop over all events
+			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
+
+				// consume loopback updates
+				if(!e.isLoopback())
+				{
+					// get personnel reference
+					IPersonnelIf personnel = 
+							(e.getSource() instanceof IPersonnelIf) ?
+							(IPersonnelIf) e.getSource() : null;
+							
+					// is object modified?
+					if (e.isChangeReferenceEvent()) {
+						updateFieldContents();
+					}
+					else if (e.isModifyObjectEvent()) {
+						updateFieldContents();
+					}
+
+					// delete object?
+					if (e.isDeleteObjectEvent() && personnel == m_currentPersonnel) {
+			    		setPersonnel(null);
+			    		updateFieldContents();
+					}
+
+				}
+			}
+		}
+	}	
 
 }

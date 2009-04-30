@@ -1,11 +1,20 @@
-package org.redcross.sar.mso.committer;
+package org.redcross.sar.mso;
 
 import java.util.List;
 
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
-public interface IUpdateHolderIf {
+/**
+ * The IChangeSourceIf interface is used by the IMsoTransactionManagerIf object 
+ * to collect information about the changes made in a IMsoObjectIf object
+ * 
+ * @author vinjar, kenneth
+ *
+ */
+
+@SuppressWarnings("unchecked")
+public interface IChangeSourceIf {
 
 	public IMsoObjectIf getMsoObject();
 	
@@ -13,7 +22,7 @@ public interface IUpdateHolderIf {
 	
     public boolean isPartial();
     
-    public List<IAttributeIf> getPartial();
+	public List<IAttributeIf<?>> getPartial();
     
     public boolean setPartial(String attribute);   
     public int setPartial(List<String> attributes);

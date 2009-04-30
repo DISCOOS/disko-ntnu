@@ -153,9 +153,14 @@ public class UnitTypeDialog extends DefaultDialog
 			return this;
 		}
 	}
-
-	public void setVisible(boolean isVisible) {
-		super.setVisible(isVisible);
-		setDirty(true);
+	
+	public UnitType select() {
+		// prepare
+		m_type = null;
+		// show (will block)
+		setVisible(true);
+		// return selection
+		return m_type;
 	}
+
 }

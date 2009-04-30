@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
@@ -27,10 +28,12 @@ import org.redcross.sar.gui.panel.MainPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -50,7 +53,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  */
 public abstract class AbstractDiskoWpModule
-			implements IDiskoWp, IMsoUpdateListenerIf, IWorkFlowListener {
+			implements IDiskoWp, IMsoUpdateListenerIf {
 
 	private IDiskoRole role;
     private IDiskoMap map;
@@ -230,6 +233,17 @@ public abstract class AbstractDiskoWpModule
     	repeater.removeWorkFlowListener(listener);
     }
 
+    public List<IMsoObjectIf> getUncomittedChanges() {
+    	List<IMsoObjectIf> changes = new Vector<IMsoObjectIf>();
+    	for(WorkFlowEvent it : changeStack) {
+    		IMsoObjectIf msoObj = it.getMsoObject();
+    		if(msoObj!=null&&!changes.contains(msoObj)) {
+    			changes.add(msoObj);
+    		}
+    	}
+    	return changes;
+    }
+    
 	public void onFlowPerformed(WorkFlowEvent e) {
     	// update change stack?
 		if(e.isChange() || e.isFinish())
@@ -456,6 +470,11 @@ public abstract class AbstractDiskoWpModule
         return getApplication().getMsoModel();
     }
 
+    public IMsoTransactionManagerIf getCommitManager()
+    {
+        return getApplication().getTransactionManager();
+    }
+    
     public IMsoManagerIf getMsoManager()
     {
         return getMsoModel().getMsoManager();

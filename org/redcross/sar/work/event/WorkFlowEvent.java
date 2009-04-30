@@ -41,19 +41,19 @@ public class WorkFlowEvent extends EventObject {
 	}
 
 	public IMsoObjectIf getMsoObject() {
-		if(isMsoSource())
+		if(isWorkDoneByMsoObject())
 			return (IMsoObjectIf)source;
 		if(isMsoData())
 			return (IMsoObjectIf)data;
 		return null;
 	}
 
-	public boolean isMsoSource() {
-		return (source instanceof IMsoObjectIf);
-	}
-
 	public boolean isMsoData() {
 		return (data instanceof IMsoObjectIf);
+	}
+
+	public boolean isWorkDoneByMsoObject() {
+		return (getSource() instanceof IMsoObjectIf);
 	}
 
 	public boolean isWorkDoneByAwtComponent() {

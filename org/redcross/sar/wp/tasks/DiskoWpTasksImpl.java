@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.tasks;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
@@ -19,6 +20,7 @@ import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskListIf;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -51,6 +53,8 @@ import java.util.List;
 public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpTasks
 {
 
+    private static final Logger m_logger = Logger.getLogger(DiskoWpTasksImpl.class);
+    
 	private boolean m_oldTransactionMode = false;
 
 	private JPanel m_contentsPanel;
@@ -377,7 +381,13 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         {
             m_currentTask.setProgress(100);
             m_currentTask.setStatus(TaskStatus.FINISHED);
-            this.getMsoModel().commit();
+        	if(isChanged()) {
+                try {
+                    getMsoModel().commit(getMsoModel().getChanges(m_currentTask));
+        		} catch (TransactionException ex) {
+        			m_logger.error("Failed to commit test data changes",ex);
+        		}            
+        	}
         }
         else {
         	if(m_taskTable.getRowCount()==0)

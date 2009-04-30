@@ -10,6 +10,7 @@ import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.menu.SysMenu;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.output.DiskoReportManager;
@@ -134,12 +135,19 @@ public interface IApplication {
 	public boolean swapTo(String role, String user, char[] password);
 
     /**
-     * Get a reference current (active) MSO Model</p>
+     * Get a reference to current (active) MSO Model</p>
      * 
      * @return A reference to the model.
      */
     public IMsoModelIf getMsoModel();
 
+    /**
+     * Get a reference to current (active) MSO Model committer </p>
+     * 
+     * @return A reference to the model.
+     */
+    public IMsoTransactionManagerIf getTransactionManager();
+    
     /**
      * choose the active operation
      * @param prompt user before choosing new operation

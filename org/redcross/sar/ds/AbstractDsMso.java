@@ -7,11 +7,11 @@ import java.util.Map;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.data.IDataSource;
-import org.redcross.sar.mso.ICommitManagerIf;
+import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
@@ -19,7 +19,7 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Update;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.mso.work.AbstractMsoWork;
-import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.AbstractWork;
 import org.redcross.sar.work.IWorkLoop.LoopState;
 
@@ -77,7 +77,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	/**
 	 * Commit manager
 	 */
-	protected ICommitManagerIf m_comitter;
+	protected IMsoTransactionManagerIf m_comitter;
 
 	/**
 	 * List of attribute to update
@@ -141,7 +141,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
 			// prepare
 			m_model = (IMsoModelIf)source;
-			m_comitter = (ICommitManagerIf)m_model;
+			m_comitter = (IMsoTransactionManagerIf)m_model;
 			m_driver = m_model.getDispatcher();
 
 			// listen for changes
@@ -422,7 +422,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			 * ======================================================== */
 
 			// initialize local list
-			List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(m_changes.size());
+			List<IChangeSourceIf> updates = new ArrayList<IChangeSourceIf>(m_changes.size());
 
 			// loop over all assignments
 			for(M it : m_changes.keySet()) {
@@ -453,7 +453,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 							// add to updates?
 							if(it.isCreated()) {
 								// get update holder set
-								IUpdateHolderIf holder = m_comitter.getUpdates(it);
+								IChangeSourceIf holder = m_comitter.getChanges(it);
 								// has updates?
 								if(holder!=null) {
 									// is modified?
@@ -475,7 +475,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 				if(updates.size()>0) {
 					m_comitter.commit(updates);
 				}
-			} catch (CommitException e) {
+			} catch (TransactionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

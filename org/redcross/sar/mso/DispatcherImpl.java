@@ -1,12 +1,11 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.IApplication;
-import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.committer.ICommitWrapperIf;
-import org.redcross.sar.mso.committer.ICommittableIf;
+import org.redcross.sar.mso.TransactionManagerImpl;
+import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.data.AbstractMsoObject;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoCommitListenerIf;
+import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import java.util.Random;
  * 
  * For documentation, see {@link  org.redcross.sar.modelDriver.IModelDriverIf}
  */
-public class Dispatcher implements IDispatcherIf, IMsoCommitListenerIf
+public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
 {
     Random m_rand = new Random(89652467667623L);
 
@@ -92,29 +91,29 @@ public class Dispatcher implements IDispatcherIf, IMsoCommitListenerIf
     @SuppressWarnings("unused")
     public void handleMsoCommitEvent(MsoEvent.Commit e)
     {
-        //Iterer gjennom objektene
-        ICommitWrapperIf wrapper = (ICommitWrapperIf) e.getSource();
-        List<ICommittableIf.ICommitObjectIf> objectList = wrapper.getObjects();
-        for (ICommittableIf.ICommitObjectIf ico : objectList)
+        // 
+        ITransactionIf wrapper = (ITransactionIf) e.getSource();
+        List<IChangeIf.IChangeObjectIf> objectList = wrapper.getObjects();
+        for (IChangeIf.IChangeObjectIf ico : objectList)
         {
             //IF created, create SARA object
             //if modified, modify Saraobject.
             //if deleted remove Sara object
         }
 
-        List<ICommittableIf.ICommitReferenceIf> attrList = wrapper.getAttributeReferences();
-        for (ICommittableIf.ICommitReferenceIf ico : attrList)
+        List<IChangeIf.IChangeReferenceIf> attrList = wrapper.getAttributeReferences();
+        for (IChangeIf.IChangeReferenceIf ico : attrList)
         {
-			CommitManager.CommitType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
+			ChangeType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
             String attName = ico.getReferenceName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf attribute = ico.getReferredObject();
         }
 
-        List<ICommittableIf.ICommitReferenceIf> listList = wrapper.getListReferences();
-        for (ICommittableIf.ICommitReferenceIf ico : listList)
+        List<IChangeIf.IChangeReferenceIf> listList = wrapper.getListReferences();
+        for (IChangeIf.IChangeReferenceIf ico : listList)
         {
-            CommitManager.CommitType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
+            ChangeType ct = ico.getType(); 
             String refName = ico.getReferenceName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf ref = ico.getReferredObject();

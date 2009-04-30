@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.unit;
 
+import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.wp.IDiskoWp;
@@ -21,6 +22,7 @@ public interface IDiskoWpUnit extends IDiskoWpModule, IDiskoWp
     public void setPersonnelLeft(IPersonnelIf personnel);
 	public void setPersonnelBottom(IPersonnelIf personnel);
 	public void setUnit(IUnitIf unit);
+	public void setCallout(ICalloutIf callout);
 	public void setOverviewPanel(int index);
 	public void setLeftView(String viewId);
 	public void setBottomView(String viewId);
@@ -34,11 +36,9 @@ public interface IDiskoWpUnit extends IDiskoWpModule, IDiskoWp
 	/*
 	 * Getters and setters
 	 */
-	public boolean getNewPersonnel();
-	public void setNewPersonnel(boolean newPersonnel);
-	public boolean getNewUnit();
-	public void setNewUnit(boolean newUnit);
-	public boolean getNewCallOut();
-	public void setNewCallOut(boolean newCallOut);
+	public boolean isNewState();
+	public boolean isNewPersonnel();
+	public boolean isNewUnit();
+	public boolean isNewCallOut();
 	
 }

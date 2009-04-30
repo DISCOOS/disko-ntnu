@@ -167,15 +167,15 @@ public interface IMsoManagerIf
 //     */
 //    public void commit();
 
-    /**
+/*    *//**
      * Perform local commit on all objects in the model.
-     */
+     *//*
     public void postProcessCommit();
 
-    /**
+    *//**
      * Perform rollback on all objects in the model.
-     */
-    public void rollback();
+     *//*
+    public void rollback();*/
 
     /**
      * Create a new {@link org.redcross.sar.mso.data.IAreaIf} object and add it to the collection of Area objects.

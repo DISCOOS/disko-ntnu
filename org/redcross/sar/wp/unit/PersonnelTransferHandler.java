@@ -155,7 +155,7 @@ public class PersonnelTransferHandler extends TransferHandler
 						aUnit.addUnitPersonnel(personnel);
 
 						// commit changes?
-						if(!(m_wp.getNewCallOut() || m_wp.getNewPersonnel() || m_wp.getNewUnit()))
+						if(!(m_wp.isNewCallOut() || m_wp.isNewPersonnel() || m_wp.isNewUnit()))
 						{
 							m_wp.commit();
 						}
@@ -212,7 +212,7 @@ public class PersonnelTransferHandler extends TransferHandler
 						aUnit.removeUnitPersonnel(personnel);
 
 						// commit changes?
-						if(!(m_wp.getNewCallOut() || m_wp.getNewPersonnel() || m_wp.getNewUnit()))
+						if(!(m_wp.isNewCallOut() || m_wp.isNewPersonnel() || m_wp.isNewUnit()))
 						{
 							m_wp.commit();
 						}

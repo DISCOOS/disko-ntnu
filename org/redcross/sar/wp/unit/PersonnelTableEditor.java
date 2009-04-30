@@ -1,10 +1,12 @@
 package org.redcross.sar.wp.unit;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.except.TransactionException;
 
 
 import javax.swing.AbstractCellEditor;
@@ -29,14 +31,16 @@ import java.util.ResourceBundle;
  */
 public class PersonnelTableEditor
 {
-    private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
+	private static final Logger m_logger = Logger.getLogger(PersonnelTableEditor.class);
+	private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
+    
 	private JTable m_table;
 
-	private IDiskoWpUnit m_wpUnit;
+	private IDiskoWpUnit m_wp;
 
 	public PersonnelTableEditor(IDiskoWpUnit wp)
 	{
-		m_wpUnit = wp;
+		m_wp = wp;
 	}
 
 	public void setTable(JTable overviewTable)
@@ -87,8 +91,8 @@ public class PersonnelTableEditor
 					if(modelIndex==-1) return;
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf selectedPersonnel = model.getPersonnel(modelIndex);
-					m_wpUnit.setPersonnelLeft(selectedPersonnel);
-					m_wpUnit.setLeftView(IDiskoWpUnit.PERSONNEL_DETAILS_VIEW_ID);
+					m_wp.setPersonnelLeft(selectedPersonnel);
+					m_wp.setLeftView(IDiskoWpUnit.PERSONNEL_DETAILS_VIEW_ID);
 					fireEditingStopped();
 				}
 			});
@@ -123,7 +127,7 @@ public class PersonnelTableEditor
 					IPersonnelIf rowPersonnel = model.getPersonnel(row);
 
 					// Get personnel in personnel details panel
-					IPersonnelIf editingPersonnel = m_wpUnit.getEditingPersonnel();
+					IPersonnelIf editingPersonnel = m_wp.getEditingPersonnel();
 
 					m_editButton.setSelected(editingPersonnel == rowPersonnel);
 				}
@@ -169,18 +173,23 @@ public class PersonnelTableEditor
 				public void actionPerformed(ActionEvent ae)
 				{
 
-					m_wpUnit.getMsoModel().suspendClientUpdate();
+					m_wp.getMsoModel().suspendClientUpdate();
 
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					UnitUtils.callOutPersonnel(personnel);
 
-					if(!m_wpUnit.getNewPersonnel())
+					if(!m_wp.isNewPersonnel())
 					{
-						m_wpUnit.getMsoModel().commit();
+				        try {
+							// Commit right away if no major updates
+							m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(personnel));
+						} catch (TransactionException ex) {
+							m_logger.error("Failed to commit personnel details changes",ex);
+						}            
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+					m_wp.getMsoModel().resumeClientUpdate(true);
 
 				}
 			});
@@ -193,18 +202,23 @@ public class PersonnelTableEditor
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					m_wpUnit.getMsoModel().suspendClientUpdate();
+					m_wp.getMsoModel().suspendClientUpdate();
 
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					UnitUtils.arrivedPersonnel(personnel);
 
-					if(!m_wpUnit.getNewPersonnel())
+					if(!m_wp.isNewPersonnel())
 					{
-						m_wpUnit.getMsoModel().commit();
+				        try {
+							// Commit right away if no major updates
+							m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(personnel));
+						} catch (TransactionException ex) {
+							m_logger.error("Failed to commit personnel details changes",ex);
+						}            
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+					m_wp.getMsoModel().resumeClientUpdate(true);
 
 				}
 			});
@@ -217,18 +231,23 @@ public class PersonnelTableEditor
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					m_wpUnit.getMsoModel().suspendClientUpdate();
+					m_wp.getMsoModel().suspendClientUpdate();
 
 					PersonnelTableModel model = (PersonnelTableModel)m_table.getModel();
 					IPersonnelIf personnel = model.getPersonnel(m_table.convertRowIndexToModel(m_row));
 					UnitUtils.releasePersonnel(personnel);
 
-					if(!m_wpUnit.getNewPersonnel())
+					if(!m_wp.isNewPersonnel())
 					{
-						m_wpUnit.getMsoModel().commit();
+				        try {
+							// Commit right away if no major updates
+							m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(personnel));
+						} catch (TransactionException ex) {
+							m_logger.error("Failed to commit personnel details changes",ex);
+						}            
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+					m_wp.getMsoModel().resumeClientUpdate(true);
 
 				}
 			});

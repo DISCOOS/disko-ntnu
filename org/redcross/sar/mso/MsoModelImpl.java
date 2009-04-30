@@ -19,10 +19,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.AbstractDataSource;
 import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
@@ -32,7 +32,7 @@ import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.mso.work.IMsoWork;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.WorkLoop;
 import org.redcross.sar.work.WorkPool;
 
@@ -40,13 +40,16 @@ import org.redcross.sar.work.WorkPool;
  * Singleton class for accessing the MSO model
  */
 public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
-							implements IMsoModelIf, ICommitManagerIf
+							implements IMsoModelIf
 {
-    private final WorkLoop m_workLoop;
+ 
+	private static final Logger m_logger = Logger.getLogger(MsoModelImpl.class); 
+	
+	private final WorkLoop m_workLoop;
     private final IDispatcherIf m_dispatcher;
     private final MsoManagerImpl m_msoManager;
     private final MsoEventManagerImpl m_msoEventManager;
-    private final CommitManager m_commitManager;
+    private final TransactionManagerImpl m_msoTransactionManager;
     private final IMsoUpdateListenerIf m_updateRepeater;
 
     private final Object m_lock = new Object();
@@ -71,7 +74,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     	// create objects
         m_msoEventManager = new MsoEventManagerImpl();
         m_msoManager = new MsoManagerImpl(this,m_msoEventManager);
-        m_commitManager = new CommitManager(this);
+        m_msoTransactionManager = new TransactionManagerImpl(this);
         // create a MSO work loop and register it as deamon thread in work pool
         m_workLoop = new WorkLoop(500,5000);
         WorkPool.getInstance().add(m_workLoop);
@@ -232,104 +235,163 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 
     public boolean hasUncommitedChanges()
     {
-        return m_commitManager.hasUncommitedChanges();
+        return m_msoTransactionManager.hasUncommitedChanges();
     }
 
     public boolean hasUncommitedChanges(MsoClassCode code) {
-    	return m_commitManager.hasUncommitedChanges(code);
+    	return m_msoTransactionManager.hasUncommitedChanges(code);
     }
 
     public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
-    	return m_commitManager.hasUncommitedChanges(msoObj);
+    	return m_msoTransactionManager.hasUncommitedChanges(msoObj);
     }
 
-	public List<IUpdateHolderIf> getUpdates() {
-		return m_commitManager.getUpdates();
+	public List<IChangeSourceIf> getChanges() {
+		return m_msoTransactionManager.getChanges();
 	}
 
-	public List<IUpdateHolderIf> getUpdates(MsoClassCode of) {
-		return m_commitManager.getUpdates(of);
+	public List<IChangeSourceIf> getChanges(MsoClassCode of) {
+		return m_msoTransactionManager.getChanges(of);
 	}
 
-	public List<IUpdateHolderIf> getUpdates(Set<MsoClassCode> of) {
-		return m_commitManager.getUpdates(of);
+	public List<IChangeSourceIf> getChanges(Set<MsoClassCode> of) {
+		return m_msoTransactionManager.getChanges(of);
 	}
 
-	public IUpdateHolderIf getUpdates(IMsoObjectIf of) {
-		return m_commitManager.getUpdates(of);
+	public IChangeSourceIf getChanges(IMsoObjectIf of) {
+		return m_msoTransactionManager.getChanges(of);
 	}
 
-	public List<IUpdateHolderIf> getUpdates(List<IMsoObjectIf> of) {
-		return m_commitManager.getUpdates(of);
+	public List<IChangeSourceIf> getChanges(List<IMsoObjectIf> of) {
+		return m_msoTransactionManager.getChanges(of);
 	}
 
+    /**
+     * Perform a commit of all changes. <p/>
+     * 
+     * Generates a {@link org.redcross.sar.mso.event.MsoEvent.Commit} event.
+     * @throws org.redcross.sar.util.except.TransactionException when the commit fails
+     */
     public synchronized void commit()
     {
         try
         {
-            m_commitManager.commit();
+            m_msoTransactionManager.commit();
         }
-        catch (CommitException e)
+        catch (TransactionException e)
         {
-        	Utils.showError(e.getMessage());
+        	m_logger.error("Failed to commit changes",e);
             rollback();
+        	Utils.showError(e.getMessage());
             return;
         }
-        /* ========================================================================
-         * postProcessCommit() is not used any more because only server updates
-         * should update the model
-         * ======================================================================== */
-        /*
-        suspendClientUpdate();
-        setLoopbackUpdateMode();
-        m_msoManager.postProcessCommit();
-        restoreUpdateMode();
-        resumeClientUpdate();
-        */
     }
 
     /**
-     * Perform a partial commit. <p/>Only possible to perform on
-     * objects that are created and modified. Object and list references
-     * are not affected, only the marked attributes. See
-     * {@link org.redcross.sar.mso.committer.IUpdateHolderIf} for more information.
+     * Perform a commit on a subset of all changes<p/>
+     * 
+     * Note that partial commits (attributes only) is only possible to perform on objects 
+     * that exists remotely (modified). If a IChangeSourceIf is marked for partial commit, object references 
+     * and list references are not affected, only the marked attributes. See 
+     * {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
      *
-     * @param List<UpdateHolder> updates - holder for updates.
+     * @param UpdateHolder updates - holder for updates.
      *
      */
-    public synchronized void commit(List<IUpdateHolderIf> updates)
+    public synchronized void commit(IChangeSourceIf changes)
     {
         try
         {
-            m_commitManager.commit(updates);
+            m_msoTransactionManager.commit(changes);
         }
-        catch (CommitException e)
+        catch (TransactionException e)
         {
-        	Utils.showError(e.getMessage());
+        	m_logger.error("Failed to commit changes",e);
             rollback();
+        	Utils.showError(e.getMessage());
             return;
         }
-        /* ========================================================================
-         * postProcessCommit() is not used any more because only server updates
-         * should update the model
-         * ======================================================================== */
-        /*
-        suspendClientUpdate();
-        setLoopbackUpdateMode();
-        m_msoManager.postProcessCommit();
-        restoreUpdateMode();
-        resumeClientUpdate();
-        */
     }
-
+    
+    /**
+     * Perform a commit on a subset of all changes<p/>
+     * 
+     * Note that partial commits (attributes only) is only possible to perform on objects 
+     * that exists remotely (modified). If a IChangeSourceIf is marked for partial commit, object references 
+     * and list references are not affected, only the marked attributes. See 
+     * {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
+     * 
+     * @param List<UpdateHolder> updates - list of holders of updates.
+     *
+     */
+    public synchronized void commit(List<IChangeSourceIf> changes)
+    {
+        try
+        {
+            m_msoTransactionManager.commit(changes);
+        }
+        catch (TransactionException e)
+        {
+        	m_logger.error("Failed to commit changes",e);
+            rollback();
+        	Utils.showError(e.getMessage());
+        }
+    }    
+    
+    /**
+     * Performs a rollback of all changes. <p/>
+     * 
+     * Clears all accumulated information.
+     */
     public synchronized void rollback()
     {
-        suspendClientUpdate();
-        setLocalUpdateMode();
-        m_commitManager.rollback();
-        m_msoManager.rollback();
-        restoreUpdateMode();
-        resumeClientUpdate(true);
+        try
+        {
+            m_msoTransactionManager.rollback();
+        }
+        catch (TransactionException e)
+        {
+        	m_logger.error("Failed to rollback changes",e);
+        	Utils.showError(e.getMessage());
+        }
+    }
+
+    /**
+     * Perform a rollback on a subset of all changes<p/>
+     * 
+     * @param UpdateHolder updates - holder for updates
+     */
+    public synchronized void rollback(IChangeSourceIf changes){
+        try
+        {
+            m_msoTransactionManager.rollback(changes);    	
+        }
+        catch (TransactionException e)
+        {
+        	m_logger.error("Failed to rollback changes",e);
+        	Utils.showError(e.getMessage());
+        }
+    }
+
+    /**
+     * Perform a rollback on a subset of all changes<p/>
+     * 
+     * @param List<UpdateHolder> updates - list of holders of updates
+     */
+    public synchronized void rollback(List<IChangeSourceIf> changes) {
+        try
+        {
+            m_msoTransactionManager.rollback(changes);    	    	
+        }
+        catch (TransactionException e)
+        {
+        	m_logger.error("Failed to rollback changes",e);
+        	Utils.showError(e.getMessage());
+        }
+    }    
+    
+    public IMsoTransactionManagerIf getMsoTransactionManager() {
+    	return m_msoTransactionManager;
     }
 
     /* ====================================================================

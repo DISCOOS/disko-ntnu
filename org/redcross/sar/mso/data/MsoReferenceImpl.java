@@ -1,10 +1,11 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.CommitManager;
+import org.redcross.sar.mso.ChangeImpl;
+import org.redcross.sar.mso.TransactionManagerImpl;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
-import org.redcross.sar.mso.committer.CommittableImpl;
 
 import java.util.Collection;
 import java.util.Vector;
@@ -592,18 +593,18 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         return false;
     }
 
-    public Collection<CommittableImpl.CommitReference> getCommittableRelations()
+    public Collection<ChangeImpl.ChangeReference> getCommittableRelations()
     {
-        Vector<CommittableImpl.CommitReference> retVal = new Vector<CommittableImpl.CommitReference>();
+        Vector<ChangeImpl.ChangeReference> retVal = new Vector<ChangeImpl.ChangeReference>();
         if (m_state == ModificationState.STATE_LOCAL)
         {
             if (m_serverValue != null && !m_serverValue.hasBeenDeleted())
             {
-                retVal.add(new CommittableImpl.CommitReference(m_name, m_owner, m_serverValue, CommitManager.CommitType.COMMIT_DELETED));
+                retVal.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_serverValue, ChangeType.DELETED));
             }
             if (m_localValue != null)
             {
-                retVal.add(new CommittableImpl.CommitReference(m_name, m_owner, m_localValue, CommitManager.CommitType.COMMIT_CREATED));
+                retVal.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_localValue, ChangeType.CREATED));
             }
 
         }

@@ -1,10 +1,10 @@
 package org.redcross.sar.mso.event;
 
+import org.redcross.sar.mso.ITransactionIf;
+import org.redcross.sar.mso.TransactionImpl;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.committer.CommitWrapper;
-import org.redcross.sar.mso.committer.ICommitWrapperIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.util.except.TransactionException;
 
 /**
  * Interface for Update manager
@@ -68,22 +68,22 @@ public interface IMsoEventManagerIf
      *
      * @param aListener The listener
      */
-    public void addCommitListener(IMsoCommitListenerIf aListener);
+    public void addCommitListener(IMsoTransactionListenerIf aListener);
 
     /**
      * Remove a listener in the Commit Listeners queue.
      *
      * @param aListener The listener
      */
-    public void removeCommitListener(IMsoCommitListenerIf aListener);
+    public void removeCommitListener(IMsoTransactionListenerIf aListener);
 
     /**
      * Notify a commit.
      *
-     * @param aSource The {@link CommitWrapper} that contains the committable objects and relations
-     * @throws org.redcross.sar.util.except.CommitException when the commit fails.
+     * @param aSource The {@link TransactionImpl} that contains the committable objects and relations
+     * @throws org.redcross.sar.util.except.TransactionException when the commit fails.
      */
-    public void notifyCommit(ICommitWrapperIf aSource) throws CommitException;
+    public void notifyCommit(ITransactionIf aSource) throws TransactionException;
 
     public void addDerivedUpdateListener(IMsoDerivedUpdateListenerIf aListener);
 

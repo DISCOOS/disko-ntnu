@@ -90,6 +90,8 @@ public class ImportCalloutDialog extends DefaultDialog
 	private JButton m_okButton;
 
 	private IDiskoWpUnit m_wpUnit;
+	
+	private ICalloutIf m_callout;
 
 	public ImportCalloutDialog(IDiskoWpUnit wp, Component parent)
 	{
@@ -115,7 +117,6 @@ public class ImportCalloutDialog extends DefaultDialog
 
 		// create content panel
 		m_contentsPanel = new DefaultPanel(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
-		m_contentsPanel.setRequestHideOnFinish(false);
 		m_contentsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER, BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 
 		// prepare body panel
@@ -267,6 +268,15 @@ public class ImportCalloutDialog extends DefaultDialog
 		gbc.gridy += height;
 	}
 
+	public ICalloutIf importCallout() {
+		// prepare
+		m_callout = null;
+		// show (will block)
+		setVisible(true);
+		// finished;
+		return m_callout;
+	}
+	
 	private void clearForm()
 	{
 		m_personnelList.clear();
@@ -386,23 +396,23 @@ public class ImportCalloutDialog extends DefaultDialog
 	private void saveCallout()
 	{
 		// Create call-out
-		ICalloutIf callout = m_wpUnit.getMsoManager().createCallout();
+		m_callout = m_wpUnit.getMsoManager().createCallout();
 
 		try
 		{
 			Calendar t = Calendar.getInstance();
-			callout.setCreated(DTG.DTGToCal(
+			m_callout.setCreated(DTG.DTGToCal(
 					t.get(Calendar.YEAR),t.get(Calendar.MONTH),
 					m_dtgTextField.getText()));
 		}
 		catch (IllegalMsoArgumentException e)
 		{
-			// TODO Set created to now?
-			callout.setCreated(Calendar.getInstance());
+			// Set created to now
+			m_callout.setCreated(Calendar.getInstance());
 		}
-		callout.setTitle(m_titleTextField.getText());
-		callout.setOrganization(m_organizationTextField.getText());
-		callout.setDepartment(m_departmentTextField.getText());
+		m_callout.setTitle(m_titleTextField.getText());
+		m_callout.setOrganization(m_organizationTextField.getText());
+		m_callout.setDepartment(m_departmentTextField.getText());
 
 		// Import personnel
 		for(PersonnelAuxiliary personnel : m_personnelList)
@@ -463,11 +473,11 @@ public class ImportCalloutDialog extends DefaultDialog
 						msoPersonnel.setStatus(PersonnelStatus.ON_ROUTE);
 					}
 
-					callout.addPersonel(msoPersonnel);
+					m_callout.addPersonel(msoPersonnel);
 
 				}
 				else {
-					// TODO: implement handling of invalid imports
+					// TODO: implement handling of invalid imports (show list off invalid imports)
 				}
 			}
 		}
@@ -522,10 +532,7 @@ public class ImportCalloutDialog extends DefaultDialog
 					catch (IOException ex) {
 						ex.printStackTrace();
 					}
-
-				}
-				else
-				{
+				} else {
 					m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
 					saveCallout();
 					CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
@@ -534,24 +541,20 @@ public class ImportCalloutDialog extends DefaultDialog
 					clearForm();
 					m_contentsPanel.finish();
 				}
-			}
-			else if("finish".equals(cmd)) {
+			} else if("finish".equals(cmd)) {
 				m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
 				saveCallout();
 				CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
 				layout.show(m_cardsPanel, IMPORT_ID);
 				m_currentPanel = IMPORT_ID;
-				clearForm();
-				fireOnWorkFinish(this,null);
-
+				clearForm();				
 			}
 			else if("cancel".equals(cmd)) {
 				m_contentsPanel.setCaptionText(m_wpUnit.getBundleText("ImportCallOut.text") + " 1/2");
 				CardLayout layout = (CardLayout)m_cardsPanel.getLayout();
 				layout.show(m_cardsPanel, IMPORT_ID);
 				m_currentPanel = IMPORT_ID;
-				setVisible(false);
-				fireOnWorkCancel(this,null);
+				m_callout = null;
 			}
 		}
 	};

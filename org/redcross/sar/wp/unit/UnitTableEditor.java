@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.unit;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -8,6 +9,7 @@ import org.redcross.sar.mso.util.UnitUtilities;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.except.TransactionException;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
@@ -30,15 +32,16 @@ import java.util.ResourceBundle;
  */
 public class UnitTableEditor
 {
-    private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
+	private static final Logger m_logger = Logger.getLogger(UnitTableEditor.class);
+	private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
 	private JTable m_table;
 
-	private IDiskoWpUnit m_wpUnit;
+	private IDiskoWpUnit m_wp;
 
 	public UnitTableEditor(IDiskoWpUnit wp)
 	{
-		m_wpUnit = wp;
+		m_wp = wp;
 	}
 
 	/**
@@ -94,8 +97,8 @@ public class UnitTableEditor
 					if(index==-1) return;
 					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
-					m_wpUnit.setUnit(unit);
-					m_wpUnit.setLeftView(IDiskoWpUnit.UNIT_VIEW_ID);
+					m_wp.setUnit(unit);
+					m_wp.setLeftView(IDiskoWpUnit.UNIT_VIEW_ID);
 					fireEditingStopped();
 				}
 			});
@@ -126,7 +129,7 @@ public class UnitTableEditor
 				IUnitIf rowUnit = model.getUnit(index);
 
 				// Get editing unit
-				IUnitIf editingUnit = m_wpUnit.getEditingUnit();
+				IUnitIf editingUnit = m_wp.getEditingUnit();
 
 				m_editButton.setSelected(editingUnit == rowUnit);
 			}
@@ -168,7 +171,7 @@ public class UnitTableEditor
 					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 
-					m_wpUnit.getMsoModel().suspendClientUpdate();
+					m_wp.getMsoModel().suspendClientUpdate();
 
 	                if (unit != null)
 	                {
@@ -179,9 +182,9 @@ public class UnitTableEditor
 	                    	else
 	                    		unit.pause();
 
-							if(!m_wpUnit.getNewUnit())
+							if(!m_wp.isNewUnit())
 							{
-								m_wpUnit.commit();
+								m_wp.commit();
 							}
 
 	                    }
@@ -190,7 +193,7 @@ public class UnitTableEditor
 	                    	Utils.showWarning("Enhet kan ikke endre status");
 	                    }
 	                }
-					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+					m_wp.getMsoModel().resumeClientUpdate(true);
 
 					fireEditingStopped();
 
@@ -211,15 +214,20 @@ public class UnitTableEditor
 					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
 
-					m_wpUnit.getMsoModel().suspendClientUpdate();
+					m_wp.getMsoModel().suspendClientUpdate();
 
 					try
 					{
 						// commit?
 						if(UnitUtilities.releaseUnit(unit)) {
-							if(!m_wpUnit.getNewUnit())
+							if(!m_wp.isNewUnit())
 							{
-								m_wpUnit.getMsoModel().commit();
+						        try {
+									// Commit right away if no major updates
+									m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(unit));
+								} catch (TransactionException ex) {
+									m_logger.error("Failed to commit unit details changes",ex);
+								}            
 							}
 						}
 
@@ -230,7 +238,7 @@ public class UnitTableEditor
 								m_resources.getString("ReleaseUnitError.text"));
 					}
 
-					m_wpUnit.getMsoModel().resumeClientUpdate(true);
+					m_wp.getMsoModel().resumeClientUpdate(true);
 
 					fireEditingStopped();
 				}

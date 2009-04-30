@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.logistics;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
@@ -11,6 +12,7 @@ import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import java.lang.instrument.IllegalClassFormatException;
@@ -25,8 +27,10 @@ import javax.swing.SwingUtilities;
  */
 public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDiskoWpLogistics
 {
-    LogisticsPanel m_logisticsPanel;
+    private LogisticsPanel m_logisticsPanel;
 
+    private static final Logger m_logger = Logger.getLogger(DiskoWpLogisticsImpl.class);
+    
     public DiskoWpLogisticsImpl() throws IllegalClassFormatException
     {
     	// forward role to abstract class
@@ -239,16 +243,29 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 
     @Override
 	public boolean commit() {
-		getMsoModel().commit();
-		fireOnWorkCommit();
-		return true;
+    	if(isChanged()) {
+            try {
+        		getMsoModel().commit(getMsoModel().getChanges(getUncomittedChanges()));
+        		return super.commit();    		
+    		} catch (TransactionException ex) {
+    			m_logger.error("Failed to commit test data changes",ex);
+    		}            
+    	}
+    	return false;
 	}
 
 	@Override
 	public boolean rollback() {
-		getMsoModel().rollback();
-		fireOnWorkRollback();
-		return true;
+    	if(isChanged()) {
+            try {
+        		getMsoModel().rollback(getMsoModel().getChanges(getUncomittedChanges()));
+        		fireOnWorkCommit();
+        		return super.commit();    		
+    		} catch (TransactionException ex) {
+    			m_logger.error("Failed to commit test data changes",ex);
+    		}            
+    	}
+    	return false;
 	}
 
 }

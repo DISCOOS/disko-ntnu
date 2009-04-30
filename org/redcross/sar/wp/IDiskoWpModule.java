@@ -6,11 +6,14 @@ import org.redcross.sar.IApplication;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * This interface provides access to properties and methods for
@@ -18,7 +21,7 @@ import org.redcross.sar.work.event.IWorkFlowListener;
  * @author geira
  *
  */
-public interface IDiskoWpModule {
+public interface IDiskoWpModule extends IWorkFlowListener {
 
 	/**
 	 * Get the name of this IDiskoWpModule. This name is used to identify
@@ -72,6 +75,14 @@ public interface IDiskoWpModule {
 	 */
 	public boolean isChanged();
 
+	
+	/**
+	 * Get list registered IMsoObjectIf changes
+	 *  
+	 * @return List of changed IMsoObjectIf objects
+	 */
+	public List<IMsoObjectIf> getUncomittedChanges();
+	
 	/**
 	 * @return true if work process is active
 	 */
@@ -100,6 +111,8 @@ public interface IDiskoWpModule {
     public boolean confirmDeactivate();
 
 	public void addWorkFlowListener(IWorkFlowListener listener);
+	
+	public void onFlowPerformed(WorkFlowEvent e);
 
     public void removeWorkFlowListener(IWorkFlowListener listener);
 
@@ -107,6 +120,8 @@ public interface IDiskoWpModule {
 
     public IMsoModelIf getMsoModel();
 
+    public IMsoTransactionManagerIf getCommitManager();
+    
     public ICmdPostIf getCmdPost();
 
     public IMsoManagerIf getMsoManager();

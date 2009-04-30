@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.tasks;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.field.TextAreaField;
@@ -9,6 +10,7 @@ import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
+import org.redcross.sar.util.except.TransactionException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -28,6 +30,9 @@ import java.awt.event.ActionListener;
 public class DeleteTaskDialog extends DefaultDialog
 {
 	private final static long serialVersionUID = 1L;
+	
+    private static final Logger m_logger = Logger.getLogger(DeleteTaskDialog.class);
+	
 
 	protected DefaultPanel m_contentsPanel;
 	protected TextLineField m_taskAttr;
@@ -35,7 +40,7 @@ public class DeleteTaskDialog extends DefaultDialog
 	protected JPanel m_attributesPanel;
 	protected JButton m_deleteButton;
 	
-	protected IDiskoWpTasks m_wpTasks;
+	protected IDiskoWpTasks m_wp;
 
 	public DeleteTaskDialog(IDiskoWpTasks wp)
 	{
@@ -43,7 +48,7 @@ public class DeleteTaskDialog extends DefaultDialog
 		super(wp.getApplication().getFrame());
 		
 		// prepare
-		m_wpTasks = wp;
+		m_wp = wp;
 
 		// initialize GUI
 		initialize();
@@ -73,7 +78,7 @@ public class DeleteTaskDialog extends DefaultDialog
 		if (m_contentsPanel == null) {
 			try {
 				// create content panel
-				m_contentsPanel = new DefaultPanel(m_wpTasks.getBundleText("DeleteTask.text"),false,true) {
+				m_contentsPanel = new DefaultPanel(m_wp.getBundleText("DeleteTask.text"),false,true) {
 
 					private static final long serialVersionUID = 1L;
 
@@ -179,7 +184,7 @@ public class DeleteTaskDialog extends DefaultDialog
 		if (m_taskAttr == null) {
 			try {
 				m_taskAttr = new TextLineField("Task",
-						m_wpTasks.getBundleText("Task.text"),
+						m_wp.getBundleText("Task.text"),
 						false,100,25,null);
 				m_taskAttr.setPreferredSize(new Dimension(300,30));
 				m_taskAttr.getTextField().setBorder(BorderFactory.createLineBorder(Color.lightGray));
@@ -199,7 +204,7 @@ public class DeleteTaskDialog extends DefaultDialog
 		if (m_descAttr == null) {
 			try {
 				m_descAttr = new TextAreaField("Description",
-						m_wpTasks.getBundleText("TaskDescription.text"),
+						m_wp.getBundleText("TaskDescription.text"),
 						false,100,100,null);
 				m_descAttr.setPreferredSize(new Dimension(300,100));
 				m_descAttr.getTextArea().setRows(5);
@@ -220,10 +225,11 @@ public class DeleteTaskDialog extends DefaultDialog
 		if(task != null)
 		{
 			task.setStatus(TaskStatus.DELETED);
-
-			task = null;
-
-			m_wpTasks.getMsoModel().commit();
+            try {
+    			m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(task));
+    		} catch (TransactionException ex) {
+    			m_logger.error("Failed to commit test data changes",ex);
+    		}            
 		}
 		this.setVisible(false);
 	}

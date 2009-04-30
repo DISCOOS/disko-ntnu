@@ -1,25 +1,36 @@
-package org.redcross.sar.mso.committer;
+package org.redcross.sar.mso;
 
 import java.util.List;
 
-import org.redcross.sar.mso.CommitManager;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
- * The ICommittableIf and subinterfaces define methods that used by the commit handler when committing objects and references.
+ * The IChangeIf interface define methods that used by the transaction handler when 
+ * committing and rolling back objects and references.
  */
-public interface ICommittableIf
+@SuppressWarnings("unchecked")
+public interface IChangeIf
 {
     /**
-     * Get type of commit
+     * Types of change indication what has happened to the object/relation.
      */
-    public CommitManager.CommitType getType();
+    public enum ChangeType
+    {
+        CREATED,	// The IMsoObjectIf is created (exists only locally)
+        MODIFIED,	// The IMsoObjectIf is modified (exists only remotely)
+        DELETED		// The IMsoObjectIf is deleted
+    }
+    
+    /**
+     * Get type of change
+     */
+    public ChangeType getType();
     
 /**
- * Methods that used by the commit handler when commiting objects.
+ * Methods that used by the transaction handler when committing objects.
  */
-    public interface ICommitObjectIf extends ICommittableIf
+    public interface IChangeObjectIf extends IChangeIf
     {
         /**
         * Get the object to commit.
@@ -34,14 +45,14 @@ public interface ICommittableIf
         /**
          * Returns partial list of attributes to commit
          */
-        public List<IAttributeIf> getPartial();
+		public List<IAttributeIf<?>> getPartial();
         
     }
 
 /**
  * Methods that used by the commit handler when commiting references.
  */
-    public interface ICommitReferenceIf extends ICommittableIf
+    public interface IChangeReferenceIf extends IChangeIf
     {
         /**
         * Get name of reference.

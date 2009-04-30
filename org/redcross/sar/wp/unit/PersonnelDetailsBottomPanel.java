@@ -57,12 +57,16 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
     private static final int UPDATE_INTERVAL = 60000;
     private long m_timeCounter;
 
-    IDiskoWpUnit m_wpModule;
+    IDiskoWpUnit m_wp;
 
     public PersonnelDetailsBottomPanel(IDiskoWpUnit wp)
     {
-        wp.getMsoEventManager().addClientUpdateListener(this);
+    	// prepare
+    	m_wp = wp;
+    	// initialize GUI
         initialize();
+        // add listeners
+        wp.getMsoEventManager().addClientUpdateListener(this);
     }
 
     private void initialize()
@@ -247,7 +251,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
 
 		if(events.isClearAllEvent()) {
-			m_currentPersonnel = null;
+			setPersonnel(null);
             updateFieldContents();
 		}
 		else
@@ -258,13 +262,24 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 				// consume loopback updates
 				if(!e.isLoopback())
 				{
-					IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ?
-	        		(IPersonnelIf) e.getSource() : null;
-			        if (personnel == m_currentPersonnel)
-			        {
-			            updateFieldContents();
-			        }
-				}
+					// get personnel reference
+					IPersonnelIf personnel = 
+							(e.getSource() instanceof IPersonnelIf) ?
+							(IPersonnelIf) e.getSource() : null;
+							
+					// is object modified?
+					if (e.isChangeReferenceEvent()) {
+						updateFieldContents();
+					}
+					else if (e.isModifyObjectEvent()) {
+						updateFieldContents();
+					}
+
+					// delete object?
+					if (e.isDeleteObjectEvent() && personnel == m_currentPersonnel) {
+			    		setPersonnel(null);
+			    		updateFieldContents();
+					}				}
 			}
 		}
     }
@@ -284,8 +299,8 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
      */
     public void handleTick(TickEvent e)
     {
-    	if(m_wpModule.getMsoManager().operationExists()) {
-	        ICmdPostIf cmdPost = m_wpModule.getCmdPost();
+    	if(m_wp.getMsoManager().operationExists()) {
+	        ICmdPostIf cmdPost = m_wp.getCmdPost();
 	        if (cmdPost == null)
 	        {
 	            return;

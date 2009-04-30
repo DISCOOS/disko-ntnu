@@ -20,13 +20,12 @@ import no.cmr.hrs.sar.tools.IDHelper;
 import no.cmr.tools.Log;
 
 import org.redcross.sar.Application;
-import org.redcross.sar.mso.committer.ICommitWrapperIf;
-import org.redcross.sar.mso.committer.ICommittableIf;
-import org.redcross.sar.mso.committer.ICommittableIf.ICommitObjectIf;
+import org.redcross.sar.mso.IChangeIf.ChangeType;
+import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.mso.event.IMsoCommitListenerIf;
+import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.util.except.CommitException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.work.AbstractWork;
@@ -38,7 +37,7 @@ import org.rescuenorway.saraccess.model.*;
 /**
  * For documentation, see {@link  IDispatcherIf}
  */
-public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, SaraChangeListener
+public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf, SaraChangeListener
 {
 
 	/** 
@@ -151,7 +150,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
     
     IMsoModelIf m_msoModel;
 
-    public SaraDispatcher()
+    public SaraDispatcherImpl()
     {
         // setUpService();
     }
@@ -539,7 +538,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
     private final HashMap<String, SarObject> commitObjects = new HashMap<String, SarObject>();
     private final List<IMsoObjectIf> loopbackObjects = new ArrayList<IMsoObjectIf>();
 
-    public void handleMsoCommitEvent(MsoEvent.Commit e) throws CommitException
+    public void handleMsoCommitEvent(MsoEvent.Commit e) throws TransactionException
     {
 
     	/* =======================================================
@@ -564,21 +563,21 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         }
 
         // get commit wrapper
-        ICommitWrapperIf wrapper = (ICommitWrapperIf) e.getSource();
+        ITransactionIf wrapper = (ITransactionIf) e.getSource();
 
         // get object list
-        List<ICommitObjectIf> objectList = wrapper.getObjects();
+        List<IChangeObjectIf> objectList = wrapper.getObjects();
 
         // prepare changed objects
-        for (ICommitObjectIf it : wrapper.getObjects())
+        for (IChangeObjectIf it : wrapper.getObjects())
         {
             //IF created, create SARA object
-            if (it.getType().equals(CommitManager.CommitType.COMMIT_CREATED))
+            if (it.getType().equals(ChangeType.CREATED))
             {
                 SarObject so = createSaraObject(it);
                 commitObjects.put(so.getID(), so);
                 so.createNewOut();
-            } else if (it.getType().equals(CommitManager.CommitType.COMMIT_MODIFIED))
+            } else if (it.getType().equals(ChangeType.MODIFIED))
             {
                 // if modified, modify SaraObject.
                 updateSaraObject(it);
@@ -586,22 +585,22 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         }
 
         // prepare list changes (1-to-N references)
-        for (ICommittableIf.ICommitReferenceIf it : wrapper.getListReferences())
+        for (IChangeIf.IChangeReferenceIf it : wrapper.getListReferences())
         {
             msoReferenceChanged(it, false);
         }
 
         // prepare object to object references (1-to-1, or named reference)
-        for (ICommittableIf.ICommitReferenceIf it : wrapper.getAttributeReferences())
+        for (IChangeIf.IChangeReferenceIf it : wrapper.getAttributeReferences())
         {
         	// forward
             msoReferenceChanged(it, true);
         }
 
         // Handle delete object last
-        for (ICommitObjectIf it : objectList)
+        for (IChangeObjectIf it : objectList)
         {
-            if (it.getType().equals(CommitManager.CommitType.COMMIT_DELETED))
+            if (it.getType().equals(ChangeType.DELETED))
             {
                 // if deleted remove Sara object
                 deleteSaraObject(it);
@@ -613,10 +612,10 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
 
     }
 
-    private void msoReferenceChanged(ICommittableIf.ICommitReferenceIf ico, boolean isNamedReference)
+    private void msoReferenceChanged(IChangeIf.IChangeReferenceIf ico, boolean isNamedReference)
     {
         // initialize
-    	CommitManager.CommitType ct = ico.getType();
+    	ChangeType ct = ico.getType();
         IMsoObjectIf owner = ico.getReferringObject();
         IMsoObjectIf ref = ico.getReferredObject();
         SarObject sourceObj = sarOperation.getSarObject(owner.getObjectId());
@@ -636,7 +635,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         } else
         {
         	// dispatch
-            if (ct.equals(CommitManager.CommitType.COMMIT_CREATED))
+            if (ct.equals(ChangeType.CREATED))
             {
             	// add relation
                 if (isNamedReference)
@@ -646,11 +645,11 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
                 {
                     sourceObj.addRelation(refName, relObj);
                 }
-            } else if (ct.equals(CommitManager.CommitType.COMMIT_MODIFIED))
+            } else if (ct.equals(ChangeType.MODIFIED))
             {
                 //TODO skal dette kunne skje??
                 Log.warning("-------------Modify relation-----------");
-            } else if (ct.equals(CommitManager.CommitType.COMMIT_DELETED))
+            } else if (ct.equals(ChangeType.DELETED))
             {
             	// add relation
             	if (isNamedReference)
@@ -664,11 +663,11 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         }
     }
 
-    private SarObject createSaraObject(ICommitObjectIf commitObject)
+    private SarObject createSaraObject(IChangeObjectIf commitObject)
     {
         IMsoObjectIf msoObj = commitObject.getObject();
         msoObj.getMsoClassCode();
-        // Finn Saras mappede objekttype
+        // get object type
         SarSession sarSess = sarSvc.getSession();
         String className = msoObj.getClass().getName();
         if (className.indexOf("Impl") > 0)
@@ -690,7 +689,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         return sbo;
     }
 
-    private void updateSaraObject(ICommitObjectIf commitObject)
+    private void updateSaraObject(IChangeObjectIf commitObject)
     {
         // get sara object
     	SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());
@@ -698,7 +697,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
         updateSaraObject(soi, commitObject.getObject(), commitObject.getPartial(), true);
     }
 
-    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, List<IAttributeIf> partial, boolean submitChanges)
+    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, List<IAttributeIf<?>> partial, boolean submitChanges)
     {
     	// initialize
         SarSession sarSess = sarSvc.getSession();
@@ -758,7 +757,7 @@ public class SaraDispatcher implements IDispatcherIf, IMsoCommitListenerIf, Sara
 
     }
 
-    private void deleteSaraObject(ICommitObjectIf commitObject)
+    private void deleteSaraObject(IChangeObjectIf commitObject)
     {
         // get object from operation
         SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());

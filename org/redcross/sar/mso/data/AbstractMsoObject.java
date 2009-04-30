@@ -16,20 +16,22 @@ import java.util.Vector;
 
 import no.cmr.tools.Log;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.ICommitManagerIf;
+import org.redcross.sar.mso.IChangeIf;
+import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
-import org.redcross.sar.mso.committer.ICommittableIf;
-import org.redcross.sar.mso.committer.IUpdateHolderIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
 import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoRuntimeException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 import org.redcross.sar.util.mso.*;
 
@@ -40,6 +42,13 @@ import org.redcross.sar.util.mso.*;
 @SuppressWarnings("unchecked")
 public abstract class AbstractMsoObject implements IMsoObjectIf
 {
+	
+	/**
+	 * The logger object
+	 */
+	
+    private static final Logger m_logger = Logger.getLogger(AbstractMsoObject.class);
+	
     /**
      * The Object ID, must exist for all MSO Objects .
      */
@@ -769,8 +778,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
     /**
-     * Rollback local changes.
-     * Generates client update event.
+     * Rollback local changes. Generates client update event.
      */
     @SuppressWarnings("unchecked")
     public void rollback()
@@ -796,6 +804,28 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             reference.rollback();
         }
     }
+    
+    /**
+     * Rollback changes in supplied attributes in this object. Generates a client update event.
+     * @param attrs - the attributes to rollback changes in
+     */    
+    public void rollback(List<IAttributeIf<?>> attrs)
+    {
+        m_hasBeenDeleted = false;
+        boolean dataModified = false;
+        for (IAttributeIf attr : attrs)
+        {
+        	if(m_attributeList.contains(attr)) {
+        		dataModified |= attr.rollback();
+        	}
+        }
+        if (dataModified)
+        {
+            registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
+        }
+
+    }
+    
 
     /**
      * Post process commit of local changes.
@@ -897,9 +927,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	return m_msoModel;
     }
 
-    public Collection<ICommittableIf.ICommitReferenceIf> getCommittableAttributeRelations()
+    public Collection<IChangeIf.IChangeReferenceIf> getCommittableAttributeRelations()
     {
-        Vector<ICommittableIf.ICommitReferenceIf> retVal = new Vector<ICommittableIf.ICommitReferenceIf>();
+        Vector<IChangeIf.IChangeReferenceIf> retVal = new Vector<IChangeIf.IChangeReferenceIf>();
         for (MsoReferenceImpl reference : m_referenceObjects.values())
         {
             retVal.addAll(reference.getCommittableRelations());
@@ -907,9 +937,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return retVal;
     }
 
-    public Collection<ICommittableIf.ICommitReferenceIf> getCommittableListRelations()
+    public Collection<IChangeIf.IChangeReferenceIf> getCommittableListRelations()
     {
-        Vector<ICommittableIf.ICommitReferenceIf> retVal = new Vector<ICommittableIf.ICommitReferenceIf>();
+        Vector<IChangeIf.IChangeReferenceIf> retVal = new Vector<IChangeIf.IChangeReferenceIf>();
         for (MsoListImpl list : m_referenceLists.values())
         {
             if (!list.isMain())
@@ -1002,11 +1032,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	            // any conflicts found?
 	            if(renumbered.size()>0) {
 	            	// found, get items that must be update directly
-                	ICommitManagerIf committer = (ICommitManagerIf)m_msoModel;
-                	List<IUpdateHolderIf> updates = new ArrayList<IUpdateHolderIf>(renumbered.size());
+                	IMsoTransactionManagerIf committer = (IMsoTransactionManagerIf)m_msoModel;
+                	List<IChangeSourceIf> updates = new ArrayList<IChangeSourceIf>(renumbered.size());
                     for(ISerialNumberedIf it : renumbered) {
     					// get update holder set
-    					IUpdateHolderIf holder = committer.getUpdates(it);
+    					IChangeSourceIf holder = committer.getChanges(it);
     					// has updates?
     					if(holder!=null) {
     						// try to set partial and to updates if succeeded
@@ -1017,7 +1047,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
                     }
 	            	// commit changes (this will not affect any other local changes)
                     if(updates.size()>0) {
-                    	m_msoModel.commit(updates);
+                        try {
+                        	m_msoModel.commit(updates);
+                		} catch (TransactionException ex) {
+                			m_logger.error("Failed to commit resolved serial number conflicts",ex);
+                		}                                	                    
                     }
 	            }
 	        }
@@ -1172,6 +1206,10 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             m_isLoopback = true;
             m_clientUpdateMask = 0;
         }
+    }
+    
+    public boolean isChanged() {
+    	return m_clientUpdateMask!=0;
     }
 
     protected void suspendDerivedUpdate()

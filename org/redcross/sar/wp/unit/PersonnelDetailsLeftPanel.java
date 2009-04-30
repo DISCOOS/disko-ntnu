@@ -36,6 +36,8 @@ import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.AssocUtils.Association;
+import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.WorkFlowEvent;
 
 /**
  * JPanel displaying team details.
@@ -77,8 +79,24 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		// add listeners
 		wp.getMsoEventManager().addClientUpdateListener(this);
 		wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
+        getInfoPanel().addWorkFlowListener(new IWorkFlowListener() {
+			public void onFlowPerformed(WorkFlowEvent e) {
+				// only forward MSO changes
+				if(e.isMsoData()) m_wp.onFlowPerformed(e);				
+			}        	
+        });
 	}
 
+	private void initialize()
+	{
+		// prepare
+		setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+
+		// add panels
+		add(getInfoPanel());
+
+	}
+	
 	private FieldsPanel getInfoPanel() {
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
@@ -152,19 +170,28 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		return m_changeStatusButton;
 	}	
 
-	private void initialize()
-	{
-		// prepare
-		setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-
-		// add panels
-		add(getInfoPanel());
-
-	}
-
 	private TextLineField getFullNameTextField() {
 		if(m_nameTextField==null) {
-			m_nameTextField = new TextLineField("fullname",m_resources.getString("FullName.text"),true);    		
+			m_nameTextField = new TextLineField("fullname",m_resources.getString("FullName.text"),true);
+			m_nameTextField.addWorkFlowListener(new IWorkFlowListener() {
+
+				@Override
+				public void onFlowPerformed(WorkFlowEvent e) {
+					// is changed?
+					if(m_nameTextField.isChangeable() && e.isChange() && e.isWorkDoneByAwtComponent()) {
+						String[] names = getNames(false);
+						if(names!=null) {
+							m_currentPersonnel.suspendClientUpdate();
+							m_currentPersonnel.setFirstname(names[0]);
+							m_currentPersonnel.setLastname(names[1]);					
+							m_currentPersonnel.resumeClientUpdate(true);							
+							m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
+						}
+					}
+					
+				}
+				
+			});
 		}
 		return m_nameTextField;
 	}
@@ -214,6 +241,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						}
 						m_currentPersonnel.resumeClientUpdate(false);
 						m_associationTextField.setChangeable(true);
+						m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
 					}
 				}
 				
@@ -286,285 +314,18 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		return m_remarksTextArea;
 	}
 
-	/**
-	 * Updates field contents with current personnel attribute values
-	 */
-	public void updateFieldContents()
-	{
-		if (m_currentPersonnel != null) {
-
-			// update caption
-			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel, true));
-			m_nameTextField.setValue(MsoUtils.getPersonnelName(m_currentPersonnel, false));
-			m_cellTextField.setValue(m_currentPersonnel.getTelephone1());
-
-			if(m_wp.getMsoManager().operationExists()) {
-				
-				IUnitIf unit = m_currentPersonnel.getOwningUnit();
-				m_unitTextField.setValue(MsoUtils.getUnitName(unit));
-				
-				if (unit != null)
-				{
-					if (unit.getUnitLeader() == m_currentPersonnel)
-					{
-						m_roleTextField.setValue(m_resources.getString("Leader.text"));
-					} else {
-						m_roleTextField.setValue(m_resources.getString("Personnel.text"));
-					}
-				} else {
-					m_roleTextField.setValue("");
-				}
-				
-				// Get next status for
-				PersonnelStatus status = m_currentPersonnel.getStatus();
-				PersonnelStatus[] values = PersonnelStatus.values();
-				status = values[(status.ordinal() + 1) % values.length];
-				if (status == PersonnelStatus.IDLE)
-				{
-					// not possible to send personnel status back to idle, set to next
-					status = values[(status.ordinal() + 1) % values.length];
-				}
-				m_changeStatusButton.setActionCommand(status.name());
-				
-	            if(getAssociationTextField().isChangeable()) {
-		            if(m_currentPersonnel.getOrganization()!=null) {
-			            Association assoc = AssocUtils.getOrganization(m_currentPersonnel.getOrganization());
-			            assoc.setPattern("{1:n}");
-			            if(m_currentPersonnel.getDivision()!=null) {
-			            	assoc = AssocUtils.getDivision(assoc,m_currentPersonnel.getDivision());
-				            assoc.setPattern("{2:n} {2:s}");
-			                if(m_currentPersonnel.getDepartment()!=null) { 
-			                	assoc = AssocUtils.getDepartment(assoc,m_currentPersonnel.getDepartment());
-					            assoc.setPattern("{3:n} {3:s}");
-			                }
-			            }
-			            getAssociationTextField().setChangeable(false);
-			            getAssociationTextField().setValue(assoc.getText());
-			            getAssociationTextField().setChangeable(true);
-		        	} else {
-			            getAssociationTextField().setChangeable(false);
-			            getAssociationTextField().setValue("");
-			            getAssociationTextField().setChangeable(true);        		
-		        	}
-	            }
-				
-			}
-			
-		} else {
-
-			// update caption
-			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel,true));
-			m_nameTextField.setValue("");
-			m_cellTextField.setValue("");
-			m_propertyComboBoxField.setValue(PersonnelType.VOLUNTEER);
-            m_associationTextField.setValue("");
-			m_roleTextField.setValue("");
-			m_unitTextField.setValue("");
-			m_callOutTextField.setValue("");
-			m_etaTextField.setValue("");
-			m_arrivedTextField.setValue("");
-			m_releasedTextField.setValue("");
-			m_remarksTextArea.setValue("");
-		}
-		m_nameTextField.requestFocus();
-	}
-	
-	/**
-	 * Updates personnel data in MSO
-	 */
-	public boolean savePersonnel()
-	{
-		if (m_currentPersonnel != null)
-		{
-			String[] fields = m_nameTextField.getValue().split(" ");
-
-			// validate
-			if (fields.length > 0)
-			{
-				m_currentPersonnel.suspendClientUpdate();
-
-				StringBuilder text = new StringBuilder();
-				for (int i = 0; i < fields.length - 1; i++)
-				{
-					text.append(fields[i] + " ");
-				}
-
-				String firstName = text.toString().trim();
-				String lastName = fields[fields.length - 1].trim();
-
-				// valid name?
-				if(firstName.length()!=0 || lastName.length()!=0) {
-
-					if (firstName.toString() != null)
-					{
-						m_currentPersonnel.setFirstname(firstName);
-					}
-					m_currentPersonnel.setLastname(lastName);
-					
-					/*
-					String phone = m_cellTextField.getValue();
-					m_currentPersonnel.setTelephone1(phone);
-
-					PersonnelType type = (PersonnelType) m_propertyComboBoxField.getValue();
-					if (type == null)
-					{
-						type = PersonnelType.OTHER;
-					}
-					m_currentPersonnel.setType(type);
-
-					String organization = (String)m_organizationComboBoxField.getValue();
-					m_currentPersonnel.setOrganization(organization);
-
-					String department = (String)m_departmentComboBoxField.getValue();
-					m_currentPersonnel.setDepartment(department);
-
-					try
-					{
-						Calendar callout = m_currentPersonnel.getCallOut();
-						callout = (callout ==null ? Calendar.getInstance() : callout);
-						callout = DTG.DTGToCal(callout.get(Calendar.YEAR),
-								callout.get(Calendar.MONTH),m_callOutTextField.getValue());
-						m_currentPersonnel.setCallOut(callout);
-					}
-					catch (IllegalMsoArgumentException e)
-					{
-					}
-
-					m_currentPersonnel.setEstimatedArrival(parseEstimatedArrival());
-
-					try
-					{
-						Calendar arrived = m_currentPersonnel.getArrived();
-						arrived = (arrived ==null ? Calendar.getInstance() : arrived);
-						arrived = DTG.DTGToCal(arrived.get(Calendar.YEAR),
-								arrived.get(Calendar.MONTH),m_arrivedTextField.getValue());
-						m_currentPersonnel.setArrived(arrived);
-					}
-					catch (IllegalMsoArgumentException e)
-					{
-					}
-
-					try
-					{
-						Calendar released = m_currentPersonnel.getReleased();
-						released = (released ==null ? Calendar.getInstance() : released);
-						released = DTG.DTGToCal(released.get(Calendar.YEAR),
-								released.get(Calendar.MONTH),m_releasedTextField.getValue());
-						m_currentPersonnel.setReleased(released);
-					}
-					catch (IllegalMsoArgumentException e)
-					{
-					}
-
-					String remarks = m_remarksTextArea.getValue();
-					m_currentPersonnel.setRemarks(remarks);
-					*/
-
-					m_currentPersonnel.resumeClientUpdate(true);
-
-					// finished!
-					return true;
-
-				}
-			}
-			Utils.showWarning("Begrensning","Fullt navn må oppgis for personell");
-		}
-		// failed!
-		return false;
-	}	
-
-	/*
-	private void updateEstimatedArrival()
-	{
-		// Don't update while user is editing
-		if (m_estimatedArrivalTextField.hasFocus())
-		{
-			return;
-		}
-
-		Calendar arriving = m_currentPersonnel.getEstimatedArrival();
-		if (arriving != null)
-		{
-			Calendar now = Calendar.getInstance();
-			if (arriving.after(now))
-			{
-				long deltaMin = (arriving.getTimeInMillis() - now.getTimeInMillis()) / 60000;
-				long hours = deltaMin / 60;
-				long minutes = deltaMin % 60;
-				StringBuilder arrivingString = new StringBuilder();
-				arrivingString.append("- ");
-				if (hours != 0)
-				{
-					arrivingString.append(hours);
-					arrivingString.append(m_resources.getString("Hours.text"));
-					arrivingString.append(" ");
-				}
-				arrivingString.append(minutes);
-				arrivingString.append(m_resources.getString("Minutes.text"));
-				m_estimatedArrivalTextField.setValue(arrivingString.toString());
-			} else
-			{
-				if (m_currentPersonnel.getStatus() == PersonnelStatus.ARRIVED)
-				{
-					m_estimatedArrivalTextField.setValue(m_resources.getString("Arrived.text"));
-				} else
-				{
-					m_estimatedArrivalTextField.setValue("");
-				}
-			}
-		} else
-		{
-			m_estimatedArrivalTextField.setValue("");
-		}
-	}
-
-	private Calendar parseEstimatedArrival()
-	{
-		String estimatedArrivalString = m_estimatedArrivalTextField.getValue();
-		String[] arrivalStringArray = estimatedArrivalString.split("\\s");
-		int hours = 0;
-		int minutes = 0;
-		String hoursString = m_resources.getString("Hours.text");
-		String minutesString = m_resources.getString("Minutes.text");
-		for (String s : arrivalStringArray)
-		{
-			if (s.contains(hoursString))
-			{
-				// Try to parse hours
-				try
-				{
-					s = s.replaceAll("\\D", "");
-					hours = Integer.valueOf(s);
-				}
-				catch (Exception e)
-				{
-				}
-			} else if (s.contains(minutesString))
-			{
-				// Try to parse minutes
-				try
-				{
-					s = s.replaceAll("\\D", "");
-					minutes = Integer.valueOf(s);
-				}
-				catch (Exception e)
-				{
-				}
-			}
-		}
-
-		Calendar estimatedArrival = Calendar.getInstance();
-		estimatedArrival.add(Calendar.HOUR_OF_DAY, hours);
-		estimatedArrival.add(Calendar.MINUTE, minutes);
-		return estimatedArrival;
-	}
-	*/
-
-	public void setCaptionText(String text)
-	{
-		getInfoPanel().setCaptionText(text);
-	}
-
+    public boolean isChanged() {
+    	return m_currentPersonnel!=null?m_currentPersonnel.isChanged():false;
+    }
+    
+    public boolean isNew() {
+    	return m_currentPersonnel!=null?!m_currentPersonnel.isCreated():false;
+    }
+    
+    public boolean isSet() {
+    	return m_currentPersonnel!=null;
+    }
+    
 	/*
 	 * Setters and getters
 	 */
@@ -599,6 +360,127 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         	getReleasedTextField().clearMsoAttribute("");
         	getRemarksTextArea().clearMsoAttribute("");
         }
+		m_nameTextField.requestFocus();
+	}	
+	
+	/**
+	 * Updates field contents with current personnel attribute values
+	 */
+	public void updateFieldContents()
+	{
+		if (m_currentPersonnel != null) {
+
+			// update caption
+			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel, true));
+			m_nameTextField.setValue(MsoUtils.getPersonnelName(m_currentPersonnel, false));
+
+			IUnitIf unit = m_currentPersonnel.getOwningUnit();
+			m_unitTextField.setValue(MsoUtils.getUnitName(unit));
+			
+			if (unit != null)
+			{
+				if (unit.getUnitLeader() == m_currentPersonnel)
+				{
+					m_roleTextField.setValue(m_resources.getString("Leader.text"));
+				} else {
+					m_roleTextField.setValue(m_resources.getString("Personnel.text"));
+				}
+			} else {
+				m_roleTextField.setValue("");
+			}
+			
+			// Get next status for
+			PersonnelStatus status = m_currentPersonnel.getStatus();
+			PersonnelStatus[] values = PersonnelStatus.values();
+			status = values[(status.ordinal() + 1) % values.length];
+			if (status == PersonnelStatus.IDLE)
+			{
+				// not possible to send personnel status back to idle, set to next
+				status = values[(status.ordinal() + 1) % values.length];
+			}
+			m_changeStatusButton.setActionCommand(status.name());
+			
+            if(getAssociationTextField().isChangeable()) {
+	            if(m_currentPersonnel.getOrganization()!=null) {
+		            Association assoc = AssocUtils.getOrganization(m_currentPersonnel.getOrganization());
+		            assoc.setPattern("{1:n}");
+		            if(m_currentPersonnel.getDivision()!=null) {
+		            	assoc = AssocUtils.getDivision(assoc,m_currentPersonnel.getDivision());
+			            assoc.setPattern("{2:n} {2:s}");
+		                if(m_currentPersonnel.getDepartment()!=null) { 
+		                	assoc = AssocUtils.getDepartment(assoc,m_currentPersonnel.getDepartment());
+				            assoc.setPattern("{3:n} {3:s}");
+		                }
+		            }
+		            getAssociationTextField().setChangeable(false);
+		            getAssociationTextField().setValue(assoc.getText());
+		            getAssociationTextField().setChangeable(true);
+	        	} else {
+		            getAssociationTextField().setChangeable(false);
+		            getAssociationTextField().setValue("");
+		            getAssociationTextField().setChangeable(true);        		
+	        	}
+            }
+			
+		} else {
+
+			// update caption
+			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel,true));
+			m_nameTextField.setValue("");
+			m_roleTextField.setValue("");
+            m_associationTextField.setValue("");
+			m_unitTextField.setValue("");
+		}
+	}
+	
+    /**
+     * validate input data
+     */
+	public boolean isInputValid()
+	{
+		if (m_currentPersonnel != null)
+		{
+			// validate
+			if (getNames(true)==null)
+			{
+				return true;
+			}
+			Utils.showWarning("Begrensning","Fullt navn må oppgis for personell");			
+		}
+		// failed!
+		return false;
+	}	
+	
+	private String[] getNames(boolean validate) {
+		
+		String[] fields = m_nameTextField.getValue().split(" ");
+
+		// validate
+		if (fields.length > 0)
+		{
+			StringBuilder text = new StringBuilder();
+			for (int i = 0; i < fields.length - 1; i++)
+			{
+				text.append(fields[i] + " ");
+			}
+
+			String firstName = text.toString().trim();
+			String lastName = fields[fields.length - 1].trim();
+
+			// get name array?
+			if(!validate || (firstName.length()!=0 || lastName.length()!=0)) {
+				
+				// finished!
+				return new String[]{firstName,lastName};
+
+			}
+		}
+		return validate?null:new String[2];
+	}
+
+	public void setCaptionText(String text)
+	{
+		getInfoPanel().setCaptionText(text);
 	}
 
 	public EnumSet<MsoClassCode> getInterests() {
@@ -611,7 +493,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
 
 		if(events.isClearAllEvent()) {
-			m_currentPersonnel = null;
+			setPersonnel(null);
 			updateFieldContents();
 		}
 		else {
@@ -621,12 +503,25 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 				// consume loopback updates
 				if(!e.isLoopback())
 				{
-					IPersonnelIf personnel = (e.getSource() instanceof IPersonnelIf) ?
+					// get personnel reference
+					IPersonnelIf personnel = 
+							(e.getSource() instanceof IPersonnelIf) ?
 							(IPersonnelIf) e.getSource() : null;
-					if (m_currentPersonnel == personnel)
-					{
+							
+					// is object modified?
+					if (e.isChangeReferenceEvent()) {
 						updateFieldContents();
 					}
+					else if (e.isModifyObjectEvent()) {
+						updateFieldContents();
+					}
+
+					// delete object?
+					if (e.isDeleteObjectEvent() && personnel == m_currentPersonnel) {
+			    		setPersonnel(null);
+			    		updateFieldContents();
+					}
+
 				}
 			}
 		}

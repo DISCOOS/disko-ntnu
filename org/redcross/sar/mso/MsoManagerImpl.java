@@ -1,6 +1,6 @@
 package org.redcross.sar.mso;
 
-import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.apache.log4j.Logger;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
@@ -12,6 +12,7 @@ import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.util.except.MsoNullPointerException;
 import org.redcross.sar.util.except.MsoRuntimeException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 
@@ -23,25 +24,12 @@ import java.util.EnumSet;
  */
 public class MsoManagerImpl implements IMsoManagerIf
 {
-	IMsoModelIf m_msoModel;
-    OperationImpl m_operation;
-
-    public static String getClasscodeText(MsoClassCode aClassCode)
-    {
-        return Internationalization.translate(aClassCode);
-    }
-
-    private void eventLogg(String aText, MsoEvent.Update e)
-    {
-        Object o = e.getSource();
-        MsoClassCode classCode = MsoClassCode.CLASSCODE_NOCLASS;
-        if (o instanceof IMsoObjectIf)
-        {
-            classCode = ((IMsoObjectIf) o).getMsoClassCode();
-        }
-    }
-
-    public MsoManagerImpl(IMsoModelIf theMsoModel, IMsoEventManagerIf anEventManager)
+	private final Logger m_logger = Logger.getLogger(MsoManagerImpl.class);
+	
+	private IMsoModelIf m_msoModel;
+	private OperationImpl m_operation;
+        
+    protected MsoManagerImpl(IMsoModelIf theMsoModel, IMsoEventManagerIf anEventManager)
     {
         m_msoModel = theMsoModel;
 
@@ -79,6 +67,24 @@ public class MsoManagerImpl implements IMsoManagerIf
             }
 
         });
+    }
+
+
+    public static String getClasscodeText(MsoClassCode aClassCode)
+    {
+        return Internationalization.translate(aClassCode);
+    }
+
+    private void eventLogg(String aText, MsoEvent.Update e)
+    {
+        Object o = e.getSource();
+        MsoClassCode classCode = MsoClassCode.CLASSCODE_NOCLASS;
+        if (o instanceof IMsoObjectIf)
+        {
+            classCode = ((IMsoObjectIf) o).getMsoClassCode();
+        }
+        m_logger.info(getClasscodeText(classCode)+ ": " + aText);
+        
     }
 
     public IOperationIf createOperation(String aNumberPrefix, String aNumber)
@@ -215,9 +221,9 @@ public class MsoManagerImpl implements IMsoManagerIf
 
 	        	/* ==============================================================
                  * FIX: This methods fails if non-deleteable references exists in the
-                 * model. This should not happend!
+                 * model. This should not happen!
                  * ============================================================== */
-                boolean ret = m_operation.delete();
+                m_operation.delete();
 
             	// remove reference
                 m_operation = null;
@@ -226,9 +232,8 @@ public class MsoManagerImpl implements IMsoManagerIf
     	    	Runtime.getRuntime().gc();
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				m_logger.error("Failed to clear operation",e);
 	        	Utils.showError(e.getMessage());
-	            rollback();
 	            return false;
 			}
     		// forward
@@ -246,17 +251,17 @@ public class MsoManagerImpl implements IMsoManagerIf
     		getExistingOperation().resumeClientUpdate(all);
     }
 
-    public void postProcessCommit()
+    protected void postProcessCommit()
     {
     	((OperationImpl)getExistingOperation()).postProcessCommit();
     }
 
-    public void rollback()
+    protected void rollback() throws TransactionException
     {
     	if(operationExists())
     		((OperationImpl)getExistingOperation()).rollback();
     }
-
+    
     public IAreaIf createArea()
     {
         return getExistingCmdPost().getAreaList().createArea(true);

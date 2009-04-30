@@ -16,7 +16,7 @@ import org.redcross.sar.ds.AbstractDs;
 import org.redcross.sar.ds.ICue;
 import org.redcross.sar.ds.IDsObject;
 import org.redcross.sar.ds.event.DsEvent;
-import org.redcross.sar.mso.ICommitManagerIf;
+import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -58,7 +58,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 	/**
 	 * Commit manager
 	 */
-	protected ICommitManagerIf m_comitter;
+	protected IMsoTransactionManagerIf m_comitter;
 
 	/**
 	 * Map of attributes to update
@@ -164,7 +164,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 
 			// prepare
 			m_model = (IMsoModelIf)source;
-			m_comitter = (ICommitManagerIf)m_model;
+			m_comitter = (IMsoTransactionManagerIf)m_model;
 			m_dispatcher = m_model.getDispatcher();
 
 			// listen for changes

@@ -1,10 +1,10 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.data.IData;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.committer.ICommittableIf;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
 import java.util.Calendar;
@@ -44,6 +44,14 @@ public interface IMsoObjectIf extends IData
      * @return True after successful commit on a created object
      */
     public boolean isCreated();
+    
+    /**
+     * Get Object change status
+     *
+     * @return True if local changes exists 
+     */
+    public boolean isChanged();
+    
 
     /**
      * Gets change count since construction. Use this counter when tracking
@@ -87,6 +95,17 @@ public interface IMsoObjectIf extends IData
      */
     public void setAttribute(int anIndex, Object aValue) throws UnknownAttributeException;
 
+    /**
+     * Rollback changes in this object. Generates a client update event.
+     */    
+    public void rollback();
+    
+    /**
+     * Rollback changes in supplied attributes in this object. Generates a client update event.
+     * @param attrs - the attributes to rollback changes in
+     */    
+    public void rollback(List<IAttributeIf<?>> attrs);
+    
     /**
      * Delete this object from the data structures
      *
@@ -207,44 +226,6 @@ public interface IMsoObjectIf extends IData
      * @return  <code>true<code> if the object has been deleted.
      */
     public boolean hasBeenDeleted();
-
-//    public void registerAddedReference();
-
-//    public void registerRemovedReference();
-
-//    public void registerRemovedReference(boolean updateServer);
-
-    /**
-     * Register modified reference.
-     * Can fire a {@link org.redcross.sar.mso.event.MsoEvent}
-     */
-//    public void registerModifiedReference();
-
-    /**
-     * Register modified reference.
-     * Can fire a {@link org.redcross.sar.mso.event.MsoEvent}
-     */
-//    public void registerModifiedReference(boolean updateServer);
-
-//    public void registerCreatedObject();
-
-//    public void registerDeletedObject();
-
-    /**
-     * Register modified data.
-     * Can fire a {@link org.redcross.sar.mso.event.MsoEvent}
-     */
-//    public void registerModifiedData();
-
-    /**
-     * Rollback local changes.
-     */
-//    public void rollback();
-
-    /**
-     * Commit local changes.
-     */
-//    public void postProcessCommit();
 
     /**
      * Get a Boolean attribute with the given index.
@@ -486,9 +467,9 @@ public interface IMsoObjectIf extends IData
      */
     public IAttributeIf.IMsoEnumIf<?> getEnumAttribute(String aName) throws UnknownAttributeException;
 
-    public Collection<ICommittableIf.ICommitReferenceIf> getCommittableAttributeRelations();
+    public Collection<IChangeIf.IChangeReferenceIf> getCommittableAttributeRelations();
 
-    public Collection<ICommittableIf.ICommitReferenceIf> getCommittableListRelations();
+    public Collection<IChangeIf.IChangeReferenceIf> getCommittableListRelations();
 
     public interface IObjectIdIf
     {

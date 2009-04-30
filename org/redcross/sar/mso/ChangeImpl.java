@@ -1,7 +1,5 @@
-package org.redcross.sar.mso.committer;
+package org.redcross.sar.mso;
 
-import org.redcross.sar.mso.CommitManager;
-import org.redcross.sar.mso.CommitManager.CommitType;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
@@ -10,40 +8,40 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Base class for managing committable objects
+ * Base class for managing change objects
  */
 @SuppressWarnings("unchecked")
-public abstract class CommittableImpl implements ICommittableIf
+public abstract class ChangeImpl implements IChangeIf
 {
     public final Calendar m_timestamp;
-    public CommitManager.CommitType m_commitType;
+    public ChangeType m_changeType;
 
 
-    public CommittableImpl(CommitManager.CommitType aCommitType)
+    public ChangeImpl(ChangeType aCommitType)
     {
-        m_commitType = aCommitType;
+        m_changeType = aCommitType;
         m_timestamp = Calendar.getInstance();
     }
 
-    public CommitManager.CommitType getType()
+    public ChangeType getType()
     {
-        return m_commitType;
+        return m_changeType;
     }
 
 
     /**
-     * Class for committable MsoObjects.
+     * Class for changed MsoObjects.
      */
-    public static class CommitObject extends CommittableImpl implements ICommitObjectIf
+    public static class ChangeObject extends ChangeImpl implements IChangeObjectIf
     {
     	private final IMsoObjectIf m_object;
-    	private final List<IAttributeIf> m_partial;
+    	private final List<IAttributeIf<?>> m_partial;
 
-        public CommitObject(IMsoObjectIf anObject, CommitType aCommitType, List<IAttributeIf> partial)
+        public ChangeObject(IMsoObjectIf anObject, ChangeType aCommitType, List<IAttributeIf<?>> partial)
         {
             super(aCommitType);
             m_object = anObject;
-            m_partial = partial!=null ? partial : new ArrayList<IAttributeIf>(0);
+            m_partial = partial!=null ? partial : new ArrayList<IAttributeIf<?>>(0);
         }
 
         public IMsoObjectIf getObject()
@@ -51,7 +49,7 @@ public abstract class CommittableImpl implements ICommittableIf
             return m_object;
         }
 
-		public List<IAttributeIf> getPartial() {
+		public List<IAttributeIf<?>> getPartial() {
 			return m_partial;
 		}
 
@@ -62,17 +60,17 @@ public abstract class CommittableImpl implements ICommittableIf
     }
 
     /**
-     * Class for committable relations.
+     * Class for changed relations.
      * A relation is defined by a relation name and two MsoObjects.
      * The name is needed since some classes may have several types of relations to another class.
      */
-    public static class CommitReference extends CommittableImpl implements ICommitReferenceIf
+    public static class ChangeReference extends ChangeImpl implements IChangeReferenceIf
     {
         private final String m_name;
         private final IMsoObjectIf m_referringObject;
         private final IMsoObjectIf m_referredObject;
 
-        public CommitReference(String aName, IMsoObjectIf theReferringObject, IMsoObjectIf theReferredObject, CommitManager.CommitType aCommitType)
+        public ChangeReference(String aName, IMsoObjectIf theReferringObject, IMsoObjectIf theReferredObject, ChangeType aCommitType)
         {
             super(aCommitType);
             m_name = aName;
