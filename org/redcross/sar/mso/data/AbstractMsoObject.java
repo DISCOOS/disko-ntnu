@@ -30,6 +30,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.except.InvalidReferenceException;
 import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.UnknownAttributeException;
@@ -81,14 +82,14 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private final ArrayList<AttributeImpl> m_attributeList = new ArrayList<AttributeImpl>();
 
     /**
-     * Set of reference lists.
-     */
-    private final Map<String, MsoListImpl> m_referenceLists = new LinkedHashMap<String, MsoListImpl>();
-
-    /**
-     * Set of reference objects.
+     * Set of reference objects (one-to-one relations).
      */
     private final Map<String, MsoReferenceImpl> m_referenceObjects = new LinkedHashMap<String, MsoReferenceImpl>();
+
+    /**
+     * Set of reference lists (one-to-many relations).
+     */
+    private final Map<String, MsoListImpl> m_referenceLists = new LinkedHashMap<String, MsoListImpl>();
 
     /**
      * Mask for suspended client update events
@@ -198,7 +199,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         m_isSetup = true;
         defineAttributes();
         defineLists();
-        defineReferences();
+        defineObjects();
         resumeDerivedUpdate();
         if(resume) resumeClientUpdate(false);
     }
@@ -222,23 +223,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      *
      * This method must be implemented by extending object
      */
-    protected abstract void defineReferences();
-
-    /**
-     * Add a list reference to a given object in a given reference list
-     * @param anObject The object to add
-     * @param aReferenceName The reference list
-     * @return <code>true</code> if successfully added, <code>false</code> otherwise
-     */
-    public abstract boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName);
-
-    /**
-     * Remove a list reference to a given object in a given reference list
-     * @param anObject The object to remove
-     * @param aReferenceName The reference list
-     * @return <code>true</code> if successfully removed, <code>false</code> otherwise
-     */
-    public abstract boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName);
+    protected abstract void defineObjects();
 
     /*-------------------------------------------------------------------------------------------
 	 * Public methods
@@ -415,54 +400,19 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return m_isSetup;
     }
 
-    @SuppressWarnings("unchecked")
-    public Map getAttributes()
+    public Map<String, IAttributeIf<?>> getAttributes()
     {
-        return m_attributeMap;
+        return new LinkedHashMap(m_attributeMap);
     }
-
-    @SuppressWarnings("unchecked")
-	public Map getReferenceObjects()
+    
+    public AttributeImpl getAttribute(String aName) throws UnknownAttributeException
     {
-        return m_referenceObjects;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Map getReferenceLists()
-    {
-        return m_referenceLists;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Map getReferenceLists(Class<?> c, boolean isEqual)
-    {
-    	Map<String,MsoListImpl> map = new LinkedHashMap<String, MsoListImpl>();
-    	if(isEqual)
-    	{
-	    	for(String it : m_referenceLists.keySet()) {
-	    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
-	    		if(list.getItemClass().equals(c)) map.put(it,list);
-	    	}
-    	}
-    	else {
-	    	for(String it : m_referenceLists.keySet())
-	    	{
-	    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
-	    		if(list.getItemClass().isAssignableFrom(c)) map.put(it,list);
-	    	}
-    	}
-        return map;
-    }
-
-    public Map getReferenceLists(MsoClassCode c) {
-    	Map<String,MsoListImpl> map = new LinkedHashMap<String, MsoListImpl>();
-    	for(String it : m_referenceLists.keySet())
-    	{
-    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
-    		IMsoObjectIf msoObj = list.getItem();
-    		if(msoObj!=null && msoObj.getMsoClassCode().equals(c)) map.put(it,list);
-    	}
-        return map;
+        AttributeImpl retVal = m_attributeMap.get(aName.toLowerCase());
+        if (retVal == null)
+        {
+            throw new UnknownAttributeException("Unknown attribute name '" + aName + "' in " + this.getClass().toString());
+        }
+        return retVal;
     }
 
     public IAttributeIf.IMsoBooleanIf getBooleanAttribute(int anIndex) throws UnknownAttributeException
@@ -777,6 +727,105 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         attr.set(aValue);
     }
 
+
+	public Map<String, IMsoObjectIf> getObjectReferences()
+    {
+        return new LinkedHashMap(m_referenceObjects);
+    }
+    
+    /**
+     * Set or reset a relation between this and another 
+     * IMsoObjectIf (one-to-one relation) 
+     * @param anObject - the object set a relation to, or relation to set to <code>null</code>  
+     * @param aReferenceName - the name of the relation
+     * @throws InvalidReferenceException is thrown if the reference does not 
+     * exist, or if the relation is required (cardinality is greater than <code>0</code>) 
+     */
+	public void setObjectReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException {
+        IMsoReferenceIf refObj = m_referenceObjects.get(aReferenceName.toLowerCase());
+        if (refObj == null)
+        {        	
+        	throw new InvalidReferenceException("The reference " + aReferenceName + " is unknown");
+        	
+        } else
+        {
+        	if(!refObj.setReference(anObject)) throw new InvalidReferenceException("The reference can not be null (cardinality is greater than 0)");
+        }
+	}
+
+    public Map<String, IMsoListIf<IMsoObjectIf>> getListReferences()
+    {
+        return new LinkedHashMap(m_referenceLists);
+    }
+
+    public Map<String, IMsoListIf<IMsoObjectIf>> getListReferences(Class<?> c, boolean isEqual)
+    {
+    	Map<String, IMsoListIf<IMsoObjectIf>> map = new LinkedHashMap<String, IMsoListIf<IMsoObjectIf>>();
+    	if(isEqual)
+    	{
+	    	for(String it : m_referenceLists.keySet()) {
+	    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
+	    		if(list.getObjectClass().equals(c)) map.put(it,list);
+	    	}
+    	}
+    	else {
+	    	for(String it : m_referenceLists.keySet())
+	    	{
+	    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
+	    		if(list.getObjectClass().isAssignableFrom(c)) map.put(it,list);
+	    	}
+    	}
+        return map;
+    }
+
+    public Map<String, IMsoListIf<IMsoObjectIf>> getListReferences(MsoClassCode c) {
+    	Map<String, IMsoListIf<IMsoObjectIf>> map = new LinkedHashMap<String, IMsoListIf<IMsoObjectIf>>();
+    	for(String it : m_referenceLists.keySet())
+    	{
+    		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
+    		IMsoObjectIf msoObj = list.getItem();
+    		if(msoObj!=null && msoObj.getMsoClassCode().equals(c)) map.put(it,list);
+    	}
+        return map;
+    }
+    
+    /**
+     * Add a reference to an one-to-many relation in this IMsoObjectIf object.
+     * 
+     * @param anObject The object to add a reference to
+     * @param aReferenceName The reference list
+     * @throws InvalidReferenceException is thrown if the list reference does not 
+     * exist, if the list object class and IMsoObjectIf object class does not 
+     * match, if the list size is less or equal to the cardinality, 
+     * or if an reference to the IMsoObjectIf object already exists, or the object is 
+     * null or not properly initialized 
+     */
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException {
+    	IMsoListIf list = m_referenceLists.get(aReferenceName);
+    	if(list==null) throw new InvalidReferenceException("List reference " + aReferenceName + " does not exist");
+    	if(!list.getObjectClass().isInstance(anObject)) throw new InvalidReferenceException("The list object class and IMsoObjectIf object class does not match (" + anObject + ")");
+    	if(list.getCardinality()>=list.size()) throw new InvalidReferenceException("Relation can not be added because the number of items in the list size is equal to or greater than the cardinality");
+    	if(!list.add(anObject)) throw new InvalidReferenceException("An reference to object " + anObject + " already exist or the object is null or not properly initialized");
+    }
+
+    /**
+     * Remove a reference from a on-to-many relation in this IMsoObjectIf object.
+     * 
+     * @param anObject The object to remove a reference from
+     * @param aReferenceName The reference list
+     * @throws InvalidReferenceException is thrown if the reference does not 
+     * exist, if the list object class and IMsoObjectIf object class does not 
+     * match, if the list size is less or equal to the cardinality, or if 
+     * an reference to IMsoObjectIf object does not exist, or is not deleteable 
+     */
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException {
+    	IMsoListIf list = m_referenceLists.get(aReferenceName);
+    	if(list==null) throw new InvalidReferenceException("List reference " + aReferenceName + " does not exist");
+    	if(!list.getObjectClass().isInstance(anObject)) throw new InvalidReferenceException("The list object class and IMsoObjectIf object class does not match (" + anObject + ")");
+    	if(list.getCardinality()<=list.size()) throw new InvalidReferenceException("Relation can not be removed because the number of items in the list size equal to or is less than the cardinality");
+    	if(!list.remove(anObject)) throw new InvalidReferenceException("A reference to object " + anObject + " does not exist, or the reference is not deletable");   	
+    }
+    
     /**
      * Rollback local changes. Generates client update event.
      */
@@ -1113,7 +1162,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      *
      * @param aReference - the reference to add
      */
-    protected void addReference(MsoReferenceImpl aReference)
+    protected void addObject(MsoReferenceImpl aReference)
     {
         if (aReference != null)
         {
@@ -1306,16 +1355,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
             return m_attributeList.get(anIndex);
         }
         throw new UnknownAttributeException("Unknown attribute index " + anIndex + " in " + this.getClass().toString());
-    }
-
-    private AttributeImpl getAttribute(String aName) throws UnknownAttributeException
-    {
-        AttributeImpl retVal = m_attributeMap.get(aName.toLowerCase());
-        if (retVal == null)
-        {
-            throw new UnknownAttributeException("Unknown attribute name '" + aName + "' in " + this.getClass().toString());
-        }
-        return retVal;
     }
 
     private void arrangeList()

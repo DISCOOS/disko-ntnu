@@ -126,37 +126,35 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		addList(m_unitPersonnel);
 	}
 
-	protected void defineReferences()
+	protected void defineObjects()
 	{
-		addReference(m_superiorUnit);
-		addReference(m_unitLeader);
-		addReference(m_track);
+		addObject(m_superiorUnit);
+		addObject(m_unitLeader);
+		addObject(m_track);
 	}
 
-	public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+	public void addListReference(IMsoObjectIf anObject, String aReferenceName)
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
-			return m_unitAssignments.add((IAssignmentIf) anObject);
+			m_unitAssignments.add((IAssignmentIf) anObject);
 		}
 		if (anObject instanceof IPersonIf)
 		{
-			return m_unitPersonnel.add((IPersonnelIf) anObject);
+			m_unitPersonnel.add((IPersonnelIf) anObject);
 		}
-		return false;
 	}
 
-	public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+	public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
-			return m_unitAssignments.remove((IAssignmentIf) anObject);
+			m_unitAssignments.remove((IAssignmentIf) anObject);
 		}
 		if (anObject instanceof IPersonIf)
 		{
-			return m_unitPersonnel.remove((IPersonnelIf) anObject);
+			m_unitPersonnel.remove((IPersonnelIf) anObject);
 		}
-		return false;
 	}
 
 	/*-------------------------------------------------------------------------------------------

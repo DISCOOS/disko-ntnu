@@ -37,28 +37,25 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         addList(m_cmdPostList);
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-    	addReference(m_system);
+    	addObject(m_system);
     }
 
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof ICmdPostIf)
         {
             m_cmdPostList.add((ICmdPostIf)anObject);
-            return true;
         }
-        return false;
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof ICmdPostIf)
         {
-            return m_cmdPostList.remove((ICmdPostIf)anObject);
+            m_cmdPostList.remove((ICmdPostIf)anObject);
         }
-        return true;
     }
 
     public IMsoManagerIf.MsoClassCode getMsoClassCode()

@@ -20,7 +20,7 @@ import org.redcross.sar.gui.ButtonState;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 
 public class MainMenu extends JPanel {
 

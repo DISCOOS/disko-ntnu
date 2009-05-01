@@ -1,13 +1,11 @@
 package org.redcross.sar.wp.unit;
 
-import javax.swing.AbstractCellEditor;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
@@ -19,11 +17,7 @@ import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -41,7 +35,7 @@ import org.redcross.sar.gui.document.AutoCompleteDocument;
 import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.table.DiskoTable;
@@ -334,7 +328,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
-					if(!m_associationTextField.isChangeable()) return;
+					if(!isSet() || !m_associationTextField.isChangeable()) return;
 					Association[] items = null;
 					if(suggestion!=null) {
 						items = AssocUtils.parse(suggestion,false,false);
@@ -401,8 +395,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             {
                 m_logger.error("Failed to set transfer handler",e);
             }
-            UnitLeaderColumnRenderer leaderRenderer = new UnitLeaderColumnRenderer();
-            leaderRenderer.setTable(m_personnelTable);
+            UnitLeaderColumnEditorCreator.installEditor(m_personnelTable,m_wp);
 
             JTableHeader tableHeader = m_personnelTable.getTableHeader();
             tableHeader.setResizingAllowed(false);
@@ -431,8 +424,12 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     {
         if (m_currentUnit != null)
         {            
-            // success
-        	return getIDs(true)!=null;
+			// validate
+			if (getIDs(true) != null)
+			{
+				return true;
+			}
+			Utils.showWarning("Begrensning","Kallesignal må oppgis for enheter");			
         }
         // failure
     	return false;
@@ -487,6 +484,9 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
     private void updateFieldContents()
     {
+		// prevent reenty
+		getInfoPanel().setChangeable(false);
+
         if (m_currentUnit != null)
         {
             // update caption
@@ -554,10 +554,15 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             getAssignmentTextField().setValue("");
             getStopTimeTextField().setValue("");
         }
+
+		// resume reenty
+		getInfoPanel().setChangeable(true);
+
     }
 
     private void updateUnitPersonnel() {
-        if (m_currentUnit != null)
+
+    	if (m_currentUnit != null)
         {
 
             UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
@@ -570,6 +575,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_personnelTable.getModel();
             model.setPersonnelList(null,null);
         }
+    	
     }
 
     private void updateWorkTime()
@@ -835,115 +841,6 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			return new String[] {"Navn", "Telefon", "Leder"};
 		}
 
-    }
-
-    /**
-     * Renderer and editor for the leader selection column
-     *
-     * @author thomasl
-     */
-    private class UnitLeaderColumnRenderer extends AbstractCellEditor implements TableCellEditor, TableCellRenderer
-    {
-        private static final long serialVersionUID = 1L;
-
-        private JPanel m_panel;
-        private JButton m_leaderButton;
-        JTable m_table;
-        private int m_editingRow;
-
-        public UnitLeaderColumnRenderer()
-        {
-
-            m_panel = new JPanel();
-
-            String letter = m_resources.getString("LeaderButton.letter");
-            String text = m_resources.getString("LeaderButton.text");
-            ImageIcon icon = DiskoIconFactory.getIcon("GENERAL.EDIT", "32x32");
-            m_leaderButton = DiskoButtonFactory.createButton(letter,text,icon,ButtonSize.SMALL);
-            m_leaderButton.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent arg0)
-                {
-                    // Set unit leader to selected personnel
-                    IUnitIf editingUnit = m_wp.getEditingUnit();
-
-                    // has editing unit?
-                    if(editingUnit!=null) {
-	                    int index = m_table.convertRowIndexToModel(m_editingRow);
-	                    if(index==-1) return;
-	                    UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
-	                    IPersonnelIf newLeader = model.getPersonnel(index);
-
-	                    // remove?
-	                    if(editingUnit.getUnitLeader()==newLeader)
-	                    	editingUnit.setUnitLeader(null);
-	                    else
-	                    	editingUnit.setUnitLeader(newLeader);
-
-	                    // Commit changes¨
-	                    if (!m_wp.isNewUnit())
-	                    {
-                            try {
-                				m_wp.getMsoModel().commit(m_wp.getCommitManager().getChanges(m_currentUnit));
-                			} catch (TransactionException ex) {
-                				m_logger.error("Failed to commit unit detail changes",ex);
-                			}            
-	                    }
-
-	                    fireEditingStopped();
-                    }
-                }
-            });
-            m_panel.add(m_leaderButton);
-        }
-
-        public void setTable(JTable table)
-        {
-            m_table = table;
-            m_panel.setBackground(m_table.getBackground());
-
-            TableColumn column = m_table.getColumnModel().getColumn(2);
-            column.setCellEditor(this);
-            column.setCellRenderer(this);
-            Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
-            column.setPreferredWidth(dim.width + 10);
-            column.setMaxWidth(dim.width + 10);
-            m_table.setRowHeight(dim.height + 10);
-        }
-
-
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column)
-        {
-            m_editingRow = row;
-            return m_panel;
-        }
-
-
-        public Object getCellEditorValue()
-        {
-            return null;
-        }
-
-
-        public Component getTableCellRendererComponent(JTable arg0,
-                                                       Object arg1, boolean arg2, boolean arg3, int row, int column)
-        {
-            int index = m_table.convertRowIndexToModel(row);
-            if(index!=-1)
-            {
-	            UnitPersonnelTableModel model = (UnitPersonnelTableModel) m_table.getModel();
-	            IPersonnelIf personnel = model.getPersonnel(index);
-
-	            IUnitIf editingUnit = m_wp.getEditingUnit();
-	            if (editingUnit != null)
-	            {
-	                m_leaderButton.setSelected(editingUnit.getUnitLeader() == personnel);
-	            }
-            }
-
-            return m_panel;
-        }
     }
     
 }

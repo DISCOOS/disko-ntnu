@@ -81,63 +81,57 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     }
 
     @Override
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
-        addReference(m_sender);
+        super.defineObjects();
+        addObject(m_sender);
     }
 
     @Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof ITaskIf)
         {
             m_messageTasks.add((ITaskIf) anObject);
-            return true;
         }
         if (anObject instanceof IMessageLineIf)
         {
             m_messageLines.add((IMessageLineIf) anObject);
-            return true;
         }
         if (anObject instanceof ICommunicatorIf)
         {
             if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
             {
                 m_confirmedReceivers.add((ICommunicatorIf) anObject);
-                return true;
             }
             if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
             {
                 m_unconfirmedReceivers.add((ICommunicatorIf) anObject);
-                return true;
             }
         }
-        return super.addObjectReference(anObject, aReferenceName);
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof ITaskIf)
         {
-            return m_messageTasks.remove((ITaskIf) anObject);
+            m_messageTasks.remove((ITaskIf) anObject);
         }
         if (anObject instanceof IMessageLineIf)
         {
-            return m_messageLines.remove((IMessageLineIf) anObject);
+            m_messageLines.remove((IMessageLineIf) anObject);
         }
         if (anObject instanceof ICommunicatorIf)
         {
             if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
             {
-                return m_confirmedReceivers.remove((ICommunicatorIf) anObject);
+                m_confirmedReceivers.remove((ICommunicatorIf) anObject);
             }
             if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
             {
-                return m_unconfirmedReceivers.remove((ICommunicatorIf) anObject);
+                m_unconfirmedReceivers.remove((ICommunicatorIf) anObject);
             }
         }
-        return super.removeObjectReference(anObject, aReferenceName);
     }
 
     public static MessageImpl implementationOf(IMessageIf anInterface) throws MsoCastException

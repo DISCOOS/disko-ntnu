@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -53,13 +54,6 @@ public class DiskoButtonFactory
 	private static Dimension smallSize;
 	private static Dimension normalSize;
 	private static Dimension longSize;
-
-	public enum ButtonSize {
-		TINY,
-		SMALL,
-		NORMAL,
-		LONG
-	}
 
 	/**
 	 * Creates a JButton based on size argument

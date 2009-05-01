@@ -21,7 +21,7 @@ import org.redcross.sar.event.TickEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.layer.IDsObjectLayer;

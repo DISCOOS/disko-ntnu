@@ -22,6 +22,7 @@ import javax.swing.event.EventListenerList;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.ButtonState;
 import org.redcross.sar.gui.DiskoIcon;
+import org.redcross.sar.gui.UIConstants.ButtonPlacement;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -67,14 +68,9 @@ public class NavMenu extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum ButtonPlacement {
-		LEFT,
-		RIGHT
-    }
-
 	private UIFactory factory;
 	private JToggleButton dummyToggleButton;
-	private JPanel leftPanel ;
+	private JPanel leftPanel;
 	private JPanel rightPanel;
 
 	/**
@@ -164,49 +160,49 @@ public class NavMenu extends JPanel {
 		bgroup.add(getDummyToggleButton());
 
 		// add all available commands
-		addCommand(getDrawHostToolToggleButton(), getDrawHostTool(),
+		addButton(getDrawHostToolToggleButton(), getDrawHostTool(),
 				MapToolType.DRAW_HOST_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getFreeHandToggleButton(), getFreeHandTool(),
+		addButton(getFreeHandToggleButton(), getFreeHandTool(),
 				MapToolType.FREEHAND_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getLineToolToggleButton(), getLineTool(),
+		addButton(getLineToolToggleButton(), getLineTool(),
 				MapToolType.LINE_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getPOIToggleButton(), getPOITool(),
+		addButton(getPOIToggleButton(), getPOITool(),
 				MapToolType.POI_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getPositionToggleButton(), getPositionTool(),
+		addButton(getPositionToggleButton(), getPositionTool(),
 				MapToolType.POSITION_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getFlankToggleButton(), getFlankTool(),
+		addButton(getFlankToggleButton(), getFlankTool(),
 				MapToolType.FLANK_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getSplitToggleButton(), getSplitTool(),
+		addButton(getSplitToggleButton(), getSplitTool(),
 				MapToolType.SPLIT_TOOL, ButtonPlacement.LEFT,1);
-		addCommand(getSelectFeatureToggleButton(), getSelectFeatureTool(),
+		addButton(getSelectFeatureToggleButton(), getSelectFeatureTool(),
 				MapToolType.SELECT_TOOL, ButtonPlacement.LEFT,0);
-		addCommand(getEraseButton(), getEraseTool(),
+		addButton(getEraseButton(), getEraseTool(),
 				MapToolType.ERASE_TOOL, ButtonPlacement.LEFT,0);
-		addCommand(getElementToggleButton(), getElementCommand(),
+		addButton(getElementToggleButton(), getElementCommand(),
 				MapCommandType.ELEMENT_COMMAND, ButtonPlacement.LEFT,1);
-		addCommand(getZoomInToggleButton(), getZoomInTool(),
+		addButton(getZoomInToggleButton(), getZoomInTool(),
 				MapToolType.ZOOM_IN_TOOL, ButtonPlacement.RIGHT,0);
-		addCommand(getZoomOutToggleButton(), getZoomOutTool(),
+		addButton(getZoomOutToggleButton(), getZoomOutTool(),
 				MapToolType.ZOOM_OUT_TOOL, ButtonPlacement.RIGHT,0);
-		addCommand(getPanToggleButton(), getPanTool(),
+		addButton(getPanToggleButton(), getPanTool(),
 				MapToolType.PAN_TOOL, ButtonPlacement.RIGHT,0);
-		addCommand(getZoomInFixedButton(), getZoomInFixedCommand(),
+		addButton(getZoomInFixedButton(), getZoomInFixedCommand(),
 				MapCommandType.ZOOM_IN_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getZoomOutFixedButton(), getZoomOutFixedCommand(),
+		addButton(getZoomOutFixedButton(), getZoomOutFixedCommand(),
 				MapCommandType.ZOOM_OUT_FIXED_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getFullExtentButton(), getFullExtentCommand(),
+		addButton(getFullExtentButton(), getFullExtentCommand(),
 				MapCommandType.ZOOM_FULL_EXTENT_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getZoomToLastExtentBackwardButton(), getZoomToLastExtentBackwardCommand(),
+		addButton(getZoomToLastExtentBackwardButton(), getZoomToLastExtentBackwardCommand(),
 				MapCommandType.ZOOM_TO_LAST_EXTENT_BACKWARD_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getZoomToLastExtentForwardButton(), getZoomToLastExtentForwardCommand(),
+		addButton(getZoomToLastExtentForwardButton(), getZoomToLastExtentForwardCommand(),
 				MapCommandType.ZOOM_TO_LAST_EXTENT_FORWARD_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getMapToggleButton(), getMapToggleCommand(),
+		addButton(getMapToggleButton(), getMapToggleCommand(),
 				MapCommandType.MAP_TOGGLE_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getScaleButton(), getScaleCommand(),
+		addButton(getScaleButton(), getScaleCommand(),
 				MapCommandType.SCALE_COMMAND, ButtonPlacement.RIGHT,1);
-		addCommand(getTocToggleButton(), getTocTool(),
+		addButton(getTocToggleButton(), getTocTool(),
 				MapCommandType.TOC_COMMAND, ButtonPlacement.RIGHT,0);
-		addCommand(getGotoToggleButton(), getGotoTool(),
+		addButton(getGotoToggleButton(), getGotoTool(),
 				MapCommandType.GOTO_COMMAND, ButtonPlacement.RIGHT,0);
 
 
@@ -987,7 +983,7 @@ public class NavMenu extends JPanel {
 		return (AbstractButton)buttons.get(key);
 	}
 
-	public void addCommand(AbstractButton button, ICommand command, Enum<?> e, Enum<?> buttonPlacement, int options) {
+	public void addButton(AbstractButton button, ICommand command, Enum<?> e, Enum<?> buttonPlacement, int options) {
 		if (buttonPlacement == ButtonPlacement.LEFT) {
 			getLeftPanel().add(button);
 		} else {

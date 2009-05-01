@@ -7,7 +7,7 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.tool.IMapTool;
 
 public class BaseToolPanel extends BasePanel implements IToolPanel {

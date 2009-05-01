@@ -39,18 +39,8 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     public static TrackImpl implementationOf(ITrackIf anInterface) throws MsoCastException

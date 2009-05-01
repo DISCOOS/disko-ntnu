@@ -119,8 +119,7 @@ public class UnitUtils
 				personnel = reinstateResource(personnel, PersonnelStatus.ON_ROUTE);
 			}
 		}
-		else
-		{
+		else if(!PersonnelStatus.ON_ROUTE.equals(status)) {
 			personnel.setStatus(PersonnelStatus.ON_ROUTE);
 			personnel.setCallOut(Calendar.getInstance());
 		}
@@ -145,8 +144,7 @@ public class UnitUtils
 				personnel = reinstateResource(personnel, PersonnelStatus.ARRIVED);
 			}
 		}
-		else
-		{
+		else if(!PersonnelStatus.ARRIVED.equals(status)) {
 			personnel.setStatus(PersonnelStatus.ARRIVED);
 			personnel.setArrived(Calendar.getInstance());
 		}
@@ -160,7 +158,11 @@ public class UnitUtils
 	 */
 	public static void releasePersonnel(IPersonnelIf personnel)
 	{
-		personnel.setStatus(PersonnelStatus.RELEASED);
+		PersonnelStatus status = personnel.getStatus();
+		if(!PersonnelStatus.RELEASED.equals(status)) {
+			personnel.setStatus(PersonnelStatus.RELEASED);
+			personnel.setReleased(Calendar.getInstance());
+		}
 	}
 
 	/**

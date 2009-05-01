@@ -35,10 +35,18 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	protected int m_cellColumn;
 	protected JTable m_table;	
 	protected Object m_value;
-	protected boolean m_isSelected;
-	protected boolean m_hasFocus;
+	
+	protected int m_editCellRow;
+	protected int m_editCellColumn;
+	protected boolean m_hasCellFocus;
+	protected boolean m_isCellSelected;
+	protected JTable m_editTable;	
+	protected Object m_editValue;
+	protected boolean m_hasEditCellFocus;
+	protected boolean m_isEditCellSelected;
+	
 	protected boolean m_isEditing;
-	protected boolean m_isEditorShown;
+	protected boolean m_isShowPopup;
 	
 	private TableIconConverter m_icons;
 	private TableStringConverter m_strings;
@@ -96,28 +104,48 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 		return m_cellColumn; 
 	}
 	
-	public boolean isSelected() {
-		return m_isSelected;
+	public int getEditCellRow() {
+		return m_editCellRow; 
+	}
+	
+	public int getEditCellColumn() {
+		return m_editCellColumn; 
+	}
+	
+	public boolean isCellSelected() {
+		return m_isCellSelected;
+	}
+	
+	public boolean isEditCellSelected() {
+		return m_isEditCellSelected;
 	}
 	
 	public JTable getTable() {
 		return m_table;
 	}
 	
-	public boolean hasFocus() {
-		return m_hasFocus;
+	public JTable getEditTable() {
+		return m_editTable;
+	}
+	
+	public boolean hasCellFocus() {
+		return m_hasCellFocus;
+	}
+	
+	public boolean hasEditCellFocus() {
+		return m_hasEditCellFocus;
 	}
 	
 	public boolean isEditing() {
 		return m_isEditing;
 	}
 	
-	public boolean isEditorShown() {
-		return m_isEditorShown;
+	public boolean isShowPopup() {
+		return m_isShowPopup;
 	}
 	
-	public void setEditorShown(boolean isShown) {
-		m_isEditorShown = isShown;
+	public void setShowPopup(boolean isShown) {
+		m_isShowPopup = isShown;
 	}
 	
 	public TableStringConverter getStringConverter() {
@@ -134,6 +162,12 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 		return text!=null ? text : ""; 			
 	}
 	
+	public String getEditText() {
+		String text = getText(m_editTable,m_editCellRow,m_editCellColumn); 
+		// get text
+		return text!=null ? text : ""; 			
+	}
+	
 	public TableIconConverter getIconConverter() {
 		return m_icons;
 	}
@@ -144,7 +178,12 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	
 	public Icon getIcon() {
 		// get icon
-		return getIcon(m_table,m_cellRow,m_cellColumn); 			
+		return getIcon(m_table,m_cellRow,m_cellColumn);
+	}	
+	
+	public Icon getEditIcon() {
+		// get icon
+		return getIcon(m_editTable,m_editCellRow,m_editCellColumn);
 	}	
 	
 	public void addActionListener(ActionListener listener) {
@@ -164,7 +203,7 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	}
 	
 	public Object getCellEditorValue() {
-		return m_value;
+		return m_editValue;
 	}
 
 	public boolean isCellEditable(EventObject e) {
@@ -267,11 +306,11 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 		
 		// prepare
-		m_value = value;
-		m_cellRow = row;
-		m_cellColumn = column;
-		m_isSelected = isSelected;
-		m_table = table;
+		m_editValue = value;
+		m_editCellRow = row;
+		m_editCellColumn = column;
+		m_isEditCellSelected = isSelected;
+		m_editTable = table;
 		m_isEditing = true;
 		
 		// draw buttons
@@ -289,10 +328,10 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 		m_value = value;
 		m_cellRow = row;
 		m_cellColumn = column;
-		m_isSelected = isSelected;
+		m_isCellSelected = isSelected;
 		m_table = table;
 		m_isEditing = false;
-		m_hasFocus = false;
+		m_hasCellFocus = false;
 		
 		// draw buttons
 		return getComponent();

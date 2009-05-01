@@ -32,19 +32,9 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        addReference(m_searchAreaHypothesis);
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
+        addObject(m_searchAreaHypothesis);
     }
 
     public static SearchAreaImpl implementationOf(ISearchAreaIf anInterface) throws MsoCastException

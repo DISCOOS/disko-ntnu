@@ -348,6 +348,11 @@ public class Application extends JFrame implements IApplication, WindowListener
 	public boolean isLoading() {
 		return isLoading;
 	}
+	
+	public boolean isTouchMode() {
+		return "TOUCH".equalsIgnoreCase(AppProps.getText("GUI.LAYOUT.MODE"));
+	}
+
 
 	private void setLoading(boolean isLoading) {
 		// update

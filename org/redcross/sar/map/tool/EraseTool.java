@@ -9,7 +9,7 @@ import javax.swing.SwingUtilities;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.SelectMsoObjectDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;

@@ -293,8 +293,8 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	if (equal(m_serverValue, aValue))
                 {
                     newState = ModificationState.STATE_SERVER;
+                    isChanged = equal(m_localValue, aValue);
                     m_localValue = null;
-                    isChanged = true;
                 } else
                 {
                     newState = ModificationState.STATE_LOCAL;

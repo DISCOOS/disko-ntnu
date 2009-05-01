@@ -17,11 +17,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
+import org.redcross.sar.Application;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.event.IToggleListener;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;
 
@@ -53,6 +54,9 @@ public class BasePanel extends AbstractPanel {
 
 	protected int minimumCollapsedHeight;
 	protected int preferredExpandedHeight;
+	
+	// get layout mode
+	protected static boolean isTouchMode = Application.getInstance().isTouchMode();
 
 
 	/* ===========================================
@@ -106,10 +110,13 @@ public class BasePanel extends AbstractPanel {
 		// initialize container
 		setContainer(new JPanel());
 		setContainerLayout(new BorderLayout());
+		
+		// get application
+		
 
 		// prepare this
 		this.setLayout(new BorderLayout());
-		this.add(getHeaderPanel(),BorderLayout.NORTH);
+		this.add(getHeaderPanel(),isTouchMode?BorderLayout.SOUTH:BorderLayout.NORTH);
 		this.add(getScrollPane(),BorderLayout.CENTER);
 		this.setBorderColor(borderColor);
 
@@ -191,7 +198,11 @@ public class BasePanel extends AbstractPanel {
 		if (headerPanel == null) {
 			try {
 				headerPanel = new HeaderPanel("",buttonSize);
-				headerPanel.setInsets(0,0,1,0);
+				if(isTouchMode) {
+					headerPanel.setInsets(1,0,0,0);
+				} else {
+					headerPanel.setInsets(0,0,1,0);
+				}
 				headerPanel.addWorkEventListener(new IWorkFlowListener() {
 
 					public void onFlowPerformed(WorkFlowEvent e) {
@@ -280,10 +291,15 @@ public class BasePanel extends AbstractPanel {
 	public void setBorderVisible(boolean isVisible) {
 		isBorderVisible = isVisible;
 		super.setBorder(createBorder());
-		if(isVisible)
-			getHeaderPanel().setInsets(0, 0, 1, 0);
-		else
+		if(isVisible) {
+			if(isTouchMode) {
+				getHeaderPanel().setInsets(1, 0, 0, 0);
+			} else {
+				getHeaderPanel().setInsets(0, 0, 1, 0);
+			}
+		} else {
 			getHeaderPanel().setInsets(1, 1, 1, 1);
+		}
 	}
 
 	@Override

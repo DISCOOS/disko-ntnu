@@ -47,22 +47,12 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        addReference(m_intelligencePOI);
-        addReference(m_intelligenceRoute);
-        addReference(m_intelligenceSubject);
-        addReference(m_intelligenceTrack);
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
+        addObject(m_intelligencePOI);
+        addObject(m_intelligenceRoute);
+        addObject(m_intelligenceSubject);
+        addObject(m_intelligenceTrack);
     }
 
     public static IntelligenceImpl implementationOf(IIntelligenceIf anInterface) throws MsoCastException

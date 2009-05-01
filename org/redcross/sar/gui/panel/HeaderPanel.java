@@ -23,7 +23,7 @@ import javax.swing.SwingConstants;
 
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;

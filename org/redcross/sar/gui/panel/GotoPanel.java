@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMap.CoordinateFormat;
 import org.redcross.sar.util.Utils;

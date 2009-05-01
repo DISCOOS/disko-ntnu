@@ -6,7 +6,7 @@ import java.util.Calendar;
 
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.gui.panel.PositionPanel;
 import org.redcross.sar.mso.IMsoManagerIf;

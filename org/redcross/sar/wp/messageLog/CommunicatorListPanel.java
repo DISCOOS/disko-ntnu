@@ -24,7 +24,7 @@ import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 

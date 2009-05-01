@@ -64,11 +64,11 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        addReference(m_linePOI);
-        addReference(m_lineUnit);
-        addReference(m_lineAssignment);
+        addObject(m_linePOI);
+        addObject(m_lineUnit);
+        addObject(m_lineAssignment);
     }
 
     public static MessageLineImpl implementationOf(IMessageLineIf anInterface) throws MsoCastException
@@ -86,16 +86,6 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     public IMsoManagerIf.MsoClassCode getMsoClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_MESSAGELINE;
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     /*-------------------------------------------------------------------------------------------

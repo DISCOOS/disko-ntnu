@@ -17,7 +17,7 @@ import org.disco.io.serial.SerialLink;
 import org.disco.io.serial.TNCSession;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.IDiskoField;
 import org.redcross.sar.gui.panel.DefaultPanel;

@@ -14,7 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.AbstractField;
 import org.redcross.sar.gui.field.CheckBoxField;
 import org.redcross.sar.gui.field.DTGField;

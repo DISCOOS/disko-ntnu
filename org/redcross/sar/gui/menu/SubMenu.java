@@ -21,7 +21,7 @@ import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWp;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;

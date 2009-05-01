@@ -12,7 +12,7 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.renderer.RadioListCellRenderer;
+import org.redcross.sar.gui.renderer.RadioButtonListCellRenderer;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -152,7 +152,7 @@ public class PriorityDialog extends DefaultDialog {
 		if (priorityList == null) {
 			try {
 				priorityList = new JList();
-				priorityList.setCellRenderer(new RadioListCellRenderer());
+				priorityList.setCellRenderer(new RadioButtonListCellRenderer());
 				priorityList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);				
 				priorityList.setFixedCellHeight(25);
 				priorityList.setListData(getPriData());

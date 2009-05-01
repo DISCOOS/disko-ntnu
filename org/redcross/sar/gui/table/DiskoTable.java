@@ -109,14 +109,12 @@ public class DiskoTable extends JTable {
 			}
 
 		});
-
-
 	}
 
 	/* ====================================================
 	 * Overridden methods
-	 * ==================================================== */
-
+	 * ==================================================== */	
+	
 	@Override
 	public void setModel(TableModel model) {
 		// forward

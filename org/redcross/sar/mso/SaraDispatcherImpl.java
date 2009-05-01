@@ -412,8 +412,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 {
                     try
                     {
-                        SarObjectImpl sarBaseObject = (SarObjectImpl) entry.getValue().get(i);
-                        //    SarBaseObject sarBaseObject =  entry.getValue().get(i);
+                        SarObjectImpl sarBaseObject = (SarObjectImpl)entry.getValue().get(i);
 
                         updateMsoReference(so, sarBaseObject, entry.getKey(), SarBaseObjectImpl.ADD_REL_FIELD);
                     }
@@ -702,7 +701,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     	// initialize
         SarSession sarSess = sarSvc.getSession();
         Map<?,?> attrMap = msoObj.getAttributes();
-        Map<?,?> relMap = msoObj.getReferenceObjects();
+        Map<?,?> relMap = msoObj.getObjectReferences();
         List<SarBaseObject> objs = sbo.getObjects();
 
         // loop over all objects in sara object
@@ -933,10 +932,9 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
         	String[] toObject = (String[])co.getToObject();
 
-            String relId = toObject[1];
+            String relId = toObject.length>1?toObject[1]:null;
             String relName = ((String[]) co.getToObj())[0];
             SarObjectImpl rel = (SarObjectImpl) sarOperation.getSarObject(relId);
-
             updateMsoReference(so, rel, relName, co.getFieldName());
 
         } else
@@ -979,26 +977,37 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         {
             try
             {
-                source.addObjectReference(relObj, relName);
+                source.addListReference(relObj, relName);
             }
-            catch (DuplicateIdException die)
+            catch (Exception e)
             {
-                //Do nothing will occure when object is created by this client
+                Log.printStackTrace("Failed to add list reference", e);
             }
         } else if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.ADD_NAMED_REL_FIELD))
         {
-
-            IMsoReferenceIf refObj = (IMsoReferenceIf) source.getReferenceObjects().get(relName.toLowerCase());
-            if (refObj == null)
-            {
-                source.getReferenceObjects().put(relName, relObj);
-            } else
-            {
-
-                refObj.setReference(relObj);
-            }
-
-        }
+        	try {
+				source.setObjectReference(relObj, relName);
+			} catch (Exception e) {
+                Log.printStackTrace("Failed to set object reference", e);
+			}
+            
+	    } else if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.REM_REL_FIELD))
+	    {	    	
+	    	try {
+				source.removeListReference(relObj, relName);
+			} catch (Exception e) {
+                Log.printStackTrace("Failed to remove list reference", e);
+			}
+            
+        } else if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.REM_NAMED_REL_FIELD))
+        {   
+        	try {
+				source.setObjectReference(null, relName);
+			} catch (Exception e) {
+                Log.printStackTrace("Failed to reset object reference", e);
+			}
+	    }
+        
     }
 
     private SarObject getParentObject(SarBaseObject so)

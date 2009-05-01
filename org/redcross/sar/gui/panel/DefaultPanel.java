@@ -8,7 +8,7 @@ import javax.swing.JButton;
 
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 
 public class DefaultPanel extends BasePanel {
 

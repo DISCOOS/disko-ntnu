@@ -44,18 +44,8 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     public void setBirthdate(Calendar aBirthdate)

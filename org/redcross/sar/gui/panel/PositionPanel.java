@@ -20,7 +20,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;

@@ -11,7 +11,7 @@ import javax.swing.event.DocumentListener;
 
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.CheckBoxField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.map.MapUtil;

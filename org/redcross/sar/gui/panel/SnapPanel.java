@@ -27,7 +27,7 @@ import javax.swing.event.ChangeListener;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.tool.SnapAdapter;
 import org.redcross.sar.map.tool.SnapAdapter.SnapListener;

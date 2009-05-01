@@ -5,17 +5,22 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -26,28 +31,22 @@ import org.redcross.sar.gui.DiskoCorner;
 import org.redcross.sar.gui.DiskoGlassPane;
 import org.redcross.sar.gui.DiskoGlassPaneUtils;
 import org.redcross.sar.gui.DiskoRoundBorder;
+import org.redcross.sar.gui.UIConstants;
 import org.redcross.sar.gui.dialog.LoginDialog;
 import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.NumPadDialog;
 import org.redcross.sar.gui.dialog.OperationDialog;
 import org.redcross.sar.gui.dialog.ServiceManagerDialog;
 import org.redcross.sar.gui.dialog.TaskDialog;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.menu.MainMenu;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.menu.SubMenu;
 import org.redcross.sar.gui.menu.SysMenu;
 import org.redcross.sar.gui.panel.MainPanel;
+import org.redcross.sar.util.Utils;
 
 public class UIFactory {
-
-	public final static String DEFAULT_FONT_NAME = "Tahoma";
-	public final static String DIALOG_FONT = "Dialog";
-	public final static int FRONT_SIZE_MEDIUM = 14;
-	public final static int FONT_SIZE_LARGE = 16;
-	public final static Font DEFAULT_BOLD_SMALL_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, 10);
-	public final static Font DEFAULT_PLAIN_MEDIUM_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, FRONT_SIZE_MEDIUM);
-	public final static Font DEFAULT_PLAIN_LARGE_FONT = new Font(DEFAULT_FONT_NAME, Font.PLAIN, FONT_SIZE_LARGE);
-	public final static Font DIALOG_PLAIN_MEDIUM_FONT = new Font(DIALOG_FONT, Font.PLAIN, FRONT_SIZE_MEDIUM);
 
 	private IApplication app;
 	private JPanel contentPanel;
@@ -94,47 +93,47 @@ public class UIFactory {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 			// set DISKO defaults
-			UIManager.put("Button.font", DEFAULT_BOLD_SMALL_FONT);
-			UIManager.put("CheckBox.font", DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("CheckBoxMenuItem.acceleratorFont", DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("CheckBoxMenuItem.font", DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("ColorChooser.font", DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("ComboBox.font", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("EditorPane.font", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("FileChooser.listFont", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("FormattedTextField.font", DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Label.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("List.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Menu.acceleratorFont",DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("Menu.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("MenuBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("MenuItem.acceleratorFont",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("MenuItem.font",DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("OptionPane.buttonFont",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("OptionPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("OptionPane.messageFont",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Panel.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("PasswordField.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("PopupMenu.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ProgressBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("RadioButton.font",DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("RadioButtonMenuItem.acceleratorFont",DIALOG_PLAIN_MEDIUM_FONT);
-			UIManager.put("RadioButtonMenuItem.font", DEFAULT_PLAIN_LARGE_FONT);
-			UIManager.put("ScrollPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Slider.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Spinner.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TabbedPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Table.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TableHeader.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TextField.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TextPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("EditorPane.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("TitledBorder.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ToggleButton.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ToolBar.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("ToolTip.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Tree.font",DEFAULT_PLAIN_MEDIUM_FONT);
-			UIManager.put("Viewport.font",DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Button.font", UIConstants.DEFAULT_BOLD_SMALL_FONT);
+			UIManager.put("CheckBox.font", UIConstants.DEFAULT_PLAIN_LARGE_FONT);
+			UIManager.put("CheckBoxMenuItem.acceleratorFont", UIConstants.DIALOG_PLAIN_MEDIUM_FONT);
+			UIManager.put("CheckBoxMenuItem.font", UIConstants.DEFAULT_PLAIN_LARGE_FONT);
+			UIManager.put("ColorChooser.font", UIConstants.DIALOG_PLAIN_MEDIUM_FONT);
+			UIManager.put("ComboBox.font", UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("EditorPane.font", UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("FileChooser.listFont", UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("FormattedTextField.font", UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Label.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("List.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Menu.acceleratorFont",UIConstants.DIALOG_PLAIN_MEDIUM_FONT);
+			UIManager.put("Menu.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("MenuBar.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("MenuItem.acceleratorFont",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("MenuItem.font",UIConstants.DEFAULT_PLAIN_LARGE_FONT);
+			UIManager.put("OptionPane.buttonFont",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("OptionPane.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("OptionPane.messageFont",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Panel.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("PasswordField.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("PopupMenu.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("ProgressBar.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("RadioButton.font",UIConstants.DEFAULT_PLAIN_LARGE_FONT);
+			UIManager.put("RadioButtonMenuItem.acceleratorFont",UIConstants.DIALOG_PLAIN_MEDIUM_FONT);
+			UIManager.put("RadioButtonMenuItem.font", UIConstants.DEFAULT_PLAIN_LARGE_FONT);
+			UIManager.put("ScrollPane.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Slider.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Spinner.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("TabbedPane.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Table.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("TableHeader.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("TextField.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("TextPane.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("EditorPane.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("TitledBorder.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("ToggleButton.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("ToolBar.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("ToolTip.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Tree.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
+			UIManager.put("Viewport.font",UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
 			UIManager.put("ScrollBar.width", 25);
 			UIManager.put("ScrollBar.height", 25);
 			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());
@@ -467,4 +466,287 @@ public class UIFactory {
 
 	};
 
+	/**
+	 * Create a default button (size equal to ButtonSize.SMALL) that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as no-ops)
+	 * @return JButton object
+	 */
+	public static JButton createButtonRenderer() {
+		return createButtonRenderer(null,null,null,ButtonSize.SMALL);
+	}
+	
+	/**
+	 * Create a default button (size equal to ButtonSize.SMALL) that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as no-ops)
+	 * @param text - button text
+	 * @param tooltip - button tool tip
+	 * @param icon - button icon
+	 * @param size - button size (LONG, NORMAL, SMALL, TINY)
+	 * @return JButton object
+	 */
+	
+	public static JButton createButtonRenderer(String text, String tooltip, Icon icon, ButtonSize size) {
+		JButton button = new JButton(text,icon) {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { /*NOP*/}
+			@Override
+			public void firePropertyChange(String propertyName, char oldValue,char newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, int oldValue, int newValue) { /*NOP*/ }
+			@Override
+			public void validate() { /*NOP*/ }
+			@Override
+			public void revalidate() { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, byte oldValue, byte newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, double oldValue, double newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, float oldValue, float newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, long oldValue, long newValue) { /*NOP*/ }
+			@Override
+			protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, short oldValue, short newValue) { /*NOP*/ }
+			@Override
+			public void repaint() { /*NOP*/ }
+			@Override
+			public void repaint(int x, int y, int width, int height) { /*NOP*/ }
+			@Override
+			public void repaint(long tm) { /*NOP*/ }
+			
+		};
+		button.setToolTipText(tooltip);
+		Dimension d = DiskoButtonFactory.getButtonSize(size);
+		Utils.setFixedSize(button, d.width, d.height);
+		return button;
+	}
+
+	/**
+	 * Create a default toggle button default Button (size equal to ButtonSize.SMALL) that is suitable 
+	 * as a table cell renderer (overrides validate, invalidate, repaint and fireProperty  methods as no-ops)
+	 * @param text - button text
+	 * @param tooltip - button tool tip
+	 * @param icon - button icon
+	 * @param size - button size (LONG, NORMAL, SMALL, TINY)
+	 * @return JToggleButton object
+	 */
+	public static JToggleButton createToggleButtonRenderer() {
+		return createToggleButtonRenderer(null, null, null, ButtonSize.SMALL);
+	}
+
+	/**
+	 * Create a toggle button that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as no-ops)
+	 * @param text - button text
+	 * @param tooltip - button tool tip
+	 * @param icon - button icon
+	 * @param size - button size (LONG, NORMAL, SMALL, TINY)
+	 * @return JToggleButton object
+	 */
+	public static JToggleButton createToggleButtonRenderer(String text, String tooltip, Icon icon, ButtonSize size) {
+		JToggleButton button = new JToggleButton(text,icon) {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { /*NOP*/}
+			@Override
+			public void firePropertyChange(String propertyName, char oldValue,char newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, int oldValue, int newValue) { /*NOP*/ }
+			@Override
+			public void validate() { /*NOP*/ }
+			@Override
+			public void revalidate() { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, byte oldValue, byte newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, double oldValue, double newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, float oldValue, float newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, long oldValue, long newValue) { /*NOP*/ }
+			@Override
+			protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, short oldValue, short newValue) { /*NOP*/ }
+			@Override
+			public void repaint() { /*NOP*/ }
+			@Override
+			public void repaint(int x, int y, int width, int height) { /*NOP*/ }
+			@Override
+			public void repaint(long tm) { /*NOP*/ }
+			
+		};
+		button.setToolTipText(tooltip);
+		Dimension d = DiskoButtonFactory.getButtonSize(size);
+		Utils.setFixedSize(button, d.width, d.height);
+		return button;
+	}
+	
+	/**
+	 * Create a JPanel that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as no-ops)
+	 * @return JPanel object
+	 */
+	public static JPanel createPanelRenderer() {
+		JPanel panel = new JPanel() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { /*NOP*/}
+			@Override
+			public void firePropertyChange(String propertyName, char oldValue,char newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, int oldValue, int newValue) { /*NOP*/ }
+			@Override
+			public void validate() { /*NOP*/ }
+			@Override
+			public void revalidate() { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, byte oldValue, byte newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, double oldValue, double newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, float oldValue, float newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, long oldValue, long newValue) { /*NOP*/ }
+			@Override
+			protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, short oldValue, short newValue) { /*NOP*/ }
+			@Override
+			public void repaint() { /*NOP*/ }
+			@Override
+			public void repaint(int x, int y, int width, int height) { /*NOP*/ }
+			@Override
+			public void repaint(long tm) { /*NOP*/ }
+			
+		};
+		return panel;
+	}	
+
+	/**
+	 * Create a JLabel that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as no-ops)
+	 * @return JLabel object
+	 */
+	public static JLabel createLabelRenderer() {
+		JLabel label = new JLabel() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { /*NOP*/}
+			@Override
+			public void firePropertyChange(String propertyName, char oldValue,char newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, int oldValue, int newValue) { /*NOP*/ }
+			@Override
+			public void validate() { /*NOP*/ }
+			@Override
+			public void revalidate() { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, byte oldValue, byte newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, double oldValue, double newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, float oldValue, float newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, long oldValue, long newValue) { /*NOP*/ }
+			@Override
+			protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, short oldValue, short newValue) { /*NOP*/ }
+			@Override
+			public void repaint() { /*NOP*/ }
+			@Override
+			public void repaint(int x, int y, int width, int height) { /*NOP*/ }
+			@Override
+			public void repaint(long tm) { /*NOP*/ }
+			
+		};
+		return label;
+	}	
+	
+	/**
+	 * Create a JRadioButton that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as nop's)
+	 * @return JRadioButton object
+	 */
+	public static JRadioButton createRadioButtonRenderer() {
+		JRadioButton button = new JRadioButton() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { /*NOP*/}
+			@Override
+			public void firePropertyChange(String propertyName, char oldValue,char newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, int oldValue, int newValue) { /*NOP*/ }
+			@Override
+			public void validate() { /*NOP*/ }
+			@Override
+			public void revalidate() { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, byte oldValue, byte newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, double oldValue, double newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, float oldValue, float newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, long oldValue, long newValue) { /*NOP*/ }
+			@Override
+			protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, short oldValue, short newValue) { /*NOP*/ }
+			@Override
+			public void repaint() { /*NOP*/ }
+			@Override
+			public void repaint(int x, int y, int width, int height) { /*NOP*/ }
+			@Override
+			public void repaint(long tm) { /*NOP*/ }
+			
+		};
+		return button;
+	}
+	
+	/**
+	 * Create a JCheckBox that is suitable as a table cell 
+	 * renderer (overrides validate, invalidate, repaint and fireProperty  methods as nop's)
+	 * @return JCheckBox object
+	 */
+	public static JCheckBox createCheckBoxRenderer() {
+		JCheckBox checkBox = new JCheckBox() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { /*NOP*/}
+			@Override
+			public void firePropertyChange(String propertyName, char oldValue,char newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, int oldValue, int newValue) { /*NOP*/ }
+			@Override
+			public void validate() { /*NOP*/ }
+			@Override
+			public void revalidate() { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, byte oldValue, byte newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, double oldValue, double newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, float oldValue, float newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, long oldValue, long newValue) { /*NOP*/ }
+			@Override
+			protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) { /*NOP*/ }
+			@Override
+			public void firePropertyChange(String propertyName, short oldValue, short newValue) { /*NOP*/ }
+			@Override
+			public void repaint() { /*NOP*/ }
+			@Override
+			public void repaint(int x, int y, int width, int height) { /*NOP*/ }
+			@Override
+			public void repaint(long tm) { /*NOP*/ }
+			
+		};
+		return checkBox;
+	}	
+	
 }

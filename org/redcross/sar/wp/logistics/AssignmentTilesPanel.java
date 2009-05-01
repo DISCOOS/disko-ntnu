@@ -5,7 +5,7 @@ import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IDiskoDropTarget;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.DiskoTilesPanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;

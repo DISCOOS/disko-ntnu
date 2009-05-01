@@ -31,7 +31,7 @@ import java.util.List;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.gui.table.DiskoTableHeader;

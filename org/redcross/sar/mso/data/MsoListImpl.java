@@ -940,7 +940,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
     public IMsoListIf<M> getClone()
     {
-        MsoListImpl<M> retVal = new MsoListImpl<M>(getItemClass(), getOwner(), getName(), isMain(), getCardinality(), size());
+        MsoListImpl<M> retVal = new MsoListImpl<M>(getObjectClass(), getOwner(), getName(), isMain(), getCardinality(), size());
         for (M item : m_items.values())
         {
             retVal.m_items.put(item.getObjectId(), item);
@@ -963,7 +963,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
     /**
      * Get the item class
      */
-    public Class<M> getItemClass() {
+    public Class<M> getObjectClass() {
     	return m_itemClass;
     }
 

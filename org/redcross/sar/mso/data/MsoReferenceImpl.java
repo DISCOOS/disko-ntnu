@@ -1,7 +1,6 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.ChangeImpl;
-import org.redcross.sar.mso.TransactionManagerImpl;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
@@ -137,7 +136,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         }
     }
 
-    public void setReference(T aReference)
+    public boolean setReference(T aReference)
     {
     	/* ========================================================
     	 * Setting a new reference value is dependent on the
@@ -316,7 +315,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 *
             	 * =========================================================== */
 
-
             	// check if a conflict has occurred?
             	boolean isConflict = (m_state == ModificationState.STATE_LOCAL
             			|| m_state == ModificationState.STATE_CONFLICTING) ?
@@ -385,6 +383,8 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 *
             	 * =========================================================== */
 
+            	// is not allowed?
+            	if(aReference==null && m_cardinality>0) return false;
 
             	// local and server values in sync?
             	if (equal(m_serverValue, aReference))
@@ -425,6 +425,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         {
             registerReferenceChange(aReference, oldReference, isChanged, isLoopback);
         }
+        
+        // success
+        return true;
 
     }
 

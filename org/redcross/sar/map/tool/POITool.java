@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.gui.panel.POIPanel;
 import org.redcross.sar.map.MapUtil;

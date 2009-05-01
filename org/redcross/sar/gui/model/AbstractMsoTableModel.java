@@ -138,11 +138,11 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 		// load data from list?
 		if(source!=null) {
 			// get lists from data class type
-			Map<String,IMsoListIf<IMsoObjectIf>> map = source.getReferenceLists(getDataClass(), true);
+			Map<String,IMsoListIf<IMsoObjectIf>> map = source.getListReferences(getDataClass(), true);
 			// loop over all lists and select items
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
 				// is item class supported?
-				if(isSupported(it.getItemClass())) {
+				if(isSupported(it.getObjectClass())) {
 					load((Collection<T>)it.getItems(),true);
 				}
 			}

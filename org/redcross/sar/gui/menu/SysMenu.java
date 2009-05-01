@@ -5,12 +5,15 @@ import org.redcross.sar.gui.dialog.MapOptionDialog;
 import org.redcross.sar.gui.dialog.ServiceManagerDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
-import org.redcross.sar.util.Utils;
+import org.redcross.sar.gui.UIConstants.ButtonPlacement;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 
+import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -26,21 +29,22 @@ public class SysMenu extends JPanel {
 
 	private UIFactory factory;
 
-	/**
-	 * Button that controls this menu visible state
-	 */
+	private JPanel leftPanel ;
+	private JPanel rightPanel;
+	
 	private JToggleButton menuToggleButton;
 
 	private JButton swapToButton;
 	private JButton mapOptionButton;
 	private JButton newOpButton;
-	private JButton finishOperationButton;
+	private JButton shutdownButton;
 	private JButton mergeButton;
 	private JButton chooseOperationButton;
 	private JButton networkButton;
 
 	private final ButtonGroup bgroup = new ButtonGroup();
 	private final EventListenerList listeners = new EventListenerList();
+	private final Map<AbstractButton,JPanel> buttonMap = new HashMap<AbstractButton, JPanel>();
 
 	public SysMenu(UIFactory factory, MainMenu mainMenu) {
 		// prepare
@@ -56,21 +60,60 @@ public class SysMenu extends JPanel {
 	 * @return void
 	 */
 	private void initialize() {
+		
 		// defaults
 		setVisible(false);
-		FlowLayout flowLayout = new FlowLayout();
-		flowLayout.setHgap(0);
-		flowLayout.setVgap(0);
-		flowLayout.setAlignment(FlowLayout.RIGHT);
-		setLayout(flowLayout);
-		addButton(getSwapToButton());
-		addButton(getMapOptionButton());
-		addButton(getFinishOperationButton());
-		addButton(getNewOpButton());
-		addButton(getMergeButton());
-		addButton(getChooseOperationButton());
-		addButton(getNetworkButton());
+		
+		// add to layout
+		setLayout(new BorderLayout());
+		add(getLeftPanel(), BorderLayout.WEST);
+		add(getRightPanel(), BorderLayout.EAST);
+		
+		// add default buttons
+		addButton(getShutdownButton(),ButtonPlacement.LEFT);
+		addButton(getSwapToButton(),ButtonPlacement.RIGHT);
+		addButton(getMapOptionButton(),ButtonPlacement.RIGHT);
+		addButton(getNewOpButton(),ButtonPlacement.RIGHT);
+		addButton(getMergeButton(),ButtonPlacement.RIGHT);
+		addButton(getChooseOperationButton(),ButtonPlacement.RIGHT);
+		addButton(getNetworkButton(),ButtonPlacement.RIGHT);
+		
 	}
+	
+	private JPanel getLeftPanel() {
+		if (leftPanel == null) {
+			try {
+				leftPanel = new JPanel();
+				FlowLayout fl = new FlowLayout();
+				fl.setHgap(0);
+				fl.setVgap(0);
+				fl.setAlignment(FlowLayout.LEFT);
+				leftPanel.setLayout(fl);
+
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return leftPanel;
+	}
+
+	private JPanel getRightPanel() {
+		if (rightPanel == null) {
+			try {
+				rightPanel = new JPanel();
+				FlowLayout fl = new FlowLayout();
+				fl.setHgap(0);
+				fl.setVgap(0);
+				fl.setAlignment(FlowLayout.RIGHT);
+				rightPanel.setLayout(fl);
+
+			} catch (java.lang.Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return rightPanel;
+	}
+	
 
 	private JButton getNewOpButton()
 	{
@@ -108,13 +151,13 @@ public class SysMenu extends JPanel {
 		return mergeButton;
 	}
 
-	private JButton getFinishOperationButton()
+	private JButton getShutdownButton()
 	{
-		if (finishOperationButton == null) {
+		if (shutdownButton == null) {
 			try {
-				finishOperationButton = DiskoButtonFactory.createButton("SYSTEM.TERMINATE",ButtonSize.NORMAL);
-				finishOperationButton.setActionCommand("SYSTEM.TERMINATE");
-				finishOperationButton.addActionListener(new java.awt.event.ActionListener() {
+				shutdownButton = DiskoButtonFactory.createButton("SYSTEM.TERMINATE",ButtonSize.NORMAL);
+				shutdownButton.setActionCommand("SYSTEM.TERMINATE");
+				shutdownButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent e) {
 						Application.getInstance().finishOperation();
 					}
@@ -123,7 +166,7 @@ public class SysMenu extends JPanel {
 				e.printStackTrace();
 			}
 		}
-		return finishOperationButton;
+		return shutdownButton;
 	}
 
 	private JButton getChooseOperationButton()
@@ -199,20 +242,35 @@ public class SysMenu extends JPanel {
 		return networkButton;
 	}	
 
-	public void addButton(AbstractButton button) {
-		add(button);
-		if (button instanceof JToggleButton) {
-			bgroup.add(button);
+	public boolean addButton(AbstractButton button, ButtonPlacement buttonPlacement) {
+		if(!buttonMap.containsKey(button)) {
+			if (buttonPlacement == ButtonPlacement.LEFT) {
+				getLeftPanel().add(button);
+				buttonMap.put(button,getLeftPanel());
+			} else {
+				getRightPanel().add(button);
+				buttonMap.put(button,getRightPanel());
+			}
+			if (button instanceof JToggleButton) {
+				bgroup.add(button);
+			}
+			button.addActionListener(actionRepeater);
+			return true;
 		}
-		button.addActionListener(actionRepeater);
+		return false;
 	}
 
-	public void removeButton(AbstractButton button) {
-		remove(button);
-		if (button instanceof JToggleButton) {
-			bgroup.remove(button);
+	public boolean removeButton(AbstractButton button) {
+		JPanel panel = buttonMap.get(button);
+		if(panel!=null) {
+			panel.remove(button);
+			if (button instanceof JToggleButton) {
+				bgroup.remove(button);
+			}
+			button.removeActionListener(actionRepeater);
+			return true;
 		}
-		button.removeActionListener(actionRepeater);
+		return false;
 	}
 
 	public void addActionListener(ActionListener listener) {

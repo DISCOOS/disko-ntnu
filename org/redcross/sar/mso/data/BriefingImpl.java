@@ -62,46 +62,41 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         addList(m_briefingSubjects);
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        addReference(m_briefingHypothesis);
+        addObject(m_briefingHypothesis);
     }
 
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IForecastIf)
         {
             m_briefingForecasts.add((IForecastIf) anObject);
-            return true;
         }
         if (anObject instanceof IEnvironmentIf)
         {
             m_briefingEnvironments.add((IEnvironmentIf) anObject);
-            return true;
         }
         if (anObject instanceof ISubjectIf)
         {
             m_briefingSubjects.add((ISubjectIf) anObject);
-            return true;
         }
-        return false;
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IForecastIf)
         {
-            return m_briefingForecasts.remove((IForecastIf) anObject);
+            m_briefingForecasts.remove((IForecastIf) anObject);
         }
         if (anObject instanceof IEquipmentIf)
         {
-            return m_briefingEnvironments.remove((IEnvironmentIf) anObject);
+            m_briefingEnvironments.remove((IEnvironmentIf) anObject);
         }
         if (anObject instanceof ISubjectIf)
         {
-            return m_briefingSubjects.remove((ISubjectIf) anObject);
+            m_briefingSubjects.remove((ISubjectIf) anObject);
         }
-        return false;
     }
 
     public static BriefingImpl implementationOf(IBriefingIf anInterface) throws MsoCastException

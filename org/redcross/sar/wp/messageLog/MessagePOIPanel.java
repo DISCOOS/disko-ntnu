@@ -19,7 +19,7 @@ import javax.swing.SwingConstants;
 import com.esri.arcgis.interop.AutomationException;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.AbstractField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.menu.NavMenu;

@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -17,7 +18,7 @@ import org.redcross.sar.gui.document.AutoCompleteDocument;
 import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextAreaField;
@@ -52,6 +53,10 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	private static final Logger m_logger = Logger.getLogger(PersonnelDetailsLeftPanel.class);
 	private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
+	private static final ImageIcon m_alertedIcon = DiskoIconFactory.getIcon("STATUS.ALERTED","32x32");
+	private static final ImageIcon m_arrivedIcon = DiskoIconFactory.getIcon("STATUS.ARRIVED","32x32");
+	private static final ImageIcon m_releasedIcon = DiskoIconFactory.getIcon("STATUS.RELEASED","32x32");
+	
 	private IDiskoWpUnit m_wp;
 	private IPersonnelIf m_currentPersonnel;
 
@@ -129,7 +134,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	private JButton getChangeStatusButton() {
 		if(m_changeStatusButton==null) {
 			m_changeStatusButton = DiskoButtonFactory.createButton(ButtonSize.SMALL);
-			m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wp.getBundleText("AlertedButton.icon"),"32x32"));
+			m_changeStatusButton.setIcon(m_alertedIcon);
 			m_changeStatusButton.setToolTipText(m_wp.getBundleText("AlertedButton.text"));
 			m_changeStatusButton.addActionListener(new ActionListener()
 			{
@@ -145,18 +150,18 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 							{
 							case ON_ROUTE:
 								m_currentPersonnel = UnitUtils.callOutPersonnel(m_currentPersonnel);
-								m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wp.getBundleText("AlertedButton.icon"),"32x32"));
+								m_changeStatusButton.setIcon(m_alertedIcon);
 								m_changeStatusButton.setToolTipText(m_wp.getBundleText("AlertedButton.text"));
 								updateFieldContents();
 								break;
 							case ARRIVED:
 								UnitUtils.arrivedPersonnel(m_currentPersonnel);
-								m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wp.getBundleText("ArrivedButton.icon"),"32x32"));
+								m_changeStatusButton.setIcon(m_arrivedIcon);
 								m_changeStatusButton.setToolTipText(m_wp.getBundleText("ArrivedButton.text"));
 								break;
 							case RELEASED:
 								UnitUtils.releasePersonnel(m_currentPersonnel);
-								m_changeStatusButton.setIcon(DiskoIconFactory.getIcon(m_wp.getBundleText("ReleasedButton.icon"),"32x32"));
+								m_changeStatusButton.setIcon(m_releasedIcon);
 								m_changeStatusButton.setToolTipText(m_wp.getBundleText("ReleasedButton.text"));
 							}
 						}
@@ -178,7 +183,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 				@Override
 				public void onFlowPerformed(WorkFlowEvent e) {
 					// is changed?
-					if(m_nameTextField.isChangeable() && e.isChange() && e.isWorkDoneByAwtComponent()) {
+					if(isSet()&&m_nameTextField.isChangeable() && e.isChange() && e.isWorkDoneByAwtComponent()) {
 						String[] names = getNames(false);
 						if(names!=null) {
 							m_currentPersonnel.suspendClientUpdate();
@@ -222,7 +227,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
-					if(!m_associationTextField.isChangeable()) return;
+					if(!isSet() || !m_associationTextField.isChangeable()) return;
 					Association[] items = null;
 					if(suggestion!=null) {
 						items = AssocUtils.parse(suggestion,false,false);
@@ -368,6 +373,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	 */
 	public void updateFieldContents()
 	{
+		// prevent reenty
+		getInfoPanel().setChangeable(false);
+
 		if (m_currentPersonnel != null) {
 
 			// update caption
@@ -421,16 +429,24 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		            getAssociationTextField().setChangeable(true);        		
 	        	}
             }
-			
+            			
 		} else {
 
+			// prevent reenty
+			getInfoPanel().setChangeable(false);
+			
 			// update caption
 			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel,true));
 			m_nameTextField.setValue("");
 			m_roleTextField.setValue("");
             m_associationTextField.setValue("");
 			m_unitTextField.setValue("");
+			
 		}
+
+		// resume reenty
+		getInfoPanel().setChangeable(true);
+
 	}
 	
     /**
@@ -441,7 +457,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		if (m_currentPersonnel != null)
 		{
 			// validate
-			if (getNames(true)==null)
+			if (getNames(true)!=null)
 			{
 				return true;
 			}

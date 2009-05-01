@@ -16,7 +16,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.model.DiskoTableColumnModel;
 import org.redcross.sar.gui.table.AbstractTableCell;
 import org.redcross.sar.gui.table.DiskoTable;
@@ -161,7 +161,7 @@ public class AssignmentTable extends DiskoTable {
 
 	private TableCellButtons createEditor(boolean actions) {
 		final TableCellButtons editor = new TableCellButtons();
-		editor.setEditorShown(true);
+		editor.setShowPopup(true);
 		editor.setIconConverter(new AssignmentIconConverter());
 		editor.setStringConverter(new AssignmentStringConverter(true));
 		if(actions) {
@@ -225,7 +225,7 @@ public class AssignmentTable extends DiskoTable {
 			// cast to AssignmentTableModel
 			AssignmentTableModel model = (AssignmentTableModel)getModel();
 			// get model indexes
-			int row = convertRowIndexToModel(cell.getCellRow());
+			int row = convertRowIndexToModel(cell.getEditCellRow());
 			// get action command
 			String cmd = e.getActionCommand();
 			// translate

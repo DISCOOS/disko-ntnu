@@ -6,7 +6,7 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.TaskDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;

@@ -5,6 +5,7 @@ import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.util.except.InvalidReferenceException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
 import java.util.Calendar;
@@ -134,25 +135,42 @@ public interface IMsoObjectIf extends IData
     public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy();
 
     /**
-     * Get a map of the attributes for the object
+     * Get a copy of map of the attributes for the object
      * @return The attributes
      */
     public Map<String, IAttributeIf<?>> getAttributes();
 
     /**
-     * Get a map of the reference objects for the object
+     * Get a attribute from name
+     * @return The IAttributeIf object
+     */
+    public IAttributeIf<?> getAttribute(String aAttributeName) throws UnknownAttributeException;
+    
+    /**
+     * Get a copy of the map of the reference objects for the object (one-to-one relations)
+     * 
      * @return The reference objects
      */
-    public Map<String, IMsoObjectIf> getReferenceObjects();
-
+    public Map<String, IMsoObjectIf> getObjectReferences();
+    
     /**
-     * Get a map of the reference lists for the object
-     * @return The reference lists
+     * Set or reset a relation between this and another 
+     * IMsoObjectIf (one-to-one relation) 
+     * @param anObject - the object set a relation to, or relation to set to <code>null</code>  
+     * @param aReferenceName - the name of the relation
+     * @throws InvalidReferenceException is thrown if the reference does not 
+     * exist, or if the relation is required (cardinality or 1) 
      */
-    public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists();
+    public void setObjectReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
 
     /**
-     * Get the reference lists that contains objects of a given class
+     * Get a copy of the map of the reference lists for the object (one-to-many relations)
+     * @return The lists containing references
+     */
+    public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences();
+
+    /**
+     * Get a copy of the map the reference lists that contains objects of a given class
      *
      * @param Class c - The item class
      * @param boolean isEqual - It <code>true</code>, only lists with item classes that are equal to passed
@@ -160,38 +178,42 @@ public interface IMsoObjectIf extends IData
      *
      * @return The reference lists that match passed arguments.
      */
-    public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists(Class<?> c, boolean isEqual);
+    public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences(Class<?> c, boolean isEqual);
 
     /**
-     * Get the reference lists that contains objects of a given MSO class class
+     * Get a copy of the map of reference lists that contains objects of a given MSO class class
      *
      * @param MsoClassCode c - The MSO class code to match
      *
      * @return The reference lists that match passed arguments. This method will
      * only return lists with one or more items in it.
      */
-    public Map<String,IMsoListIf<IMsoObjectIf>> getReferenceLists(MsoClassCode c);
+    public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences(MsoClassCode c);
 
     /**
-     * Add a reference to an IMsoObjectIf object.
-     *
-     * The type of object (class) determines which list to use
-     * @param anObject The object to add
-     * @param aReferenceName
-     * @return <code>true<code/> if the object has been successfully added, <code>false<code/> otherwise.
+     * Add a reference to an one-to-many relation in this IMsoObjectIf object.
+     * 
+     * @param anObject The object to add a reference to
+     * @param aReferenceName The reference list
+     * @throws InvalidReferenceException is thrown if the list reference does not 
+     * exist, if the list object class and IMsoObjectIf object class does not 
+     * match, if the list size is less or equal to the cardinality, 
+     * or if an reference to the IMsoObjectIf object already exists, or the object is 
+     * null or not properly initialized 
      */
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName);
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
 
     /**
-     * Remove a reference to an IMsoObjectIf object.
-     *
-     * The type of object (class) determines which list to use
-     * @param anObject The object to remove
-     * @param aReferenceName
-     * @return <code>true<code/> if the object has been successfully removed, <code>false<code/> otherwise.
+     * Remove a reference from a on-to-many relation in this IMsoObjectIf object.
+     * 
+     * @param anObject The object to remove a reference from
+     * @param aReferenceName The reference list
+     * @throws InvalidReferenceException is thrown if the reference does not 
+     * exist, if the list object class and IMsoObjectIf object class does not 
+     * match, if the list size is less or equal to the cardinality, or if 
+     * an reference to IMsoObjectIf object does not exist, or is not deleteable 
      */
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName);
-
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
 
     /**
      * Suspend update notifications to listeners.

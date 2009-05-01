@@ -31,7 +31,13 @@ public interface IMsoReferenceIf<T extends IMsoObjectIf>
 
     public boolean isUncommitted();
 
-    public void setReference(T aReference);
+    /**
+     * 
+     * @param aReference - the object reference or <code>null</code>
+     * @return <code>false</code> if object reference is <code>null</code> 
+     * and cardinality is greater than <code>0</code>, <code>true</code> otherwise . 
+     */
+    public boolean setReference(T aReference);
 
     public int getChangeCount();
 

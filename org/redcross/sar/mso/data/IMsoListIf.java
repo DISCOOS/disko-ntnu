@@ -198,8 +198,8 @@ public interface IMsoListIf<M extends IMsoObjectIf>
     public int getChangeCount();
     
     /**
-     * Get the item class
+     * Get the list object class
      */
-    public Class<M> getItemClass();
+    public Class<M> getObjectClass();
 
 }

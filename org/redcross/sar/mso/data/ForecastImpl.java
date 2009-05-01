@@ -29,20 +29,9 @@ public class ForecastImpl extends AbstractTimeItem implements IForecastIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
     }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.addObjectReference(anObject,aReferenceName);
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.removeObjectReference(anObject,aReferenceName);
-    }
-
 
     public void setText(String aText)
     {

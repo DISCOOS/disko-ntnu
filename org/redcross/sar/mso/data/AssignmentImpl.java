@@ -77,39 +77,35 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         addList(m_assignmentFindings);
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        addReference(m_assignmentBriefing);
-        addReference(m_plannedArea);
-        addReference(m_reportedArea);
+        addObject(m_assignmentBriefing);
+        addObject(m_plannedArea);
+        addObject(m_reportedArea);
     }
 
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IPOIIf)
         {
             m_assignmentFindings.add((IPOIIf) anObject);
-            return true;
         }
         if (anObject instanceof IEquipmentIf)
         {
             m_assignmentEquipment.add((IEquipmentIf) anObject);
-            return true;
         }
-        return false;
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IPOIIf)
         {
-            return m_assignmentFindings.remove((IPOIIf) anObject);
+            m_assignmentFindings.remove((IPOIIf) anObject);
         }
         if (anObject instanceof IEquipmentIf)
         {
-            return m_assignmentEquipment.remove((IEquipmentIf) anObject);
+            m_assignmentEquipment.remove((IEquipmentIf) anObject);
         }
-        return false;
     }
 
     protected AssignmentType getTypeBySubclass()

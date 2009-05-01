@@ -19,7 +19,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
@@ -462,6 +462,7 @@ public class DrawDialog extends DefaultDialog implements IDialog, IDrawToolColle
             m_contentPanel = new TogglePanel("Tegneverktøy",false,true,ButtonSize.SMALL);
             m_contentPanel.setNotScrollBars();
             m_contentPanel.setRequestHideOnCancel(true);
+            m_contentPanel.setContainerBorder(BorderFactory.createEmptyBorder(5,5,5,5));
             m_contentPanel.setContainerLayout(new BoxLayout(m_contentPanel.getContainer(),BoxLayout.Y_AXIS));
             m_contentPanel.addToContainer(getButtonsPanel());
             m_contentPanel.addToContainer(Box.createVerticalStrut(5));

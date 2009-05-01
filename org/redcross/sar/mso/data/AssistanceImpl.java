@@ -26,27 +26,15 @@ public class AssistanceImpl extends AssignmentImpl implements IAssistanceIf
     }
 
     @Override
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
+        super.defineObjects();
     }
 
     @Override
     protected AssignmentType getTypeBySubclass()
     {
         return AssignmentType.ASSISTANCE;
-    }
-
-    @Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.addObjectReference(anObject, aReferenceName);
-    }
-
-    @Override
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.removeObjectReference(anObject, aReferenceName);
     }
 
     /*-------------------------------------------------------------------------------------------

@@ -27,21 +27,9 @@ public class SubjectImpl extends AbstractPerson implements ISubjectIf
     }
 
     @Override
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
-    }
-
-    @Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.addObjectReference(anObject, aReferenceName);
-    }
-
-    @Override
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.removeObjectReference(anObject, aReferenceName);
+        super.defineObjects();
     }
 
     public static SubjectImpl implementationOf(ISubjectIf anInterface) throws MsoCastException

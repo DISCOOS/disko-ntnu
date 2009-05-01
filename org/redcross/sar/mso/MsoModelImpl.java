@@ -403,7 +403,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 		// allowed?
 		if(isAvailable()) {
 			List list = new ArrayList(100);
-			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getReferenceLists(c, true);
+			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getListReferences(c, true);
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
 				list.addAll(it.getItems());
 			}
@@ -419,7 +419,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     	// allowed?
 		if(isAvailable() && e instanceof MsoClassCode) {
 			List list = new ArrayList(100);
-			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getReferenceLists((MsoClassCode)e);
+			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getListReferences((MsoClassCode)e);
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
 				list.addAll(it.getItems());
 			}

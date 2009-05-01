@@ -197,9 +197,11 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      */
     public void commit(IChangeSourceIf changes) throws TransactionException
     {
-    	List<IChangeSourceIf> list = new Vector<IChangeSourceIf>(1);
-    	list.add(changes);
-    	commit(changes);
+    	if(changes!=null) {
+	    	List<IChangeSourceIf> list = new Vector<IChangeSourceIf>(1);
+	    	list.add(changes);
+	    	commit(list);
+    	}
     }
         
     /**
@@ -257,9 +259,11 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
     public void rollback(IChangeSourceIf changes) throws TransactionException {
-    	List<IChangeSourceIf> list = new Vector<IChangeSourceIf>(1);
-    	list.add(changes);
-    	rollback(changes);
+    	if(changes!=null) {
+	    	List<IChangeSourceIf> list = new Vector<IChangeSourceIf>(1);
+	    	list.add(changes);
+	    	rollback(changes);
+    	}
     }
 
     /**

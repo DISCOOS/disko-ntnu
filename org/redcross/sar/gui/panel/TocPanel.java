@@ -17,7 +17,7 @@ import javax.swing.SwingUtilities;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.LayerModel;
 import org.redcross.sar.map.MapLayerModel;
 import org.redcross.sar.map.IDiskoMap;

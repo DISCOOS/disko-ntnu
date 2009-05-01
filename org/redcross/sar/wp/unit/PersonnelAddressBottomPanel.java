@@ -1,7 +1,7 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -93,7 +93,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 			m_addressTextField = new TextLineField("address",m_resources.getString("Address.text"),true);
 			m_addressTextField.addWorkFlowListener(new IWorkFlowListener() {
 				public void onFlowPerformed(WorkFlowEvent e) {
-					if(m_addressTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+					if(isSet()&&m_addressTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
 						setAddress();
 					}					
 				}				
@@ -145,6 +145,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	 */
 	public void updateFieldContents()
 	{
+		// prevent reenty
+		getInfoPanel().setChangeable(false);
+
 		if(m_currentPersonnel == null)
 		{
 			m_addressTextField.setValue("");
@@ -168,6 +171,10 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 				m_postNumberTextField.setValue("");
 			}
 		}
+
+		// resume reenty
+		getInfoPanel().setChangeable(true);
+
 	}
 
     public boolean isChanged() {

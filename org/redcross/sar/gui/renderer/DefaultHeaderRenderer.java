@@ -20,7 +20,7 @@ import javax.swing.JTable;
 import org.redcross.sar.gui.model.IDiskoTableModel;
 import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.util.Utils;
 
 public class DefaultHeaderRenderer implements TableHeaderRenderer {

@@ -18,18 +18,8 @@ public class DataSourceImpl extends AbstractMsoObject implements IDataSourceIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     public IMsoManagerIf.MsoClassCode getMsoClassCode()

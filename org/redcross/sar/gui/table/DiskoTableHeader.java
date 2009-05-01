@@ -34,7 +34,7 @@ import javax.swing.table.TableModel;
 
 import org.redcross.sar.gui.PopupManager;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.model.IDiskoTableModel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.renderer.TableHeaderRenderer;

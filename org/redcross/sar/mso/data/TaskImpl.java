@@ -75,23 +75,11 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     }
 
     @Override
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
-        addReference(m_createdEvent);
-        addReference(m_dependentObject);
-    }
-
-    @Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.addObjectReference(anObject, aReferenceName);
-    }
-
-    @Override
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.removeObjectReference(anObject, aReferenceName);
+        super.defineObjects();
+        addObject(m_createdEvent);
+        addObject(m_dependentObject);
     }
 
     public static TaskImpl implementationOf(ITaskIf anInterface) throws MsoCastException

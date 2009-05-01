@@ -42,7 +42,7 @@ import org.redcross.sar.gui.dialog.NetDialog;
 import org.redcross.sar.gui.dialog.TNCDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 import org.redcross.sar.gui.table.DiskoTable;

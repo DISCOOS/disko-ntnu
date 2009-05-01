@@ -47,23 +47,10 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
     }
 
     @Override
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
+        super.defineObjects();
     }
-
-    @Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.addObjectReference(anObject, aReferenceName);
-    }
-
-    @Override
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return super.removeObjectReference(anObject, aReferenceName);
-    }
-
 
     protected UnitType getTypeBySubclass()
     {

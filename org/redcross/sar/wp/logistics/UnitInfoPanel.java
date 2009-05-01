@@ -10,7 +10,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
 import org.redcross.sar.gui.field.PositionField;

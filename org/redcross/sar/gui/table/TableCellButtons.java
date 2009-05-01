@@ -21,7 +21,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.ButtonsPanel;
 import org.redcross.sar.util.Utils;
 
@@ -194,7 +194,7 @@ public class TableCellButtons extends AbstractTableCell {
 			
 			// update selection state?
 			if(m_table!=null) {
-				if (m_isSelected){
+				if (m_isCellSelected){
 					m_label.setBackground(m_table.getSelectionBackground());
 					m_label.setForeground(m_table.getSelectionForeground());
 					m_buttons.setBackground(m_table.getSelectionBackground());
@@ -209,7 +209,7 @@ public class TableCellButtons extends AbstractTableCell {
 			}
 			
 			// show or hide buttons?
-			boolean isVisible = (m_isEditing || m_isEditorShown);
+			boolean isVisible = (m_isEditing || m_isShowPopup);
 			
 			// show button
 			m_buttons.setButtonVisible(m_editor, isVisible);

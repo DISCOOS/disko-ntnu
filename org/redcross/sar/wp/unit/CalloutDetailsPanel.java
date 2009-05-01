@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.redcross.sar.gui.document.AutoCompleteDocument;
 import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
@@ -156,7 +156,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
-					if(!m_associationTextField.isChangeable()) return;
+					if(!isSet() || m_associationTextField.isChangeable()) return;
 					Association[] items = null;
 					if(suggestion!=null) {
 						items = AssocUtils.parse(suggestion,false,false);
@@ -241,7 +241,11 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 	 */
 	public void updateFieldContents()
 	{
+		// prevent reenty
+		getInfoPanel().setChangeable(false);
+		
 		if(m_currentCallout != null) {
+
             // update caption
             getInfoPanel().setCaptionText(m_resources.getString("CallOut.text") + " " + DTG.CalToDTG(m_currentCallout.getCreated()));
 			
@@ -268,13 +272,16 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
             }
 			CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 			model.setPersonnelList(m_wp.getMsoModel(),m_currentCallout.getPersonnelList());
-
+			
 		} else {
 			getInfoPanel().setCaptionText("Velg varsling i listen");
 			m_associationTextField.setValue("");
 			CallOutPersonnelTableModel model = (CallOutPersonnelTableModel)m_personnelTable.getModel();
 			model.setPersonnelList(m_wp.getMsoModel(),null);			
 		}
+
+		// resume reenty
+		getInfoPanel().setChangeable(true);
 
 	}
 

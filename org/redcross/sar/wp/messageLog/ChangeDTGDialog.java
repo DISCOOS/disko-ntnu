@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import javax.swing.BorderFactory;
 
 import org.redcross.sar.gui.dialog.DefaultDialog;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.DefaultPanel;

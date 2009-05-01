@@ -71,19 +71,8 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-    }
-
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     public static POIImpl implementationOf(IPOIIf anInterface) throws MsoCastException

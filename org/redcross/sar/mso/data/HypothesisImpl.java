@@ -30,18 +30,8 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     public static HypothesisImpl implementationOf(IHypothesisIf anInterface) throws MsoCastException

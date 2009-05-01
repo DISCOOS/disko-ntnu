@@ -12,6 +12,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.except.InvalidReferenceException;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.IGeodataIf;
 
@@ -43,38 +44,34 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         addList(m_areaGeodata);
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
     }
 
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
             m_areaGeodata.add(anObject);
-            return true;
         }
         if (anObject instanceof IPOIIf)
         {
             if ("AreaPOIs".equals(aReferenceName))
             {
                 m_areaPOIs.add((IPOIIf) anObject);
-                return true;
             }
             if ("AreaGeodata".equals(aReferenceName))
             {
                 m_areaGeodata.add(anObject);
-                return true;
             }
         }
-        return false;
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
-            return m_areaGeodata.remove(anObject);
+            m_areaGeodata.remove(anObject);
         }
         if (anObject instanceof IPOIIf)
         {
@@ -85,23 +82,22 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		POIType type = ((IPOIIf)anObject).getType();
 	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
-	        			return anObject.delete();
+	        			if(!anObject.delete()) throw new InvalidReferenceException("Reference can not be deleted");
 	        		}
             	}
-                return m_areaPOIs.remove((IPOIIf) anObject);
+                m_areaPOIs.remove((IPOIIf) anObject);
             }
             if ("AreaGeodata".equals(aReferenceName))
             {
             	// remove area POIs?
             	if(m_hostile) {
-            		return anObject.delete();
+            		anObject.delete();
             	}
             	else {
-            		return m_areaGeodata.remove(anObject);
+            		m_areaGeodata.remove(anObject);
             	}
             }
         }
-        return false;
     }
 
     public static AreaImpl implementationOf(IAreaIf anInterface) throws MsoCastException

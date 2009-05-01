@@ -35,7 +35,7 @@ import no.cmr.tools.Log;
 
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextLineField;
 import org.redcross.sar.gui.panel.FieldsPanel;

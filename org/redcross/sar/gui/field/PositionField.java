@@ -20,7 +20,7 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.PositionSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.format.MGRSFormatter;
 import org.redcross.sar.gui.format.UTMFormatter;
 import org.redcross.sar.gui.panel.CoordinatePanel;

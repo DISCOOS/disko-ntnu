@@ -40,27 +40,24 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
         addList(m_personnel);
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
     }
 
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IPersonnelIf)
         {
             m_personnel.add((IPersonnelIf) anObject);
-            return true;
         }
-        return false;
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IPersonnelIf)
         {
-            return m_personnel.remove((IPersonnelIf) anObject);
+            m_personnel.remove((IPersonnelIf) anObject);
         }
-        return false;
     }
 
     public static CalloutImpl implementationOf(ICalloutIf anInterface) throws MsoCastException

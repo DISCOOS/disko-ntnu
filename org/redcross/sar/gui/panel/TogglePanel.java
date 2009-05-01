@@ -15,7 +15,7 @@ import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.event.IToggleListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 
 public class TogglePanel extends BasePanel implements ITogglePanel {
 
@@ -394,7 +394,12 @@ public class TogglePanel extends BasePanel implements ITogglePanel {
                 minimumCollapsedHeight = h;
 
                 // set new insets
-                collapsedInsets = new Insets(tmpInsets.top, tmpInsets.left, 0, tmpInsets.right);
+                if(isTouchMode) {
+                	collapsedInsets = new Insets(0, tmpInsets.left, tmpInsets.bottom, tmpInsets.right);
+                } else {
+                	collapsedInsets = new Insets(tmpInsets.top, tmpInsets.left, 0, tmpInsets.right);
+                }
+                
 
             }
 

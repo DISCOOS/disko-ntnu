@@ -36,7 +36,7 @@ import org.redcross.sar.gui.event.DiskoMouseAdapter;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -54,7 +54,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 /**
  * Implementation of the Unit work process
  *
- * @author thomasl
+ * @author thomasl, kenneth
  */
 public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IWorkFlowListener
 {
@@ -90,11 +90,6 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 
 	UnitTypeDialog m_unitTypeDialog;
 	ImportCalloutDialog m_importCalloutDialog;
-
-	/*private static boolean m_newPersonnel = false;
-	private static boolean m_newUnit = false;
-	private static boolean m_newCallOut = false;
-	*/
 
 	public DiskoWpUnitImpl() throws IllegalClassFormatException
 	{
@@ -138,6 +133,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_calloutDetailsPanel = new CalloutDetailsPanel(this);
 		m_leftPanel.add(m_calloutDetailsPanel, CALLOUT_VIEW_ID);
 		JPanel leftMessagePanel = new JPanel(new BorderLayout(0,0));
+		leftMessagePanel.setBorder(UIFactory.createBorder());
 		m_leftMessageLabel = new JLabel();
 		m_leftMessageLabel.setVerticalAlignment(SwingUtilities.CENTER);
 		m_leftMessageLabel.setHorizontalAlignment(SwingUtilities.CENTER);
@@ -155,6 +151,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		m_personnelAddressBottomPanel = new PersonnelAddressBottomPanel(this);
 		m_bottomPanel.add(m_personnelAddressBottomPanel, PERSONNEL_ADDITIONAL_VIEW_ID);
 		JPanel bottomMessagePanel = new JPanel(new BorderLayout(0,0));
+		bottomMessagePanel.setBorder(UIFactory.createBorder());
 		m_bottomMessageLabel = new JLabel();
 		m_bottomMessageLabel.setVerticalAlignment(SwingUtilities.CENTER);
 		m_bottomMessageLabel.setHorizontalAlignment(SwingUtilities.CENTER);
@@ -233,8 +230,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		tableRowSorter.setSortable(2, false);
 		tableRowSorter.setSortable(3, false);
 
-		PersonnelTableEditor personnelRenderer = new PersonnelTableEditor(this);
-		personnelRenderer.setTable(m_personnelOverviewTable);
+		// set personnel table editor
+		PersonnelTableEditorCreator.installEditor(m_personnelOverviewTable,this);
 
 		Dimension dim = DiskoButtonFactory.getButtonSize(ButtonSize.SMALL);
 
@@ -265,8 +262,8 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
 		unitModel.setColumnAlignment(1, SwingConstants.CENTER);
 		unitModel.setColumnAlignment(2, SwingConstants.CENTER);
 
-		UnitTableEditor unitRenderer = new UnitTableEditor(this);
-		unitRenderer.setTable(m_unitOverviewTable);
+		// set unit table editor
+		UnitTableEditorCreator.installEditor(m_unitOverviewTable,this);
 
 		m_unitOverviewTable.setRowHeight(dim.height + 10);
 		column = m_unitOverviewTable.getColumnModel().getColumn(1);

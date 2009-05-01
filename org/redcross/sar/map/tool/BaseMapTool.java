@@ -16,7 +16,7 @@ import org.redcross.sar.Application;
 import org.redcross.sar.gui.DiskoIcon;
 import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.event.DialogToggleListener;
-import org.redcross.sar.gui.factory.DiskoButtonFactory.ButtonSize;
+import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;

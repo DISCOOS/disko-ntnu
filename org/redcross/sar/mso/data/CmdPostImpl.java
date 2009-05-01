@@ -131,7 +131,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         addList(m_unitList);
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
     }
 
@@ -161,16 +161,6 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     {
         // TODO update when multiple command posts
         return 1;
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
     }
 
     public static CmdPostImpl implementationOf(ICmdPostIf anInterface) throws MsoCastException

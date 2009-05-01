@@ -222,5 +222,6 @@ public interface IApplication {
 
 	public boolean invoke(Enum<?> cmd, boolean requestFocus);
 
+	public boolean isTouchMode();
 
 }

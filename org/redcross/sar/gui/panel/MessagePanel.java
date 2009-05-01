@@ -14,7 +14,7 @@ import java.text.AttributedString;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 
-import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.UIConstants;
 import org.redcross.sar.util.Utils;
 
 public class MessagePanel extends DefaultPanel {
@@ -49,7 +49,7 @@ public class MessagePanel extends DefaultPanel {
 	private JEditorPane getMessagePane() {
 		if(m_msgPane == null) {
 			m_msgPane = new JEditorPane();
-			m_msgPane.setFont(UIFactory.DEFAULT_PLAIN_MEDIUM_FONT);
+			m_msgPane.setFont(UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
 			m_msgPane.setContentType("text/html");
 			m_msgPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 			m_msgPane.setEditable(false);

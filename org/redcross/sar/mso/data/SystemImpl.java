@@ -29,7 +29,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
 	protected void defineAttributes() { /* NOP */ }
 
 	@Override
-	protected void defineReferences() { /* NOP */ }
+	protected void defineObjects() { /* NOP */ }
 
 	@Override
     protected void defineLists()
@@ -38,23 +38,20 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
     }
 
 	@Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IDataSourceIf)
         {
         	m_dataSourceList.add((IDataSourceIf)anObject);
-            return true;
         }
-        return false;
     }
 
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof IDataSourceIf)
         {
-            return m_dataSourceList.remove((IDataSourceIf)anObject);
+            m_dataSourceList.remove((IDataSourceIf)anObject);
         }
-        return true;
     }
 
     public IMsoManagerIf.MsoClassCode getMsoClassCode()

@@ -66,32 +66,28 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
     }
 
     @Override
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
+        super.defineObjects();
     }
 
 
     @Override
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof ITaskIf)
         {
             m_eventTasks.add((ITaskIf)anObject);
-            return true;
         }
-        return super.addObjectReference(anObject,aReferenceName);
-
     }
 
     @Override
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
     {
         if (anObject instanceof ITaskIf)
         {
-            return m_eventTasks.remove((ITaskIf) anObject);
+            m_eventTasks.remove((ITaskIf) anObject);
         }
-        return super.removeObjectReference(anObject,aReferenceName);
     }
 
     public static EventImpl implementationOf(IEventIf anInterface) throws MsoCastException

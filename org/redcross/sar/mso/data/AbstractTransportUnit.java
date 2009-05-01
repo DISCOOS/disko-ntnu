@@ -34,9 +34,9 @@ public abstract class AbstractTransportUnit extends AbstractUnit implements ITra
         super.defineLists();
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        super.defineReferences();
+        super.defineObjects();
     }
 
 //    public String toString()

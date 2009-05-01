@@ -28,19 +28,9 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
     {
     }
 
-    protected void defineReferences()
+    protected void defineObjects()
     {
-        addReference(m_checkpointTask);
-    }
-
-    public boolean addObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
-    }
-
-    public boolean removeObjectReference(IMsoObjectIf anObject, String aReferenceName)
-    {
-        return true;
+        addObject(m_checkpointTask);
     }
 
     public static CheckpointImpl implementationOf(ICheckpointIf anInterface) throws MsoCastException
