@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
@@ -23,6 +24,7 @@ import org.redcross.sar.gui.table.AbstractTableCell;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.Internationalization;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 /**
@@ -32,6 +34,7 @@ import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
  */
 public class UnitLeaderColumnEditorCreator {
 
+	private static final Logger m_logger = Logger.getLogger(UnitLeaderColumnEditorCreator.class);
 	private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 	
 	/**
@@ -115,6 +118,20 @@ public class UnitLeaderColumnEditorCreator {
 	                    	editingUnit.setUnitLeader(newLeader);
 
 	                    fireEditingStopped();
+	                    
+						try
+						{
+							// commit?
+							if(!m_wp.isNewPersonnel())
+							{
+								// Commit right away if no major updates
+								m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(editingUnit));
+							}
+
+						} catch (TransactionException ex) {
+							m_logger.error("Failed to commit unit leader change",ex);
+						}            
+	                    
                     }
                 }
             });

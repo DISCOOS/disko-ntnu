@@ -61,6 +61,33 @@ public interface IAttributeIf<T>
      */
     public boolean isState(ModificationState state);
 
+    /**
+     * Get attribute value
+     * 
+     * @return a value of type T
+     */
+    public T get();
+    
+    /**
+     * Get the local attribute value
+     * 
+     * @return a value of type T
+     */
+    public T getLocalValue();
+    
+    /**
+     * Get the server attribute value
+     * 
+     * @return a value of type T
+     */
+    public T getServerValue();
+    
+    
+    /**
+     * Set attribute value
+     * 
+     * @param aValue
+     */
     public void set(T aValue);
 
     /**
@@ -127,11 +154,11 @@ public interface IAttributeIf<T>
     public boolean isRequired();
 
     /**
-     * Tells if this attributes is changed since last commit.
+     * Get attribute owner
      *
-     * @return @return <code>true</code>  if changed after last commit, <code>false</code> otherwise.
+     * @return @return Reference to IMsoObjectIf object.
      */
-    //public boolean isChanged();
+    public IMsoObjectIf getOwner();
 
     /**
      * Interface for {@link Boolean} attributes.

@@ -19,6 +19,7 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.undo.UndoableEdit;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.AWTUtilitiesWrapper;
@@ -813,19 +814,27 @@ public class DefaultDialog extends JDialog implements IDialog {
      * =========================================== */
 
     protected void fireOnWorkFinish(Object source, Object data) {
-        fireOnWorkPerformed(new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_FINISH));
+    	fireOnWorkFinish(source,data,null);
     }
 
+    protected void fireOnWorkFinish(Object source, Object data, UndoableEdit edit) {
+        fireOnWorkPerformed(new WorkFlowEvent(source,data,edit,WorkFlowEvent.EVENT_FINISH));
+    }
+    
     protected void fireOnWorkCancel(Object source, Object data) {
-        fireOnWorkPerformed(new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CANCEL));
+    	fireOnWorkCancel(source,data,null);
     }
 
+    protected void fireOnWorkCancel(Object source, Object data, UndoableEdit edit) {
+        fireOnWorkPerformed(new WorkFlowEvent(source,data,edit,WorkFlowEvent.EVENT_CANCEL));
+    }
+    
     protected void fireOnWorkChange(Object data) {
-        fireOnWorkPerformed(new WorkFlowEvent(this,data,WorkFlowEvent.EVENT_CHANGE));
+        fireOnWorkPerformed(new WorkFlowEvent(this,data,null,WorkFlowEvent.EVENT_CHANGE));
     }
 
-    protected void fireOnWorkChange(Object source, Object data) {
-        fireOnWorkPerformed(new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CHANGE));
+    protected void fireOnWorkChange(Object source, Object data, UndoableEdit edit) {
+        fireOnWorkPerformed(new WorkFlowEvent(source,data,edit,WorkFlowEvent.EVENT_CHANGE));
     }
 
     protected void fireOnWorkPerformed(WorkFlowEvent e) {

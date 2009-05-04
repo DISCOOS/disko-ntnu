@@ -97,6 +97,25 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     	m_changeCount++;
     }
 
+    public IMsoObjectIf getOwner() {
+    	return m_owner;
+    }
+    
+    public T get()
+    {
+    	return getAttrValue();
+    }
+    
+    public T getLocalValue()
+    {
+    	return m_localValue;
+    }
+    
+    public T getServerValue()
+    {
+    	return m_serverValue;
+    }
+    
     public void set(T aValue)
     {
         if (!m_class.isAssignableFrom(aValue.getClass()))

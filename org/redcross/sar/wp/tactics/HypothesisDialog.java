@@ -165,7 +165,7 @@ public class HypothesisDialog extends DefaultDialog {
 						}
 
 						// update
-						msoObject = area;
+						m_msoObject = area;
 						setHypothesis(h, true, false);
 
 						// resume changes
@@ -186,7 +186,7 @@ public class HypothesisDialog extends DefaultDialog {
 
 				};
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
-				contentPanel.setInterests(msoModel,getMyInterest());
+				contentPanel.connect(msoModel,getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
 				contentPanel.setContainer(getHypothesisPanel());
 			} catch (java.lang.Throwable e) {

@@ -236,7 +236,7 @@ public class PersonnelTableEditorCreator
 							// Commit right away if no major updates
 							m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(personnel));
 						} catch (TransactionException ex) {
-							m_logger.error("Failed to commit personnel details changes",ex);
+							m_logger.error("Failed to commit personnel status change",ex);
 						}            
 					}
 
@@ -264,7 +264,7 @@ public class PersonnelTableEditorCreator
 							// Commit right away if no major updates
 							m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(personnel));
 						} catch (TransactionException ex) {
-							m_logger.error("Failed to commit personnel details changes",ex);
+							m_logger.error("Failed to commit personnel status change",ex);
 						}            
 					}
 
@@ -292,7 +292,7 @@ public class PersonnelTableEditorCreator
 							// Commit right away if no major updates
 							m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(personnel));
 						} catch (TransactionException ex) {
-							m_logger.error("Failed to commit personnel details changes",ex);
+							m_logger.error("Failed to commit personnel status change",ex);
 						}            
 					}
 

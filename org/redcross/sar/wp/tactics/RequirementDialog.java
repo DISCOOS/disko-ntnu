@@ -144,7 +144,7 @@ public class RequirementDialog extends DefaultDialog {
 						}
 
 						// update
-						msoObject = search;
+						m_msoObject = search;
 						setPriority((pri==null) ? AssignmentPriority.NORMAL : pri ,true,false);
 						setAccuracy(accuracy!=0 ? accuracy : 75,true,false);
 						setPersonnel(personnel!=0 ? personnel : 3,true,false);
@@ -166,7 +166,7 @@ public class RequirementDialog extends DefaultDialog {
 					}
 
 				};
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.connect(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,

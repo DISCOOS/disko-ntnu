@@ -257,7 +257,7 @@ public abstract class AbstractDiskoWpModule
     {
 
     	// create event
-		WorkFlowEvent e = new WorkFlowEvent(this,data,WorkFlowEvent.EVENT_CHANGE);
+		WorkFlowEvent e = new WorkFlowEvent(this,data,null,WorkFlowEvent.EVENT_CHANGE);
 
 		// forward
 		fireOnWorkPerformed(e);
@@ -267,7 +267,7 @@ public abstract class AbstractDiskoWpModule
     protected void fireOnWorkRollback()
     {
     	// create event
-    	WorkFlowEvent e = new WorkFlowEvent(this,null,WorkFlowEvent.EVENT_ROLLBACK);
+    	WorkFlowEvent e = new WorkFlowEvent(this,null,null,WorkFlowEvent.EVENT_ROLLBACK);
 
     	// forward
     	fireOnWorkPerformed(e);
@@ -276,7 +276,7 @@ public abstract class AbstractDiskoWpModule
     protected void fireOnWorkCommit()
     {
     	// create event
-    	WorkFlowEvent e = new WorkFlowEvent(this,null,WorkFlowEvent.EVENT_COMMIT);
+    	WorkFlowEvent e = new WorkFlowEvent(this,null,null,WorkFlowEvent.EVENT_COMMIT);
     	// forward
     	fireOnWorkPerformed(e);
     }

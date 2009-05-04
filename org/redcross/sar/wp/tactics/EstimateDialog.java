@@ -129,7 +129,7 @@ public class EstimateDialog extends DefaultDialog {
 					}
 
 				};
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.connect(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,

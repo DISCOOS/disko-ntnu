@@ -49,6 +49,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		initialize();
 		// add listeners
 		wp.getMsoEventManager().addClientUpdateListener(this);
+		getInfoPanel().addWorkFlowListener(wp);
 	}
 
 	private void initialize()
@@ -65,6 +66,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
 			m_infoPanel.setColumns(3);
+			m_infoPanel.setAutoSave(true);
 			m_infoPanel.setPreferredExpandedHeight(275);
 			m_infoPanel.addButton(getCenterAtButton(), "centerat");
 			m_infoPanel.suspendLayout();
@@ -75,7 +77,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 			m_infoPanel.setFieldSpanX("postnumber", 1);
 			m_infoPanel.setFieldSpanX("postarea", 2);
 			m_infoPanel.resumeLayout();
-			m_infoPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL));
+			m_infoPanel.connect(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL));
 		}
 		return m_infoPanel;
 	}

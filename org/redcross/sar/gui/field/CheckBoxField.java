@@ -11,6 +11,7 @@ import javax.swing.JCheckBox;
 
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
+import org.redcross.sar.undo.DiskoFieldEdit;
 
 
 /**
@@ -58,7 +59,7 @@ public class CheckBoxField extends AbstractField {
 
 				public void actionPerformed(ActionEvent e) {
 					if(!isChangeable()) return;
-					fireOnWorkChange();
+					fireOnWorkChange(new DiskoFieldEdit(CheckBoxField.this,!getValue(),getValue()));
 				}
 
 			});
@@ -98,27 +99,17 @@ public class CheckBoxField extends AbstractField {
 	}
 
 	@Override
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof MsoBoolean) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}
-
-	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
 		getCheckBox().setEnabled(isEditable && isEnabled());
+	}
+	
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof MsoBoolean);
 	}
 
 }

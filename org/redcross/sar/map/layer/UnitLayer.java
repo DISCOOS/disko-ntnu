@@ -59,7 +59,7 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
 	public void draw(int drawPhase, IDisplay display, ITrackCancel trackCancel)
 			throws IOException, AutomationException {
 		try {
-			if (display == null || !this.isVisible) {
+			if (display == null  || !this.isVisible) {
 				return;
 			}
 

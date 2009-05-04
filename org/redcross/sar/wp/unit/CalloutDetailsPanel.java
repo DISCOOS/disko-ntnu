@@ -25,7 +25,6 @@ import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;
 
 import javax.swing.AbstractCellEditor;
@@ -87,12 +86,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
         // add listeners
         wp.getMsoEventManager().addClientUpdateListener(this);
         wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
-        getInfoPanel().addWorkFlowListener(new IWorkFlowListener() {
-			public void onFlowPerformed(WorkFlowEvent e) {
-				// only forward MSO changes
-				if(e.isMsoData()) m_wp.onFlowPerformed(e);				
-			}        	
-        });
+        getInfoPanel().addWorkFlowListener(wp);
 	}
 
     private void initialize()
@@ -111,6 +105,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel(m_resources.getString("UnitInfo.text"),"",false,false);
 			m_infoPanel.setColumns(2);
+			m_infoPanel.setAutoSave(true);
 			m_infoPanel.setPreferredExpandedHeight(175);
 			m_infoPanel.setMinimumSize(new Dimension(175,200));
 			m_infoPanel.addButton(getPrintButton(), "print");
@@ -119,7 +114,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 			m_infoPanel.addField(getCreatedTextField());
 			m_infoPanel.addField(getAssociationTextField());
 			m_infoPanel.resumeLayout();
-			m_infoPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_CALLOUT));
+			m_infoPanel.connect(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_CALLOUT));
 		}
 		return m_infoPanel;
 	}	

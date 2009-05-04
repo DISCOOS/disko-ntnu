@@ -8,18 +8,15 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.redcross.sar.Application;
-import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.PositionSelectorDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
-import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.format.MGRSFormatter;
 import org.redcross.sar.gui.format.UTMFormatter;
@@ -30,6 +27,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
+import org.redcross.sar.undo.DiskoFieldEdit;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 
@@ -158,6 +156,8 @@ public class PositionField extends AbstractField {
 	}
 
 	public boolean setValue(Object value) {
+		// get old value
+		Object oldValue = getValue();
 		// validate data type
 		if(value instanceof Point)
 			getCoordinatePanel().setPoint((Point)value);
@@ -174,7 +174,7 @@ public class PositionField extends AbstractField {
 		// set formatted text
 		getLabel().setText(getFormattedText());
 		// notify change?
-		if(isChangeable()) fireOnWorkChange();
+		if(isChangeable()) fireOnWorkChange(new DiskoFieldEdit(this,oldValue,getValue()));
 		// success
 		return true;
 	}
@@ -194,25 +194,7 @@ public class PositionField extends AbstractField {
 		// finished
 		return Utils.getHtml(text);		
 	}
-
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoPosition ||
-					attribute instanceof AttributeImpl.MsoTimePos) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}
-
+	
 	public int getFormat() {
 		return getCoordinatePanel().getFormat();
 	}
@@ -252,6 +234,14 @@ public class PositionField extends AbstractField {
 		getLabel().setText(getFormattedText());
 	}
 	
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof AttributeImpl.MsoPosition ||
+				attr instanceof AttributeImpl.MsoTimePos);
+	}
 	
 	/*==================================================================
 	 * Private methods

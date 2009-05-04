@@ -13,6 +13,7 @@ import javax.swing.JComboBox;
 
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoString;
+import org.redcross.sar.undo.DiskoFieldEdit;
 
 /**
  * @author kennetgu
@@ -56,10 +57,11 @@ public class ComboBoxField extends AbstractField {
 			JComboBox field = new JComboBox();
 			field.setEditable(m_isEditable);
 			field.addItemListener(new ItemListener() {
+				Object m_oldValue;
 				public void itemStateChanged(ItemEvent e) {
 					if(!isChangeable()) return;
-					fireOnWorkChange();
-
+					fireOnWorkChange(new DiskoFieldEdit(ComboBoxField.this,m_oldValue,getValue()));
+					m_oldValue = getValue();
 				}
 			});
 
@@ -111,65 +113,19 @@ public class ComboBoxField extends AbstractField {
 		// success
 		return true;
 	}
-
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof MsoString) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}
-
+	
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
 		getComboBox().setEditable(isEditable);
 	}
 
-
-	/*
-		private JLabel m_label;
-
-		@Override
-		public Component getListCellRendererComponent(JList list,
-				Object value, int index, boolean isSelected, boolean hasFocus) {
-
-			if(m_label==null) m_label = new JLabel();
-
-			// translate
-			if(value instanceof Enum) {
-				m_label.setText(DiskoEnumFactory.getText((Enum)value));
-			}
-			else if (value!=null) {
-				m_label.setText(value.toString());
-			}
-			else {
-				m_label.setText("");
-			}
-
-			// update selection state
-			if (isSelected){
-				m_label.setBackground(list.getSelectionBackground());
-				m_label.setForeground(list.getSelectionForeground());
-			}
-			else {
-				m_label.setBackground(list.getBackground());
-				m_label.setForeground(list.getForeground());
-			}
-			// finished
-			return m_label;
-		}
-
-	};
-	*/
-
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return true;
+	}
+	
 }

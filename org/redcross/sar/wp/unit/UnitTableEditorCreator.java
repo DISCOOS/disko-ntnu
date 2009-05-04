@@ -226,7 +226,6 @@ public class UnitTableEditorCreator
 				public void actionPerformed(ActionEvent arg0)
 				{
 
-					// release unit
 					int index = m_table.convertRowIndexToModel(getEditCellRow());
 					UnitTableModel model = (UnitTableModel)m_table.getModel();
 					IUnitIf unit = model.getUnit(index);
@@ -244,9 +243,13 @@ public class UnitTableEditorCreator
 
 							if(!m_wp.isNewUnit())
 							{
-								m_wp.commit();
+								m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(unit));
 							}
 
+	                    }
+	                    catch (TransactionException ex)
+	                    {
+	                    	m_logger.error("Failed to commit unit status change",ex);	                    	
 	                    }
 	                    catch (IllegalOperationException ex)
 	                    {
@@ -282,16 +285,14 @@ public class UnitTableEditorCreator
 						if(UnitUtilities.releaseUnit(unit)) {
 							if(!m_wp.isNewUnit())
 							{
-						        try {
-									// Commit right away if no major updates
-									m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(unit));
-								} catch (TransactionException ex) {
-									m_logger.error("Failed to commit unit details changes",ex);
-								}            
+								// Commit right away if no major updates
+								m_wp.getMsoModel().commit(m_wp.getMsoModel().getChanges(unit));
 							}
 						}
 
-					}
+					} catch (TransactionException ex) {
+						m_logger.error("Failed to commit unit status change",ex);
+					}            
 					catch (IllegalOperationException e1)
 					{
 						Utils.showError(m_resources.getString("ReleaseUnitError.header"),

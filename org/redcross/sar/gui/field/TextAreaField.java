@@ -7,8 +7,7 @@ import java.awt.Component;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -70,28 +69,32 @@ public class TextAreaField extends AbstractField {
 
 	public JTextArea getTextArea() {
 		if(m_textArea==null) {
-			m_textArea = new JTextArea();
-			m_textArea.setEditable(m_isEditable);
-			m_textArea.getDocument().addDocumentListener(new DocumentListener() {
-
-				public void changedUpdate(DocumentEvent e) { change(); }
-
-				public void insertUpdate(DocumentEvent e) { change(); }
-
-				public void removeUpdate(DocumentEvent e) { change(); }
-
-				private void change() {
-					if(!isChangeable()) return;
-					fireOnWorkChange();
+			m_textArea = new JTextArea() {
+				
+				private static final long serialVersionUID = 1L;
+				
+				@Override
+				public void setDocument(Document doc) {
+					// remove from old
+					if(super.getDocument()!=null) {
+						super.getDocument().removeUndoableEditListener(m_undoListener);
+					}
+					// forward
+					super.setDocument(doc);
+					// add listener
+					doc.addUndoableEditListener(m_undoListener);
 				}
-
-			});
+				
+			};
+			m_textArea.setEditable(m_isEditable);
 			m_textArea.setRows(2);
 			m_textArea.setLineWrap(true);
 			m_textArea.setWrapStyleWord(true);
 			m_textArea.setBorder(UIFactory.createBorder());
 			m_textArea.setLineWrap(true);
 			m_textArea.setWrapStyleWord(true);
+			// set listeners
+			m_textArea.getDocument().addUndoableEditListener(m_undoListener);
 		}
 		return m_textArea;
 	}
@@ -114,26 +117,9 @@ public class TextAreaField extends AbstractField {
 
 	public boolean setValue(Object value) {
 		// update
-		getTextArea().setText(String.valueOf(value));
+		getTextArea().setText(value!=null?String.valueOf(value):null);
 		// success
 		return true;
-	}
-
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoString) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
 	}
 
 	@Override
@@ -142,4 +128,12 @@ public class TextAreaField extends AbstractField {
 		getTextArea().setEditable(isEditable);
 	}
 
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof AttributeImpl.MsoString);
+	}
+	
 }

@@ -111,7 +111,7 @@ public class PriorityDialog extends DefaultDialog {
 						}
 						
 						// update
-						msoObject = area;
+						m_msoObject = area;
 						setPriority(pri,true,false);						
 
 						// resume changes
@@ -131,7 +131,7 @@ public class PriorityDialog extends DefaultDialog {
 					
 					
 				};
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.connect(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setContainer(getPriorityList());

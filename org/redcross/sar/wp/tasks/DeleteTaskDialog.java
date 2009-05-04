@@ -100,7 +100,7 @@ public class DeleteTaskDialog extends DefaultDialog
 							task = (ITaskIf)msoObj;
 						}						
 						// update
-						msoObject = task;
+						m_msoObject = task;
 
 						// resume changes
 						setChangeable(true);

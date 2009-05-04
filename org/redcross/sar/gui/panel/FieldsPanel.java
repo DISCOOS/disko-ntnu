@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +16,8 @@ import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
 import org.redcross.sar.gui.UIConstants.ButtonSize;
+import org.redcross.sar.gui.event.IMsoFieldListener;
+import org.redcross.sar.gui.event.MsoFieldEvent;
 import org.redcross.sar.gui.field.AbstractField;
 import org.redcross.sar.gui.field.CheckBoxField;
 import org.redcross.sar.gui.field.DTGField;
@@ -25,6 +28,8 @@ import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.field.PositionField;
 import org.redcross.sar.gui.field.TextAreaField;
 import org.redcross.sar.gui.util.SpringUtilities;
+import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -46,10 +51,6 @@ public class FieldsPanel extends TogglePanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private List<String> m_names;
-	private Map<String,IDiskoField> m_fields;
-	private Map<String,Integer[]> m_fieldSpan;
-
 	private JLabel m_messageLabel;
 
 	private float m_fieldAlignX = Component.LEFT_ALIGNMENT;
@@ -60,8 +61,16 @@ public class FieldsPanel extends TogglePanel {
 	private boolean m_isMessageVisible = false;
 	private boolean m_autoResizeX = true;
 	private boolean m_autoResizeY = false;
+	private boolean m_isAutoSave = false;
 
 	private int m_columns;
+	
+	private final IMsoFieldListener m_listener;
+
+	private final List<String> m_names = new ArrayList<String>();
+	private final Map<String,IDiskoField> m_fields = new HashMap<String,IDiskoField>();
+	private final Map<String,Integer[]> m_fieldSpan = new HashMap<String,Integer[]>();
+	private final Map<String,IMsoObjectIf> m_msoObjects = new HashMap<String,IMsoObjectIf>();
 
 	public FieldsPanel() {
 		this("Egenskaper");
@@ -83,13 +92,28 @@ public class FieldsPanel extends TogglePanel {
 		super(caption,finish,cancel,toggle,buttonSize);
 		// prepare
 		m_columns = columns;
-		m_names = new ArrayList<String>();
-		m_fields = new HashMap<String, IDiskoField>();
-		m_fieldSpan = new HashMap<String, Integer[]>();
 		// initialize GUI
 		initialize(message);
 		// hide toggle button
 		setButtonVisible("toggle", false);
+		// listen for IAttributeIf<?> set and reset events
+		m_listener = new IMsoFieldListener() {
+
+			@Override
+			public void onMsoFieldChanged(MsoFieldEvent e) {
+				switch(e.getType()) {
+				case MsoFieldEvent.ATTRIBUTE_SET: 
+					addInterest(e.getSource().getMsoAttribute());
+					break;
+				case MsoFieldEvent.ATTRIBUTE_RESET:
+					removeInterest(e.getSource().getMsoAttribute());
+					break;
+				}
+				
+			}
+			
+		};
+		
 	}
 
 	protected void initialize(String message) {
@@ -99,6 +123,14 @@ public class FieldsPanel extends TogglePanel {
 		createMessage();
 	}
 
+	/**
+	 * Connect to a IMsoModelIf model
+	 * @param model - the model
+	 */
+	public void connect(IMsoModelIf model) {
+		connect(model, EnumSet.noneOf(MsoClassCode.class));
+	}
+	
 	public int getColumns() {
 		return m_columns;
 	}
@@ -320,8 +352,14 @@ public class FieldsPanel extends TogglePanel {
 			m_names.add(name);
 			m_fields.put(name,field);
 			m_fieldSpan.put(name,new Integer[]{1,1});
+			if(field.isMsoField()) {
+				addInterest(field.getMsoAttribute());
+			}
+			field.addMsoFieldListener(m_listener);
 			// add listener
 			field.addWorkFlowListener(this);
+			// set auto save mode
+			field.setAutoSave(m_isAutoSave);
 			// set layout dirty
 			m_isLayoutDirty = true;
 			// forward
@@ -332,7 +370,7 @@ public class FieldsPanel extends TogglePanel {
 		// failure
 		return bFlag;
 	}
-
+	
 	public IDiskoField getField(String name) {
 		// has mso object?
 		if(m_names!=null) {
@@ -362,7 +400,11 @@ public class FieldsPanel extends TogglePanel {
 		// has panel?
 		if(attr!=null) {
 			// remove
-			m_fields.remove(name);
+			IDiskoField field = m_fields.remove(name);
+			if(field.isMsoField()) {
+				removeInterest(field.getMsoAttribute());
+			}
+			field.removeMsoFieldListener(m_listener);
 			m_names.remove(name);
 			m_fieldSpan.remove(name);
 			// set layout dirty
@@ -371,6 +413,20 @@ public class FieldsPanel extends TogglePanel {
 		update();
 		// failure
 		return false;
+	}
+	
+	private void addInterest(IAttributeIf<?> attr) {
+		IMsoObjectIf msoObj = attr.getOwner();
+		String objId = msoObj.getObjectId();
+		m_msoObjects.put(objId,msoObj);
+		m_msoInterests.add(msoObj.getMsoClassCode());
+	}
+
+	private void removeInterest(IAttributeIf<?> attr) {
+		IMsoObjectIf msoObj = attr.getOwner();
+		String objId = msoObj.getObjectId();
+		m_msoObjects.remove(objId);
+		m_msoInterests.remove(msoObj.getMsoClassCode());
 	}
 	
 	public List<IDiskoField> getFields() {
@@ -460,6 +516,7 @@ public class FieldsPanel extends TogglePanel {
 	public void clearFields()  {
 		// remove old panels?
 		if(m_fields!=null) {
+			m_msoObjects.clear();
 			m_fields.clear();
 			m_names.clear();
 			// get list panel
@@ -601,9 +658,14 @@ public class FieldsPanel extends TogglePanel {
   		for(IDiskoField it : m_fields.values()) {
 			it.setAutoSave(autoSave);
   		}
+  		m_isAutoSave = autoSave;
+  	}
+  	
+  	public boolean isAutoSave() {
+  		return m_isAutoSave;
   	}
 
-  	public int getAutoSave() {
+  	public int getAutoSaveCount() {
   		int count = 0;
   		for(IDiskoField it : m_fields.values()) {
 			if(it.getAutoSave()) count++;
@@ -669,8 +731,15 @@ public class FieldsPanel extends TogglePanel {
 
 	@Override
 	protected void msoObjectCreated(IMsoObjectIf msoObj, int mask) {
-		super.msoObjectCreated(msoObject, mask);
-		if(this.msoObject == msoObj) {
+		
+		// forward
+		super.msoObjectCreated(msoObj, mask);
+		
+		// get object id
+		String objId = msoObj.getObjectId();
+		
+		// only notify attributes belonging to this object
+		if((msoObj = m_msoObjects.get(objId))!=null) {
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
 			for(IDiskoField it: m_fields.values()) {
@@ -698,8 +767,15 @@ public class FieldsPanel extends TogglePanel {
 		 *
 		 */
 
-		super.msoObjectChanged(msoObject, mask);
-		if(this.msoObject == msoObj) {
+		// forward
+		super.msoObjectChanged(msoObj, mask);
+		
+		// get object id
+		String objId = msoObj.getObjectId();
+		
+		// only notify attributes belonging to this object
+		if((msoObj = m_msoObjects.get(objId))!=null) {
+			
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
 			for(IDiskoField it: m_fields.values()) {
@@ -718,17 +794,21 @@ public class FieldsPanel extends TogglePanel {
 		// TODO: Implement deleted attribute indication in GUI
 
 		// forward
-		super.msoObjectDeleted(msoObject, mask);
+		super.msoObjectDeleted(msoObj, mask);
 
+		// get object id
+		String objId = msoObj.getObjectId();
+		
 		// only notify attributes belonging to this object
-		if(this.msoObject == msoObj) {
+		if((msoObj = m_msoObjects.get(objId))!=null) {
 			// TODO: Implement deleted attribute indication in GUI
 			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
 			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
 					IMsoField field = ((IMsoField)it);
-					if(map.containsValue(field.getMsoAttribute())) {
+					IAttributeIf<?> attr = field.getMsoAttribute();
+					if(map.containsValue(attr)) {
 						field.setMsoAttribute(null);
 						it.reset();
 					}
@@ -743,7 +823,8 @@ public class FieldsPanel extends TogglePanel {
 		// TODO: Implement deleted attribute indication in GUI
 
 		// forward
-		super.msoObjectClearAll(msoObject, mask);
+		super.msoObjectClearAll(msoObj, mask);
+		
 		// loop over attributes
 		for(IDiskoField it: m_fields.values()) {
 			if(it instanceof IMsoField) {

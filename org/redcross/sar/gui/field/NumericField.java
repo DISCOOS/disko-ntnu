@@ -6,8 +6,7 @@ package org.redcross.sar.gui.field;
 import java.awt.Component;
 
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -85,8 +84,6 @@ public class NumericField extends AbstractField {
 	private void initialize(int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// apply number document
 		getTextField().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
-		// forward
-		registerChangeListener();
 	}
 	
 	/*==================================================================
@@ -97,11 +94,29 @@ public class NumericField extends AbstractField {
 	public Component getComponent() {
 		if(m_component==null) {
 			// create
-			JTextField field = new JTextField();
+			JTextField field = new JTextField() {
+				
+				private static final long serialVersionUID = 1L;
+				
+				@Override
+				public void setDocument(Document doc) {
+					// remove from old
+					if(super.getDocument()!=null) {
+						super.getDocument().removeUndoableEditListener(m_undoListener);
+					}
+					// forward
+					super.setDocument(doc);
+					// add listener
+					doc.addUndoableEditListener(m_undoListener);
+				}
+				
+			};
 			// set format
 			field.setEditable(m_isEditable);
 			// save the component
 			m_component = field;
+			// set listeners
+			field.getDocument().addUndoableEditListener(m_undoListener);
 		}
 		return m_component;
 	}
@@ -150,31 +165,15 @@ public class NumericField extends AbstractField {
 		return false;
 	}
 	
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// reset?
-		if(attribute==null) {
-			// reset
-			m_attribute = null;
-		}
-		else { 
-			// is supported?
-			if(isMsoAttributeSupported(attribute)) {
-				// match component type and attribute
-				if( 	attribute instanceof AttributeImpl.MsoInteger ||
-						attribute instanceof AttributeImpl.MsoDouble		) {
-					// save attribute
-					m_attribute = attribute;
-					// update name
-					setName(m_attribute.getName());
-					// forward
-					reset();
-				}
-			}
-		}
-		// failure
-		return false;
-	}	
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
 	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof AttributeImpl.MsoInteger ||
+				attr instanceof AttributeImpl.MsoDouble);
+	}
+		
 	public void setMaxDigits(int digits) {
 		// set precision
 		((NumericDocument)getTextField().getDocument()).setMaxDigits(digits); 
@@ -210,27 +209,5 @@ public class NumericField extends AbstractField {
 		super.setEditable(isEditable);
 		getTextField().setEditable(isEditable);		
 	}
-	
-	/*==================================================================
-	 * Private methods
-	 *================================================================== 
-	 */
-	
-	private void registerChangeListener() {
-		getTextField().getDocument().addDocumentListener(new DocumentListener() {
-
-			public void changedUpdate(DocumentEvent e) { change(); }
-
-			public void insertUpdate(DocumentEvent e) { change(); }
-
-			public void removeUpdate(DocumentEvent e) { change(); }
-			
-			private void change() {
-				if(!isChangeable()) return;
-				fireOnWorkChange();
-			}
-			
-		});		
-	}
-	
+		
 }

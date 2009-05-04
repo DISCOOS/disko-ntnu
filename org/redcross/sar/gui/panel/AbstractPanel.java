@@ -7,7 +7,6 @@ import java.awt.LayoutManager;
 import java.awt.LayoutManager2;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -15,6 +14,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.IMsoHolder;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.event.MsoLayerEvent;
@@ -28,28 +28,27 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;
 
-import com.esri.arcgis.interop.AutomationException;
-
 public abstract class AbstractPanel extends JPanel implements IPanel, IPanelManager, IMsoHolder {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = Logger.getLogger(AbstractPanel.class);
 
 	private int m_isMarked = 0;
 
-	private int consumeCount = 0;
-	private int loopCount = 0;
+	private int m_consumeCount = 0;
+	private int m_loopCount = 0;
 
-	private boolean isDirty = false;
-	private boolean requestHideOnFinish = true;
-	private boolean requestHideOnCancel = true;
+	private boolean m_isDirty = false;
+	private boolean m_requestHideOnFinish = true;
+	private boolean m_requestHideOnCancel = true;
 
-	protected IMsoModelIf msoModel;
-	protected IMsoObjectIf msoObject;
+	protected IMsoModelIf m_msoModel;
+	protected IMsoObjectIf m_msoObject;
 
-	protected EnumSet<?> msoLayers;
-	protected EnumSet<MsoClassCode> msoInterests;
+	protected EnumSet<?> m_msoLayers;
+	protected EnumSet<MsoClassCode> m_msoInterests;
 
-	protected PanelManager manager = new PanelManager(null,this);
+	protected PanelManager m_manager = new PanelManager(null,this);
 
 	/* ===========================================
 	 * Constructors
@@ -62,8 +61,8 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 
 	public AbstractPanel(String caption) {
 		// prepare
-        msoLayers =  EnumSet.noneOf(LayerCode.class);
-		msoInterests = EnumSet.noneOf(MsoClassCode.class);
+        m_msoLayers =  EnumSet.noneOf(LayerCode.class);
+		m_msoInterests = EnumSet.noneOf(MsoClassCode.class);
 	}
 
 	/* ===========================================
@@ -71,30 +70,30 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	 * =========================================== */
 
 	public boolean isLoop() {
-		return (loopCount>0);
+		return (m_loopCount>0);
 	}
 
 	public void setLoop(boolean isLoop) {
 		if(isLoop)
-			loopCount++;
-		else if(loopCount>0)
-			loopCount--;
+			m_loopCount++;
+		else if(m_loopCount>0)
+			m_loopCount--;
 	}
 
 	public EnumSet<?> getMsoLayers() {
-		return msoLayers;
+		return m_msoLayers;
 	}
 
 	public void setMsoLayers(IDiskoMap map, EnumSet<LayerCode> layers) {
 		// unregister?
-		if(this.msoLayers!=null) {
+		if(this.m_msoLayers!=null) {
 			// loop over all layers
 			for(LayerCode it: layers) {
 				IMsoFeatureLayer l = map.getMsoLayer(it);
 				if(l!=null) l.removeMsoLayerEventListener(this);
 			}
 		}
-		this.msoLayers = layers!=null ? layers : EnumSet.noneOf(LayerCode.class);
+		this.m_msoLayers = layers!=null ? layers : EnumSet.noneOf(LayerCode.class);
 		// register?
 		if(layers!=null) {
 			// loop over all layers
@@ -105,18 +104,24 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		}
 	}
 
-	public void setInterests(IMsoModelIf model, EnumSet<MsoClassCode> interests) {
-		// unregister?
-		if(msoModel!=null) {
-			msoModel.getEventManager().removeClientUpdateListener(this);
-		}
+	public void connect(IMsoModelIf model, EnumSet<MsoClassCode> interests) {
+		// unregister
+		disconnect();
 		// initialize
-		msoModel = model;
-		msoInterests = EnumSet.noneOf(MsoClassCode.class);
+		m_msoModel = model;
+		m_msoInterests = EnumSet.noneOf(MsoClassCode.class);
 		// add listener?
 		if(model!=null) {
-			msoInterests = interests;
-			msoModel.getEventManager().addClientUpdateListener(this);
+			m_msoInterests = interests;
+			m_msoModel.getEventManager().addClientUpdateListener(this);
+		}
+	}
+	
+	public void disconnect() {
+		// unregister?
+		if(m_msoModel!=null) {
+			m_msoModel.getEventManager().removeClientUpdateListener(this);
+			m_msoModel = null;
 		}
 	}
 
@@ -135,14 +140,14 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	        }
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Failed to select MSO feature",e);
 		}
 
 		// forward
 		setMsoObject(msoObj);
 
 		// finished
-		return (msoObject!=null);
+		return (m_msoObject!=null);
 
 	}
 
@@ -168,12 +173,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	 * =========================================== */
 
 	public IMsoObjectIf getMsoObject() {
-		return msoObject;
+		return m_msoObject;
 	}
 
 	public void setMsoObject(IMsoObjectIf msoObj) {
 		// prepare
-		msoObject = msoObj;
+		m_msoObject = msoObj;
 		// forward
 		update();
 	}
@@ -184,7 +189,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// reapply mso object
 		setMsoObject(getMsoObject());
 		// reset flag?
-		if(isDirty) setDirty(false);
+		if(m_isDirty) setDirty(false);
 		// resume change events
 		setChangeable(true);
 	}
@@ -197,11 +202,11 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// consume change events
 		setChangeable(false);
 		// suspend for faster update?
-		if(msoModel!=null) msoModel.suspendClientUpdate();
+		if(m_msoModel!=null) m_msoModel.suspendClientUpdate();
 		// request action
 		bFlag = beforeFinish();
 		// resume updates?
-		if(msoModel!=null) msoModel.resumeClientUpdate(true);
+		if(m_msoModel!=null) m_msoModel.resumeClientUpdate(true);
 		// finish?
 		if(bFlag) {
 			// request action
@@ -238,7 +243,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	}
 
 	public boolean isDirty() {
-		return isDirty;
+		return m_isDirty;
 	}
 
 	public void setDirty(boolean isDirty) {
@@ -256,30 +261,30 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	}
 
 	public boolean isRequestHideOnFinish() {
-		return requestHideOnFinish;
+		return m_requestHideOnFinish;
 	}
 
 	public void setRequestHideOnFinish(boolean isEnabled) {
-		requestHideOnFinish = isEnabled;
+		m_requestHideOnFinish = isEnabled;
 	}
 
 	public boolean isRequestHideOnCancel() {
-		return requestHideOnCancel;
+		return m_requestHideOnCancel;
 	}
 
 	public void setRequestHideOnCancel(boolean isEnabled) {
-		requestHideOnCancel = isEnabled;
+		m_requestHideOnCancel = isEnabled;
 	}
 
 	public boolean isChangeable() {
-		return (consumeCount==0);
+		return (m_consumeCount==0);
 	}
 
 	public void setChangeable(boolean isChangeable) {
 		if(!isChangeable)
-			consumeCount++;
-		else if(consumeCount>0)
-			consumeCount--;
+			m_consumeCount++;
+		else if(m_consumeCount>0)
+			m_consumeCount--;
 	}
 
     public Dimension getPreferredContainerSize() {
@@ -473,12 +478,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
     }
 
 	public IPanelManager getManager() {
-		return manager;
+		return m_manager;
 	}
 
 	public void setParentManager(IPanelManager parent, boolean requestMoveTo, boolean setAll) {
 		// set parent manager
-		this.manager.setParentManager(parent);
+		this.m_manager.setParentManager(parent);
     	// forward to all descendants of container?
 		if(setAll) setParentManager(getContainer(),parent,requestMoveTo);
 	}
@@ -488,16 +493,16 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
      * ========================================================== */
 
     public boolean isRootManager() {
-    	return manager.isRootManager();
+    	return m_manager.isRootManager();
     }
 
 	public IPanelManager getParentManager() {
-		return manager.getParentManager();
+		return m_manager.getParentManager();
 	}
 
 	public IPanelManager setParentManager(IPanelManager parent) {
 		// set parent manager
-		IPanelManager old = this.manager.setParentManager(parent);
+		IPanelManager old = this.m_manager.setParentManager(parent);
     	// forward to all descendants of container
         setParentManager(getContainer(),parent,false);
         // finished
@@ -537,7 +542,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	 * =========================================== */
 
 	public EnumSet<MsoClassCode> getInterests() {
-		return msoInterests;
+		return m_msoInterests;
 	}
 
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
@@ -546,7 +551,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		if(!isChangeable()) return;
 
 		// loop over all events
-		for(MsoEvent.Update e : events.getEvents(msoInterests)) {
+		for(MsoEvent.Update e : events.getEvents(m_msoInterests)) {
 
 			// consume loopback updates
 			if(!e.isLoopback()) {
@@ -562,7 +567,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 
 		        // clear all?
 		        if(clearAll) {
-		        	msoObjectClearAll(this.msoObject,mask);
+		        	msoObjectClearAll(this.m_msoObject,mask);
 		        }
 		        else {
 		        	// get flags
@@ -602,17 +607,13 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 			List<IMsoObjectIf> selection = e.getSelectedMsoObjects();
 			// select new?
 			if (selection != null && selection.size() > 0) {
-				// get mso object
+				// get MSO object
 				msoObj = selection.get(0);
 			}
 			// forward
 			setMsoObject(msoObj);
-		} catch (AutomationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (Exception ex) {
+			logger.error("Failed to get selected MSO objects",ex);
 		}
 	}
 
@@ -701,7 +702,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	protected abstract void fireOnWorkPerformed(WorkFlowEvent e);
 
 	protected void setDirty(boolean isDirty, boolean update) {
-		this.isDirty = isDirty;
+		this.m_isDirty = isDirty;
 		if(update) {
 			setChangeable(false);
 			update();
@@ -718,14 +719,14 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	}
 
 	protected void afterFinish() {
-		fireOnWorkFinish(this,msoObject);
-		if(getManager()!=null && requestHideOnFinish)
+		fireOnWorkFinish(this,m_msoObject);
+		if(getManager()!=null && m_requestHideOnFinish)
 			getManager().requestHide();
 	}
 
 	protected void afterCancel() {
-		fireOnWorkCancel(this,msoObject);
-		if(getManager()!=null && requestHideOnCancel)
+		fireOnWorkCancel(this,m_msoObject);
+		if(getManager()!=null && m_requestHideOnCancel)
 			getManager().requestHide();
 	}
 
@@ -733,14 +734,14 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 
 	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
 		// is same as selected?
-		if(msoObj == this.msoObject) {
-			setMsoObject(msoObject);
+		if(msoObj == this.m_msoObject) {
+			setMsoObject(m_msoObject);
 		}
 	}
 
 	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
 		// is same as selected?
-		if(msoObj == this.msoObject) {
+		if(msoObj == this.m_msoObject) {
 			// forward
 			setMsoObject(null);
 		}
@@ -748,7 +749,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 
 	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
 		// is same as selected?
-		if(msoObj == this.msoObject) {
+		if(msoObj == this.m_msoObject) {
 			// forward
 			setMsoObject(null);
 		}

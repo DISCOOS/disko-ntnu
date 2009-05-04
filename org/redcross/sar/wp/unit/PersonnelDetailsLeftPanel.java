@@ -84,12 +84,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		// add listeners
 		wp.getMsoEventManager().addClientUpdateListener(this);
 		wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
-        getInfoPanel().addWorkFlowListener(new IWorkFlowListener() {
-			public void onFlowPerformed(WorkFlowEvent e) {
-				// only forward MSO changes
-				if(e.isMsoData()) m_wp.onFlowPerformed(e);				
-			}        	
-        });
+        getInfoPanel().addWorkFlowListener(wp);
 	}
 
 	private void initialize()
@@ -106,6 +101,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
 			m_infoPanel.setColumns(2);
+			m_infoPanel.setAutoSave(true);
 			m_infoPanel.setPreferredExpandedHeight(275);
 			m_infoPanel.addButton(getChangeStatusButton(), "status");
 			m_infoPanel.suspendLayout();
@@ -124,9 +120,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 			m_infoPanel.setFieldSpanX("cellphone", 2);
 			m_infoPanel.setFieldSpanX("property", 2);
 			m_infoPanel.setFieldSpanX("association", 2);
-			m_infoPanel.setFieldSpanX("remarks", 2);			
+			m_infoPanel.setFieldSpanX("remarks", 2);
 			m_infoPanel.resumeLayout();
-			m_infoPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL));
+			m_infoPanel.connect(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_PERSONNEL));
 		}
 		return m_infoPanel;
 	}
@@ -356,6 +352,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         	getETATextField().reset();
         	getArrivedTextField().reset();
         	getReleasedTextField().reset();
+        	getRemarksTextArea().reset();
         }  else {
         	getCellPhoneTextField().clearMsoAttribute("");
         	getPropertyTextField().clearMsoAttribute(PersonnelType.VOLUNTEER);

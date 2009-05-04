@@ -99,6 +99,10 @@ public class Application extends JFrame implements IApplication, WindowListener
 	private ServicePool m_servicePool;
 	private DsPool m_dsPool;
 	private ProgressMonitor m_progresMonitor;
+	
+	// undo support
+	//private final UndoManager m_undoManager = new UndoManager();
+	//private final UndoableEditSupport m_undoSupport = new UndoableEditSupport(m_undoManager);
 
 	// counters
 	private int lockCount = 0;

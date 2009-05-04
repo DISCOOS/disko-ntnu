@@ -483,7 +483,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
     			showSelectedCallOut();
     		}
             try {
-                getMsoModel().commit(getMsoModel().getChanges(getUncomittedChanges()));
+                getMsoModel().rollback(getMsoModel().getChanges(getUncomittedChanges()));
                 return super.rollback();
     		} catch (TransactionException ex) {
     			m_logger.error("Failed to commit unit data",ex);

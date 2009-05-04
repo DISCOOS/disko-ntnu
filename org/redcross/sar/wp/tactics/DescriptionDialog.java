@@ -106,7 +106,7 @@ public class DescriptionDialog extends DefaultDialog {
 						}
 
 						// update
-						msoObject = assignment;
+						m_msoObject = assignment;
 						if(area==null) {
 							getPOITableModel().disconnectAll();
 							getPOITableModel().clear();
@@ -136,7 +136,7 @@ public class DescriptionDialog extends DefaultDialog {
 
 				};
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.connect(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());
 				contentPanel.setContainer(getPOITable());
 

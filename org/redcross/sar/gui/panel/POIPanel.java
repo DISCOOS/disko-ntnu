@@ -63,7 +63,7 @@ public class POIPanel extends DefaultToolPanel {
 		super(caption,tool);
 
 		// listen for IPOIIf changes
-		setInterests(Application.getInstance().getMsoModel(),
+		connect(Application.getInstance().getMsoModel(),
 				EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_POI));
 
 		// initialize GUI
@@ -432,7 +432,7 @@ public class POIPanel extends DefaultToolPanel {
 			// reset bit
 			setDirty(false);
 			// notify
-			fireOnWorkFinish(this, msoObject);
+			fireOnWorkFinish(this, m_msoObject);
 		}
 
 		// finished

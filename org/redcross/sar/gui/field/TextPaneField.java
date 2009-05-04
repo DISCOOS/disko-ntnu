@@ -7,8 +7,7 @@ import java.awt.Component;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.mso.data.AttributeImpl;
@@ -70,23 +69,27 @@ public class TextPaneField extends AbstractField {
 
 	public JTextPane getTextPane() {
 		if(m_textPane==null) {
-			m_textPane = new JTextPane();
-			m_textPane.setEditable(m_isEditable);
-			m_textPane.getDocument().addDocumentListener(new DocumentListener() {
-
-				public void changedUpdate(DocumentEvent e) { change(); }
-
-				public void insertUpdate(DocumentEvent e) { change(); }
-
-				public void removeUpdate(DocumentEvent e) { change(); }
-
-				private void change() {
-					if(!isChangeable()) return;
-					fireOnWorkChange();
+			m_textPane = new JTextPane() {
+				
+				private static final long serialVersionUID = 1L;
+				
+				@Override
+				public void setDocument(Document doc) {
+					// remove from old
+					if(super.getDocument()!=null) {
+						super.getDocument().removeUndoableEditListener(m_undoListener);
+					}
+					// forward
+					super.setDocument(doc);
+					// add listener
+					doc.addUndoableEditListener(m_undoListener);
 				}
-
-			});
+				
+			};
+			m_textPane.setEditable(m_isEditable);
 			m_textPane.setBorder(UIFactory.createBorder());
+			// set listeners
+			m_textPane.getDocument().addUndoableEditListener(m_undoListener);
 		}
 		return m_textPane;
 	}
@@ -109,26 +112,9 @@ public class TextPaneField extends AbstractField {
 
 	public boolean setValue(Object value) {
 		// update
-		getTextPane().setText(String.valueOf(value));
+		getTextPane().setText(value!=null?String.valueOf(value):null);
 		// success
 		return true;
-	}
-
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoString) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
 	}
 
 	@Override
@@ -137,4 +123,12 @@ public class TextPaneField extends AbstractField {
 		getTextPane().setEditable(isEditable);
 	}
 
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof AttributeImpl.MsoString);
+	}
+	
 }

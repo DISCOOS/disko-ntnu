@@ -137,7 +137,7 @@ public class UnitAllocationDialog extends DefaultDialog {
 						}
 						
 						// update
-						msoObject = assignment;
+						m_msoObject = assignment;
 
 						// resume changes
 						setChangeable(true);
@@ -155,7 +155,7 @@ public class UnitAllocationDialog extends DefaultDialog {
 					}
 						
 				};
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.connect(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));		
 				contentPanel.insertButton("finish", getAssignButton(), "assign");

@@ -217,7 +217,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 				}
 
 			});
-			m_contentPanel.setInterests(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_MESSAGE));
+			m_contentPanel.connect(m_wp.getMsoModel(), EnumSet.of(MsoClassCode.CLASSCODE_MESSAGE));
 
 		}
 		return m_contentPanel;

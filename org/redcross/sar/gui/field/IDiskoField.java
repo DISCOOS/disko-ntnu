@@ -5,14 +5,19 @@ import java.awt.event.ActionListener;
 import javax.swing.Icon;
 
 import org.redcross.sar.gui.IChangeable;
+import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.work.event.IWorkFlowListener;
 
-public interface IDiskoField extends IChangeable {
+public interface IDiskoField extends IChangeable, IMsoField {
 
 	public String getName();
 
+	public boolean isMsoField();
+	public IAttributeIf<?> getMsoAttribute();
+	public IAttributeIf<?> clearMsoAttribute();
+	public boolean setMsoAttribute(IAttributeIf<?> attribute);
+	
 	public boolean isDirty();
-
 	public boolean isChangeable();
 	public void setChangeable(boolean isConsume);
 

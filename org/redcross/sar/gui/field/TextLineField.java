@@ -6,8 +6,7 @@ package org.redcross.sar.gui.field;
 import java.awt.Component;
 
 import javax.swing.JFormattedTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
@@ -49,31 +48,34 @@ public class TextLineField extends AbstractField {
 		super(attribute, caption, isEditable);
 	}
 
-	/*==================================================================
-	 * Public methods
-	 *================================================================== 
-	 */
+	/* ==================================================================
+	 *  Public methods
+	 * ================================================================== */
 
 	public Component getComponent() {
 		if(m_component==null) {
-			JFormattedTextField field = new JFormattedTextField();
-			field.setEditable(m_isEditable);
-			field.getDocument().addDocumentListener(new DocumentListener() {
-
-				public void changedUpdate(DocumentEvent e) { change(); }
-
-				public void insertUpdate(DocumentEvent e) { change(); }
-
-				public void removeUpdate(DocumentEvent e) { change(); }
+			JFormattedTextField field = new JFormattedTextField() {
 				
-				private void change() {
-					if(!isChangeable()) return;
-					fireOnWorkChange();
+				private static final long serialVersionUID = 1L;
+				
+				@Override
+				public void setDocument(Document doc) {
+					// remove from old
+					if(super.getDocument()!=null) {
+						super.getDocument().removeUndoableEditListener(m_undoListener);
+					}
+					// forward
+					super.setDocument(doc);
+					// add listener
+					doc.addUndoableEditListener(m_undoListener);
 				}
 				
-			});
+			};
+			field.setEditable(m_isEditable);
 			// save the component
 			m_component = field;			
+			// set listeners
+			field.getDocument().addUndoableEditListener(m_undoListener);
 		}
 		return m_component;
 	}
@@ -96,31 +98,23 @@ public class TextLineField extends AbstractField {
 	
 	public boolean setValue(Object value) {
 		// update
-		((JFormattedTextField)m_component).setText(String.valueOf(value));
+		((JFormattedTextField)m_component).setText(value!=null?String.valueOf(value):null);
 		// success
 		return true;
 	}
-	
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoString) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}	
 	
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
 		getTextField().setEditable(isEditable);		
 	}
+	
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof AttributeImpl.MsoString);
+	}
+	
 }

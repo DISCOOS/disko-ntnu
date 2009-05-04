@@ -102,7 +102,7 @@ public class MissionTextDialog extends DefaultDialog {
 						}
 
 						// update
-						msoObject = area;
+						m_msoObject = area;
 						setText(remarks,true,false);
 
 						// resume changes
@@ -122,7 +122,7 @@ public class MissionTextDialog extends DefaultDialog {
 
 				};
 				
-				contentPanel.setInterests(wp.getMsoModel(),getMyInterest());
+				contentPanel.connect(wp.getMsoModel(),getMyInterest());
 				contentPanel.setMsoLayers(wp.getMap(),getMyLayers());				
 				contentPanel.setCaptionIcon(DiskoIconFactory.getIcon("GENERAL.EMPTY", "32x32"));
 				contentPanel.setContainer(getTextArea());

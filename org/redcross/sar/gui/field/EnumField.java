@@ -16,10 +16,9 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.ListSelectorPanel;
-import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
-import org.redcross.sar.util.Utils;
+import org.redcross.sar.undo.DiskoFieldEdit;
 
 /**
  * @author kennetgu
@@ -141,6 +140,8 @@ public class EnumField extends AbstractField {
 
 	public boolean setValue(Object value) {
 		if(value instanceof Enum) {
+			// get old value
+			Enum<?> oldValue = getValue();
 			// save
 			m_value = (Enum<?>)value;
 			// get text
@@ -148,7 +149,7 @@ public class EnumField extends AbstractField {
 			// update
 			getTextField().setText(text);
 			// notify change?
-			if(isChangeable()) fireOnWorkChange();
+			if(isChangeable()) fireOnWorkChange(new DiskoFieldEdit(this,oldValue,value));
 			// finished
 			return true;
 		}
@@ -195,23 +196,6 @@ public class EnumField extends AbstractField {
 		return ((JList)m_component).getVisibleRowCount();
 	}
 
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoEnum) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}
-
 	@Override
 	public void setEditable(boolean isEditable) {
 		// forward
@@ -220,6 +204,14 @@ public class EnumField extends AbstractField {
 		getTextField().setEditable(false);
 	}
 
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof MsoEnum);
+	}
+	
 	/*==================================================================
 	 * Private methods
 	 *==================================================================

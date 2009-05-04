@@ -8,11 +8,9 @@ import java.util.Calendar;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.redcross.sar.gui.format.DTGFormatter;
-import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -76,27 +74,30 @@ public class DTGField extends AbstractField {
 	public Component getComponent() {
 		if(m_component==null) {
 			// create
-			JFormattedTextField field = new JFormattedTextField();
+			JFormattedTextField field = new JFormattedTextField()  {
+				
+				private static final long serialVersionUID = 1L;
+				
+				@Override
+				public void setDocument(Document doc) {
+					// remove from old
+					if(super.getDocument()!=null) {
+						super.getDocument().removeUndoableEditListener(m_undoListener);
+					}
+					// forward
+					super.setDocument(doc);
+					// add listener
+					doc.addUndoableEditListener(m_undoListener);
+				}
+				
+			};
 			// set format
 			field.setFormatterFactory(new DTGFormatterFactory());
 			field.setEditable(m_isEditable);
-			field.getDocument().addDocumentListener(new DocumentListener() {
-
-				public void changedUpdate(DocumentEvent e) { change(); }
-
-				public void insertUpdate(DocumentEvent e) { change(); }
-
-				public void removeUpdate(DocumentEvent e) { change(); }
-
-				private void change() {
-					if(!isChangeable()) return;
-					fireOnWorkChange();
-				}
-
-			});
 			// save the component
 			m_component = field;
-
+			// add listeners
+			field.getDocument().addUndoableEditListener(m_undoListener);
 		}
 		return m_component;
 	}
@@ -174,30 +175,21 @@ public class DTGField extends AbstractField {
 		}
 		return false;
 	}
-
-	public boolean setMsoAttribute(IAttributeIf<?> attribute) {
-		// is supported?
-		if(isMsoAttributeSupported(attribute)) {
-			// match component type and attribute
-			if(attribute instanceof AttributeImpl.MsoCalendar) {
-				// save attribute
-				m_attribute = attribute;
-				// update name
-				setName(m_attribute.getName());
-				// success
-				return true;
-			}
-		}
-		// failure
-		return false;
-	}
-
 	@Override
 	public void setEditable(boolean isEditable) {
 		super.setEditable(isEditable);
 		getTextField().setEditable(isEditable);
 	}
 
+
+	/* ====================================================================
+	 * Protected methods
+	 * ==================================================================== */
+	
+	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+		return (attr instanceof MsoCalendar);
+	}
+	
 	/*==================================================================
 	 * Inner classes
 	 *==================================================================
@@ -218,5 +210,5 @@ public class DTGField extends AbstractField {
 		}
 
 	}
-
+	
 }

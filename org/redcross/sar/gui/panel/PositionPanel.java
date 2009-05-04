@@ -82,7 +82,7 @@ public class PositionPanel extends DefaultToolPanel {
 		this.msoModel = Application.getInstance().getMsoModel();
 		
 		// listen for IUnitIf changes
-		setInterests(Application.getInstance().getMsoModel(),
+		connect(Application.getInstance().getMsoModel(),
 				EnumSet.of(IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT));
 		
 		// initialize gui
@@ -636,7 +636,7 @@ public class PositionPanel extends DefaultToolPanel {
 			// reset bit
 			setDirty(false);
 			// notify
-			fireOnWorkFinish(this, msoObject);
+			fireOnWorkFinish(this, m_msoObject);
 		}
 		
 		// finished

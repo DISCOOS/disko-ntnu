@@ -189,7 +189,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		// initialize GUI
 		initialize();
 
-		// load map
+		// forward
 		loadMxdDoc(mapManager.getMxdDoc(),true);
 
 	}
@@ -224,9 +224,6 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		// listen to do actions when the map is loaded
 		addIMapControlEvents2Listener(ctrlAdapter);
 
-		// listen for component events
-		mapBean.addComponentListener(compAdapter);
-
 		// create refresh stack
 		refreshStack = new HashMap<String,Runnable>();
 
@@ -240,127 +237,136 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		// add map bean to component
 		add(mapBean,BorderLayout.CENTER);
 		
+		// listen for component events
+		addComponentListener(compAdapter);
+
 		//setBorder(UIFactory.createBorder(10,10,10,10,Color.RED));
 		
 	}
 
 	@SuppressWarnings("unchecked")
-	private void initLayers(boolean initMSO) throws Exception {
+	private void initLayers(boolean initMSO) {
 
-		// forward
-		if(!isMxdDocLoaded()) return;
+		try {
+			
+			// forward
+			//if(!isMxdDocLoaded()) return;
 
-		// get hooks
-		IMap focusMap = mapBean.getActiveView().getFocusMap();
-		ISpatialReference srs = getSpatialReference();
+			// get hooks
+			IMap focusMap = mapBean.getActiveView().getFocusMap();
+			ISpatialReference srs = getSpatialReference();
 
-		// initialize layers?
-		if(initMSO) {
+			// initialize layers?
+			if(initMSO) {
 
-			// add MSO layers
-			msoLayers = new ArrayList<IMsoFeatureLayer>();
-			diskoLayers = new ArrayList<IMapLayer>();
+				// add MSO layers
+				msoLayers = new ArrayList<IMsoFeatureLayer>();
+				diskoLayers = new ArrayList<IMapLayer>();
 
-			// get interests as
-			ArrayList<Enum<?>> list = new ArrayList<Enum<?>>(layerCodes);
+				// get interests as
+				ArrayList<Enum<?>> list = new ArrayList<Enum<?>>(layerCodes);
 
-			// initialize
-			classCodes = EnumSet.noneOf(MsoClassCode.class);
-			coClassCodes = new HashMap<MsoClassCode, EnumSet<MsoClassCode>>();
+				// initialize
+				classCodes = EnumSet.noneOf(MsoClassCode.class);
+				coClassCodes = new HashMap<MsoClassCode, EnumSet<MsoClassCode>>();
 
-			// loop over my layers
-			for(int i=0;i<list.size();i++){
-				Enum<?> layerCode = list.get(i);
-				if(layerCode == IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER) {
-					addDiskoLayer(new SearchAreaLayer(srs,msoLayerEventStack),true);
-					addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
-				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER) {
-					addDiskoLayer(new OperationAreaLayer(srs,msoLayerEventStack),true);
-					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
-				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER) {
-					addDiskoLayer(new OperationAreaMaskLayer(srs,msoLayerEventStack),true);
-					addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
-				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.AREA_LAYER) {
-					addDiskoLayer(new AreaLayer(srs,msoLayerEventStack),true);
-					if(addClass(MsoClassCode.CLASSCODE_AREA)) {
-						addCoClass(MsoClassCode.CLASSCODE_POI,MsoClassCode.CLASSCODE_AREA);
-						addCoClass(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_AREA);
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
+				// loop over my layers
+				for(int i=0;i<list.size();i++){
+					Enum<?> layerCode = list.get(i);
+					if(layerCode == IMsoFeatureLayer.LayerCode.SEARCH_AREA_LAYER) {
+						addDiskoLayer(new SearchAreaLayer(srs,msoLayerEventStack),true);
+						addClass(MsoClassCode.CLASSCODE_SEARCHAREA);
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.OPERATION_AREA_LAYER) {
+						addDiskoLayer(new OperationAreaLayer(srs,msoLayerEventStack),true);
+						addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.OPERATION_AREA_MASK_LAYER) {
+						addDiskoLayer(new OperationAreaMaskLayer(srs,msoLayerEventStack),true);
+						addClass(MsoClassCode.CLASSCODE_OPERATIONAREA);
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.AREA_LAYER) {
+						addDiskoLayer(new AreaLayer(srs,msoLayerEventStack),true);
+						if(addClass(MsoClassCode.CLASSCODE_AREA)) {
+							addCoClass(MsoClassCode.CLASSCODE_POI,MsoClassCode.CLASSCODE_AREA);
+							addCoClass(MsoClassCode.CLASSCODE_ROUTE,MsoClassCode.CLASSCODE_AREA);
+							addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_AREA);
+						}
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.ROUTE_LAYER) {
+						addDiskoLayer(new RouteLayer(srs,msoLayerEventStack),true);
+						if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+							addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
+							addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
+						}
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.POI_LAYER) {
+						addDiskoLayer(new POILayer(srs,msoLayerEventStack),true);
+						if(addClass(MsoClassCode.CLASSCODE_POI)) {
+							addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
+						}
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.FLANK_LAYER) {
+						addDiskoLayer(new FlankLayer(srs,msoLayerEventStack),true);
+						if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
+							addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
+						}
+					}
+					else if(layerCode == IMsoFeatureLayer.LayerCode.UNIT_LAYER) {
+						addDiskoLayer(new UnitLayer(srs,msoLayerEventStack),true);
+						addClass(MsoClassCode.CLASSCODE_UNIT);
+					}
+					else if(layerCode == IDsObjectLayer.LayerCode.ESTIMATED_POSITION_LAYER) {
+						addDiskoLayer(new EstimatedPositionLayer(mapLayerEventStack,srs),false);
 					}
 				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.ROUTE_LAYER) {
-					addDiskoLayer(new RouteLayer(srs,msoLayerEventStack),true);
-					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
-						addCoClass(MsoClassCode.CLASSCODE_AREA,MsoClassCode.CLASSCODE_ROUTE);
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
-					}
+
+				// add co-classes that affects registered classes
+				for(MsoClassCode code : coClassCodes.keySet()) {
+					addClass(code);
 				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.POI_LAYER) {
-					addDiskoLayer(new POILayer(srs,msoLayerEventStack),true);
-					if(addClass(MsoClassCode.CLASSCODE_POI)) {
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_POI);
-					}
+
+				// create a the MSO group layer
+				GroupLayer diskoGroup = new GroupLayer();
+				diskoGroup.setName("DISKO_GROUP_LAYER");
+				diskoGroup.setCached(true);
+
+				// add DISKO layers to layer group
+				for (IMapLayer it : diskoLayers) {
+					if(it instanceof IElementLayer)
+						diskoGroup.add((ILayer)((IElementLayer)it).getLayerImpl());
+					else if(it instanceof ILayer)
+						diskoGroup.add((ILayer)it);
 				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.FLANK_LAYER) {
-					addDiskoLayer(new FlankLayer(srs,msoLayerEventStack),true);
-					if(addClass(MsoClassCode.CLASSCODE_ROUTE)) {
-						addCoClass(MsoClassCode.CLASSCODE_ASSIGNMENT,MsoClassCode.CLASSCODE_ROUTE);
-					}
-				}
-				else if(layerCode == IMsoFeatureLayer.LayerCode.UNIT_LAYER) {
-					addDiskoLayer(new UnitLayer(srs,msoLayerEventStack),true);
-					addClass(MsoClassCode.CLASSCODE_UNIT);
-				}
-				else if(layerCode == IDsObjectLayer.LayerCode.ESTIMATED_POSITION_LAYER) {
-					addDiskoLayer(new EstimatedPositionLayer(mapLayerEventStack,srs),false);
+
+				// add to focus map
+				focusMap.addLayer(diskoGroup);
+
+				// connect layers and MSO data
+				binder.setLayers(msoLayers);
+
+			}
+			else {
+				// update spatial references
+				for (IMapLayer it : diskoLayers) {
+					((ILayer)it).setSpatialReferenceByRef(srs);
 				}
 			}
 
-			// add co-classes that affects registered classes
-			for(MsoClassCode code : coClassCodes.keySet()) {
-				addClass(code);
+			// initialize all layers
+			for (int i = 0; i < focusMap.getLayerCount(); i++) {
+				prepareLayer(focusMap.getLayer(i));
 			}
 
-			// create a the MSO group layer
-			GroupLayer diskoGroup = new GroupLayer();
-			diskoGroup.setName("DISKO_GROUP_LAYER");
-			diskoGroup.setCached(true);
+			// load MSO data into layers
+			binder.load();
 
-			// add DISKO layers to layer group
-			for (IMapLayer it : diskoLayers) {
-				if(it instanceof IElementLayer)
-					diskoGroup.add((ILayer)((IElementLayer)it).getLayerImpl());
-				else if(it instanceof ILayer)
-					diskoGroup.add((ILayer)it);
-			}
-
-			// add to focus map
-			focusMap.addLayer(diskoGroup);
-
-			// connect layers and MSO data
-			binder.setLayers(msoLayers);
-
+			// initialize MSO selection model
+			setMsoLayerModel();
+			
+		} catch (Exception e) {
+			logger.error("Failed to load dynamic MSO layers",e);
 		}
-		else {
-			// update spatial references
-			for (IMapLayer it : diskoLayers) {
-				((ILayer)it).setSpatialReferenceByRef(srs);
-			}
-		}
-
-		// initialize all layers
-		for (int i = 0; i < focusMap.getLayerCount(); i++) {
-			prepareLayer(focusMap.getLayer(i));
-		}
-
-		// load MSO data into layers
-		binder.load();
-
-		// initialize MSO selection model
-		setMsoLayerModel();
 
 	}
 
@@ -1943,8 +1949,12 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 				if(!mapBean.getDocumentFilename().equals(mxdDoc)) {
 					// validate document
 					if(mapBean.checkMxFile(mxdDoc)) {
+						// remove bean from document
+						remove(mapBean);
 						// load document
 						mapBean.loadMxFile(mxdDoc, null, null);
+						// add map bean to component
+						add(mapBean,BorderLayout.CENTER);
 						// set mxd document
 						this.mxdDoc = mxdDoc;
 						// update spatial references

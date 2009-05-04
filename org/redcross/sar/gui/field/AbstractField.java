@@ -17,8 +17,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.UndoableEdit;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.gui.event.IMsoFieldListener;
+import org.redcross.sar.gui.event.MsoFieldEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
@@ -35,7 +40,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
  * @author kennetgu
  *
  */
-public abstract class AbstractField extends JPanel implements IDiskoField, IMsoField {
+public abstract class AbstractField extends JPanel implements IDiskoField {
 
 	private static final long serialVersionUID = 1L;
 
@@ -63,9 +68,37 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	private int m_fixedWidth;
 	private int m_fixedHeight;
-
+	
 	private final EventListenerList listeners = new EventListenerList();
 
+	/*==================================================================
+	 * Anonymous classes
+	 *================================================================== */
+
+	private FocusListener m_focusListener = new FocusListener() {
+
+		@Override
+		public void focusGained(FocusEvent e) {
+			focusChanged(true);
+		}
+
+		@Override
+		public void focusLost(FocusEvent e) {
+			focusChanged(false);
+		}
+
+	};
+	
+	protected UndoableEditListener m_undoListener = new UndoableEditListener() {
+
+		@Override
+		public void undoableEditHappened(UndoableEditEvent e) {
+			if(!isChangeable()) return;
+			fireOnWorkChange(e.getEdit());
+		}
+		
+	};
+	
 	/*==================================================================
 	 * Constructors
 	 *==================================================================
@@ -78,16 +111,15 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 	protected AbstractField(String name, String caption, boolean isEditable, int width, int height, Object value) {
 		// forward
 		super();
-		// initialize GUI
-		initialize(width, height);
 		// suspend listeners
 		setChangeable(false);
+		// initialize GUI
+		initialize(width, height);
 		// update
 		setName(name);
 		setCaptionText(caption);
 		setValue(value);
 		setEditable(isEditable);
-
 		// resume listeners
 		setChangeable(true);
 	}
@@ -130,7 +162,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		return m_captionLabel;
 	}
 
-	protected void fireOnWorkChange() {
+	protected void fireOnWorkChange(UndoableEdit edit) {
 
 		// consume?
 		if(!isChangeable()) return;
@@ -138,18 +170,18 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		if(m_autoSave) {
 			Application.getInstance().getMsoModel().suspendClientUpdate();
 			if(finish()) {
-				fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_FINISH));
+				fireOnWorkChange(new WorkFlowEvent(this,getValue(),edit,WorkFlowEvent.EVENT_FINISH));
 			}
 			else {
 				// notify change instead
 				m_isDirty = true;
-				fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_CHANGE));
+				fireOnWorkChange(new WorkFlowEvent(this,getValue(),edit,WorkFlowEvent.EVENT_CHANGE));
 			}
 			Application.getInstance().getMsoModel().resumeClientUpdate(true);
 		}
 		else {
 			m_isDirty = true;
-			fireOnWorkChange(new WorkFlowEvent(this,getValue(),WorkFlowEvent.EVENT_CHANGE));
+			fireOnWorkChange(new WorkFlowEvent(this,getValue(),edit,WorkFlowEvent.EVENT_CHANGE));
 		}
 	}
 
@@ -187,7 +219,9 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 			}
 		}
 	}
-
+	
+	protected abstract boolean isMsoAttributeSettable(IAttributeIf<?> attr);
+	
 	/*==================================================================
 	 * Private methods
 	 *==================================================================
@@ -224,6 +258,22 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 			list[i].onFlowPerformed(e);
 		}
 	}
+	
+	private void fireOnMsoAttributeChanged() {
+		int type = (m_attribute==null?MsoFieldEvent.ATTRIBUTE_RESET:MsoFieldEvent.ATTRIBUTE_SET);
+		fireOnMsoFieldChange(new MsoFieldEvent(this,type));
+	}
+	
+	private void fireOnMsoFieldChange(MsoFieldEvent e) {
+		// get listeners
+		IMsoFieldListener[] list = listeners.getListeners(IMsoFieldListener.class);
+		// forward
+		for(int i=0; i<list.length; i++) {
+			list[i].onMsoFieldChanged(e);
+		}
+		
+	}
+	
 
 	/*==================================================================
 	 * Public methods
@@ -336,7 +386,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 	public boolean isEditable() {
 		return m_isEditable;
 	}
-
+	
 	public void setAutoSave(boolean auto) {
 		throw new IllegalArgumentException("AutoSave not supported");
 	}
@@ -462,7 +512,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 	}
 
 	public boolean isMsoField() {
-		return (m_attribute!=null);
+		return m_attribute!=null;
 	}
 
 	public IAttributeIf<?> getMsoAttribute() {
@@ -481,6 +531,11 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 		return attr;		
 	}
 	
+	/**
+	 * Method for testing if the attribute is testing 
+	 * @param attribute - the attribute to test
+	 * @return 
+	 */
   	public static boolean isMsoAttributeSupported(IAttributeIf<?> attribute) {
 		return !(attribute instanceof AttributeImpl.MsoPolygon ||
 				attribute instanceof AttributeImpl.MsoRoute ||
@@ -496,6 +551,15 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	}
 
+	public void addMsoFieldListener(IMsoFieldListener listener) {
+		listeners.add(IMsoFieldListener.class,listener);
+	}
+
+	public void removeMsoFieldListener(IMsoFieldListener listener) {
+		listeners.remove(IMsoFieldListener.class,listener);
+
+	}
+	
 	public void installButton(AbstractButton button, boolean isVisible) {
 		// remove current?
 		if(m_button!=null) {
@@ -606,24 +670,26 @@ public abstract class AbstractField extends JPanel implements IDiskoField, IMsoF
 
 	public abstract Component getComponent();
 
-	public abstract boolean setMsoAttribute(IAttributeIf<?> attribute);
-
-	/*==================================================================
-	 * Anonymous classes
-	 *================================================================== */
-
-	private FocusListener m_focusListener = new FocusListener() {
-
-		@Override
-		public void focusGained(FocusEvent e) {
-			focusChanged(true);
+	public final boolean setMsoAttribute(IAttributeIf<?> attribute) {
+		// is supported?
+		if(isMsoAttributeSupported(attribute)) {
+			// match component type and attribute
+			if(isMsoAttributeSettable(attribute)) {
+				// save attribute
+				m_attribute = attribute;
+				// update name
+				setName(m_attribute.getName());
+				// reset value
+				reset();
+				// notify
+				fireOnMsoAttributeChanged();
+				// success
+				return true;
+			}
 		}
-
-		@Override
-		public void focusLost(FocusEvent e) {
-			focusChanged(false);
-		}
-
-	};
+		// failure
+		return false;		
+	}
+	
 
 }
