@@ -10,7 +10,6 @@ import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.ITrackCancel;
 
-import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;

@@ -105,7 +105,7 @@ public interface IMsoObjectIf extends IData
      * Rollback changes in supplied attributes in this object. Generates a client update event.
      * @param attrs - the attributes to rollback changes in
      */    
-    public void rollback(List<IAttributeIf<?>> attrs);
+    public void rollback(List<IMsoAttributeIf<?>> attrs);
     
     /**
      * Delete this object from the data structures
@@ -138,13 +138,13 @@ public interface IMsoObjectIf extends IData
      * Get a copy of map of the attributes for the object
      * @return The attributes
      */
-    public Map<String, IAttributeIf<?>> getAttributes();
+    public Map<String, IMsoAttributeIf<?>> getAttributes();
 
     /**
      * Get a attribute from name
      * @return The IAttributeIf object
      */
-    public IAttributeIf<?> getAttribute(String aAttributeName) throws UnknownAttributeException;
+    public IMsoAttributeIf<?> getAttribute(String aAttributeName) throws UnknownAttributeException;
     
     /**
      * Get a copy of the map of the reference objects for the object (one-to-one relations)
@@ -257,7 +257,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoBooleanIf getBooleanAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoBooleanIf getBooleanAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
      * Get a Boolean attribute with the given name.
@@ -267,7 +267,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoBooleanIf getBooleanAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoBooleanIf getBooleanAttribute(String aName) throws UnknownAttributeException;
 
     /**
      * Get an Integer attribute with the given index.
@@ -277,7 +277,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoIntegerIf getIntegerAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoIntegerIf getIntegerAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
      * Get an Integer attribute with the given name.
@@ -287,7 +287,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoIntegerIf getIntegerAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoIntegerIf getIntegerAttribute(String aName) throws UnknownAttributeException;
 
 //    /**
 //     * Get a Long attribute with the given index.
@@ -317,7 +317,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoDoubleIf getDoubleAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoDoubleIf getDoubleAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
      * Get a Double attribute with the given name.
@@ -327,7 +327,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoDoubleIf getDoubleAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoDoubleIf getDoubleAttribute(String aName) throws UnknownAttributeException;
 
     /**
      * Get a String attribute with the given index.
@@ -337,7 +337,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoStringIf getStringAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoStringIf getStringAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
      * Get a String attribute with the given name.
@@ -347,7 +347,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoStringIf getStringAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoStringIf getStringAttribute(String aName) throws UnknownAttributeException;
 
     /**
      * Get a Calendar attribute with the given index.
@@ -357,7 +357,7 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoCalendarIf getCalendarAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoCalendarIf getCalendarAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
      * Get a Calendar attribute with the given name.
@@ -367,131 +367,131 @@ public interface IMsoObjectIf extends IData
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoCalendarIf getCalendarAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoCalendarIf getCalendarAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPositionIf} attribute with the given index.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoPositionIf} attribute with the given index.
      *
      * @param anIndex Attribute index.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoPositionIf getPositionAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoPositionIf getPositionAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPositionIf}  attribute with the given name.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoPositionIf}  attribute with the given name.
      *
      * @param aName Attribute name.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoPositionIf getPositionAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoPositionIf getPositionAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoTimePosIf} attribute with the given index.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoTimePosIf} attribute with the given index.
      *
      * @param anIndex Attribute index.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoTimePosIf getTimePosAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoTimePosIf getTimePosAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoTimePosIf}  attribute with the given name.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoTimePosIf}  attribute with the given name.
      *
      * @param aName Attribute name.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoTimePosIf getTimePosAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoTimePosIf getTimePosAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoTrackIf} attribute with the given index.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoTrackIf} attribute with the given index.
      *
      * @param anIndex Attribute index.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoTrackIf getTrackAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoTrackIf getTrackAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoTrackIf}  attribute with the given name.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoTrackIf}  attribute with the given name.
      *
      * @param aName Attribute name.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoTrackIf getTrackAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoTrackIf getTrackAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoRouteIf} attribute with the given index.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoRouteIf} attribute with the given index.
      *
      * @param anIndex Attribute index.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoRouteIf getRouteAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoRouteIf getRouteAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoRouteIf}  attribute with the given name.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoRouteIf}  attribute with the given name.
      *
      * @param aName Attribute name.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoRouteIf getRouteAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoRouteIf getRouteAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPolygonIf} attribute with the given index.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoPolygonIf} attribute with the given index.
      *
      * @param anIndex Attribute index.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoPolygonIf getPolygonAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoPolygonIf getPolygonAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPolygonIf}  attribute with the given name.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoPolygonIf}  attribute with the given name.
      *
      * @param aName Attribute name.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoPolygonIf getPolygonAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoPolygonIf getPolygonAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPolygonIf} attribute with the given index.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoPolygonIf} attribute with the given index.
      *
      * @param anIndex Attribute index.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoEnumIf<?> getEnumAttribute(int anIndex) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoEnumIf<?> getEnumAttribute(int anIndex) throws UnknownAttributeException;
 
     /**
-     * Get a {@link org.redcross.sar.mso.data.IAttributeIf.IMsoPolygonIf}  attribute with the given name.
+     * Get a {@link org.redcross.sar.mso.data.IMsoAttributeIf.IMsoPolygonIf}  attribute with the given name.
      *
      * @param aName Attribute name.
      * @return The attribute, if it exists a and is of the right type, otherwise null.
      * @throws org.redcross.sar.util.except.UnknownAttributeException
      *          If attribute of the given type does not exist.
      */
-    public IAttributeIf.IMsoEnumIf<?> getEnumAttribute(String aName) throws UnknownAttributeException;
+    public IMsoAttributeIf.IMsoEnumIf<?> getEnumAttribute(String aName) throws UnknownAttributeException;
 
-    public Collection<IChangeIf.IChangeReferenceIf> getCommittableAttributeRelations();
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedAttributeReferences();
 
-    public Collection<IChangeIf.IChangeReferenceIf> getCommittableListRelations();
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences();
 
     public interface IObjectIdIf
     {

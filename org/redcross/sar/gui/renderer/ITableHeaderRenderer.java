@@ -8,7 +8,7 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-public interface TableHeaderRenderer extends TableCellRenderer {
+public interface ITableHeaderRenderer extends TableCellRenderer {
 
 	public int getWidth(Graphics g, JTable table, int row, int col);
 	

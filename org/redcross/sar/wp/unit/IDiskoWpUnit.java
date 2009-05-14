@@ -8,37 +8,31 @@ import org.redcross.sar.wp.IDiskoWpModule;
 
 public interface IDiskoWpUnit extends IDiskoWpModule, IDiskoWp
 {
+    public final static String bundleName = "org.redcross.sar.wp.unit.unit";
+
 	/*
 	 * View related
 	 */
-	public static final String PERSONNEL_DETAILS_VIEW_ID = "PERSONNEL_DETAILS_VIEW";
-	public static final String PERSONNEL_ADDITIONAL_VIEW_ID = "PERSONNEL_ADDITIONAL_VIEW";
-	public static final String UNIT_VIEW_ID = "UNIT_VIEW";
-	public static final String CALLOUT_VIEW_ID = "CALLOUT_VIEW";
-	public static final String MESSAGE_VIEW_ID = "MESSAGE_VIEW";
+	public static final String PERSONNEL_DETAILS_VIEW_ID = "PERSONNEL.DETAILS.VIEW";
+	public static final String PERSONNEL_ADDITIONAL_VIEW_ID = "PERSONNEL.ADDITIONAL.VIEW";
+	public static final String UNIT_DETAILS_VIEW_ID = "UNIT.DETAILS.VIEW";
+	public static final String CALLOUT_DETAILS_VIEW_ID = "CALLOUT.DETAILS.VIEW";
+	public static final String MESSAGE_VIEW_ID = "MESSAGE.VIEW";
 
-    public final static String bundleName = "org.redcross.sar.wp.unit.unit";
-
-    public void setPersonnelLeft(IPersonnelIf personnel);
-	public void setPersonnelBottom(IPersonnelIf personnel);
-	public void setUnit(IUnitIf unit);
-	public void setCallout(ICalloutIf callout);
-	public void setOverviewPanel(int index);
-	public void setLeftView(String viewId);
+	public void setMainTab(int index);
 	public void setBottomView(String viewId);
+	public boolean setLeftView(String viewId);
+    public boolean setPersonnel(IPersonnelIf personnel);
+    public boolean setPersonnelLeft(IPersonnelIf personnel);
+	public void setPersonnelBottom(IPersonnelIf personnel);
+	public boolean setUnit(IUnitIf unit);
+	public boolean setCallout(ICalloutIf callout);
 
-	/*
-	 * Editor objects
-	 */
 	public IPersonnelIf getEditingPersonnel();
 	public IUnitIf getEditingUnit();
-
-	/*
-	 * Getters and setters
-	 */
-	public boolean isNewState();
-	public boolean isNewPersonnel();
-	public boolean isNewUnit();
-	public boolean isNewCallOut();
+	public ICalloutIf getEditingCallout();
 	
+	public boolean isEditValid();
+	public boolean isDataValid();
+		
 }

@@ -43,7 +43,7 @@ import org.redcross.sar.gui.dialog.TNCDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.util.Utils;
@@ -195,8 +195,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private ConsoleDialog getConsoleDialog() {
 		if(consoleDialog == null) {
-			consoleDialog = new ConsoleDialog(Application.getInstance());
-			consoleDialog.setLocationRelativeTo(Application.getInstance());
+			consoleDialog = new ConsoleDialog(Application.getFrameInstance());
+			consoleDialog.setLocationRelativeTo(Application.getFrameInstance());
 		}
 		return consoleDialog;
 	}		
@@ -208,7 +208,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private ListSelectorDialog getSelectorDialog() {
 		if(selectorDialog == null) {
-			selectorDialog = new ListSelectorDialog(Application.getInstance());
+			selectorDialog = new ListSelectorDialog(Application.getFrameInstance());
 			selectorDialog.prepare("Velg tjeneste", new String[]{
 					"Sanntidssporing (APRS-COM)",
 					"Sanntidssporing (APRS-IS)"});
@@ -223,8 +223,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private TNCDialog getTNCDialog() {
 		if(tncDialog == null) {
-			tncDialog = new TNCDialog(Application.getInstance());
-			tncDialog.setLocationRelativeTo(Application.getInstance());			
+			tncDialog = new TNCDialog(Application.getFrameInstance());
+			tncDialog.setLocationRelativeTo(Application.getFrameInstance());			
 		}
 		return tncDialog;
 	}		
@@ -236,8 +236,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 */	
 	private NetDialog getNetDialog() {
 		if(netDialog == null) {
-			netDialog = new NetDialog(Application.getInstance());
-			netDialog.setLocationRelativeTo(Application.getInstance());			
+			netDialog = new NetDialog(Application.getFrameInstance());
+			netDialog.setLocationRelativeTo(Application.getFrameInstance());			
 		}
 		return netDialog;
 	}			
@@ -250,7 +250,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 	private LoginDialog getLoginDialog() {
 		if(loginDialog == null) {
 			loginDialog = new LoginDialog();
-			loginDialog.setLocationRelativeTo(Application.getInstance());			
+			loginDialog.setLocationRelativeTo(Application.getFrameInstance());			
 		}
 		return loginDialog;
 	}			
@@ -337,8 +337,8 @@ public class ServiceManagerPanel extends DefaultPanel {
 	}
 	
 	private void console() {
-		ConsoleDialog dlg = new ConsoleDialog(Application.getInstance());
-		dlg.setLocationRelativeTo(Application.getInstance());
+		ConsoleDialog dlg = new ConsoleDialog(Application.getFrameInstance());
+		dlg.setLocationRelativeTo(Application.getFrameInstance());
 		getConsoleDialog().open();		
 	}
 	
@@ -423,9 +423,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 		private static final long serialVersionUID = 1L;
 		
 		FieldsPanel fieldsPanel;
-		TextLineField userNameField;
-		TextLineField passwordField;
-		TextLineField commandField;
+		TextField userNameField;
+		TextField passwordField;
+		TextField commandField;
 		
 		boolean isCancel = false;
 		
@@ -443,7 +443,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 		
 		public LoginDialog() {
 			// forward
-			super(Application.getInstance());
+			super(Application.getFrameInstance());
 			// initialize gui
 			initialize();
 		}
@@ -489,9 +489,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 		 * 	
 		 * @return org.redcross.sar.gui.field.TextLineField
 		 */
-		private TextLineField getUserNameField() {
+		private TextField getUserNameField() {
 			if (userNameField == null) {
-				userNameField = new TextLineField("username","Brukernavn",true);			
+				userNameField = new TextField("username","Brukernavn",true);			
 				userNameField.setValue("DISKO");
 			}
 			return userNameField;
@@ -502,9 +502,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 		 * 	
 		 * @return org.redcross.sar.gui.field.TextLineField	
 		 */
-		private TextLineField getPasswordField() {
+		private TextField getPasswordField() {
 			if (passwordField == null) {
-				passwordField = new TextLineField("password","Passord",true);			
+				passwordField = new TextField("password","Passord",true);			
 				passwordField.setValue("-1");
 			}
 			return passwordField;
@@ -515,9 +515,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 		 * 	
 		 * @return org.redcross.sar.gui.field.TextLineField	
 		 */
-		private TextLineField getCommandField() {
+		private TextField getCommandField() {
 			if (commandField == null) {
-				commandField = new TextLineField("command","Kommando",true);			
+				commandField = new TextField("command","Kommando",true);			
 				commandField.setValue("filter r/64/10/200");
 			}
 			return commandField;

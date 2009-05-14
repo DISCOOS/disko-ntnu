@@ -22,6 +22,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableStringConverter;
 
 import org.redcross.sar.gui.PopupManager;
+import org.redcross.sar.gui.model.IDiskoTableModel;
 
 /**
  * @author kennetgu
@@ -85,7 +86,6 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	public abstract int getCellWidth(Graphics g, JTable table, int row, int col);
 	
 	protected abstract JComponent getEditorComponent();
-	
 	protected abstract JComponent getComponent();
 		
 	/* ===============================================================
@@ -342,6 +342,17 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	 * Helper methods
 	 * =============================================================== */
 	
+	protected int getColumnFixedWidth(JTable table, int column) {
+		// check if width is fixed?
+		if(table.getModel() instanceof IDiskoTableModel) {
+			IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+			column = table.convertColumnIndexToModel(column);
+			if(model.isColumnWidthFixed(column)) {
+				return model.getColumnFixedWidth(column);
+			} 
+		}
+		return -1;
+	}
 
 	protected void fireActionPerformed(ActionEvent e) {
 		ActionListener[] list = m_listeners.getListeners(ActionListener.class);

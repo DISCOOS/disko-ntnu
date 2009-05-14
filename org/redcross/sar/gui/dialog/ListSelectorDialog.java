@@ -92,12 +92,41 @@ public class ListSelectorDialog extends DefaultDialog  {
 			return null;
 		else
 			return getListSelectorPanel().getSelected();
-	}	
+	}		
 	
 	public Object select(String title, Object[] values) {
 		// prepare
 		m_cancel = false;
 		getListSelectorPanel().getList().setSelectedIndex(0);
+		// update selector
+		getListSelectorPanel().setCaptionText(title);		
+		getListSelectorPanel().getList().setModel(new DefaultComboBoxModel(values));
+		// show
+		setVisible(true);
+		// translate action
+		if(m_cancel)
+			return null;
+		else
+			return getListSelectorPanel().getSelected();
+	}
+	
+	public Object select(Object selected) {
+		// prepare
+		m_cancel = false;
+		getListSelectorPanel().getList().setSelectedValue(selected,true);
+		// show
+		setVisible(true);
+		// translate action
+		if(m_cancel)
+			return null;
+		else
+			return getListSelectorPanel().getSelected();
+	}		
+	
+	public Object select(String title, Object[] values, Object selected) {
+		// prepare
+		m_cancel = false;
+		getListSelectorPanel().getList().setSelectedValue(selected, true);
 		// update selector
 		getListSelectorPanel().setCaptionText(title);		
 		getListSelectorPanel().getList().setModel(new DefaultComboBoxModel(values));

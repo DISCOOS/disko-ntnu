@@ -23,7 +23,7 @@ public interface IEnumStatusHolder<E extends Enum<E>> extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<E> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<E> getStatusAttribute();
 
     public String getStatusText();
 }

@@ -36,7 +36,7 @@ public class ElementCommand extends AbstractDiskoCommand implements IElementEven
 		button.setFocusable(false);
 
 		// create dialog
-		dialog = new ElementDialog(Application.getInstance());
+		dialog = new ElementDialog(Application.getFrameInstance());
 		showDirect = true; // shows dialog first time onClick is invoked
 
 		// add listener

@@ -20,7 +20,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.NumericField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.CompassPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
@@ -52,7 +52,7 @@ public class UnitStatusPanel extends TogglePanel {
 	private JPanel m_bearingPanel;
 	private CompassPanel m_compassPanel;
 	private NumericField m_bearingAttr;
-	private TextLineField m_activeAttr;
+	private TextField m_activeAttr;
 	private FieldsPanel m_attribsPanel;
 
 	public UnitStatusPanel(IUnitIf unit) {
@@ -186,11 +186,11 @@ public class UnitStatusPanel extends TogglePanel {
         return m_bearingAttr;
     }
 
-	private TextLineField getActiveAttr()
+	private TextField getActiveAttr()
     {
         if (m_activeAttr == null)
         {
-        	m_activeAttr = new TextLineField("active","Aktivt oppdrag",false,100,25,"Ingen oppdrag");
+        	m_activeAttr = new TextField("active","Aktivt oppdrag",false,100,25,"Ingen oppdrag");
         	m_activeAttr.installButton(getCenterAtAssignmentButton(), true);
         	getCenterAtAssignmentButton().setEnabled(true);
         }
@@ -291,7 +291,7 @@ public class UnitStatusPanel extends TogglePanel {
 
 		// connect to attributes
 		getAttribsPanel().create(unit, ATTRIBUTES, CAPTIONS, true, 100, 25, true);
-		getAttribsPanel().setAutoSave(true);
+		getAttribsPanel().setBatchMode(false);
 		getAttribsPanel().addField(getActiveAttr());
 
 		// listener for changes in position

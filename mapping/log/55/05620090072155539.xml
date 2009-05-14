@@ -1529,3 +1529,2543 @@
 </update>
 
 @END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172013656">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172013656" fact_type="5" field="" given_time="1241172013656" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172013921">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172013921" fact_type="5" field="" given_time="1241172013921" id="05620090072155539.912943616015.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172014015">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172014015" fact_type="5" field="" given_time="1241172014015" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172025500">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172025500" fact_type="5" field="" given_time="1241172025500" id="05620090072155539.676439717062.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172027625">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172027625" fact_type="5" field="" given_time="1241172027625" id="05620090072155539.002439711031.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172029843">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172029843" fact_type="5" field="" given_time="1241172029843" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172326984">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000152" origId="00000000152">
+<string_data string_val=""/>
+<string_data string_val="Kenneth"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172327078">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000153" origId="00000000153">
+<string_data string_val="3"/>
+<string_data string_val="Gulbrandsøy"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172327203">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172327203" fact_type="5" field="" given_time="1241172327203" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241172339859">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241172339859" fact_type="5" field="" given_time="1241172339859" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241173305750">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241173305750" fact_type="5" field="" given_time="1241173305750" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191278843">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191278843" fact_type="5" field="" given_time="1241191278843" id="05620090072155539.912943616015.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191279000">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191279000" fact_type="5" field="" given_time="1241191279000" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191293031">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191293031" fact_type="5" field="" given_time="1241191293031" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191364593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191364593" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191455343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191455343" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191534968">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191534968" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191574187">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191574187" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191593875">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191593875" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241191940281">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241191940281" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241192009046">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241192009046" fact_type="5" field="" given_time="1241192009046" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241192017546">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241192017546" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241192596765">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241192596765" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241192606890">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241192606890" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241192927406">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241192927406" fact_type="5" field="" given_time="1241192927406" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241193026187">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241193026187" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241193080796">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241193080796" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241193100296">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241193100296" fact_type="5" field="" given_time="1241193100296" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241194008968">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241194008968" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241194015984">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241194015984" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241194108453">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241194108453" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241194112343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241194112343" fact_type="5" field="" given_time="1241194112343" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241198911109">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241198911109" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241206224552">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241206224552" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241206734302">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241206734302" fact_type="5" field="" given_time="1241206734302" id="05620090072155539.914043075906.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211213567">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211213567" fact_type="5" field="" given_time="1241211213567" id="05620090072155539.912943616015.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211213646">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211213646" id="05620090072155539.912943616015.00000000164" origId="00000000164">
+<datetime_data date_val="1239451620000"/>
+<datetime_data date_val="1241211213552"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211328036">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211328036" fact_type="5" field="" given_time="1241211328036" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211328130">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211328130" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1239447720000"/>
+<datetime_data date_val="1241211328036"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211329286">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211329286" fact_type="5" field="" given_time="1241211329286" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211329396">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211329396" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211328036"/>
+<datetime_data date_val="1241211329286"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211329817">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211329817" fact_type="5" field="" given_time="1241211329817" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211329911">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211329911" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211329286"/>
+<datetime_data date_val="1241211329817"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211330067">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211330067" fact_type="5" field="" given_time="1241211330067" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211330161">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211330161" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211329817"/>
+<datetime_data date_val="1241211330067"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211335536">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211335536" fact_type="5" field="" given_time="1241211335536" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211335630">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211335630" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211330067"/>
+<datetime_data date_val="1241211335536"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211335755">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211335755" fact_type="5" field="" given_time="1241211335755" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211335849">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211335849" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211335536"/>
+<datetime_data date_val="1241211335739"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211335958">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211335958" fact_type="5" field="" given_time="1241211335958" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211336067">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211336067" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211335739"/>
+<datetime_data date_val="1241211335958"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211349755">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211349755" fact_type="5" field="" given_time="1241211349755" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211349864">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211349864" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211335958"/>
+<datetime_data date_val="1241211349755"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211349958">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211349958" fact_type="5" field="" given_time="1241211349958" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211350067">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211350067" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211349755"/>
+<datetime_data date_val="1241211349958"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211350177">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211350177" fact_type="5" field="" given_time="1241211350177" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211350286">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211350286" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211349958"/>
+<datetime_data date_val="1241211350177"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211521927">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211521927" fact_type="5" field="" given_time="1241211521927" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211522036">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211522036" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211350177"/>
+<datetime_data date_val="1241211521927"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211594052">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241211594052" fact_type="5" field="" given_time="1241211594052" id="05620090072155539.912943616015.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241211594192">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241211594192" id="05620090072155539.912943616015.00000000164" origId="00000000164">
+<datetime_data date_val="1241211213552"/>
+<datetime_data date_val="1241211594052"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685342859">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685342859" fact_type="5" field="" given_time="1241685342859" id="05620090072155539.002439711031.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685343046">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.002439711031.00000000161" origId="00000000161">
+<string_data string_val=""/>
+<string_data string_val="jhgjhgkjhgjgh"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685418187">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685418187" fact_type="5" field="" given_time="1241685418187" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685418281">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="ARRIVED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685418390">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241685418390" id="05620090072155539.403939721828.00000000163" origId="00000000163">
+<datetime_data/>
+<datetime_data date_val="1241685411328"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685419671">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685419671" fact_type="5" field="" given_time="1241685419671" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685419781">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ARRIVED"/>
+<string_data string_val="ON_ROUTE"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685419875">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241685419875" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241211521927"/>
+<datetime_data date_val="1241685419671"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420140">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685420140" fact_type="5" field="" given_time="1241685420140" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420234">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="ARRIVED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241685420343" id="05620090072155539.403939721828.00000000163" origId="00000000163">
+<datetime_data date_val="1241685411328"/>
+<datetime_data date_val="1241685420140"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420609">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685420609" fact_type="5" field="" given_time="1241685420609" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420718">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ARRIVED"/>
+<string_data string_val="ON_ROUTE"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420812">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241685420812" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241685419671"/>
+<datetime_data date_val="1241685420609"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685420937">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685420937" fact_type="5" field="" given_time="1241685420937" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685421046">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="ARRIVED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685421156">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241685421156" id="05620090072155539.403939721828.00000000163" origId="00000000163">
+<datetime_data date_val="1241685420140"/>
+<datetime_data date_val="1241685420937"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685424562">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241685424562" fact_type="5" field="" given_time="1241685424562" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685424671">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ARRIVED"/>
+<string_data string_val="ON_ROUTE"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241685424781">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241685424781" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241685420609"/>
+<datetime_data date_val="1241685424562"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686263375">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241686263375" fact_type="5" field="" given_time="1241686263375" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686263484">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="ARRIVED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686263593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241686263593" id="05620090072155539.403939721828.00000000163" origId="00000000163">
+<datetime_data date_val="1241685420937"/>
+<datetime_data date_val="1241686263375"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686267078">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241686267078" fact_type="5" field="" given_time="1241686267078" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686267187">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ARRIVED"/>
+<string_data string_val="ON_ROUTE"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686267296">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241686267296" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241685424562"/>
+<datetime_data date_val="1241686267078"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686541343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241686541343" fact_type="5" field="" given_time="1241686541343" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686541453">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="ARRIVED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686541546">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241686541546" id="05620090072155539.403939721828.00000000163" origId="00000000163">
+<datetime_data date_val="1241686263375"/>
+<datetime_data date_val="1241686541343"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686551593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241686551593" fact_type="5" field="" given_time="1241686551593" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686551703">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000160" origId="00000000160">
+<string_data string_val="ARRIVED"/>
+<string_data string_val="ON_ROUTE"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241686551796">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241686551796" id="05620090072155539.403939721828.00000000164" origId="00000000164">
+<datetime_data date_val="1241686267078"/>
+<datetime_data date_val="1241686551593"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241854565984">
+<add_to_op id="05620090072155539">
+<object id="505327365843" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="505327365843" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="505327365843" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="505327365843" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="505327365843" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="505327365843" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="505327365843" version="1">
+<date_fact value="1241854565890"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="505327365843" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="505327365843" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="505327365843" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241854612906">
+<add_to_op id="05620090072155539">
+<object id="809927412875" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="809927412875" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="809927412875" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="809927412875" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="809927412875" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="809927412875" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="809927412875" version="1">
+<date_fact value="1241854612906"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="809927412875" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="809927412875" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="809927412875" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241874866031">
+<add_to_op id="05620090072155539">
+<object id="928347665953" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="928347665953" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="928347665953" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="928347665953" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="928347665953" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="928347665953" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="928347665953" version="1">
+<date_fact value="1241874865984"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="928347665953" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="928347665953" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="928347665953" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241874887781">
+<add_to_op id="05620090072155539">
+<object id="544147687750" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="544147687750" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="544147687750" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="544147687750" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="544147687750" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="544147687750" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="544147687750" version="1">
+<date_fact value="1241874887781"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="544147687750" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="544147687750" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="544147687750" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241874895250">
+<add_to_op id="05620090072155539">
+<object id="970447695218" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="970447695218" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="970447695218" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="970447695218" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="970447695218" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="970447695218" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="970447695218" version="1">
+<date_fact value="1241874895250"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="970447695218" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="970447695218" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="970447695218" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241874900062">
+<add_to_op id="05620090072155539">
+<object id="313447700031" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="313447700031" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="313447700031" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="313447700031" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="313447700031" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="313447700031" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="313447700031" version="1">
+<date_fact value="1241874900062"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="313447700031" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="313447700031" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="313447700031" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241874915781">
+<add_to_op id="05620090072155539">
+<object id="352047715734" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="352047715734" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="352047715734" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="352047715734" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="352047715734" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="352047715734" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="352047715734" version="1">
+<date_fact value="1241874915765"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="352047715734" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="352047715734" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="352047715734" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049000">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875049000" fact_type="5" field="" given_time="1241875049000" id="05620090072155539.912943616015.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049109">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.912943616015.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="RELEASED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049234">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241875049234" id="05620090072155539.912943616015.00000000168" origId="00000000168">
+<datetime_data/>
+<datetime_data date_val="1241874849968"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049359">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875049359" fact_type="5" field="" given_time="1241875049359" id="05620090072155539.928347665953.00000000158" int_val="0" origId="00000000158">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049468">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.928347665953.00000000164" origId="00000000164">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="RELEASED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241875049593" id="05620090072155539.928347665953.00000000172" origId="00000000172">
+<datetime_data/>
+<datetime_data date_val="1241874878468"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049734">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875049734" fact_type="5" field="" given_time="1241875049734" id="05620090072155539.505327365843.00000000158" int_val="0" origId="00000000158">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049843">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.505327365843.00000000164" origId="00000000164">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="RELEASED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875049984">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241875049984" id="05620090072155539.505327365843.00000000172" origId="00000000172">
+<datetime_data/>
+<datetime_data date_val="1241874893156"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050093">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875050093" fact_type="5" field="" given_time="1241875050093" id="05620090072155539.544147687750.00000000158" int_val="0" origId="00000000158">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050234">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.544147687750.00000000164" origId="00000000164">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="RELEASED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1241875050343" id="05620090072155539.544147687750.00000000172" origId="00000000172">
+<datetime_data/>
+<datetime_data date_val="1241874897843"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050468">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875050468" fact_type="-1" field="add_named_relation" id="05620090072155539.912943616015" origId="">
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.928347665953</element>
+</string_array>
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.928347665953</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875050593" fact_type="-1" field="add_named_relation" id="05620090072155539.928347665953" origId="">
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.544147687750</element>
+</string_array>
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.544147687750</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050718">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875050718" fact_type="-1" field="add_named_relation" id="05620090072155539.505327365843" origId="">
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.970447695218</element>
+</string_array>
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.970447695218</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1241875050843">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1241875050843" fact_type="-1" field="add_named_relation" id="05620090072155539.544147687750" origId="">
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.313447700031</element>
+</string_array>
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.313447700031</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1241875364015">
+<delete_object comment="DISKO" field="" id="05620090072155539.313447700031" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1241875575234">
+<delete_object comment="DISKO" field="" id="05620090072155539.352047715734" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1241875628046">
+<delete_object comment="DISKO" field="" id="05620090072155539.809927412875" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1241877860203">
+<delete_object comment="DISKO" field="" id="05620090072155539.544147687750" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1241974688296">
+<delete_object comment="DISKO" field="" id="05620090072155539.928347665953" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1241985218921">
+<add_to_op id="05620090072155539">
+<object id="704371561000" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="704371561000" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="704371561000" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="704371561000" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="704371561000" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="704371561000" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="704371561000" version="1">
+<date_fact value="1241985211375"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="704371561000" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="704371561000" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="704371561000" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1242051910578">
+<delete_object comment="DISKO" field="" id="05620090072155539.704371561000" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242052065343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242052065343" fact_type="5" field="" given_time="1242052065343" id="05620090072155539.970447695218.00000000158" int_val="0" origId="00000000158">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242052065468">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.970447695218.00000000164" origId="00000000164">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="RELEASED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242052065593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1242052065593" id="05620090072155539.970447695218.00000000172" origId="00000000172">
+<datetime_data/>
+<datetime_data date_val="1242052062531"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1242054411125">
+<delete_object comment="DISKO" field="" id="05620090072155539.970447695218" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242167320312">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242167320312" fact_type="5" field="" given_time="1242167320312" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242167320609">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000170" origId="00000000170">
+<string_data string_val="Norges Røde Kors"/>
+<string_data string_val="Trondheim"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242168536937">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242168536937" fact_type="5" field="" given_time="1242168536937" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242168579140">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242168579140" fact_type="-1" field="remove_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242168602750">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242168602750" fact_type="-1" field="add_named_relation" id="05620090072155539.035043077890" origId="">
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+<string_array>
+<element>UnitLeader</element>
+<element>05620090072155539.914043075906</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242168897140">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242168897140" fact_type="5" field="" given_time="1242168897140" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242168897250">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000170" origId="00000000170">
+<string_data string_val="Trondheim"/>
+<string_data string_val="Norges Røde Kors"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242169451187">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242169451187" fact_type="5" field="" given_time="1242169451187" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242169451328">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000169" origId="00000000169">
+<string_data string_val="Trondheim"/>
+<string_data string_val="Fana"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242173414640">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242173414640" fact_type="5" field="" given_time="1242173414640" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242173414765">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000169" origId="00000000169">
+<string_data string_val="Fana"/>
+<string_data string_val="Trondheim"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242176024312">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242176024312" fact_type="5" field="" given_time="1242176024312" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242176024406">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000169" origId="00000000169">
+<string_data string_val="Trondheim"/>
+<string_data string_val="Fana"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242176580359">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242176580359" fact_type="5" field="" given_time="1242176580359" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242176580500">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000161" origId="00000000161">
+<string_data string_val=""/>
+<string_data string_val="dfdff"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<delete datetime_data="1242176598031">
+<delete_object comment="DISKO" field="" id="05620090072155539.912943616015" type="99"/>
+</delete>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<add datetime_data="1242176886734">
+<add_to_op id="05620090072155539">
+<object id="550303917343" name="Personnel" objectType="test" pos="25">
+<fact comp="n" edit="n" id="00000000000000007" label="Objektnavn" pos1="25" pos2="999" relTo="550303917343" version="0">
+<str_fact value="Personnel"/>
+</fact>
+<fact comp="n" edit="y" id="00000000153" label="ID" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000154" label="Photo" pos1="999" pos2="999" relTo="550303917343" version="1">
+<num_fact antdec="0" max="1.0E8" min="0.0" value="0.0"/>
+</fact>
+<fact comp="n" edit="y" id="00000000155" label="Birthdate" pos1="999" pos2="999" relTo="550303917343" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000156" label="Firstname" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000157" label="Lastname" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact value="5"/>
+</fact>
+<fact comp="n" edit="y" id="00000000158" label="Residence" pos1="999" pos2="999" relTo="550303917343" version="1">
+<loc_fact lat_value="" locationType="0" long_value=""/>
+</fact>
+<fact comp="n" edit="y" id="00000000159" label="Address" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000160" label="Telephone1" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000161" label="Telephone2" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000162" label="Telephone3" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000163" label="Gender" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact value="UNKNOWN"/>
+</fact>
+<fact comp="n" edit="y" id="00000000164" label="Status" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact value="ON_ROUTE"/>
+</fact>
+<fact comp="n" edit="y" id="00000000165" label="Remarks" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000166" label="Type" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact value="VOLUNTEER"/>
+</fact>
+<fact comp="n" edit="y" id="00000000167" label="Arrived" pos1="999" pos2="999" relTo="550303917343" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000168" label="CallOut" pos1="999" pos2="999" relTo="550303917343" version="1">
+<date_fact value="1242176878062"/>
+</fact>
+<fact comp="n" edit="y" id="00000000169" label="DataSourceID" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000170" label="DataSourceName" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000171" label="EstimatedArrival" pos1="999" pos2="999" relTo="550303917343" version="1">
+<date_fact value="1239545424093"/>
+</fact>
+<fact comp="n" edit="y" id="00000000172" label="Released" pos1="999" pos2="999" relTo="550303917343" version="1">
+<date_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000173" label="ImportStatus" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact value="UPDATED"/>
+</fact>
+<fact comp="n" edit="y" id="00000000174" label="Organization" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000175" label="Division" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+<fact comp="n" edit="y" id="00000000176" label="Department" pos1="999" pos2="999" relTo="550303917343" version="1">
+<str_fact/>
+</fact>
+</object>
+</add_to_op>
+</add>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242176887000">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242176887000" fact_type="-1" field="add_named_relation" id="05620090072155539.505327365843" origId="">
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.550303917343</element>
+</string_array>
+<string_array>
+<element>NextOccurence</element>
+<element>05620090072155539.550303917343</element>
+</string_array>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242238312500">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242238312500" fact_type="5" field="" given_time="1242238312500" id="05620090072155539.676439717062.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242238312718">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.676439717062.00000000160" origId="00000000160">
+<string_data string_val="ON_ROUTE"/>
+<string_data string_val="ARRIVED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242238312859">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" fact_type="1" field="" fieldType="2" given_time="1242238312859" id="05620090072155539.676439717062.00000000163" origId="00000000163">
+<datetime_data/>
+<datetime_data date_val="1242238303062"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242251403906">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.425339750609.00000000240" origId="00000000240">
+<string_data string_val=""/>
+<string_data string_val="Lag 1"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242251404265">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242251404265" fact_type="5" field="" given_time="1242251404265" id="05620090072155539.425339750609.00000000241" int_val="0" origId="00000000241">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242253427750">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.858939776312.00000000240" origId="00000000240">
+<string_data string_val=""/>
+<string_data string_val="Lag 3"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242253427906">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242253427906" fact_type="5" field="" given_time="1242253427906" id="05620090072155539.858939776312.00000000241" int_val="0" origId="00000000241">
+<FROM double_val="10.265000343322754" float_val="10.265000343322754" lat_val="63.41649999999999" long_val="10.265000343322754" string_val=""/>
+<TO double_val="10.265000343322754" float_val="10.265000343322754" int_val="0" lat_val="63.41649999999999" long_val="10.265000343322754" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242254985031">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.858939776312.00000000240" origId="00000000240">
+<string_data string_val="Lag 3"/>
+<string_data string_val="Lag2"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242254985343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242254985343" fact_type="5" field="" given_time="1242254985343" id="05620090072155539.858939776312.00000000241" int_val="0" origId="00000000241">
+<FROM double_val="10.265000343322754" float_val="10.265000343322754" lat_val="63.41649999999999" long_val="10.265000343322754" string_val=""/>
+<TO double_val="10.265000343322754" float_val="10.265000343322754" int_val="0" lat_val="63.41649999999999" long_val="10.265000343322754" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242256899890">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.035043077890.00000000239" origId="00000000239">
+<string_data string_val="READY"/>
+<string_data string_val="PAUSED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242256899984">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242256899984" fact_type="5" field="" given_time="1242256899984" id="05620090072155539.035043077890.00000000241" int_val="0" origId="00000000241">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242256906062">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.035043077890.00000000239" origId="00000000239">
+<string_data string_val="PAUSED"/>
+<string_data string_val="READY"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242256906187">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242256906187" fact_type="5" field="" given_time="1242256906187" id="05620090072155539.035043077890.00000000241" int_val="0" origId="00000000241">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242256912937">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.035043077890.00000000239" origId="00000000239">
+<string_data string_val="READY"/>
+<string_data string_val="PAUSED"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242256913078">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242256913078" fact_type="5" field="" given_time="1242256913078" id="05620090072155539.035043077890.00000000241" int_val="0" origId="00000000241">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242257419593">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242257419593" fact_type="5" field="" given_time="1242257419593" id="05620090072155539.035043077890.00000000241" int_val="0" origId="00000000241">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242257427500">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.035043077890.00000000239" origId="00000000239">
+<string_data string_val="PAUSED"/>
+<string_data string_val="READY"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242257427640">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242257427640" fact_type="5" field="" given_time="1242257427640" id="05620090072155539.035043077890.00000000241" int_val="0" origId="00000000241">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242259430140">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242259430140" fact_type="5" field="" given_time="1242259430140" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242259430234">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000169" origId="00000000169">
+<string_data string_val="Fana"/>
+<string_data string_val="Trondheim"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242260048375">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242260048375" fact_type="5" field="" given_time="1242260048375" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242260048515">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000161" origId="00000000161">
+<string_data string_val="dfdff"/>
+<string_data string_val="dfd"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242261591265">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242261591265" fact_type="5" field="" given_time="1242261591265" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242261591375">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000161" origId="00000000161">
+<string_data string_val="dfd"/>
+<string_data string_val="dfddfdfsdfdsf"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265642312">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242265642312" fact_type="5" field="" given_time="1242265642312" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265642406">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val=""/>
+<string_data string_val="455654654"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265730109">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242265730109" fact_type="5" field="" given_time="1242265730109" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265730250">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="455654654"/>
+<string_data string_val="45565465"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265737312">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242265737312" fact_type="5" field="" given_time="1242265737312" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265737453">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="45565465"/>
+<string_data string_val="455654656"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265774078">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242265774078" fact_type="5" field="" given_time="1242265774078" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242265774218">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="455654656"/>
+<string_data string_val="455654667"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242266003734">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242266003734" fact_type="5" field="" given_time="1242266003734" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242266003859">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="455654667"/>
+<string_data string_val="4556546"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242266015781">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242266015781" fact_type="5" field="" given_time="1242266015781" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242266015921">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="4556546"/>
+<string_data string_val="455654699"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242266256812">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242266256812" fact_type="5" field="" given_time="1242266256812" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242266256953">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="455654699"/>
+<string_data string_val="4556546995656566767"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267758218">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242267758218" fact_type="5" field="" given_time="1242267758218" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267758312">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="4556546995656566767"/>
+<string_data string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267779375">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242267779375" fact_type="5" field="" given_time="1242267779375" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267779515">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val=""/>
+<string_data string_val="123456789123"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267800062">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242267800062" fact_type="5" field="" given_time="1242267800062" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267800203">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000161" origId="00000000161">
+<string_data string_val="dfddfdfsdfdsf"/>
+<string_data string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267864578">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242267864578" fact_type="5" field="" given_time="1242267864578" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242267864734">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="123456789123"/>
+<string_data string_val="93258930"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242268556468">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242268556468" fact_type="5" field="" given_time="1242268556468" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242268556578">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000156" origId="00000000156">
+<string_data string_val="93258930"/>
+<string_data string_val="93258931"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242268669343">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242268669343" fact_type="5" field="" given_time="1242268669343" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242268669484">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000169" origId="00000000169">
+<string_data string_val="Trondheim"/>
+<string_data string_val="Trysil"/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242268705031">
+<update_object changed_by="Administrator" changed_on_location="55" comment="" datetime_data="1242268705031" fact_type="5" field="" given_time="1242268705031" id="05620090072155539.403939721828.00000000154" int_val="0" origId="00000000154">
+<FROM string_val=""/>
+<TO int_val="0" string_val=""/>
+</update_object>
+</update>
+
+@END MESSAGE@
+<?xml version="1.0" encoding="UTF-8"?>
+<update datetime_data="1242268705187">
+<update_object changed_by="Administrator" changed_on_location="55" fact_type="2" field="" fieldType="5" id="05620090072155539.403939721828.00000000169" origId="00000000169">
+<string_data string_val="Trysil"/>
+<string_data string_val="Trondheim"/>
+</update_object>
+</update>
+
+@END MESSAGE@

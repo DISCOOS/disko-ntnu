@@ -4,11 +4,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoBinder;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
@@ -17,6 +18,7 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 								extends AbstractDataTableModel<T,T> {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = Logger.getLogger(AbstractMsoTableModel.class);
 
 	protected IMsoListIf<T> list;
 	protected boolean isNameAttribute;
@@ -164,6 +166,9 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 	 * Protected methods
 	 * ============================================================================= */
 
+	/**
+	 *  Is fired when IDataModel.update(T id, T obj) is called.
+	 */
 	protected abstract Object getCellValue(int row, String column);
 
 	protected Object[] update(T id, T obj, Object[] data) {
@@ -171,7 +176,7 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 			int index = findRowFromId(id);
 			obj = (obj==null ? getObject(index) : obj);
 			if(obj!=null && isNameAttribute) {
-				Map<String,IAttributeIf<?>> attrs = obj.getAttributes();
+				Map<String,IMsoAttributeIf<?>> attrs = obj.getAttributes();
 				for(int i=0; i<names.size();i++) {
 					String name = names.get(i);
 					if(attrs.containsKey(name)) {
@@ -190,7 +195,7 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Failed to update table model",e);
 		}
 		return data;
 	}

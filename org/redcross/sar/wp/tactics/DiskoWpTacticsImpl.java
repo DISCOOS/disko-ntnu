@@ -308,9 +308,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if(isChanged()) {
 
 			// loop over all changes
-			for(int i=0;i<changeStack.size();i++) {
+			for(int i=0;i<m_changeStack.size();i++) {
 				// get mso object
-				IMsoObjectIf msoObj = changeStack.get(i).getMsoObject();
+				IMsoObjectIf msoObj = m_changeStack.get(i).getMsoObject();
 				// is not deleted
 				if(msoObj!=null && !msoObj.hasBeenDeleted()) {
 					// dispatch current object type
@@ -421,7 +421,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// hide all dialogs
 			hideDialogs(null);
 			// reset calling wp
-			callingWp = null;
+			m_callingWp = null;
 			// keep current object selected?
 			if(!keep) clearSelected();
 			// select next element?
@@ -609,7 +609,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (elementToggleButton == null) {
 			try {
 				Enum<?> e = TacticsActionType.MANAGE_ELEMENTS;
-				elementToggleButton = DiskoButtonFactory.createToggleButton(e,ButtonSize.NORMAL,wpBundle);
+				elementToggleButton = DiskoButtonFactory.createToggleButton(e,ButtonSize.NORMAL,m_wpBundle);
 				elementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						ElementDialog dialog = getMap().getElementDialog();
@@ -638,7 +638,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (descriptionToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SHOW_DESCRIPTION;
-				descriptionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				descriptionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				descriptionToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						DescriptionDialog dialog = getDescriptionDialog();
@@ -664,7 +664,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (hypotheseToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SET_HYPOTHESIS;
-				hypotheseToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				hypotheseToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				hypotheseToggleButton.setVisible(false);
 				hypotheseToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -693,7 +693,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (listToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SHOW_ASSIGNMENT_LIST;
-				listToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				listToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				listToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						ListDialog dialog = getListDialog();
@@ -720,7 +720,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (missionToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SHOW_MISSION;
-				missionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				missionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				missionToggleButton.setVisible(false);
 				missionToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -748,7 +748,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (priorityToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SET_PRIORITY;
-				priorityToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				priorityToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				priorityToggleButton.setVisible(false);
 				priorityToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -783,7 +783,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (requirementToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SET_REQUIREMENT;
-				requirementToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				requirementToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				requirementToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						RequirementDialog dialog = getRequirementDialog();
@@ -810,7 +810,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (estimateToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.SHOW_ESTIMATES;
-				estimateToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				estimateToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				estimateToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						EstimateDialog dialog = getEstimateDialog();
@@ -843,7 +843,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (unitToggleButton == null) {
 			try {
 				Enum<?> key = TacticsActionType.ENQUEUE_TO_UNIT;
-				unitToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, wpBundle);
+				unitToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
 				unitToggleButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						UnitAllocationDialog dialog = getUnitSelectionDialog();

@@ -94,7 +94,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_subType.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<BoatSubType> getSubTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<BoatSubType> getSubTypeAttribute()
     {
         return m_subType;
     }
@@ -123,7 +123,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_capacity.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getCapacityAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getCapacityAttribute()
     {
         return m_capacity;
     }
@@ -143,7 +143,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_depth.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getDepthAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getDepthAttribute()
     {
         return m_depth;
     }
@@ -163,7 +163,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_freeboard.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getFreeboardAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getFreeboardAttribute()
     {
         return m_freeboard;
     }
@@ -183,7 +183,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_height.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getHeightAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getHeightAttribute()
     {
         return m_height;
     }
@@ -203,7 +203,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_length.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getLengthAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getLengthAttribute()
     {
         return m_length;
     }

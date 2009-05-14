@@ -37,7 +37,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getSubTypeState();
 
-    public IAttributeIf.IMsoEnumIf<SearchSubType> getSubTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<SearchSubType> getSubTypeAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -49,7 +49,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getPlannedAccuracyState();
 
-    public IAttributeIf.IMsoIntegerIf getPlannedAccuracyAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedAccuracyAttribute();
 
     public void setPlannedCoverage(int aPlannedCoverage);
 
@@ -57,7 +57,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getPlannedCoverageState();
 
-    public IAttributeIf.IMsoIntegerIf getPlannedCoverageAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedCoverageAttribute();
 
     public void setPlannedPersonnel(int aPlannedPersonnel);
 
@@ -65,7 +65,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getPlannedPersonnelState();
 
-    public IAttributeIf.IMsoIntegerIf getPlannedPersonnelAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedPersonnelAttribute();
 
     public void setPlannedProgress(int aPlannedProgress);
 
@@ -73,7 +73,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getPlannedProgressState();
 
-    public IAttributeIf.IMsoIntegerIf getPlannedProgressAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedProgressAttribute();
 
     public void setPlannedSearchMethod(String aPlannedSearchMethod);
 
@@ -81,7 +81,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getPlannedSearchMethodState();
 
-    public IAttributeIf.IMsoStringIf getPlannedSearchMethodAttribute();
+    public IMsoAttributeIf.IMsoStringIf getPlannedSearchMethodAttribute();
 
     public void setReportedAccuracy(int aReportedAccuracy);
 
@@ -89,7 +89,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getReportedAccuracyState();
 
-    public IAttributeIf.IMsoIntegerIf getReportedAccuracyAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getReportedAccuracyAttribute();
 
     public void setReportedCoverage(int aReportedCoverage);
 
@@ -97,7 +97,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getReportedCoverageState();
 
-    public IAttributeIf.IMsoIntegerIf getReportedCoverageAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getReportedCoverageAttribute();
 
     public void setReportedPersonnel(int aReportedPersonnel);
 
@@ -105,7 +105,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getReportedPersonnelState();
 
-    public IAttributeIf.IMsoIntegerIf getReportedPersonnelAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getReportedPersonnelAttribute();
 
     public void setReportedProgress(int aReportedProgress);
 
@@ -113,7 +113,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getReportedProgressState();
 
-    public IAttributeIf.IMsoIntegerIf getReportedProgressAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getReportedProgressAttribute();
 
     public void setReportedSearchMethod(int aReportedSearchMethod);
 
@@ -121,7 +121,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getReportedSearchMethodState();
 
-    public IAttributeIf.IMsoIntegerIf getReportedSearchMethodAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getReportedSearchMethodAttribute();
 
     public void setStart(Calendar aStart);
 
@@ -129,7 +129,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getStartState();
 
-    public IAttributeIf.IMsoCalendarIf getStartAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getStartAttribute();
 
     public void setStop(Calendar aStop);
 
@@ -137,7 +137,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public IMsoModelIf.ModificationState getStopState();
 
-    public IAttributeIf.IMsoCalendarIf getStopAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getStopAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Other specified methods

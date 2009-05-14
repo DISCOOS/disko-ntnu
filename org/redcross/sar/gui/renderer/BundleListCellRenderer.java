@@ -1,18 +1,17 @@
 package org.redcross.sar.gui.renderer;
 
+import org.redcross.sar.gui.IStringConverter;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 
 import java.awt.Component;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 
-public class BundleListCellRenderer extends JLabel implements ListCellRenderer
+public class BundleListCellRenderer extends DefaultListCellRenderer implements IStringConverter
 {
-
 
     private static final long serialVersionUID = 1L;
 
@@ -39,7 +38,7 @@ public class BundleListCellRenderer extends JLabel implements ListCellRenderer
     {
 
     	setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
-        setText(DiskoStringFactory.translate(value,bundle));
+        setText(toString(value));
         if (isSelected)
         {
             setBackground(list.getSelectionBackground());
@@ -52,34 +51,9 @@ public class BundleListCellRenderer extends JLabel implements ListCellRenderer
         return this;
     }
 
-	/* =======================================================
-	 * Increased performance (See DefaultTableCellRenderer).
-	 * ======================================================= */
-
 	@Override
-	public void firePropertyChange(String propertyName, boolean oldValue,
-			boolean newValue) { /* NOP */ }
-
-	@Override
-	public void firePropertyChange(String propertyName, char oldValue,
-			char newValue) { /* NOP */ }
-
-	@Override
-	public void firePropertyChange(String propertyName, int oldValue,
-			int newValue) { /* NOP */ }
-
-	@Override
-	public void revalidate() { /* NOP */ }
-
-	@Override
-	public void repaint() { /* NOP */ }
-
-	@Override
-	public void repaint(int x, int y, int width, int height) { /* NOP */ }
-
-	@Override
-	public void repaint(long tm) { /* NOP */ }
-
-	@Override
-	public void validate() { /* NOP */ }
+	public String toString(Object value) {
+		return DiskoStringFactory.translate(value,bundle);
+	}
+        
 }

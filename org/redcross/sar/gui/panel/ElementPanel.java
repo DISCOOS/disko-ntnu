@@ -32,7 +32,7 @@ import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
+import org.redcross.sar.gui.renderer.MsoListCellRenderer;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAreaIf;
@@ -187,7 +187,8 @@ public class ElementPanel extends TogglePanel {
 		if (typeList == null) {
 			try {
 				typeList = new JList();
-				typeList.setCellRenderer(new MsoIconListCellRenderer(0,false,"32x32"));
+				typeList.setCellRenderer(new MsoListCellRenderer(0,false,
+						true,"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
 				typeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				typeList.addListSelectionListener(new ListSelectionListener() {
 
@@ -261,7 +262,8 @@ public class ElementPanel extends TogglePanel {
 		if (objectList == null) {
 			// create list
             objectList = new JList();
-            objectList.setCellRenderer(new MsoIconListCellRenderer(1,false,"32x32"));
+            objectList.setCellRenderer(new MsoListCellRenderer(1,false,true,
+            		"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
             objectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // add selection listener
             objectList.addListSelectionListener(new ListSelectionListener() {
@@ -355,7 +357,8 @@ public class ElementPanel extends TogglePanel {
 		if (partList == null) {
 			// create list
             partList = new JList();
-            partList.setCellRenderer(new MsoIconListCellRenderer(1,false,"32x32"));
+            partList.setCellRenderer(new MsoListCellRenderer(1,false,true,
+            		"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
             partList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // add listener
             partList.addListSelectionListener(new ListSelectionListener() {
@@ -498,7 +501,7 @@ public class ElementPanel extends TogglePanel {
 		listData[listData.length-1] = MsoClassCode.CLASSCODE_UNIT;
 		types = new ArrayList<Enum<?>>();
 		editable = new HashMap<Enum<?>,Boolean>();
-		for(Enum it : listData) {
+		for(Enum<?> it : listData) {
 			types.add(it);
 			editable.put(it, true);
 		}

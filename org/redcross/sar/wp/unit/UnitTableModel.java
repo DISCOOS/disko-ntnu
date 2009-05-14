@@ -41,7 +41,11 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 
 		// translate
 		if(NAME.equals(column))
-			return MsoUtils.getUnitName(getId(row), true);
+		{
+			IUnitIf unit = getId(row);
+			String name = MsoUtils.getUnitName(getId(row), true);			
+			return unit.isChanged()?name.concat("*"):name;
+		}
 		else if(VIEW.equals(column))
 			return getId(row);
 

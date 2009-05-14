@@ -1,12 +1,13 @@
 package org.redcross.sar.gui.field;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
+import javax.swing.AbstractButton;
 import javax.swing.DefaultListModel;
 import javax.swing.JFormattedTextField;
+import javax.swing.JTextField;
 import javax.swing.JList;
 
 import org.redcross.sar.Application;
@@ -16,15 +17,14 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.ListSelectorPanel;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
-import org.redcross.sar.undo.DiskoFieldEdit;
 
 /**
  * @author kennetgu
  *
  */
-public class EnumField extends AbstractField {
+public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextField> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -35,8 +35,7 @@ public class EnumField extends AbstractField {
 
 	/*==================================================================
 	 * Constructors
-	 *==================================================================
-	 */
+	 *================================================================== */
 
 	public EnumField(String name, String caption, boolean isEditable) {
 		// forward
@@ -103,53 +102,72 @@ public class EnumField extends AbstractField {
 		setValues(values);
 		// forward?
 		initalizeEdit();
-		// forward
-		setEditable(isEditable);
 	}
 
-	/*==================================================================
-	 * Public methods
-	 *==================================================================
-	 */
+	/* ==================================================================
+	 *  anonymous classes
+	 * ================================================================== */
+	
+	private final ActionListener m_actionListener = new ActionListener() {
 
-	public Component getComponent() {
-		if(m_component==null) {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// prompt user for selection
+			Enum<?> value = (Enum<?>)getSelectorDialog().select();
+			// user selected a value?
+			if(value!=null) {
+				setValue(value);
+			}
+			else {
+				// reset value
+				reset();
+			}
+		}
+
+	};
+	
+	/* ==================================================================
+	 *  Public methods
+	 * ================================================================== */
+
+	public JFormattedTextField getEditComponent() {
+		if(m_editComponent==null) {
 			JFormattedTextField field = new JFormattedTextField();
 			field.setEditable(false);
-			// save the component
-			m_component = field;
+			m_editComponent = field;
 		}
-		return m_component;
+		return m_editComponent;
 	}
 
-	public JFormattedTextField getTextField() {
-		return (JFormattedTextField)m_component;
+	public JTextField getViewComponent() {
+		if(m_viewComponent==null) {
+			m_viewComponent = createDefaultComponent(false);
+		}
+		return m_viewComponent;
+	}
+	
+	public void setBatchMode(boolean isBatchMode) {
+		m_isBatchMode = isBatchMode;
 	}
 
-	public void setAutoSave(boolean auto) {
-		m_autoSave = auto;
+	public boolean isBatchMode() {
+		return m_isBatchMode;
 	}
 
-	public boolean getAutoSave() {
-		return m_autoSave;
-	}
-
-	public Enum<?> getValue() {
+	public Enum<?> getEditValue() {
 		return m_value;
 	}
 
-	public boolean setValue(Object value) {
+	@Override
+	protected boolean setNewEditValue(Object value) {
 		if(value instanceof Enum) {
-			// get old value
-			Enum<?> oldValue = getValue();
 			// save
 			m_value = (Enum<?>)value;
 			// get text
 			String text = DiskoEnumFactory.getText((Enum<?>)value);
 			// update
-			getTextField().setText(text);
-			// notify change?
-			if(isChangeable()) fireOnWorkChange(new DiskoFieldEdit(this,oldValue,value));
+			getEditComponent().setText(text);
+			getViewComponent().setText(getFormattedText());
 			// finished
 			return true;
 		}
@@ -157,6 +175,10 @@ public class EnumField extends AbstractField {
 		return false;
 	}
 
+	@Override
+	public String getFormattedText() {
+		return getEditComponent().getText();
+	}
 
 	public Enum<?>[] getValues() {
 		return m_values;
@@ -170,7 +192,7 @@ public class EnumField extends AbstractField {
 		// get list
 		JList list = getSelectorPanel().getList();
 		// get current selected value
-		Enum<?> current = getValue();
+		Enum<?> current = getEditValue();
 		// fill new values?
 		if(values!=null) {
 			for (int i = 0; i < values.length; i++) {
@@ -188,27 +210,21 @@ public class EnumField extends AbstractField {
 				list.setSelectedIndex(0);
 	}
 
-	public void setVisibleRowCount(int rows) {
-		((JList)m_component).setVisibleRowCount(rows);
-	}
-
-	public int getVisibleRowCount() {
-		return ((JList)m_component).getVisibleRowCount();
-	}
-
 	@Override
-	public void setEditable(boolean isEditable) {
+	public final void installButton(AbstractButton button, boolean isVisible) {
 		// forward
-		super.setEditable(isEditable);
-		// force
-		getTextField().setEditable(false);
+		super.installButton(button, isVisible);
+		// handle actions
+		getButton().addActionListener(m_actionListener);
+		// update selector dialog location
+		getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
 	}
-
+	
 	/* ====================================================================
 	 * Protected methods
 	 * ==================================================================== */
 	
-	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+	protected boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr) {
 		return (attr instanceof MsoEnum);
 	}
 	
@@ -226,7 +242,7 @@ public class EnumField extends AbstractField {
 
 	private ListSelectorDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
-			m_selectorDialog = new ListSelectorDialog(Application.getInstance());
+			m_selectorDialog = new ListSelectorDialog(Application.getFrameInstance());
 		}
 		return m_selectorDialog;
 	}
@@ -236,33 +252,11 @@ public class EnumField extends AbstractField {
 		// initialize gui
 		installButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
 
-		// handle actions
-		getButton().addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
-				Enum<?> value = (Enum<?>)getSelectorDialog().select();
-				if(value!=null) {
-					setValue(value);
-				}
-				else {
-					// consume
-					setChangeable(false);
-					// forward
-					setValue(getValue());
-					// resume
-					setChangeable(true);
-				}
-			}
-
-		});
 	}
 
-	/*==================================================================
-	 * Private static methods
-	 *==================================================================
-	 */
+	/* ==================================================================
+	 *  Private static methods
+	 * ================================================================== */
 
 	@SuppressWarnings("unchecked")
 	private static Enum[] getAllEnumValues(MsoEnum attribute) {

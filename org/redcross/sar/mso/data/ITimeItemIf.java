@@ -12,7 +12,7 @@ public interface ITimeItemIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTimeStampState();
 
-    public IAttributeIf.IMsoCalendarIf getTimeStampAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getTimeStampAttribute();
 
     public String toString();
 
@@ -22,5 +22,5 @@ public interface ITimeItemIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getVisibleState();
 
-    public IAttributeIf.IMsoBooleanIf getVisibleAttribute();
+    public IMsoAttributeIf.IMsoBooleanIf getVisibleAttribute();
 }

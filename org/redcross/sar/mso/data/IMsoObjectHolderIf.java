@@ -17,7 +17,7 @@ public interface IMsoObjectHolderIf<M extends IMsoObjectIf>
     /**
      * Delete a MsoObject.
      *
-     * @param anObject The object to deleteObject
+     * @param anObject The object to delete
      * @return <code>true</code> if the reference has been deleted, <code>false</code> otherwise.
      */
     public boolean doDeleteReference(M anObject);

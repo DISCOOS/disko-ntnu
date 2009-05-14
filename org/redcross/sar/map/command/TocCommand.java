@@ -36,7 +36,7 @@ public class TocCommand extends AbstractDiskoCommand {
 		showDirect = true;
 
 		// create dialog
-		dialog = new TocDialog(Application.getInstance());
+		dialog = new TocDialog(Application.getFrameInstance());
 
 	}
 

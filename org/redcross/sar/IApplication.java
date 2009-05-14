@@ -1,5 +1,7 @@
 package org.redcross.sar;
 
+import java.beans.PropertyChangeListener;
+
 import javax.swing.JFrame;
 
 import org.disco.io.IOManager;
@@ -21,9 +23,11 @@ import org.redcross.sar.output.DiskoReportManager;
  * @author geira
  *
  */
-public interface IApplication {
+public interface IApplication{
 
 	public final static String bundleName = "org.redcross.sar.application";
+	
+	public final static String PROP_GUI_LAYOUT_MODE = "GUI.LAYOUT.MODE";
 
 	/**
 	 * Get the current (active) role
@@ -216,12 +220,45 @@ public interface IApplication {
      */    
 	public void setLocked(boolean isLocked);
 
+	/**
+	 * Get loading flag. This flag is set during operation loading
+	 * @return boolean
+	 */
 	public boolean isLoading();
 
+	/**
+	 * 
+	 * @return 
+	 */
 	public DiskoKeyEventDispatcher getKeyEventDispatcher();
 
+	/**
+	 * Add a property change listener to the application
+	 * 
+	 * @param listener - the listener
+	 */
+	public void addPropertyChangeListener(PropertyChangeListener listener);
+	
+	/**
+	 * Remove a property change listener from the application
+	 * 
+	 * @param listener - the listener
+	 */
+	public void removePropertyChangeListener(PropertyChangeListener listener);	
+	
+	/**
+	 * Invoke a application command
+	 * @param cmd - Enum identifying the command
+	 * @param requestFocus - if <code>true</code>, focus is requested after execution
+	 * @return
+	 */
 	public boolean invoke(Enum<?> cmd, boolean requestFocus);
 
+	/**
+	 * Get touch mode flag
+	 * 
+	 * @return boolean
+	 */
 	public boolean isTouchMode();
 
 }

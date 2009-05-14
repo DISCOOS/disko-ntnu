@@ -74,7 +74,7 @@ public class Utils {
 
 	public static int showConfirm(String title, String msg,int option) {
 		// get frame (if frame is locked use null)
-		Frame frame = Application.getInstance().isLocked() ? null : Application.getInstance();
+		Frame frame = Application.getInstance().isLocked() ? null : Application.getFrameInstance();
 		// set isMessageDialog flag
 		messageDialog = new MessageDialog(frame);
 		// forwar
@@ -153,8 +153,8 @@ public class Utils {
 			catch(Exception e) { e.printStackTrace(); }
 
 			// create message dialog
-			messageDialog = new MessageDialog(Application.getInstance());
-			messageDialog.setLocationRelativeTo(Application.getInstance());
+			messageDialog = new MessageDialog(Application.getFrameInstance());
+			messageDialog.setLocationRelativeTo(Application.getFrameInstance());
 			messageDialog.addFocusListener(new FocusAdapter() {
             	@Override
                 public void focusGained(FocusEvent e) {
@@ -308,15 +308,15 @@ public class Utils {
     	}
     	else if(value instanceof String) {
     		String str = value.toString();
-        	if(isNumeric(str,Integer.class))
-        		return Integer.class;
+        	if(isNumeric(str,Long.class))
+        		return Long.class;
         	else if(isNumeric(str,Double.class))
         		return Double.class;
-        	else if(isNumeric(str,Long.class))
-        		return Long.class;
         	else if(isNumeric(str,Float.class))
         		return Float.class;
-        	if(isNumeric(str,Byte.class))
+    		else if(isNumeric(str,Integer.class))
+        		return Integer.class;
+    		else if(isNumeric(str,Byte.class))
         		return Byte.class;
         	else if(isNumeric(str,Short.class))
         		return Short.class;
@@ -332,13 +332,13 @@ public class Utils {
         {
             if (c.equals(Number.class))
             {
-            	if(isNumeric(str,Integer.class))
+            	if(isNumeric(str,Long.class))
             		return true;
             	else if(isNumeric(str,Double.class))
             		return true;
-            	else if(isNumeric(str,Long.class))
-            		return true;
             	else if(isNumeric(str,Float.class))
+            		return true;
+            	else if(isNumeric(str,Integer.class))
             		return true;
             	if(isNumeric(str,Byte.class))
             		return true;
@@ -389,21 +389,21 @@ public class Utils {
     	return parseNumeric(str,Number.class);
     }
 
-    public static Object parseNumeric(String str, Class<? extends Number> c)
+    public static Number parseNumeric(String str, Class<? extends Number> c)
     {
         try
         {
             if (c.equals(Number.class))
             {
-            	if(isNumeric(str,Integer.class))
-            		return parseNumeric(str,Integer.class);
+            	if(isNumeric(str,Long.class))
+            		return parseNumeric(str,Long.class);
             	else if(isNumeric(str,Double.class))
             		return parseNumeric(str,Double.class);
-            	else if(isNumeric(str,Long.class))
-            		return parseNumeric(str,Long.class);
             	else if(isNumeric(str,Float.class))
             		return parseNumeric(str,Float.class);
-            	if(isNumeric(str,Byte.class))
+            	else if(isNumeric(str,Integer.class))
+            		return parseNumeric(str,Integer.class);
+            	else if(isNumeric(str,Byte.class))
             		return parseNumeric(str,Byte.class);
             	else if(isNumeric(str,Short.class))
             		return parseNumeric(str,Short.class);

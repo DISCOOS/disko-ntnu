@@ -282,9 +282,10 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
                 IDiskoWpUnit calledUnitModule = (IDiskoWpUnit) calledModule;
                 role.selectDiskoWpModule(calledModule);
                 calledModule.setCallingWp(m_wp.getName());
-                calledUnitModule.setOverviewPanel(1);
-                calledUnitModule.setUnit(m_displayedUnit);
-                calledUnitModule.setLeftView(IDiskoWpUnit.UNIT_VIEW_ID);
+                calledUnitModule.setMainTab(1);
+                if(calledUnitModule.setUnit(m_displayedUnit)) {
+                	calledUnitModule.setLeftView(IDiskoWpUnit.UNIT_DETAILS_VIEW_ID);
+                }
 
             } else
             {

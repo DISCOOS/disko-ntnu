@@ -3,15 +3,12 @@
  */
 package org.redcross.sar.gui.field;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.JTextPane;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.DefaultDialog;
@@ -24,10 +21,9 @@ import org.redcross.sar.gui.panel.CoordinatePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
-import org.redcross.sar.mso.data.AttributeImpl;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoTimePos;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
-import org.redcross.sar.undo.DiskoFieldEdit;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 
@@ -37,7 +33,7 @@ import com.esri.arcgis.geometry.Point;
  * @author kennetgu
  *
  */
-public class PositionField extends AbstractField {
+public class PositionField extends AbstractField<Position,JTextPane,JTextPane> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -45,7 +41,6 @@ public class PositionField extends AbstractField {
 
 	private CoordinatePanel m_coordinatePanel;
 	private GotoPanel m_gotoPanel;
-	private JLabel m_fieldLabel;
 	private PositionSelectorDialog m_selectorDialog;
 	
 	private int m_digits = 5;
@@ -88,7 +83,7 @@ public class PositionField extends AbstractField {
 		initialize(null,DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionField(IAttributeIf<?> attribute, String caption,
+	public PositionField(IMsoAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -96,7 +91,7 @@ public class PositionField extends AbstractField {
 		initialize(getValue(),DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionField(IAttributeIf<?> attribute, String caption,
+	public PositionField(IMsoAttributeIf<?> attribute, String caption,
 			boolean isEditable, int width, int height, int format) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -111,74 +106,68 @@ public class PositionField extends AbstractField {
 		setValue(value);
 		// forward
 		initalizeEdit();
-		// forward
-		setEditable(isEditable);
 	}
 
-	/*==================================================================
-	 * Public methods
-	 *==================================================================
-	 */
+	/* ==================================================================
+	 *  anonymous classes
+	 * ================================================================== */
+	
+	private final ActionListener m_actionListener = new ActionListener() {
 
-	public Component getComponent() {
-		if(m_component==null) {
-			JPanel panel = new JPanel(new BorderLayout());
-			m_fieldLabel = new JLabel();
-			m_fieldLabel.setBorder((new JTextField()).getBorder());
-			panel.add(m_fieldLabel,BorderLayout.CENTER);
-			// save the component
-			m_component = panel;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// get install map and prepare goto panel
+			IDiskoMap map = getInstalledMap();
+			// map installed?
+			if(map!=null) {
+				// prepare selector dialog				
+				setSelectionMap(map);
+				// prompt user for selection
+				Position p = getSelectorDialog().select(getEditValue());
+				// user selected a value?
+				if(p!=null) {
+					setValue(p);
+				} else { 
+					reset(); 
+				}
+			}
+			
 		}
-		return m_component;
+
+	};	
+	
+	/* ==================================================================
+	 *  Public methods
+	 * ================================================================== */
+
+	public JTextPane getEditComponent() {
+		if(m_editComponent==null) {
+			m_editComponent = createTextPaneComponent("text/html",true);
+		}
+		m_editComponent.setEditable(true);
+		return m_editComponent;
 	}
 
-	public JLabel getLabel() {
-		return m_fieldLabel;
-	}
-
-	public void setAutoSave(boolean auto) {
-		m_autoSave = auto;
-	}
-
-	public boolean getAutoSave() {
-		return m_autoSave;
+	public JTextPane getViewComponent() {
+		if(m_viewComponent==null) {
+			m_viewComponent = createTextPaneComponent("text/html",false);
+		}
+		return m_viewComponent;
 	}
 	
-	private CoordinatePanel getCoordinatePanel() {
-		if(m_coordinatePanel==null) {
-			m_coordinatePanel = getGotoPanel().getCoordinatePanel();
-		}
-		return m_coordinatePanel;
+	public void setBatchMode(boolean isBatchMode) {
+		m_isBatchMode = isBatchMode;
 	}
 
-	public Object getValue() {
+	public boolean isBatchMode() {
+		return m_isBatchMode;
+	}
+	
+	@Override
+	public Position getEditValue() {
 		return getCoordinatePanel().getPosition();
 	}
 
-	public boolean setValue(Object value) {
-		// get old value
-		Object oldValue = getValue();
-		// validate data type
-		if(value instanceof Point)
-			getCoordinatePanel().setPoint((Point)value);
-		else if(value instanceof Position)
-			getCoordinatePanel().setPosition((Position)value);
-		else if(value instanceof String)
-			getCoordinatePanel().setText((String)value);
-		else if(value == null)
-			getCoordinatePanel().setText(null);
-		else {
-			// failure
-			return false;
-		}
-		// set formatted text
-		getLabel().setText(getFormattedText());
-		// notify change?
-		if(isChangeable()) fireOnWorkChange(new DiskoFieldEdit(this,oldValue,getValue()));
-		// success
-		return true;
-	}
-	
 	public String getFormattedText() {
 		String text = getCoordinatePanel().getText();		
 		if(getCoordinatePanel().isPositionValid() && m_isHtml) {
@@ -209,7 +198,7 @@ public class PositionField extends AbstractField {
 		// update format
 		getCoordinatePanel().setFormat(format);
 		// set formatted text
-		getLabel().setText(getFormattedText());
+		getViewComponent().setText(getFormattedText());
 	}
 	
 	public int getDigits() {
@@ -220,7 +209,7 @@ public class PositionField extends AbstractField {
 		// prepare
 		m_digits = digits;
 		// set formatted text
-		getLabel().setText(getFormattedText());
+		getViewComponent().setText(getFormattedText());
 	}
 
 	public boolean isHtml() {
@@ -231,22 +220,58 @@ public class PositionField extends AbstractField {
 		// prepare
 		m_isHtml = isHtml;
 		// set formatted text
-		getLabel().setText(getFormattedText());
+		getViewComponent().setText(getFormattedText());
+	}
+	
+	@Override
+	public final void installButton(AbstractButton button, boolean isVisible) {
+		// forward
+		super.installButton(button, isVisible);
+		// handle actions
+		getButton().addActionListener(m_actionListener);
 	}
 	
 	/* ====================================================================
 	 * Protected methods
 	 * ==================================================================== */
 	
-	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
-		return (attr instanceof AttributeImpl.MsoPosition ||
-				attr instanceof AttributeImpl.MsoTimePos);
+	@Override
+	protected boolean setNewEditValue(Object value) {
+		// validate data type
+		if(value instanceof Point)
+			getCoordinatePanel().setPoint((Point)value);
+		else if(value instanceof Position)
+			getCoordinatePanel().setPosition((Position)value);
+		else if(value instanceof String)
+			getCoordinatePanel().setText((String)value);
+		else if(value == null)
+			getCoordinatePanel().setText(null);
+		else {
+			// failure
+			return false;
+		}
+		// set formatted text
+		getEditComponent().setText(getFormattedText());
+		getViewComponent().setText(getFormattedText());
+		// success
+		return true;
 	}
 	
-	/*==================================================================
-	 * Private methods
-	 *==================================================================
-	 */
+	protected boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr) {
+		return (attr instanceof MsoPosition ||
+				attr instanceof MsoTimePos);
+	}
+	
+	/* ==================================================================
+	 *  Private methods
+	 * ================================================================== */
+
+	private CoordinatePanel getCoordinatePanel() {
+		if(m_coordinatePanel==null) {
+			m_coordinatePanel = getGotoPanel().getCoordinatePanel();
+		}
+		return m_coordinatePanel;
+	}
 
 	private GotoPanel getGotoPanel() {
 		if(m_gotoPanel==null) {
@@ -257,7 +282,7 @@ public class PositionField extends AbstractField {
 
 	private PositionSelectorDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
-			m_selectorDialog = new PositionSelectorDialog(Application.getInstance());
+			m_selectorDialog = new PositionSelectorDialog(Application.getFrameInstance());
 		}
 		return m_selectorDialog;
 	}
@@ -265,38 +290,13 @@ public class PositionField extends AbstractField {
 	private void initalizeEdit() {
 		// initialize GUI
 		installButton(DiskoButtonFactory.createButton("GENERAL.EDIT", ButtonSize.SMALL), true);
-		// handle actions
-		getButton().addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// get old value
-				Position resume = (Position)getValue();
-				// get install map and prepare goto panel
-				IDiskoMap map = getInstalledMap();
-				// map installed?
-				if(map!=null) {
-					getSelectorDialog().onLoad(map);
-					if(map!=null)
-						getSelectorDialog().setSnapToLocation((JComponent)map, DefaultDialog.POS_EAST, 0, true, false);
-					else
-						getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
-					// select position
-					Position p = getSelectorDialog().select(resume);
-					// update or resume?
-					if(p!=null)
-						setValue(p);
-					else {
-						// consume
-						setChangeable(false);
-						// forward
-						setValue(resume);
-						// resume
-						setChangeable(true);
-					}
-				}
-			}
-
-		});
+	}
+	
+	private void setSelectionMap(IDiskoMap map) {
+		getSelectorDialog().onLoad(map);
+		if(map!=null)
+			getSelectorDialog().setSnapToLocation((JComponent)map, DefaultDialog.POS_CENTER, 0, true, false);
+		else
+			getSelectorDialog().setSnapToLocation(getButton(), DefaultDialog.POS_WEST, 0, false, false);
 	}
 }

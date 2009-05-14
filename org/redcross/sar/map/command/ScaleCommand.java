@@ -36,7 +36,7 @@ public class ScaleCommand extends AbstractDiskoCommand {
 		showDirect = true;
 
 		// create dialog
-		dialog = new ScaleDialog(Application.getInstance());
+		dialog = new ScaleDialog(Application.getFrameInstance());
 
 	}
 

@@ -116,11 +116,14 @@ public class TableCellButtons extends AbstractTableCell {
 	 * =============================================================== */
 	
 	public int getCellWidth(Graphics g, JTable table, int row, int col) {
-		Icon icon = getIcon(table,row,col);
-		String text = getText(table,row,col);
-		int w = (icon!=null ? icon.getIconWidth() + m_label.getIconTextGap() : 0) 
-			  + Utils.getStringWidth(g, Utils.stripHtml(text))
-			  + getButtons().getTotalItemWidth(false);
+		int w = getColumnFixedWidth(table,col);
+		if(w<0) {
+			Icon icon = getIcon(table,row,col);
+			String text = getText(table,row,col);
+			w = (icon!=null ? icon.getIconWidth() + m_label.getIconTextGap() : 0) 
+				  + Utils.getStringWidth(g, Utils.stripHtml(text))
+				  + getButtons().getTotalItemWidth(false);
+		}
 		return w;
 	}
 	

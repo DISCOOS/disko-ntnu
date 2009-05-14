@@ -10,7 +10,7 @@ public interface IAssociationIf extends IMsoObjectIf {
 
 	public IMsoModelIf.ModificationState getOrganizationState();
 
-    public IAttributeIf.IMsoStringIf getOrganizationAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute();
 
     
     public void setDivision(String aDepartment);
@@ -19,7 +19,7 @@ public interface IAssociationIf extends IMsoObjectIf {
 
     public IMsoModelIf.ModificationState getDivisionState();
 
-    public IAttributeIf.IMsoStringIf getDivisionAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDivisionAttribute();
     
     
 	public void setDepartment(String department);
@@ -28,6 +28,6 @@ public interface IAssociationIf extends IMsoObjectIf {
 
 	public IMsoModelIf.ModificationState getDepartmentState();
 
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute();	
+    public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute();	
 	
 }

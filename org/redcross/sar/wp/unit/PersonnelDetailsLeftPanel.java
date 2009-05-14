@@ -14,15 +14,18 @@ import javax.swing.JTextField;
 import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.AssociationDialog;
+import org.redcross.sar.gui.document.AlphaNumericDocument;
 import org.redcross.sar.gui.document.AutoCompleteDocument;
+import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.field.TextAreaField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
@@ -63,12 +66,12 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	private JButton m_changeStatusButton;
 
 	private FieldsPanel m_infoPanel;
-	private TextLineField m_nameTextField;
-	private TextLineField m_cellTextField;
+	private TextField m_nameTextField;
+	private TextField m_cellTextField;
 	private ComboBoxField m_propertyComboBoxField;
-    private TextLineField m_associationTextField;
-	private TextLineField m_roleTextField;
-	private TextLineField m_unitTextField;
+    private TextField m_associationTextField;
+	private TextField m_roleTextField;
+	private TextField m_unitTextField;
 	private DTGField m_etaTextField;
 	private DTGField m_callOutTextField;
 	private DTGField m_arrivedTextField;
@@ -101,7 +104,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
 			m_infoPanel.setColumns(2);
-			m_infoPanel.setAutoSave(true);
+			m_infoPanel.setBatchMode(false);
 			m_infoPanel.setPreferredExpandedHeight(275);
 			m_infoPanel.addButton(getChangeStatusButton(), "status");
 			m_infoPanel.suspendLayout();
@@ -141,24 +144,16 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						try {
 							String command = e.getActionCommand();
 							PersonnelStatus newStatus = PersonnelStatus.valueOf(command);
-
 							switch(newStatus)
 							{
 							case ON_ROUTE:
-								m_currentPersonnel = UnitUtils.callOutPersonnel(m_currentPersonnel);
-								m_changeStatusButton.setIcon(m_alertedIcon);
-								m_changeStatusButton.setToolTipText(m_wp.getBundleText("AlertedButton.text"));
-								updateFieldContents();
+								setPersonnel(ResourceUtils.callOutPersonnel(m_currentPersonnel));
 								break;
 							case ARRIVED:
-								UnitUtils.arrivedPersonnel(m_currentPersonnel);
-								m_changeStatusButton.setIcon(m_arrivedIcon);
-								m_changeStatusButton.setToolTipText(m_wp.getBundleText("ArrivedButton.text"));
+								setPersonnel(ResourceUtils.arrivedPersonnel(m_currentPersonnel));
 								break;
 							case RELEASED:
-								UnitUtils.releasePersonnel(m_currentPersonnel);
-								m_changeStatusButton.setIcon(m_releasedIcon);
-								m_changeStatusButton.setToolTipText(m_wp.getBundleText("ReleasedButton.text"));
+								ResourceUtils.releasePersonnel(m_currentPersonnel);
 							}
 						}
 						catch(Exception ex) {
@@ -170,10 +165,33 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		}
 		return m_changeStatusButton;
 	}	
+	
+	private void updateChangeStatusButton(PersonnelStatus newStatus) {
 
-	private TextLineField getFullNameTextField() {
+		switch(newStatus)
+		{
+		case ON_ROUTE:
+			m_changeStatusButton.setIcon(m_alertedIcon);
+			m_changeStatusButton.setToolTipText(m_wp.getBundleText("AlertedButton.text"));
+			m_changeStatusButton.setActionCommand(newStatus.name());
+			break;
+		case ARRIVED:
+			m_changeStatusButton.setIcon(m_arrivedIcon);
+			m_changeStatusButton.setToolTipText(m_wp.getBundleText("ArrivedButton.text"));
+			m_changeStatusButton.setActionCommand(newStatus.name());
+			break;
+		case RELEASED:
+			m_changeStatusButton.setIcon(m_releasedIcon);
+			m_changeStatusButton.setToolTipText(m_wp.getBundleText("ReleasedButton.text"));
+			m_changeStatusButton.setActionCommand(newStatus.name());
+			break;
+		}
+		
+	}
+
+	private TextField getFullNameTextField() {
 		if(m_nameTextField==null) {
-			m_nameTextField = new TextLineField("fullname",m_resources.getString("FullName.text"),true);
+			m_nameTextField = new TextField("fullname",m_resources.getString("FullName.text"),true);
 			m_nameTextField.addWorkFlowListener(new IWorkFlowListener() {
 
 				@Override
@@ -197,27 +215,29 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		return m_nameTextField;
 	}
 
-	private TextLineField getCellPhoneTextField() {
+	private TextField getCellPhoneTextField() {
 		if(m_cellTextField==null) {
-			m_cellTextField = new TextLineField("cellphone",m_resources.getString("CellularPhone.text"),true);    		
+			m_cellTextField = new TextField("cellphone",m_resources.getString("CellularPhone.text"),true);
+			NumericDocument doc = new NumericDocument(12,0,false);
+			m_cellTextField.getEditComponent().setDocument(doc);
 		}
 		return m_cellTextField;
 	}
 
 	private ComboBoxField getPropertyTextField() {
 		if(m_propertyComboBoxField==null) {
-			m_propertyComboBoxField = new ComboBoxField("property",m_resources.getString("Property.text"),false);    		
+			m_propertyComboBoxField = new ComboBoxField("property",m_resources.getString("Property.text"),true);    		
 			m_propertyComboBoxField.fill(PersonnelType.values());
 			ResourceBundle personnelResources = Internationalization.getBundle(IPersonnelIf.class);
-			m_propertyComboBoxField.getComboBox().setRenderer(new BundleListCellRenderer(personnelResources));
+			m_propertyComboBoxField.getEditComponent().setRenderer(new BundleListCellRenderer(personnelResources));
 		}
 		return m_propertyComboBoxField;
 	}
 
-    private TextLineField getAssociationTextField() {
+    private TextField getAssociationTextField() {
 		if(m_associationTextField==null) {
-		    m_associationTextField = new TextLineField("association","Tilhørighet",true);
-			JTextField inputField = m_associationTextField.getTextField();
+		    m_associationTextField = new TextField("association","Tilhørighet",true);
+			JTextField inputField = m_associationTextField.getEditComponent();
 			AutoCompleteDocument doc = new AutoCompleteDocument(AssocUtils.getAssociations(-1,"{l:n} {l:s}"),inputField);
 			inputField.setDocument(doc);
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
@@ -232,9 +252,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						m_associationTextField.setChangeable(false);
 						m_currentPersonnel.suspendClientUpdate();
 						if(items!=null) {
-							m_currentPersonnel.setOrganization(items[0].getName());
-							m_currentPersonnel.setDivision(items[0].getName());
-							m_currentPersonnel.setDepartment(items[0].getName());
+							m_currentPersonnel.setOrganization(items[0].getName(1));
+							m_currentPersonnel.setDivision(items[0].getName(2));
+							m_currentPersonnel.setDepartment(items[0].getName(3));
 						} else {
 							m_currentPersonnel.setOrganization(null);
 							m_currentPersonnel.setDivision(null);
@@ -252,10 +272,10 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 				public void actionPerformed(ActionEvent e) {
 					if(m_currentPersonnel!=null) {
-						AssociationDialog dlg = new AssociationDialog(Application.getInstance());
-						dlg.setLocationRelativeTo(Application.getInstance());
+						AssociationDialog dlg = new AssociationDialog(Application.getFrameInstance());
+						dlg.setLocationRelativeTo(Application.getFrameInstance());
 						if(dlg.associate(getAssociationTextField().getValue(),m_currentPersonnel)) {
-							updateFieldContents();
+							m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
 						}
 					}
 				}
@@ -265,16 +285,18 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		return m_associationTextField;
 	}	
 
-	private TextLineField getRoleTextField() {
+	private TextField getRoleTextField() {
 		if(m_roleTextField==null) {
-			m_roleTextField = new TextLineField("role",m_resources.getString("Role.text"),false);    		
+			m_roleTextField = new TextField("role",m_resources.getString("Role.text"),false);
+			m_roleTextField.setChangeable(false);
 		}
 		return m_roleTextField;
 	}
 
-	private TextLineField getUnitTextField() {
+	private TextField getUnitTextField() {
 		if(m_unitTextField==null) {
-			m_unitTextField = new TextLineField("unit",m_resources.getString("Unit.text"),false);    		
+			m_unitTextField = new TextField("unit",m_resources.getString("Unit.text"),false);
+			m_unitTextField.setChangeable(false);
 		}
 		return m_unitTextField;
 	}
@@ -319,10 +341,6 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
     	return m_currentPersonnel!=null?m_currentPersonnel.isChanged():false;
     }
     
-    public boolean isNew() {
-    	return m_currentPersonnel!=null?!m_currentPersonnel.isCreated():false;
-    }
-    
     public boolean isSet() {
     	return m_currentPersonnel!=null;
     }
@@ -346,13 +364,6 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         	getArrivedTextField().setMsoAttribute(personnel.getArrivedAttribute());
         	getReleasedTextField().setMsoAttribute(personnel.getReleasedAttribute());
         	getRemarksTextArea().setMsoAttribute(personnel.getRemarksAttribute());
-        	getCellPhoneTextField().reset();
-        	getPropertyTextField().reset();
-        	getCallOutTextField().reset();
-        	getETATextField().reset();
-        	getArrivedTextField().reset();
-        	getReleasedTextField().reset();
-        	getRemarksTextArea().reset();
         }  else {
         	getCellPhoneTextField().clearMsoAttribute("");
         	getPropertyTextField().clearMsoAttribute(PersonnelType.VOLUNTEER);
@@ -362,36 +373,42 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         	getReleasedTextField().clearMsoAttribute("");
         	getRemarksTextArea().clearMsoAttribute("");
         }
-		m_nameTextField.requestFocus();
+        if(personnel==null || PersonnelStatus.RELEASED.equals(personnel.getStatus()))
+        {
+        	m_infoPanel.setEditable(false);
+        } else {
+        	m_infoPanel.setEditable(true);
+        	m_nameTextField.requestFocus();
+        }
+        updateFieldContents();
 	}	
 	
 	/**
 	 * Updates field contents with current personnel attribute values
 	 */
-	public void updateFieldContents()
+	private void updateFieldContents()
 	{
-		// prevent reenty
-		getInfoPanel().setChangeable(false);
-
 		if (m_currentPersonnel != null) {
 
 			// update caption
 			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel, true));
-			m_nameTextField.setValue(MsoUtils.getPersonnelName(m_currentPersonnel, false));
+			if(getFullNameTextField().isChangeable()) {
+				getFullNameTextField().setValue(MsoUtils.getPersonnelName(m_currentPersonnel, false),false);
+			}
 
 			IUnitIf unit = m_currentPersonnel.getOwningUnit();
-			m_unitTextField.setValue(MsoUtils.getUnitName(unit));
+			getUnitTextField().setValue(MsoUtils.getUnitName(unit));
 			
 			if (unit != null)
 			{
 				if (unit.getUnitLeader() == m_currentPersonnel)
 				{
-					m_roleTextField.setValue(m_resources.getString("Leader.text"));
+					getRoleTextField().setValue(m_resources.getString("Leader.text"));
 				} else {
-					m_roleTextField.setValue(m_resources.getString("Personnel.text"));
+					getRoleTextField().setValue(m_resources.getString("Personnel.text"));
 				}
 			} else {
-				m_roleTextField.setValue("");
+				getRoleTextField().setValue("");
 			}
 			
 			// Get next status for
@@ -403,7 +420,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 				// not possible to send personnel status back to idle, set to next
 				status = values[(status.ordinal() + 1) % values.length];
 			}
-			m_changeStatusButton.setActionCommand(status.name());
+			updateChangeStatusButton(status);
 			
             if(getAssociationTextField().isChangeable()) {
 	            if(m_currentPersonnel.getOrganization()!=null) {
@@ -417,51 +434,47 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 				            assoc.setPattern("{3:n} {3:s}");
 		                }
 		            }
-		            getAssociationTextField().setChangeable(false);
-		            getAssociationTextField().setValue(assoc.getText());
-		            getAssociationTextField().setChangeable(true);
+		            getAssociationTextField().setValue(assoc.getText(),false);
 	        	} else {
-		            getAssociationTextField().setChangeable(false);
-		            getAssociationTextField().setValue("");
-		            getAssociationTextField().setChangeable(true);        		
+		            getAssociationTextField().setValue("",false);
 	        	}
             }
+            
+			getInfoPanel().setEditable(true);            
             			
 		} else {
 
-			// prevent reenty
-			getInfoPanel().setChangeable(false);
-			
 			// update caption
-			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel,true));
-			m_nameTextField.setValue("");
-			m_roleTextField.setValue("");
-            m_associationTextField.setValue("");
-			m_unitTextField.setValue("");
+			getInfoPanel().setCaptionText(m_wp.getBundleText("NoPersonnelSelected.text"));
+			getFullNameTextField().setValue("",false);
+			getRoleTextField().setValue("");
+            getAssociationTextField().setValue("",false);
+			getUnitTextField().setValue("");
+	
+			getInfoPanel().setEditable(false);
 			
 		}
-
-		// resume reenty
-		getInfoPanel().setChangeable(true);
 
 	}
 	
     /**
      * validate input data
      */
-	public boolean isInputValid()
+	public boolean isEditValid()
 	{
-		if (m_currentPersonnel != null)
+		if (isSet())
 		{
 			// validate
-			if (getNames(true)!=null)
+			if (getNames(true)==null)
 			{
-				return true;
+				// notify
+				Utils.showWarning("Begrensning","Fullt navn må oppgis for mannskap");
+				// failure
+				return false;
 			}
-			Utils.showWarning("Begrensning","Fullt navn må oppgis for personell");			
 		}
-		// failed!
-		return false;
+		// success
+		return true;
 	}	
 	
 	private String[] getNames(boolean validate) {

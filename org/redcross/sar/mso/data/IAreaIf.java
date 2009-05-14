@@ -19,7 +19,7 @@ public interface IAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for lists

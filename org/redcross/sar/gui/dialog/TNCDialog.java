@@ -273,8 +273,8 @@ public class TNCDialog extends DefaultDialog  {
 			consoleButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					ConsoleDialog dlg = new ConsoleDialog(Application.getInstance());
-					dlg.setLocationRelativeTo(Application.getInstance());
+					ConsoleDialog dlg = new ConsoleDialog(Application.getFrameInstance());
+					dlg.setLocationRelativeTo(Application.getFrameInstance());
 					getConsoleDialog().open(session);					
 				}
 				
@@ -316,8 +316,8 @@ public class TNCDialog extends DefaultDialog  {
 	 */	
 	private ConsoleDialog getConsoleDialog() {
 		if(consoleDialog == null) {
-			consoleDialog = new ConsoleDialog(Application.getInstance());
-			consoleDialog.setLocationRelativeTo(Application.getInstance());
+			consoleDialog = new ConsoleDialog(Application.getFrameInstance());
+			consoleDialog.setLocationRelativeTo(Application.getFrameInstance());
 		}
 		return consoleDialog;
 	}	
@@ -483,7 +483,7 @@ public class TNCDialog extends DefaultDialog  {
 		refresh();
 		// comboboxes are not editable
 		getSessionPanel().setEditable(false);
-		// dialog is modal, the call it blocks on this 
+		// dialog is modal, the call blocks on this 
 		setVisible(true);
 		// finished
 		return !isCancel;

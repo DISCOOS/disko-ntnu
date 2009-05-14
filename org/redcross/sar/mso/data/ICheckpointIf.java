@@ -13,7 +13,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getCheckedState();
 
-    public IAttributeIf.IMsoBooleanIf getCheckedAttribute();
+    public IMsoAttributeIf.IMsoBooleanIf getCheckedAttribute();
 
     public void setDescription(String aDescription);
 
@@ -21,7 +21,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getDescriptionState();
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
     public void setName(String aName);
 
@@ -29,7 +29,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getNameState();
 
-    public IAttributeIf.IMsoStringIf getNameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for references

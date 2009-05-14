@@ -76,7 +76,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 
     public DiskoWpTasksImpl() throws IllegalClassFormatException
     {
-        super();
+        super(Logger.getLogger(DiskoWpTasksImpl.class));
 
         m_dialogs = new LinkedList<DefaultDialog>();
 
@@ -157,7 +157,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     {
 
 		Enum<?> key = TaskActionType.NEW_TASK;
-		m_newButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
+		m_newButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, m_wpBundle);
         m_newButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent arg0)
@@ -168,7 +168,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         layoutButton(m_newButton, true);
 
 		key = TaskActionType.EDIT_TASK;
-		m_changeButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
+		m_changeButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, m_wpBundle);
         m_changeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -179,7 +179,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         layoutButton(m_changeButton, true);
 
 		key = TaskActionType.DELETE_TASK;
-		m_deleteButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
+		m_deleteButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, m_wpBundle);
         m_deleteButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -190,7 +190,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
         layoutButton(m_deleteButton, true);
 
 		key = TaskActionType.TASK_FINISHED;
-		m_performedButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, wpBundle);
+		m_performedButton = DiskoButtonFactory.createButton(key, ButtonSize.NORMAL, m_wpBundle);
         m_performedButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)

@@ -55,34 +55,35 @@ import com.esri.arcgis.interop.AutomationException;
 public abstract class AbstractDiskoWpModule
 			implements IDiskoWp, IMsoUpdateListenerIf {
 
-	private IDiskoRole role;
-    private IDiskoMap map;
-    private boolean hasSubMenu = false;
-    private boolean isNavMenuSetupNeeded = true;
-    private State mainState;
-	private List<Enum<?>> mapLayers;
+	private IDiskoRole m_role;
+    private IDiskoMap m_map;
+    private boolean m_hasSubMenu = false;
+    private boolean m_isNavMenuSetupNeeded = true;
+    private State m_mainState;
+	private List<Enum<?>> m_mapLayers;
 
-    protected String callingWp;
-    protected ResourceBundle wpBundle;
-    protected boolean isActive = false;
+    protected String m_callingWp;
+    protected ResourceBundle m_wpBundle;
+    protected boolean m_isActive = false;
 
-    private int isWorking = 0;
+    private int m_isWorking = 0;
 
-    protected final Logger logger = Logger.getLogger(getClass());
-    protected final WorkFlowEventRepeater repeater = new WorkFlowEventRepeater();
-    protected final List<WorkFlowEvent> changeStack = new ArrayList<WorkFlowEvent>();
-	protected final EnumSet<IMsoManagerIf.MsoClassCode> interests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
+    protected Logger m_logger;
+    protected final WorkFlowEventRepeater m_repeater = new WorkFlowEventRepeater();
+    protected final List<WorkFlowEvent> m_changeStack = new ArrayList<WorkFlowEvent>();
+	protected final EnumSet<IMsoManagerIf.MsoClassCode> m_interests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
 
-    public AbstractDiskoWpModule() throws IllegalClassFormatException
+    public AbstractDiskoWpModule(Logger logger) throws IllegalClassFormatException
     {
-
+    	// set logger
+    	m_logger = logger;
     	// valid package name?
     	if(Utils.getPackageName(getClass()) == null)
     		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
 
 
         // initialize layers
-        this.mapLayers = getDefaultMapLayers();
+        this.m_mapLayers = getDefaultMapLayers();
 
 		// initialize timers
         initTickTimer();
@@ -91,7 +92,7 @@ public abstract class AbstractDiskoWpModule
     }
 
     /**
-     * @param role
+     * @param m_role
      */
     public AbstractDiskoWpModule(
     		EnumSet<MsoClassCode> interests,
@@ -104,7 +105,7 @@ public abstract class AbstractDiskoWpModule
     		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
 
         // initialize objects
-        this.mapLayers = mapLayers;
+        this.m_mapLayers = mapLayers;
 
         // add listeners?
     	if(interests.size()>0) {
@@ -131,31 +132,31 @@ public abstract class AbstractDiskoWpModule
 
     public IDiskoRole getDiskoRole()
     {
-        return role;
+        return m_role;
     }
 
     public boolean isMapInstalled() {
-    	return map!=null;
+    	return m_map!=null;
     }
 
 
     public boolean installMap() {
-        if (map == null)
+        if (m_map == null)
         {
             try
             {
             	// get map manager
                 IDiskoMapManager manager = getApplication().getMapManager();
                 // initialize map
-                map = manager.createMap(mapLayers);
+                m_map = manager.createMap(m_mapLayers);
                 // hide map
-                ((Component)map).setVisible(false);
+                ((Component)m_map).setVisible(false);
                 // success
                 return true;
             }
             catch (Exception e)
             {
-                logger.error("Failed to install map",e);
+                m_logger.error("Failed to install map",e);
             }
         }
         // failed
@@ -167,7 +168,7 @@ public abstract class AbstractDiskoWpModule
       */
     public IDiskoMap getMap()
     {
-        return map;
+        return m_map;
     }
 
     public IApplication getApplication()
@@ -189,12 +190,12 @@ public abstract class AbstractDiskoWpModule
 
     public void setCallingWp(String name)
     {
-        callingWp = name;
+        m_callingWp = name;
     }
 
     public String getCallingWp()
     {
-        return callingWp;
+        return m_callingWp;
     }
 
     /* (non-Javadoc)
@@ -202,7 +203,7 @@ public abstract class AbstractDiskoWpModule
       */
     public boolean hasSubMenu()
     {
-        return hasSubMenu;
+        return m_hasSubMenu;
     }
 
 	public boolean commit() {
@@ -225,17 +226,17 @@ public abstract class AbstractDiskoWpModule
 
     public void addWorkFlowListener(IWorkFlowListener listener)
     {
-    	repeater.addWorkFlowListener(listener);
+    	m_repeater.addWorkFlowListener(listener);
     }
 
     public void removeWorkFlowListener(IWorkFlowListener listener)
     {
-    	repeater.removeWorkFlowListener(listener);
+    	m_repeater.removeWorkFlowListener(listener);
     }
 
     public List<IMsoObjectIf> getUncomittedChanges() {
     	List<IMsoObjectIf> changes = new Vector<IMsoObjectIf>();
-    	for(WorkFlowEvent it : changeStack) {
+    	for(WorkFlowEvent it : m_changeStack) {
     		IMsoObjectIf msoObj = it.getMsoObject();
     		if(msoObj!=null&&!changes.contains(msoObj)) {
     			changes.add(msoObj);
@@ -247,10 +248,10 @@ public abstract class AbstractDiskoWpModule
 	public void onFlowPerformed(WorkFlowEvent e) {
     	// update change stack?
 		if(e.isChange() || e.isFinish())
-			changeStack.add(e);
+			m_changeStack.add(e);
 
 	    // forward
-		repeater.fireOnWorkPerformed(e);
+		m_repeater.fireOnWorkPerformed(e);
 	}
 
     protected void fireOnWorkChange(Object data)
@@ -285,10 +286,10 @@ public abstract class AbstractDiskoWpModule
     {
     	// update change stack?
 		if(e.isCommit() || e.isRollback())
-			changeStack.clear();
+			m_changeStack.clear();
 
 		// forward
-		repeater.fireOnWorkPerformed(e);
+		m_repeater.fireOnWorkPerformed(e);
     }
 
     /**
@@ -296,7 +297,7 @@ public abstract class AbstractDiskoWpModule
      */
     public boolean isChanged()
     {
-        return (changeStack.size()>0);
+        return (m_changeStack.size()>0);
     }
 
     /**
@@ -304,16 +305,16 @@ public abstract class AbstractDiskoWpModule
      */
     public boolean isActive()
     {
-        return isActive;
+        return m_isActive;
     }
 
     public void activate(IDiskoRole role)
     {
     	// set active
-        isActive=true;
+        m_isActive=true;
 
         // prepare
-        this.role = role;
+        this.m_role = role;
 
         // update frame text
         setFrameText("");
@@ -333,9 +334,9 @@ public abstract class AbstractDiskoWpModule
 						try {
 							getMap().refreshMapBase();
 						} catch (AutomationException e) {
-							logger.error("Failed to active map",e);
+							m_logger.error("Failed to active map",e);
 						} catch (IOException e) {
-							logger.error("Failed to active map",e);
+							m_logger.error("Failed to active map",e);
 						}
 					}
 
@@ -364,8 +365,8 @@ public abstract class AbstractDiskoWpModule
 
 
     	// load state saved when deactived?
-    	if(mainState!=null) {
-        	getApplication().getUIFactory().load(mainState);
+    	if(m_mainState!=null) {
+        	getApplication().getUIFactory().load(m_mainState);
     	}
     }
 
@@ -380,11 +381,11 @@ public abstract class AbstractDiskoWpModule
     		getMap().setVisible(false);
     	}
     	// save current state
-    	mainState = getApplication().getUIFactory().save();
+    	m_mainState = getApplication().getUIFactory().save();
     	// hide all registered dialogs
     	getApplication().getUIFactory().hideDialogs();
 		// reset flags and title
-        isActive=false;
+        m_isActive=false;
         // reset frame caption
     	setFrameText(null);
     }
@@ -393,7 +394,7 @@ public abstract class AbstractDiskoWpModule
      * @see org.redcross.sar.wp.IDiskoWpModule#isNavBarSetupNeeded()
      */
     public boolean isNavMenuSetupNeeded() {
-    	return isNavMenuSetupNeeded;
+    	return m_isNavMenuSetupNeeded;
     }
 
     /* (non-Javadoc)
@@ -409,9 +410,9 @@ public abstract class AbstractDiskoWpModule
 		// get nav button
 		getApplication().getUIFactory().setNavMenuVisible(isVisible);
     	// save state
-		mainState =  getApplication().getUIFactory().save();
+		m_mainState =  getApplication().getUIFactory().save();
 		// do not need to do setup any more
-		isNavMenuSetupNeeded = false;
+		m_isNavMenuSetupNeeded = false;
     }
 
     public void setFrameText(String text)
@@ -462,7 +463,7 @@ public abstract class AbstractDiskoWpModule
         // add button to sub menu
         getApplication().getUIFactory().getSubMenu().addItem(button, id, addToGroup);
         // set sub menu existence flag
-        hasSubMenu = true;
+        m_hasSubMenu = true;
     }
 
     public IMsoModelIf getMsoModel()
@@ -495,12 +496,12 @@ public abstract class AbstractDiskoWpModule
 
     public String getBundleText(String aKey)
     {
-        return Internationalization.getString(wpBundle,aKey);
+        return Internationalization.getString(m_wpBundle,aKey);
     }
 
     protected void assignWpBundle(Class<?> aClass)
     {
-        wpBundle = Internationalization.getBundle(aClass);
+        m_wpBundle = Internationalization.getBundle(aClass);
     }
 
     public boolean confirmDeactivate()
@@ -510,7 +511,7 @@ public abstract class AbstractDiskoWpModule
     }
 
 	public EnumSet<MsoClassCode> getInterests() {
-		return interests;
+		return m_interests;
 	}
 
 	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
@@ -519,24 +520,24 @@ public abstract class AbstractDiskoWpModule
 
 	public void beforeOperationChange() {
 		// suspend map update
-		if(map!=null) {
-			map.suspendNotify();
-			map.setSupressDrawing(true);
+		if(m_map!=null) {
+			m_map.suspendNotify();
+			m_map.setSupressDrawing(true);
 		}
 	}
 
 	public void afterOperationChange() {
 		// clear stack
-		changeStack.clear();
+		m_changeStack.clear();
 		// resume map update
-		if(map!=null) {
+		if(m_map!=null) {
 			try {
-				map.setSupressDrawing(false);
-				map.refreshMsoLayers();
-				map.resumeNotify();
+				m_map.setSupressDrawing(false);
+				m_map.refreshMsoLayers();
+				m_map.resumeNotify();
 			}
 			catch(Exception e) {
-				logger.error("Failed to refresh map",e);
+				m_logger.error("Failed to refresh map",e);
 			}
 		}
 		// update title bar text?
@@ -545,44 +546,44 @@ public abstract class AbstractDiskoWpModule
 
 	public void suspendUpdate() {
 		Application.getInstance().getMsoModel().suspendClientUpdate();
-		if(map!=null) {
-			map.suspendNotify();
-			map.setSupressDrawing(true);
+		if(m_map!=null) {
+			m_map.suspendNotify();
+			m_map.setSupressDrawing(true);
 		}
 	}
 
 	public void resumeUpdate() {
 		Application.getInstance().getMsoModel().resumeClientUpdate(true);
-		if(map!=null) {
+		if(m_map!=null) {
 			try {
-				map.setSupressDrawing(false);
-				map.refreshMsoLayers();
-				map.resumeNotify();
+				m_map.setSupressDrawing(false);
+				m_map.refreshMsoLayers();
+				m_map.resumeNotify();
 			}
 			catch(Exception e) {
-				logger.error("Failed to resume update",e);
+				m_logger.error("Failed to resume update",e);
 			}
 		}
 	}
 
 	public boolean isWorking() {
-		return (isWorking>0);
+		return (m_isWorking>0);
 	}
 
 	public int isWorkingCount() {
-		return isWorking;
+		return m_isWorking;
 	}
 
 	public int setIsWorking() {
-		isWorking++;
-		return isWorking;
+		m_isWorking++;
+		return m_isWorking;
 	}
 
 	public int setIsNotWorking() {
-		if(isWorking>0) {
-			isWorking--;
+		if(m_isWorking>0) {
+			m_isWorking--;
 		}
-		return isWorking;
+		return m_isWorking;
 	}
 
 	/*============================================================
@@ -759,7 +760,7 @@ public abstract class AbstractDiskoWpModule
 		        setIsNotWorking();
 			}
 			catch(Exception e) {
-				logger.error("Failed to resume suspended update",e);
+				m_logger.error("Failed to resume suspended update",e);
 			}
 		}
 	}

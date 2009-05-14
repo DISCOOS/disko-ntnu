@@ -1,3 +1,4 @@
+
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.data.Selector;
@@ -5,6 +6,8 @@ import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  *
@@ -12,38 +15,6 @@ import java.util.Comparator;
 public interface IPersonnelIf extends IPersonIf, IAssociationIf
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Personnel";
-
-    /**
-     * Often used selectors
-     */
-
-    public static Selector<IPersonnelIf> ALL_SELECTOR = new Selector<IPersonnelIf>()
-	{
-		public boolean select(IPersonnelIf personnel)
-		{
-			return true;
-		}
-	};
-
-    public static Selector<IPersonnelIf> ACTIVE_SELECTOR = new Selector<IPersonnelIf>()
-	{
-		public boolean select(IPersonnelIf personnel)
-		{
-			return personnel.getNextOccurence() == null;
-		}
-	};
-
-	/**
-	 * Often used comparators
-	 */
-    public static final Comparator<IPersonnelIf> PERSONNEL_NAME_COMPARATOR = new Comparator<IPersonnelIf>()
-	{
-		public int compare(IPersonnelIf p1, IPersonnelIf p2)
-		{
-			int res = p1.getFirstName().compareTo(p2.getFirstName());
-			return res == 0 ? p1.getLastName().compareTo(p2.getLastName()) : res;
-		}
-	};
 
     public enum PersonnelStatus
     {
@@ -71,13 +42,64 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
     	KEPT
     }
 
+    public static final EnumSet<PersonnelStatus> ACTIVE_SET = EnumSet.range(PersonnelStatus.IDLE,PersonnelStatus.ARRIVED);
+    public static final EnumSet<PersonnelStatus> HISTORY_SET = EnumSet.of(PersonnelStatus.IDLE,PersonnelStatus.RELEASED);
+    
+    /**
+     * Often used selectors
+     */
+
+    public static Selector<IPersonnelIf> ALL_SELECTOR = new Selector<IPersonnelIf>()
+	{
+		public boolean select(IPersonnelIf personnel)
+		{
+			return true;
+		}
+	};
+
+	/**
+	 * This selector selects every personnel with status other than RELEASED 
+	 */
+    public static Selector<IPersonnelIf> ACTIVE_SELECTOR = new Selector<IPersonnelIf>()
+	{
+		public boolean select(IPersonnelIf personnel)
+		{
+			return personnel.getNextOccurrence() == null && !PersonnelStatus.RELEASED.equals(personnel.getStatus());
+		}
+	};
+	
+	/**
+	 * This selector selects every personnel with status other than RELEASED and every
+	 * personnel that is released but not reinstated (<code>IPersonnel::getNextOccurrence()</code> 
+	 * is <code>null</code>). 
+	 */
+	public static Selector<IPersonnelIf> REINSTATE_SELECTOR = new Selector<IPersonnelIf>()
+	{
+		public boolean select(IPersonnelIf personnel)
+		{
+			return personnel.getNextOccurrence() == null;
+		}
+	};	
+
+	/**
+	 * Often used comparators
+	 */
+    public static final Comparator<IPersonnelIf> PERSONNEL_NAME_COMPARATOR = new Comparator<IPersonnelIf>()
+	{
+		public int compare(IPersonnelIf p1, IPersonnelIf p2)
+		{
+			int res = p1.getFirstName().compareTo(p2.getFirstName());
+			return res == 0 ? p1.getLastName().compareTo(p2.getLastName()) : res;
+		}
+	};
+
     public void setArrived(Calendar anArrived);
 
     public Calendar getArrived();
 
     public IMsoModelIf.ModificationState getArrivedState();
 
-    public IAttributeIf.IMsoCalendarIf getArrivedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getArrivedAttribute();
 
     public void setCallOut(Calendar aCallOut);
 
@@ -85,7 +107,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getCallOutState();
 
-    public IAttributeIf.IMsoCalendarIf getCallOutAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getCallOutAttribute();
 
     public void setDataSourceID(String aDataSourceID);
 
@@ -93,7 +115,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getDataSourceIDState();
 
-    public IAttributeIf.IMsoStringIf getDataSourceIDAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDataSourceIDAttribute();
 
     public void setDataSourceName(String aDataSourceName);
 
@@ -101,7 +123,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getDataSourceNameState();
 
-    public IAttributeIf.IMsoStringIf getDataSourceNameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDataSourceNameAttribute();
 
     public void setEstimatedArrival(Calendar anEstimatedArrival);
 
@@ -109,7 +131,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getEstimatedArrivalState();
 
-    public IAttributeIf.IMsoCalendarIf getEstimatedArrivalAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getEstimatedArrivalAttribute();
 
     public void setReleased(Calendar aReleased);
 
@@ -117,7 +139,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getReleasedState();
 
-    public IAttributeIf.IMsoCalendarIf getReleasedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute();
 
     public void setRemarks(String aRemarks);
 
@@ -125,7 +147,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     public void setStatus(PersonnelStatus aStatus);
 
@@ -137,7 +159,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<PersonnelStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<PersonnelStatus> getStatusAttribute();
 
     public void setType(PersonnelType aType);
 
@@ -147,7 +169,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getTypeState();
 
-    public IAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute();
 
     public String getTypeName();
 
@@ -163,17 +185,59 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public IMsoModelIf.ModificationState getImportStatusState();
 
-    public IAttributeIf.IMsoEnumIf<PersonnelImportStatus> getImportStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<PersonnelImportStatus> getImportStatusAttribute();
 
+    /**
+     * Get the first occurrence of this personnel. 
+     *  
+     * @return A IPersonnelIf instance if found, <code>this</code> otherwise.
+     */
+    public IPersonnelIf getFirstOccurrence();
+    
+    /**
+     * Get the previous occurrence of this personnel. 
+     *  
+     * @return A IPersonnelIf instance if found, <code>null</code> otherwise.
+     */
+    public IPersonnelIf getPreviousOccurrence();
+    
+    /**
+     * Get a list of all previous occurrences of this personnel. 
+     *  
+     * @return A List<IPersonnelIf> instance.
+     */
+    public List<IPersonnelIf> getPreviousOccurrences();
+    
+    /**
+     * Set the next occurrence of this personnel. 
+     */
+    public void setNextOccurrence(IPersonnelIf aPersonnel);
 
-    public void setNextOccurence(IPersonnelIf aPersonnel);
+    /**
+     * Get the next occurrence of this personnel. 
+     *  
+     * @return A IPersonnelIf instance if found, <code>null</code> otherwise.
+     */
+    public IPersonnelIf getNextOccurrence();
 
-    public IPersonnelIf getNextOccurence();
+    public IMsoModelIf.ModificationState getNextOccurrenceState();
 
-    public IMsoModelIf.ModificationState getNextOccurenceState();
+    public IMsoReferenceIf<IPersonnelIf> getNextOccurrenceAttribute();
 
-    public IMsoReferenceIf<IPersonnelIf> getNextOccurenceAttribute();
-
+    /**
+     * Get a list of the next occurrences of this personnel. 
+     *  
+     * @return A List<IPersonnelIf> instance.
+     */
+    public List<IPersonnelIf> getNextOccurrences();
+    
+    /**
+     * Get the last occurrence of this personnel. 
+     *  
+     * @return A IPersonnelIf instance if found, <code>this</code> otherwise.
+     */
+    public IPersonnelIf getLastOccurrence();
+    
     public IUnitIf getOwningUnit();
 
 

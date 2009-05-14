@@ -10,7 +10,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
 
 import org.redcross.sar.gui.field.IDiskoField;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -65,7 +65,7 @@ public class WorkFlowEvent extends EventObject {
 		return null;
 	}
 	
-	public IAttributeIf<?> getMsoAttribute() {
+	public IMsoAttributeIf<?> getMsoAttribute() {
 		if(isWorkDoneByDiskoField()) {
 			IDiskoField field = (IDiskoField)source;
 			if(field.isMsoField()) {

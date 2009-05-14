@@ -3,8 +3,6 @@
  */
 package org.redcross.sar.map.tool;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 
 import javax.swing.AbstractButton;
@@ -19,8 +17,6 @@ import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IMapTool.IMapToolState;
-import org.redcross.sar.util.Utils;
-
 import com.esri.arcgis.controls.BaseCommand;
 import com.esri.arcgis.interop.AutomationException;
 

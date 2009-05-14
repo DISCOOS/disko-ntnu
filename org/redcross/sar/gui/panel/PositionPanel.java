@@ -22,8 +22,8 @@ import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.field.TextLineField;
-import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
+import org.redcross.sar.gui.field.TextField;
+import org.redcross.sar.gui.renderer.MsoListCellRenderer;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
@@ -209,7 +209,8 @@ public class PositionPanel extends DefaultToolPanel {
 		if (unitList == null) {
             unitList = new JList();
             unitList.setVisibleRowCount(0);
-            unitList.setCellRenderer(new MsoIconListCellRenderer(0,false,"32x32"));
+            unitList.setCellRenderer(new MsoListCellRenderer(0,false,true,
+            		"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
             unitList.setModel(new DefaultComboBoxModel());
             
             // add listener
@@ -277,7 +278,7 @@ public class PositionPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes nameAttr	
 	 * 	
-	 * @return {@link TextLineField}
+	 * @return {@link TextField}
 	 */
 	public DTGField getDTGAttr() {
 		if (dtgAttr == null) {			

@@ -154,11 +154,13 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     /**
      * Set update mode to {@link IMsoModelIf.UpdateMode#LOOPBACK_UPDATE_MODE LOOPBACK_UPDATE_MODE}.
      */
+    /*
     public synchronized void setLoopbackUpdateMode()
     {
         setUpdateMode(UpdateMode.LOOPBACK_UPDATE_MODE);
     }
-
+	*/
+    
     protected void setUpdateMode(UpdateMode aMode)
     {
         m_updateModeStack.push(aMode);

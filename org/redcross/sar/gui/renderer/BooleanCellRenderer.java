@@ -6,25 +6,30 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-public class BooleanCellRenderer extends JCheckBox implements TableCellRenderer {
+import org.redcross.sar.gui.factory.UIFactory;
+
+public class BooleanCellRenderer implements TableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
+	
+	private JCheckBox m_checkbox;
 
 	public BooleanCellRenderer() {
-		super.setOpaque(true);
+		m_checkbox = UIFactory.createCheckBoxRenderer();
+		m_checkbox.setOpaque(true);
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
 
 		if(value!=null)
-			setSelected(Boolean.valueOf(value.toString()));
+			m_checkbox.setSelected(Boolean.valueOf(value.toString()));
 		else
-			setSelected(false);
+			m_checkbox.setSelected(false);
 
-		setBackground(table.getBackground());
-		setForeground(table.getForeground());
-		return this;
+		m_checkbox.setBackground(table.getBackground());
+		m_checkbox.setForeground(table.getForeground());
+		return m_checkbox;
 	}
 
 
@@ -38,36 +43,5 @@ public class BooleanCellRenderer extends JCheckBox implements TableCellRenderer 
 			getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
 	}
-
-	/* =======================================================
-	 * Increased performance (See DefaultTableCellRenderer).
-	 * ======================================================= */
-
-	@Override
-	public void firePropertyChange(String propertyName, boolean oldValue,
-			boolean newValue) { /* NOP */ }
-
-	@Override
-	public void firePropertyChange(String propertyName, char oldValue,
-			char newValue) { /* NOP */ }
-
-	@Override
-	public void firePropertyChange(String propertyName, int oldValue,
-			int newValue) { /* NOP */ }
-
-	@Override
-	public void revalidate() { /* NOP */ }
-
-	@Override
-	public void repaint() { /* NOP */ }
-
-	@Override
-	public void repaint(int x, int y, int width, int height) { /* NOP */ }
-
-	@Override
-	public void repaint(long tm) { /* NOP */ }
-
-	@Override
-	public void validate() { /* NOP */ }
 
 }

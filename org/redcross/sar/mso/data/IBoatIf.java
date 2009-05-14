@@ -30,7 +30,7 @@ public interface IBoatIf extends ITransportIf
 
     public IMsoModelIf.ModificationState getSubTypeState();
 
-    public IAttributeIf.IMsoEnumIf<BoatSubType> getSubTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<BoatSubType> getSubTypeAttribute();
 
     public String getSubTypeName();
 
@@ -44,7 +44,7 @@ public interface IBoatIf extends ITransportIf
 
     public IMsoModelIf.ModificationState getCapacityState();
 
-    public IAttributeIf.IMsoIntegerIf getCapacityAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getCapacityAttribute();
 
     public void setDepth(int aDepth);
 
@@ -52,7 +52,7 @@ public interface IBoatIf extends ITransportIf
 
     public IMsoModelIf.ModificationState getDepthState();
 
-    public IAttributeIf.IMsoIntegerIf getDepthAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getDepthAttribute();
 
     public void setFreeboard(int aFreeboard);
 
@@ -60,7 +60,7 @@ public interface IBoatIf extends ITransportIf
 
     public IMsoModelIf.ModificationState getFreeboardState();
 
-    public IAttributeIf.IMsoIntegerIf getFreeboardAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getFreeboardAttribute();
 
     public void setHeight(int aHeight);
 
@@ -68,7 +68,7 @@ public interface IBoatIf extends ITransportIf
 
     public IMsoModelIf.ModificationState getHeightState();
 
-    public IAttributeIf.IMsoIntegerIf getHeightAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getHeightAttribute();
 
     public void setLength(int aLength);
 
@@ -76,6 +76,6 @@ public interface IBoatIf extends ITransportIf
 
     public IMsoModelIf.ModificationState getLengthState();
 
-    public IAttributeIf.IMsoIntegerIf getLengthAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getLengthAttribute();
 
 }

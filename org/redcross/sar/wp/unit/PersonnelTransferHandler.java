@@ -1,7 +1,9 @@
 package org.redcross.sar.wp.unit;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 import javax.swing.JComponent;
@@ -23,6 +25,7 @@ import java.io.IOException;
 public class PersonnelTransferHandler extends TransferHandler
 {
 	private static final long serialVersionUID = 1L;
+	private static final Logger m_logger = Logger.getLogger(PersonnelTransferHandler.class);
 
 	private static DataFlavor m_personnelFlavor;
 
@@ -98,7 +101,7 @@ public class PersonnelTransferHandler extends TransferHandler
         try
 		{
 			IPersonnelIf personnel = (IPersonnelIf)support.getTransferable().getTransferData(m_personnelFlavor);
-			return UnitUtils.canAssignPersonnelToUnit(personnel);
+			return ResourceUtils.canAssignPersonnelToUnit(personnel);
 		}
         catch (UnsupportedFlavorException e)
 		{
@@ -131,12 +134,11 @@ public class PersonnelTransferHandler extends TransferHandler
 
 			if(model instanceof UnitPersonnelTableModel)
 			{
-				// Unit personnel table is transfer target
+				// cast to UnitPersonnelTableModel 
 				UnitPersonnelTableModel unitModel = (UnitPersonnelTableModel)model;
-				// Add personnel to unit personnel list
+				
 				try
 				{
-
 					// get personnel
 					IPersonnelIf personnel = (IPersonnelIf)transferable.getTransferData(m_personnelFlavor);
 
@@ -154,27 +156,20 @@ public class PersonnelTransferHandler extends TransferHandler
 						// add to unit
 						aUnit.addUnitPersonnel(personnel);
 
-						// commit changes?
-						if(!(m_wp.isNewCallOut() || m_wp.isNewPersonnel() || m_wp.isNewUnit()))
-						{
-							m_wp.commit();
-						}
+						// notify
+						m_wp.onFlowPerformed(new WorkFlowEvent(this,aUnit,WorkFlowEvent.EVENT_CHANGE));
+						
 					}
+					// refresh table
 					unitModel.fireTableDataChanged();
+					// success
+					return true;
 				}
-				catch (UnsupportedFlavorException e)
+				catch (Exception e)
 				{
-					e.printStackTrace();
-					return false;
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-					return false;
+					m_logger.error("Failed to transfer personnel",e);
 				}
 			}
-
-			return true;
 		}
 		return false;
 	}
@@ -196,7 +191,9 @@ public class PersonnelTransferHandler extends TransferHandler
 			TableModel model = table.getModel();
 			if(model instanceof UnitPersonnelTableModel)
 			{
-				// Drag source was unit personnel table
+				// cast to UnitPersonnelTableModel 
+				UnitPersonnelTableModel unitModel = (UnitPersonnelTableModel)model;
+				
 				try
 				{
 					// get exported personnel
@@ -211,26 +208,19 @@ public class PersonnelTransferHandler extends TransferHandler
 						// remove personnel from unit
 						aUnit.removeUnitPersonnel(personnel);
 
-						// commit changes?
-						if(!(m_wp.isNewCallOut() || m_wp.isNewPersonnel() || m_wp.isNewUnit()))
-						{
-							m_wp.commit();
-						}
+						// notify
+						m_wp.onFlowPerformed(new WorkFlowEvent(this,aUnit,WorkFlowEvent.EVENT_CHANGE));
 
 					}
-
+					// refresh table
+					unitModel.fireTableDataChanged();
 				}
-				catch (UnsupportedFlavorException e)
+				catch (Exception e)
 				{
-					e.printStackTrace();
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
+					m_logger.error("Failed to transfer personnel",e);
 				}
 			}
 		}
-
     }
 
 	/**

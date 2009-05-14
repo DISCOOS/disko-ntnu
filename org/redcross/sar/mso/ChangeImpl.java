@@ -1,6 +1,6 @@
 package org.redcross.sar.mso;
 
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import java.util.ArrayList;
@@ -35,13 +35,13 @@ public abstract class ChangeImpl implements IChangeIf
     public static class ChangeObject extends ChangeImpl implements IChangeObjectIf
     {
     	private final IMsoObjectIf m_object;
-    	private final List<IAttributeIf<?>> m_partial;
+    	private final List<IMsoAttributeIf<?>> m_partial;
 
-        public ChangeObject(IMsoObjectIf anObject, ChangeType aCommitType, List<IAttributeIf<?>> partial)
+        public ChangeObject(IMsoObjectIf anObject, ChangeType aCommitType, List<IMsoAttributeIf<?>> partial)
         {
             super(aCommitType);
             m_object = anObject;
-            m_partial = partial!=null ? partial : new ArrayList<IAttributeIf<?>>(0);
+            m_partial = partial!=null ? partial : new ArrayList<IMsoAttributeIf<?>>(0);
         }
 
         public IMsoObjectIf getObject()
@@ -49,7 +49,7 @@ public abstract class ChangeImpl implements IChangeIf
             return m_object;
         }
 
-		public List<IAttributeIf<?>> getPartial() {
+		public List<IMsoAttributeIf<?>> getPartial() {
 			return m_partial;
 		}
 

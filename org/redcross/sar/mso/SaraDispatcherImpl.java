@@ -41,25 +41,25 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 {
 
 	/** 
-	 * <b>SaraChangeEvent arrival buffer stategy</b></p>
+	 * <b>SaraChangeEvent arrival buffer strategy</b></p>
 	 * 
 	 * Do to the SARA and MSO model implementations, events arrive in "trains".
 	 * The reason is the transaction nature of the commit process. Changes in 
-	 * local instances of MSO model is commited as a group. 
+	 * local instances of MSO model is committed as a group. 
 	 * 
 	 * This property can be exploited. Since changes comes in "trains", a 
-	 * arrival buffer strategy reduses the amount of model and UI updates 
+	 * arrival buffer strategy reduces the amount of model and UI updates 
 	 * required locally. In this implementation, a 2 second buffer is 
-	 * hardcoded. The following rules is applied
+	 * hard coded. The following rules is applied
 	 * 
 	 * 1. Changes are added as long as it is less than 2 seconds since last
 	 *    time the mso model was updated
 	 * 2. The buffer will empty every 2 seconds, regardless of the arrivals
-	 * 3. It is assumed that the buffer is of sufficently large capacity with
+	 * 3. It is assumed that the buffer is of sufficiently large capacity with
 	 *    respect to the operational requirements of the system.
 	 * 
 	 * IMPORTANT! It is not implemented any recovery mechanisms if the buffer
-	 * overruns. This voulnarbility should be adressed in the future.
+	 * overruns. This voulnarbility should be addressed in the future.
 	 * 
 	 **/
 	final static int SARA_CHANGE_EVENT_BUFFER_DELAY = 2000;
@@ -89,11 +89,11 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     
 	
 	/** 
-	 * <b>Initalization of SARA dispatcher </b></p> 
+	 * <b>Initialization of SARA dispatcher </b></p> 
 	 * 
 	 * When the dispatcher is initialized, background threads are started. 
 	 * These threads loads available operations asynchronously. Hence, 
-	 * enumration should be delayed until all operations are loaded in SARA. 
+	 * enumeration should be delayed until all operations are loaded in SARA. 
 	 **/
     boolean m_isInitiated = false;
     
@@ -696,7 +696,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         updateSaraObject(soi, commitObject.getObject(), commitObject.getPartial(), true);
     }
 
-    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, List<IAttributeIf<?>> partial, boolean submitChanges)
+    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, List<IMsoAttributeIf<?>> partial, boolean submitChanges)
     {
     	// initialize
         SarSession sarSess = sarSvc.getSession();
@@ -714,7 +714,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 {
                     // Map fact to attribute
                     String attrName = ((SarFact) so).getLabel();
-                    IAttributeIf<?> msoAttr = (IAttributeIf<?>) attrMap.get(attrName.toLowerCase());
+                    IMsoAttributeIf<?> msoAttr = (IMsoAttributeIf<?>) attrMap.get(attrName.toLowerCase());
                     // only update fact if this is not a partial update, or if attribute
                     // is included in the partial update
                     if(partial.size()==0 || partial.contains(msoAttr)) {

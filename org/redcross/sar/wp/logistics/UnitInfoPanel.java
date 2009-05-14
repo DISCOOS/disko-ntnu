@@ -14,11 +14,11 @@ import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
 import org.redcross.sar.gui.field.PositionField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.TogglePanel;
-import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
+import org.redcross.sar.gui.renderer.MsoListCellRenderer;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -167,14 +167,15 @@ public class UnitInfoPanel extends JPanel
 	private JList getMembersList() {
 		if(m_membersList==null) {
 			m_membersList = new JList();
-			m_membersList.setCellRenderer(new MsoIconListCellRenderer(1,false,"24x24"));
+			m_membersList.setCellRenderer(new MsoListCellRenderer(1,false,true,
+					"24x24",MsoListCellRenderer.MAP_ICON_TO_TYPE));
 			m_membersList.setVisibleRowCount(2);
 		}
 		return m_membersList;
 	}
 
 	private IDiskoField createTextField(String name, int index) {
-		IDiskoField attr = new TextLineField(name,
+		IDiskoField attr = new TextField(name,
 				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		return attr;

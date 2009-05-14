@@ -1,4 +1,4 @@
-package org.redcross.sar.gui.renderer;
+package org.redcross.sar.gui.table;
 
 import java.awt.Component;
 import java.io.File;

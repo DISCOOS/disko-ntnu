@@ -224,7 +224,7 @@ public class UnitAllocationDialog extends DefaultDialog {
 	private UnitTable getUnitTable() {
 		if (unitTable == null) {
 			try {
-				unitTable = new UnitTable(msoModel,"32x32",IUnitIf.ACTIVE_RANGE);
+				unitTable = new UnitTable(msoModel,"32x32",IUnitIf.ACTIVE_SET);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

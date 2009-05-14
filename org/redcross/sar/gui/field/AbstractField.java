@@ -1,26 +1,38 @@
 package org.redcross.sar.gui.field;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.undo.UndoableEdit;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.event.IMsoFieldListener;
 import org.redcross.sar.gui.event.MsoFieldEvent;
@@ -28,49 +40,71 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.mso.data.AttributeImpl;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoPolygon;
+import org.redcross.sar.mso.data.AttributeImpl.MsoRoute;
+import org.redcross.sar.mso.data.AttributeImpl.MsoTrack;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.undo.DiskoFieldEdit;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IWorkFlowListener;
 import org.redcross.sar.work.event.WorkFlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
- * @author kennetgu
+ * 
+ * @author Administrator
  *
+ * @param O - object value type
+ * @param E - edit component type
+ * @param V - view component type
  */
-public abstract class AbstractField extends JPanel implements IDiskoField {
+public abstract class AbstractField<O, E extends Component, V extends Component> extends JPanel implements IDiskoField {
 
 	private static final long serialVersionUID = 1L;
+	protected static final Logger m_logger = Logger.getLogger(AbstractField.class);
 
 	protected static final int MINIMUM_COMPONENT_WIDTH = 50;
 	protected static final int DEFAULT_CAPTION_WIDTH = 80;
 	protected static final int DEFAULT_MAXIMUM_HEIGHT = 25;
 
+	protected JLabel m_valueLabel;
 	protected JLabel m_captionLabel;
-	protected Component m_component;
+	protected E m_editComponent;
+	protected V m_viewComponent;
 	protected AbstractButton m_button;
-	protected Component m_buttonStrut;
 
 	protected String m_caption;
+	
+	protected O m_oldEditValue;
 
-	protected IAttributeIf<?> m_attribute;
+	protected IMsoAttributeIf<?> m_attribute;
 
 	protected int m_isMarked = 0;
 
-	protected boolean m_isDirty = false;
-	protected boolean m_autoSave = false;
-	protected boolean m_isEditable = false;
-	protected boolean m_isTrackingFocus = false;
+	protected boolean m_isBatchMode = true;
 
-	private int m_consumeCount = 0;
+	private int m_editableCount = 0;
+	private int m_changeableCount = 0;
 
 	private int m_fixedWidth;
 	private int m_fixedHeight;
 	
-	private final EventListenerList listeners = new EventListenerList();
-
+	private boolean m_isDirty = false;
+	private boolean m_isTrackingFocus = false;
+	private boolean m_isValueAdjusting = false;
+	
+	private Color m_vBg;					// no change view background 
+	private Color m_eBg;					// no change edit background 
+	private Color m_lBg = Color.YELLOW;		// local change background
+	private Color m_cBg = Color.RED;		// conflict change background
+	private Color m_sBg = Color.GREEN;		// server background
+	
+	private ModificationState m_state = ModificationState.STATE_UNDEFINED;
+	
+	private final EventListenerList m_listeners = new EventListenerList();
+	
 	/*==================================================================
 	 * Anonymous classes
 	 *================================================================== */
@@ -89,20 +123,20 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 
 	};
 	
-	protected UndoableEditListener m_undoListener = new UndoableEditListener() {
+	protected final DocumentListener m_documentListener = new DocumentListener() {
 
 		@Override
-		public void undoableEditHappened(UndoableEditEvent e) {
-			if(!isChangeable()) return;
-			fireOnWorkChange(e.getEdit());
-		}
+		public void changedUpdate(DocumentEvent e) { /*onEditValueChanged();*/ }
+		@Override
+		public void insertUpdate(DocumentEvent e) { onEditValueChanged(); }
+		@Override
+		public void removeUpdate(DocumentEvent e) { onEditValueChanged(); }
 		
 	};
-	
-	/*==================================================================
-	 * Constructors
-	 *==================================================================
-	 */
+
+	/* ==================================================================
+	 *  Constructors
+	 * ================================================================== */
 
 	protected AbstractField(String name, String caption, boolean isEditable) {
 		this(name,caption,isEditable,DEFAULT_CAPTION_WIDTH,DEFAULT_MAXIMUM_HEIGHT,null);
@@ -120,11 +154,14 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		setCaptionText(caption);
 		setValue(value);
 		setEditable(isEditable);
+		// update backgrounds
+		m_eBg = getEditComponent().getBackground();
+		m_vBg = getViewComponent().getBackground();
 		// resume listeners
 		setChangeable(true);
 	}
 
-	protected AbstractField(IAttributeIf<?> attribute, String caption, boolean isEditable) {
+	protected AbstractField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable) {
 		// forward
 		this(attribute.getName(),caption,isEditable);
 		// set attribute
@@ -133,7 +170,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		reset();
 	}
 
-	protected AbstractField(IAttributeIf<?> attribute,
+	protected AbstractField(IMsoAttributeIf<?> attribute,
 			String caption, boolean isEditable,
 			int width, int height) {
 		// forward
@@ -145,44 +182,35 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 	}
 
 
-	/*==================================================================
-	 * Protected methods
-	 *==================================================================
-	 */
+	/* ==================================================================
+	 *  Protected methods
+	 * ================================================================== */
 
+	protected boolean isScrollable(Component c) {
+		return (c instanceof Scrollable);
+	}
+	
+	protected JScrollPane createDefaultScrollPane(Component c) {
+		JScrollPane scrollPane = UIFactory.createScrollPane(c,false);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		return scrollPane;
+	}
+	
+	protected int getDefaultMaximumHeight() {
+		Component c = getComponent();
+		return isScrollable(c)?UIManager.getInt("ScrollBar.height")+DEFAULT_MAXIMUM_HEIGHT:DEFAULT_MAXIMUM_HEIGHT;
+	}
+	
 	protected JLabel getCaption() {
 		if(m_captionLabel==null) {
 			m_captionLabel = new JLabel(m_caption);
 			m_captionLabel.setOpaque(false);
 			m_captionLabel.setVerticalAlignment(SwingConstants.TOP);
-			m_captionLabel.setLabelFor(getComponent());
 			m_captionLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 			m_captionLabel.setAlignmentY(JComponent.CENTER_ALIGNMENT);
 		}
 		return m_captionLabel;
-	}
-
-	protected void fireOnWorkChange(UndoableEdit edit) {
-
-		// consume?
-		if(!isChangeable()) return;
-
-		if(m_autoSave) {
-			Application.getInstance().getMsoModel().suspendClientUpdate();
-			if(finish()) {
-				fireOnWorkChange(new WorkFlowEvent(this,getValue(),edit,WorkFlowEvent.EVENT_FINISH));
-			}
-			else {
-				// notify change instead
-				m_isDirty = true;
-				fireOnWorkChange(new WorkFlowEvent(this,getValue(),edit,WorkFlowEvent.EVENT_CHANGE));
-			}
-			Application.getInstance().getMsoModel().resumeClientUpdate(true);
-		}
-		else {
-			m_isDirty = true;
-			fireOnWorkChange(new WorkFlowEvent(this,getValue(),edit,WorkFlowEvent.EVENT_CHANGE));
-		}
 	}
 
 	protected IDiskoMap getInstalledMap() {
@@ -220,39 +248,134 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		}
 	}
 	
-	protected abstract boolean isMsoAttributeSettable(IAttributeIf<?> attr);
+	protected O getOldEditValue() {
+		return m_oldEditValue;
+	}
 	
-	/*==================================================================
-	 * Private methods
-	 *==================================================================
+	protected void setOldEditValue(O value) {
+		m_oldEditValue = value;
+	}
+	
+	/**
+	 * Extending class should call this method when edit value is changed
 	 */
+	protected void onEditValueChanged() {
+		if(!isValueAdjusting() && isChangeable()) {
+			setValueAdjusting(true);
+			setValue(getEditValue());			
+			setValueAdjusting(false);
+		}
+	}
+	
+	protected boolean isValueAdjusting() {
+		return m_isValueAdjusting;
+	}
+	
+	protected void setValueAdjusting(boolean isAdjusting) {
+		m_isValueAdjusting = isAdjusting;
+	}
+	
+	protected boolean isValueChanged(O oldValue, Object newValue) {
+		return !isEqual(oldValue, newValue);
+	}
+	
+	protected void setFieldBackground() {
+		if(isMsoField()) {
+			// set background
+			switch(m_attribute.getState()) {
+			case STATE_LOCAL: 
+				getComponent().setBackground(m_lBg);
+				break;
+			case STATE_SERVER:
+				getComponent().setBackground(isEditable()?m_eBg:m_vBg);
+				break;
+			case STATE_CONFLICTING:
+				getComponent().setBackground(m_cBg);
+				break;
+			}
+			m_state = m_attribute.getState();
+		} else {
+			getComponent().setBackground(isEditable()?m_eBg:m_vBg);			
+			m_state = ModificationState.STATE_UNDEFINED;
+		}
+		
+	}
+	
+	protected abstract boolean setNewEditValue(Object value);
+	protected abstract boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr);
+	
+	/* ==================================================================
+	 *  Private methods
+	 * ================================================================== */
 
 	private void initialize(int width, int height) {
-		this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-		this.add(getCaption());
-		Component c = getComponent();
-		if(c instanceof JComponent) {
-			((JComponent)c).setAlignmentX(JComponent.LEFT_ALIGNMENT);
-			((JComponent)c).setAlignmentY(JComponent.CENTER_ALIGNMENT);
-		}
-		this.add(c);
-		this.add(getButton());
-		this.setOpaque(false);
 		// update fixed sizes
 		setFixedCaptionWidth(width);
 		setFixedHeight(height);
-		// do not add before button is made visible
-		m_buttonStrut = Box.createHorizontalStrut(5);
 		// add focus listeners
-		getComponent().addFocusListener(m_focusListener);
+		getEditComponent().addFocusListener(m_focusListener);
 		getButton().addFocusListener(m_focusListener);
 		// USE TO DEBUG LAYOUT PROBLEMS
 		// setBorder(BorderFactory.createLineBorder(Color.RED)); 		
 	}
+	
+	private void build() {
+		this.removeAll();
+		this.setLayout(new BorderLayout(5,5));
+		this.add(getCaption(),BorderLayout.WEST);
+		Component c = null;
+		if(isEditable()) {
+			c = getEditComponent();
+			if(c instanceof JComponent) {
+				((JComponent)c).setAlignmentX(JComponent.LEFT_ALIGNMENT);
+				((JComponent)c).setAlignmentY(JComponent.CENTER_ALIGNMENT);
+			}
+		} else {
+			c = getViewComponent();
+		}
+		add(getFieldComponent(c),BorderLayout.CENTER);
+		add(getButton(),BorderLayout.EAST);
+		setOpaque(false);		
+		getCaption().setLabelFor(c);			
+	}
+	
+	private Component getFieldComponent(Component c) {
+		if(isScrollable(c)) {
+			c = createDefaultScrollPane(c);
+		}
+		return c;
+	}
+	
+	private void fireOnWorkChange(UndoableEdit edit) {
+
+		// consume?
+		if(!isChangeable()) return;
+
+		// save change now?
+		if(!isBatchMode()) {
+			Application.getInstance().getMsoModel().suspendClientUpdate();
+			if(finish()) {
+				m_isDirty = false;
+				fireOnWorkChange(new WorkFlowEvent(this,getEditValue(),edit,WorkFlowEvent.EVENT_FINISH));
+			}
+			else {
+				// notify change instead
+				m_isDirty = true;
+				fireOnWorkChange(new WorkFlowEvent(this,getEditValue(),edit,WorkFlowEvent.EVENT_CHANGE));
+			}
+			Application.getInstance().getMsoModel().resumeClientUpdate(true);
+		}
+		else {
+			m_isDirty = true;
+			fireOnWorkChange(new WorkFlowEvent(this,getEditValue(),edit,WorkFlowEvent.EVENT_CHANGE));
+		}
+		// update background
+		setFieldBackground();
+	}
 
 	private void fireOnWorkChange(WorkFlowEvent e) {
 		// get listeners
-		IWorkFlowListener[] list = listeners.getListeners(IWorkFlowListener.class);
+		IWorkFlowListener[] list = m_listeners.getListeners(IWorkFlowListener.class);
 		// forward
 		for(int i=0; i<list.length; i++) {
 			list[i].onFlowPerformed(e);
@@ -266,7 +389,7 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 	
 	private void fireOnMsoFieldChange(MsoFieldEvent e) {
 		// get listeners
-		IMsoFieldListener[] list = listeners.getListeners(IMsoFieldListener.class);
+		IMsoFieldListener[] list = m_listeners.getListeners(IMsoFieldListener.class);
 		// forward
 		for(int i=0; i<list.length; i++) {
 			list[i].onMsoFieldChanged(e);
@@ -274,11 +397,9 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		
 	}
 	
-
-	/*==================================================================
-	 * Public methods
-	 *==================================================================
-	 */
+	/* ==================================================================
+	 *  Public methods
+	 * ================================================================== */
 
 	public boolean isTrackingFocus() {
 		return m_isTrackingFocus;
@@ -305,21 +426,31 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 	}
 
 	public boolean isChangeable() {
-		return (m_consumeCount==0);
+		return (m_changeableCount==0);
 	}
 
 	public void setChangeable(boolean isChangeable) {
 		if(!isChangeable)
-			m_consumeCount++;
-		else if(m_consumeCount>0)
-			m_consumeCount--;
+			m_changeableCount++;
+		else if(m_changeableCount>0)
+			m_changeableCount--;
 	}
+	
+	public int resetChangeable() {
+		int count = m_changeableCount;
+		m_changeableCount = 0;
+		return count;
+	}	
 
 	public boolean isDirty() {
-		if(m_attribute!=null)
-			return m_attribute.isUncommitted();
-		else
-			return m_isDirty;
+		// editor value equal
+		if(isValueChanged(getEditValue(),getValue())) {
+			if(m_attribute!=null)
+				return m_attribute.isUncommitted();
+			else
+				return m_isDirty;
+		}
+		return true;
 	}
 
 	public void setDirty(boolean isDirty) {
@@ -361,9 +492,9 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		// save height
 		m_fixedHeight = height;
 		// constrain height to button
-		height = m_button!=null && m_button.isVisible() ? Math.max(height,m_button.getPreferredSize().height) : height;
+		height = getButton()!=null && getButton().isVisible() ? Math.max(height,getButton().getPreferredSize().height) : height;
 		// translate
-		height = (height==-1 ? DEFAULT_MAXIMUM_HEIGHT : height);
+		height = (height==-1 ? getDefaultMaximumHeight() : height);
 		// set fixed height
 		Utils.setFixedHeight(this, height);
 	}
@@ -372,27 +503,44 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 	public void setEnabled(boolean isEnabled) {
 		// forward
 		super.setEnabled(isEnabled);
+		// forward
+		getEditComponent().setEnabled(isEnabled);
+		getViewComponent().setEnabled(isEnabled);
 		// update button
 		getButton().setEnabled(isEnabled);
-		// forward?
-		if(m_component!=null) m_component.setEnabled(isEnabled);
-	}
-
-	public void setEditable(boolean isEditable) {
-		m_isEditable = isEditable;
-		getButton().setEnabled(isEditable);
 	}
 
 	public boolean isEditable() {
-		return m_isEditable;
+		return m_editableCount==0;
 	}
 	
-	public void setAutoSave(boolean auto) {
-		throw new IllegalArgumentException("AutoSave not supported");
+	public final void setEditable(boolean isEditable) {
+		if(!isEditable)
+			m_editableCount++;
+		else if(m_editableCount>0)
+			m_editableCount--;
+		if(m_editableCount<2) {
+			getButton().setEnabled(isEditable());
+			build();
+		}
 	}
 
-	public boolean getAutoSave() {
-		throw new IllegalArgumentException("AutoSave not supported");
+	public int resetEditable() {
+		int count = m_editableCount;
+		m_editableCount = 0;
+		if(count>0) {
+			getButton().setEnabled(true);
+			build();			
+		}
+		return count;
+	}	
+	
+	public void setBatchMode(boolean isBatchMode) {
+		throw new IllegalArgumentException("AutoFinish not supported");
+	}
+
+	public boolean isBatchMode() {
+		throw new IllegalArgumentException("AutoFinish  not supported");
 	}
 
 	@Override
@@ -400,8 +548,8 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		// TODO Auto-generated method stub
 		super.setToolTipText(text);
 		getCaption().setToolTipText(text);
-		if(getComponent() instanceof JComponent)
-			((JComponent)getComponent()).setToolTipText(text);
+		if(getEditComponent() instanceof JComponent)
+			((JComponent)getEditComponent()).setToolTipText(text);
 	}
 
 	public String getCaptionText() {
@@ -472,12 +620,14 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 
 		try {
 			// forward
-			if(MsoUtils.setAttribValue(m_attribute,getValue())) {
+			if(MsoUtils.setAttribValue(m_attribute,getEditValue())) {
 				// success
 				bFlag = true;
+				// update background
+				setFieldBackground();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			m_logger.error("Failed to set attribute value",e);
 		}
 
 		// resume changes
@@ -486,47 +636,61 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		// finished
 		return bFlag;
 	}
+	
+	public void update() {
+		// update background
+		setFieldBackground();		
+	}
 
 	public void reset() {
 		// consume?
-		if(!isChangeable()) return;
-		// consume change
-		setChangeable(false);
-		// load from MSO model?
-		if(isMsoField()) {
-			try {
-				// forward
-				setValue(MsoUtils.getAttribValue(m_attribute));
-			} catch (Exception e) {
-				e.printStackTrace();
+		if(!isValueAdjusting()&&isChangeable()) 
+		{
+			// consume changes
+			setChangeable(false);
+			// load from MSO model?
+			if(isMsoField()) {
+				try {
+					// reset to attribute value
+					setNewEditValue(MsoUtils.getAttribValue(m_attribute));
+					setOldEditValue(getEditValue());
+				} catch (Exception e) {
+					m_logger.error("Failed to get attribute value",e);
+				}
 			}
+			else {
+				// reset to old edit value
+				setNewEditValue(m_oldEditValue);
+			}
+			// reset flag
+			m_isDirty = false;
+			// update background
+			setFieldBackground();
+			// resume change
+			setChangeable(true);
 		}
-		else {
-			// re-apply current value
-			setValue(getValue());
-		}
-		// reset flag
-		m_isDirty = false;
-		// resume change
-		setChangeable(true);
 	}
 
 	public boolean isMsoField() {
 		return m_attribute!=null;
 	}
 
-	public IAttributeIf<?> getMsoAttribute() {
+	public IMsoAttributeIf<?> getMsoAttribute() {
 		return m_attribute;
 	}
 
-	public IAttributeIf<?> clearMsoAttribute() {
-		IAttributeIf<?> attr = m_attribute;
+	public IMsoAttributeIf<?> clearMsoAttribute() {
+		IMsoAttributeIf<?> attr = m_attribute;
 		m_attribute = null;
+		// set backgrounds
+		getEditComponent().setBackground(m_eBg);
+		getViewComponent().setBackground(m_vBg);
+		// finished
 		return attr;
 	}
 	
-	public IAttributeIf<?> clearMsoAttribute(Object setValue) {
-		IAttributeIf<?> attr = clearMsoAttribute();
+	public IMsoAttributeIf<?> clearMsoAttribute(Object setValue) {
+		IMsoAttributeIf<?> attr = clearMsoAttribute();
 		setValue(setValue);
 		return attr;		
 	}
@@ -536,34 +700,33 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 	 * @param attribute - the attribute to test
 	 * @return 
 	 */
-  	public static boolean isMsoAttributeSupported(IAttributeIf<?> attribute) {
-		return !(attribute instanceof AttributeImpl.MsoPolygon ||
-				attribute instanceof AttributeImpl.MsoRoute ||
-				attribute instanceof AttributeImpl.MsoTrack);
+  	public static boolean isMsoAttributeSupported(IMsoAttributeIf<?> attribute) {
+		return !(attribute instanceof MsoPolygon ||
+				attribute instanceof MsoRoute ||
+				attribute instanceof MsoTrack);
   	}
 
 	public void addWorkFlowListener(IWorkFlowListener listener) {
-		listeners.add(IWorkFlowListener.class,listener);
+		m_listeners.add(IWorkFlowListener.class,listener);
 	}
 
 	public void removeWorkFlowListener(IWorkFlowListener listener) {
-		listeners.remove(IWorkFlowListener.class,listener);
+		m_listeners.remove(IWorkFlowListener.class,listener);
 
 	}
 
 	public void addMsoFieldListener(IMsoFieldListener listener) {
-		listeners.add(IMsoFieldListener.class,listener);
+		m_listeners.add(IMsoFieldListener.class,listener);
 	}
 
 	public void removeMsoFieldListener(IMsoFieldListener listener) {
-		listeners.remove(IMsoFieldListener.class,listener);
+		m_listeners.remove(IMsoFieldListener.class,listener);
 
 	}
 	
 	public void installButton(AbstractButton button, boolean isVisible) {
 		// remove current?
 		if(m_button!=null) {
-			if(m_button.isVisible()) this.remove(m_buttonStrut);
 			m_button.removeFocusListener(m_focusListener);
 			this.remove(m_button);
 
@@ -577,10 +740,10 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		m_button.setEnabled(isEnabled() && isEditable());
 		m_button.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 		m_button.setAlignmentY(JComponent.CENTER_ALIGNMENT);
-		if(isVisible) this.add(m_buttonStrut);
-		if(button!=null) this.add(button);
+		if(button!=null) this.add(button,BorderLayout.EAST);
 		setFixedHeight(m_fixedHeight);
 		m_button.addFocusListener(m_focusListener);
+		m_button.setEnabled(isEditable());
 	}
 
 	public String getButtonText() {
@@ -605,14 +768,6 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 
 	public void setButtonVisible(boolean isVisible) {
 		if(getButton().isVisible()!=isVisible) {
-			if(getButton().isVisible()) {
-				this.remove(m_buttonStrut);
-			}
-			else {
-				this.remove(getButton());
-				this.add(m_buttonStrut);
-				this.add(getButton());
-			}
 			getButton().setVisible(isVisible);
 			setFixedHeight(m_fixedHeight);
 		}
@@ -658,19 +813,54 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		}
 		return false;
 	}
+	
+	public Component getComponent() {
+		return isEditable()?getEditComponent():getViewComponent();
+	}
 
 	/*==================================================================
 	 * Abstract public methods
 	 *================================================================== */
 
+	public abstract E getEditComponent();
+	public abstract V getViewComponent();
 
-	public abstract Object getValue();
-
-	public abstract boolean setValue(Object value);
-
-	public abstract Component getComponent();
-
-	public final boolean setMsoAttribute(IAttributeIf<?> attribute) {
+	public abstract String getFormattedText();
+	
+	@SuppressWarnings("unchecked")
+	public final O getValue() {
+		if(isMsoField()) {
+			return (O)MsoUtils.getAttribValue(getMsoAttribute());
+		}
+		return getEditValue();
+	}
+	
+	public abstract O getEditValue();
+	
+	public final boolean setValue(Object value) {
+		O oldValue = getOldEditValue();
+		if(isValueAdjusting() || setNewEditValue(value)) {
+			// notify change?
+			if(isValueChanged(oldValue, value)) {
+				fireOnWorkChange(new DiskoFieldEdit(this,oldValue,value));
+			}
+			// forward
+			setOldEditValue(getEditValue());
+			// success
+			return true;
+		}
+		// failure
+		return false;
+	}
+	
+	public final boolean setValue(Object value, boolean notify) {
+		setChangeable(notify);
+		boolean bFlag = setValue(value);
+		setChangeable(!notify);
+		return bFlag;
+	}
+	
+	public final boolean setMsoAttribute(IMsoAttributeIf<?> attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
@@ -691,5 +881,94 @@ public abstract class AbstractField extends JPanel implements IDiskoField {
 		return false;		
 	}
 	
+	/*==================================================================
+	 * Static helper methods
+	 *================================================================== */
 
+	protected static boolean isEqual(Object o1, Object o2) {
+		if(o1==o2) return true;
+		if(o1!=null) return o1.equals(o2);
+		return false;
+	}
+	
+	protected static JFormattedTextField createDefaultComponent(boolean isEditable) {
+		return createDefaultComponent(isEditable,null,null);
+	}
+	
+	protected static JFormattedTextField createDefaultComponent(boolean isEditable, final JTextComponent coobject, final DocumentListener listener) {
+		JFormattedTextField textField = listener!=null ? new JFormattedTextField() {
+			
+			private static final long serialVersionUID = 1L;
+										
+			@Override
+			public void setDocument(Document doc) {
+				// cleanup?
+				if(super.getDocument()!=null) 
+					super.getDocument().removeDocumentListener(listener);  
+				// replace 
+				super.setDocument(doc);
+				coobject.setDocument(doc);
+				// add listener?
+				if(doc!=null) doc.addDocumentListener(listener);
+			}
+			
+		} : new JFormattedTextField();
+		textField.setEditable(isEditable);
+		return textField;
+	}	
+
+	protected static JLabel createLabelComponent() {
+		JLabel label = new JLabel();
+		Border outer = (new JTextField()).getBorder();
+		Border inner = BorderFactory.createEmptyBorder(2,2,2,2);
+		label.setBorder(BorderFactory.createCompoundBorder(outer,inner));
+		return label;
+	}
+	
+	protected static JTextArea createTextAreaComponent(boolean isEditable) {
+		return createTextAreaComponent(isEditable,null,null);
+	}
+	
+	protected static JTextArea createTextAreaComponent(boolean isEditable, final JTextComponent coobject, final DocumentListener listener) {
+		JTextArea area = listener!=null ? new JTextArea() {
+			
+			private static final long serialVersionUID = 1L;
+										
+			@Override
+			public void setDocument(Document doc) {
+				// cleanup?
+				if(super.getDocument()!=null) 
+					super.getDocument().removeDocumentListener(listener);  
+				// replace 
+				super.setDocument(doc);
+				coobject.setDocument(doc);
+				// add listener?
+				if(doc!=null) doc.addDocumentListener(listener);
+			}
+			
+		} : new JTextArea();
+		area.setRows(2);
+		area.setLineWrap(true);
+		area.setWrapStyleWord(true);
+		area.setWrapStyleWord(true);
+		area.setBorder((new JTextField()).getBorder());
+		return area;
+	}
+
+	protected static JTextPane createTextPaneComponent(String contentType, boolean isEditable) {
+		JTextPane pane = new JTextPane();
+		pane.setEditable(isEditable);
+		pane.setContentType(contentType);
+		pane.setBorder((new JTextField()).getBorder());
+		// add a CSS rule to force body tags to use the default label font
+        // instead of the value in javax.swing.text.html.default.css
+        Font font = UIManager.getFont("EditorPane.font");
+        String bodyRule = "body { font-family: " 
+        	+ font.getFamily() + "; " 
+        	+ "font-size: " + font.getSize() + "pt; }";
+        ((HTMLDocument)pane.getDocument()).getStyleSheet().addRule(bodyRule);
+        return pane;
+	}
+	
+	
 }

@@ -148,12 +148,13 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
     public void setPersonnel(IPersonnelIf personnel)
     {
         m_currentPersonnel = personnel;
+        updateFieldContents();
     }
 
     /**
      * Set field contents to that of the current personnel
      */
-    public void updateFieldContents()
+    private void updateFieldContents()
     {
         if (m_currentPersonnel == null)
         {

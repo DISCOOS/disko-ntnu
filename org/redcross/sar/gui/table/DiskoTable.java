@@ -3,6 +3,8 @@ package org.redcross.sar.gui.table;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
@@ -25,6 +27,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
 import org.redcross.sar.gui.model.DiskoTableColumnModel;
+import org.redcross.sar.gui.model.IDiskoTableModel;
+import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 import org.redcross.sar.util.Utils;
 
 public class DiskoTable extends JTable {
@@ -79,6 +83,7 @@ public class DiskoTable extends JTable {
 		setAutoFitWidths(false);
 		setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		setTableHeader(new DiskoTableHeader(showVerticalHeaderLines));
+		setDefaultRenderer(Object.class, new DiskoTableCellRenderer());
 		setColumnModel(new DiskoTableColumnModel());
 
 		// auto create is not supported
@@ -108,6 +113,31 @@ public class DiskoTable extends JTable {
 
 			}
 
+		});
+		/* =================================================
+		 * BUG-FIX: When autoFitWidthColumns is true,
+		 * the table columns are auto fitted when the 
+		 * table is shown for the first time. This bug-fix
+		 * resolves the issue by implementing a one-shot
+		 * column auto fit using a component listener.
+		 * ================================================= */
+		// add a one-shot refresh listener
+		addHierarchyBoundsListener(new HierarchyBoundsListener() {
+
+			@Override
+			public void ancestorMoved(HierarchyEvent e) { fire(); }
+			@Override
+			public void ancestorResized(HierarchyEvent e) { fire(); }
+			
+			private void fire() {
+				if(getGraphics()!=null) {
+					if(isAutoFitWidths()) {
+						autoFitWidthColumns();
+					}
+					removeHierarchyBoundsListener(this);
+				}
+			}
+			
 		});
 	}
 
@@ -329,6 +359,11 @@ public class DiskoTable extends JTable {
 		// get models
 		TableModel data = getModel();
 		TableColumnModel columns = getColumnModel();
+		// set flags
+		boolean setMax = false;
+		boolean isDTM = (data instanceof IDiskoTableModel);
+		// cast to IDiskoTableModel?
+		IDiskoTableModel model = isDTM?(IDiskoTableModel)data:null;
 		// get column count
 		int iCount = columns.getColumnCount();
 		// get row count
@@ -343,17 +378,32 @@ public class DiskoTable extends JTable {
 				TableColumn column = columns.getColumn(i);
 				// get header width
 				int max = getHeaderWidth(g,column,i);
-				// loop over all rows
-				for(int j=0;j<jCount;j++) {
-					// maximize width
-					max = Math.max(max,getCellWidth(g,j,i));
+				// get maximum width
+				if(!isDTM || model.getColumnFixedWidth(i)<0) {
+					// reset maximum column width flag
+					setMax = false;
+					// loop over all rows?
+					for(int j=0;j<jCount;j++) {
+						// maximize width
+						max = Math.max(max,getCellWidth(g,j,i));
+					}
+				} else {
+					// use fixed width
+					max = Math.max(max,model.getColumnFixedWidth(i));
+					// set maximum column width flag
+					setMax = true;
 				}
 				// set width
-				setColumnWidth(column, max, true, true, false);
+				setColumnWidth(column, max, true, true, setMax);
+				
 			}
 		}
 	}
 
+	public boolean isAutoFitWidths() {
+		return m_autoFitWidths;
+	}
+		
 	public void setAutoFitWidths(boolean isEnabled) {
 		m_autoFitWidths = isEnabled;
 	}

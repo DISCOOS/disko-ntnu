@@ -205,7 +205,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_type.getState();
 	}
 
-	public IAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute()
+	public IMsoAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute()
 	{
 		return m_type;
 	}
@@ -238,7 +238,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			throw new IllegalOperationException(
 					"The unit is released, no status changed is allowed");
 		}
-		if(IUnitIf.MANAGED_RANGE.contains(aStatus))
+		if(IUnitIf.MANAGED_SET.contains(aStatus))
 		{
 			throw new IllegalOperationException(
 				"Status is managed by MSO model only");
@@ -257,7 +257,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_status.getState();
 	}
 
-	public IAttributeIf.IMsoEnumIf<UnitStatus> getStatusAttribute()
+	public IMsoAttributeIf.IMsoEnumIf<UnitStatus> getStatusAttribute()
 	{
 		return m_status;
 	}
@@ -282,7 +282,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return m_organization.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOrganizationAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute()
     {
         return m_organization;
     }
@@ -302,7 +302,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_division.getState();
 	}
 
-    public IAttributeIf.IMsoStringIf getDivisionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDivisionAttribute()
     {
     	return m_division;
     }
@@ -322,7 +322,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return m_department.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute()
     {
         return m_department;
     }	
@@ -346,7 +346,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return m_name.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getNameAttribute()
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute()
     {
         return m_name;
     }
@@ -366,7 +366,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_callSign.getState();
 	}
 
-	public IAttributeIf.IMsoStringIf getCallSignAttribute()
+	public IMsoAttributeIf.IMsoStringIf getCallSignAttribute()
 	{
 		return m_callSign;
 	}
@@ -386,7 +386,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_toneId.getState();
 	}
 
-	public IAttributeIf.IMsoStringIf getToneIDAttribute()
+	public IMsoAttributeIf.IMsoStringIf getToneIDAttribute()
 	{
 		return m_toneId;
 	}
@@ -406,7 +406,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_trackingId.getState();
 	}
 
-	public IAttributeIf.IMsoStringIf getTrackingIDAttribute()
+	public IMsoAttributeIf.IMsoStringIf getTrackingIDAttribute()
 	{
 		return m_trackingId;
 	}
@@ -429,7 +429,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_position.getState();
 	}
 
-	public IAttributeIf.IMsoPositionIf getPositionAttribute()
+	public IMsoAttributeIf.IMsoPositionIf getPositionAttribute()
 	{
 		return m_position;
 	}
@@ -449,7 +449,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_remarks.getState();
 	}
 
-	public IAttributeIf.IMsoStringIf getRemarksAttribute()
+	public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
 	{
 		return m_remarks;
 	}
@@ -470,7 +470,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_number.getState();
 	}
 
-	public IAttributeIf.IMsoIntegerIf getNumberAttribute()
+	public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
 	{
 		return m_number;
 	}

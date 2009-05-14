@@ -133,7 +133,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }

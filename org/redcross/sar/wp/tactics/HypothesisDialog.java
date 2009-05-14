@@ -470,7 +470,7 @@ public class HypothesisDialog extends DefaultDialog {
 				model.addElement(new Integer(i));
 			}
 			priorityCombo.fill(model);
-			priorityCombo.getComboBox().setSelectedIndex(0);
+			priorityCombo.getEditComponent().setSelectedIndex(0);
 		}
 		return priorityCombo;
 	}
@@ -490,7 +490,7 @@ public class HypothesisDialog extends DefaultDialog {
 					model.addElement(values[i]);
 				}
 				statusCombo.fill(model);
-				JComboBox cb = (JComboBox)statusCombo.getComponent();
+				JComboBox cb = (JComboBox)statusCombo.getEditComponent();
 				cb.setRenderer(new BundleListCellRenderer());
 				cb.setSelectedIndex(0);
 			} catch (java.lang.Throwable e) {
@@ -568,7 +568,7 @@ public class HypothesisDialog extends DefaultDialog {
 	}
 
 	private int getPriority()  {
-		return getPriorityCombo().getComboBox().getSelectedIndex()+1;
+		return getPriorityCombo().getEditComponent().getSelectedIndex()+1;
 	}
 
 	private void setPriority(int priority, boolean gui, boolean mso) {
@@ -577,7 +577,7 @@ public class HypothesisDialog extends DefaultDialog {
 		if(h!=null) {
 			// update gui?
 			if (gui) {
-				getPriorityCombo().getComboBox().setSelectedIndex(priority-1);
+				getPriorityCombo().getEditComponent().setSelectedIndex(priority-1);
 			}
 			// update mso?
 			if(mso) {

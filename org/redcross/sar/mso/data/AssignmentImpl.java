@@ -192,7 +192,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<AssignmentStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<AssignmentStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -227,7 +227,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_priority.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<AssignmentPriority> getPriorityAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<AssignmentPriority> getPriorityAttribute()
     {
         return m_priority;
     }
@@ -253,7 +253,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_type.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute()
     {
         return m_type;
     }
@@ -282,7 +282,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }
@@ -302,7 +302,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_prioritySequence.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute()
     {
         return m_prioritySequence;
     }
@@ -323,7 +323,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_number.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
     {
         return m_number;
     }
@@ -343,7 +343,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_timeEstimatedFinished.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute()
     {
         return m_timeEstimatedFinished;
     }

@@ -5,6 +5,7 @@ import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.JButton;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
@@ -21,7 +22,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
 
     public DiskoWpPlanImpl() throws IllegalClassFormatException
     {
-        super();
+    	super(Logger.getLogger(DiskoWpPlanImpl.class));
         initialize();
     }
 

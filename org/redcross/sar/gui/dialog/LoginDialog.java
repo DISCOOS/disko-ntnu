@@ -18,7 +18,7 @@ import org.redcross.sar.IApplication;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.util.Utils;
 
@@ -32,8 +32,8 @@ public class LoginDialog extends DefaultDialog {
 
 	private DefaultPanel contentPanel = null;
 
-	private TextLineField attrUserName = null;
-	private TextLineField attrPassword = null;
+	private TextField attrUserName = null;
+	private TextField attrPassword = null;
 	private ComboBoxField attrRoles = null;
 
 	/**
@@ -126,12 +126,12 @@ public class LoginDialog extends DefaultDialog {
 	/**
 	 * This method initializes UserName attribute
 	 *
-	 * @return {@link TextLineField}
+	 * @return {@link TextField}
 	 */
-	public TextLineField getUserName() {
+	public TextField getUserName() {
 		if (attrUserName == null) {
 			try {
-				attrUserName = new TextLineField("username","Brukernavn",true,80,25,"");
+				attrUserName = new TextField("username","Brukernavn",false,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -142,12 +142,12 @@ public class LoginDialog extends DefaultDialog {
 	/**
 	 * This method initializes Password attribute
 	 *
-	 * @return {@link TextLineField}
+	 * @return {@link TextField}
 	 */
-	public TextLineField getPassword() {
+	public TextField getPassword() {
 		if (attrPassword == null) {
 			try {
-				attrPassword = new TextLineField("password","Passord",true,80,25,"");
+				attrPassword = new TextField("password","Passord",false,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -163,7 +163,7 @@ public class LoginDialog extends DefaultDialog {
 	public ComboBoxField getRoles() {
 		if (attrRoles == null) {
 			try {
-				attrRoles = new ComboBoxField("roles","Roller",false,80,25,"");
+				attrRoles = new ComboBoxField("roles","Roller",true,80,25,"");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

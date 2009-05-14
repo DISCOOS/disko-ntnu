@@ -2,7 +2,7 @@ package org.redcross.sar.mso;
 
 import java.util.List;
 
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -22,7 +22,7 @@ public interface IChangeSourceIf {
 	
     public boolean isPartial();
     
-	public List<IAttributeIf<?>> getPartial();
+	public List<IMsoAttributeIf<?>> getPartial();
     
     public boolean setPartial(String attribute);   
     public int setPartial(List<String> attributes);

@@ -8,7 +8,6 @@ import org.redcross.sar.data.AbstractBinder;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.data.event.BinderEvent;
 import org.redcross.sar.data.event.SourceEvent;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -133,53 +132,48 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 			// loop over all events
 			for(MsoEvent.Update it : events.getEvents()) {
 
-				// consume loopback updates
-				if(!UpdateMode.LOOPBACK_UPDATE_MODE.equals(it.getUpdateMode())) {
+				// get flags
+				int mask = it.getEventTypeMask();
 
-					// get flags
-					int mask = it.getEventTypeMask();
+		        // get MSO object
+		        IMsoObjectIf msoObj = (IMsoObjectIf)it.getSource();
 
-			        // get MSO object
-			        IMsoObjectIf msoObj = (IMsoObjectIf)it.getSource();
+		        // is data object?
+		        if(selectData(msoObj)) {
 
-			        // is data object?
-			        if(selectData(msoObj)) {
+		        	// get id
+		        	T id = (T)msoObj;
 
-			        	// get id
-			        	T id = (T)msoObj;
+			        // add object?
+					if (it.isCreateObjectEvent()) {
 
-				        // add object?
-						if (it.isCreateObjectEvent()) {
+						fireDataCreated(id, mask);
 
-							fireDataCreated(id, mask);
+					}
 
-						}
+					// is object modified?
+					if (!it.isDeleteObjectEvent()  && (it.isModifyObjectEvent() || it.isChangeReferenceEvent())) {
 
-						// is object modified?
-						if (!it.isDeleteObjectEvent()  && (it.isModifyObjectEvent() || it.isChangeReferenceEvent())) {
+						fireDataChanged(id,mask);
 
-							fireDataChanged(id,mask);
+					}
 
-						}
+					// delete object?
+					if (it.isDeleteObjectEvent()) {
 
-						// delete object?
-						if (it.isDeleteObjectEvent()) {
+						fireDataDeleted(id,mask);
 
-							fireDataDeleted(id,mask);
-
-						}
-
-			        }
-			        else if(selectCoObject(msoObj)) {
-			        	fireCoDataChanged(msoObj, mask);
-			        }
-			        else if (isDataObject(msoObj)) {
-			        	fireDataUnselected((T)msoObj, mask);
-			        }
-			        else if (isCoObject(msoObj)) {
-			        	fireCoDataUnselected(msoObj, mask);
-			        }
-				}
+					}
+		        }
+		        else if(selectCoObject(msoObj)) {
+		        	fireCoDataChanged(msoObj, mask);
+		        }
+		        else if (isDataObject(msoObj)) {
+		        	fireDataUnselected((T)msoObj, mask);
+		        }
+		        else if (isCoObject(msoObj)) {
+		        	fireCoDataUnselected(msoObj, mask);
+		        }
 			}
 		}
 	}

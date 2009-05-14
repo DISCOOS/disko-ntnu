@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.field.TextAreaField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -35,7 +35,7 @@ public class DeleteTaskDialog extends DefaultDialog
 	
 
 	protected DefaultPanel m_contentsPanel;
-	protected TextLineField m_taskAttr;
+	protected TextField m_taskAttr;
 	protected TextAreaField m_descAttr;
 	protected JPanel m_attributesPanel;
 	protected JButton m_deleteButton;
@@ -178,16 +178,16 @@ public class DeleteTaskDialog extends DefaultDialog
 	/**
 	 * This method initializes TaskAttr
 	 *
-	 * @return {@link TextLineField}
+	 * @return {@link TextField}
 	 */
-	private TextLineField getTaskAttr() {
+	private TextField getTaskAttr() {
 		if (m_taskAttr == null) {
 			try {
-				m_taskAttr = new TextLineField("Task",
+				m_taskAttr = new TextField("Task",
 						m_wp.getBundleText("Task.text"),
 						false,100,25,null);
 				m_taskAttr.setPreferredSize(new Dimension(300,30));
-				m_taskAttr.getTextField().setBorder(BorderFactory.createLineBorder(Color.lightGray));
+				m_taskAttr.getEditComponent().setBorder(BorderFactory.createLineBorder(Color.lightGray));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}
@@ -207,9 +207,9 @@ public class DeleteTaskDialog extends DefaultDialog
 						m_wp.getBundleText("TaskDescription.text"),
 						false,100,100,null);
 				m_descAttr.setPreferredSize(new Dimension(300,100));
-				m_descAttr.getTextArea().setRows(5);
-				m_descAttr.getTextArea().setColumns(30);
-				m_descAttr.getTextArea().setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+				m_descAttr.getEditComponent().setRows(5);
+				m_descAttr.getEditComponent().setColumns(30);
+				m_descAttr.getEditComponent().setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
 			}

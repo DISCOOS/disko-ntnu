@@ -37,7 +37,7 @@ public class GotoCommand extends AbstractDiskoCommand {
 		showDirect = true;
 
 		// create dialog
-		dialog = new GotoDialog(Application.getInstance());
+		dialog = new GotoDialog(Application.getFrameInstance());
 
 	}
 

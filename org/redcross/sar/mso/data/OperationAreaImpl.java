@@ -67,7 +67,7 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         return m_assignment.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getAssignmentAttribute()
+    public IMsoAttributeIf.IMsoStringIf getAssignmentAttribute()
     {
         return m_assignment;
     }
@@ -87,7 +87,7 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         return m_geodata.getState();
     }
 
-    public IAttributeIf.IMsoPolygonIf getGeodataAttribute()
+    public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute()
     {
         return m_geodata;
     }
@@ -107,7 +107,7 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }

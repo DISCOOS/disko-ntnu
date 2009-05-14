@@ -2,22 +2,23 @@
  * 
  */
 package org.redcross.sar.gui.field;
-
-import java.awt.Component;
-
+ 
+import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
 import org.redcross.sar.gui.document.NumericDocument;
-import org.redcross.sar.mso.data.AttributeImpl;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
+import org.redcross.sar.mso.data.AttributeImpl.MsoDouble;
+import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
+import org.redcross.sar.mso.data.AttributeImpl.MsoString;
 import org.redcross.sar.util.Utils;
 
 /**
  * @author kennetgu
  *
  */
-public class NumericField extends AbstractField {
+public class NumericField extends AbstractField<Number,JFormattedTextField,JTextField> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -56,7 +57,7 @@ public class NumericField extends AbstractField {
 	}
 		
 	
-	public NumericField(IAttributeIf<?> attribute, String caption,
+	public NumericField(IMsoAttributeIf<?> attribute, String caption,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
@@ -64,7 +65,7 @@ public class NumericField extends AbstractField {
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 
-	public NumericField(IAttributeIf<?> attribute, String caption, boolean isEditable,
+	public NumericField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable,
 			int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -72,7 +73,7 @@ public class NumericField extends AbstractField {
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 	
-	public NumericField(IAttributeIf<?> attribute, String caption, boolean isEditable,
+	public NumericField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable,
 			int width, int height,   
 			int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// forward
@@ -83,7 +84,7 @@ public class NumericField extends AbstractField {
 	
 	private void initialize(int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// apply number document
-		getTextField().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
+		getEditComponent().setDocument(new NumericDocument(maxDigits,decimalPrecision,allowNegative));
 	}
 	
 	/*==================================================================
@@ -91,53 +92,52 @@ public class NumericField extends AbstractField {
 	 *================================================================== 
 	 */
 	
-	public Component getComponent() {
-		if(m_component==null) {
+	public JFormattedTextField getEditComponent() {
+		if(m_editComponent==null) {
 			// create
-			JTextField field = new JTextField() {
+			m_editComponent = new JFormattedTextField() {
 				
 				private static final long serialVersionUID = 1L;
-				
+											
 				@Override
 				public void setDocument(Document doc) {
-					// remove from old
-					if(super.getDocument()!=null) {
-						super.getDocument().removeUndoableEditListener(m_undoListener);
-					}
-					// forward
+					// illegal operation?
+					if(super.getDocument() instanceof NumericDocument)  
+						throw new IllegalArgumentException("Document can not be replaced");
+					// replace default (only allowed once after NumericDocument is set)
 					super.setDocument(doc);
-					// add listener
-					doc.addUndoableEditListener(m_undoListener);
+					if(doc!=null) doc.addDocumentListener(m_documentListener);
 				}
 				
 			};
-			// set format
-			field.setEditable(m_isEditable);
-			// save the component
-			m_component = field;
-			// set listeners
-			field.getDocument().addUndoableEditListener(m_undoListener);
 		}
-		return m_component;
+		return (JFormattedTextField)m_editComponent;
 	}
 			
-	public JTextField getTextField() {
-		return (JTextField)m_component;
+	public JTextField getViewComponent() {
+		if(m_viewComponent==null) {
+			m_viewComponent = createDefaultComponent(false);
+		}
+		return m_viewComponent;
 	}
 	
-	public void setAutoSave(boolean auto) {
-		m_autoSave = auto;
+	public void setBatchMode(boolean isBatchMode) {
+		m_isBatchMode = isBatchMode;
 	}
 	
-	public boolean getAutoSave() {
-		return m_autoSave;
+	public boolean isBatchMode() {
+		return m_isBatchMode;
 	}	
 	
-	public Object getValue() {
-		// as numeric class?
+	public Number getEditValue() {
+		// get string
+		String value = getEditComponent().getText();
+		// get numeric class?
+		if(m_numericClass==null) {
+			m_numericClass = Utils.getNumericClass(value);
+		}
+		// found numeric class?
 		if(m_numericClass!=null) {
-			// get string
-			String value = getTextField().getText();
 			// validate
 			if(Utils.isNumeric(value, m_numericClass)) {
 				// get number in correct class
@@ -147,67 +147,62 @@ public class NumericField extends AbstractField {
 		return null;
 	}
 	
-	public boolean setValue(Object value) {
-		// is null?
-		if(value==null) value = 0;
+	@Override
+	protected boolean setNewEditValue(Object value) {
 		// get number class
-		Class<? extends Number> c = Utils.getNumericClass(value);
-		// is a number?
-		if(c!=null) {
-			// save class
-			m_numericClass = c;
-			// update
-			getTextField().setText(String.valueOf(value));
-			// success
-			return true;
-		}
-		// failure
-		return false;
+		m_numericClass = Utils.getNumericClass(value);
+		// get text
+		String text = (value!=null?String.valueOf(value):"");
+		// update
+		getEditComponent().setText(text);
+		getViewComponent().setText(getFormattedText());
+		// success
+		return true;
+	}
+	
+	@Override
+	public String getFormattedText() {
+		return getEditComponent().getText();
 	}
 	
 	/* ====================================================================
 	 * Protected methods
 	 * ==================================================================== */
 	
-	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
-		return (attr instanceof AttributeImpl.MsoInteger ||
-				attr instanceof AttributeImpl.MsoDouble);
+	protected boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr) {
+		return (attr instanceof MsoInteger ||
+				attr instanceof MsoDouble || 
+				attr instanceof MsoString);
 	}
 		
 	public void setMaxDigits(int digits) {
 		// set precision
-		((NumericDocument)getTextField().getDocument()).setMaxDigits(digits); 
+		((NumericDocument)getEditComponent().getDocument()).setMaxDigits(digits); 
 	}
  
 	public int getMaxDigits() {
 		// get precision
-		return ((NumericDocument)getTextField().getDocument()).getMaxDigits(); 
+		return ((NumericDocument)getEditComponent().getDocument()).getMaxDigits(); 
 	}
 	
 	public void setDecimalPrecision(int precision) {
 		// set precision
-		((NumericDocument)getTextField().getDocument()).setDecimalPrecision(precision); 
+		((NumericDocument)getEditComponent().getDocument()).setDecimalPrecision(precision); 
 	}
  
 	public int getDecimalPrecision() {
 		// get precision
-		return ((NumericDocument)getTextField().getDocument()).getDecimalPrecision(); 
+		return ((NumericDocument)getEditComponent().getDocument()).getDecimalPrecision(); 
 	}
    
 	public void setAllowNegative(boolean allow) {
 		// set flag
-		((NumericDocument)getTextField().getDocument()).setAllowNegative(allow); 
+		((NumericDocument)getEditComponent().getDocument()).setAllowNegative(allow); 
 	}
  
 	public boolean getAllowNegative() {
 		// get flag
-		return ((NumericDocument)getTextField().getDocument()).getAllowNegative(); 
+		return ((NumericDocument)getEditComponent().getDocument()).getAllowNegative(); 
 	}
 
-	@Override
-	public void setEditable(boolean isEditable) {
-		super.setEditable(isEditable);
-		getTextField().setEditable(isEditable);		
-	}
-		
 }

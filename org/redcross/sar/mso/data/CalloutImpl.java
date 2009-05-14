@@ -125,7 +125,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_title.getState();
 	}
 
-    public IAttributeIf.IMsoStringIf getTitleAttribute()
+    public IMsoAttributeIf.IMsoStringIf getTitleAttribute()
     {
     	return m_title;
     }
@@ -145,7 +145,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_created.getState();
 	}
 
-    public IAttributeIf.IMsoCalendarIf getCreatedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute()
     {
     	return m_created;
     }
@@ -165,7 +165,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_organization.getState();
 	}
 
-    public IAttributeIf.IMsoStringIf getOrganizationAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute()
     {
     	return m_organization;
     }
@@ -185,7 +185,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_division.getState();
 	}
 
-    public IAttributeIf.IMsoStringIf getDivisionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDivisionAttribute()
     {
     	return m_division;
     }
@@ -205,7 +205,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_department.getState();
 	}
 
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute()
     {
     	return m_department;
     }

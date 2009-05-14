@@ -24,7 +24,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.MapPanel;
@@ -59,10 +59,10 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 	private TogglePanel m_controlPanel;
 	private FieldsPanel m_simAttribsPanel;
 	private DTGField m_startedTimeAttr;
-	private TextLineField m_effortTimeAttr;
-	private TextLineField m_avgSimTimeAttr;
-	private TextLineField m_maxSimTimeAttr;
-	private TextLineField m_utilSimTimeAttr;
+	private TextField m_effortTimeAttr;
+	private TextField m_avgSimTimeAttr;
+	private TextField m_maxSimTimeAttr;
+	private TextField m_utilSimTimeAttr;
 	private JButton m_resumeButton;
 	private JButton m_suspendButton;
 	private JTabbedPane m_tabbedPane;
@@ -357,41 +357,41 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         return m_startedTimeAttr;
     }
 
-	private TextLineField getEffortTimeAttr()
+	private TextField getEffortTimeAttr()
     {
         if (m_effortTimeAttr == null)
         {
-        	m_effortTimeAttr = new TextLineField("efforttime","Innsatstid", false, 130, 25, 0);
+        	m_effortTimeAttr = new TextField("efforttime","Innsatstid", false, 130, 25, 0);
 
         }
         return m_effortTimeAttr;
     }
 
-	private TextLineField getAvgSimTimeAttr()
+	private TextField getAvgSimTimeAttr()
     {
         if (m_avgSimTimeAttr == null)
         {
-        	m_avgSimTimeAttr = new TextLineField("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
+        	m_avgSimTimeAttr = new TextField("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
 
         }
         return m_avgSimTimeAttr;
     }
 
-	private TextLineField getMaxSimTimeAttr()
+	private TextField getMaxSimTimeAttr()
     {
         if (m_maxSimTimeAttr == null)
         {
-        	m_maxSimTimeAttr = new TextLineField("maxtime","Arbeidstid (max)", false, 130, 25, 0);
+        	m_maxSimTimeAttr = new TextField("maxtime","Arbeidstid (max)", false, 130, 25, 0);
 
         }
         return m_maxSimTimeAttr;
     }
 
-	private TextLineField getUtilSimTimeAttr()
+	private TextField getUtilSimTimeAttr()
     {
         if (m_utilSimTimeAttr == null)
         {
-        	m_utilSimTimeAttr = new TextLineField("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
+        	m_utilSimTimeAttr = new TextField("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
 
         }
         return m_utilSimTimeAttr;

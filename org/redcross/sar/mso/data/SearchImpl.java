@@ -115,7 +115,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_subType.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<SearchSubType> getSubTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<SearchSubType> getSubTypeAttribute()
     {
         return m_subType;
     }
@@ -139,7 +139,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedAccuracy.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPlannedAccuracyAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedAccuracyAttribute()
     {
         return m_plannedAccuracy;
     }
@@ -159,7 +159,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedCoverage.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPlannedCoverageAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedCoverageAttribute()
     {
         return m_plannedCoverage;
     }
@@ -179,7 +179,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedPersonnel.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPlannedPersonnelAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedPersonnelAttribute()
     {
         return m_plannedPersonnel;
     }
@@ -199,7 +199,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedProgress.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPlannedProgressAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPlannedProgressAttribute()
     {
         return m_plannedProgress;
     }
@@ -219,7 +219,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedSearchMethod.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getPlannedSearchMethodAttribute()
+    public IMsoAttributeIf.IMsoStringIf getPlannedSearchMethodAttribute()
     {
         return m_plannedSearchMethod;
     }
@@ -239,7 +239,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedAccuracy.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getReportedAccuracyAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getReportedAccuracyAttribute()
     {
         return m_reportedAccuracy;
     }
@@ -259,7 +259,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedCoverage.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getReportedCoverageAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getReportedCoverageAttribute()
     {
         return m_reportedCoverage;
     }
@@ -279,7 +279,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedPersonnel.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getReportedPersonnelAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getReportedPersonnelAttribute()
     {
         return m_reportedPersonnel;
     }
@@ -299,7 +299,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedProgress.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getReportedProgressAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getReportedProgressAttribute()
     {
         return m_reportedProgress;
     }
@@ -319,7 +319,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedSearchMethod.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getReportedSearchMethodAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getReportedSearchMethodAttribute()
     {
         return m_reportedSearchMethod;
     }
@@ -339,7 +339,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_start.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getStartAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getStartAttribute()
     {
         return m_start;
     }
@@ -359,7 +359,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_stop.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getStopAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getStopAttribute()
     {
         return m_stop;
     }

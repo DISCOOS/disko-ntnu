@@ -3,15 +3,15 @@
  */
 package org.redcross.sar.gui.field;
 
-import java.awt.Component;
 import java.util.Calendar;
 
 import javax.swing.JFormattedTextField;
+import javax.swing.JTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
-import javax.swing.text.Document;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.format.DTGFormatter;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
@@ -21,12 +21,13 @@ import org.redcross.sar.util.mso.DTG;
  * @author kennetgu
  *
  */
-public class DTGField extends AbstractField {
+public class DTGField extends AbstractField<Calendar,JFormattedTextField,JTextField> {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger m_logger = Logger.getLogger(DTGField.class); 
 
-	private int m_year;
-	private int m_month;
+	private int m_year=Calendar.getInstance().get(Calendar.YEAR);
+	private int m_month=Calendar.getInstance().get(Calendar.MONTH);
 
 	/*==================================================================
 	 * Constructors
@@ -71,85 +72,69 @@ public class DTGField extends AbstractField {
 	 *==================================================================
 	 */
 
-	public Component getComponent() {
-		if(m_component==null) {
+	public JFormattedTextField getEditComponent() {
+		if(m_editComponent==null) {
 			// create
-			JFormattedTextField field = new JFormattedTextField()  {
-				
-				private static final long serialVersionUID = 1L;
-				
-				@Override
-				public void setDocument(Document doc) {
-					// remove from old
-					if(super.getDocument()!=null) {
-						super.getDocument().removeUndoableEditListener(m_undoListener);
-					}
-					// forward
-					super.setDocument(doc);
-					// add listener
-					doc.addUndoableEditListener(m_undoListener);
-				}
-				
-			};
-			// set format
-			field.setFormatterFactory(new DTGFormatterFactory());
-			field.setEditable(m_isEditable);
-			// save the component
-			m_component = field;
-			// add listeners
-			field.getDocument().addUndoableEditListener(m_undoListener);
+			m_editComponent = new JFormattedTextField();
+			m_editComponent.setFormatterFactory(new DTGFormatterFactory());
+			m_editComponent.getDocument().addDocumentListener(m_documentListener);
 		}
-		return m_component;
+		return m_editComponent;
 	}
 
-	public JFormattedTextField getTextField() {
-		return (JFormattedTextField)m_component;
+	public JTextField getViewComponent() {
+		if(m_viewComponent==null) {
+			m_viewComponent = createDefaultComponent(false);
+		}
+		return m_viewComponent;
+	}
+	
+	public void setBatchMode(boolean isBatchMode) {
+		m_isBatchMode = isBatchMode;
 	}
 
-	public void setAutoSave(boolean auto) {
-		m_autoSave = auto;
-	}
-
-	public boolean getAutoSave() {
-		return m_autoSave;
+	public boolean isBatchMode() {
+		return m_isBatchMode;
 	}
 
 	@Override
-	public Calendar getValue() {
+	public Calendar getEditValue() {
 		// initialize to current attribute value
 		Calendar time = m_attribute!=null
 				? (Calendar)MsoUtils.getAttribValue(m_attribute) : null;
 		// try to get DTG from text field
 		try {
-			time = DTG.DTGToCal(m_year,m_month,((JFormattedTextField)m_component).getText());
+			Object value = getEditComponent().getValue();
+			time = DTG.DTGToCal(m_year,m_month,value!=null?value.toString():"000000");
 		} catch (IllegalMsoArgumentException e) {
 			// consume
 		}
 		return time;
 	}
 
-	public boolean setValue(Object value) {
-		// validate data type
-		if(value instanceof Calendar) {
-			setOffset((Calendar)value);
-			((JFormattedTextField)m_component).setText(DTG.CalToDTG((Calendar)value));
-		}
-		else if (value instanceof String ||
-				 value instanceof Number) {
-			((JFormattedTextField)m_component).setText(String.valueOf(value));
-		}
-		else if(value==null) {
-			((JFormattedTextField)m_component).setText("");
-		}
-		else {
-			return false;
-		}
-		// success
-		return true;
+	@Override
+	public String getFormattedText() {
+		return getDTG();
 	}
-
+	
+	public int getYear() {
+		return m_year;
+	}
+	
+	public void setYear(int year) {
+		m_year = year;
+	}
+	
+	public int getMonth() {
+		return m_month;
+	}
+	
+	public void setMonth(int month) {
+		m_month = month;
+	}
+	
 	public String getDTG() {
-		return DTG.CalToDTG(getValue());
+		return DTG.CalToDTG(isDirty()?getEditValue():getValue());
 	}
 
 	public boolean setDTG(String aDTG) {
@@ -157,8 +142,7 @@ public class DTGField extends AbstractField {
 			setValue(DTG.DTGToCal(m_year, m_month, aDTG));
 			return true;
 		} catch (IllegalMsoArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			m_logger.error("Failed to convert DTG to Calendar",e);
 		}
 		return false;
 	}
@@ -170,24 +154,50 @@ public class DTGField extends AbstractField {
 			setValue(DTG.DTGToCal(m_year, m_month, aDTG));
 			return true;
 		} catch (IllegalMsoArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			m_logger.error("Failed to convert DTG to Calendar",e);
 		}
 		return false;
 	}
-	@Override
-	public void setEditable(boolean isEditable) {
-		super.setEditable(isEditable);
-		getTextField().setEditable(isEditable);
-	}
-
 
 	/* ====================================================================
 	 * Protected methods
 	 * ==================================================================== */
 	
-	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+	protected boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr) {
 		return (attr instanceof MsoCalendar);
+	}
+	
+	@Override
+	protected boolean setNewEditValue(Object value) {
+		String text = "";
+		// validate data type
+		if(value instanceof Calendar) {
+			setOffset((Calendar)value);
+			text = DTG.CalToDTG((Calendar)value);
+		}
+		else if (value instanceof String || 
+				value instanceof Number) {
+			try {
+				setValue(DTG.DTGToCal(m_year,m_month,value.toString()));
+			} catch (IllegalMsoArgumentException e) {
+				m_logger.error("Failed to convert value to Calendar",e);
+			}
+		}
+		else if(value!=null) {
+			return false;
+		}
+		getEditComponent().setText(text);
+		getViewComponent().setText(getFormattedText());
+		// success
+		return true;
+	}
+	
+	@Override
+	protected boolean isValueChanged(Calendar oldValue, Object newValue) {
+		if(newValue instanceof Calendar) {
+			return !DTG.isEqualDTG(oldValue,(Calendar)newValue);
+		}
+		return false;
 	}
 	
 	/*==================================================================
@@ -204,7 +214,7 @@ public class DTGField extends AbstractField {
 				mf1 = new DTGFormatter();
 			}
 			catch (Exception e) {
-				e.printStackTrace();
+				m_logger.error("Failed to create DTG formatter",e);
 			}
 			return mf1;
 		}

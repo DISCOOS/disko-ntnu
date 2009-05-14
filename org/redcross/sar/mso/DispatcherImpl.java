@@ -1,7 +1,6 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.IApplication;
-import org.redcross.sar.mso.TransactionManagerImpl;
 import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.data.AbstractMsoObject;
 import org.redcross.sar.mso.data.IMsoObjectIf;

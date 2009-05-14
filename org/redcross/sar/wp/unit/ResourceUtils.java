@@ -1,11 +1,16 @@
 package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.mso.IMsoManagerIf;
+import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.data.IUnitIf;
+import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
 
@@ -17,7 +22,7 @@ import javax.swing.JOptionPane;
 /**
  * Handles personnel logic
  */
-public class UnitUtils
+public class ResourceUtils
 {
     private static final ResourceBundle m_resources = Internationalization.getBundle(IDiskoWpUnit.class);
 
@@ -28,20 +33,23 @@ public class UnitUtils
 	 * @param personnel Old personnel instance
 	 * @param newStatus Status of new personnel instance
 	 */
-	public static IPersonnelIf reinstateResource(IPersonnelIf personnel, PersonnelStatus newStatus)
+	public static IPersonnelIf reinstatePersonnel(IPersonnelIf personnel, PersonnelStatus newStatus)
 	{
 		// Get personnel at end of history chain
-		IPersonnelIf nextOccurence = personnel;
-		while(nextOccurence.getNextOccurence() != null)
+		IPersonnelIf lastOccurence = personnel.getLastOccurrence();
+		
+		// is last occurrence released?
+		if(lastOccurence.getStatus() == PersonnelStatus.RELEASED)
 		{
-			nextOccurence = nextOccurence.getNextOccurence();
-		}
-
-		if(nextOccurence.getStatus() == PersonnelStatus.RELEASED)
-		{
+			
+			// get mso model
+			IMsoModelIf model = Application.getInstance().getMsoModel();
+			
+			// suspend update events
+			model.suspendClientUpdate();
+			
 			// Reinstate resource
-			IPersonnelIf newPersonnel = Application.getInstance().getMsoModel().getMsoManager().createPersonnel();
-			newPersonnel.suspendClientUpdate();
+			IPersonnelIf newPersonnel = model.getMsoManager().createPersonnel();
 
 			// Copy fields
 			newPersonnel.setBirthdate(personnel.getBirthdate());
@@ -62,7 +70,7 @@ public class UnitUtils
 			newPersonnel.setType(personnel.getType());
 
 			// Maintain personnel history chain
-			nextOccurence.setNextOccurence(newPersonnel);
+			lastOccurence.setNextOccurrence(newPersonnel);
 
 			// Set status
 			newPersonnel.setStatus(newStatus);
@@ -75,27 +83,41 @@ public class UnitUtils
 				newPersonnel.setCallOut(Calendar.getInstance());
 				newPersonnel.setArrived(Calendar.getInstance());
 			}
+			
+			/*
+			// commit changes
+			try {
+				List<IChangeSourceIf> changes = new Vector<IChangeSourceIf>(2);
+				changes.add(model.getChanges(newPersonnel));
+				changes.add(model.getChanges(lastOccurence));
+				model.commit(changes);
+			} catch (TransactionException e) {
+				m_logger.error("Failed to commit reinstated personnel",e);
+			}
+			*/
+			
+			// resume events
+			model.resumeClientUpdate(true);
 
-			newPersonnel.resumeClientUpdate(true);
-
+			// finished
 			return newPersonnel;
-		}
-		else
-		{
-			// Personnel at end of history chain is not released, return this
-			return nextOccurence;
+			
+		} else {
+			// personnel at end of history chain is not released
+			return lastOccurence;
 		}
 	}
 
 	/**
 	 * @return User confirmation, whether to reinstate personnel or not
 	 */
-	public static boolean confirmReinstate()
+	public static boolean confirmReinstate(IPersonnelIf personnel)
 	{
-		String[] options = {m_resources.getString("Yes.text"), m_resources.getString("No.text")};
+		String name = MsoUtils.getPersonnelName(personnel,false);
+		String[] options = {DiskoStringFactory.getAnswerText(true),DiskoStringFactory.getAnswerText(false)};
 		return JOptionPane.YES_OPTION == JOptionPane.showOptionDialog(
 				null,
-				m_resources.getString("ReinstateReleasedPersonnel.text"),
+				String.format(m_resources.getString("ReinstateReleasedPersonnel.text"),name),
 				m_resources.getString("ReinstateReleasedPersonnel.header"),
 				JOptionPane.YES_NO_OPTION,
 				JOptionPane.QUESTION_MESSAGE,
@@ -114,9 +136,9 @@ public class UnitUtils
 		PersonnelStatus status = personnel.getStatus();
 		if(status == PersonnelStatus.RELEASED)
 		{
-			if(confirmReinstate())
+			if(confirmReinstate(personnel))
 			{
-				personnel = reinstateResource(personnel, PersonnelStatus.ON_ROUTE);
+				personnel = reinstatePersonnel(personnel, PersonnelStatus.ON_ROUTE);
 			}
 		}
 		else if(!PersonnelStatus.ON_ROUTE.equals(status)) {
@@ -139,9 +161,9 @@ public class UnitUtils
 
 		if(status == PersonnelStatus.RELEASED)
 		{
-			if(confirmReinstate())
+			if(confirmReinstate(personnel))
 			{
-				personnel = reinstateResource(personnel, PersonnelStatus.ARRIVED);
+				personnel = reinstatePersonnel(personnel, PersonnelStatus.ARRIVED);
 			}
 		}
 		else if(!PersonnelStatus.ARRIVED.equals(status)) {
@@ -196,22 +218,61 @@ public class UnitUtils
 		}
 		return true;
 	}
-
+	
 	/**
-	 * Deletes personnel instance. History chain is kept
-	 * @param personnel The personnel
-	 * @throws IllegalOperationException Thrown if personnel can not be deleted
+	 * Releases a unit
+	 * @param unit The unit
+	 * @throws IllegalOperationException Thrown if unit can not be released
 	 */
-	public static void deletePersonnel(IPersonnelIf personnel) throws IllegalOperationException
+	public static boolean releaseUnit(IUnitIf unit) throws IllegalOperationException
 	{
-		if(personnel.getStatus() != PersonnelStatus.IDLE)
+		if(unit.getStatus() != UnitStatus.RELEASED)
 		{
-			throw new IllegalOperationException("Personnel status not IDLE, cannot delete");
-		}
+			IAssignmentIf activeAssignment = unit.getActiveAssignment();
 
-		if(!personnel.delete())
-		{
-			throw new IllegalOperationException("Failed to delete personnel object");
+			// Get user confirmation
+			boolean releaseUnit;
+			if(activeAssignment != null)
+			{
+				String[] options = {m_resources.getString("Yes.text"), m_resources.getString("No.text")};
+				releaseUnit = (JOptionPane.YES_OPTION == JOptionPane.showOptionDialog(null,
+						m_resources.getString("ReleaseUnitWithAssignment.text"),
+						m_resources.getString("ReleaseUnitWithAssignment.header"),
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,
+						options,
+						options[0]));
+			}
+			else
+			{
+				String[] options = {m_resources.getString("Yes.text"), m_resources.getString("No.text")};
+				releaseUnit = (JOptionPane.YES_OPTION == JOptionPane.showOptionDialog(null,
+						m_resources.getString("ReleaseUnit.text"),
+						m_resources.getString("ReleaseUnit.header"),
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,
+						options,
+						options[0]));
+			}
+
+			// Release unit
+			if(releaseUnit)
+			{
+				
+				// Abort assignment
+				if(activeAssignment != null)
+				{
+					activeAssignment.setStatus(AssignmentStatus.ABORTED);
+				}
+
+				// Release unit
+				unit.setStatus(UnitStatus.RELEASED);
+			}
+			return releaseUnit;
 		}
-	}	
+		return false;
+	}
+	
 }

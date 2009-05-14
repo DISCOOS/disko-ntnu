@@ -16,6 +16,7 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 	protected List<Boolean> editable;
 	protected List<String> editors;
 	protected List<Integer> alignments;
+	protected List<Integer> fixedwidths;
 
 	/* =============================================================================
 	 * Constructors
@@ -31,6 +32,7 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 		this.names = new ArrayList<String>(10);
 		this.editors = new ArrayList<String>(10);
 		this.alignments = new ArrayList<Integer>(10);
+		this.fixedwidths = new ArrayList<Integer>(10);
 	}
 
 	public DiskoTableModel(String[] names, String[] captions) {
@@ -65,6 +67,7 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 		this.names = new ArrayList<String>(size);
 		this.editors = new ArrayList<String>(size);
 		this.alignments = new ArrayList<Integer>(size);
+		this.fixedwidths = new ArrayList<Integer>(size);
 
 		// create lists
 		for(int i=0;i<size;i++) {
@@ -74,6 +77,7 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 			this.editable.add(editable[i]);
 			this.editors.add(editors[i]);
 			this.alignments.add(SwingConstants.LEFT);
+			this.fixedwidths.add(-1);
 		}
 
 	}
@@ -131,6 +135,18 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 		alignments.set(column,alignment);
 	}
 
+	public boolean isColumnWidthFixed(int column) {
+		return (fixedwidths.get(column).intValue()>-1);
+	}
+	
+	public int getColumnFixedWidth(int column) {
+		return fixedwidths.get(column).intValue();
+	}
+	
+	public void setColumnFixedWidth(int column, int fixedwidth) {
+		fixedwidths.set(column,fixedwidth);
+	}
+	
 	/* =============================================================================
 	 * Protected static methods
 	 * ============================================================================= */
@@ -143,6 +159,8 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 		this.editable.clear();
 		this.editors.clear();
 		this.alignments.clear();
+		this.fixedwidths.clear();
+
 		// get size
 		int size = names!=null ? names.length : 0;
 		// fill lists
@@ -153,6 +171,7 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 			this.editable.add(editable[i] instanceof Boolean ? (Boolean)editable[i] : false);
 			this.editors.add(editors[i].toString());
 			this.alignments.add(SwingConstants.LEFT);
+			this.fixedwidths.add(-1);
 		}
 		// notify?
 		if(notify) fireTableStructureChanged();

@@ -81,7 +81,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_subType.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<AircraftSubType> getSubTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<AircraftSubType> getSubTypeAttribute()
     {
         return m_subType;
     }
@@ -110,7 +110,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_infrared.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getInfraredAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getInfraredAttribute()
     {
         return m_infrared;
     }
@@ -130,7 +130,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_nightvision.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getNightvisionAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getNightvisionAttribute()
     {
         return m_nightvision;
     }
@@ -150,7 +150,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_photo.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getPhotoAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getPhotoAttribute()
     {
         return m_photo;
     }
@@ -170,7 +170,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_range.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getRangeAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getRangeAttribute()
     {
         return m_range;
     }
@@ -190,7 +190,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_seats.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getSeatsAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getSeatsAttribute()
     {
         return m_seats;
     }
@@ -210,7 +210,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_video.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getVideoAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getVideoAttribute()
     {
         return m_video;
     }
@@ -230,7 +230,7 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_visibility.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getVisibilityAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getVisibilityAttribute()
     {
         return m_visibility;
     }

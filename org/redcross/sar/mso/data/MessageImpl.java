@@ -175,7 +175,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<MessageStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<MessageStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -207,7 +207,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_broadcast.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getBroadcastAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getBroadcastAttribute()
     {
         return m_broadcast;
     }
@@ -250,7 +250,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_number.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
     {
         return m_number;
     }

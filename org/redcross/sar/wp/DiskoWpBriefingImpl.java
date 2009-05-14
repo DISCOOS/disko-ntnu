@@ -5,12 +5,11 @@ import java.lang.instrument.IllegalClassFormatException;
 
 import javax.swing.JButton;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
-
-import com.esri.arcgis.beans.map.MapBean;
 
 
 /**
@@ -23,7 +22,7 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
 
     public DiskoWpBriefingImpl() throws IllegalClassFormatException
     {
-        super();
+        super(Logger.getLogger(DiskoWpBriefingImpl.class));
         initialize();
     }
 

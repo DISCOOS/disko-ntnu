@@ -261,7 +261,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 			// create header panel
 			m_optionsPanel = new HeaderPanel("",ButtonSize.SMALL,SwingConstants.LEFT);
 			// get name attribute
-			AbstractField attr = getDTGAttr();
+			AbstractField<?,?,?> attr = getDTGAttr();
 			// prepare layout
 			attr.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 			attr.setCaptionColor(Color.WHITE, Color.LIGHT_GRAY);

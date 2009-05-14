@@ -4,6 +4,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
@@ -27,7 +28,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule
 	 */
 	public DiskoWpDsImpl() throws IllegalClassFormatException {
 		// forward
-		super();
+		super(Logger.getLogger(DiskoWpDsImpl.class));
 		// initialize gui
 	    initialize();
 	}

@@ -252,7 +252,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	        // update internal lists
 	        switch (m_msoModel.getUpdateMode())
 	        {
-	            case LOOPBACK_UPDATE_MODE:
+	            //case LOOPBACK_UPDATE_MODE:
 	            case REMOTE_UPDATE_MODE:
 	            {
 

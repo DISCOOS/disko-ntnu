@@ -53,7 +53,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<MessageStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<MessageStatus> getStatusAttribute();
 
     public String getStatusText();
 
@@ -67,7 +67,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getBroadcastState();
 
-    public IAttributeIf.IMsoBooleanIf getBroadcastAttribute();
+    public IMsoAttributeIf.IMsoBooleanIf getBroadcastAttribute();
 
     /*
     public void setEventTime(Calendar aTime);

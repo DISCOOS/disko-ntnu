@@ -69,7 +69,7 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         return m_checked.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getCheckedAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getCheckedAttribute()
     {
         return m_checked;
     }
@@ -89,7 +89,7 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         return m_description.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
     {
         return m_description;
     }
@@ -109,7 +109,7 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         return m_name.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getNameAttribute()
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute()
     {
         return m_name;
     }

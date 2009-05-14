@@ -10,9 +10,10 @@ public class DTGFormatter extends MaskFormatter {
 	
 	public DTGFormatter() throws ParseException {
 		super("######");
-		this.setPlaceholder("00000");
+		this.setPlaceholder("000000");
 		this.setPlaceholderCharacter('0');
 		this.setCommitsOnValidEdit(true);
+		this.setOverwriteMode(true);		
 	}
 
 }

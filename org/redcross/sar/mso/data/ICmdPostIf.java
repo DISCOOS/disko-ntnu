@@ -39,7 +39,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<CmdPostStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<CmdPostStatus> getStatusAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -51,7 +51,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getEstablishedState();
 
-    public IAttributeIf.IMsoCalendarIf getEstablishedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getEstablishedAttribute();
 
     public void setCallSign(String aCallSign);
 
@@ -59,7 +59,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getCallSignState();
 
-    public IAttributeIf.IMsoStringIf getCallSignAttribute();
+    public IMsoAttributeIf.IMsoStringIf getCallSignAttribute();
 
     public void setReleased(Calendar aReleased);
 
@@ -67,7 +67,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getReleasedState();
 
-    public IAttributeIf.IMsoCalendarIf getReleasedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute();
 
     public void setShift(int aShift);
 
@@ -75,7 +75,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getShiftState();
 
-    public IAttributeIf.IMsoIntegerIf getShiftAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getShiftAttribute();
 
     public void setTelephone1(String aTelephone1);
 
@@ -83,7 +83,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephone1State();
 
-    public IAttributeIf.IMsoStringIf getTelephone1Attribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute();
 
     public void setTelephone2(String aTelephone2);
 
@@ -91,7 +91,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephone2State();
 
-    public IAttributeIf.IMsoStringIf getTelephone2Attribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute();
 
     public void setTelephone3(String aTelephone3);
 
@@ -99,7 +99,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephone3State();
 
-    public IAttributeIf.IMsoStringIf getTelephone3Attribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for lists

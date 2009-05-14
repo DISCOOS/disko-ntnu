@@ -13,7 +13,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
 import org.redcross.sar.gui.model.FileTableModel;
-import org.redcross.sar.gui.renderer.FileTableCellRenderer;
 import org.redcross.sar.util.Utils;
 
 public class FileTable extends DiskoTable {

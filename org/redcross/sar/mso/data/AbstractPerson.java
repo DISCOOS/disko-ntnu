@@ -63,7 +63,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_birthdate.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getBirthdateAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getBirthdateAttribute()
     {
         return m_birthdate;
     }
@@ -83,7 +83,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_firstname.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getFirstnameAttribute()
+    public IMsoAttributeIf.IMsoStringIf getFirstnameAttribute()
     {
         return m_firstname;
     }
@@ -103,7 +103,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_iD.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getIDAttribute()
+    public IMsoAttributeIf.IMsoStringIf getIDAttribute()
     {
         return m_iD;
     }
@@ -123,7 +123,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_lastname.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getLastnameAttribute()
+    public IMsoAttributeIf.IMsoStringIf getLastnameAttribute()
     {
         return m_lastname;
     }
@@ -143,7 +143,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_photo.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPhotoAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPhotoAttribute()
     {
         return m_photo;
     }
@@ -163,7 +163,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_residence.getState();
     }
 
-    public IAttributeIf.IMsoPositionIf getResidenceAttribute()
+    public IMsoAttributeIf.IMsoPositionIf getResidenceAttribute()
     {
         return m_residence;
     }
@@ -183,7 +183,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
     	return m_address.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getAddressAttribute()
+    public IMsoAttributeIf.IMsoStringIf getAddressAttribute()
     {
     	return m_address;
     }
@@ -203,7 +203,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_telephone1.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephone1Attribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute()
     {
         return m_telephone1;
     }
@@ -223,7 +223,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_telephone2.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephone2Attribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute()
     {
         return m_telephone2;
     }
@@ -243,7 +243,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_telephone3.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephone3Attribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute()
     {
         return m_telephone3;
     }
@@ -273,7 +273,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_gender.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<PersonGender> getGenderAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<PersonGender> getGenderAttribute()
     {
         return m_gender;
     }

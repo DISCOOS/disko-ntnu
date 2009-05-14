@@ -10,7 +10,6 @@ import com.esri.arcgis.system.ITrackCancel;
 
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoSymbolFactory;
-import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.UnitFeature;

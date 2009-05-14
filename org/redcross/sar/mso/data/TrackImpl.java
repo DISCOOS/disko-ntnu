@@ -3,7 +3,6 @@ package org.redcross.sar.mso.data;
 import no.cmr.tools.Log;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
@@ -79,7 +78,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_geodata.getState();
     }
 
-    public IAttributeIf.IMsoTrackIf getGeodataAttribute()
+    public IMsoAttributeIf.IMsoTrackIf getGeodataAttribute()
     {
         return m_geodata;
     }
@@ -99,7 +98,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }
@@ -120,7 +119,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_areaSequenceNumber.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()
     {
         return m_areaSequenceNumber;
     }

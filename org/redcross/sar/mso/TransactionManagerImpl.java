@@ -4,7 +4,7 @@ import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.ITransactionIf.TransactionType;
 import org.redcross.sar.mso.data.AbstractMsoObject;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -310,7 +310,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     {
 
     	private final IMsoObjectIf m_object;
-    	private final List<IAttributeIf<?>> m_partial =  new ArrayList<IAttributeIf<?>>(1);
+    	private final List<IMsoAttributeIf<?>> m_partial =  new ArrayList<IMsoAttributeIf<?>>(1);
 
         private int m_mask;
 
@@ -338,7 +338,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
         	return m_partial!=null && m_partial.size()>0;
         }
 
-        public List<IAttributeIf<?>> getPartial() {
+        public List<IMsoAttributeIf<?>> getPartial() {
         	return m_partial;
         }
 
@@ -351,7 +351,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
         	if(!isCreated() && isModified()) {
 	        	String name = attribute.toLowerCase();
 	        	if(m_object.getAttributes().containsKey(name)) {
-	        		IAttributeIf item = m_object.getAttributes().get(name);
+	        		IMsoAttributeIf item = m_object.getAttributes().get(name);
 	        		if(!m_partial.contains(item)) {
 	        			return m_partial.add(item);
 	        		}
@@ -362,8 +362,8 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 
         public boolean removePartial(String attribute) {
         	String name = attribute.toLowerCase();
-        	IAttributeIf found = null;
-        	for(IAttributeIf it : m_partial) {
+        	IMsoAttributeIf found = null;
+        	for(IMsoAttributeIf it : m_partial) {
         		if(it.getName().equals(name)) {
         			found = it;
         			break;

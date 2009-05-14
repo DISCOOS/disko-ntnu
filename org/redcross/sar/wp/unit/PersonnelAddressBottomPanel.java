@@ -2,7 +2,7 @@ package org.redcross.sar.wp.unit;
 
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -34,9 +34,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	private IPersonnelIf m_currentPersonnel;
 
 	private FieldsPanel m_infoPanel;
-	private TextLineField m_addressTextField;
-	private TextLineField m_postAreaTextField;
-	private TextLineField m_postNumberTextField;
+	private TextField m_addressTextField;
+	private TextField m_postAreaTextField;
+	private TextField m_postNumberTextField;
 	private JButton m_centerAtButton;
 	
 	IDiskoWpUnit m_wp;
@@ -66,7 +66,8 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		if(m_infoPanel==null) {
 			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
 			m_infoPanel.setColumns(3);
-			m_infoPanel.setAutoSave(true);
+			m_infoPanel.setBatchMode(false);
+			m_infoPanel.setHeaderVisible(false);
 			m_infoPanel.setPreferredExpandedHeight(275);
 			m_infoPanel.addButton(getCenterAtButton(), "centerat");
 			m_infoPanel.suspendLayout();
@@ -90,9 +91,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		return m_centerAtButton;
 	}	
 	
-	private TextLineField getAddressTextField() {
+	private TextField getAddressTextField() {
 		if(m_addressTextField==null) {
-			m_addressTextField = new TextLineField("address",m_resources.getString("Address.text"),true);
+			m_addressTextField = new TextField("address",m_resources.getString("Address.text"),true);
 			m_addressTextField.addWorkFlowListener(new IWorkFlowListener() {
 				public void onFlowPerformed(WorkFlowEvent e) {
 					if(isSet()&&m_addressTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
@@ -104,9 +105,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		return m_addressTextField;
 	}	
 
-	private TextLineField getPostAreaTextField() {
+	private TextField getPostAreaTextField() {
 		if(m_postAreaTextField==null) {
-			m_postAreaTextField = new TextLineField("postarea",m_resources.getString("PostArea.text"),true);  
+			m_postAreaTextField = new TextField("postarea",m_resources.getString("PostArea.text"),true);  
 			m_postAreaTextField.addWorkFlowListener(new IWorkFlowListener() {
 				public void onFlowPerformed(WorkFlowEvent e) {
 					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
@@ -118,9 +119,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		return m_postAreaTextField;
 	}	
 	
-	private TextLineField getPostNumberTextField() {
+	private TextField getPostNumberTextField() {
 		if(m_postNumberTextField==null) {
-			m_postNumberTextField = new TextLineField("postnumber",m_resources.getString("PostNumber.text"),true);    		
+			m_postNumberTextField = new TextField("postnumber",m_resources.getString("PostNumber.text"),true);    		
 			m_postNumberTextField.addWorkFlowListener(new IWorkFlowListener() {
 				public void onFlowPerformed(WorkFlowEvent e) {
 					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
@@ -140,12 +141,13 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	public void setPersonnel(IPersonnelIf personnel)
 	{
 		m_currentPersonnel = personnel;
+		updateFieldContents();
     }
 
 	/**
 	 * Update field contents with current personnel values
 	 */
-	public void updateFieldContents()
+	private void updateFieldContents()
 	{
 		// prevent reenty
 		getInfoPanel().setChangeable(false);
@@ -183,28 +185,10 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
     	return m_currentPersonnel!=null?m_currentPersonnel.isChanged():false;
     }
     
-    public boolean isNew() {
-    	return m_currentPersonnel!=null?!m_currentPersonnel.isCreated():false;
-    }
-    
     public boolean isSet() {
     	return m_currentPersonnel!=null;
     }
     
-	/**
-	 * validate input data
-	 */
-	public boolean isInputValid()
-	{
-		if(m_currentPersonnel != null)
-		{
-			// validate
-			return true;
-		}
-		// failure
-		return true;
-	}
-	
 	private String getAddress() {
 		// Store address fields in single string, separated by ;
 		return  m_addressTextField.getValue() + ";" +

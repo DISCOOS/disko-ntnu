@@ -87,7 +87,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTypeState();
 
-    public IAttributeIf.IMsoEnumIf<POIType> getTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<POIType> getTypeAttribute();
 
     public String getInternationalTypeName();
 
@@ -101,7 +101,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getNameState();
 
-    public IAttributeIf.IMsoStringIf getNameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute();
 
     public void setPosition(Position aPosition);
 
@@ -109,7 +109,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getPositionState();
 
-    public IAttributeIf.IMsoPositionIf getPositionAttribute();
+    public IMsoAttributeIf.IMsoPositionIf getPositionAttribute();
 
     public void setRemarks(String aRemarks);
 
@@ -117,7 +117,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     public void setAreaSequenceNumber(int aNumber);
 
@@ -125,7 +125,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getAreaSequenceNumberState();
 
-    public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
 
     /*-------------------------------------------------------------------------------------------
      * Other Methods

@@ -15,7 +15,6 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.ISpatialReference;
-import com.esri.arcgis.geometry.Point;
 
 public class MissionOrderReportParams {
 	public final static String MISSION_TITLE	= "Mission title";

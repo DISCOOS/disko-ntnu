@@ -8,7 +8,7 @@ import java.util.Vector;
 
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.data.IAttributeIf.IMsoEnumIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoEnumIf;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
 public class MsoStatusInput<T extends IMsoObjectIf, E extends Enum<E>> extends AbstractInput<T, Integer> {

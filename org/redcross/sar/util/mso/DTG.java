@@ -10,6 +10,30 @@ import java.util.Calendar;
 public class DTG
 {
     /**
+     * Create a {@link java.util.Calendar} object for a DTG string using current year and month.
+     * @param aDTG The DTG value
+     * @return The created object
+     * @throws IllegalMsoArgumentException If DTG has an illegal value.
+     */
+    public static Calendar DTGToCal(String aDTG) throws IllegalMsoArgumentException
+    {	
+    	Calendar c = Calendar.getInstance();
+    	return DTGToCal(c.get(Calendar.YEAR),c.get(Calendar.MONTH),aDTG);
+    }
+    
+    /**
+     * Create a {@link java.util.Calendar} object for a DTG string using current year and month.
+     * @param aDTG The DTG value
+     * @return The created object
+     * @throws IllegalMsoArgumentException If DTG has an illegal value.
+     */
+    public static Calendar DTGToCal(long aDTG) throws IllegalMsoArgumentException
+    {	
+    	Calendar c = Calendar.getInstance();
+    	return DTGToCal(c.get(Calendar.YEAR),c.get(Calendar.MONTH),aDTG);
+    }
+    
+    /**
      * Create a {@link java.util.Calendar} object for a DTG string.
      * @param aDTG The DTG value
      * @return The created object
@@ -19,7 +43,7 @@ public class DTG
     {
         try
         {
-            return DTGToCal(year,month,Long.parseLong(aDTG));
+            return DTGToCal(year,month,Long.parseLong(aDTG==null||aDTG.isEmpty()?"0":aDTG));
         }
         catch (NumberFormatException e)
         {
@@ -94,6 +118,18 @@ public class DTG
             aCalendar.add(Calendar.MONTH, -1);
         }
         return aDay <= aCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+    }
+    
+    public static boolean isEqualDTG(Calendar c1, Calendar c2) {
+    	if(c1==c2) return true;
+    	if(c1!=null) {
+    		if(c1.equals(c2)) return true;
+    		return (c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) ||
+    				c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH) ||
+    				c1.get(Calendar.HOUR_OF_DAY) == c2.get(Calendar.HOUR_OF_DAY) ||
+    				c1.get(Calendar.MINUTE) == c2.get(Calendar.MINUTE));
+    	}
+    	return false;
     }
 
     /*

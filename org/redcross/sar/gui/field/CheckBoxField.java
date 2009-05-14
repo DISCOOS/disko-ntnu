@@ -3,22 +3,22 @@
  */
 package org.redcross.sar.gui.field;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
+import javax.swing.JTextField;
 
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
-import org.redcross.sar.undo.DiskoFieldEdit;
 
 
 /**
  * @author kennetgu
  *
  */
-public class CheckBoxField extends AbstractField {
+public class CheckBoxField extends AbstractField<Boolean,JCheckBox,JTextField> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -50,65 +50,70 @@ public class CheckBoxField extends AbstractField {
 	 *==================================================================
 	 */
 
-	public Component getComponent() {
-		if(m_component==null) {
+	public JCheckBox getEditComponent() {
+		if(m_editComponent==null) {
 			JCheckBox cb = new JCheckBox();
-			m_component = cb;
-			m_component.setEnabled(m_isEditable);
+			m_editComponent = cb;
+			m_editComponent.setEnabled(isEditable());
 			cb.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					if(!isChangeable()) return;
-					fireOnWorkChange(new DiskoFieldEdit(CheckBoxField.this,!getValue(),getValue()));
+					onEditValueChanged();
 				}
 
 			});
 		}
-		return m_component;
+		return m_editComponent;
+	}
+	
+	public JTextField getViewComponent() {
+		if(m_viewComponent==null) {
+			m_viewComponent = createDefaultComponent(false);
+		}
+		return m_viewComponent;
+	}
+	
+	public void setBatchMode(boolean isBatchMode) {
+		m_isBatchMode = isBatchMode;
 	}
 
-	public JCheckBox getCheckBox() {
-		return ((JCheckBox)m_component);
-	}
-
-	public void setAutoSave(boolean auto) {
-		m_autoSave = auto;
-	}
-
-	public boolean getAutoSave() {
-		return m_autoSave;
+	public boolean isBatchMode() {
+		return m_isBatchMode;
 	}
 
 	@Override
-	public Boolean getValue() {
-		return ((JCheckBox)m_component).isSelected();
+	public Boolean getEditValue() {
+		return ((JCheckBox)m_editComponent).isSelected();
 	}
 
 	@Override
-	public boolean setValue(Object value) {
+	protected boolean setNewEditValue(Object value) {
+		boolean bFlag = false;
 		if(value instanceof String)
-			((JCheckBox)m_component).setSelected(Boolean.valueOf((String)value));
+			bFlag = Boolean.valueOf((String)value);
 		else if(value instanceof Boolean)
-			((JCheckBox)m_component).setSelected(Boolean.valueOf((Boolean)value));
+			bFlag = Boolean.valueOf((Boolean)value);
 		else {
 			// failure
 			return false;
 		}
+		// update
+		getEditComponent().setSelected(bFlag);
+		getViewComponent().setText(getFormattedText());
 		// success
 		return true;
 	}
-
+	
 	@Override
-	public void setEditable(boolean isEditable) {
-		super.setEditable(isEditable);
-		getCheckBox().setEnabled(isEditable && isEnabled());
+	public String getFormattedText() {
+		return DiskoStringFactory.getSelectionText(getEditComponent().isSelected());
 	}
 	
 	/* ====================================================================
 	 * Protected methods
 	 * ==================================================================== */
 	
-	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+	protected boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr) {
 		return (attr instanceof MsoBoolean);
 	}
 

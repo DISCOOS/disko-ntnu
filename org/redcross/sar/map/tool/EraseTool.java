@@ -277,7 +277,7 @@ public class EraseTool extends BaseMapTool {
 
 	private SelectMsoObjectDialog getSelectorDialog() {
 		if(m_selectorDialog==null) {
-			m_selectorDialog = new SelectMsoObjectDialog(Application.getInstance());
+			m_selectorDialog = new SelectMsoObjectDialog(Application.getFrameInstance());
 			m_selectorDialog.getListSelectorPanel().setCaptionText("Velg objekt");
 		}
 		return m_selectorDialog;

@@ -3,23 +3,24 @@
  */
 package org.redcross.sar.gui.field;
 
-import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.gui.IStringConverter;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoString;
-import org.redcross.sar.undo.DiskoFieldEdit;
 
 /**
  * @author kennetgu
  *
  */
-public class ComboBoxField extends AbstractField {
+public class ComboBoxField extends AbstractField<Object,JComboBox,JTextField> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -52,45 +53,43 @@ public class ComboBoxField extends AbstractField {
 	 *==================================================================
 	 */
 
-	public Component getComponent() {
-		if(m_component==null) {
+	public JComboBox getEditComponent() {
+		if(m_editComponent==null) {
 			JComboBox field = new JComboBox();
-			field.setEditable(m_isEditable);
 			field.addItemListener(new ItemListener() {
-				Object m_oldValue;
 				public void itemStateChanged(ItemEvent e) {
-					if(!isChangeable()) return;
-					fireOnWorkChange(new DiskoFieldEdit(ComboBoxField.this,m_oldValue,getValue()));
-					m_oldValue = getValue();
+					onEditValueChanged();
 				}
 			});
-
 			// save the component
-			m_component = field;
+			m_editComponent = field;
 		}
-		return m_component;
+		return m_editComponent;
 	}
 
-	public JComboBox getComboBox() {
-		return (JComboBox)m_component;
+	public JTextField getViewComponent() {
+		if(m_viewComponent==null) {
+			m_viewComponent = createDefaultComponent(false);
+		}
+		return m_viewComponent;
+	}
+	
+	public void setBatchMode(boolean isBatchMode) {
+		m_isBatchMode = isBatchMode;
 	}
 
-	public void setAutoSave(boolean auto) {
-		m_autoSave = auto;
-	}
-
-	public boolean getAutoSave() {
-		return m_autoSave;
+	public boolean isBatchMode() {
+		return m_isBatchMode;
 	}
 
 	public boolean fill(Object values) {
 		try {
 			if(values instanceof Object[])
-				getComboBox().setModel(new DefaultComboBoxModel((Object[])values));
+				getEditComponent().setModel(new DefaultComboBoxModel((Object[])values));
 			else if(values instanceof ComboBoxModel)
-				getComboBox().setModel((ComboBoxModel)values);
+				getEditComponent().setModel((ComboBoxModel)values);
 			else 
-				getComboBox().setModel(new DefaultComboBoxModel());
+				getEditComponent().setModel(new DefaultComboBoxModel());
 			return true;
 		}
 		catch(Exception e) {
@@ -99,32 +98,51 @@ public class ComboBoxField extends AbstractField {
 		return false;
 	}
 
-	public Object getValue() {
-		return ((JComboBox)m_component).getSelectedItem();
+	@Override
+	public Object getEditValue() {
+		return ((JComboBox)m_editComponent).getSelectedItem();
 	}
 
-	public boolean setValue(Object value) {
+	@Override
+	protected boolean setNewEditValue(Object value) {
 		// update
-		if(value==null) {
-			getComboBox().setSelectedIndex(-1);
+		if(value==null || (value instanceof String && value.toString().isEmpty())) {
+			getEditComponent().setSelectedIndex(-1);
 		} else {
-			getComboBox().setSelectedItem(value);
+			getEditComponent().setSelectedItem(value);
 		}
+		getViewComponent().setText(getFormattedText());
 		// success
 		return true;
 	}
 	
 	@Override
-	public void setEditable(boolean isEditable) {
-		super.setEditable(isEditable);
-		getComboBox().setEditable(isEditable);
+	public String getFormattedText() {
+		int index = getEditComponent().getSelectedIndex();
+		if(index!=-1) {
+			Object selected = getEditComponent().getSelectedItem();
+			ListCellRenderer renderer = getEditComponent().getRenderer();
+			if(renderer instanceof IStringConverter) {
+				return ((IStringConverter)renderer).toString(selected);
+			}
+			return selected!=null?selected.toString():"";
+		}
+		return "";
 	}
-
+	
+	public boolean isListEditable() {
+		return getEditComponent().isEditable();
+	}
+	
+	public void setListEditable(boolean isEditable) {
+		getEditComponent().setEditable(isEditable);
+	}
+	
 	/* ====================================================================
 	 * Protected methods
 	 * ==================================================================== */
 	
-	protected boolean isMsoAttributeSettable(IAttributeIf<?> attr) {
+	protected boolean isMsoAttributeSettable(IMsoAttributeIf<?> attr) {
 		return true;
 	}
 	

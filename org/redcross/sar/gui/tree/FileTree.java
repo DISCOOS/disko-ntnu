@@ -7,7 +7,7 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.TreePath;
 
 import org.redcross.sar.gui.model.FileTreeModel;
-import org.redcross.sar.gui.renderer.FileTreeCellRenderer;
+import org.redcross.sar.gui.table.FileTreeCellRenderer;
 import org.redcross.sar.util.Utils;
 
 public class FileTree extends JTree {

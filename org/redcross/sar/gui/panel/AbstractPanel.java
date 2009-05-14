@@ -287,6 +287,12 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 			m_consumeCount--;
 	}
 
+	public int resetChangeable() {
+		int count = m_consumeCount;
+		m_consumeCount = 0;
+		return count;
+	}
+	
     public Dimension getPreferredContainerSize() {
         return (getContainer()!=null ? getContainer().getPreferredSize() : new Dimension(0,0));
     }
@@ -553,15 +559,20 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// loop over all events
 		for(MsoEvent.Update e : events.getEvents(m_msoInterests)) {
 
-			// consume loopback updates
-			if(!e.isLoopback()) {
+			// get mask
+			int mask = e.getEventTypeMask();
 
-				// get mask
-				int mask = e.getEventTypeMask();
+	        // get mso object
+	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 
-		        // get mso object
-		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
-
+			// is loopback update?
+			if(e.isLoopback()) {
+				
+				// forward
+				msoObjectLoopback(msoObj,mask);
+				
+			} else {
+				
 		        // get flag
 		        boolean clearAll = (mask & MsoEvent.MsoEventType.CLEAR_ALL_EVENT.maskValue()) != 0;
 
@@ -755,6 +766,14 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		}
 	}
 
+	protected void msoObjectLoopback(IMsoObjectIf msoObj, int mask) {
+		// is same as selected?
+		if(msoObj == this.m_msoObject) {
+			// forward
+			setMsoObject(m_msoObject);
+		}
+	}
+	
 	protected void setParentManager(Container container, IPanelManager parent, boolean requestMoveTo) {
         for(Component it : container.getComponents()) {
             if(it instanceof IPanel) {

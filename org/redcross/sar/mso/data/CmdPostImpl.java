@@ -209,7 +209,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<CmdPostStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<CmdPostStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -233,7 +233,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_established.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getEstablishedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getEstablishedAttribute()
     {
         return m_established;
     }
@@ -253,7 +253,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_callSign.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getCallSignAttribute()
+    public IMsoAttributeIf.IMsoStringIf getCallSignAttribute()
     {
         return m_callSign;
     }
@@ -273,7 +273,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_toneId.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getToneIDAttribute()
+    public IMsoAttributeIf.IMsoStringIf getToneIDAttribute()
     {
         return m_toneId;
     }
@@ -293,7 +293,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_released.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getReleasedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute()
     {
         return m_released;
     }
@@ -313,7 +313,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_shift.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getShiftAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getShiftAttribute()
     {
         return m_shift;
     }
@@ -333,7 +333,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_telephone1.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephone1Attribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute()
     {
         return m_telephone1;
     }
@@ -353,7 +353,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_telephone2.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephone2Attribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute()
     {
         return m_telephone2;
     }
@@ -373,7 +373,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_telephone3.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephone3Attribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute()
     {
         return m_telephone3;
     }
@@ -770,7 +770,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
             } else if (anObject instanceof IUnitIf)
             {
                 IUnitIf unit = (IUnitIf) anObject;
-                if (IUnitIf.ACTIVE_RANGE.contains(unit.getStatus()))
+                if (IUnitIf.ACTIVE_SET.contains(unit.getStatus()))
                 {
                     return true;
                 } else

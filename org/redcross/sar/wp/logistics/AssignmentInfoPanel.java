@@ -13,7 +13,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.EnumField;
 import org.redcross.sar.gui.field.IDiskoField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
@@ -155,7 +155,7 @@ public class AssignmentInfoPanel extends JPanel
 	}
 
 	private IDiskoField createTextField(String name, int index) {
-		IDiskoField attr = new TextLineField(name,
+		IDiskoField attr = new TextField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,75,25,"");
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 
-import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.event.MsoLayerEventStack;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.OperationAreaMaskFeature;

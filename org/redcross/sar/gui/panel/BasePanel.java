@@ -15,9 +15,10 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
-import org.redcross.sar.Application;
 import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.event.IToggleListener;
@@ -50,13 +51,11 @@ public class BasePanel extends AbstractPanel {
 	protected JScrollPane scrollPane;
 	protected Container container;
 
-	//protected Dimension expandedSize;
-
 	protected int minimumCollapsedHeight;
 	protected int preferredExpandedHeight;
 	
 	// get layout mode
-	protected static boolean isTouchMode = Application.getInstance().isTouchMode();
+	protected int headerPlacement = SwingConstants.TOP;
 
 
 	/* ===========================================
@@ -116,7 +115,7 @@ public class BasePanel extends AbstractPanel {
 
 		// prepare this
 		this.setLayout(new BorderLayout());
-		this.add(getHeaderPanel(),isTouchMode?BorderLayout.SOUTH:BorderLayout.NORTH);
+		this.add(getHeaderPanel(),headerPlacement==SwingUtilities.BOTTOM?BorderLayout.SOUTH:BorderLayout.NORTH);
 		this.add(getScrollPane(),BorderLayout.CENTER);
 		this.setBorderColor(borderColor);
 
@@ -141,6 +140,23 @@ public class BasePanel extends AbstractPanel {
 		}
 	}
 
+	private int resetChangeable(JComponent c) {
+		// initialize
+		int count = 0;
+		// loop over all children
+		for(int i=0; i < c.getComponentCount(); i++){
+			Component it = c.getComponent(i);
+			// implements IChangeable?
+			if(it instanceof IChangeable) {
+				count += ((IChangeable)c.getComponent(i)).resetChangeable();
+			}
+			else if(it instanceof JComponent) {
+				count += resetChangeable((JComponent)it);
+			}
+		}
+		return count;
+	}
+	
 	/* ===========================================
 	 * Public methods
 	 * ===========================================
@@ -198,7 +214,7 @@ public class BasePanel extends AbstractPanel {
 		if (headerPanel == null) {
 			try {
 				headerPanel = new HeaderPanel("",buttonSize);
-				if(isTouchMode) {
+				if(headerPlacement==SwingUtilities.BOTTOM) {
 					headerPanel.setInsets(1,0,0,0);
 				} else {
 					headerPanel.setInsets(0,0,1,0);
@@ -262,6 +278,25 @@ public class BasePanel extends AbstractPanel {
 	public boolean isHeaderVisible() {
 		return getHeaderPanel().isVisible();
 	}
+	
+	/**
+	 * Set the placement of the header (TOP or BOTTOM)
+	 * 
+	 * @param placement - only SwingUtilities.BOTTOM and SwingUtilities.TOP supported
+	 * 
+	 */
+	public void setHeaderPlacement(int placement) {
+		if(headerPlacement != placement) {
+			headerPlacement = placement;
+			this.add(getHeaderPanel(),headerPlacement==SwingUtilities.BOTTOM?BorderLayout.SOUTH:BorderLayout.NORTH);
+			setBorderVisible(isBorderVisible());
+		}
+	}
+
+	public int isHeaderPlacement() {
+		return headerPlacement;
+	}
+	
 
 	@Override
 	public void setBorder(Border border) {
@@ -292,7 +327,7 @@ public class BasePanel extends AbstractPanel {
 		isBorderVisible = isVisible;
 		super.setBorder(createBorder());
 		if(isVisible) {
-			if(isTouchMode) {
+			if(headerPlacement==SwingUtilities.BOTTOM) {
 				getHeaderPanel().setInsets(1, 0, 0, 0);
 			} else {
 				getHeaderPanel().setInsets(0, 0, 1, 0);
@@ -498,6 +533,18 @@ public class BasePanel extends AbstractPanel {
 		}
 	}
 
+	@Override
+	public int resetChangeable() {
+		// forward
+		int count = super.resetChangeable();
+		// loop over all children?
+		if(getContainer() instanceof JComponent) {
+			// cast to JComponent
+			count += resetChangeable((JComponent)getContainer());
+		}
+		return count;
+	}
+	
     public int getMinimumCollapsedHeight() {
         return minimumCollapsedHeight;
     }

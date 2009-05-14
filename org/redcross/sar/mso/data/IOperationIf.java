@@ -19,7 +19,7 @@ public interface IOperationIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getOpNumberState();
 
-    public IAttributeIf.IMsoStringIf getOpNumberAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOpNumberAttribute();
 
     public void setOpNumberPrefix(String aNumberPrefix);
 
@@ -27,7 +27,7 @@ public interface IOperationIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getOpNumberPrefixState();
 
-    public IAttributeIf.IMsoStringIf getOpNumberPrefixAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOpNumberPrefixAttribute();
 
     /*-------------------------------------------------------------------------------------------
      * Methods for references

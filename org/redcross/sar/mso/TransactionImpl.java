@@ -76,8 +76,8 @@ public class TransactionImpl implements ITransactionIf
 	        if (createdObject)
 	        {
 	            m_changeObjects.add(new ChangeImpl.ChangeObject(anObject, ChangeType.CREATED,null));
-	            m_changeAttributeReferences.addAll(anObject.getCommittableAttributeRelations());
-	            m_changeListReferences.addAll(anObject.getCommittableListRelations());
+	            m_changeAttributeReferences.addAll(anObject.getChangedAttributeReferences());
+	            m_changeListReferences.addAll(anObject.getChangedListReferences());
 	            return;
 	        }
 	        if (deletedObject)
@@ -91,8 +91,8 @@ public class TransactionImpl implements ITransactionIf
 	        }
 	        if (modifiedReference)
 	        {
-	            m_changeAttributeReferences.addAll(anObject.getCommittableAttributeRelations());
-	            m_changeListReferences.addAll(anObject.getCommittableListRelations());
+	            m_changeAttributeReferences.addAll(anObject.getChangedAttributeReferences());
+	            m_changeListReferences.addAll(anObject.getChangedListReferences());
 	        }
     	}	       
     }

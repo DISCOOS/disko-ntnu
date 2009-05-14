@@ -60,7 +60,7 @@ public interface IHypothesisIf extends IMsoObjectIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<HypothesisStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<HypothesisStatus> getStatusAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -72,7 +72,7 @@ public interface IHypothesisIf extends IMsoObjectIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getDescriptionState();
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
     public void setPriorityIndex(int aPriority);
 
@@ -80,5 +80,5 @@ public interface IHypothesisIf extends IMsoObjectIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getPriorityIndexState();
 
-    public IAttributeIf.IMsoIntegerIf getPriorityIndexAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityIndexAttribute();
 }

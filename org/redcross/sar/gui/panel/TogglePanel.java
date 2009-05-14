@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
 import org.redcross.sar.gui.DiskoIcon;
@@ -394,7 +395,7 @@ public class TogglePanel extends BasePanel implements ITogglePanel {
                 minimumCollapsedHeight = h;
 
                 // set new insets
-                if(isTouchMode) {
+                if(headerPlacement==SwingUtilities.BOTTOM) {
                 	collapsedInsets = new Insets(0, tmpInsets.left, tmpInsets.bottom, tmpInsets.right);
                 } else {
                 	collapsedInsets = new Insets(tmpInsets.top, tmpInsets.left, 0, tmpInsets.right);

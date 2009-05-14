@@ -40,8 +40,10 @@ import com.esri.arcgis.system.esriLicenseProductCode;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
@@ -61,9 +63,9 @@ import javax.swing.SwingUtilities;
  */
 
 /**
- * @author geira
+ * @author geira, kenneth
  */
-public class Application extends JFrame implements IApplication, WindowListener
+public class Application implements IApplication
 {
 	private static final String CONFIRMATION_TEXT = "CONFIRMATION.TEXT";
 	private static final String CONFIRMATION_TITLE = "CONFIRMATION.HEADER";
@@ -86,6 +88,7 @@ public class Application extends JFrame implements IApplication, WindowListener
     private static final Logger logger = Logger.getLogger(Application.class);	
 	private static final ResourceBundle bundle = Internationalization.getBundle(IApplication.class);
     
+	private JFrame m_frame;
     private IDiskoRole m_currentRole;
 	private Hashtable<String, IDiskoRole> m_roles;
 	private DiskoModuleManager m_moduleLoader;
@@ -99,6 +102,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 	private ServicePool m_servicePool;
 	private DsPool m_dsPool;
 	private ProgressMonitor m_progresMonitor;
+	private PropertyChangeSupport m_propertyChangeSupport;
 	
 	// undo support
 	//private final UndoManager m_undoManager = new UndoManager();
@@ -144,7 +148,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 		{
 			public void run()
 			{
-				Application.getInstance().setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+				Application.getInstance();
 			}
 		});
 	}
@@ -202,6 +206,13 @@ public class Application extends JFrame implements IApplication, WindowListener
   		return m_this;
   	}
 
+    public static JFrame getFrameInstance() {
+  		if (m_this != null) {
+  			return m_this.m_frame;
+  		}
+  		return null;
+  	}
+    
 	/**
 	 * Method overridden to protect singleton
 	 *
@@ -219,51 +230,75 @@ public class Application extends JFrame implements IApplication, WindowListener
 	
 	private void initialize()
 	{
-		try
-		{
-			// initialize logging
-			Log.init("DISKO");
-			// set title
-			this.setTitle("DISKO");
-			// set glass pane
-			this.setGlassPane(getUIFactory().getGlassPane());
-            // set content panel
-			this.setContentPane(getUIFactory().getContentPanel());
-			// apply size and layout
-			this.getFrame().setPreferredSize(new Dimension(1024,768));
-			this.pack();
-			// show extended
-			this.getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
-			// add this as window listener
-			this.addWindowListener(this);
-			// initialize work pool to ensure that this is done on the EDT
-			WorkPool.getInstance();
-			// initialize decision support to ensure that this is done on the EDT
-			DsPool.getInstance();
-			// show me
-			this.setVisible(true);
-			//initiate model driver
-			this.getMsoModel().getDispatcher().initiate();
-			this.getMsoModel().getDispatcher().addDispatcherListener(m_dispatcherAdapter);
-			// prepare IO  
-			IOManager.getInstance();
-			// load services?
-			if(AppProps.getText("SERVICES.initialize").equals("true")) {
-				this.getServicePool().installFromXmlFile(new File("DiskoServices.xml"));
-				this.getServicePool().setAutomatic(AppProps.getText("SERVICES.automatic").equals("true"));
-				this.getServicePool().setMaster(AppProps.getText("SERVICES.master").equals("true"));
+		// initialize logging
+		Log.init("DISKO");
+		// get frame
+		JFrame frame = getFrame();
+		// set title
+		frame.setTitle("DISKO");
+		// set glass pane
+		frame.setGlassPane(getUIFactory().getGlassPane());
+        // set content panel
+		frame.setContentPane(getUIFactory().getContentPanel());
+		// do not close when user clicks the close control box on the title line
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		// add window closing handler
+		frame.addWindowListener(new WindowAdapter() {
+			
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// consume?
+				if(isLoading())
+					Utils.showWarning("Vennligst vent til lasting er ferdig");
+				else
+					finishOperation();
 			}
-			// prepare reporting
-			m_diskoReport = new DiskoReportManager(this);
-			// set loading bit
-			setLoading(true);
-			// forward
-			getUIFactory().getLoginDialog().showLogin(true);
-		}
-		catch (Exception e)
-		{
-			onFatalError("Fatal error","Failed to initialize application instance",e);
-		}
+			
+		});
+		// apply size and layout
+		frame.setPreferredSize(new Dimension(1000,700));
+		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+		frame.pack();
+		// show me
+		frame.setVisible(true);
+		// show progress dialog
+		getProgressMonitor().start("Initialiserer...",0,0,0,0,0);
+		// initialize later
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try
+				{
+					// initialize work pool to ensure that this is done on the EDT
+					WorkPool.getInstance();
+					// initialize decision support to ensure that this is done on the EDT
+					DsPool.getInstance();
+					//initiate model driver
+					getMsoModel().getDispatcher().initiate();
+					getMsoModel().getDispatcher().addDispatcherListener(m_dispatcherAdapter);
+					// prepare IO  
+					IOManager.getInstance();
+					// load services?
+					if(AppProps.getText("SERVICES.initialize").equals("true")) {
+						getServicePool().installFromXmlFile(new File("DiskoServices.xml"));
+						getServicePool().setAutomatic(AppProps.getText("SERVICES.automatic").equals("true"));
+						getServicePool().setMaster(AppProps.getText("SERVICES.master").equals("true"));
+					}
+					// prepare reporting
+					m_diskoReport = new DiskoReportManager(Application.this);
+					// hide progress dialog
+					getProgressMonitor().finish();
+					// set loading bit
+					setLoading(true);
+					// forward
+					getUIFactory().getLoginDialog().showLogin(true);
+					
+				}
+				catch (Exception e)
+				{
+					onFatalError("Fatal error","Failed to initialize application instance",e);
+				}
+			}			
+		});
 	}
 
 	void initializeArcGISLicenses()
@@ -320,7 +355,11 @@ public class Application extends JFrame implements IApplication, WindowListener
 	 */
 	public JFrame getFrame()
 	{
-		return this;
+		if(m_frame==null) {
+			m_frame = new JFrame();
+				
+		}
+		return m_frame;
 	}
 
 	public boolean isLocked() {
@@ -354,7 +393,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 	}
 	
 	public boolean isTouchMode() {
-		return "TOUCH".equalsIgnoreCase(AppProps.getText("GUI.LAYOUT.MODE"));
+		return "TOUCH".equalsIgnoreCase(AppProps.getText(PROP_GUI_LAYOUT_MODE));
 	}
 
 
@@ -496,56 +535,12 @@ public class Application extends JFrame implements IApplication, WindowListener
 			try {
 				m_progresMonitor = ProgressMonitor.getInstance();
 			} catch (Exception e) {
-				onFatalError("Fatal error","Failed to get DsPool instance",e);
+				onFatalError("Fatal error","Failed to get Progress Monitor instance",e);
 			}
 		}
 		return m_progresMonitor;
 	}
 	
-	public void windowClosing(WindowEvent e) {
-		// consume?
-		if(isLoading())
-			Utils.showWarning("Vennligst vent til lasting er ferdig");
-		else
-			finishOperation();
-	}
-
-	public void windowClosed(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowOpened(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowIconified(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowDeiconified(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowActivated(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowDeactivated(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowGainedFocus(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowLostFocus(WindowEvent e) {
-		// NOP
-	}
-
-	public void windowStateChanged(WindowEvent e) {
-		// NOP
-	}
-
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.IApplication#login(java.lang.String, java.lang.String, char[])
 	 */
@@ -566,8 +561,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 				selectActiveOperation(false);
 			} else {
 				// get maximum wait time
-				long maxTime = Long.parseLong(getProperty("max.wait.time",
-						"" + 60 * 1000));
+				long maxTime = Long.parseLong(getProperty("max.wait.time","" + 60 * 1000));
 				// The model driver is not initiated. Schedule the initiation work.
 				// If initiation is successful the active operation is choosen. If initiation fails,
 				// the system will be shut down.
@@ -748,8 +742,7 @@ public class Application extends JFrame implements IApplication, WindowListener
 			getDispatcher().shutdown();
 		}
 		// forward
-		dispose();
-
+		getFrame().dispose();
 	}
 	
 	public void onFatalError(String title, String message) {
@@ -803,7 +796,32 @@ public class Application extends JFrame implements IApplication, WindowListener
 
 	public boolean setProperty(String key, String value)
 	{
-		return AppProps.setText(key,value);
+		String oldValue = AppProps.getText(key);
+		if(AppProps.setText(key,value)) {
+			// notify
+			getPropertyChangeSupport().firePropertyChange(key, oldValue, value);
+			// success
+			return true;
+		}
+		// failed
+		return false;
+	}
+
+	private PropertyChangeSupport getPropertyChangeSupport() {
+		if(m_propertyChangeSupport==null) {
+			m_propertyChangeSupport = new PropertyChangeSupport(this);
+		}
+		return m_propertyChangeSupport;
+	}
+	
+	@Override
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		getPropertyChangeSupport().addPropertyChangeListener(listener);
+	}
+
+	@Override
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		getPropertyChangeSupport().removePropertyChangeListener(listener);
 	}
 
 	private void fireBeforeOperationChange() {

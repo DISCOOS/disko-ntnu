@@ -32,7 +32,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<IntelligenceStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<IntelligenceStatus> getStatusAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -44,7 +44,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getDescriptionState();
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
     public void setPriority(int aPriority);
 
@@ -52,7 +52,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getPriorityState();
 
-    public IAttributeIf.IMsoIntegerIf getPriorityAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute();
 
     public void setSource(String aSource);
 
@@ -60,7 +60,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getSourceState();
 
-    public IAttributeIf.IMsoStringIf getSourceAttribute();
+    public IMsoAttributeIf.IMsoStringIf getSourceAttribute();
 
     public void setTime(Calendar aTime);
 
@@ -68,7 +68,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTimeState();
 
-    public IAttributeIf.IMsoCalendarIf getTimeAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getTimeAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for references

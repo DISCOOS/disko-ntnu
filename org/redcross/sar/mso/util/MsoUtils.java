@@ -23,7 +23,7 @@ import org.redcross.sar.mso.data.AbstractUnit;
 import org.redcross.sar.mso.data.AttributeImpl;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IMessageIf;
@@ -44,6 +44,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
+import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -74,19 +75,18 @@ public class MsoUtils {
 				return IAssignmentIf.DELETABLE_SET.contains(assignment.getStatus());
 		}
 		else if (msoObj instanceof IUnitIf) {
-			return IUnitIf.DELETEABLE_SET.contains(((IUnitIf)msoObj).getStatus());
+			return !IUnitIf.HISTORY_SET.contains(((IUnitIf)msoObj).getStatus());
 		}
+		else if (msoObj instanceof IPersonnelIf) {
+			return !IPersonnelIf.HISTORY_SET.contains(((IUnitIf)msoObj).getStatus());			
+		}
+		// all else is editable by default
 		return true;
 	}
 	
 	public static boolean isDeleteable(IMsoObjectIf msoObj) {
 		// choose delete operations
-		if (msoObj instanceof IOperationAreaIf)
-			return true;
-		else if (msoObj instanceof ISearchAreaIf) {
-			return true;
-		}
-		else if (msoObj instanceof IAreaIf) {
+		if (msoObj instanceof IAreaIf) {
 			return isEditable(msoObj);
 		}					
 		else if (msoObj instanceof IRouteIf) {
@@ -96,15 +96,43 @@ public class MsoUtils {
 			return isEditable(msoObj);
 		}		
 		else if (msoObj instanceof IUnitIf) {
+			if(isEditable(msoObj)) {
+				
+				// cast to IUnitIf
+				IUnitIf unit = (IUnitIf)msoObj;
+				
+				// has assignments?
+				if(unit.getActiveAssignment()==null 
+						&& unit.getFinishedAssigments().size()==0) {
+				
+					// get cmd post
+					ICmdPostIf cmdPost = unit.getModel().getMsoManager().getCmdPost();
+	
+					// has command post?
+					if(cmdPost!=null) {
+					
+						// Check message log for references
+						for(IMessageIf message : cmdPost.getMessageLogItems())
+						{
+							if(message.getSender() == unit || message.getReceiver() == unit)
+							{
+								return false;
+							}
+						}
+					}
+				}
+			}
+		}		
+		else if (msoObj instanceof IPersonnelIf) {
 			return isEditable(msoObj);
 		}		
-		// all else is deletable
+		// all else is deleteable by default
 		return true;
 	}
 	
 	public static boolean delete(IMsoObjectIf msoObject, int options) {
 		
-		// allowd?
+		// allowed?
 		if(isDeleteable(msoObject)) {		
 			// dispatch type
 			if(msoObject instanceof IAreaIf) {
@@ -257,9 +285,13 @@ public class MsoUtils {
 		else if(msoObj instanceof IPOIIf) {
 			e =((IPOIIf)msoObj).getType();
 		}
+		else {
+			e = msoObj.getMsoClassCode();			
+		}
 		
-    	// return sub type
+    	// finished
         return e;
+        
     }    
     
     public static Enum<?> getStatus(IMsoObjectIf msoObj)
@@ -546,7 +578,7 @@ public class MsoUtils {
 	}
 	
 	public static String getUnitName(IUnitIf unit, boolean include) {
-		String name = "<Unknown>";
+		String name = "";
 		if(unit!=null) {
 			name = DiskoEnumFactory.getText(unit.getType()) + " " + unit.getNumber();
 			// include status text?
@@ -1024,7 +1056,7 @@ public class MsoUtils {
 		}
 		return p;
 	}	
-	public static Object getAttribValue(IAttributeIf<?> attribute) {
+	public static Object getAttribValue(IMsoAttributeIf<?> attribute) {
 		// dispatch attribute type
 		if (attribute instanceof AttributeImpl.MsoBoolean) {
 		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
@@ -1075,7 +1107,14 @@ public class MsoUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static boolean setAttribValue(IAttributeIf<?> attribute, Object value) {
+	public static boolean setAttribValue(IMsoAttributeIf<?> attribute, Object value) {
+		
+		// set null value?
+		if(value==null) {
+			attribute.set(null);
+			return true;
+		}
+		
 		// dispatch attribute type
 		if (attribute instanceof AttributeImpl.MsoBoolean) {
 		    AttributeImpl.MsoBoolean lAttr = (AttributeImpl.MsoBoolean) attribute;
@@ -1099,6 +1138,9 @@ public class MsoUtils {
 		    AttributeImpl.MsoString lAttr = (AttributeImpl.MsoString) attribute;
 		    if(value instanceof String) {
 		    	lAttr.set((String)value); return true;
+		    }
+		    else if(value!=null) {
+		    	lAttr.set(value.toString()); return true;
 		    }
 		}
 		else if (attribute instanceof AttributeImpl.MsoCalendar) {

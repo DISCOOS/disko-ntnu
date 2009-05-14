@@ -15,7 +15,7 @@ public interface IRouteIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getGeodataState();
 
-    public IAttributeIf.IMsoRouteIf getGeodataAttribute();
+    public IMsoAttributeIf.IMsoRouteIf getGeodataAttribute();
 
     public void setRemarks(String aRemarks);
 
@@ -23,7 +23,7 @@ public interface IRouteIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     public void setAreaSequenceNumber(int aNumber);
 
@@ -31,7 +31,7 @@ public interface IRouteIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getAreaSequenceNumberState();
 
-    public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
     
     /*-------------------------------------------------------------------------------------------
      * Public methods

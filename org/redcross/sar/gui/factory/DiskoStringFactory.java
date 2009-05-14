@@ -73,13 +73,29 @@ public class DiskoStringFactory {
 		String key = null;
 		if(value!=null) {
 			if(value instanceof Enum)
-				key = BasicDiskoFactory.getKey((Enum)value, "text");
+				key = BasicDiskoFactory.getKey((Enum<?>)value, "text");
 			else if (value instanceof String)
 				key = value.toString();
 			else
 				key = BasicDiskoFactory.getKey(value.toString(), "text");
 		}
 		return key;
+	}
+	
+	public static String getBooleanText(boolean isTrue) {
+		return isTrue?getText("TRUE"):getText("FALSE"); 
+	}
+	
+	public static String getAnswerText(boolean isYes) {
+		return isYes?getText("YES"):getText("NO"); 
+	}
+	
+	public static String getSelectionText(boolean isSelected) {
+		return isSelected?getText("SELECTED"):getText("NOT_SELECTED"); 
+	}
+	
+	public static String getNullText() {
+		return getText("NULL");
 	}
 	
 }

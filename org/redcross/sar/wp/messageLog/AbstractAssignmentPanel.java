@@ -37,7 +37,7 @@ import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
@@ -240,7 +240,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
     	m_editAssignmentPanel = new FieldsPanel("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
 
     	// add attributes
-    	m_editAssignmentPanel.addField(new TextLineField("Assignment",
+    	m_editAssignmentPanel.addField(new TextField("Assignment",
     			m_aWp.getBundleText("AssignmentLabel.text"),false,120,25,"<velg oppdrag>"));
     	m_editAssignmentPanel.addField(new DTGField("Time",
     			m_aWp.getBundleText("AllocatedTimeLabel.text"),true,120,25,Calendar.getInstance()));
@@ -695,14 +695,14 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
 	    	// create?
     		if(m_selectedPanel.getFieldCount()==0) {
 	    		// add attributes (this should only occur once)
-    			m_selectedPanel.addField(new TextLineField("Assignment",
+    			m_selectedPanel.addField(new TextField("Assignment",
     					m_aWp.getBundleText("AssignmentLabel.text"),false,
     					120,25, MsoUtils.getAssignmentName(selected, 1)));
-    			m_selectedPanel.addField(new TextLineField("Priority",
+    			m_selectedPanel.addField(new TextField("Priority",
     					m_aWp.getBundleText("PriorityLabel.text"),false,
     					120,25,selected.getPriorityText()));
     			IUnitIf unit = selected.getOwningUnit();
-    			m_selectedPanel.addField(new TextLineField("Owner",
+    			m_selectedPanel.addField(new TextField("Owner",
     					m_aWp.getBundleText("OwnerLabel.text"),false,
     					120,25,unit!=null ? MsoUtils.getUnitName(unit, false) : ""));
     			m_selectedPanel.addField(selected.getRemarksAttribute(),

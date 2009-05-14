@@ -18,7 +18,7 @@ import java.util.Vector;
  * Generic class for all MSO attributes
  */
 @SuppressWarnings("unchecked")
-public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<AttributeImpl<T>>
+public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable<AttributeImpl<T>>
 {
     private final String m_name;
     private final int m_cardinality;
@@ -118,7 +118,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
     
     public void set(T aValue)
     {
-        if (!m_class.isAssignableFrom(aValue.getClass()))
+        if (aValue!=null && !m_class.isAssignableFrom(aValue.getClass()))
         {
             throw new ClassCastException("Cannot cast " + aValue.getClass() + " to " + m_class.toString());
         }
@@ -170,6 +170,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         // translate
         switch (updateMode)
         {
+        /*
             case LOOPBACK_UPDATE_MODE:
             {
             	/* ===========================================================
@@ -219,7 +220,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
             	 * discarded.
             	 *
             	 * =========================================================== */
-
+        	/*
                 // only server value is kept
                 m_localValue = null;
 
@@ -237,6 +238,7 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
                 break;
 
             }
+            */
             case REMOTE_UPDATE_MODE:
             {
             	/* ===========================================================
@@ -289,7 +291,6 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
                 // notify change
                 isChanged |= isConflict;
-
 
                 break;
             }
@@ -368,10 +369,15 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
         }
         return null;
     }
+    
+    public boolean isChanged() {
+    	return m_state == ModificationState.STATE_LOCAL 
+    		|| m_state == ModificationState.STATE_CONFLICTING;
+    }
 
     public boolean rollback()
     {
-        boolean isChanged = m_state == ModificationState.STATE_LOCAL || m_state == ModificationState.STATE_CONFLICTING;
+        boolean isChanged = isChanged();
         if(isChanged)
         {
 	        m_localValue = null;
@@ -382,8 +388,8 @@ public abstract class AttributeImpl<T> implements IAttributeIf<T>, Comparable<At
 
     public boolean postProcessCommit()
     {
-        boolean isChanged = m_state == ModificationState.STATE_LOCAL || m_state == ModificationState.STATE_CONFLICTING;
-        if (isChanged)
+        boolean isChanged = isChanged();
+        if(isChanged)
         {
             m_serverValue = m_localValue;
             m_localValue = null;

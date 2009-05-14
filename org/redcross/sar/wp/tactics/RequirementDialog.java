@@ -248,7 +248,7 @@ public class RequirementDialog extends DefaultDialog {
 					model.addElement(values[i]);
 				}
 				priorityCombo.fill(model);
-				JComboBox cb = (JComboBox)priorityCombo.getComponent();
+				JComboBox cb = (JComboBox)priorityCombo.getEditComponent();
 				cb.setRenderer(new BundleListCellRenderer());
 				cb.setSelectedIndex(0);
 
@@ -273,7 +273,7 @@ public class RequirementDialog extends DefaultDialog {
 					model.addElement(new Integer(i*25));
 				}
 				accuracyCombo.fill(model);
-				JComboBox cb = (JComboBox)accuracyCombo.getComponent();
+				JComboBox cb = (JComboBox)accuracyCombo.getEditComponent();
 				cb.setSelectedIndex(0);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();
@@ -296,7 +296,7 @@ public class RequirementDialog extends DefaultDialog {
 					model.addElement(new Integer(i));
 				}
 				personnelCombo.fill(model);
-				JComboBox cb = (JComboBox)accuracyCombo.getComponent();
+				JComboBox cb = (JComboBox)accuracyCombo.getEditComponent();
 				cb.setSelectedIndex(0);
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace();

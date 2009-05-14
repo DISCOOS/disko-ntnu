@@ -174,6 +174,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         // replace current relation
         switch (updateMode)
         {
+        	/*
             case LOOPBACK_UPDATE_MODE:
             {
 
@@ -238,7 +239,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * discarded.
             	 *
             	 * =========================================================== */
-
+        	/*
             	// set state
             	newState = ModificationState.STATE_SERVER;
 
@@ -282,6 +283,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
                 break;
             }
+            */
             case REMOTE_UPDATE_MODE:
             {
 
@@ -325,7 +327,7 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
                 		  ModificationState.STATE_CONFLICTING
                 		: ModificationState.STATE_SERVER;
 
-                // set loopback flag
+                // set loop-back flag
                 isLoopback = !isConflict;
 
                 // only reset local value if no conflict is found,
@@ -559,7 +561,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         return acceptConflicting(ModificationState.STATE_SERVER);
     }
 
-
     public boolean isUncommitted()
     {
         return m_state == ModificationState.STATE_LOCAL;
@@ -567,12 +568,12 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public boolean canDeleteReference(T anObject)
     {
-        return (getReference() == anObject && canDelete());
+        return (anObject!=null && getReference() == anObject && canDelete());
     }
 
     public boolean doDeleteReference(T anObject)
     {
-        if (canDelete())
+        if (canDeleteReference(anObject))
         {
             String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
             System.out.println("Delete reference from " + s + " to " + anObject);
@@ -590,28 +591,33 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	// register
                 registerDeletedReference(m_localValue,true,true,false);
             }
-
+        	// success
             return true;
         }
+        // not allowed
         return false;
     }
 
-    public Collection<ChangeImpl.ChangeReference> getCommittableRelations()
+    protected Collection<ChangeImpl.ChangeReference> getChangedReferences()
     {
-        Vector<ChangeImpl.ChangeReference> retVal = new Vector<ChangeImpl.ChangeReference>();
+    	/* ==================================================================
+    	 * Algorithm for committing reference
+    	 * ================================================================== */
+        Vector<ChangeImpl.ChangeReference> changes = new Vector<ChangeImpl.ChangeReference>();
         if (m_state == ModificationState.STATE_LOCAL)
         {
+        	// notify that current (server) reference should be deleted?
             if (m_serverValue != null && !m_serverValue.hasBeenDeleted())
             {
-                retVal.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_serverValue, ChangeType.DELETED));
+                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_serverValue, ChangeType.DELETED));
             }
+            // notify that a new (server) reference should created?
             if (m_localValue != null)
             {
-                retVal.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_localValue, ChangeType.CREATED));
+                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_localValue, ChangeType.CREATED));
             }
-
         }
-        return retVal;
+        return changes;
     }
 
 }

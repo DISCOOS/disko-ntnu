@@ -46,7 +46,7 @@ public interface ICalloutIf extends IAssociationIf
 
 	public IMsoModelIf.ModificationState getTitleState();
 
-    public IAttributeIf.IMsoStringIf getTitleAttribute();
+    public IMsoAttributeIf.IMsoStringIf getTitleAttribute();
 
 
     public void setCreated(Calendar created);
@@ -55,7 +55,7 @@ public interface ICalloutIf extends IAssociationIf
 
 	public IMsoModelIf.ModificationState getCreatedState();
 
-    public IAttributeIf.IMsoCalendarIf getCreatedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute();
 
 
     public void setOrganization(String organization);
@@ -64,7 +64,7 @@ public interface ICalloutIf extends IAssociationIf
 
 	public IMsoModelIf.ModificationState getOrganizationState();
 
-    public IAttributeIf.IMsoStringIf getOrganizationAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute();
 
 
 	/*-------------------------------------------------------------------------------------------

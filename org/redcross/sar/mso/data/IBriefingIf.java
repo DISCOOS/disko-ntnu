@@ -1,8 +1,6 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.util.except.DuplicateIdException;
-
 import java.util.Calendar;
 import java.util.Collection;
 
@@ -18,7 +16,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getActiveState();
 
-    public IAttributeIf.IMsoBooleanIf getActiveAttribute();
+    public IMsoAttributeIf.IMsoBooleanIf getActiveAttribute();
 
     public void setChannel1(String aChannel1);
 
@@ -26,7 +24,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getChannel1State();
 
-    public IAttributeIf.IMsoStringIf getChannel1Attribute();
+    public IMsoAttributeIf.IMsoStringIf getChannel1Attribute();
 
     public void setChannel2(String aChannel2);
 
@@ -34,7 +32,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getChannel2State();
 
-    public IAttributeIf.IMsoStringIf getChannel2Attribute();
+    public IMsoAttributeIf.IMsoStringIf getChannel2Attribute();
 
     public void setClosure(Calendar aClosure);
 
@@ -42,7 +40,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getClosureState();
 
-    public IAttributeIf.IMsoCalendarIf getClosureAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getClosureAttribute();
 
     public void setCommsProcedure(String aCommsProcedure);
 
@@ -50,7 +48,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getCommsProcedureState();
 
-    public IAttributeIf.IMsoStringIf getCommsProcedureAttribute();
+    public IMsoAttributeIf.IMsoStringIf getCommsProcedureAttribute();
 
     public void setFindingsProcedure(String aFindingsProcedure);
 
@@ -58,7 +56,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getFindingsProcedureState();
 
-    public IAttributeIf.IMsoStringIf getFindingsProcedureAttribute();
+    public IMsoAttributeIf.IMsoStringIf getFindingsProcedureAttribute();
 
     public void setImportantClues(String aImportantClues);
 
@@ -66,7 +64,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getImportantCluesState();
 
-    public IAttributeIf.IMsoStringIf getImportantCluesAttribute();
+    public IMsoAttributeIf.IMsoStringIf getImportantCluesAttribute();
 
     public void setMediaProcedure(String aMediaProcedure);
 
@@ -74,7 +72,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getMediaProcedureState();
 
-    public IAttributeIf.IMsoStringIf getMediaProcedureAttribute();
+    public IMsoAttributeIf.IMsoStringIf getMediaProcedureAttribute();
 
     public void setOther(String aOther);
 
@@ -82,7 +80,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getOtherState();
 
-    public IAttributeIf.IMsoStringIf getOtherAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOtherAttribute();
 
     public void setOthers(String aOthers);
 
@@ -90,7 +88,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getOthersState();
 
-    public IAttributeIf.IMsoStringIf getOthersAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOthersAttribute();
 
     public void setOverallStrategy(String aOverallStrategy);
 
@@ -98,7 +96,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getOverallStrategyState();
 
-    public IAttributeIf.IMsoStringIf getOverallStrategyAttribute();
+    public IMsoAttributeIf.IMsoStringIf getOverallStrategyAttribute();
 
     public void setRepeaters(String aRepeaters);
 
@@ -106,7 +104,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getRepeatersState();
 
-    public IAttributeIf.IMsoStringIf getRepeatersAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRepeatersAttribute();
 
     public void setSupplies(String aSupplies);
 
@@ -114,7 +112,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getSuppliesState();
 
-    public IAttributeIf.IMsoStringIf getSuppliesAttribute();
+    public IMsoAttributeIf.IMsoStringIf getSuppliesAttribute();
 
     public void setTelephones(String aTelephones);
 
@@ -122,7 +120,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephonesState();
 
-    public IAttributeIf.IMsoStringIf getTelephonesAttribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephonesAttribute();
 
     public void setTransportProcedure(String aTransportProcedure);
 
@@ -130,7 +128,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTransportProcedureState();
 
-    public IAttributeIf.IMsoStringIf getTransportProcedureAttribute();
+    public IMsoAttributeIf.IMsoStringIf getTransportProcedureAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for lists

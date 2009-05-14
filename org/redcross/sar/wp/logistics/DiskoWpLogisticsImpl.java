@@ -34,7 +34,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
     public DiskoWpLogisticsImpl() throws IllegalClassFormatException
     {
     	// forward role to abstract class
-        super();
+        super(Logger.getLogger(DiskoWpLogisticsImpl.class));
 
         // initialize GUI
         initialize();

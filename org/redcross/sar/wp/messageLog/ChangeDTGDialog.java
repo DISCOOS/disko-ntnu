@@ -127,7 +127,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		this.setVisible(true);
 
 		// request focus on input field
-		getTimeAttr().getTextField().requestFocusInWindow();
+		getTimeAttr().getEditComponent().requestFocusInWindow();
 
 
 	}
@@ -260,7 +260,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_numPadPanel = new NumPadPanel("Tastatur",false,false);
 			m_numPadPanel.setHeaderVisible(false);
 			m_numPadPanel.setInputVisible(false);
-			m_numPadPanel.setInputField(getTimeAttr().getTextField(), false);
+			m_numPadPanel.setInputField(getTimeAttr().getEditComponent(), false);
 			m_numPadPanel.addWorkFlowListener(getContentPanel());
 		}
 		return m_numPadPanel;

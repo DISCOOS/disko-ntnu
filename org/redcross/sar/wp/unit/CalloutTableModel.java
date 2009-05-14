@@ -14,8 +14,12 @@ public class CalloutTableModel extends AbstractMsoTableModel<ICalloutIf>
 {
 	private static final long serialVersionUID = 1L;
 
-	private static final String DTG = "dtg";
-	private static final String TITLE = "title";
+	public static final String DTG = "dtg";
+	public static final String TITLE = "title";
+	public static final String VIEW = "view";
+
+	public static final String[] NAMES = new String[] { DTG, VIEW, VIEW };
+	public static final String[] CAPTIONS = new String[] { "DTG", "Tittel", "Vis" };
 
 	/* ===============================================================
 	 * Constructors
@@ -69,11 +73,11 @@ public class CalloutTableModel extends AbstractMsoTableModel<ICalloutIf>
 	 * =============================================================== */
 
 	public String[] getNames() {
-		return new String[] {TITLE, DTG};
+		return NAMES;
 	}
 
 	public String[] getCaptions() {
-		return new String[] {"DTG", "Tittel"};
+		return CAPTIONS;
 	}
 
 

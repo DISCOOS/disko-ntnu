@@ -25,8 +25,10 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTrans
     public enum UpdateMode
     {
         LOCAL_UPDATE_MODE,
-        REMOTE_UPDATE_MODE,
-        LOOPBACK_UPDATE_MODE
+        REMOTE_UPDATE_MODE /*,
+        LOOPBACK_UPDATE_MODE 	  This mode is replaced by loop-back detection in
+         						  in IAttributeIf, IMsoListIf and IReferenceIf
+         						  implementations */
     }
 
     /**
@@ -82,7 +84,7 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTrans
     /**
      * Set update mode to {@link UpdateMode#LOOPBACK_UPDATE_MODE LOOPBACK_UPDATE_MODE}.
      */
-    public void setLoopbackUpdateMode();
+    //public void setLoopbackUpdateMode();
 
     /**
      * Restore previous update mode.

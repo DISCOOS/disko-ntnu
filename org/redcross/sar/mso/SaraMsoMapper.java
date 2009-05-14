@@ -3,7 +3,7 @@ package org.redcross.sar.mso;
 import no.cmr.geo.PositionOccurrence;
 import no.cmr.tools.Log;
 import org.redcross.sar.mso.data.AttributeImpl;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.util.mso.*;
 import org.rescuenorway.saraccess.model.*;
 import org.rescuenorway.saraccess.model.TimePos;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class SaraMsoMapper {
 
-    public static void mapMsoAttrToSarFact(SarObject sarObj, SarFact sarFact, IAttributeIf<?> msoAttr, boolean distribute) {
+    public static void mapMsoAttrToSarFact(SarObject sarObj, SarFact sarFact, IMsoAttributeIf<?> msoAttr, boolean distribute) {
         try
         {
         if (msoAttr instanceof AttributeImpl.MsoBoolean) {

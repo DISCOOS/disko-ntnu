@@ -7,8 +7,6 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.Route;
-import org.redcross.sar.util.mso.TimePos;
-import org.redcross.sar.util.mso.Track;
 
 public class RouteImpl extends AbstractMsoObject implements IRouteIf
 {
@@ -77,7 +75,7 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         return m_geodata.getState();
     }
 
-    public IAttributeIf.IMsoRouteIf getGeodataAttribute()
+    public IMsoAttributeIf.IMsoRouteIf getGeodataAttribute()
     {
         return m_geodata;
     }
@@ -97,7 +95,7 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }
@@ -155,7 +153,7 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         return m_areaSequenceNumber.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()
     {
         return m_areaSequenceNumber;
     }

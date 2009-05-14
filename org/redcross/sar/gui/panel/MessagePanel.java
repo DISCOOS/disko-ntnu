@@ -2,6 +2,7 @@
 package org.redcross.sar.gui.panel;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.font.FontRenderContext;
@@ -13,8 +14,9 @@ import java.text.AttributedString;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
+import javax.swing.UIManager;
+import javax.swing.text.html.HTMLDocument;
 
-import org.redcross.sar.gui.UIConstants;
 import org.redcross.sar.util.Utils;
 
 public class MessagePanel extends DefaultPanel {
@@ -49,11 +51,17 @@ public class MessagePanel extends DefaultPanel {
 	private JEditorPane getMessagePane() {
 		if(m_msgPane == null) {
 			m_msgPane = new JEditorPane();
-			m_msgPane.setFont(UIConstants.DEFAULT_PLAIN_MEDIUM_FONT);
 			m_msgPane.setContentType("text/html");
 			m_msgPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 			m_msgPane.setEditable(false);
 			m_msgPane.setOpaque(false);
+			// add a CSS rule to force body tags to use the default label font
+	        // instead of the value in javax.swing.text.html.default.css
+	        Font font = UIManager.getFont("EditorPane.font");
+	        String bodyRule = "body { font-family: " 
+	        	+ font.getFamily() + "; " 
+	        	+ "font-size: " + font.getSize() + "pt; }";
+	        ((HTMLDocument)m_msgPane.getDocument()).getStyleSheet().addRule(bodyRule);
 		}
 		return m_msgPane;
 	}

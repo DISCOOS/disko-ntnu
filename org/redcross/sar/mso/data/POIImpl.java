@@ -116,7 +116,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_type.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<POIType> getTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<POIType> getTypeAttribute()
     {
         return m_type;
     }
@@ -140,7 +140,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_name.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getNameAttribute()
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute()
     {
         return m_name;
     }
@@ -160,7 +160,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_position.getState();
     }
 
-    public IAttributeIf.IMsoPositionIf getPositionAttribute()
+    public IMsoAttributeIf.IMsoPositionIf getPositionAttribute()
     {
         return m_position;
     }
@@ -180,7 +180,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }
@@ -200,7 +200,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_areaSequenceNumber.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()
     {
         return m_areaSequenceNumber;
     }

@@ -8,7 +8,7 @@ import java.awt.Frame;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
-import org.redcross.sar.gui.renderer.MsoIconListCellRenderer;
+import org.redcross.sar.gui.renderer.MsoListCellRenderer;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -35,8 +35,10 @@ public class SelectMsoObjectDialog extends ListSelectorDialog {
 	}
 	
 	private void initialize() {
-		// render 
-		getListSelectorPanel().getList().setCellRenderer(new MsoIconListCellRenderer(1,true,"32x32"));
+		// set new render 
+		getListSelectorPanel().getList().setCellRenderer(
+				new MsoListCellRenderer(1,true,true,
+						"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
 	}
 	
 	

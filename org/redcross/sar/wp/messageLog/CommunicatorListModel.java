@@ -357,7 +357,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 					// cast to IUnitIf
 					IUnitIf unit = (IUnitIf)c;
 					// select?
-					return IUnitIf.ACTIVE_RANGE.contains(unit.getStatus());
+					return IUnitIf.ACTIVE_SET.contains(unit.getStatus());
 				}
 				else
 				{
@@ -391,7 +391,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 						// cast to IUnitIf
 						IUnitIf unit = (IUnitIf)c;
 						// select?
-						return IUnitIf.ACTIVE_RANGE.contains(unit.getStatus());
+						return IUnitIf.ACTIVE_SET.contains(unit.getStatus());
 					}
 					else
 					{
@@ -432,7 +432,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 					// cast to IUnitIf
 					IUnitIf unit = (IUnitIf)c;
 					// select?
-					return IUnitIf.ACTIVE_RANGE.contains(unit.getStatus()) &&
+					return IUnitIf.ACTIVE_SET.contains(unit.getStatus()) &&
 							(type == unit.getType() || type == null);
 				}
 				else

@@ -10,8 +10,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
 import org.redcross.sar.Application;
-import org.redcross.sar.mso.MsoModelImpl;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.event.IWorkListener;
 import org.redcross.sar.work.event.WorkEvent;
 

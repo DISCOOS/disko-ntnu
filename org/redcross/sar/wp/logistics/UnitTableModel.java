@@ -477,7 +477,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     	public boolean include(Entry<? extends UnitTableModel, ? extends Integer> entry) {
     		UnitTableModel model = entry.getModel();
     		IUnitIf unit = model.getId(entry.getIdentifier());
-            return (IUnitIf.ACTIVE_RANGE.contains(unit.getStatus()) &&
+            return (IUnitIf.ACTIVE_SET.contains(unit.getStatus()) &&
                     m_unitTypeSelection.contains(unit.getType()));
     	}
     };

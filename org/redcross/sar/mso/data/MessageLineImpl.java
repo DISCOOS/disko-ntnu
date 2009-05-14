@@ -113,7 +113,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineType.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<MessageLineType> getLineTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<MessageLineType> getLineTypeAttribute()
     {
         return m_lineType;
     }
@@ -137,7 +137,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineNumber.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getLineNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getLineNumberAttribute()
     {
         return m_lineNumber;
     }
@@ -158,7 +158,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineText.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getLineTextAttribute()
+    public IMsoAttributeIf.IMsoStringIf getLineTextAttribute()
     {
         return m_lineText;
     }
@@ -178,7 +178,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_operationTime.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getLineTimeAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getLineTimeAttribute()
     {
         return m_operationTime;
     }
@@ -196,7 +196,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 		return m_linePosition.getState();
 	}
 
-    public IAttributeIf.IMsoPositionIf getLinePositionAttribute()
+    public IMsoAttributeIf.IMsoPositionIf getLinePositionAttribute()
     {
         return m_linePosition;
     }

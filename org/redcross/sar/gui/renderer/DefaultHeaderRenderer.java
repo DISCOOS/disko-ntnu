@@ -23,7 +23,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.util.Utils;
 
-public class DefaultHeaderRenderer implements TableHeaderRenderer {
+public class DefaultHeaderRenderer implements ITableHeaderRenderer {
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,6 +67,15 @@ public class DefaultHeaderRenderer implements TableHeaderRenderer {
 	 * =============================================================== */
 
 	public int getWidth(Graphics g, JTable table, int row, int col) {
+		// check if width is fixed?
+		if(table.getModel() instanceof IDiskoTableModel) {
+			IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+			col = table.convertColumnIndexToModel(col);
+			if(model.isColumnWidthFixed(col)) {
+				return model.getColumnFixedWidth(col);
+			} 
+		}
+		// calculate width from data
 		Object value = table.getColumnModel().getColumn(col).getHeaderValue();
 		getTableCellRendererComponent(table,value,false,false,row, col);
 		Icon icon = m_panel.getCaptionIcon();
@@ -151,6 +160,11 @@ public class DefaultHeaderRenderer implements TableHeaderRenderer {
 				setEditor(model.getHeaderEditor(col));
 				setEditorVisible(model.isHeaderEditable(col));
 				m_panel.setCaptionAlignment(model.getColumnAlignment(col));
+				if(model.isColumnWidthFixed(col)) {
+					Utils.setFixedWidth(m_panel, model.getColumnFixedWidth(col));
+				} else {
+					Utils.setAnySize(m_panel, m_panel.getWidth(), m_panel.getHeight());
+				}
 			}
 		}
 		return m_panel;

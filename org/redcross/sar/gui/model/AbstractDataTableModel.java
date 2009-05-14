@@ -270,8 +270,8 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 	/**
 	 * Is fired when IDataModel.remove(S id) is called.
 	 *
-	 * @param S id - The affected row id. If <code>null</code>, all rows are removed.
-	 * @param boolean finalize - If <code>true</code>, object references to data should be set to <code>null</code>
+	 * @param S id - The affected row id. If <code>null</code>, all rows should be removed.
+	 * @param boolean finalize - If <code>true</code>, all references to data should be set to <code>null</code>
 	 */
 	protected void cleanup(S id, boolean finalize) { /*NOP*/ }
 

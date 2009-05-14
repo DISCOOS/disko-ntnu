@@ -15,8 +15,11 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JDialog;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.undo.UndoableEdit;
@@ -72,9 +75,6 @@ public class DefaultDialog extends JDialog implements IDialog {
     private boolean snapToInside = true;		// if true, snap inside the visible rectangle of snapToComponent
     private boolean isSnapToLocked = false;		// if true, this can only move together with snapToComponent
 
-    //private int width  = -1;
-    //private int height = -1;
-
     private Component snapToComponent;
 
     private float opacity = 1.0f;
@@ -101,7 +101,7 @@ public class DefaultDialog extends JDialog implements IDialog {
      * ========================================================== */
 
     public DefaultDialog() {
-        this(Application.getInstance());
+        this(Application.getInstance().getFrame());
     }
 
     public DefaultDialog(Window owner) {
@@ -136,6 +136,27 @@ public class DefaultDialog extends JDialog implements IDialog {
         // add glass pane listener
         getGlassPane().addGlassPaneListener(m_adapter);
 
+        // add application property change listener
+        Application.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+
+        	@Override
+			public void propertyChange(PropertyChangeEvent e) 
+        	{
+				Component c = getContentPane();
+				if(c instanceof BasePanel) 
+				{
+					if(Application.PROP_GUI_LAYOUT_MODE
+							.equalsIgnoreCase(e.getPropertyName())) 
+					{
+						BasePanel p = (BasePanel)c;
+						boolean b = Application.getInstance().isTouchMode();
+						p.setHeaderPlacement(b?SwingConstants.BOTTOM:SwingConstants.TOP);
+					}
+				}			
+			}
+        	
+        });
+        
         // test for translucency support
         validateTranslucencySupport();
 
@@ -160,6 +181,12 @@ public class DefaultDialog extends JDialog implements IDialog {
         if(c instanceof IPanel) {
             IPanel p = (IPanel)c;
             p.setParentManager(this, true, false);
+        }
+        // is instance of BasePanel?
+        if(c instanceof BasePanel) {
+        	BasePanel p = (BasePanel)c;
+        	p.setHeaderPlacement(Application.getInstance().isTouchMode() ?
+        			SwingUtilities.BOTTOM:SwingUtilities.TOP);
         }
 
     }
@@ -424,6 +451,12 @@ public class DefaultDialog extends JDialog implements IDialog {
             ((IPanel)getContentPane()).setChangeable(isChangeable);
     }
 
+    public int resetChangeable() {
+        if(isWorkSupported())
+            return ((IPanel)getContentPane()).resetChangeable();
+        return -1;
+    }
+    
     public IMsoObjectIf getMsoObject() {
         if(isWorkSupported()) {
             return ((IMsoHolder)getContentPane()).getMsoObject();

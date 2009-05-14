@@ -21,7 +21,7 @@ import com.esri.arcgis.interop.AutomationException;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.AbstractField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.menu.NavMenu;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.GotoPanel;
@@ -64,7 +64,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	protected GotoPanel m_gotoPanel;
 	protected HeaderPanel m_optionsPanel;
 	protected POITypesPanel m_typesPanel;
-	protected TextLineField m_nameAttr;
+	protected TextField m_nameAttr;
 
 	protected IDiskoWpMessageLog m_wp;
 
@@ -239,10 +239,10 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private TextLineField getNameAttr() {
+	private TextField getNameAttr() {
 		if (m_nameAttr == null) {
 			// get from position panel
-			m_nameAttr = (TextLineField)getPOIPanel().getOptionsPanel().getField("Name");
+			m_nameAttr = (TextField)getPOIPanel().getOptionsPanel().getField("Name");
 			m_nameAttr.setCaptionText("Navn i kart");
 			m_nameAttr.setFixedCaptionWidth(80);
 		}
@@ -259,7 +259,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			// create header panel
 			m_optionsPanel = new HeaderPanel("",ButtonSize.SMALL,SwingConstants.LEFT);
 			// get name attribute
-			AbstractField attr = getNameAttr();
+			AbstractField<?,?,?> attr = getNameAttr();
 			// prepare layout
 			attr.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 			attr.setCaptionColor(Color.WHITE, Color.LIGHT_GRAY);

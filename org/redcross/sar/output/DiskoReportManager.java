@@ -20,7 +20,6 @@ import net.sf.jasperreports.engine.JRPrintPage;
 import org.redcross.sar.IApplication;
 import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
-import org.redcross.sar.map.event.IMapDataListener;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAssignmentIf;

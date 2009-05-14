@@ -114,7 +114,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_description.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
     {
         return m_description;
     }
@@ -134,7 +134,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_number.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
     {
         return m_number;
     }
@@ -154,7 +154,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_creatingWorkProcess.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getCreatingWorkProcessAttribute()
+    public IMsoAttributeIf.IMsoStringIf getCreatingWorkProcessAttribute()
     {
         return m_creatingWorkProcess;
     }
@@ -183,7 +183,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_type.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute()
     {
         return m_type;
     }
@@ -213,7 +213,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_progress.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getProgressAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getProgressAttribute()
     {
         return m_progress;
     }
@@ -233,7 +233,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_responsibleRole.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getResponsibleRoleAttribute()
+    public IMsoAttributeIf.IMsoStringIf getResponsibleRoleAttribute()
     {
         return m_responsibleRole;
     }
@@ -253,7 +253,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_taskText.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTaskTextAttribute()
+    public IMsoAttributeIf.IMsoStringIf getTaskTextAttribute()
     {
         return m_taskText;
     }
@@ -273,7 +273,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_alert.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getAlertAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getAlertAttribute()
     {
         return m_alert;
     }
@@ -293,7 +293,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_created.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getCreatedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute()
     {
         return m_created;
     }
@@ -318,7 +318,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_priority.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<TaskPriority> getPriorityAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<TaskPriority> getPriorityAttribute()
     {
         return m_priority;
     }
@@ -358,7 +358,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<TaskStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<TaskStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -388,7 +388,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_sourceClass.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<IMsoManagerIf.MsoClassCode> getSourceClassAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<IMsoManagerIf.MsoClassCode> getSourceClassAttribute()
     {
         return m_sourceClass;
     }

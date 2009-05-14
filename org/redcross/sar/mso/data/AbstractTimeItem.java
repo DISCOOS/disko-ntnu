@@ -56,7 +56,7 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
         return m_timeStamp.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getTimeStampAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getTimeStampAttribute()
     {
         return m_timeStamp;
     }
@@ -111,7 +111,7 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
         return m_visible.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getVisibleAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getVisibleAttribute()
     {
         return m_visible;
     }

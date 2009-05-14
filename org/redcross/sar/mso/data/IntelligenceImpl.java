@@ -102,7 +102,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<IntelligenceStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<IntelligenceStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -126,7 +126,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_description.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
     {
         return m_description;
     }
@@ -146,7 +146,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_priority.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPriorityAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute()
     {
         return m_priority;
     }
@@ -166,7 +166,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_source.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getSourceAttribute()
+    public IMsoAttributeIf.IMsoStringIf getSourceAttribute()
     {
         return m_source;
     }
@@ -186,7 +186,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_time.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getTimeAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getTimeAttribute()
     {
         return m_time;
     }

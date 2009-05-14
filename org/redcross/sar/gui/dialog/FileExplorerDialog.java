@@ -24,7 +24,6 @@ import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.table.FileTable;
 import org.redcross.sar.gui.tree.FileTree;
-import org.redcross.sar.util.Utils;
 
 public class FileExplorerDialog extends DefaultDialog {
 
@@ -43,7 +42,7 @@ public class FileExplorerDialog extends DefaultDialog {
 
 	public FileExplorerDialog() {
 		// forward
-		super(Application.getInstance());
+		super(Application.getFrameInstance());
 		// initialize GUI
 		initialize();
 	}

@@ -50,7 +50,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getDescriptionState();
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
     public void setProgress(int aProgress);
 
@@ -58,7 +58,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getProgressState();
 
-    public IAttributeIf.IMsoIntegerIf getProgressAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getProgressAttribute();
 
     public void setResponsibleRole(String aResponsibleRole);
 
@@ -66,7 +66,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getResponsibleRoleState();
 
-    public IAttributeIf.IMsoStringIf getResponsibleRoleAttribute();
+    public IMsoAttributeIf.IMsoStringIf getResponsibleRoleAttribute();
 
     public void setTaskText(String aTaskText);
 
@@ -74,7 +74,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getTaskTextState();
 
-    public IAttributeIf.IMsoStringIf getTaskTextAttribute();
+    public IMsoAttributeIf.IMsoStringIf getTaskTextAttribute();
 
     public void setAlert(Calendar aAlert);
 
@@ -82,7 +82,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getAlertState();
 
-    public IAttributeIf.IMsoCalendarIf getAlertAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getAlertAttribute();
 
     public void setCreated(Calendar aCreated);
 
@@ -90,7 +90,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getCreatedState();
 
-    public IAttributeIf.IMsoCalendarIf getCreatedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute();
 
     public void setCreatingWorkProcess(String aCreatingWorkProcess);
 
@@ -98,7 +98,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getCreatingWorkProcessState();
 
-    public IAttributeIf.IMsoStringIf getCreatingWorkProcessAttribute();
+    public IMsoAttributeIf.IMsoStringIf getCreatingWorkProcessAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for references
@@ -134,7 +134,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getTypeState();
 
-    public IAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute();
 
     public String getTypeName();
     
@@ -148,7 +148,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoModelIf.ModificationState getSourceClassState();
 
-    public IAttributeIf.IMsoEnumIf<IMsoManagerIf.MsoClassCode> getSourceClassAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<IMsoManagerIf.MsoClassCode> getSourceClassAttribute();
 
     public String getSourceClassText();
 

@@ -12,7 +12,7 @@ import java.util.Vector;
 /**
  * Base interface for MSO Attributes
  */
-public interface IAttributeIf<T>
+public interface IMsoAttributeIf<T>
 {
     /**
      * Get name of attribute
@@ -117,6 +117,11 @@ public interface IAttributeIf<T>
      * @return  <code>true<code> if getAttrValue is not null, <code>false<code> otherwise.
      */
     public boolean validate();
+    
+    /**
+     * Test if local changes exists
+     */
+    public boolean isChanged();
 
     /**
      * Accept local (client) value in case of conflict.
@@ -163,7 +168,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link Boolean} attributes.
      */
-    public interface IMsoBooleanIf extends IAttributeIf<Boolean>
+    public interface IMsoBooleanIf extends IMsoAttributeIf<Boolean>
     {
         public void setValue(boolean aValue);
 
@@ -175,7 +180,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link Integer} attributes.
      */
-    public interface IMsoIntegerIf extends IAttributeIf<Integer>
+    public interface IMsoIntegerIf extends IMsoAttributeIf<Integer>
     {
         public void setValue(int aValue);
 
@@ -205,7 +210,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link Double} attributes.
      */
-    public interface IMsoDoubleIf extends IAttributeIf<Double>
+    public interface IMsoDoubleIf extends IMsoAttributeIf<Double>
     {
         public void setValue(long aValue);
 
@@ -227,7 +232,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link String} attributes.
      */
-    public interface IMsoStringIf extends IAttributeIf<String>
+    public interface IMsoStringIf extends IMsoAttributeIf<String>
     {
         public void setValue(String aValue);
 
@@ -237,7 +242,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link java.util.Calendar} attributes.
      */
-    public interface IMsoCalendarIf extends IAttributeIf<Calendar>
+    public interface IMsoCalendarIf extends IMsoAttributeIf<Calendar>
     {
         public void setValue(Calendar aDTG);
 
@@ -249,7 +254,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link org.redcross.sar.util.mso.Position} attributes.
      */
-    public interface IMsoPositionIf extends IAttributeIf<Position>
+    public interface IMsoPositionIf extends IMsoAttributeIf<Position>
     {
         public void setValue(Position aPosition);
 
@@ -261,7 +266,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link org.redcross.sar.util.mso.TimePos} attributes.
      */
-    public interface IMsoTimePosIf extends IAttributeIf<TimePos>
+    public interface IMsoTimePosIf extends IMsoAttributeIf<TimePos>
     {
         public void setValue(TimePos aTimePos);
 
@@ -271,7 +276,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link org.redcross.sar.util.mso.Polygon} attributes.
      */
-    public interface IMsoPolygonIf extends IAttributeIf<Polygon>
+    public interface IMsoPolygonIf extends IMsoAttributeIf<Polygon>
     {
         public void setValue(Polygon aPolygon);
 
@@ -281,7 +286,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link org.redcross.sar.util.mso.Route} attributes.
      */
-    public interface IMsoRouteIf extends IAttributeIf<Route>
+    public interface IMsoRouteIf extends IMsoAttributeIf<Route>
     {
         public void setValue(Route aRoute);
 
@@ -291,7 +296,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link org.redcross.sar.util.mso.Track} attributes.
      */
-    public interface IMsoTrackIf extends IAttributeIf<Track>
+    public interface IMsoTrackIf extends IMsoAttributeIf<Track>
     {
         public void setValue(Track aTrack);
 
@@ -301,7 +306,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link org.redcross.sar.util.mso.GeoList} attributes.
      */
-    public interface IMsoGeoListIf extends IAttributeIf<GeoList>
+    public interface IMsoGeoListIf extends IMsoAttributeIf<GeoList>
     {
         public void setValue(GeoList aGeoList);
 
@@ -311,7 +316,7 @@ public interface IAttributeIf<T>
     /**
      * Interface for {@link Enum} attributes.
      */
-    public interface IMsoEnumIf<E extends Enum<E>> extends IAttributeIf<E>
+    public interface IMsoEnumIf<E extends Enum<E>> extends IMsoAttributeIf<E>
     {
         public void setValue(E anEnum);
 

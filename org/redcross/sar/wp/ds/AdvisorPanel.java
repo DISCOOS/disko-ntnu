@@ -19,7 +19,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
@@ -41,11 +41,11 @@ public class AdvisorPanel extends JPanel
 	private TogglePanel m_advisorPanel;
 	private FieldsPanel m_advisorPropPanel;
 	private DTGField m_startedTimeAttr;
-	private TextLineField m_effortTimeAttr;
-	private TextLineField m_avgEstTimeAttr;
-	private TextLineField m_maxEstTimeAttr;
-	private TextLineField m_utilEstTimeAttr;
-	private TextLineField m_catalogAttr;
+	private TextField m_effortTimeAttr;
+	private TextField m_avgEstTimeAttr;
+	private TextField m_maxEstTimeAttr;
+	private TextField m_utilEstTimeAttr;
+	private TextField m_catalogAttr;
 	private JButton m_loadButton;
 	private JButton m_saveButton;
 	private JButton m_resumeButton;
@@ -216,49 +216,49 @@ public class AdvisorPanel extends JPanel
         return m_startedTimeAttr;
     }
 
-	private TextLineField getEffortTimeAttr()
+	private TextField getEffortTimeAttr()
     {
         if (m_effortTimeAttr == null)
         {
-        	m_effortTimeAttr = new TextLineField("efforttime","Innsatstid", false, 130, 25, 0);
+        	m_effortTimeAttr = new TextField("efforttime","Innsatstid", false, 130, 25, 0);
 
         }
         return m_effortTimeAttr;
     }
 
-	private TextLineField getAvgEstTimeAttr()
+	private TextField getAvgEstTimeAttr()
     {
         if (m_avgEstTimeAttr == null)
         {
-        	m_avgEstTimeAttr = new TextLineField("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
+        	m_avgEstTimeAttr = new TextField("avgtime","Arbeidstid (gj.sn)", false, 130, 25, 0);
 
         }
         return m_avgEstTimeAttr;
     }
 
-	private TextLineField getMaxEstTimeAttr()
+	private TextField getMaxEstTimeAttr()
     {
         if (m_maxEstTimeAttr == null)
         {
-        	m_maxEstTimeAttr = new TextLineField("maxtime","Arbeidstid (max)", false, 130, 25, 0);
+        	m_maxEstTimeAttr = new TextField("maxtime","Arbeidstid (max)", false, 130, 25, 0);
 
         }
         return m_maxEstTimeAttr;
     }
 
-	private TextLineField getUtilEstTimeAttr()
+	private TextField getUtilEstTimeAttr()
     {
         if (m_utilEstTimeAttr == null)
         {
-        	m_utilEstTimeAttr = new TextLineField("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
+        	m_utilEstTimeAttr = new TextField("utiltime","Arbeidstid (forbruk)", false, 130, 25, 0);
 
         }
         return m_utilEstTimeAttr;
     }
 
-	private TextLineField getCatalogAttr() {
+	private TextField getCatalogAttr() {
 		if (m_catalogAttr==null) {
-			m_catalogAttr = new TextLineField("Catalog","Katalog",false,130,25,AppProps.getText("DS.ADVISOR.LOGGING.path"));
+			m_catalogAttr = new TextField("Catalog","Katalog",false,130,25,AppProps.getText("DS.ADVISOR.LOGGING.path"));
 			m_catalogAttr.setButtonVisible(true);
 			m_catalogAttr.setButtonEnabled(true);
 			m_catalogAttr.addButtonActionListener(new ActionListener() {

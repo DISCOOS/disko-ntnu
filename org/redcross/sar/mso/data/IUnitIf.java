@@ -20,69 +20,6 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 {
     public static final String bundleName  = "org.redcross.sar.mso.data.properties.Unit";
 
-    /**
-     * Often used status ranges
-     */
-    public static final EnumSet<UnitStatus> OWNER_RANGE = EnumSet.range(UnitStatus.EMPTY, UnitStatus.PAUSED);
-    public static final EnumSet<UnitStatus> ACTIVE_RANGE = EnumSet.range(UnitStatus.READY, UnitStatus.PAUSED);
-    public static final EnumSet<UnitStatus> HISTORY_RANGE = EnumSet.of(UnitStatus.RELEASED);
-    public static final EnumSet<UnitStatus> OCCUPIED_RANGE = EnumSet.range(UnitStatus.INITIALIZING, UnitStatus.PENDING);
-    public static final EnumSet<UnitStatus> IDLE_RANGE = EnumSet.of(UnitStatus.READY, UnitStatus.PAUSED);
-    public static final EnumSet<UnitStatus> MANAGED_RANGE = ACTIVE_RANGE.clone();
-    public static final EnumSet<UnitStatus> DELETEABLE_SET = EnumSet.of(UnitStatus.EMPTY);
-
-    /**
-     * Often used selectors
-     */
-
-    public static final Selector<IUnitIf> ALL_SELECTOR = new Selector<IUnitIf>()
-    {
-        public boolean select(IUnitIf aUnit)
-        {
-            return true;
-        }
-    };
-
-    public static final Selector<IUnitIf> OWNER_SELECTOR = new Selector<IUnitIf>()
-    {
-        public boolean select(IUnitIf aUnit)
-        {
-            return (IUnitIf.OWNER_RANGE.contains(aUnit.getStatus()));
-        }
-    };
-
-    public static final Selector<IUnitIf> HISTORY_SELECTOR = new Selector<IUnitIf>()
-    {
-        public boolean select(IUnitIf aUnit)
-        {
-            return (IUnitIf.HISTORY_RANGE.contains(aUnit.getStatus()));
-        }
-    };
-
-    public static final Selector<IUnitIf> ACTIVE_SELECTOR = new Selector<IUnitIf>()
-    {
-        public boolean select(IUnitIf aUnit)
-        {
-            return (IUnitIf.ACTIVE_RANGE.contains(aUnit.getStatus()));
-        }
-    };
-
-    /**
-     * Often used comparators
-     */
-    public static final Comparator<IUnitIf> TYPE_AND_NUMBER_COMPARATOR = new Comparator<IUnitIf>()
-    {
-        public int compare(IUnitIf u1, IUnitIf u2)
-        {
-            int typeCompare = u1.getType().compareTo(u2.getType());
-            if (typeCompare != 0)
-            {
-                return typeCompare;
-            }
-            return u1.getNumber() - u2.getNumber();
-        }
-    };
-
     public enum UnitType
     {
         CP,
@@ -103,7 +40,71 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
         PAUSED,
         RELEASED
     }
+    
+    /**
+     * Often used status ranges
+     */
+    public static final EnumSet<UnitStatus> OWNER_SET = EnumSet.range(UnitStatus.EMPTY, UnitStatus.PAUSED);
+    public static final EnumSet<UnitStatus> ACTIVE_SET = EnumSet.range(UnitStatus.READY, UnitStatus.PAUSED);
+    public static final EnumSet<UnitStatus> HISTORY_SET = EnumSet.of(UnitStatus.RELEASED);
+    public static final EnumSet<UnitStatus> OCCUPIED_SET = EnumSet.range(UnitStatus.INITIALIZING, UnitStatus.PENDING);
+    public static final EnumSet<UnitStatus> IDLE_SET = EnumSet.of(UnitStatus.READY, UnitStatus.PAUSED);
+    public static final EnumSet<UnitStatus> MANAGED_SET = ACTIVE_SET.clone();
+    public static final EnumSet<UnitStatus> DELETEABLE_SET = EnumSet.of(UnitStatus.EMPTY,UnitStatus.READY,UnitStatus.PAUSED);
 
+    /**
+     * Often used selectors
+     */
+
+    public static final Selector<IUnitIf> ALL_SELECTOR = new Selector<IUnitIf>()
+    {
+        public boolean select(IUnitIf aUnit)
+        {
+            return true;
+        }
+    };
+
+    public static final Selector<IUnitIf> OWNER_SELECTOR = new Selector<IUnitIf>()
+    {
+        public boolean select(IUnitIf aUnit)
+        {
+            return (IUnitIf.OWNER_SET.contains(aUnit.getStatus()));
+        }
+    };
+
+    public static final Selector<IUnitIf> HISTORY_SELECTOR = new Selector<IUnitIf>()
+    {
+        public boolean select(IUnitIf aUnit)
+        {
+            return (IUnitIf.HISTORY_SET.contains(aUnit.getStatus()));
+        }
+    };
+
+    public static final Selector<IUnitIf> ACTIVE_SELECTOR = new Selector<IUnitIf>()
+    {
+        public boolean select(IUnitIf aUnit)
+        {
+            return (IUnitIf.ACTIVE_SET.contains(aUnit.getStatus()));
+        }
+    };
+
+    /**
+     * Often used comparators
+     */
+    public static final Comparator<IUnitIf> TYPE_AND_NUMBER_COMPARATOR = new Comparator<IUnitIf>()
+    {
+        public int compare(IUnitIf u1, IUnitIf u2)
+        {
+            int typeCompare = u1.getType().compareTo(u2.getType());
+            if (typeCompare != 0)
+            {
+                return typeCompare;
+            }
+            return u1.getNumber() - u2.getNumber();
+        }
+    };
+
+   
     /*-------------------------------------------------------------------------------------------
     * Methods for ENUM attributes
     *-------------------------------------------------------------------------------------------*/
@@ -137,7 +138,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IMsoModelIf.ModificationState getTypeState();
 
-    public IAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute();
 
     public String getInternationalTypeName();
 
@@ -151,7 +152,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IMsoModelIf.ModificationState getNameState();
 
-    public IAttributeIf.IMsoStringIf getNameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute();
 
     public void setCallSign(String aCallSign);
 
@@ -159,7 +160,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IMsoModelIf.ModificationState getCallSignState();
 
-    public IAttributeIf.IMsoStringIf getCallSignAttribute();
+    public IMsoAttributeIf.IMsoStringIf getCallSignAttribute();
 
 	public void setToneID(String toneId);
 
@@ -167,7 +168,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
 	public IMsoModelIf.ModificationState getToneIDState();
 
-	public IAttributeIf.IMsoStringIf getToneIDAttribute();
+	public IMsoAttributeIf.IMsoStringIf getToneIDAttribute();
 	
     public void setTrackingID(String aTrackingID);
 
@@ -175,7 +176,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IMsoModelIf.ModificationState getTrackingIDState();
 
-    public IAttributeIf.IMsoStringIf getTrackingIDAttribute();
+    public IMsoAttributeIf.IMsoStringIf getTrackingIDAttribute();
     
     public void setPosition(Position aPosition);
 
@@ -183,7 +184,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IMsoModelIf.ModificationState getPositionState();
 
-    public IAttributeIf.IMsoPositionIf getPositionAttribute();
+    public IMsoAttributeIf.IMsoPositionIf getPositionAttribute();
 
     public void setRemarks(String aRemarks);
 
@@ -191,7 +192,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for lists

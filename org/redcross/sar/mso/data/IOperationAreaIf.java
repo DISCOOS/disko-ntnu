@@ -16,7 +16,7 @@ public interface IOperationAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getAssignmentState();
 
-    public IAttributeIf.IMsoStringIf getAssignmentAttribute();
+    public IMsoAttributeIf.IMsoStringIf getAssignmentAttribute();
 
     public void setGeodata(Polygon aGeodata);
 
@@ -24,7 +24,7 @@ public interface IOperationAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getGeodataState();
 
-    public IAttributeIf.IMsoPolygonIf getGeodataAttribute();
+    public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute();
 
     public void setRemarks(String aRemarks);
 
@@ -32,6 +32,6 @@ public interface IOperationAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
 }

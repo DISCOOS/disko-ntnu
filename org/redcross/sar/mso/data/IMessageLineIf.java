@@ -99,7 +99,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getLineTypeState();
 
-    public IAttributeIf.IMsoEnumIf<MessageLineType> getLineTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<MessageLineType> getLineTypeAttribute();
 
     public String getLineTypeText();
 
@@ -113,7 +113,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getLineNumberState();
 
-    public IAttributeIf.IMsoIntegerIf getLineNumberAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getLineNumberAttribute();
 
     public void setLineText(String aText);
 
@@ -121,7 +121,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getLineTextState();
 
-    public IAttributeIf.IMsoStringIf getLineTextAttribute();
+    public IMsoAttributeIf.IMsoStringIf getLineTextAttribute();
 
     public void setLineTime(Calendar anOperationTime);
 
@@ -129,7 +129,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getLineTimeState();
 
-    public IAttributeIf.IMsoCalendarIf getLineTimeAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getLineTimeAttribute();
 
     public void setLinePosition(Position aPosition);
 
@@ -137,7 +137,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getLinePositionState();
 
-    public IAttributeIf.IMsoPositionIf getLinePositionAttribute();
+    public IMsoAttributeIf.IMsoPositionIf getLinePositionAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for references

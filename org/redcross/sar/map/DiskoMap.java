@@ -1743,7 +1743,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		if (elementDialog == null) {
 
 			// create
-			elementDialog = new ElementDialog(Application.getInstance());
+			elementDialog = new ElementDialog(Application.getFrameInstance());
 			elementDialog.setSnapToLocation(mapBean,DefaultDialog.POS_EAST, 0, true, false);
 
 		}
@@ -1772,7 +1772,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		if(snapDialog == null) {
 
 			// create new snap dialog
-	        snapDialog = new SnapDialog(Application.getInstance());
+	        snapDialog = new SnapDialog(Application.getFrameInstance());
 	        snapDialog.setSnapToLocation(this,DefaultDialog.POS_WEST, 0, true, false);
 
 		}

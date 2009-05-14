@@ -23,7 +23,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextAreaField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -59,7 +59,7 @@ public class TaskPanel extends DefaultPanel
 
 	private ITaskIf m_currentTask;
 
-	private TextLineField m_nameField;
+	private TextField m_nameField;
 	private ComboBoxField m_typeCombo;
 	private DTGField m_createdField;
 	private ComboBoxField m_priorityCombo;
@@ -71,7 +71,7 @@ public class TaskPanel extends DefaultPanel
 	private JButton m_useSourceButton;
 	private TextAreaField m_descriptionArea;
 	private TextAreaField m_sourceArea;
-	private TextLineField m_objectField;
+	private TextField m_objectField;
 	private JPanel m_centerPanel;
 	private JPanel m_westPanel;
 	private JPanel m_eastPanel;
@@ -111,7 +111,7 @@ public class TaskPanel extends DefaultPanel
 
 	private JPanel getNameField() {
 		if(m_nameField==null) {
-			m_nameField = new TextLineField("name",m_resources.getString("Task.text"),true);
+			m_nameField = new TextField("name",m_resources.getString("Task.text"),true);
 			//Utils.setFixedSize(m_nameField,490,25);
 		}
 		return m_nameField;
@@ -140,9 +140,9 @@ public class TaskPanel extends DefaultPanel
 			// Type (0,0)
 			m_typeCombo = new ComboBoxField("type",m_resources.getString("TaskType.text"),false);
 			m_typeCombo.fill(TaskType.values());
-			m_typeCombo.getComboBox().setSelectedIndex(3);
-			m_typeCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
-			m_typeCombo.getComboBox().addActionListener(new ActionListener()
+			m_typeCombo.getEditComponent().setSelectedIndex(3);
+			m_typeCombo.getEditComponent().setRenderer(new BundleListCellRenderer(m_resources));
+			m_typeCombo.getEditComponent().addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent arg0)
 				{
@@ -171,7 +171,7 @@ public class TaskPanel extends DefaultPanel
 			m_responsibleCombo = new ComboBoxField("responsible",
 					m_resources.getString("TaskResponsible.text"),false);
 			m_responsibleCombo.fill(responsible);
-			m_responsibleCombo.getComboBox().setSelectedIndex(0);
+			m_responsibleCombo.getEditComponent().setSelectedIndex(0);
 			m_responsibleCombo.addWorkFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_responsibleCombo);
@@ -186,9 +186,9 @@ public class TaskPanel extends DefaultPanel
 			};
 			m_statusCombo = new ComboBoxField("status",m_resources.getString("TaskStatus.text"),false);
 			m_statusCombo.fill(statusItems);
-			m_statusCombo.getComboBox().setSelectedIndex(0);
-			m_statusCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
-			m_statusCombo.getComboBox().addActionListener(new ActionListener()
+			m_statusCombo.getEditComponent().setSelectedIndex(0);
+			m_statusCombo.getEditComponent().setRenderer(new BundleListCellRenderer(m_resources));
+			m_statusCombo.getEditComponent().addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
@@ -196,7 +196,7 @@ public class TaskPanel extends DefaultPanel
 					TaskStatus selectedStatus = (TaskStatus)m_statusCombo.getValue();
 					if(selectedStatus == TaskStatus.FINISHED)
 					{
-						m_progressCombo.getComboBox().setSelectedIndex(10);
+						m_progressCombo.getEditComponent().setSelectedIndex(10);
 					}
 					updateFieldsEditable();
 				}
@@ -220,16 +220,16 @@ public class TaskPanel extends DefaultPanel
 			// Priority
 			m_priorityCombo = new ComboBoxField("priority",m_resources.getString("TaskPriority.text"),false);
 			m_priorityCombo.fill(TaskPriority.values());
-			m_priorityCombo.getComboBox().setSelectedIndex(3);
-			m_priorityCombo.getComboBox().setRenderer(new BundleListCellRenderer(m_resources));
+			m_priorityCombo.getEditComponent().setSelectedIndex(3);
+			m_priorityCombo.getEditComponent().setRenderer(new BundleListCellRenderer(m_resources));
 			m_priorityCombo.addWorkFlowListener(this);
 			m_eastPanel.add(m_priorityCombo);
 
 			// Due (2,1)
 			m_dueCombo = new ComboBoxField("due", m_resources.getString("TaskDue.text"),true);
 			updateDueComboBox();
-			m_dueCombo.getComboBox().setSelectedIndex(2);
-			JTextField field = (JTextField)m_dueCombo.getComboBox()
+			m_dueCombo.getEditComponent().setSelectedIndex(2);
+			JTextField field = (JTextField)m_dueCombo.getEditComponent()
 									.getEditor().getEditorComponent();
 			field.setDocument(new NumericDocument(6,0,false));
 			m_dueCombo.addWorkFlowListener(this);
@@ -239,7 +239,7 @@ public class TaskPanel extends DefaultPanel
 			// Alert (2,1)
 			m_alertCombo = new ComboBoxField("alert",m_resources.getString("TaskAlert.text"),true);
 			updateAlertComboBox();
-			m_alertCombo.getComboBox().setSelectedIndex(2);
+			m_alertCombo.getEditComponent().setSelectedIndex(2);
 			m_alertCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_alertCombo);
@@ -248,7 +248,7 @@ public class TaskPanel extends DefaultPanel
 			String[] progressItems = {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "50%", "80%", "90%", "100%"};
 			m_progressCombo = new ComboBoxField("progress",m_resources.getString("TaskProgress.text"),false);
 			m_progressCombo.fill(progressItems);
-			m_progressCombo.getComboBox().setSelectedIndex(0);
+			m_progressCombo.getEditComponent().setSelectedIndex(0);
 			m_progressCombo.addWorkFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_progressCombo);
@@ -270,7 +270,7 @@ public class TaskPanel extends DefaultPanel
 			m_descriptionArea = new TextAreaField("description",
 					m_resources.getString("TaskDescription.text"),true);
 			m_descriptionArea.setFixedHeight(100);
-			m_descriptionArea.getTextArea().setRows(0);
+			m_descriptionArea.getEditComponent().setRows(0);
 
 			// add button
 			//String text = m_resources.getString("TaskUseSource.text");
@@ -302,13 +302,13 @@ public class TaskPanel extends DefaultPanel
 			m_sourceArea = new  TextAreaField("source",
 					m_resources.getString("TaskSource.text"),false);
 			m_sourceArea.setFixedHeight(100);
-			m_sourceArea.getTextArea().setRows(0);
+			m_sourceArea.getEditComponent().setRows(0);
 			m_sourceArea.addWorkFlowListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));
 			m_bottomPanel.add(m_sourceArea);
 
 			// Object
-			m_objectField = new TextLineField("object",
+			m_objectField = new TextField("object",
 					m_resources.getString("TaskObject.text"),false);
 			m_objectField.addWorkFlowListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));
@@ -401,16 +401,18 @@ public class TaskPanel extends DefaultPanel
 		IDiskoRole role = Application.getInstance().getCurrentRole();
 		boolean canChangeFields = TaskUtilities.canChangeFields(status);
 		boolean canChangeStatus = TaskUtilities.canChangeStatus(role, m_currentTask);
-		boolean editable =  canChangeFields && canChangeStatus;
+		boolean editable = canChangeFields && canChangeStatus;
 
 		m_statusCombo.setEnabled(canChangeStatus);
 		m_alertCombo.setEnabled(editable);
+		m_descriptionArea.resetEditable();
 		m_descriptionArea.setEditable(editable);
 		m_useSourceButton.setEnabled(editable);
 		m_dueCombo.setEnabled(editable);
 		m_priorityCombo.setEnabled(editable);
 		m_progressCombo.setEnabled(editable);
 		m_responsibleCombo.setEnabled(editable);
+		m_nameField.resetEditable();
 		m_nameField.setEditable(editable);
 		m_typeCombo.setEnabled(editable);
 	}
@@ -545,7 +547,7 @@ public class TaskPanel extends DefaultPanel
 
 			// Progress
 			int progress = m_currentTask.getProgress();
-			m_progressCombo.getComboBox().setSelectedIndex(progress/10);
+			m_progressCombo.getEditComponent().setSelectedIndex(progress/10);
 
 			// Description
 			String description = m_currentTask.getDescription();
@@ -586,9 +588,9 @@ public class TaskPanel extends DefaultPanel
 			m_createdField.setValue(DTG.CalToDTG(Calendar.getInstance()));
 			m_priorityCombo.setValue(TaskPriority.NORMAL);
 			m_responsibleCombo.setValue(null);
-			m_alertCombo.getComboBox().setSelectedIndex(0);
+			m_alertCombo.getEditComponent().setSelectedIndex(0);
 			m_statusCombo.setValue(TaskStatus.UNPROCESSED);
-			m_progressCombo.getComboBox().setSelectedIndex(0);
+			m_progressCombo.getEditComponent().setSelectedIndex(0);
 			m_descriptionArea.setValue("");
 			m_sourceArea.setValue("");
 			m_objectField.setValue("");
@@ -600,7 +602,7 @@ public class TaskPanel extends DefaultPanel
 
 	private void updateDueComboBox()
 	{
-		m_dueCombo.getComboBox().removeAllItems();
+		m_dueCombo.getEditComponent().removeAllItems();
 		int intervalSize = 15;
 		int numItems = 5;
 		Calendar dueItem = null;
@@ -623,25 +625,25 @@ public class TaskPanel extends DefaultPanel
 
 		for(int i=0; i<numItems; i++)
 		{
-			m_dueCombo.getComboBox().addItem(DTG.CalToDTG(dueItem));
+			m_dueCombo.getEditComponent().addItem(DTG.CalToDTG(dueItem));
 			dueItem.add(Calendar.MINUTE, intervalSize);
 		}
-		m_dueCombo.getComboBox().setSelectedIndex(0);
+		m_dueCombo.getEditComponent().setSelectedIndex(0);
 	}
 
 	private void updateAlertComboBox()
 	{
 		int[] alertItems = {1, 5, 15, 30, 60};
 
-		m_alertCombo.getComboBox().removeAllItems();
+		m_alertCombo.getEditComponent().removeAllItems();
 
-		m_alertCombo.getComboBox().addItem(m_resources.getString("TaskNoAlert.text"));
+		m_alertCombo.getEditComponent().addItem(m_resources.getString("TaskNoAlert.text"));
 
 		String alertItem = null;
 		for(int i=0; i<alertItems.length; i++)
 		{
 			alertItem = String.valueOf(alertItems[i]) + " " + m_resources.getString("TaskAlertItem.text");
-			m_alertCombo.getComboBox().addItem(alertItem);
+			m_alertCombo.getEditComponent().addItem(alertItem);
 		}
 
 		if(m_currentTask != null)
@@ -649,7 +651,7 @@ public class TaskPanel extends DefaultPanel
 			Calendar alertTime = m_currentTask.getAlert();
 			if(alertTime == null)
 			{
-				m_alertCombo.getComboBox().setSelectedIndex(0);
+				m_alertCombo.getEditComponent().setSelectedIndex(0);
 			}
 			else
 			{
@@ -659,7 +661,7 @@ public class TaskPanel extends DefaultPanel
 				if(diffMin == 0)
 				{
 					// No alert
-					m_alertCombo.getComboBox().setSelectedIndex(0);
+					m_alertCombo.getEditComponent().setSelectedIndex(0);
 				}
 				else
 				{
@@ -670,7 +672,7 @@ public class TaskPanel extends DefaultPanel
 					{
 						if(diffMin == alertItems[i])
 						{
-							m_alertCombo.getComboBox().setSelectedIndex(i+1);
+							m_alertCombo.getEditComponent().setSelectedIndex(i+1);
 							customTime = false;
 						}
 					}
@@ -679,7 +681,7 @@ public class TaskPanel extends DefaultPanel
 					{
 						// User has written in own time, add this to combo box items
 						String oldAlertTime = diffMin + " " + m_resources.getString("TaskAlertItem.text");
-						m_alertCombo.getComboBox().addItem(oldAlertTime);
+						m_alertCombo.getEditComponent().addItem(oldAlertTime);
 						m_alertCombo.setValue(oldAlertTime);
 					}
 				}

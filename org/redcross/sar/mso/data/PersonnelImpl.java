@@ -1,11 +1,15 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
 
 import java.util.Calendar;
+import java.util.List;
+import java.util.Vector;
 
+@SuppressWarnings("unchecked")
 public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 {
 
@@ -24,7 +28,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     private final AttributeImpl.MsoEnum<PersonnelType> m_type = new AttributeImpl.MsoEnum<PersonnelType>(this, "Type", 1, PersonnelType.VOLUNTEER);
     private final AttributeImpl.MsoEnum<PersonnelImportStatus> m_importStatus = new AttributeImpl.MsoEnum<PersonnelImportStatus>(this, "ImportStatus", 1, PersonnelImportStatus.UPDATED);
 
-    private final MsoReferenceImpl<IPersonnelIf> m_nextOccurence = new MsoReferenceImpl<IPersonnelIf>(this,"NextOccurence", 0, true);
+    private final MsoReferenceImpl<IPersonnelIf> m_nextOccurrence = new MsoReferenceImpl<IPersonnelIf>(this,"NextOccurence", 0, true);
 
     public PersonnelImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
@@ -60,7 +64,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     protected void defineObjects()
     {
         super.defineObjects();
-        addObject(m_nextOccurence);
+        addObject(m_nextOccurrence);
     }
 
     public static PersonnelImpl implementationOf(IPersonnelIf anInterface) throws MsoCastException
@@ -90,7 +94,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_arrived.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getArrivedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getArrivedAttribute()
     {
         return m_arrived;
     }
@@ -110,7 +114,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_callOut.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getCallOutAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getCallOutAttribute()
     {
         return m_callOut;
     }
@@ -130,7 +134,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_dataSourceID.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDataSourceIDAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDataSourceIDAttribute()
     {
         return m_dataSourceID;
     }
@@ -150,7 +154,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_dataSourceName.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDataSourceNameAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDataSourceNameAttribute()
     {
         return m_dataSourceName;
     }
@@ -170,7 +174,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_estimatedArrival.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getEstimatedArrivalAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getEstimatedArrivalAttribute()
     {
         return m_estimatedArrival;
     }
@@ -190,7 +194,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_released.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getReleasedAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute()
     {
         return m_released;
     }
@@ -210,7 +214,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }
@@ -230,7 +234,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_organization.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOrganizationAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute()
     {
         return m_organization;
     }
@@ -250,7 +254,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 		return m_division.getState();
 	}
 
-    public IAttributeIf.IMsoStringIf getDivisionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDivisionAttribute()
     {
     	return m_division;
     }
@@ -270,7 +274,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_department.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDepartmentAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute()
     {
         return m_department;
     }
@@ -295,7 +299,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<PersonnelStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<PersonnelStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -325,7 +329,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_type.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute()
     {
         return m_type;
     }
@@ -365,32 +369,56 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     	return m_importStatus.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<PersonnelImportStatus> getImportStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<PersonnelImportStatus> getImportStatusAttribute()
     {
     	return m_importStatus;
     }
 
-
-    public void setNextOccurence(IPersonnelIf aPersonnel)
-    {
-        m_nextOccurence.setReference(aPersonnel);
+	public IPersonnelIf getFirstOccurrence() {
+		List<IPersonnelIf> list = getPreviousOccurrences();
+		return (list.size()>0?list.get(0):this);
+	}
+	
+	public IPersonnelIf getPreviousOccurrence() {
+    	return (IPersonnelIf)m_owningMainList.selectSingleItem(new OccurrenceSelector(this,true));
+    }
+    
+	public List<IPersonnelIf> getPreviousOccurrences()
+    {    	
+        return new Vector<IPersonnelIf>(m_owningMainList.selectItems(new OccurrenceSelector(this,true)));
     }
 
-    public IPersonnelIf getNextOccurence()
+    public void setNextOccurrence(IPersonnelIf aPersonnel)
     {
-        return m_nextOccurence.getReference();
+        m_nextOccurrence.setReference(aPersonnel);
     }
 
-    public IMsoModelIf.ModificationState getNextOccurenceState()
+    public IPersonnelIf getNextOccurrence()
     {
-        return m_nextOccurence.getState();
+        return m_nextOccurrence.getReference();
     }
 
-    public IMsoReferenceIf<IPersonnelIf> getNextOccurenceAttribute()
+    public IMsoModelIf.ModificationState getNextOccurrenceState()
     {
-        return m_nextOccurence;
+        return m_nextOccurrence.getState();
     }
 
+    public IMsoReferenceIf<IPersonnelIf> getNextOccurrenceAttribute()
+    {
+        return m_nextOccurrence;
+    }
+
+    @SuppressWarnings("unchecked")
+	public List<IPersonnelIf> getNextOccurrences()
+    {    	
+        return new Vector<IPersonnelIf>(m_owningMainList.selectItems(new OccurrenceSelector(this,false)));
+    }
+    
+	public IPersonnelIf getLastOccurrence() {
+		List<IPersonnelIf> list = getNextOccurrences();
+		return (list.size()>0?list.get(list.size()-1):this);
+	}
+	
     public IMsoManagerIf.MsoClassCode getMsoClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
@@ -417,5 +445,40 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         	return false;
         }
     };
+    
+    public static class OccurrenceSelector implements Selector<IPersonnelIf> {
+
+    	IPersonnelIf pivot;
+    	boolean backwards;
+    	
+    	public OccurrenceSelector(IPersonnelIf pivot, boolean backwards) {
+    		this.pivot = pivot;
+    		this.backwards = backwards;
+    	}
+    	
+		@Override
+		public boolean select(IPersonnelIf anObject) {
+			// find root
+			if(backwards) {
+				/* ========================================
+				 * search backwards (previous occurrences)
+				 * ======================================== */ 
+				if(pivot!=null && pivot.equals(anObject.getNextOccurrence())) {
+					pivot = anObject;
+					return true;
+				}
+			} else {
+				/* ========================================
+				 * search forward (next occurrences)
+				 * ======================================== */ 
+				if(pivot!=null && pivot.equals(anObject)) {
+					pivot = anObject.getNextOccurrence();
+				}
+			}
+			return false;
+		}
+    	
+    };
+    
 
 }

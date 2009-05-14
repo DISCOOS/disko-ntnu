@@ -16,4 +16,8 @@ public interface IDiskoTableModel extends TableModel {
 	public int getColumnAlignment(int column);
 	public void setColumnAlignment(int column, int alignment);
 
+	public boolean isColumnWidthFixed(int column);	
+	public int getColumnFixedWidth(int column);
+	public void setColumnFixedWidth(int column, int fixedwidth);
+	
 }

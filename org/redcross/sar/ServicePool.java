@@ -4,7 +4,6 @@
 package org.redcross.sar;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -15,9 +14,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.apache.log4j.Logger;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.DispatcherAdapter;

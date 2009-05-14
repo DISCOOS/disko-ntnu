@@ -37,7 +37,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.model.IDiskoTableModel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
-import org.redcross.sar.gui.renderer.TableHeaderRenderer;
+import org.redcross.sar.gui.renderer.ITableHeaderRenderer;
 import org.redcross.sar.util.Utils;
 
 public class DiskoTableHeader extends JTableHeader {
@@ -48,8 +48,8 @@ public class DiskoTableHeader extends JTableHeader {
 	final private PopupManager m_popupMananger = new PopupManager();
 	final private EventListenerList m_listeners = new EventListenerList();
 
-	private TableHeaderRenderer m_renderer;
-	private TableHeaderRenderer m_editor;
+	private ITableHeaderRenderer m_renderer;
+	private ITableHeaderRenderer m_editor;
 
 	private int m_editColumn;
 	private int m_mouseColumn;
@@ -188,8 +188,8 @@ public class DiskoTableHeader extends JTableHeader {
 
 	@Override
 	public void setDefaultRenderer(TableCellRenderer defaultRenderer) {
-		if(defaultRenderer instanceof TableHeaderRenderer)
-			m_renderer = (TableHeaderRenderer)defaultRenderer;
+		if(defaultRenderer instanceof ITableHeaderRenderer)
+			m_renderer = (ITableHeaderRenderer)defaultRenderer;
 		else
 			m_renderer = null;
 		// forward
@@ -210,8 +210,8 @@ public class DiskoTableHeader extends JTableHeader {
 			m_editor.removeActionListener(m_popupMananger);
 		}
 		// register new=
-		if(defaultRenderer instanceof TableHeaderRenderer) {
-			m_editor = (TableHeaderRenderer)defaultRenderer;
+		if(defaultRenderer instanceof ITableHeaderRenderer) {
+			m_editor = (ITableHeaderRenderer)defaultRenderer;
 			m_editor.addActionListener(m_popupMananger);
 		}
 		else

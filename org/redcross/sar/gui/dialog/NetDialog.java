@@ -12,7 +12,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.IDiskoField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.FieldsPanel;
 import org.redcross.sar.util.Utils;
@@ -35,8 +35,8 @@ public class NetDialog extends DefaultDialog  {
 	private ComboBoxField protocolField;
 	private ComboBoxField hostField;	
 	private ComboBoxField portField;
-	private TextLineField userNameField;
-	private TextLineField passwordField;
+	private TextField userNameField;
+	private TextField passwordField;
 	
 	private JButton consoleButton;
 	private JButton connectButton;
@@ -165,9 +165,9 @@ public class NetDialog extends DefaultDialog  {
 	 * 	
 	 * @return org.redcross.sar.gui.field.TextLineField
 	 */
-	private TextLineField getUserNameField() {
+	private TextField getUserNameField() {
 		if (userNameField == null) {
-			userNameField = new TextLineField("username","Brukernavn",true);			
+			userNameField = new TextField("username","Brukernavn",true);			
 			userNameField.setValue("DISKO");
 		}
 		return userNameField;
@@ -178,9 +178,9 @@ public class NetDialog extends DefaultDialog  {
 	 * 	
 	 * @return org.redcross.sar.gui.field.TextLineField	
 	 */
-	private TextLineField getPasswordField() {
+	private TextField getPasswordField() {
 		if (passwordField == null) {
-			passwordField = new TextLineField("password","Passord",true);			
+			passwordField = new TextField("password","Passord",true);			
 			passwordField.setValue("-");
 		}
 		return passwordField;
@@ -198,8 +198,8 @@ public class NetDialog extends DefaultDialog  {
 			consoleButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					ConsoleDialog dlg = new ConsoleDialog(Application.getInstance());
-					dlg.setLocationRelativeTo(Application.getInstance());
+					ConsoleDialog dlg = new ConsoleDialog(Application.getFrameInstance());
+					dlg.setLocationRelativeTo(Application.getFrameInstance());
 					getConsoleDialog().open(session);					
 				}
 				
@@ -241,8 +241,8 @@ public class NetDialog extends DefaultDialog  {
 	 */	
 	private ConsoleDialog getConsoleDialog() {
 		if(consoleDialog == null) {
-			consoleDialog = new ConsoleDialog(Application.getInstance());
-			consoleDialog.setLocationRelativeTo(Application.getInstance());
+			consoleDialog = new ConsoleDialog(Application.getFrameInstance());
+			consoleDialog.setLocationRelativeTo(Application.getFrameInstance());
 		}
 		return consoleDialog;
 	}	
@@ -347,7 +347,7 @@ public class NetDialog extends DefaultDialog  {
 		refresh();
 		// comboboxes are not editable
 		getSessionPanel().setEditable(false);
-		// dialog is modal, the call it blocks on this 
+		// dialog is modal, the call blocks on this 
 		setVisible(true);
 		// finished
 		return !isCancel;

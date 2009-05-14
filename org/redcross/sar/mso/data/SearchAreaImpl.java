@@ -83,7 +83,7 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<SearchAreaStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<SearchAreaStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -107,7 +107,7 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_geodata.getState();
     }
 
-    public IAttributeIf.IMsoPolygonIf getGeodataAttribute()
+    public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute()
     {
         return m_geodata;
     }
@@ -127,7 +127,7 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_priority.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPriorityAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute()
     {
         return m_priority;
     }
@@ -147,7 +147,7 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_remarks.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
     {
         return m_remarks;
     }

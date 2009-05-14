@@ -22,7 +22,7 @@ public interface IEnumPriorityHolder<E extends Enum<E>> extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getPriorityState();
 
-    public IAttributeIf.IMsoEnumIf<E> getPriorityAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<E> getPriorityAttribute();
 
     public String getPriorityText();
 

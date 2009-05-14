@@ -16,11 +16,10 @@ import java.io.File;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.model.FileTreeModel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.tree.FileTree;
-import org.redcross.sar.util.Utils;
 
 public class DirectoryChooserDialog extends DefaultDialog {
 
@@ -30,7 +29,7 @@ public class DirectoryChooserDialog extends DefaultDialog {
 	private Object selected;
 	private FileTree fileTree;
 	private DefaultPanel contentPanel;
-	private TextLineField selectedAttr;
+	private TextField selectedAttr;
 
 	/* ==================================================
 	 * Constructors
@@ -38,7 +37,7 @@ public class DirectoryChooserDialog extends DefaultDialog {
 
 	public DirectoryChooserDialog() {
 		// forward
-		super(Application.getInstance());
+		super(Application.getFrameInstance());
 		// initialize GUI
 		initialize();
 	}
@@ -177,9 +176,9 @@ public class DirectoryChooserDialog extends DefaultDialog {
 		return fileTree;
 	}
 
-	private TextLineField getSelectedAttr() {
+	private TextField getSelectedAttr() {
 		if(selectedAttr==null) {
-			selectedAttr = new TextLineField("selected","Katalog",false);
+			selectedAttr = new TextField("selected","Katalog",false);
 		}
 		return selectedAttr;
 	}

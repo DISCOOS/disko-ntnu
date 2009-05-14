@@ -15,7 +15,7 @@ import javax.swing.event.DocumentListener;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
@@ -42,7 +42,7 @@ public class POIPanel extends DefaultToolPanel {
 	private JButton centerAtButton;
 	private POITypesPanel poiTypesPanel;
 	private FieldsPanel optionsPanel;
-	private TextLineField nameAttr;
+	private TextField nameAttr;
 	private TogglePanel remarksPanel;
 	private JTextArea remarksArea;
 
@@ -192,11 +192,11 @@ public class POIPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes nameAttr
 	 *
-	 * @return {@link TextLineField}
+	 * @return {@link TextField}
 	 */
-	public TextLineField getNameAttr() {
+	public TextField getNameAttr() {
 		if (nameAttr == null) {
-			nameAttr = new TextLineField("Name","Navn",true,50,25,"");
+			nameAttr = new TextField("Name","Navn",true,50,25,"");
 		}
 		return nameAttr;
 	}

@@ -25,7 +25,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getBirthdateState();
 
-    public IAttributeIf.IMsoCalendarIf getBirthdateAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getBirthdateAttribute();
 
     public void setFirstname(String aFirstname);
 
@@ -33,7 +33,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getFirstnameState();
 
-    public IAttributeIf.IMsoStringIf getFirstnameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getFirstnameAttribute();
 
     public void setID(String anID);
 
@@ -41,7 +41,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getIDState();
 
-    public IAttributeIf.IMsoStringIf getIDAttribute();
+    public IMsoAttributeIf.IMsoStringIf getIDAttribute();
 
     public void setLastname(String aLastname);
 
@@ -49,7 +49,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getLastnameState();
 
-    public IAttributeIf.IMsoStringIf getLastnameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getLastnameAttribute();
 
     public void setPhoto(int aPhoto);
 
@@ -57,7 +57,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getPhotoState();
 
-    public IAttributeIf.IMsoIntegerIf getPhotoAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPhotoAttribute();
 
     public void setResidence(Position aResidence);
 
@@ -65,7 +65,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getResidenceState();
 
-    public IAttributeIf.IMsoPositionIf getResidenceAttribute();
+    public IMsoAttributeIf.IMsoPositionIf getResidenceAttribute();
 
     public void setAddress(String address);
 
@@ -73,7 +73,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getAddressState();
 
-    public IAttributeIf.IMsoStringIf getAddressAttribute();
+    public IMsoAttributeIf.IMsoStringIf getAddressAttribute();
 
     public void setTelephone1(String aTelephone1);
 
@@ -81,7 +81,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephone1State();
 
-    public IAttributeIf.IMsoStringIf getTelephone1Attribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute();
 
     public void setTelephone2(String aTelephone2);
 
@@ -89,7 +89,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephone2State();
 
-    public IAttributeIf.IMsoStringIf getTelephone2Attribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute();
 
     public void setTelephone3(String aTelephone3);
 
@@ -97,7 +97,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getTelephone3State();
 
-    public IAttributeIf.IMsoStringIf getTelephone3Attribute();
+    public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute();
 
 
     public void setGender(PersonGender aGender);
@@ -110,7 +110,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getGenderState();
 
-    public IAttributeIf.IMsoEnumIf<PersonGender> getGenderAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<PersonGender> getGenderAttribute();
 
 
     public int getAge();

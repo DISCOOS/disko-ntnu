@@ -488,7 +488,7 @@ public class ProgressMonitor {
 		// forward event to listeners
 		fireUpdateProgressEvent(ProgressEventType.EVENT_FINISH);
 		// reset position
-		setProgressSnapTo(Application.getInstance().getLayeredPane());
+		setProgressSnapTo(Application.getFrameInstance().getLayeredPane());
 	}
 
 
@@ -556,7 +556,7 @@ public class ProgressMonitor {
 	 */
 	private DiskoGlassPane getGlassPane() {
     	if(m_glassPane==null) {
-    		m_glassPane = (DiskoGlassPane)Application.getInstance().getGlassPane();
+    		m_glassPane = (DiskoGlassPane)Application.getFrameInstance().getGlassPane();
     	}
     	return m_glassPane;
     }
@@ -569,7 +569,7 @@ public class ProgressMonitor {
 	private ProgressDialog getProgressDialog() {
 		// initialize?
 		if(m_progressDialog==null) {
-			m_progressDialog = new ProgressDialog(Application.getInstance(),false,ProgressStyleType.BAR_STYLE);
+			m_progressDialog = new ProgressDialog(Application.getFrameInstance(),false,ProgressStyleType.BAR_STYLE);
 			getGlassPane().setProgressDialog(m_progressDialog);
 		}
 		return m_progressDialog;

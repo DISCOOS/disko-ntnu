@@ -95,6 +95,4 @@ public interface IPanel extends IChangeable,
     public IPanelManager getParentManager();
 	public void setParentManager(IPanelManager parent, boolean requestMoveTo, boolean setAll);
 
-
-
 }

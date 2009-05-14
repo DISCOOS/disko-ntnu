@@ -12,7 +12,6 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.dialog.ProgressDialog;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.map.event.IProgressorListener;
-import org.redcross.sar.util.Utils;
 
 import com.esri.arcgis.system.IStepProgressor;
 
@@ -27,7 +26,7 @@ public class Progressor implements IStepProgressor {
 	private ProgressDialog progressDialog;
 
 	public Progressor(Component locationAt)  {
-		this.progressDialog = new ProgressDialog(Application.getInstance(),false,ProgressStyleType.ICON_STYLE);
+		this.progressDialog = new ProgressDialog(Application.getFrameInstance(),false,ProgressStyleType.ICON_STYLE);
 		this.progressDialog.setTrancluent(true);
 		this.progressDialog.setSnapToLocation(locationAt, DefaultDialog.POS_CENTER, 0, true, false);
 		this.bar = progressDialog.getProgressPanel().getProgressBar();

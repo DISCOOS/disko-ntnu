@@ -80,7 +80,7 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_status.getState();
     }
 
-    public IAttributeIf.IMsoEnumIf<HypothesisStatus> getStatusAttribute()
+    public IMsoAttributeIf.IMsoEnumIf<HypothesisStatus> getStatusAttribute()
     {
         return m_status;
     }
@@ -104,12 +104,12 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_description.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute()
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
     {
         return m_description;
     }
 
-    public IAttributeIf.IMsoIntegerIf getNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
     {
         return m_number;
     }
@@ -129,7 +129,7 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_priorityIndex.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getPriorityIndexAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityIndexAttribute()
     {
         return m_priorityIndex;
     }

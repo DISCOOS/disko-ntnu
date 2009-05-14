@@ -21,11 +21,10 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IAssignmentIf;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.Utils;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class EstimateDialog extends DefaultDialog {
@@ -95,7 +94,7 @@ public class EstimateDialog extends DefaultDialog {
 						// consume changes
 						setChangeable(false);
 						// initialize
-						IAttributeIf<?> eta = null;
+						IMsoAttributeIf<?> eta = null;
 						IAssignmentIf assignment = null;
 						// get owning area
 						IAreaIf area = MsoUtils.getOwningArea(msoObj);
@@ -119,7 +118,7 @@ public class EstimateDialog extends DefaultDialog {
 						update();
 
 						// request focus
-						getEtaAttribute().getTextField().requestFocus();
+						getEtaAttribute().getEditComponent().requestFocus();
 					}
 
 					@Override
@@ -200,8 +199,8 @@ public class EstimateDialog extends DefaultDialog {
 	public TrackDialog getTrackDialog() {
 		if (trackDialog == null) {
 			// create panels
-			trackDialog = new TrackDialog(Application.getInstance());
-			trackDialog.setLocationRelativeTo(Application.getInstance());
+			trackDialog = new TrackDialog(Application.getFrameInstance());
+			trackDialog.setLocationRelativeTo(Application.getFrameInstance());
 
 		}
 		return trackDialog;

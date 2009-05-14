@@ -82,7 +82,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         return m_opNumber.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOpNumberAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOpNumberAttribute()
     {
         return m_opNumber;
     }
@@ -102,7 +102,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         return m_opNumberPrefix.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOpNumberPrefixAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOpNumberPrefixAttribute()
     {
         return m_opNumberPrefix;
     }

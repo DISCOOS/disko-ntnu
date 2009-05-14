@@ -30,17 +30,19 @@ import org.redcross.sar.gui.field.TextAreaField;
 import org.redcross.sar.gui.util.SpringUtilities;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.AttributeImpl;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoBoolean;
 import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
 import org.redcross.sar.mso.data.AttributeImpl.MsoDouble;
 import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
 import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
+import org.redcross.sar.mso.data.AttributeImpl.MsoPolygon;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPosition;
+import org.redcross.sar.mso.data.AttributeImpl.MsoRoute;
 import org.redcross.sar.mso.data.AttributeImpl.MsoString;
 import org.redcross.sar.mso.data.AttributeImpl.MsoTimePos;
+import org.redcross.sar.mso.data.AttributeImpl.MsoTrack;
 import org.redcross.sar.util.Utils;
 
 /**
@@ -61,7 +63,8 @@ public class FieldsPanel extends TogglePanel {
 	private boolean m_isMessageVisible = false;
 	private boolean m_autoResizeX = true;
 	private boolean m_autoResizeY = false;
-	private boolean m_isAutoSave = false;
+	private boolean m_isBatchMode = true;
+	private boolean m_isEditable = true;
 
 	private int m_columns;
 	
@@ -246,7 +249,7 @@ public class FieldsPanel extends TogglePanel {
 		// remove old panels
 		clearFields();
 		// get all attributes
-		Map<String,IAttributeIf<?>> map = msoObject.getAttributes();
+		Map<String,IMsoAttributeIf<?>> map = msoObject.getAttributes();
 		// select decision method
 		if(include) {
 			// insert only passed attributes
@@ -255,7 +258,7 @@ public class FieldsPanel extends TogglePanel {
 				// add to panel?
 				if(map.containsKey(it)) {
 					// get attribute
-					IAttributeIf<?> attr = map.get(it);
+					IMsoAttributeIf<?> attr = map.get(it);
 					// is supported?
 					if(AbstractField.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
@@ -270,7 +273,7 @@ public class FieldsPanel extends TogglePanel {
 				// add to panel?
 				if(!attributes.contains(it)) {
 					// get attribute
-					IAttributeIf<?> attr = map.get(it);
+					IMsoAttributeIf<?> attr = map.get(it);
 					// is supported?
 					if(AbstractField.isMsoAttributeSupported(attr)) {
 						// add new attribute panel this
@@ -318,7 +321,7 @@ public class FieldsPanel extends TogglePanel {
 		}
 	}
 
-	public IDiskoField addField(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
+	public IDiskoField addField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
@@ -359,7 +362,7 @@ public class FieldsPanel extends TogglePanel {
 			// add listener
 			field.addWorkFlowListener(this);
 			// set auto save mode
-			field.setAutoSave(m_isAutoSave);
+			field.setBatchMode(m_isBatchMode);
 			// set layout dirty
 			m_isLayoutDirty = true;
 			// forward
@@ -415,14 +418,14 @@ public class FieldsPanel extends TogglePanel {
 		return false;
 	}
 	
-	private void addInterest(IAttributeIf<?> attr) {
+	private void addInterest(IMsoAttributeIf<?> attr) {
 		IMsoObjectIf msoObj = attr.getOwner();
 		String objId = msoObj.getObjectId();
 		m_msoObjects.put(objId,msoObj);
 		m_msoInterests.add(msoObj.getMsoClassCode());
 	}
 
-	private void removeInterest(IAttributeIf<?> attr) {
+	private void removeInterest(IMsoAttributeIf<?> attr) {
 		IMsoObjectIf msoObj = attr.getOwner();
 		String objId = msoObj.getObjectId();
 		m_msoObjects.remove(objId);
@@ -579,7 +582,7 @@ public class FieldsPanel extends TogglePanel {
 		getField(name).setValue(value);
 	}
 
-  	public static IDiskoField createField(IAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
+  	public static IDiskoField createField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
   		// initialize component
   		IDiskoField component = null;
 		try {
@@ -619,15 +622,15 @@ public class FieldsPanel extends TogglePanel {
 			    component = new PositionField(
 			    		(MsoTimePos)attribute,caption,isEditable,width,height);
 			}
-			else if (attribute instanceof AttributeImpl.MsoPolygon) {
+			else if (attribute instanceof MsoPolygon) {
 			    //AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) attribute;
 			    //throw new IllegalArgumentException("MsoPolygon is not supported");
 			}
-			else if (attribute instanceof AttributeImpl.MsoRoute) {
+			else if (attribute instanceof MsoRoute) {
 			    //AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) attribute;
 			    //throw new IllegalArgumentException("MsoRoute is not supported");
 			}
-			else if (attribute instanceof AttributeImpl.MsoTrack) {
+			else if (attribute instanceof MsoTrack) {
 			    //AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) attribute;
 			    //throw new IllegalArgumentException("MsoTrack is not supported");
 			}
@@ -654,31 +657,46 @@ public class FieldsPanel extends TogglePanel {
   		super.update();
   	}
 
-  	public void setAutoSave(boolean autoSave) {
+  	public void setBatchMode(boolean isBatchMode) {
   		for(IDiskoField it : m_fields.values()) {
-			it.setAutoSave(autoSave);
+			it.setBatchMode(isBatchMode);
   		}
-  		m_isAutoSave = autoSave;
+  		m_isBatchMode = isBatchMode;
   	}
   	
-  	public boolean isAutoSave() {
-  		return m_isAutoSave;
+  	public boolean isBatchMode() {
+  		return m_isBatchMode;
   	}
 
-  	public int getAutoSaveCount() {
+  	public int getBatchModeCount() {
   		int count = 0;
   		for(IDiskoField it : m_fields.values()) {
-			if(it.getAutoSave()) count++;
+			if(it.isBatchMode()) count++;
   		}
   		return count;
   	}
 
   	public void setEditable(boolean isEditable) {
-  		for(IDiskoField it : m_fields.values()) {
-			it.setEditable(isEditable);
+  		if(m_isEditable != isEditable) {
+	  		for(IDiskoField it : m_fields.values()) {
+  				it.setEditable(isEditable);
+	  		}
+	  		m_isEditable = isEditable;
   		}
   	}
+  	
+  	public boolean isEditable() {
+  		return m_isEditable;
+  	}
 
+  	public int getEditableCount() {
+  		int count = 0;
+  		for(IDiskoField it : m_fields.values()) {
+			if(it.isEditable()) count++;
+  		}
+  		return count;
+  	}
+  	
   	@Override
   	public void setEnabled(boolean isEnabled) {
   		super.setEnabled(isEnabled);
@@ -740,7 +758,7 @@ public class FieldsPanel extends TogglePanel {
 		
 		// only notify attributes belonging to this object
 		if((msoObj = m_msoObjects.get(objId))!=null) {
-			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
 			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
@@ -752,8 +770,8 @@ public class FieldsPanel extends TogglePanel {
 		}
 	}
 
-
-	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+	@Override
+	protected void msoObjectLoopback(IMsoObjectIf msoObj, int mask) {
 
 		/*
 		 *
@@ -762,8 +780,38 @@ public class FieldsPanel extends TogglePanel {
 		 * functionality. For example source name (person, module) and
 		 * location (IP address, master name, logical unit)
 		 *
-		 * TODO: Implement server/local value conflict indication in
-		 * GUI and functionality for resolving this conflict action
+		 */
+
+		// forward
+		super.msoObjectLoopback(msoObj, mask);
+		
+		// get object id
+		String objId = msoObj.getObjectId();
+		
+		// only notify attributes belonging to this object
+		if((msoObj = m_msoObjects.get(objId))!=null) {
+			
+			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
+			// loop over attributes
+			for(IDiskoField it: m_fields.values()) {
+				if(it instanceof IMsoField) {
+					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
+						it.reset();
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void msoObjectChanged(IMsoObjectIf msoObj, int mask) {
+
+		/*
+		 *
+		 * TODO: Implement server value change indication in
+		 * GUI including lookup of source information
+		 * functionality. For example source name (person, module) and
+		 * location (IP address, master name, logical unit)
 		 *
 		 */
 
@@ -776,7 +824,7 @@ public class FieldsPanel extends TogglePanel {
 		// only notify attributes belonging to this object
 		if((msoObj = m_msoObjects.get(objId))!=null) {
 			
-			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
 			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
@@ -786,8 +834,8 @@ public class FieldsPanel extends TogglePanel {
 				}
 			}
 		}
-	}
-
+	}	
+	
 	@Override
 	protected void msoObjectDeleted(IMsoObjectIf msoObj, int mask) {
 
@@ -802,12 +850,12 @@ public class FieldsPanel extends TogglePanel {
 		// only notify attributes belonging to this object
 		if((msoObj = m_msoObjects.get(objId))!=null) {
 			// TODO: Implement deleted attribute indication in GUI
-			Map<String,IAttributeIf<?>> map = msoObj.getAttributes();
+			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
 			// loop over attributes
 			for(IDiskoField it: m_fields.values()) {
 				if(it instanceof IMsoField) {
 					IMsoField field = ((IMsoField)it);
-					IAttributeIf<?> attr = field.getMsoAttribute();
+					IMsoAttributeIf<?> attr = field.getMsoAttribute();
 					if(map.containsValue(attr)) {
 						field.setMsoAttribute(null);
 						it.reset();
@@ -834,5 +882,5 @@ public class FieldsPanel extends TogglePanel {
 			}
 		}
 	}
-
+	
 }

@@ -2,7 +2,6 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -67,7 +66,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<EventStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<EventStatus> getStatusAttribute();
     
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -79,7 +78,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getPriorityState();
 
-    public IAttributeIf.IMsoIntegerIf getPriorityAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute();
 
     public void setLevel(int aLevel);
 
@@ -87,7 +86,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getLevelState();
 
-    public IAttributeIf.IMsoIntegerIf getLevelAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getLevelAttribute();
     
     public void setName(String aText);
 
@@ -95,7 +94,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getNameState();
 
-    public IAttributeIf.IMsoStringIf getNameAttribute();
+    public IMsoAttributeIf.IMsoStringIf getNameAttribute();
     
     public void setDescription(String aText);
 
@@ -103,7 +102,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoModelIf.ModificationState getDescriptionState();
 
-    public IAttributeIf.IMsoStringIf getDescriptionAttribute();
+    public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
     
     /*-------------------------------------------------------------------------------------------
     * Methods for lists

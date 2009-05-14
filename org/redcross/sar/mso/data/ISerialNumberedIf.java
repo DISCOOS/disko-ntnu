@@ -33,5 +33,5 @@ public interface ISerialNumberedIf extends IMsoObjectIf
      *
      * @return The serial number attribute
      */
-    public IAttributeIf.IMsoIntegerIf getNumberAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute();
 }

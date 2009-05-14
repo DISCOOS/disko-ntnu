@@ -12,7 +12,7 @@ import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -443,7 +443,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 						String name = attributes.get(i);
 
 						// get attribute
-						IAttributeIf attr = it.getAttributes().get(name);
+						IMsoAttributeIf attr = it.getAttributes().get(name);
 
 						// has attribute?
 						if(attr!=null) {

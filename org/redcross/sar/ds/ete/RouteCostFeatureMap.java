@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 
-import org.redcross.sar.map.DiskoMap;
 import org.redcross.sar.map.IDiskoMap;
 
 import com.esri.arcgis.carto.ILayer;

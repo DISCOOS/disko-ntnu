@@ -135,7 +135,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_active.getState();
     }
 
-    public IAttributeIf.IMsoBooleanIf getActiveAttribute()
+    public IMsoAttributeIf.IMsoBooleanIf getActiveAttribute()
     {
         return m_active;
     }
@@ -155,7 +155,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_channel1.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getChannel1Attribute()
+    public IMsoAttributeIf.IMsoStringIf getChannel1Attribute()
     {
         return m_channel1;
     }
@@ -175,7 +175,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_channel2.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getChannel2Attribute()
+    public IMsoAttributeIf.IMsoStringIf getChannel2Attribute()
     {
         return m_channel2;
     }
@@ -195,7 +195,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_closure.getState();
     }
 
-    public IAttributeIf.IMsoCalendarIf getClosureAttribute()
+    public IMsoAttributeIf.IMsoCalendarIf getClosureAttribute()
     {
         return m_closure;
     }
@@ -215,7 +215,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_commsProcedure.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getCommsProcedureAttribute()
+    public IMsoAttributeIf.IMsoStringIf getCommsProcedureAttribute()
     {
         return m_commsProcedure;
     }
@@ -235,7 +235,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_findingsProcedure.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getFindingsProcedureAttribute()
+    public IMsoAttributeIf.IMsoStringIf getFindingsProcedureAttribute()
     {
         return m_findingsProcedure;
     }
@@ -255,7 +255,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_importantClues.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getImportantCluesAttribute()
+    public IMsoAttributeIf.IMsoStringIf getImportantCluesAttribute()
     {
         return m_importantClues;
     }
@@ -275,7 +275,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_mediaProcedure.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getMediaProcedureAttribute()
+    public IMsoAttributeIf.IMsoStringIf getMediaProcedureAttribute()
     {
         return m_mediaProcedure;
     }
@@ -295,7 +295,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_other.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOtherAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOtherAttribute()
     {
         return m_other;
     }
@@ -315,7 +315,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_others.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOthersAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOthersAttribute()
     {
         return m_others;
     }
@@ -335,7 +335,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_overallStrategy.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getOverallStrategyAttribute()
+    public IMsoAttributeIf.IMsoStringIf getOverallStrategyAttribute()
     {
         return m_overallStrategy;
     }
@@ -355,7 +355,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_repeaters.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getRepeatersAttribute()
+    public IMsoAttributeIf.IMsoStringIf getRepeatersAttribute()
     {
         return m_repeaters;
     }
@@ -375,7 +375,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_supplies.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getSuppliesAttribute()
+    public IMsoAttributeIf.IMsoStringIf getSuppliesAttribute()
     {
         return m_supplies;
     }
@@ -395,7 +395,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_telephones.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTelephonesAttribute()
+    public IMsoAttributeIf.IMsoStringIf getTelephonesAttribute()
     {
         return m_telephones;
     }
@@ -415,7 +415,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_transportProcedure.getState();
     }
 
-    public IAttributeIf.IMsoStringIf getTransportProcedureAttribute()
+    public IMsoAttributeIf.IMsoStringIf getTransportProcedureAttribute()
     {
         return m_transportProcedure;
     }

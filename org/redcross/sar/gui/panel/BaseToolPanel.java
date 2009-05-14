@@ -5,7 +5,6 @@ import java.awt.Color;
 
 import javax.swing.Icon;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.tool.IMapTool;
@@ -13,13 +12,6 @@ import org.redcross.sar.map.tool.IMapTool;
 public class BaseToolPanel extends BasePanel implements IToolPanel {
 
 	private static final long serialVersionUID = 1L;
-
-	public static final int HORIZONTAL_SCROLLBAR_ALWAYS = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS;
-	public static final int HORIZONTAL_SCROLLBAR_AS_NEEDED = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED;
-	public static final int HORIZONTAL_SCROLLBAR_NEVER = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER;
-	public static final int VERTICAL_SCROLLBAR_ALWAYS = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS;
-	public static final int VERTICAL_SCROLLBAR_AS_NEEDED = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED;
-	public static final int VERTICAL_SCROLLBAR_NEVER = JScrollPane.VERTICAL_SCROLLBAR_NEVER;
 
 	private IMapTool tool;
 

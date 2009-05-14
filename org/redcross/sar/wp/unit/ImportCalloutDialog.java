@@ -434,7 +434,7 @@ public class ImportCalloutDialog extends DefaultDialog
 							msoPersonnel.setLastname(personnel.getLastName());
 							msoPersonnel.setTelephone1(personnel.getPhone());
 							msoPersonnel.setImportStatus(PersonnelImportStatus.IMPORTED);
-							personnel.getPersonnelRef().setNextOccurence(msoPersonnel);
+							personnel.getPersonnelRef().setNextOccurrence(msoPersonnel);
 						}
 						else if(personnel.isUpdate())
 						{
@@ -456,7 +456,7 @@ public class ImportCalloutDialog extends DefaultDialog
 						// Reinstate released personnel
 						if(msoPersonnel.getStatus() == PersonnelStatus.RELEASED)
 						{
-							msoPersonnel = UnitUtils.reinstateResource(msoPersonnel, PersonnelStatus.ON_ROUTE);
+							msoPersonnel = ResourceUtils.reinstatePersonnel(msoPersonnel, PersonnelStatus.ON_ROUTE);
 						}
 						else if(msoPersonnel.getStatus() != PersonnelStatus.ARRIVED)
 						{
@@ -584,9 +584,9 @@ public class ImportCalloutDialog extends DefaultDialog
 			{
 				m_personnelRef = personnel;
 				// Set reference to end of personnel history chain
-				while(m_personnelRef.getNextOccurence() != null)
+				while(m_personnelRef.getNextOccurrence() != null)
 				{
-					m_personnelRef = m_personnelRef.getNextOccurence();
+					m_personnelRef = m_personnelRef.getNextOccurrence();
 				}
 				m_preExisting = true;
 			}

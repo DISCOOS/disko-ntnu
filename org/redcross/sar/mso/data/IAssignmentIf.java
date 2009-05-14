@@ -54,7 +54,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IMsoModelIf.ModificationState getTypeState();
 
-    public IAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute();
 
     public String getInternationalTypeName();
 
@@ -68,7 +68,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     public void setPrioritySequence(int aPrioritySequence);
 
@@ -76,7 +76,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IMsoModelIf.ModificationState getPrioritySequenceState();
 
-    public IAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute();
 
     public void setTimeEstimatedFinished(Calendar aTimeEstimatedFinished);
 
@@ -84,7 +84,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IMsoModelIf.ModificationState getTimeEstimatedFinishedState();
 
-    public IAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute();
+    public IMsoAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute();
 
 
     /*-------------------------------------------------------------------------------------------

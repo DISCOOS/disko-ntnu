@@ -2,7 +2,7 @@ package org.redcross.sar.mso;
 
 import java.util.List;
 
-import org.redcross.sar.mso.data.IAttributeIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
@@ -45,7 +45,7 @@ public interface IChangeIf
         /**
          * Returns partial list of attributes to commit
          */
-		public List<IAttributeIf<?>> getPartial();
+		public List<IMsoAttributeIf<?>> getPartial();
         
     }
 

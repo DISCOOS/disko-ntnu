@@ -28,7 +28,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getStatusState();
 
-    public IAttributeIf.IMsoEnumIf<SearchAreaStatus> getStatusAttribute();
+    public IMsoAttributeIf.IMsoEnumIf<SearchAreaStatus> getStatusAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for attributes
@@ -40,7 +40,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getGeodataState();
 
-    public IAttributeIf.IMsoPolygonIf getGeodataAttribute();
+    public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute();
 
     public void setPriority(int aPriority);
 
@@ -48,7 +48,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getPriorityState();
 
-    public IAttributeIf.IMsoIntegerIf getPriorityAttribute();
+    public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute();
 
     public void setRemarks(String aRemarks);
 
@@ -56,7 +56,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public IMsoModelIf.ModificationState getRemarksState();
 
-    public IAttributeIf.IMsoStringIf getRemarksAttribute();
+    public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for references

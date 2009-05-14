@@ -3,9 +3,9 @@ package org.redcross.sar.mso.data;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
-import org.redcross.sar.mso.data.IAttributeIf.IMsoEnumIf;
-import org.redcross.sar.mso.data.IAttributeIf.IMsoIntegerIf;
-import org.redcross.sar.mso.data.IAttributeIf.IMsoStringIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoEnumIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoIntegerIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoStringIf;
 import org.redcross.sar.util.except.MsoCastException;
 
 import java.util.Calendar;
@@ -152,7 +152,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
         return m_number.getState();
     }
 
-    public IAttributeIf.IMsoIntegerIf getNumberAttribute()
+    public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
     {
         return m_number;
     }

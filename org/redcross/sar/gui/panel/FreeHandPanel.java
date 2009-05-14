@@ -13,7 +13,7 @@ import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.CheckBoxField;
-import org.redcross.sar.gui.field.TextLineField;
+import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.tool.FreeHandTool;
 import org.redcross.sar.map.tool.SnapAdapter;
@@ -27,8 +27,8 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	private JButton snapToButton;
 	private FieldsPanel optionsPanel;
 	private CheckBoxField snapToAttr;
-	private TextLineField minStepAttr;
-	private TextLineField maxStepAttr;
+	private TextField minStepAttr;
+	private TextField maxStepAttr;
 	private CheckBoxField constraintAttr;
 
 	/* ===========================================
@@ -99,7 +99,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		if(snapToAttr == null) {
 			snapToAttr = new CheckBoxField("autosnap","Automatisk snapping",true,135,35,false);
 			snapToAttr.setToolTipText("Snapper tegning automatisk til valgte lag");
-			snapToAttr.getCheckBox().addItemListener(new ItemListener() {
+			snapToAttr.getEditComponent().addItemListener(new ItemListener() {
 
 				public void itemStateChanged(ItemEvent e) {
 				    if (e.getStateChange() == ItemEvent.DESELECTED)
@@ -114,7 +114,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 				    	}
 				    	else {
 				    		// reset flag
-				    		snapToAttr.getCheckBox().setSelected(false);
+				    		snapToAttr.getEditComponent().setSelected(false);
 				    	}
 				    }
 				}
@@ -139,7 +139,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		if(constraintAttr == null) {
 			constraintAttr = new CheckBoxField("constaint","Begrens avstand",true,135,25,true);
 			constraintAttr.setToolTipText("Begrenser avstand mellom punkter på en linje");
-			constraintAttr.getCheckBox().addItemListener(new ItemListener() {
+			constraintAttr.getEditComponent().addItemListener(new ItemListener() {
 
 				public void itemStateChanged(ItemEvent e) {
 
@@ -158,12 +158,12 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		return constraintAttr;
 	}
 
-	private TextLineField getMinStepAttr() {
+	private TextField getMinStepAttr() {
 		if(minStepAttr == null) {
-			minStepAttr = new TextLineField("min","Minium avstand",true,135,25,"10");
-			minStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
+			minStepAttr = new TextField("min","Minium avstand",true,135,25,"10");
+			minStepAttr.getEditComponent().setDocument(new NumericDocument(-1,0,false));
 			minStepAttr.setToolTipText("Minimum avstand mellom to punktet");
-			minStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
+			minStepAttr.getEditComponent().getDocument().addDocumentListener(new DocumentListener() {
 
 				public void changedUpdate(DocumentEvent e) { change(); }
 				public void insertUpdate(DocumentEvent e) { change(); }
@@ -184,12 +184,12 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		return minStepAttr;
 	}
 
-	private TextLineField getMaxStepAttr() {
+	private TextField getMaxStepAttr() {
 		if(maxStepAttr == null) {
-			maxStepAttr = new TextLineField("max","Maximum avstand",true,135,25,"100");
-			maxStepAttr.getTextField().setDocument(new NumericDocument(-1,0,false));
+			maxStepAttr = new TextField("max","Maximum avstand",true,135,25,"100");
+			maxStepAttr.getEditComponent().setDocument(new NumericDocument(-1,0,false));
 			maxStepAttr.setToolTipText("Maximum avstand mellom to punktet");
-			maxStepAttr.getTextField().getDocument().addDocumentListener(new DocumentListener() {
+			maxStepAttr.getEditComponent().getDocument().addDocumentListener(new DocumentListener() {
 
 				public void changedUpdate(DocumentEvent e) { change(); }
 				public void insertUpdate(DocumentEvent e) { change(); }
@@ -272,14 +272,14 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 		// get adapter
 		SnapAdapter adapter = getTool().getSnapAdapter();
 		// enable auto snapping check?
-		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
+		getSnapToAttr().getEditComponent().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
 	}
 
 	public void onSnapableChanged() {
 		// get adapter
 		SnapAdapter adapter = getTool().getSnapAdapter();
 		// enable auto snapping check?
-		getSnapToAttr().getCheckBox().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
+		getSnapToAttr().getEditComponent().setEnabled(adapter.isSnapReady() && adapter.isSnappingAllowed());
 	}
 
 

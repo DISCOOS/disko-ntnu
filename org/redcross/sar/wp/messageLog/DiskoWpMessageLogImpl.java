@@ -1,5 +1,6 @@
 package org.redcross.sar.wp.messageLog;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
@@ -24,7 +25,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 
     public DiskoWpMessageLogImpl() throws IllegalClassFormatException
     {
-    	super();
+    	super(Logger.getLogger(DiskoWpMessageLogImpl.class));
 
     	// initialize GUI
         initialize();
