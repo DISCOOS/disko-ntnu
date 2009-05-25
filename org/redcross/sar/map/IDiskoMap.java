@@ -20,7 +20,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.mso.GeoPos;
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.ILayer;
@@ -177,8 +177,8 @@ public interface IDiskoMap {
 
 	public ISpatialReference getSpatialReference() throws IOException, AutomationException;
 
-	public void addWorkFlowListener(IWorkFlowListener listener);
-	public void removeWorkEventListener(IWorkFlowListener listener);
+	public void addWorkFlowListener(IFlowListener listener);
+	public void removeWorkEventListener(IFlowListener listener);
 
 	public IEnvelope getDirtyExtent();
 

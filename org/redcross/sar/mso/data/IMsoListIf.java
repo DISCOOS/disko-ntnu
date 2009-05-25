@@ -5,14 +5,18 @@ package org.redcross.sar.mso.data;
  */
 
 import org.redcross.sar.data.Selector;
+import org.redcross.sar.mso.ChangeImpl;
+import org.redcross.sar.mso.IChangeIf;
+import org.redcross.sar.mso.IChangeIf.IChangeReferenceIf;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.mso.data.IMsoObjectIf.IObjectIdIf;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-public interface IMsoListIf<M extends IMsoObjectIf>
+public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
 {
     /**
      * Get name of list
@@ -25,32 +29,94 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * The list owner 
      */
     public IMsoObjectIf getOwner();
-
+    
     /**
-     * Get a java.util.Collection of the items in the list.
-     *
-     * @return All items (not marked for deletion in the list)
+     * Check the main list flag. </p>
+     * If <code>true</code>, the list is the owner of the 
+     * referenced objects. When references to objects in main 
+     * lists are deleted, the objects are also deleted. </p>
+	 *
+     * @return <code>true</code> if main list, <code>false</code> otherwise.
      */
-    public Collection<M> getItems();
+    public boolean isMain();
 
     /**
-     * Get any item in the list.
+     * Get a java.util.Collection of the referenced items in the list.
      *
-     * @return An item held by the list.
+     * @return All referenced items (not marked for deletion in the list)
      */
-    public M getItem();
+    public Collection<M> getObjects();
 
     /**
-     * Get an item in the list, with a given object ID.
+     * Get first item referenced by the list.
+     *
+     * @return An the first item referenced by the list.
+     */
+    public M getHeadObject();
+
+    /**
+     * Get an referenced item in the list, with a given object ID object.
      *
      * @param anObjectId The object ID
-     * @return The item, if it exists, otherwise <code>null</code>.
+     * @return The referenced item, if it exists, otherwise <code>null</code>.
      */
-    public M getItem(String anObjectId);
-
+    public M getObject(IObjectIdIf anObjectId);
+    
+    /**
+     * Get an referenced item in the list, with a given object ID string.
+     *
+     * @param anObjectId The object ID
+     * @return The referenced item, if it exists, otherwise <code>null</code>.
+     */
+    public M getObject(String anObjectId);
 
     /**
-     * Add an object to the list.
+     * Get a java.util.Collection of the references in the list.
+     *
+     * @return All references (not marked for deletion in the list)
+     */
+    public Collection<IMsoReferenceIf<M>> getReferences();
+
+    /**
+     * Get first item in the list.
+     *
+     * @return The first reference in the list.
+     */
+    public IMsoReferenceIf<M> getHeadReference();
+
+    /**
+     * Get an reference in the list, that reference a given object ID object.
+     *
+     * @param anObjectId The object ID of the referenced object
+     * @return The reference, if it exists, otherwise <code>null</code>.
+     */
+    public IMsoReferenceIf<M> getReference(IObjectIdIf anObjectId);
+    
+    /**
+     * Get an reference in the list, that reference a given object ID string.
+     *
+     * @param anObjectId The object ID of the referenced object
+     * @return The reference, if it exists, otherwise <code>null</code>.
+     */
+    public IMsoReferenceIf<M> getReference(String anObjectId);
+
+    /**
+     * Get an reference in the list, that reference a given object.
+     *
+     * @param anObject The referenced object
+     * @return The reference, if it exists, otherwise <code>null</code>.
+     */
+    public IMsoReferenceIf<M> getReference(M anObject);
+    
+    /**
+     * Returns the number of objects in the list.
+     *
+     * @return the number of objects in the list.
+     */
+    public int size();
+
+    /**
+     * Add the given object to the list.
      *
      * @param anObject The object to add
      * @return <code>false</code> if the list already contains an object with 
@@ -60,21 +126,33 @@ public interface IMsoListIf<M extends IMsoObjectIf>
     public boolean add(M anObject);
 
     /**
-     * Returns the number of objects in the list.
-     *
-     * @return the number of objects in the list.
-     */
-    public int size();
-
-    /**
-     * Remove reference to an object.
-     * An object in a main list is removed completely, otherwise it is only removed from the current list.
+     * Remove the given object from the list. </p>
+     * 
+     * An object in a main list is removed completely, otherwise it 
+     * is only removed from the current list.
      *
      * @param anObject The object to remove.
      * @return True if success, otherwise false.
      */
     public boolean remove(M anObject);
 
+    /**
+     * Delete all objects in the list</p>
+     * 
+     * Can be optimized, but has probably very little effect, as the list normally will be quite short.
+     */
+    public void removeAll();    
+    
+    /**
+     * Rollback changes in this list. Generates a client update events if changes have been made
+     */    
+    public void rollback();
+    
+    /**
+     * Rollback changes in references to the given items in this list. Generates a client update events if changes have been made
+     */    
+    public void rollback(List<IChangeReferenceIf> items);
+    
    /** 
     * Generate an List of selected items from the list.
     *
@@ -175,7 +253,7 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * The cloned list will be a copy that refers to the same objects
      * @return The cloned list.
      */
-    public IMsoListIf<M> getClone();
+    //public IMsoListIf<M> getClone();
     
     /**
      * Get list cardinality
@@ -201,5 +279,19 @@ public interface IMsoListIf<M extends IMsoObjectIf>
      * Get the list object class
      */
     public Class<M> getObjectClass();
+    
+    /**
+     * Get list of changed references.
+     * 
+     * @return Returns list of changed references
+     */
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences();
 
+    /**
+     * Get sub-list of changed references given the partial list.
+     * 
+     * @return Returns sub-list of changed references
+     */
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences(Collection<IChangeIf> partial);
+    
 }

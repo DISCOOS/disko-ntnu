@@ -154,7 +154,7 @@ public class UnitlogReportParams {
 		callSigns[0][1] = unit.getCallSign();
 		callSigns[0][0] = unit.getCommunicatorShortName();
 		int unitCount = unitList.size();
-		Collection <IUnitIf> unitCollection = unitList.getItems();
+		Collection <IUnitIf> unitCollection = unitList.getObjects();
 		Iterator unitIter = unitCollection.iterator();
 		int iter2 = 1;
 		String keyCallSign = KEY_CALLSIGN_PREFIX + Integer.toString(iter2);

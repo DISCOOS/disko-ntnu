@@ -72,8 +72,8 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.work.ProgressMonitor;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEventRepeater;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEventRepeater;
 
 /**
  * This calls extends MapBean to provide user interface for map rendering
@@ -138,7 +138,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 	// adapters
 	private MsoDrawAdapter drawAdapter;
 	private SnapAdapter snapAdapter;
-	private final WorkFlowEventRepeater workRepeater = new WorkFlowEventRepeater();
+	private final FlowEventRepeater workRepeater = new FlowEventRepeater();
 	private final ControlEventsAdapter ctrlAdapter = new ControlEventsAdapter();
 	private final MapCompEventsAdapter compAdapter = new MapCompEventsAdapter();
 
@@ -2083,12 +2083,12 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 	 * IWorkListener methods
 	 *==========================================================*/
 
-	public void addWorkFlowListener(IWorkFlowListener listener) {
-		workRepeater.addWorkFlowListener(listener);
+	public void addWorkFlowListener(IFlowListener listener) {
+		workRepeater.addFlowListener(listener);
 	}
 
-	public void removeWorkEventListener(IWorkFlowListener listener) {
-		workRepeater.removeWorkFlowListener(listener);
+	public void removeWorkEventListener(IFlowListener listener) {
+		workRepeater.removeFlowListener(listener);
 	}
 
 	/*==========================================================

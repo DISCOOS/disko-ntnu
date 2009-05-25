@@ -44,7 +44,7 @@ import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.messageLog.ChangeTasksDialog.TaskSubType;
 
 /**
@@ -182,7 +182,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			m_poiPanel = (POIPanel)m_tool.addToolPanel();
 
 			// forward work to this
-			m_poiPanel.addWorkFlowListener(this);
+			m_poiPanel.addFlowListener(this);
 
 
 		}
@@ -190,7 +190,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 	}
 
 	@Override
-	public void onFlowPerformed(WorkFlowEvent e) {
+	public void onFlowPerformed(FlowEvent e) {
 
 		super.onFlowPerformed(e);
 

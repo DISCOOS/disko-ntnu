@@ -14,12 +14,12 @@ import javax.swing.ListCellRenderer;
 
 import org.redcross.sar.gui.IStringConverter;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
-import org.redcross.sar.mso.data.AttributeImpl.MsoString;
 
 /**
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class ComboBoxField extends AbstractField<Object,JComboBox,JTextField> {
 
 	private static final long serialVersionUID = 1L;
@@ -38,12 +38,12 @@ public class ComboBoxField extends AbstractField<Object,JComboBox,JTextField> {
 		super(name, caption, isEditable);
 	}
 
-	public ComboBoxField(MsoString attribute, String caption,
+	public ComboBoxField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
 	}
 
-	public ComboBoxField(MsoString attribute, String caption, int width,
+	public ComboBoxField(IMsoAttributeIf attribute, String caption, int width,
 			int height, boolean isEditable) {
 		super(attribute, caption, isEditable, width, height);
 	}
@@ -74,14 +74,6 @@ public class ComboBoxField extends AbstractField<Object,JComboBox,JTextField> {
 		return m_viewComponent;
 	}
 	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}
-
 	public boolean fill(Object values) {
 		try {
 			if(values instanceof Object[])

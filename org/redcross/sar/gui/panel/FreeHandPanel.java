@@ -25,7 +25,7 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	private static final long serialVersionUID = 1L;
 
 	private JButton snapToButton;
-	private FieldsPanel optionsPanel;
+	private FieldPane optionsPanel;
 	private CheckBoxField snapToAttr;
 	private TextField minStepAttr;
 	private TextField maxStepAttr;
@@ -75,11 +75,11 @@ public class FreeHandPanel extends DefaultToolPanel implements SnapListener {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private FieldsPanel getOptionsPanel() {
+	private FieldPane getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
 
-				optionsPanel = new FieldsPanel("Alternativer","",false,false,ButtonSize.SMALL);
+				optionsPanel = new FieldPane("Alternativer","",false,false,ButtonSize.SMALL);
 				optionsPanel.setPreferredExpandedHeight(180);
 				optionsPanel.setButtonVisible("toggle", true);
 				optionsPanel.addField(getSnapToAttr());

@@ -6,8 +6,8 @@ import javax.swing.DefaultComboBoxModel;
 
 import org.redcross.sar.gui.panel.ListSelectorPanel;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * @author kennetgu
@@ -35,10 +35,10 @@ public class ListSelectorDialog extends DefaultDialog  {
 		initialize();
 		
 		// add listener
-		addWorkFlowListener(new IWorkFlowListener() {
+		addFlowListener(new IFlowListener() {
 
 			@Override
-			public void onFlowPerformed(WorkFlowEvent e) {
+			public void onFlowPerformed(FlowEvent e) {
 				if(e.isCancel()) m_cancel = true;				
 			}
 			

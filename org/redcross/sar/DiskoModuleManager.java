@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
+import org.redcross.sar.undo.EditManager;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.ProgressMonitor;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -34,6 +35,7 @@ public class DiskoModuleManager {
 	private String[] rolleNames;
 	private final ClassLoader classLoader;
 	private final Map<String,IDiskoWpModule> modules;
+	private final EditManager m_editManager = new EditManager();
 	
 	private final Logger logger = Logger.getLogger(DiskoModuleManager.class);
 
@@ -54,6 +56,15 @@ public class DiskoModuleManager {
 
 	}
 
+	/**
+	 * Return a reference to the EditManager class. This class contains
+	 * methods to handle edits across work processes.
+	 * @return A reference to the EditManager
+	 */
+	public EditManager getEditManager() { 
+		return m_editManager;
+	}
+	
 	/**
 	 * Get an array containing all role titles defined in the xml-file.
 	 * @return An array of role titles
@@ -84,7 +95,7 @@ public class DiskoModuleManager {
 			Element elem = (Element)elems.item(i);
 			String title = elem.getAttribute("title");
 			if (title.equals(name)) {
-				// parse this rolle
+				// parse this role
 				return parseDiskoRole(elem);
 			}
 		}
@@ -129,6 +140,7 @@ public class DiskoModuleManager {
 						Object obj = cls.getConstructors()[0].newInstance();
 						if (obj instanceof IDiskoWpModule) {
 							module = (IDiskoWpModule)obj;
+							m_editManager.install(module);
 							modules.put(className,module);
 						}
 						else throw new Exception("Unsupported class was found");

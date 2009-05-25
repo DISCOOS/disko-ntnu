@@ -18,7 +18,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     private int makeUnitSerialNumber(Class<?> aClass)
     {
         int retVal = 0;
-        for (IUnitIf item : getItems())
+        for (IUnitIf item : getObjects())
         {
             if (item.getClass() == aClass && item.getNumber() > retVal)
             {
@@ -31,7 +31,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     void rearrangeUnitSerialNumber(Class<?> aClass)
     {
         // todo make code
-        for (IUnitIf item : getItems())
+        for (IUnitIf item : getObjects())
         {
         }
     }
@@ -103,7 +103,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
 
     public IUnitIf getUnit(int aUnitNr)
     {
-        for (IUnitIf unit : getItems())
+        for (IUnitIf unit : getObjects())
         {
             if (unit.getNumber() == aUnitNr)
             {

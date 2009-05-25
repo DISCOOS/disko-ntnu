@@ -19,6 +19,13 @@ import org.redcross.sar.work.event.WorkEvent;
  */
 public abstract class AbstractWork implements IWork {
 
+	public static final int REALTIME_PRIORITY = 0;
+	public static final int HIGH_HIGH_PRIORITY = 1;
+	public static final int HIGH_PRIORITY = 2;
+	public static final int NORMAL_PRIORITY = 3;
+	public static final int LOW_PRIORITY = 4;
+	public static final int LOW_LOW_PRIORITY = 5;
+	
     protected Object m_result;
 
     protected int m_priority = 0;
@@ -62,7 +69,7 @@ public abstract class AbstractWork implements IWork {
     public AbstractWork(int priority, boolean isSafe,
             boolean isModal, ThreadType thread,
             String message, long millisToPopup,
-            boolean showProgress, boolean suspend, boolean isLoop) throws Exception {
+            boolean isProgressShown, boolean suspend, boolean isLoop) throws Exception {
 
         // validate parameters
         if(!isSafe && m_thread ==
@@ -89,7 +96,7 @@ public abstract class AbstractWork implements IWork {
         m_millisToPopup = millisToPopup;
         // instructs the progress monitor to show the progress
         // dialog to be shown when millisToPopup has expired
-        m_showProgress = showProgress;
+        m_showProgress = isProgressShown;
         // set suspend flag
         m_suspend = suspend;
         // set loop flag
@@ -327,14 +334,7 @@ public abstract class AbstractWork implements IWork {
             hideProgress();
             // set state
             setState(m_isLoop ? WorkState.PENDING : WorkState.FINISHED);
-
-            /*
-            // DEBUG: print to console
-            System.out.println("WORKER:Finished ("
-                    + (Calendar.getInstance().getTimeInMillis() - m_tic)
-                    + " ms)");
             // reset start time
-            */
             m_tic=0;
             // forward
             afterDone();

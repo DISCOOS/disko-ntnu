@@ -151,16 +151,6 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
         setUpdateMode(UpdateMode.REMOTE_UPDATE_MODE);
     }
 
-    /**
-     * Set update mode to {@link IMsoModelIf.UpdateMode#LOOPBACK_UPDATE_MODE LOOPBACK_UPDATE_MODE}.
-     */
-    /*
-    public synchronized void setLoopbackUpdateMode()
-    {
-        setUpdateMode(UpdateMode.LOOPBACK_UPDATE_MODE);
-    }
-	*/
-    
     protected void setUpdateMode(UpdateMode aMode)
     {
         m_updateModeStack.push(aMode);
@@ -407,7 +397,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 			List list = new ArrayList(100);
 			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getListReferences(c, true);
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
-				list.addAll(it.getItems());
+				list.addAll(it.getObjects());
 			}
 			// success
 			return list;
@@ -423,7 +413,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 			List list = new ArrayList(100);
 			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getListReferences((MsoClassCode)e);
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
-				list.addAll(it.getItems());
+				list.addAll(it.getObjects());
 			}
 			// success
 			return list;

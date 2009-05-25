@@ -24,8 +24,8 @@ import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.event.IToggleListener;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 public class BasePanel extends AbstractPanel {
 
@@ -148,7 +148,7 @@ public class BasePanel extends AbstractPanel {
 			Component it = c.getComponent(i);
 			// implements IChangeable?
 			if(it instanceof IChangeable) {
-				count += ((IChangeable)c.getComponent(i)).resetChangeable();
+				count += ((IChangeable)c.getComponent(i)).clearChangeableCount();
 			}
 			else if(it instanceof JComponent) {
 				count += resetChangeable((JComponent)it);
@@ -219,9 +219,9 @@ public class BasePanel extends AbstractPanel {
 				} else {
 					headerPanel.setInsets(0,0,1,0);
 				}
-				headerPanel.addWorkEventListener(new IWorkFlowListener() {
+				headerPanel.addWorkEventListener(new IFlowListener() {
 
-					public void onFlowPerformed(WorkFlowEvent e) {
+					public void onFlowPerformed(FlowEvent e) {
 						// is dirty?
 						if(e.isChange())
 							setDirty(true);
@@ -534,9 +534,9 @@ public class BasePanel extends AbstractPanel {
 	}
 
 	@Override
-	public int resetChangeable() {
+	public int clearChangeableCount() {
 		// forward
-		int count = super.resetChangeable();
+		int count = super.clearChangeableCount();
 		// loop over all children?
 		if(getContainer() instanceof JComponent) {
 			// cast to JComponent
@@ -659,11 +659,11 @@ public class BasePanel extends AbstractPanel {
 		super.setParentManager(parent,requestMoveTo,setAll);
 	}
 
-	public void addWorkFlowListener(IWorkFlowListener listener) {
+	public void addFlowListener(IFlowListener listener) {
 		getHeaderPanel().addWorkEventListener(listener);
 	}
 
-	public void removeWorkFlowListener(IWorkFlowListener listener) {
+	public void removeFlowListener(IFlowListener listener) {
 		getHeaderPanel().removeWorkEventListener(listener);
 	}
 
@@ -742,7 +742,7 @@ public class BasePanel extends AbstractPanel {
 		getHeaderPanel().fireOnWorkChange(source,data);
 	}
 
-	protected void fireOnWorkPerformed(WorkFlowEvent e){
+	protected void fireOnWorkPerformed(FlowEvent e){
 		getHeaderPanel().fireOnWorkPerformed(e);
 	}
 

@@ -96,11 +96,12 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         // notify
         fireUpdate(m_clientUpdateListeners,
         		getUpdateEvents(root,Application.getInstance().getMsoModel().getUpdateMode(),
-        				false, MsoEventType.CLEAR_ALL_EVENT.maskValue()));
+        				MsoEventType.CLEAR_ALL_EVENT.maskValue(), false, false));
     }
 
     public void notifyClientUpdate(IMsoObjectIf aSource,
-    		UpdateMode mode, boolean isLoopback, int anEventTypeMask)
+    		UpdateMode mode, int anEventTypeMask, 
+    		boolean isLoopback, boolean isRollback)
     {
     	// consume?
     	if(anEventTypeMask!=0)
@@ -109,12 +110,12 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     		if(m_resumeCount==0)
     		{
     			fireUpdate(m_clientUpdateListeners,
-    					getUpdateEvents(aSource, mode, isLoopback, anEventTypeMask));
+    					getUpdateEvents(aSource, mode, anEventTypeMask, isLoopback, isRollback));
     		}
     		else
     		{
     			// forward
-    			update(m_buffer,new MsoEvent.Update( aSource, mode, isLoopback, anEventTypeMask ));
+    			update(m_buffer,new MsoEvent.Update( aSource, mode, anEventTypeMask, isLoopback, isRollback ));
     		}
 
     	}
@@ -143,12 +144,12 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         removeInterests(m_serverUpdateListeners,aListener);
     }
 
-    public void notifyServerUpdate(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask)
+    public void notifyServerUpdate(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask, boolean isLoopback, boolean isRollback)
     {
     	// consume?
     	if(anEventTypeMask!=0)
     	{
-	        fireUpdate(m_serverUpdateListeners, getUpdateEvents(aSource, mode, false, anEventTypeMask));
+	        fireUpdate(m_serverUpdateListeners, getUpdateEvents(aSource, mode, anEventTypeMask, isLoopback, isRollback));
     	}
     }
 
@@ -287,9 +288,9 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     }
 
     private MsoEvent.UpdateList getUpdateEvents(IMsoObjectIf msoObj,
-    		UpdateMode mode, boolean isLoopback, int mask)
+    		UpdateMode mode, int mask, boolean isLoopback, boolean isRollback)
     {
-     	MsoEvent.Update e = new MsoEvent.Update( msoObj, mode, isLoopback, mask );
+     	MsoEvent.Update e = new MsoEvent.Update( msoObj, mode, mask, isLoopback, isRollback );
         return new MsoEvent.UpdateList(getUpdateEvents(e),e.isClearAllEvent());
     }
 

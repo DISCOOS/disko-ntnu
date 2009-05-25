@@ -2,8 +2,8 @@ package org.redcross.sar;
 
 import java.util.List;
 
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
@@ -13,7 +13,7 @@ import org.redcross.sar.wp.IDiskoWpModule;
  *
  */
 
-public interface IDiskoRole extends IWorkFlowListener {
+public interface IDiskoRole extends IFlowListener {
 
 	/**
 	 * Add a new work process module to this DiskoRole.
@@ -96,6 +96,6 @@ public interface IDiskoRole extends IWorkFlowListener {
 	/**
 	 * 
 	 */
-	public void onFlowPerformed(WorkFlowEvent e);
+	public void onFlowPerformed(FlowEvent e);
 	
 }

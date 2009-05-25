@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -16,14 +17,13 @@ import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.event.IMsoFieldListener;
-import org.redcross.sar.gui.event.MsoFieldEvent;
+import org.redcross.sar.gui.event.IFieldListener;
+import org.redcross.sar.gui.event.FieldEvent;
 import org.redcross.sar.gui.field.AbstractField;
 import org.redcross.sar.gui.field.CheckBoxField;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.EnumField;
-import org.redcross.sar.gui.field.IDiskoField;
-import org.redcross.sar.gui.field.IMsoField;
+import org.redcross.sar.gui.field.IField;
 import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.field.PositionField;
 import org.redcross.sar.gui.field.TextAreaField;
@@ -49,7 +49,7 @@ import org.redcross.sar.util.Utils;
  * @author kennetgu
  *
  */
-public class FieldsPanel extends TogglePanel {
+public class FieldPane extends TogglePanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -63,34 +63,34 @@ public class FieldsPanel extends TogglePanel {
 	private boolean m_isMessageVisible = false;
 	private boolean m_autoResizeX = true;
 	private boolean m_autoResizeY = false;
-	private boolean m_isBatchMode = true;
+	private boolean m_isBufferMode = true;
 	private boolean m_isEditable = true;
 
 	private int m_columns;
 	
-	private final IMsoFieldListener m_listener;
+	private final IFieldListener m_listener;
 
 	private final List<String> m_names = new ArrayList<String>();
-	private final Map<String,IDiskoField> m_fields = new HashMap<String,IDiskoField>();
+	private final Map<String,IField<?>> m_fields = new HashMap<String,IField<?>>();
 	private final Map<String,Integer[]> m_fieldSpan = new HashMap<String,Integer[]>();
-	private final Map<String,IMsoObjectIf> m_msoObjects = new HashMap<String,IMsoObjectIf>();
+	private final Map<IMsoObjectIf,List<IField<?>>> m_boundFields = new HashMap<IMsoObjectIf,List<IField<?>>>();
 
-	public FieldsPanel() {
+	public FieldPane() {
 		this("Egenskaper");
 	}
 
-	public FieldsPanel(String caption) {
+	public FieldPane(String caption) {
 		this(caption,"Ingen egenskaper funnet",true,true);
 	}
 
-	public FieldsPanel(String caption, String message, boolean finish, boolean cancel) {
+	public FieldPane(String caption, String message, boolean finish, boolean cancel) {
 		this(caption,message,finish,cancel,false,ButtonSize.SMALL,1);
 	}
 
-	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
+	public FieldPane(String caption, String message, boolean finish, boolean cancel, ButtonSize buttonSize) {
 		this(caption,message,finish,cancel,false,buttonSize,1);
 	}
-	public FieldsPanel(String caption, String message, boolean finish, boolean cancel, boolean toggle, ButtonSize buttonSize, int columns) {
+	public FieldPane(String caption, String message, boolean finish, boolean cancel, boolean toggle, ButtonSize buttonSize, int columns) {
 		// forward
 		super(caption,finish,cancel,toggle,buttonSize);
 		// prepare
@@ -100,16 +100,16 @@ public class FieldsPanel extends TogglePanel {
 		// hide toggle button
 		setButtonVisible("toggle", false);
 		// listen for IAttributeIf<?> set and reset events
-		m_listener = new IMsoFieldListener() {
+		m_listener = new IFieldListener() {
 
 			@Override
-			public void onMsoFieldChanged(MsoFieldEvent e) {
+			public void onFieldChanged(FieldEvent e) {
 				switch(e.getType()) {
-				case MsoFieldEvent.ATTRIBUTE_SET: 
-					addInterest(e.getSource().getMsoAttribute());
+				case FieldEvent.EVENT_MODEL_SET:
+					addInterest(e.getSource());
 					break;
-				case MsoFieldEvent.ATTRIBUTE_RESET:
-					removeInterest(e.getSource().getMsoAttribute());
+				case FieldEvent.EVENT_MODEL_RESET:
+					removeInterest(e.getSource());
 					break;
 				}
 				
@@ -290,14 +290,9 @@ public class FieldsPanel extends TogglePanel {
 		return (m_names!=null ? m_names.size(): 0);
 	}
 
-	public boolean doWork() {
-		return finish();
-	}
-
-
 	@Override
 	protected void afterFinish() {
-		for(IDiskoField it: m_fields.values()) {
+		for(IField<?> it: m_fields.values()) {
 			it.finish();
 		}
 		super.afterFinish();
@@ -305,7 +300,7 @@ public class FieldsPanel extends TogglePanel {
 
 	@Override
 	protected void afterCancel() {
-		for(IDiskoField it: m_fields.values()) {
+		for(IField<?> it: m_fields.values()) {
 			it.cancel();
 		}
 		super.afterCancel();
@@ -316,18 +311,18 @@ public class FieldsPanel extends TogglePanel {
 		// forward
 		super.reset();
 		// forward
-		for(IDiskoField it: m_fields.values()) {
+		for(IField<?> it: m_fields.values()) {
 			it.reset();
 		}
 	}
 
-	public IDiskoField addField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
+	public IField<?> addField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height)  {
 		// string get name
 		String name = attribute.getName();
 		// does not exist?
 		if(!m_names.contains(name)) {
 			// forward
-			IDiskoField attr = createField(attribute,caption,isEditable,width,height);
+			IField<?> attr = createField(attribute,caption,isEditable,width,height);
 			// forward
 			if(addField(attr)) {
 				// forward
@@ -339,7 +334,7 @@ public class FieldsPanel extends TogglePanel {
 		return null;
 	}
 
-	public boolean addField(IDiskoField field)  {
+	public boolean addField(IField<?> field)  {
 		// initialize flag
 		boolean bFlag = false;
 		// string get name
@@ -355,14 +350,12 @@ public class FieldsPanel extends TogglePanel {
 			m_names.add(name);
 			m_fields.put(name,field);
 			m_fieldSpan.put(name,new Integer[]{1,1});
-			if(field.isMsoField()) {
-				addInterest(field.getMsoAttribute());
-			}
-			field.addMsoFieldListener(m_listener);
+			addInterest(field);
+			field.addFieldListener(m_listener);
 			// add listener
-			field.addWorkFlowListener(this);
+			field.addFlowListener(this);
 			// set auto save mode
-			field.setBatchMode(m_isBatchMode);
+			field.setBufferMode(m_isBufferMode);
 			// set layout dirty
 			m_isLayoutDirty = true;
 			// forward
@@ -370,12 +363,12 @@ public class FieldsPanel extends TogglePanel {
 			// success
 			bFlag = true;
 		}
-		// failure
+		// finished
 		return bFlag;
 	}
 	
-	public IDiskoField getField(String name) {
-		// has mso object?
+	public IField<?> getField(String name) {
+		// has MSO object?
 		if(m_names!=null) {
 			// has attribute
 			if (m_names.contains(name)) {
@@ -387,8 +380,8 @@ public class FieldsPanel extends TogglePanel {
 		return null;
 	}
 	
-	public IDiskoField getField(int index) {
-		// has mso object?
+	public IField<?> getField(int index) {
+		// has MSO object?
 		if(m_names!=null) {
 			// return panel
 			return m_fields.get(m_names.get(index));
@@ -403,11 +396,9 @@ public class FieldsPanel extends TogglePanel {
 		// has panel?
 		if(attr!=null) {
 			// remove
-			IDiskoField field = m_fields.remove(name);
-			if(field.isMsoField()) {
-				removeInterest(field.getMsoAttribute());
-			}
-			field.removeMsoFieldListener(m_listener);
+			IField<?> field = m_fields.remove(name);
+			removeInterest(field);
+			field.removeFieldListener(m_listener);
 			m_names.remove(name);
 			m_fieldSpan.remove(name);
 			// set layout dirty
@@ -418,28 +409,56 @@ public class FieldsPanel extends TogglePanel {
 		return false;
 	}
 	
-	private void addInterest(IMsoAttributeIf<?> attr) {
-		IMsoObjectIf msoObj = attr.getOwner();
-		String objId = msoObj.getObjectId();
-		m_msoObjects.put(objId,msoObj);
-		m_msoInterests.add(msoObj.getMsoClassCode());
+	private void addInterest(IField<?> field) {
+		Object source = field.getModel().getSource();
+		if(source instanceof IMsoAttributeIf<?>) {
+			// get IMsoObject from attribute
+			IMsoAttributeIf<?> attr = (IMsoAttributeIf<?>)source;
+			IMsoObjectIf msoObj = attr.getOwner();
+			// get all fields bound to this IMsoObjectIf instances 
+			List<IField<?>> fields = m_boundFields.get(msoObj);
+			// initialize?
+			if(fields==null) {
+				fields=new ArrayList<IField<?>>();
+				m_boundFields.put(msoObj,fields);
+				m_msoInterests.add(msoObj.getMsoClassCode());				
+			}
+			// add field to field list
+			fields.add(field);
+		}
 	}
 
-	private void removeInterest(IMsoAttributeIf<?> attr) {
-		IMsoObjectIf msoObj = attr.getOwner();
-		String objId = msoObj.getObjectId();
-		m_msoObjects.remove(objId);
-		m_msoInterests.remove(msoObj.getMsoClassCode());
+	private void removeInterest(IField<?> field) {
+		// initialize remove list
+		List<IMsoObjectIf> removeList = new Vector<IMsoObjectIf>();
+		// remove field from all field lists
+		for(IMsoObjectIf it : m_boundFields.keySet()) {
+			List<IField<?>> fields = m_boundFields.get(it);
+			if(fields!=null) {
+				if(fields.remove(field)) {
+					if(fields.size()==0) {
+						removeList.add(it);
+					}
+				}
+			} else {
+				removeList.add(it);
+			}
+		}
+		// remove empty field lists and interests
+		for(IMsoObjectIf it : removeList) {
+			m_boundFields.remove(it);
+			m_msoInterests.remove(it.getMsoClassCode());
+		}
 	}
 	
-	public List<IDiskoField> getFields() {
-		return new ArrayList<IDiskoField>(m_fields.values());
+	public List<IField<?>> getFields() {
+		return new ArrayList<IField<?>>(m_fields.values());
 	}
 
-	public List<IDiskoField> getFields(String[] names) {
-		List<IDiskoField> list = new ArrayList<IDiskoField>(names.length);
+	public List<IField<?>> getFields(String[] names) {
+		List<IField<?>> list = new ArrayList<IField<?>>(names.length);
 		for(String name : names) {
-			IDiskoField field = m_fields.get(name);
+			IField<?> field = m_fields.get(name);
 			if(field!=null) list.add(field);			
 		}
 		return list;
@@ -519,9 +538,11 @@ public class FieldsPanel extends TogglePanel {
 	public void clearFields()  {
 		// remove old panels?
 		if(m_fields!=null) {
-			m_msoObjects.clear();
-			m_fields.clear();
+			// clear all lists
 			m_names.clear();
+			m_fields.clear();
+			m_fieldSpan.clear();
+			m_boundFields.clear();
 			// get list panel
 			JPanel list = (JPanel)getContainer();
 			list.removeAll();
@@ -537,7 +558,7 @@ public class FieldsPanel extends TogglePanel {
 	}
 
 	public void setCaptionWidth(int width) {
-		for(IDiskoField it: m_fields.values())
+		for(IField<?> it: m_fields.values())
 			it.setFixedCaptionWidth(width);
 	}
 
@@ -550,7 +571,7 @@ public class FieldsPanel extends TogglePanel {
 	}
 	
 	public void setFixedHeight(int heigth) {
-		for(IDiskoField it: m_fields.values())
+		for(IField<?> it: m_fields.values())
 			it.setFixedHeight(heigth);
 	}
 	
@@ -582,9 +603,9 @@ public class FieldsPanel extends TogglePanel {
 		getField(name).setValue(value);
 	}
 
-  	public static IDiskoField createField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
+  	public static IField<?> createField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable, int width, int height) {
   		// initialize component
-  		IDiskoField component = null;
+  		IField<?> component = null;
 		try {
 			// dispatch attribute type
 			if (attribute instanceof MsoBoolean) {
@@ -647,7 +668,7 @@ public class FieldsPanel extends TogglePanel {
   	public void update() {
 
   		// calculate dirty bit
-  		for(IDiskoField it : m_fields.values()) {
+  		for(IField<?> it : m_fields.values()) {
   			if(it.isDirty()) {
   				setDirty(true,false); break;
   			}
@@ -656,42 +677,77 @@ public class FieldsPanel extends TogglePanel {
   		// forward
   		super.update();
   	}
-
-  	public void setBatchMode(boolean isBatchMode) {
-  		for(IDiskoField it : m_fields.values()) {
-			it.setBatchMode(isBatchMode);
-  		}
-  		m_isBatchMode = isBatchMode;
-  	}
   	
-  	public boolean isBatchMode() {
-  		return m_isBatchMode;
+	/**
+	 * Check if field pane is in buffer mode. </p>
+	 * 
+	 * If the field pane is in buffer mode, changes are buffered 
+	 * instead of being passed to field models. Changes are 
+	 * forwarded to the models by invoking <code>finish()</code>, 
+	 * or discarded by invoking <code>cancel()</code>. </p>
+	 * 
+	 * @return Returns <code>true</code> if in buffer mode.
+	 */
+  	public boolean isBufferMode() {
+  		return m_isBufferMode;
   	}
 
-  	public int getBatchModeCount() {
+	/**
+	 * Set all fields in buffer mode. </p>
+	 * 
+	 * If the field pane is in buffer mode, changes are buffered 
+	 * instead of being passed to field models. Changes are 
+	 * forwarded to the field models by invoking <code>finish()</code>, 
+	 * or discarded by invoking <code>cancel()</code>. </p>
+	 * 
+	 */
+  	public void setBufferMode(boolean isBufferMode) {
+  		for(IField<?> it : m_fields.values()) {
+			it.setBufferMode(isBufferMode);
+  		}
+  		m_isBufferMode = isBufferMode;
+  	}
+
+  	/**
+  	 * Get the number of fields in buffer mode.
+  	 * 
+  	 * @return Returns the number of fields in buffer mode
+  	 */
+  	public int getBufferModeCount() {
   		int count = 0;
-  		for(IDiskoField it : m_fields.values()) {
-			if(it.isBatchMode()) count++;
+  		for(IField<?> it : m_fields.values()) {
+			if(it.isBufferMode()) count++;
   		}
   		return count;
   	}
 
+  	public boolean isEditable() {
+  		return m_isEditable;
+  	}
+
+	/**
+	 * Set field pane editable state. If the state is changed,
+	 * the new state is forwarded to all fields. 
+	 * 
+	 * @see <code>IField::setEditable()</code> 
+	 * 
+	 */	
   	public void setEditable(boolean isEditable) {
   		if(m_isEditable != isEditable) {
-	  		for(IDiskoField it : m_fields.values()) {
+	  		for(IField<?> it : m_fields.values()) {
   				it.setEditable(isEditable);
 	  		}
 	  		m_isEditable = isEditable;
   		}
   	}
   	
-  	public boolean isEditable() {
-  		return m_isEditable;
-  	}
-
+  	/**
+  	 * Get the number of editable fields.
+  	 * @return Returns the number of editable fields.
+  	 */
   	public int getEditableCount() {
   		int count = 0;
-  		for(IDiskoField it : m_fields.values()) {
+  		for(IField<?> it : m_fields.values()) {
 			if(it.isEditable()) count++;
   		}
   		return count;
@@ -700,7 +756,7 @@ public class FieldsPanel extends TogglePanel {
   	@Override
   	public void setEnabled(boolean isEnabled) {
   		super.setEnabled(isEnabled);
-  		for(IDiskoField it : m_fields.values()) {
+  		for(IField<?> it : m_fields.values()) {
   			if(it instanceof Component)
   				((Component)it).setEnabled(isEnabled);
   		}
@@ -711,7 +767,7 @@ public class FieldsPanel extends TogglePanel {
   		// forward
   		super.setChangeable(isChangeable);
   		// loop over all attributes
-  		for(IDiskoField it : m_fields.values()) {
+  		for(IField<?> it : m_fields.values()) {
   			it.setChangeable(isChangeable);
   		}
 	}
@@ -720,7 +776,7 @@ public class FieldsPanel extends TogglePanel {
 		// prepare
 		m_fieldAlignX = position;
   		// loop over all attributes
-  		for(IDiskoField it : m_fields.values()) {
+  		for(IField<?> it : m_fields.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
@@ -740,7 +796,7 @@ public class FieldsPanel extends TogglePanel {
 		// prepare
 		m_fieldAlignY = position;
   		// loop over all attributes
-  		for(IDiskoField it : m_fields.values()) {
+  		for(IField<?> it : m_fields.values()) {
   			if(it instanceof JComponent) {
   				((JComponent)it).setAlignmentX(position);
   			}
@@ -753,19 +809,14 @@ public class FieldsPanel extends TogglePanel {
 		// forward
 		super.msoObjectCreated(msoObj, mask);
 		
-		// get object id
-		String objId = msoObj.getObjectId();
-		
-		// only notify attributes belonging to this object
-		if((msoObj = m_msoObjects.get(objId))!=null) {
-			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
-			// loop over attributes
-			for(IDiskoField it: m_fields.values()) {
-				if(it instanceof IMsoField) {
-					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
-						it.reset();
-					}
-				}
+		// get bound field list
+		List<IField<?>> list = m_boundFields.get(msoObj);
+
+		// found fields bound to object?
+		if(list!=null) {
+			// reset all bound fields to changed source data
+			for(IField<?> it: list) {
+				it.reset();
 			}
 		}
 	}
@@ -775,8 +826,7 @@ public class FieldsPanel extends TogglePanel {
 
 		/*
 		 *
-		 * TODO: Implement server value change indication in
-		 * GUI including lookup of source information
+		 * TODO: Implement lookup of change source information
 		 * functionality. For example source name (person, module) and
 		 * location (IP address, master name, logical unit)
 		 *
@@ -785,22 +835,16 @@ public class FieldsPanel extends TogglePanel {
 		// forward
 		super.msoObjectLoopback(msoObj, mask);
 		
-		// get object id
-		String objId = msoObj.getObjectId();
-		
-		// only notify attributes belonging to this object
-		if((msoObj = m_msoObjects.get(objId))!=null) {
-			
-			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
-			// loop over attributes
-			for(IDiskoField it: m_fields.values()) {
-				if(it instanceof IMsoField) {
-					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
-						it.reset();
-					}
-				}
+		// get bound field list
+		List<IField<?>> list = m_boundFields.get(msoObj);
+
+		// found fields bound to object?
+		if(list!=null) {
+			// reset all bound fields to changed source data
+			for(IField<?> it: list) {
+				it.parse();
 			}
-		}
+		}		
 	}
 
 	@Override
@@ -808,8 +852,7 @@ public class FieldsPanel extends TogglePanel {
 
 		/*
 		 *
-		 * TODO: Implement server value change indication in
-		 * GUI including lookup of source information
+		 * TODO: Implement lookup of change source information
 		 * functionality. For example source name (person, module) and
 		 * location (IP address, master name, logical unit)
 		 *
@@ -818,22 +861,16 @@ public class FieldsPanel extends TogglePanel {
 		// forward
 		super.msoObjectChanged(msoObj, mask);
 		
-		// get object id
-		String objId = msoObj.getObjectId();
-		
-		// only notify attributes belonging to this object
-		if((msoObj = m_msoObjects.get(objId))!=null) {
-			
-			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
-			// loop over attributes
-			for(IDiskoField it: m_fields.values()) {
-				if(it instanceof IMsoField) {
-					if(map.containsValue(((IMsoField)it).getMsoAttribute())) {
-						it.reset();
-					}
-				}
+		// get bound field list
+		List<IField<?>> list = m_boundFields.get(msoObj);
+
+		// found fields bound to object?
+		if(list!=null) {
+			// reset all bound fields to changed source data
+			for(IField<?> it: list) {
+				it.parse();
 			}
-		}
+		}		
 	}	
 	
 	@Override
@@ -844,43 +881,35 @@ public class FieldsPanel extends TogglePanel {
 		// forward
 		super.msoObjectDeleted(msoObj, mask);
 
-		// get object id
-		String objId = msoObj.getObjectId();
-		
-		// only notify attributes belonging to this object
-		if((msoObj = m_msoObjects.get(objId))!=null) {
-			// TODO: Implement deleted attribute indication in GUI
-			Map<String,IMsoAttributeIf<?>> map = msoObj.getAttributes();
-			// loop over attributes
-			for(IDiskoField it: m_fields.values()) {
-				if(it instanceof IMsoField) {
-					IMsoField field = ((IMsoField)it);
-					IMsoAttributeIf<?> attr = field.getMsoAttribute();
-					if(map.containsValue(attr)) {
-						field.setMsoAttribute(null);
-						it.reset();
-					}
-				}
+		// get bound field list
+		List<IField<?>> list = m_boundFields.get(msoObj);
+
+		// found fields bound to object?
+		if(list!=null) {
+			// reset all bound fields to changed source data
+			for(IField<?> it: list) {
+				it.reset();
 			}
-		}
+		}		
 	}
 
 	@Override
 	protected void msoObjectClearAll(IMsoObjectIf msoObj, int mask) {
 
-		// TODO: Implement deleted attribute indication in GUI
+		// TODO: Implement clear all indication in GUI
 
 		// forward
 		super.msoObjectClearAll(msoObj, mask);
 		
-		// loop over attributes
-		for(IDiskoField it: m_fields.values()) {
-			if(it instanceof IMsoField) {
-				IMsoField field = ((IMsoField)it);
-				field.setMsoAttribute(null);
+		// get bound field list
+		List<IField<?>> list = m_boundFields.get(msoObj);
+
+		// found fields bound to object?
+		if(list!=null) {
+			// reset all bound fields to changed source data
+			for(IField<?> it: list) {
 				it.reset();
 			}
-		}
+		}				
 	}
-	
 }

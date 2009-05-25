@@ -25,8 +25,8 @@ import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
 import org.redcross.sar.work.AbstractWork;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 	// lists
 	protected List<IToolPanel> panels;
 	protected List<IToolListener> toolListeners;
-	protected List<IWorkFlowListener> workListeners;	
+	protected List<IFlowListener> workListeners;	
 
 	/**
 	 * Constructor
@@ -77,7 +77,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 	protected BaseMapTool() {
 		// prepare
 		toolListeners = new ArrayList<IToolListener>();
-		workListeners = new ArrayList<IWorkFlowListener>();		
+		workListeners = new ArrayList<IFlowListener>();		
 	}
 
 	/*===============================================
@@ -184,11 +184,11 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 		return true;
 	}
 
-	public void addWorkFlowListener(IWorkFlowListener listener) {
+	public void addWorkFlowListener(IFlowListener listener) {
 		workListeners.add(listener);
 	}
 
-	public void removeDiskoEventListener(IWorkFlowListener listener) {
+	public void removeDiskoEventListener(IFlowListener listener) {
 		workListeners.remove(listener);
 	}
 
@@ -408,26 +408,26 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 
 	protected void fireOnWorkFinish(Object source, Object data) {
 		// create event
-		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_FINISH);
+		FlowEvent e = new FlowEvent(source, data,FlowEvent.EVENT_FINISH);
 	   	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkCancel(Object source, Object data) {
 		// create event
-		WorkFlowEvent e = new WorkFlowEvent(source, data,WorkFlowEvent.EVENT_CANCEL);
+		FlowEvent e = new FlowEvent(source, data,FlowEvent.EVENT_CANCEL);
     	// forward
 		fireOnWorkPerformed(e);
     }
 
 	protected void fireOnWorkChange(Object source, Object data) {
 		// create event
-		WorkFlowEvent e = new WorkFlowEvent(source,data,WorkFlowEvent.EVENT_CHANGE);
+		FlowEvent e = new FlowEvent(source,data,FlowEvent.EVENT_CHANGE);
 		// forward
 		fireOnWorkPerformed(e);
     }
 
-    protected void fireOnWorkPerformed(WorkFlowEvent e)
+    protected void fireOnWorkPerformed(FlowEvent e)
     {
 		// notify listeners
 		for (int i = 0; i < workListeners.size(); i++) {
@@ -585,7 +585,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 		}
 		public AbstractToolWork(boolean isThreadSafe, boolean notify, String message) throws Exception {
 			// forward
-			super(0,isThreadSafe,true,
+			super(HIGH_PRIORITY,isThreadSafe,true,
 					isThreadSafe ? ThreadType.WORK_ON_UNSAFE : ThreadType.WORK_ON_SAFE,
 					"Vent litt",500,notify,false);
 		}

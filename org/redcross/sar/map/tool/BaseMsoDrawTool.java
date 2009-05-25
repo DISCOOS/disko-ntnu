@@ -737,7 +737,7 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
 				geoRubber = null;
 
 				// has been deleted?
-				if(msoObject!=null && msoObject.hasBeenDeleted())
+				if(msoObject!=null && msoObject.isDeleted())
 					doMsoInit();
 
 				// continue on existing geometries?
@@ -1701,7 +1701,7 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
 			if(Application.getInstance().getMsoModel().getMsoManager().operationExists()) {
 
 				// has been deleted?
-				if(msoObject!=null && msoObject.hasBeenDeleted())
+				if(msoObject!=null && msoObject.isDeleted())
 					doMsoInit();
 
 				// is type defined?

@@ -4,6 +4,7 @@ import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -12,9 +13,9 @@ import java.util.List;
 public class TransactionImpl implements ITransactionIf
 {
 	
-    private final ArrayList<IChangeIf.IChangeObjectIf> m_changeObjects = new ArrayList<IChangeIf.IChangeObjectIf>();
-    private final ArrayList<IChangeIf.IChangeReferenceIf> m_changeAttributeReferences = new ArrayList<IChangeIf.IChangeReferenceIf>();
-    private final ArrayList<IChangeIf.IChangeReferenceIf> m_changeListReferences = new ArrayList<IChangeIf.IChangeReferenceIf>();
+    private final List<IChangeIf.IChangeObjectIf> m_changeObjects = new ArrayList<IChangeIf.IChangeObjectIf>();
+    private final List<IChangeIf.IChangeReferenceIf> m_changeObjectReferences = new ArrayList<IChangeIf.IChangeReferenceIf>();
+    private final List<IChangeIf.IChangeReferenceIf> m_changeListReferences = new ArrayList<IChangeIf.IChangeReferenceIf>();
 
     private final TransactionType m_type;
     
@@ -31,9 +32,9 @@ public class TransactionImpl implements ITransactionIf
         return m_changeObjects;
     }
 
-    public List<IChangeIf.IChangeReferenceIf> getAttributeReferences()
+    public List<IChangeIf.IChangeReferenceIf> getObjectReferences()
     {
-        return m_changeAttributeReferences;
+        return m_changeObjectReferences;
     }
 
     public List<IChangeIf.IChangeReferenceIf> getListReferences()
@@ -46,26 +47,30 @@ public class TransactionImpl implements ITransactionIf
      *
      * @param IChangeSourceIf holder - The holder of the update information
      */
-    protected void add(IChangeSourceIf anHolder)
-    {
-    	
+    protected void add(IChangeSourceIf anSource)
+    {    	
     	// get information
-    	IMsoObjectIf anObject = anHolder.getMsoObject();
+    	IMsoObjectIf anObject = anSource.getMsoObject();
     	
     	// is partial commit?
-    	if(anHolder.isPartial()) {
-    		// only schedule modified data
-    		m_changeObjects.add(
-    				new ChangeImpl.ChangeObject(anObject,
-    						ChangeType.MODIFIED,anHolder.getPartial()));
+    	if(anSource.isPartial()) 
+    	{
+    		// get partial update list
+    		List<IChangeIf> partial = anSource.getPartial();
+    		// add modified object
+    		m_changeObjects.add(new ChangeImpl.ChangeObject(anObject,ChangeType.MODIFIED,partial));
+    		// add sub-lists of changed object references
+    		m_changeObjectReferences.addAll(anObject.getChangedObjectReferences(partial));
+    		m_changeListReferences.addAll(anObject.getChangedListReferences(partial));
     	}
-    	else {    	
+    	else 
+    	{    	
     		
 	    	// full commit, get flags
-	        boolean createdObject = anHolder.isCreated();
-	        boolean deletedObject = anHolder.isDeleted();
-	        boolean modifiedObject = anHolder.isModified();
-	        boolean modifiedReference = anHolder.isReferenceChanged();
+	        boolean createdObject = anSource.isCreated();
+	        boolean deletedObject = anSource.isDeleted();
+	        boolean modifiedObject = anSource.isModified();
+	        boolean modifiedReference = anSource.isReferenceChanged();
 	
 	        // both a create AND delete action on a objects equals no change
 	        if (createdObject && deletedObject)
@@ -76,7 +81,7 @@ public class TransactionImpl implements ITransactionIf
 	        if (createdObject)
 	        {
 	            m_changeObjects.add(new ChangeImpl.ChangeObject(anObject, ChangeType.CREATED,null));
-	            m_changeAttributeReferences.addAll(anObject.getChangedAttributeReferences());
+	            m_changeObjectReferences.addAll(anObject.getChangedObjectReferences());
 	            m_changeListReferences.addAll(anObject.getChangedListReferences());
 	            return;
 	        }
@@ -85,13 +90,14 @@ public class TransactionImpl implements ITransactionIf
 	            m_changeObjects.add(new ChangeImpl.ChangeObject(anObject, ChangeType.DELETED,null));
 	            return;
 	        }
-	        if (modifiedObject)
+	        if (modifiedObject && !modifiedReference)
 	        {
 	            m_changeObjects.add(new ChangeImpl.ChangeObject(anObject, ChangeType.MODIFIED,null));
 	        }
 	        if (modifiedReference)
 	        {
-	            m_changeAttributeReferences.addAll(anObject.getChangedAttributeReferences());
+	            m_changeObjects.add(new ChangeImpl.ChangeObject(anObject, ChangeType.MODIFIED,null));
+	            m_changeObjectReferences.addAll(anObject.getChangedObjectReferences());
 	            m_changeListReferences.addAll(anObject.getChangedListReferences());
 	        }
     	}	       

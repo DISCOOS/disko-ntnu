@@ -18,6 +18,7 @@ import org.redcross.sar.util.Utils;
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class NumericField extends AbstractField<Number,JFormattedTextField,JTextField> {
 	
 	private static final long serialVersionUID = 1L;
@@ -57,7 +58,7 @@ public class NumericField extends AbstractField<Number,JFormattedTextField,JText
 	}
 		
 	
-	public NumericField(IMsoAttributeIf<?> attribute, String caption,
+	public NumericField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
@@ -65,7 +66,7 @@ public class NumericField extends AbstractField<Number,JFormattedTextField,JText
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 
-	public NumericField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable,
+	public NumericField(IMsoAttributeIf attribute, String caption, boolean isEditable,
 			int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -73,7 +74,7 @@ public class NumericField extends AbstractField<Number,JFormattedTextField,JText
 		initialize(DEFAULT_MAX_DIGITS,DEFAULT_DECIMAL_PRECISION,ALLOW_NEGATIVE);
 	}
 	
-	public NumericField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable,
+	public NumericField(IMsoAttributeIf attribute, String caption, boolean isEditable,
 			int width, int height,   
 			int maxDigits, int decimalPrecision, boolean allowNegative) {
 		// forward
@@ -120,14 +121,6 @@ public class NumericField extends AbstractField<Number,JFormattedTextField,JText
 		}
 		return m_viewComponent;
 	}
-	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-	
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}	
 	
 	public Number getEditValue() {
 		// get string

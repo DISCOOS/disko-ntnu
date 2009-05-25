@@ -159,6 +159,7 @@ public class MsoEvent extends java.util.EventObject
 			m_eventTypeMask = mask;
 			isDirty = true;
 		}
+		
 		// is both update events?
 		if(this instanceof Update && e instanceof Update) {
 
@@ -175,23 +176,34 @@ public class MsoEvent extends java.util.EventObject
 	        		|| !UpdateMode.LOCAL_UPDATE_MODE.equals(u1.m_updateMode) ?
 	        				u2.m_updateMode : u1.m_updateMode);
 
+	        if(u1.m_updateMode != aMode) {
+	        	u1.m_updateMode = aMode;
+	        	isDirty = true;
+	        }
+	        
 	        /* =========================================
 	         * Get union of update loopback flags. Is loopback as long
 	         * as all updates are loopbacks. Else, flag
 	         * is reset.
 	         * ========================================= */
-	        boolean isLoopback = u2.m_isLoopback && u2.m_isLoopback;
+	        boolean isLoopback = u1.m_isLoopbackMode && u2.m_isLoopbackMode;
 
-	        // changed?
-	        if(u1.m_updateMode != aMode) {
-	        	u1.m_updateMode = aMode;
-	        	isDirty = true;
-	        }
-	        if(u1.m_isLoopback != isLoopback) {
-	        	u1.m_isLoopback = isLoopback;
+	        if(u1.m_isLoopbackMode != isLoopback) {
+	        	u1.m_isLoopbackMode = isLoopback;
 	        	isDirty = true;
 	        }
 
+	        /* =========================================
+	         * Get union of update rollback flags. Is rollback as long
+	         * as all updates are rollback. Else, flag
+	         * is reset.
+	         * ========================================= */
+	        boolean isRollback = u1.m_isRollbackMode && u2.m_isRollbackMode;
+
+	        if(u1.m_isRollbackMode != isRollback) {
+	        	u1.m_isRollbackMode = isRollback;
+	        	isDirty = true;
+	        }
 		}
 		// finished
 		return isDirty;
@@ -213,13 +225,19 @@ public class MsoEvent extends java.util.EventObject
 	    /**
 	     * Looback flag
 	     */
-	    private boolean m_isLoopback;
+	    private boolean m_isLoopbackMode;
+	    
+	    /**
+	     * Rollback flag.
+	     */
+	    private boolean m_isRollbackMode;
 
-		public Update(IMsoObjectIf aSource, UpdateMode mode, boolean isLooback, int anEventTypeMask)
+		public Update(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask, boolean isLoobackMode, boolean isRollbackMode)
         {
             super(aSource, anEventTypeMask);
             m_updateMode = mode;
-            m_isLoopback = isLooback;
+            m_isLoopbackMode = isLoobackMode;
+            m_isRollbackMode = isRollbackMode;
 
         }
 
@@ -231,9 +249,32 @@ public class MsoEvent extends java.util.EventObject
 	    	return m_updateMode;
 	    }
 
-	    public boolean isLoopback() {
-	    	return m_isLoopback;
+	    /**
+	     * Get loopback flag </p> 
+	     * 
+	     * This flag is only true if all updates in IMsoObjectIf 
+	     * source object are loopback updates. </p>  
+		 *
+	     * @return boolean
+	     * @see IMsoUpdateStateIf 
+	     */
+	    public boolean isLoopbackMode() {
+	    	return m_isLoopbackMode;
 	    }
+	    
+	    /**
+	     * Get rollback flag </p> 
+	     * 
+	     * This flag is only true if all updates in IMsoObjectIf 
+	     * source object are rollback updates. </p>  
+		 *
+	     * @return boolean
+	     * @see IMsoUpdateStateIf 
+	     */
+	    public boolean isRollbackMode() {
+	    	return m_isRollbackMode;
+	    }
+	    
 
     }
 

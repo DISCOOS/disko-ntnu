@@ -6,7 +6,7 @@ import org.redcross.sar.gui.dialog.IDialog;
 import org.redcross.sar.gui.panel.IToolPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.event.IToolListener;
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 
 import com.esri.arcgis.systemUI.ITool;
 
@@ -57,8 +57,8 @@ public interface IMapTool extends ITool {
 
 	public AbstractButton getButton();
 
-	public void addWorkFlowListener(IWorkFlowListener listener);
-	public void removeDiskoEventListener(IWorkFlowListener listener);
+	public void addWorkFlowListener(IFlowListener listener);
+	public void removeDiskoEventListener(IFlowListener listener);
 
 	public boolean addToolListener(IToolListener listener);
 	public boolean removeToolListener(IToolListener listener);

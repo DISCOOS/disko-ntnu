@@ -10,15 +10,15 @@ import javax.swing.BorderFactory;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.panel.NumPadPanel;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMessageIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * Creates the dialog for changing DTG in message log edit mode.
@@ -32,7 +32,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 	private boolean m_isTabletMode = true;
 
 	private DefaultPanel m_contentPanel;
-	private FieldsPanel m_attributesPanel;
+	private FieldPane m_attributesPanel;
 	private NumPadPanel m_numPadPanel;
 	private DTGField m_createdAttr;
 	private DTGField m_timeAttr;
@@ -205,10 +205,10 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_contentPanel.setContainerBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			m_contentPanel.addToContainer(getAttributesPanel(),BorderLayout.CENTER);
 			m_contentPanel.addToContainer(getNumPadPanel(),BorderLayout.EAST);
-			m_contentPanel.addWorkFlowListener(new IWorkFlowListener() {
+			m_contentPanel.addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 
 					// forward?
 					if(e.isFinish())
@@ -223,11 +223,11 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 		return m_contentPanel;
 	}
 
-	private FieldsPanel getAttributesPanel()
+	private FieldPane getAttributesPanel()
 	{
 		if (m_attributesPanel == null) {
 			// initialize
-			m_attributesPanel = new FieldsPanel("Dato-Tid-Gruppe","Ingen egenskaper definert",false,false);
+			m_attributesPanel = new FieldPane("Dato-Tid-Gruppe","Ingen egenskaper definert",false,false);
 			m_attributesPanel.setHeaderVisible(false);
 			m_attributesPanel.setPreferredSize(new Dimension(180,250));
 			m_attributesPanel.setNotScrollBars();
@@ -235,7 +235,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_attributesPanel.addField(getCreatedAttr());
 			m_attributesPanel.addField(getTimeAttr());
 			// add listeners
-			m_attributesPanel.addWorkFlowListener(getContentPanel());
+			m_attributesPanel.addFlowListener(getContentPanel());
 		}
 		return m_attributesPanel;
 	}
@@ -261,7 +261,7 @@ public class ChangeDTGDialog extends DefaultDialog implements IEditorIf
 			m_numPadPanel.setHeaderVisible(false);
 			m_numPadPanel.setInputVisible(false);
 			m_numPadPanel.setInputField(getTimeAttr().getEditComponent(), false);
-			m_numPadPanel.addWorkFlowListener(getContentPanel());
+			m_numPadPanel.addFlowListener(getContentPanel());
 		}
 		return m_numPadPanel;
 	}

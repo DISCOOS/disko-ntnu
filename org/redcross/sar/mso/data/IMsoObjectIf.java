@@ -6,6 +6,7 @@ import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.util.except.InvalidReferenceException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
 import java.util.Calendar;
@@ -17,7 +18,7 @@ import java.util.Map;
 /**
  * Interface for MSO objects
  */
-public interface IMsoObjectIf extends IData
+public interface IMsoObjectIf extends IData, IMsoDataStateIf
 {
     /**
      * Get Object ID
@@ -47,24 +48,61 @@ public interface IMsoObjectIf extends IData
     public boolean isCreated();
     
     /**
-     * Get Object change status
+     * Test for local update mode
      *
-     * @return True if local changes exists 
+     * @return <code>true</code> if all data are in LOCAL mode. 
+     */
+    public boolean isLocalState();
+    
+    /**
+     * Test for remote update mode
+     *
+     * @return <code>true</code> if all data are in REMOTE mode. 
+     */
+    public boolean isRemoteState();
+    
+    /**
+     * Test for loopback update mode
+     *
+     * @return <code>true</code> if all data are in LOOPBACK mode 
+     * and some data are in REMOTE mode. 
+     */
+    public boolean isLoopbackMode();
+    
+    /**
+     * Test for mixed update mode
+     *
+     * @return <code>true</code> if data has more than one update mode 
+     */
+    public boolean isMixedState();    
+    
+    /**
+     * Get change status
+     *
+     * @return <code>true</code> if local changes exists. 
      */
     public boolean isChanged();
     
-
+    /**
+     * Get change status
+     *
+     * @return <code>true</code> if any change has occurred 
+     */
+    public boolean isChangedSince(int changeCount);
+    
     /**
      * Gets change count since construction. Use this counter when tracking
-     * changes executed on a object. The following changes are tracked, and
-     * thus will increment the change counter<p>
-     * 1. Attribute changes<br>
-     * 2. Relation changes<p>
-     * This property enables MSO Update listeners to track changes
-     * without the need for local buffering of object states (attributes,
-     * relations and so on).
+     * changes executed on a object. </p>
+     * 
+     * The following changes are tracked:
+     * 1. All attribute changes (LOCAL and SERVER mode change)<br>
+     * 2. All reference changes (object and list, LOCAL and SERVER mode change)</p>
+     * 
+     * This property enables IMsoClientUpdateListeners to track incremental 
+     * changes without the need for local buffering of object states 
+     * (attributes, relations and so on).
      *
-     * @return The number of changes performed on the object since the construction.
+     * @return The number of changes performed on the object since it's construction.
      */
     public int getChangeCount();
 
@@ -97,15 +135,25 @@ public interface IMsoObjectIf extends IData
     public void setAttribute(int anIndex, Object aValue) throws UnknownAttributeException;
 
     /**
+     * 
+     * Perform commit on the object. Generates a client update event.
+     *
+     * @return True if something has been done.
+     * @throws TransactionException
+     */
+    public boolean commit() throws TransactionException;
+    
+    /**
      * Rollback changes in this object. Generates a client update event.
      */    
     public void rollback();
     
     /**
-     * Rollback changes in supplied attributes in this object. Generates a client update event.
-     * @param attrs - the attributes to rollback changes in
+     * Rollback changes in supplied objects owned by this object. 
+     * Generates a client update event it a rollback occurs
+     * @param objects - the objects to rollback changes in
      */    
-    public void rollback(List<IMsoAttributeIf<?>> attrs);
+    public void rollback(List<IChangeIf> objects);
     
     /**
      * Delete this object from the data structures
@@ -116,15 +164,14 @@ public interface IMsoObjectIf extends IData
 
     /**
      * Use this method to check if an object is deleteable. If the MSO model is in
-     * REMOTE_UPDATE_MODE or in LOOPBACK_UPDATE_MODE, this method returns
-     * <code>true</code> by default. Otherwise, it will check if the Object is in an required
-     * relation with another object or list. If so, the method will return <code>false</code>
-     * which indicates that <code>delete()</code> will not succeed, preventing the object from
-     * being deleted.<p>
+     * REMOTE_UPDATE_MODE, this method returns <code>true</code> by default. Otherwise, 
+     * it will check if the Object is in an required relation with another object or list. 
+     * If so, the method will return <code>false</code> which indicates that 
+     * <code>delete()</code> will not succeed, preventing the object from being deleted.<p>
      *
      * @return <code>true</code> if object can be deleted, <code>false</code> otherwise.
      */
-    public boolean canDelete();
+    public boolean isDeletable();
 
     /**
      * Use this method to get list over <code>IMsoObjectHolderIf</code>
@@ -132,7 +179,7 @@ public interface IMsoObjectIf extends IData
      *
      * @return List of <code>IMsoObjectHolderIf</code> that prevents deletion
      */
-    public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy();
+    public List<IMsoObjectHolderIf<IMsoObjectIf>> getUndeleteableReferenceHolders();
 
     /**
      * Get a copy of map of the attributes for the object
@@ -146,12 +193,36 @@ public interface IMsoObjectIf extends IData
      */
     public IMsoAttributeIf<?> getAttribute(String aAttributeName) throws UnknownAttributeException;
     
+    
     /**
-     * Get a copy of the map of the reference objects for the object (one-to-one relations)
+     * Check if a given IMsoObject is referenced to by this IMsoObject
      * 
-     * @return The reference objects
+     * @param msoObj - the referenced object to look for
+     * @return Returns <code>true</code> if reference to given object is found 
      */
-    public Map<String, IMsoObjectIf> getObjectReferences();
+    public boolean contains(IMsoObjectIf msoObj);
+    
+    /**
+     * Get the object holder for the given IMsoObject. It the reference to
+     * the given object is a one-to-one reference between this object
+     * and the given object, a IMsoReferenceIf instance is returned. If the found 
+     * reference is a one-to-many reference, a IMsoListIf instances is returned. 
+     * Regardless of this, the owning object is always this object, not the
+     * IMsoReferenceIf or IMsoListIf instances (they only hold the object reference
+     * between objects).
+     * 
+     * @param msoObj - the object to look for 
+     * @return Returns the object holding the reference between this and the given object. 
+     */
+    public IMsoObjectHolderIf<?> getObjectHolder(IMsoObjectIf msoObj);
+    
+    /**
+     * Get the holder of the reference between this and the given object
+     * 
+     * @param msoObj - the referenced object to look for 
+     * @return Returns the holder of the reference between this and the given object
+     */
+    public IMsoReferenceIf<?> getReference(IMsoObjectIf msoObj);
     
     /**
      * Set or reset a relation between this and another 
@@ -159,10 +230,53 @@ public interface IMsoObjectIf extends IData
      * @param anObject - the object set a relation to, or relation to set to <code>null</code>  
      * @param aReferenceName - the name of the relation
      * @throws InvalidReferenceException is thrown if the reference does not 
-     * exist, or if the relation is required (cardinality or 1) 
+     * exist, or if the relation is required (cardinality is greater than <code>0</code>)
      */
     public void setObjectReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
 
+    /**
+     * Get a map of the objects referenced by this object (all one-to-one and one-to-many relations). 
+     * The map key is the object (one-to-one) or list (one-to-many) reference name and the value is the 
+     * referenced object(s).
+     * 
+     * @return Returns a map of the objects referenced by this object. 
+     */
+    public Map<String, List<IMsoObjectIf>> getObjects();
+    
+    /**
+     * Get a copy of the object reference map (all one-to-one relations from 
+     * this object to other IMsoObjectIf objects). The map key is the reference
+     * name and the value is the associated IMsoReferenceIf object.
+     * 
+     * @return Returns a copy of the object reference map. 
+     */
+    public Map<String, IMsoReferenceIf<?>> getObjectReferences();
+    
+    /**
+     * Add a reference to an one-to-many relation in this IMsoObjectIf object.
+     * 
+     * @param anObject The object to add a reference to
+     * @param aReferenceListName The reference list
+     * @throws InvalidReferenceException is thrown if the list reference does not 
+     * exist, if the list object class and IMsoObjectIf object class does not 
+     * match, if the list size is less or equal to the cardinality, 
+     * or if an reference to the IMsoObjectIf object already exists, or the object is 
+     * null or not properly initialized 
+     */
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException;
+
+    /**
+     * Remove a reference from a on-to-many relation in this IMsoObjectIf object.
+     * 
+     * @param anObject The object to remove a reference from
+     * @param aReferenceListName The reference list
+     * @throws InvalidReferenceException is thrown if the reference does not 
+     * exist, if the list object class and IMsoObjectIf object class does not 
+     * match, if the list size is less or equal to the cardinality, or if 
+     * an reference to IMsoObjectIf object does not exist, or is not deleteable 
+     */
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException;
+    
     /**
      * Get a copy of the map of the reference lists for the object (one-to-many relations)
      * @return The lists containing references
@@ -189,32 +303,7 @@ public interface IMsoObjectIf extends IData
      * only return lists with one or more items in it.
      */
     public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences(MsoClassCode c);
-
-    /**
-     * Add a reference to an one-to-many relation in this IMsoObjectIf object.
-     * 
-     * @param anObject The object to add a reference to
-     * @param aReferenceName The reference list
-     * @throws InvalidReferenceException is thrown if the list reference does not 
-     * exist, if the list object class and IMsoObjectIf object class does not 
-     * match, if the list size is less or equal to the cardinality, 
-     * or if an reference to the IMsoObjectIf object already exists, or the object is 
-     * null or not properly initialized 
-     */
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
-
-    /**
-     * Remove a reference from a on-to-many relation in this IMsoObjectIf object.
-     * 
-     * @param anObject The object to remove a reference from
-     * @param aReferenceName The reference list
-     * @throws InvalidReferenceException is thrown if the reference does not 
-     * exist, if the list object class and IMsoObjectIf object class does not 
-     * match, if the list size is less or equal to the cardinality, or if 
-     * an reference to IMsoObjectIf object does not exist, or is not deleteable 
-     */
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
-
+    
     /**
      * Suspend update notifications to listeners.
      * <p/>
@@ -247,7 +336,7 @@ public interface IMsoObjectIf extends IData
      *
      * @return  <code>true<code> if the object has been deleted.
      */
-    public boolean hasBeenDeleted();
+    public boolean isDeleted();
 
     /**
      * Get a Boolean attribute with the given index.
@@ -489,10 +578,53 @@ public interface IMsoObjectIf extends IData
      */
     public IMsoAttributeIf.IMsoEnumIf<?> getEnumAttribute(String aName) throws UnknownAttributeException;
 
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedAttributeReferences();
+    /**
+     * Get list changed attributes.
+     * @return Return list of attributes changed locally
+     */    
+    public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes();
+    
+    /**
+     * Get sub-list of changed attributes given the partial list.
+     * 
+     * @return Return sub-list of attributes changed locally
+     */    
+    public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes(Collection<IChangeIf> partial);
+    
+    /**
+     * Get the list of changed object (one-to-one) references.
+     *  
+     * @return Returns a list of changed object references
+     */
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedObjectReferences();
 
+    /**
+     * Get a sub-list of changed object (one-to-one) references given the partial list.
+     *  
+     * @return Returns a sub-list of changed object references
+     */
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedObjectReferences(Collection<IChangeIf> partial);
+    
+    /**
+     * Get the list of changed list (one-to-many) references.
+     *  
+     * @return Returns a list of changed list references
+     */
     public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences();
 
+    /**
+     * Get the sub-list of changed list (one-to-many) references given the partial list.
+     *  
+     * @return Returns a sub-list of changed list references
+     */
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences(Collection<IChangeIf> partial);
+
+    /**
+     * Interface for unique identification of IMsoObjectIf instances
+     * 
+     * @author vinjar
+     *
+     */
     public interface IObjectIdIf
     {
         public String getId();

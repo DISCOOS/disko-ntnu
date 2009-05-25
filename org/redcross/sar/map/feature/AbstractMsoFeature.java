@@ -58,7 +58,7 @@ public abstract class AbstractMsoFeature implements IMsoFeature {
 	}
 
 	public boolean create() throws IOException, AutomationException {
-		if(srs!=null && msoObject!=null && !msoObject.hasBeenDeleted()) {
+		if(srs!=null && msoObject!=null && !msoObject.isDeleted()) {
 			return true;
 		}
 		return false;

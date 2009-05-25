@@ -6,6 +6,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +29,7 @@ import org.redcross.sar.gui.panel.MainPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
+import org.redcross.sar.mso.IChangeSourceIf;
 import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -40,9 +42,9 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
-import org.redcross.sar.work.event.WorkFlowEventRepeater;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
+import org.redcross.sar.work.event.FlowEventRepeater;
 
 import com.esri.arcgis.interop.AutomationException;
 
@@ -69,8 +71,8 @@ public abstract class AbstractDiskoWpModule
     private int m_isWorking = 0;
 
     protected Logger m_logger;
-    protected final WorkFlowEventRepeater m_repeater = new WorkFlowEventRepeater();
-    protected final List<WorkFlowEvent> m_changeStack = new ArrayList<WorkFlowEvent>();
+    //protected final List<FlowEvent> m_changeStack = new ArrayList<FlowEvent>();
+    protected final FlowEventRepeater m_repeater = new FlowEventRepeater();
 	protected final EnumSet<IMsoManagerIf.MsoClassCode> m_interests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
 
     public AbstractDiskoWpModule(Logger logger) throws IllegalClassFormatException
@@ -224,72 +226,112 @@ public abstract class AbstractDiskoWpModule
 		return bFlag;
 	}
 
-    public void addWorkFlowListener(IWorkFlowListener listener)
+    public void addFlowListener(IFlowListener listener)
     {
-    	m_repeater.addWorkFlowListener(listener);
+    	m_repeater.addFlowListener(listener);
     }
 
-    public void removeWorkFlowListener(IWorkFlowListener listener)
+    public void removeFlowListener(IFlowListener listener)
     {
-    	m_repeater.removeWorkFlowListener(listener);
+    	m_repeater.removeFlowListener(listener);
     }
 
+    /*
     public List<IMsoObjectIf> getUncomittedChanges() {
     	List<IMsoObjectIf> changes = new Vector<IMsoObjectIf>();
-    	for(WorkFlowEvent it : m_changeStack) {
-    		IMsoObjectIf msoObj = it.getMsoObject();
-    		if(msoObj!=null&&!changes.contains(msoObj)) {
-    			changes.add(msoObj);
+    	for(FlowEvent it : m_changeStack) {
+    		for(IMsoObjectIf msoObj : it.getMsoObjects()) {
+	    		if(msoObj!=null&&!changes.contains(msoObj)) {
+	    			changes.add(msoObj);
+	    		}
     		}
     	}
     	return changes;
     }
     
-	public void onFlowPerformed(WorkFlowEvent e) {
+	public void onFlowPerformed(FlowEvent e) {
     	// update change stack?
 		if(e.isChange() || e.isFinish())
 			m_changeStack.add(e);
 
 	    // forward
-		m_repeater.fireOnWorkPerformed(e);
+		m_repeater.fireOnFlowPerformed(e);
 	}
+	*/
+    
+    public List<IMsoObjectIf> getChangedMsoObjects() {
+    	List<IMsoObjectIf> changes = new Vector<IMsoObjectIf>();
+    	Map<IMsoModelIf,List<IChangeSourceIf>> map = getApplication().getEditManager().getUncomittedChanges(this);
+    	for(List<IChangeSourceIf> list : map.values()) {
+    		for(IChangeSourceIf it : list) {
+	    		IMsoObjectIf msoObj = it.getMsoObject();    		
+	    		if(msoObj!=null&&!changes.contains(msoObj)) {
+	    			changes.add(msoObj);
+	    		}
+    		}
+    	}
+    	return changes;
+    }
+    
+	public void onFlowPerformed(FlowEvent e) {
+		// forward
+		getApplication().getEditManager().onFlowPerformed(this, e);
+	    // forward
+		m_repeater.fireOnFlowPerformed(e);
+	}
+    
 
     protected void fireOnWorkChange(Object data)
     {
 
     	// create event
-		WorkFlowEvent e = new WorkFlowEvent(this,data,null,WorkFlowEvent.EVENT_CHANGE);
+		FlowEvent e = new FlowEvent(this,data,null,FlowEvent.EVENT_CHANGE);
 
 		// forward
-		fireOnWorkPerformed(e);
+		fireOnFlowPerformed(e);
 
     }
 
     protected void fireOnWorkRollback()
     {
     	// create event
-    	WorkFlowEvent e = new WorkFlowEvent(this,null,null,WorkFlowEvent.EVENT_ROLLBACK);
+    	FlowEvent e = new FlowEvent(this,null,null,FlowEvent.EVENT_ROLLBACK);
 
     	// forward
-    	fireOnWorkPerformed(e);
+    	fireOnFlowPerformed(e);
     }
 
     protected void fireOnWorkCommit()
     {
     	// create event
-    	WorkFlowEvent e = new WorkFlowEvent(this,null,null,WorkFlowEvent.EVENT_COMMIT);
+    	FlowEvent e = new FlowEvent(this,null,null,FlowEvent.EVENT_COMMIT);
     	// forward
-    	fireOnWorkPerformed(e);
+    	fireOnFlowPerformed(e);
     }
 
-    protected void fireOnWorkPerformed(WorkFlowEvent e)
+    /*
+    protected void fireOnFlowPerformed(FlowEvent e)
     {
     	// update change stack?
 		if(e.isCommit() || e.isRollback())
 			m_changeStack.clear();
 
 		// forward
-		m_repeater.fireOnWorkPerformed(e);
+		m_repeater.fireOnFlowPerformed(e);
+    }
+
+    public boolean isChanged()
+    {
+        return (m_changeStack.size()>0);
+    }
+    */
+
+    protected void fireOnFlowPerformed(FlowEvent e)
+    {
+    	// forward
+    	getApplication().getEditManager().onFlowPerformed(this, e);
+		// forward
+		m_repeater.fireOnFlowPerformed(e);
     }
 
     /**
@@ -297,12 +339,9 @@ public abstract class AbstractDiskoWpModule
      */
     public boolean isChanged()
     {
-        return (m_changeStack.size()>0);
+        return (getApplication().getEditManager().isChanged(this));
     }
-
-    /**
-     * @return True if change count is larger then zero
-     */
+    
     public boolean isActive()
     {
         return m_isActive;
@@ -527,8 +566,6 @@ public abstract class AbstractDiskoWpModule
 	}
 
 	public void afterOperationChange() {
-		// clear stack
-		m_changeStack.clear();
 		// resume map update
 		if(m_map!=null) {
 			try {
@@ -725,7 +762,7 @@ public abstract class AbstractDiskoWpModule
 
 		public ModuleWork(String msg, boolean show, boolean suspend) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,msg,100,show,false);
+			super(NORMAL_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,msg,100,show,false);
 			// prepare
 			m_suspend = suspend;
 		}

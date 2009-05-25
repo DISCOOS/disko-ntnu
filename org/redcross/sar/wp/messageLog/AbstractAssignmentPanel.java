@@ -38,7 +38,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.renderer.IconRenderer;
 import org.redcross.sar.map.IDiskoMap;
@@ -77,7 +77,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
     protected JList m_messageLineList;
 
     protected IAssignmentIf m_selectedAssignment;
-    protected FieldsPanel m_selectedPanel;
+    protected FieldPane m_selectedPanel;
     protected IUnitIf m_owningUnit;
 
     protected JPanel m_buttonPanel;
@@ -88,7 +88,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
 
     protected ButtonSize buttonSize = ButtonSize.SMALL;
 
-    protected FieldsPanel m_editAssignmentPanel;
+    protected FieldPane m_editAssignmentPanel;
     protected IMessageLineIf m_editingLine;
 
     protected BasePanel m_nextAssignmentsPanel;
@@ -217,7 +217,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
 
     protected void initSelectedPanel() {
     	// create panel
-    	m_selectedPanel = new FieldsPanel("Oppdragsinformasjon","Ingen oppdrag tilgjengelig",false,false);
+    	m_selectedPanel = new FieldPane("Oppdragsinformasjon","Ingen oppdrag tilgjengelig",false,false);
     	m_selectedPanel.setNotScrollBars();
     	Utils.setFixedWidth(m_selectedPanel,250);
     }
@@ -237,7 +237,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
     protected void initEditAssignmentPanel()
     {
 
-    	m_editAssignmentPanel = new FieldsPanel("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
+    	m_editAssignmentPanel = new FieldPane("Endre oppdragslinje","Ingen oppdrag funnet",false,false);
 
     	// add attributes
     	m_editAssignmentPanel.addField(new TextField("Assignment",

@@ -88,7 +88,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     }
 
     @Override
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -100,18 +100,18 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         }
         if (anObject instanceof ICommunicatorIf)
         {
-            if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
+            if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceListName))
             {
                 m_confirmedReceivers.add((ICommunicatorIf) anObject);
             }
-            if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
+            if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceListName))
             {
                 m_unconfirmedReceivers.add((ICommunicatorIf) anObject);
             }
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -123,11 +123,11 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         }
         if (anObject instanceof ICommunicatorIf)
         {
-            if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
+            if (CONFIRMED_RECEIVERS_NAME.equals(aReferenceListName))
             {
                 m_confirmedReceivers.remove((ICommunicatorIf) anObject);
             }
-            if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceName))
+            if (UNCONFIRMED_RECEIVERS_NAME.equals(aReferenceListName))
             {
                 m_unconfirmedReceivers.remove((ICommunicatorIf) anObject);
             }
@@ -194,8 +194,8 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     	// suspend MSO update
 		suspendClientUpdate();
 		// clear receiver lists when changing broadcast state
-		m_unconfirmedReceivers.deleteAll();
-		m_confirmedReceivers.deleteAll();
+		m_unconfirmedReceivers.removeAll();
+		m_confirmedReceivers.removeAll();
 		// update
 		m_broadcast.setValue(aBroadcast);
 		// resume MSO update
@@ -271,7 +271,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public Collection<ICommunicatorIf> getConfirmedReceiversItems()
     {
-        return m_confirmedReceivers.getItems();
+        return m_confirmedReceivers.getObjects();
     }
 
     public IMsoListIf<ICommunicatorIf> getUnconfirmedReceivers()
@@ -286,7 +286,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public Collection<ICommunicatorIf> getUnconfirmedReceiversItems()
     {
-        return m_unconfirmedReceivers.getItems();
+        return m_unconfirmedReceivers.getObjects();
     }
 
     public void addMessageTask(ITaskIf anITaskIf)
@@ -306,7 +306,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public Collection<ITaskIf> getMessageTasksItems()
     {
-        return m_messageTasks.getItems();
+        return m_messageTasks.getObjects();
     }
 
 
@@ -328,7 +328,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public Collection<IMessageLineIf> getMessageLineItems()
     {
-        return m_messageLines.getItems();
+        return m_messageLines.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------
@@ -434,14 +434,14 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public ICommunicatorIf getReceiver()
     {
-        return m_confirmedReceivers.getItem();
+        return m_confirmedReceivers.getHeadObject();
     }
 
     public Collection<ICommunicatorIf> getReceivers()
     {
     	List<ICommunicatorIf> list = new ArrayList<ICommunicatorIf>();
-    	list.addAll(m_unconfirmedReceivers.getItems());
-    	list.addAll(m_confirmedReceivers.getItems());
+    	list.addAll(m_unconfirmedReceivers.getObjects());
+    	list.addAll(m_confirmedReceivers.getObjects());
         return list;
     }
 
@@ -459,7 +459,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     private int getNextLineNumber()
     {
         int retVal = 0;
-        for (IMessageLineIf ml : m_messageLines.getItems())
+        for (IMessageLineIf ml : m_messageLines.getObjects())
         {
             if (ml.getLineNumber() > retVal)
             {
@@ -471,7 +471,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     private IMessageLineIf getMessageLine(int aNumber)
     {
-        for (IMessageLineIf ml : m_messageLines.getItems())
+        for (IMessageLineIf ml : m_messageLines.getObjects())
         {
             if (ml.getLineNumber() == aNumber)
             {
@@ -483,7 +483,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     private IMessageLineIf getMessageLine(IMessageLineIf.MessageLineType aType)
     {
-        for (IMessageLineIf ml : m_messageLines.getItems())
+        for (IMessageLineIf ml : m_messageLines.getObjects())
         {
             if (ml.getLineType() == aType)
             {
@@ -511,7 +511,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 		}
 		// was removed?
 		if (bFlag) {
-			for (IMessageLineIf ml : m_messageLines.getItems()) {
+			for (IMessageLineIf ml : m_messageLines.getObjects()) {
 				if (ml.getLineNumber() > deletedLineNumber) {
 					ml.setLineNumber(ml.getLineNumber() - 1);
 				}
@@ -559,7 +559,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public IMessageLineIf findMessageLine(IMessageLineIf.MessageLineType aType, IAssignmentIf anAssignment, boolean makeNewLine)
     {
-        for (IMessageLineIf ml : m_messageLines.getItems())
+        for (IMessageLineIf ml : m_messageLines.getObjects())
         {
             if (ml.getLineType() == aType)
             {

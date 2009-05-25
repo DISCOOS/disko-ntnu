@@ -1,14 +1,25 @@
 package org.redcross.sar.gui;
 
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 
 public interface IChangeable {
 
 	/* ================================================
-	 * IWork interface
+	 * IChangeable interface
 	 * ================================================ */
 
+	/**
+	 * Check if changes exists.
+	 * 
+	 * @return Returns <code>true</code> if changes exists.
+	 */
 	public boolean isDirty();
+	
+	/**
+	 * Force a given dirty state. 
+	 * 
+	 * @param isDirty - the new dirty state
+	 */	
 	public void setDirty(boolean isDirty);
 
 	public int isMarked();
@@ -33,16 +44,32 @@ public interface IChangeable {
 	public void setChangeable(boolean isChangable);
 
 	/**
-	 * Reset state to changeable by resetting the internal counter to zero. 
+	 * Clear state to changeable by resetting the internal counter to zero. 
 	 * 
 	 * @return the internal counter value  
 	 */
-	public int resetChangeable();
+	public int clearChangeableCount();
 
+	/**
+	 * Reset to default values.  
+	 */
 	public void reset();
+	
+	/**
+	 * Finish change flow. Changes should be collected and handled 
+	 * before <code>isDirty()</code> is reset.
+	 *  
+	 * @return boolean
+	 */
 	public boolean finish();
+	
+	/**
+	 * Cancel any changes to previous values.
+	 * 
+	 * @return boolean
+	 */
 	public boolean cancel();
 
-	public void addWorkFlowListener(IWorkFlowListener listener);
-	public void removeWorkFlowListener(IWorkFlowListener listener);
+	public void addFlowListener(IFlowListener listener);
+	public void removeFlowListener(IFlowListener listener);
 }

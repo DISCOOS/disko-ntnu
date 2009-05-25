@@ -11,12 +11,12 @@ import javax.swing.border.Border;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 
 public interface IPanel extends IChangeable,
 								IMsoUpdateListenerIf,
 								IMsoLayerEventListener,
-								IWorkFlowListener,
+								IFlowListener,
 								ActionListener {
 
 
@@ -49,8 +49,8 @@ public interface IPanel extends IChangeable,
 	public void addActionListener(ActionListener listener);
 	public void removeActionListener(ActionListener listener);
 
-	public void addWorkFlowListener(IWorkFlowListener listener);
-	public void removeWorkFlowListener(IWorkFlowListener listener);
+	public void addFlowListener(IFlowListener listener);
+	public void removeFlowListener(IFlowListener listener);
 
     public Container getContainer();
     public void setContainer(Container container);

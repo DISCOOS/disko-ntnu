@@ -14,7 +14,6 @@ import javax.swing.JTextField;
 import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.AssociationDialog;
-import org.redcross.sar.gui.document.AlphaNumericDocument;
 import org.redcross.sar.gui.document.AutoCompleteDocument;
 import org.redcross.sar.gui.document.NumericDocument;
 import org.redcross.sar.gui.event.IAutoCompleteListener;
@@ -23,10 +22,9 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.DTGField;
-import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.field.TextAreaField;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IPersonnelIf;
@@ -40,12 +38,11 @@ import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.AssocUtils.Association;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
- * JPanel displaying team details.
- * Responsible for storing personnel in MSO.
+ * FieldsPanel displaying personnel details.
  *
  * @author thomasl, kenneth
  */
@@ -65,7 +62,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 	private JButton m_changeStatusButton;
 
-	private FieldsPanel m_infoPanel;
+	private FieldPane m_infoPanel;
 	private TextField m_nameTextField;
 	private TextField m_cellTextField;
 	private ComboBoxField m_propertyComboBoxField;
@@ -87,7 +84,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		// add listeners
 		wp.getMsoEventManager().addClientUpdateListener(this);
 		wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
-        getInfoPanel().addWorkFlowListener(wp);
+        getInfoPanel().addFlowListener(wp);
 	}
 
 	private void initialize()
@@ -100,11 +97,11 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 	}
 	
-	private FieldsPanel getInfoPanel() {
+	private FieldPane getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
+			m_infoPanel = new FieldPane(m_resources.getString("PersonnelInfo.text"),"",false,false);
 			m_infoPanel.setColumns(2);
-			m_infoPanel.setBatchMode(false);
+			m_infoPanel.setBufferMode(false);
 			m_infoPanel.setPreferredExpandedHeight(275);
 			m_infoPanel.addButton(getChangeStatusButton(), "status");
 			m_infoPanel.suspendLayout();
@@ -192,19 +189,19 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	private TextField getFullNameTextField() {
 		if(m_nameTextField==null) {
 			m_nameTextField = new TextField("fullname",m_resources.getString("FullName.text"),true);
-			m_nameTextField.addWorkFlowListener(new IWorkFlowListener() {
+			m_nameTextField.addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 					// is changed?
-					if(isSet()&&m_nameTextField.isChangeable() && e.isChange() && e.isWorkDoneByAwtComponent()) {
+					if(isSet()&&m_nameTextField.isChangeable() && e.isChange() && e.isSourceComponent()) {
 						String[] names = getNames(false);
 						if(names!=null) {
 							m_currentPersonnel.suspendClientUpdate();
 							m_currentPersonnel.setFirstname(names[0]);
 							m_currentPersonnel.setLastname(names[1]);					
 							m_currentPersonnel.resumeClientUpdate(true);							
-							m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
+							m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 						}
 					}
 					
@@ -262,7 +259,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						}
 						m_currentPersonnel.resumeClientUpdate(false);
 						m_associationTextField.setChangeable(true);
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 					}
 				}
 				
@@ -275,7 +272,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 						AssociationDialog dlg = new AssociationDialog(Application.getFrameInstance());
 						dlg.setLocationRelativeTo(Application.getFrameInstance());
 						if(dlg.associate(getAssociationTextField().getValue(),m_currentPersonnel)) {
-							m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
+							m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 						}
 					}
 				}
@@ -479,28 +476,34 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	
 	private String[] getNames(boolean validate) {
 		
-		String[] fields = m_nameTextField.getValue().split(" ");
+		String names = m_nameTextField.getValue();
 
-		// validate
-		if (fields.length > 0)
-		{
-			StringBuilder text = new StringBuilder();
-			for (int i = 0; i < fields.length - 1; i++)
+		if(names!=null) {
+			
+			String[] fields = names.split(" ");
+	
+			// validate
+			if (fields.length > 0)
 			{
-				text.append(fields[i] + " ");
-			}
-
-			String firstName = text.toString().trim();
-			String lastName = fields[fields.length - 1].trim();
-
-			// get name array?
-			if(!validate || (firstName.length()!=0 || lastName.length()!=0)) {
-				
-				// finished!
-				return new String[]{firstName,lastName};
-
+				StringBuilder text = new StringBuilder();
+				for (int i = 0; i < fields.length - 1; i++)
+				{
+					text.append(fields[i] + " ");
+				}
+	
+				String firstName = text.toString().trim();
+				String lastName = fields[fields.length - 1].trim();
+	
+				// get name array?
+				if(!validate || (firstName.length()!=0 || lastName.length()!=0)) {
+					
+					// finished!
+					return new String[]{firstName,lastName};
+	
+				}
 			}
 		}
+		
 		return validate?null:new String[2];
 	}
 
@@ -527,7 +530,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
 
 				// consume loopback updates
-				if(!e.isLoopback())
+				if(!e.isLoopbackMode())
 				{
 					// get personnel reference
 					IPersonnelIf personnel = 

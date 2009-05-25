@@ -26,7 +26,7 @@ import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 /**
@@ -124,7 +124,7 @@ public class TableEditorFactory {
 	                    else
 	                    	editingUnit.setUnitLeader(newLeader);
 	                    updateCell(m_editCellRow);
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,editingUnit,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,editingUnit,FlowEvent.EVENT_CHANGE));
                     }
 					fireEditingStopped();
                 }
@@ -312,7 +312,7 @@ public class TableEditorFactory {
 	                    try
 	                    {
 	                    	if(unit.isPaused()) unit.resume(); else unit.pause();
-							m_wp.onFlowPerformed(new WorkFlowEvent(this,unit,WorkFlowEvent.EVENT_CHANGE));
+							m_wp.onFlowPerformed(new FlowEvent(this,unit,FlowEvent.EVENT_CHANGE));
 						}
 	                    catch (IllegalOperationException ex)
 	                    {
@@ -338,7 +338,7 @@ public class TableEditorFactory {
 					{
 						// commit?
 						if(ResourceUtils.releaseUnit(unit)) {
-							m_wp.onFlowPerformed(new WorkFlowEvent(this,unit,WorkFlowEvent.EVENT_CHANGE));
+							m_wp.onFlowPerformed(new FlowEvent(this,unit,FlowEvent.EVENT_CHANGE));
 						}										
 					}            
 					catch (IllegalOperationException e1)
@@ -542,7 +542,7 @@ public class TableEditorFactory {
 						{
 							m_wp.setPersonnelLeft(nextPersonnel);
 						}
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,personnel,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,personnel,FlowEvent.EVENT_CHANGE));
 					}
 					fireEditingStopped();
 				}
@@ -562,7 +562,7 @@ public class TableEditorFactory {
 						IPersonnelIf nextPersonnel = ResourceUtils.arrivedPersonnel(personnel);
 						updateCell(m_editCellRow);
 						if(nextPersonnel!=personnel) m_wp.setPersonnelLeft(nextPersonnel);
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,personnel,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,personnel,FlowEvent.EVENT_CHANGE));
 					}
 					fireEditingStopped();
 				}
@@ -581,7 +581,7 @@ public class TableEditorFactory {
 					if(!PersonnelStatus.RELEASED.equals(oldStatus)) {
 						ResourceUtils.releasePersonnel(personnel);
 						updateCell(m_editCellRow);
-						m_wp.onFlowPerformed(new WorkFlowEvent(m_releasedButton[1],personnel,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(m_releasedButton[1],personnel,FlowEvent.EVENT_CHANGE));
 					}
 					fireEditingStopped();
 				}
@@ -774,7 +774,7 @@ public class TableEditorFactory {
 						{
 							model.getPersonnelList().add(reinstated);
 						}
-						m_wp.onFlowPerformed(new WorkFlowEvent(m_arrivedButton[1],personnel,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(m_arrivedButton[1],personnel,FlowEvent.EVENT_CHANGE));
 					}					
 					fireEditingStopped();
 				}
@@ -793,7 +793,7 @@ public class TableEditorFactory {
 					if(!PersonnelStatus.RELEASED.equals(oldStatus)) {
 						ResourceUtils.releasePersonnel(personnel);
 						updateCell(m_editCellRow);
-						m_wp.onFlowPerformed(new WorkFlowEvent(m_releasedButton[1],personnel,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(m_releasedButton[1],personnel,FlowEvent.EVENT_CHANGE));
 					}
 					fireEditingStopped();
 				}

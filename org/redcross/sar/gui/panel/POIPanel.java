@@ -27,8 +27,8 @@ import org.redcross.sar.mso.data.IPOIIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
@@ -41,7 +41,7 @@ public class POIPanel extends DefaultToolPanel {
 	private GotoPanel gotoPanel;
 	private JButton centerAtButton;
 	private POITypesPanel poiTypesPanel;
-	private FieldsPanel optionsPanel;
+	private FieldPane optionsPanel;
 	private TextField nameAttr;
 	private TogglePanel remarksPanel;
 	private JTextArea remarksArea;
@@ -103,9 +103,9 @@ public class POIPanel extends DefaultToolPanel {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
 			gotoPanel.setPreferredExpandedHeight(140);
 			Utils.setFixedHeight(gotoPanel, 140);
-			gotoPanel.addWorkFlowListener(new IWorkFlowListener() {
+			gotoPanel.addFlowListener(new IFlowListener() {
 
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 
 					// consume?
 					if(!isChangeable()) return;
@@ -149,21 +149,21 @@ public class POIPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes optionsPanel
 	 *
-	 * @return {@link FieldsPanel}
+	 * @return {@link FieldPane}
 	 */
-	public FieldsPanel getOptionsPanel() {
+	public FieldPane getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
-				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
+				optionsPanel = new FieldPane("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setExpanded(false);
 				optionsPanel.setPreferredExpandedHeight(80);
 				Utils.setFixedHeight(optionsPanel, 80);
 				optionsPanel.setButtonVisible("toggle", true);
 				optionsPanel.addField(getNameAttr());
-				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
+				optionsPanel.addFlowListener(new IFlowListener() {
 
 					@Override
-					public void onFlowPerformed(WorkFlowEvent e) {
+					public void onFlowPerformed(FlowEvent e) {
 
 						// consume?
 						if(!isChangeable()) return;
@@ -212,9 +212,9 @@ public class POIPanel extends DefaultToolPanel {
 			poiTypesPanel.setExpanded(false);
 			poiTypesPanel.setPreferredExpandedHeight(100);
 			Utils.setFixedHeight(poiTypesPanel, 100);
-			poiTypesPanel.addWorkFlowListener(new IWorkFlowListener() {
+			poiTypesPanel.addFlowListener(new IFlowListener() {
 
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 
 					// consume?
 					if(!isChangeable()) return;

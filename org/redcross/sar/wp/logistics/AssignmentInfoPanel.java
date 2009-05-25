@@ -12,9 +12,9 @@ import javax.swing.JTextArea;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.EnumField;
-import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.IField;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -31,7 +31,7 @@ public class AssignmentInfoPanel extends JPanel
 	public final static String ASG_PRINT = "AsgPrint";
 	public final static String ASG_CHANGE = "AsgChange";
 
-	private FieldsPanel m_infoPanel;
+	private FieldPane m_infoPanel;
 	private TogglePanel m_remarksPanel;
 	private JTextArea m_remarksArea;
 
@@ -111,9 +111,9 @@ public class AssignmentInfoPanel extends JPanel
 		add(getRemarksPanel());
 	}
 
-	private FieldsPanel getInfoPanel() {
+	private FieldPane getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
+			m_infoPanel = new FieldPane("","Ingen egenskaper",false,false);
 			m_infoPanel.setPreferredExpandedHeight(175);
 			m_infoPanel.setColumns(2);
 			m_infoPanel.addField(createEnumField("priority",0));
@@ -154,23 +154,23 @@ public class AssignmentInfoPanel extends JPanel
 		return m_remarksArea;
 	}
 
-	private IDiskoField createTextField(String name, int index) {
-		IDiskoField attr = new TextField(name,
+	private IField<?> createTextField(String name, int index) {
+		IField<?> attr = new TextField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,75,25,"");
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
-	private IDiskoField createEnumField(String name, int index) {
-		IDiskoField attr = new EnumField(name,
+	private IField<?> createEnumField(String name, int index) {
+		IField<?> attr = new EnumField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);
 		return attr;
 	}
 
-	private IDiskoField createDTGField(String name, int index) {
-		IDiskoField attr = new DTGField(name,
+	private IField<?> createDTGField(String name, int index) {
+		IField<?> attr = new DTGField(name,
 				m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("AsgInfoPanel_hdr_"+index+".tooltip"));
 		return attr;

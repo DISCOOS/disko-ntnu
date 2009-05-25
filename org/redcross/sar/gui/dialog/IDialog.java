@@ -5,7 +5,7 @@ import java.awt.Component;
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 
 public interface IDialog extends IChangeable, IPanelManager {
 
@@ -60,8 +60,8 @@ public interface IDialog extends IChangeable, IPanelManager {
 	public boolean finish();
 	public boolean cancel();
 
-	public void addWorkFlowListener(IWorkFlowListener listener);
-	public void removeWorkFlowListener(IWorkFlowListener listener);
+	public void addFlowListener(IFlowListener listener);
+	public void removeFlowListener(IFlowListener listener);
 
 	/* =======================================================
 	 * IPanelManager interface

@@ -25,8 +25,8 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 public abstract class AbstractPanel extends JPanel implements IPanel, IPanelManager, IMsoHolder {
 
@@ -162,8 +162,8 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	public abstract void addActionListener(ActionListener listener);
 	public abstract void removeActionListener(ActionListener listener);
 
-	public abstract void addWorkFlowListener(IWorkFlowListener listener);
-	public abstract void removeWorkFlowListener(IWorkFlowListener listener);
+	public abstract void addFlowListener(IFlowListener listener);
+	public abstract void removeFlowListener(IFlowListener listener);
 
     public abstract Container getContainer();
     public abstract void setContainer(Container container);
@@ -287,7 +287,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 			m_consumeCount--;
 	}
 
-	public int resetChangeable() {
+	public int clearChangeableCount() {
 		int count = m_consumeCount;
 		m_consumeCount = 0;
 		return count;
@@ -566,7 +566,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 
 			// is loopback update?
-			if(e.isLoopback()) {
+			if(e.isLoopbackMode()) {
 				
 				// forward
 				msoObjectLoopback(msoObj,mask);
@@ -638,7 +638,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 	 * IWorkListener implementation
 	 * =========================================== */
 
-	public void onFlowPerformed(WorkFlowEvent e) {
+	public void onFlowPerformed(FlowEvent e) {
 		fireOnWorkPerformed(e);
 	}
 
@@ -710,7 +710,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 
 	protected abstract void fireOnWorkChange(Object source, Object data);
 
-	protected abstract void fireOnWorkPerformed(WorkFlowEvent e);
+	protected abstract void fireOnWorkPerformed(FlowEvent e);
 
 	protected void setDirty(boolean isDirty, boolean update) {
 		this.m_isDirty = isDirty;

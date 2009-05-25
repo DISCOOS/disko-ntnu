@@ -390,7 +390,7 @@ public class MsoUtils {
 	            if(cmdPost!=null)	{
 	            	
 			    	// get all areas
-			    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getItems());
+			    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(anModel.getMsoManager().getCmdPost().getAreaList().getObjects());
 			
 			    	// searh for route
 			    	for(int i=0;i<areaList.size();i++) {
@@ -430,7 +430,7 @@ public class MsoUtils {
 	    		if(cmdPost!=null) {
 	    			
 		    		// get all areas
-			    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(cmdPost.getAreaList().getItems());
+			    	ArrayList<IAreaIf> areaList = new ArrayList<IAreaIf>(cmdPost.getAreaList().getObjects());
 			
 			    	// searh for route
 			    	for(int i=0;i<areaList.size();i++) {
@@ -457,7 +457,8 @@ public class MsoUtils {
 		GeometryBag geomBag = null;
         
 		// get geometry list from area
-		IMsoListIf<IMsoObjectIf> geoList = area.getAreaGeodata().getClone();
+		//IMsoListIf<IMsoObjectIf> geoList = area.getAreaGeodata().getClone();
+		IMsoListIf<IMsoObjectIf> geoList = area.getAreaGeodata();
         
 		// has data
         if (geoList != null && geoList.size() > 0) {
@@ -535,7 +536,7 @@ public class MsoUtils {
 	}
 	
 	public static IPOIIf getPOI(IAreaIf area, POIType poiType) {
-		Iterator<IPOIIf> iter = area.getAreaPOIs().getItems().iterator();
+		Iterator<IPOIIf> iter = area.getAreaPOIs().getObjects().iterator();
 		while (iter.hasNext()) {
 			IPOIIf poi = iter.next();
 			if (poi.getType() == poiType) {
@@ -834,7 +835,7 @@ public class MsoUtils {
     	IMessageLineListIf lines = message.getMessageLines();
     	
     	// loop over all lines
-    	for(IMessageLineIf line : lines.getItems())
+    	for(IMessageLineIf line : lines.getObjects())
     	{
     		String lineText = line.toString();
     		if (stringBuilder.length()>0)

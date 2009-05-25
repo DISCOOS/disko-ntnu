@@ -1,11 +1,13 @@
 package org.redcross.sar.mso.event;
 
+import java.util.EventListener;
+
 import org.redcross.sar.util.except.TransactionException;
 
 /**
  *
  */
-public interface IMsoTransactionListenerIf extends java.util.EventListener
+public interface IMsoTransactionListenerIf extends EventListener
 {
     /**
      * Handle a commit event. <p/>

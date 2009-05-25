@@ -441,7 +441,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
                 boolean isAlertTime = false;
                 boolean isAlertStatus = false;
                 boolean isAlertRole = false;
-                for (ITaskIf task : tasks.getItems())
+                for (ITaskIf task : tasks.getObjects())
                 {
                     Calendar alertTime = task.getAlert();
                     isAlertTime = alertTime != null && alertTime.before(currentTime);

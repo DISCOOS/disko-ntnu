@@ -40,7 +40,7 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	}
 
 	public boolean load(IMsoListIf<T> list, boolean append) {
-		return load(list.getItems(), append);
+		return load(list.getObjects(), append);
 	}
 
 	/* =============================================================================

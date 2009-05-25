@@ -19,9 +19,9 @@ import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.ComboBoxField;
-import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.IField;
 import org.redcross.sar.gui.panel.DefaultPanel;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.util.Utils;
 
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class TNCDialog extends DefaultDialog  {
 												"flowCtrl",
 												"hostMode"};
 
-	private FieldsPanel sessionPanel;
+	private FieldPane sessionPanel;
 	
 	private ComboBoxField protocolField;
 	private ComboBoxField portField;
@@ -92,9 +92,9 @@ public class TNCDialog extends DefaultDialog  {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private FieldsPanel getSessionPanel() {
+	private FieldPane getSessionPanel() {
 		if (sessionPanel == null) {
-			sessionPanel = new FieldsPanel("Tilkobling");
+			sessionPanel = new FieldPane("Tilkobling");
 			sessionPanel.setScrollBarPolicies(
 					DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
 					DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);
@@ -517,7 +517,7 @@ public class TNCDialog extends DefaultDialog  {
 			this.hostMode = hostMode;			
 		}
 		
-		public Setup(List<IDiskoField> fields) {
+		public Setup(List<IField<?>> fields) {
 			protocol = getProtocol(fields.get(0).getValue());
 			port = getPort(fields.get(1).getValue());
 			tnc = getTNC(fields.get(2).getValue());
@@ -556,7 +556,7 @@ public class TNCDialog extends DefaultDialog  {
 			}
 		}
 				
-		public void setValues(List<IDiskoField> fields) {
+		public void setValues(List<IField<?>> fields) {
 			fields.get(0).setValue(protocol);
 			fields.get(1).setValue(port);
 			fields.get(2).setValue(tnc);

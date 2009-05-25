@@ -217,7 +217,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     			for(Update e : list.getEvents(m_interests)) {
 
     				// consume?
-    				if(!e.isLoopback()) {
+    				if(!e.isLoopbackMode()) {
 
     					// get flags
     			        boolean deletedObject  = e.isDeleteObjectEvent();

@@ -205,9 +205,9 @@ public class ResourceUtils
 		if(manager.operationExists()) {
 			// TODO: replace with more general method
 			// Personnel can only be Allocated to ONE unit
-			for(IUnitIf unit : manager.getCmdPost().getUnitList().getItems())
+			for(IUnitIf unit : manager.getCmdPost().getUnitList().getObjects())
 			{
-				for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getItems())
+				for(IPersonnelIf unitPersonnel : unit.getUnitPersonnel().getObjects())
 				{
 					if(!UnitStatus.RELEASED.equals(unit.getStatus()) &&  unitPersonnel == personnel)
 					{

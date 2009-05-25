@@ -116,7 +116,7 @@ public class UnitsPanel extends BasePanel {
 			IUnitIf unit = m_model.getUnit(i);
 			Component strut = Box.createVerticalStrut((i>0) ? 5 : 0);
 			UnitStatusPanel panel = new UnitStatusPanel(unit);
-			panel.addWorkFlowListener(this);
+			panel.addFlowListener(this);
 			panel.addActionListener(this);
 			m_struts.put(unit, strut);
 			m_units.put(unit, panel);
@@ -150,7 +150,7 @@ public class UnitsPanel extends BasePanel {
 		for(int i=0;i<count;i++) {
 			if(items.getComponent(i) instanceof UnitStatusPanel) {
 				UnitStatusPanel panel = (UnitStatusPanel)items.getComponent(i);
-				panel.removeWorkFlowListener(this);
+				panel.removeFlowListener(this);
 				panel.removeActionListener(this);
 			}
 		}
@@ -167,7 +167,7 @@ public class UnitsPanel extends BasePanel {
 			// add to component
 			items.add(m_struts.get(unit));
 			UnitStatusPanel panel = m_units.get(unit);
-			panel.addWorkFlowListener(this);
+			panel.addFlowListener(this);
 			panel.addActionListener(this);
 			items.add(panel);
 		}

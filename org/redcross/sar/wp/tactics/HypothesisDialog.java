@@ -32,7 +32,7 @@ import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.model.HypothesisListModel;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
@@ -46,8 +46,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class HypothesisDialog extends DefaultDialog {
@@ -66,7 +66,7 @@ public class HypothesisDialog extends DefaultDialog {
 	private JLabel selectedLabel;
 	private BasePanel descriptionPanel;
 	private JTextArea descriptionTextArea;
-	private FieldsPanel attribsPanel;
+	private FieldPane attribsPanel;
 	private ComboBoxField statusCombo;
 	private ComboBoxField priorityCombo;
 
@@ -432,18 +432,18 @@ public class HypothesisDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private FieldsPanel getAttribsPanel() {
+	private FieldPane getAttribsPanel() {
 		if (attribsPanel == null) {
 			try {
-				attribsPanel = new FieldsPanel("Egenskaper","",false,false);
+				attribsPanel = new FieldPane("Egenskaper","",false,false);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
 				attribsPanel.setNotScrollBars();
 				attribsPanel.addField(getPriorityCombo());
 				attribsPanel.addField(getStatusCombo());
-				attribsPanel.addWorkFlowListener(new IWorkFlowListener() {
+				attribsPanel.addFlowListener(new IFlowListener() {
 
 					@Override
-					public void onFlowPerformed(WorkFlowEvent e) {
+					public void onFlowPerformed(FlowEvent e) {
 						if(e.isChange() || e.isFinish())
 							setDirty(true);
 					}

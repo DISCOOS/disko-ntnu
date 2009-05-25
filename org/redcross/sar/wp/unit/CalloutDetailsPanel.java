@@ -6,7 +6,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICalloutIf;
@@ -17,7 +17,7 @@ import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -46,7 +46,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 
 	private JButton m_printButton;
 
-	private FieldsPanel m_infoPanel;
+	private FieldPane m_infoPanel;
 	private TextField m_titleTextField;
 	private TextField m_createdTextField;
 	private TextField m_associationTextField;
@@ -69,7 +69,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
         // add listeners
         wp.getMsoEventManager().addClientUpdateListener(this);
         wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
-        getInfoPanel().addWorkFlowListener(wp);
+        getInfoPanel().addFlowListener(wp);
 	}
 
     private void initialize()
@@ -84,11 +84,11 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
         
     }
 
-	private FieldsPanel getInfoPanel() {
+	private FieldPane getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new FieldsPanel(m_resources.getString("UnitInfo.text"),"",false,false);
+			m_infoPanel = new FieldPane(m_resources.getString("UnitInfo.text"),"",false,false);
 			m_infoPanel.setColumns(2);
-			m_infoPanel.setBatchMode(false);
+			m_infoPanel.setBufferMode(false);
 			m_infoPanel.setPreferredExpandedHeight(175);
 			m_infoPanel.setMinimumSize(new Dimension(175,200));
 			m_infoPanel.addButton(getPrintButton(), "print");
@@ -153,7 +153,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 						}
 						m_currentCallout.resumeClientUpdate(false);
 						m_associationTextField.setChangeable(true);
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentCallout,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,m_currentCallout,FlowEvent.EVENT_CHANGE));
 					}
 				}
 
@@ -310,7 +310,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_CALLOUT)) {
 
 				// consume loopback updates
-				if(!e.isLoopback())
+				if(!e.isLoopbackMode())
 				{
 					// get callout reference
 					ICalloutIf callout = 

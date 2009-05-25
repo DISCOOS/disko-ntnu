@@ -84,7 +84,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         addObject(m_reportedArea);
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPOIIf)
         {
@@ -96,7 +96,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPOIIf)
         {
@@ -118,7 +118,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
      * Resets correct subclass in case of incorrect changes by application or others.
      * Renumber duplicate numbers
      */
-    public void registerModifiedData(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    public void registerModifiedData(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback, boolean isRollback)
     {
         if (getType() != getTypeBySubclass())
         {
@@ -127,14 +127,14 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         if (getPlannedArea() != null)
         {
             ((AreaImpl) getPlannedArea()).registerModifiedData(
-            		getPlannedArea(),aMode,updateServer,isLoopback);
+            		getPlannedArea(),aMode,updateServer,isLoopback,isRollback);
         }
         if (getReportedArea() != null)
         {
             ((AreaImpl) getReportedArea()).registerModifiedData(
-            		getReportedArea(),aMode,updateServer,isLoopback);
+            		getReportedArea(),aMode,updateServer,isLoopback,isRollback);
         }
-        super.registerModifiedData(this,aMode,updateServer,isLoopback);
+        super.registerModifiedData(this,aMode,updateServer,isLoopback,isRollback);
     }
 
     public static AssignmentImpl implementationOf(IAssignmentIf anInterface) throws MsoCastException
@@ -369,7 +369,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public Collection<IEquipmentIf> getAssignmentEquipmentItems()
     {
-        return m_assignmentEquipment.getItems();
+        return m_assignmentEquipment.getObjects();
     }
 
     public void addAssignmentFinding(IPOIIf anIPOIIf)
@@ -389,7 +389,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public Collection<IPOIIf> getAssignmentFindingsItems()
     {
-        return m_assignmentFindings.getItems();
+        return m_assignmentFindings.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------

@@ -133,7 +133,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		addObject(m_track);
 	}
 
-	public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+	public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
@@ -145,7 +145,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 	}
 
-	public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+	public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
@@ -167,13 +167,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	 * Renumber duplicate numbers
 	 */
 	@Override
-	protected void registerModifiedData(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
+	protected void registerModifiedData(IMsoDataStateIf source, UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
 	{
 		if (getType() != getTypeBySubclass())
 		{
 			setType(getTypeBySubclass());
 		}
-		super.registerModifiedData(source,aMode,updateServer,isLoopback);
+		super.registerModifiedData(source,aMode,notifyServer,isLoopback,isRollback);
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -491,7 +491,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public Collection<IAssignmentIf> getUnitAssignmentsItems()
 	{
-		return m_unitAssignments.getItems();
+		return m_unitAssignments.getObjects();
 	}
 
 	public void addUnitPersonnel(IPersonnelIf anPersonnel)
@@ -523,7 +523,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public Collection<IPersonnelIf> getUnitPersonnelItems()
 	{
-		return m_unitPersonnel.getItems();
+		return m_unitPersonnel.getObjects();
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -620,7 +620,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		ArrayList<IHierarchicalUnitIf> resultList = new ArrayList<IHierarchicalUnitIf>();
 		IUnitListIf mainList = Application.getInstance().getMsoModel().getMsoManager().getCmdPost().getUnitList();
-		for (IUnitIf u : mainList.getItems())
+		for (IUnitIf u : mainList.getObjects())
 		{
 			if (u.getSuperiorUnit() == aUnit)
 			{

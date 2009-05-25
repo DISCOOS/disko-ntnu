@@ -25,7 +25,7 @@ import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.model.FileTreeModel;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -44,7 +44,7 @@ public class ETEPanel extends JPanel
 	private static final String CONTROL_CAPTION = "ETE - <b>Kontrollpanel</b> (%s)";
 
 	private TogglePanel m_etePanel;
-	private FieldsPanel m_etePropPanel;
+	private FieldPane m_etePropPanel;
 	private DTGField m_startedTimeAttr;
 	private TextField m_effortTimeAttr;
 	private TextField m_avgEstTimeAttr;
@@ -221,11 +221,11 @@ public class ETEPanel extends JPanel
 		return m_stopButton;
 	}
 
-	private FieldsPanel getEtePropPanel()
+	private FieldPane getEtePropPanel()
     {
         if (m_etePropPanel == null)
         {
-        	m_etePropPanel = new FieldsPanel("","",false,false);
+        	m_etePropPanel = new FieldPane("","",false,false);
         	m_etePropPanel.setHeaderVisible(false);
         	m_etePropPanel.setBorderVisible(false);
         	m_etePropPanel.setNotScrollBars();
@@ -443,7 +443,7 @@ public class ETEPanel extends JPanel
 		 */
 		Work(int task) throws Exception {
 			// forward
-			super(0,true,false,ThreadType.WORK_ON_LOOP,"Vent litt",500,true,false);
+			super(NORMAL_PRIORITY,true,false,ThreadType.WORK_ON_LOOP,"Vent litt",500,true,false);
 			// prepare
 			m_task = task;
 		}

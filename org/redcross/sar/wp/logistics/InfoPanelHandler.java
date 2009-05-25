@@ -107,7 +107,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 		for(MsoEvent.Update e : events.getEvents(myInterests))
 		{
 			// consume loopback updates
-			if(!e.isLoopback())
+			if(!e.isLoopbackMode())
 			{
 		        if (ASSIGNMENT_PANEL_NAME.equals(m_displayedPanelName))
 		        {

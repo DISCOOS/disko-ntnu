@@ -3,14 +3,14 @@ package org.redcross.sar.wp.unit;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 import java.util.EnumSet;
 import java.util.ResourceBundle;
@@ -33,7 +33,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 
 	private IPersonnelIf m_currentPersonnel;
 
-	private FieldsPanel m_infoPanel;
+	private FieldPane m_infoPanel;
 	private TextField m_addressTextField;
 	private TextField m_postAreaTextField;
 	private TextField m_postNumberTextField;
@@ -49,7 +49,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		initialize();
 		// add listeners
 		wp.getMsoEventManager().addClientUpdateListener(this);
-		getInfoPanel().addWorkFlowListener(wp);
+		getInfoPanel().addFlowListener(wp);
 	}
 
 	private void initialize()
@@ -62,11 +62,11 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 
 	}
 	
-	private FieldsPanel getInfoPanel() {
+	private FieldPane getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new FieldsPanel(m_resources.getString("PersonnelInfo.text"),"",false,false);
+			m_infoPanel = new FieldPane(m_resources.getString("PersonnelInfo.text"),"",false,false);
 			m_infoPanel.setColumns(3);
-			m_infoPanel.setBatchMode(false);
+			m_infoPanel.setBufferMode(false);
 			m_infoPanel.setHeaderVisible(false);
 			m_infoPanel.setPreferredExpandedHeight(275);
 			m_infoPanel.addButton(getCenterAtButton(), "centerat");
@@ -94,9 +94,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	private TextField getAddressTextField() {
 		if(m_addressTextField==null) {
 			m_addressTextField = new TextField("address",m_resources.getString("Address.text"),true);
-			m_addressTextField.addWorkFlowListener(new IWorkFlowListener() {
-				public void onFlowPerformed(WorkFlowEvent e) {
-					if(isSet()&&m_addressTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+			m_addressTextField.addFlowListener(new IFlowListener() {
+				public void onFlowPerformed(FlowEvent e) {
+					if(isSet()&&m_addressTextField.isChangeable()&&e.isChange()&&e.isSourceComponent()) {
 						setAddress();
 					}					
 				}				
@@ -108,9 +108,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	private TextField getPostAreaTextField() {
 		if(m_postAreaTextField==null) {
 			m_postAreaTextField = new TextField("postarea",m_resources.getString("PostArea.text"),true);  
-			m_postAreaTextField.addWorkFlowListener(new IWorkFlowListener() {
-				public void onFlowPerformed(WorkFlowEvent e) {
-					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+			m_postAreaTextField.addFlowListener(new IFlowListener() {
+				public void onFlowPerformed(FlowEvent e) {
+					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isSourceComponent()) {
 						setAddress();
 					}					
 				}
@@ -122,9 +122,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	private TextField getPostNumberTextField() {
 		if(m_postNumberTextField==null) {
 			m_postNumberTextField = new TextField("postnumber",m_resources.getString("PostNumber.text"),true);    		
-			m_postNumberTextField.addWorkFlowListener(new IWorkFlowListener() {
-				public void onFlowPerformed(WorkFlowEvent e) {
-					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isWorkDoneByAwtComponent()) {
+			m_postNumberTextField.addFlowListener(new IFlowListener() {
+				public void onFlowPerformed(FlowEvent e) {
+					if(m_postAreaTextField.isChangeable()&&e.isChange()&&e.isSourceComponent()) {
 						setAddress();
 					}					
 				}
@@ -201,7 +201,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		m_currentPersonnel.suspendClientUpdate();
 		m_currentPersonnel.setAddress(getAddress());
 		m_currentPersonnel.resumeClientUpdate(true);
-		m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentPersonnel,WorkFlowEvent.EVENT_CHANGE));
+		m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 	}
 	
 	public EnumSet<MsoClassCode> getInterests() {
@@ -222,7 +222,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
 
 				// consume loopback updates
-				if(!e.isLoopback())
+				if(!e.isLoopbackMode())
 				{
 					// get personnel reference
 					IPersonnelIf personnel = 

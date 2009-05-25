@@ -429,7 +429,7 @@ public class MapUtil {
         if (msoList != null && msoList.size() > 0) {
 			GeometryBag geomBag = new GeometryBag();
 			geomBag.setSpatialReferenceByRef(srs);
-			for(IPOIIf poi : msoList.getItems()) {
+			for(IPOIIf poi : msoList.getObjects()) {
 				// get object
 				IGeometry geo = getEsriPoint(poi.getPosition().getGeoPos(), srs);
 				// add?
@@ -447,7 +447,7 @@ public class MapUtil {
         if (msoList != null && msoList.size() > 0) {
 			GeometryBag geomBag = new GeometryBag();
 			geomBag.setSpatialReferenceByRef(srs);
-			for(IMsoObjectIf mso : msoList.getItems()) {
+			for(IMsoObjectIf mso : msoList.getObjects()) {
 				// valid class type?
 				if (code == null || mso.getMsoClassCode().equals(code)) {
 					// initialize
@@ -1797,7 +1797,8 @@ public class MapUtil {
 		IEnvelope frame = null;
 		// get geometry bag of all lines
 		IGeometry geoArea = getEsriGeometryBag(
-				area.getAreaGeodata().getClone(),
+				//area.getAreaGeodata().getClone(),
+				area.getAreaGeodata(),
         		MsoClassCode.CLASSCODE_ROUTE,
         		map.getSpatialReference());
 		// get geometry bag of all points

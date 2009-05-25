@@ -479,7 +479,7 @@ public class SnapAdapter {
 
 		public SnapWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_LOOP,
+			super(HIGH_PRIORITY,false,true,ThreadType.WORK_ON_LOOP,
 					"Oppdaterer snapping buffer", 100,notify,false);
 			// prepare
 			this.extent = extent;
@@ -532,10 +532,7 @@ public class SnapAdapter {
 		}
 
 		@Override
-		public void merge(Map work) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void merge(Map work) { /*NOP*/ }
 	}
 
 	/*=============================================================

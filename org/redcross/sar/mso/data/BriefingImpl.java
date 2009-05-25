@@ -67,7 +67,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         addObject(m_briefingHypothesis);
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IForecastIf)
         {
@@ -83,7 +83,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IForecastIf)
         {
@@ -441,7 +441,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
 
     public Collection<IForecastIf> getBriefingForecastsItems()
     {
-        return m_briefingForecasts.getItems();
+        return m_briefingForecasts.getObjects();
     }
 
     public void addBriefingEnvironment(IEnvironmentIf anIEnvironmentIf)
@@ -461,7 +461,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
 
     public Collection<IEnvironmentIf> getBriefingEnvironmentsItems()
     {
-        return m_briefingEnvironments.getItems();
+        return m_briefingEnvironments.getObjects();
     }
 
     public void addBriefingSubject(ISubjectIf anISubjectIf)
@@ -481,7 +481,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
 
     public Collection<ISubjectIf> getBriefingSubjectsItems()
     {
-        return m_briefingSubjects.getItems();
+        return m_briefingSubjects.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------

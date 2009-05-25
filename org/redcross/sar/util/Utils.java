@@ -57,6 +57,7 @@ import org.xml.sax.SAXException;
  * @author geira
  *
  */
+@SuppressWarnings("unchecked")
 public class Utils {
 
 	public final static String DATA_STRING_FORMAT = "yyyy.MM.dd HH:mm:ss Z";

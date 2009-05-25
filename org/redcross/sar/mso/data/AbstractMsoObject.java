@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -19,11 +20,16 @@ import no.cmr.tools.Log;
 import org.apache.log4j.Logger;
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
+import org.redcross.sar.mso.ChangeImpl;
 import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IChangeSourceIf;
 import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IChangeIf.ChangeType;
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
+import org.redcross.sar.mso.IChangeIf.IChangeReferenceIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
 import org.redcross.sar.mso.data.AttributeImpl.MsoInteger;
@@ -36,6 +42,8 @@ import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 import org.redcross.sar.util.mso.*;
 
+import com.esri.arcgis.geoprocessing.tools.analysistools.Update;
+
 /**
  * Base class for all data objects in the MSO data model.
  * Has double bookkeeping of all attributes, both in a HashMap (for name lookup) and an ArrayList (for indexing)
@@ -43,11 +51,9 @@ import org.redcross.sar.util.mso.*;
 @SuppressWarnings("unchecked")
 public abstract class AbstractMsoObject implements IMsoObjectIf
 {
-	
 	/**
 	 * The logger object
-	 */
-	
+	 */	
     private static final Logger m_logger = Logger.getLogger(AbstractMsoObject.class);
 	
     /**
@@ -92,22 +98,39 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private final Map<String, MsoListImpl> m_referenceLists = new LinkedHashMap<String, MsoListImpl>();
 
     /**
-     * Mask for suspended client update events
+     * TODO: Explain...
      */
-    private int m_clientUpdateMask = 0;
+    private final Map<IMsoDataStateIf,List<ClientUpdate>> m_clientUpdateBuffer = new HashMap<IMsoDataStateIf, List<ClientUpdate>>();
+    
+    /**
+     * Mask for suspended client update events. This member buffers 
+     * the union of all update masks registered when 
+     * client updates notifications are suspended
+     */
+    //private Map<IMsoDataStateIf,Integer> m_sClientUpdateMask = new HashMap<IMsoDataStateIf, Integer>();
+    
+    /**
+     * Dominant update mode, where LOCAL_UPDATE_MODE overwrites all 
+     * other modes. This member buffers the union of all update modes 
+     * registered when client updates notifications are suspended
+     */
+    //private Map<IMsoDataStateIf,UpdateMode> m_sUpdateMode = new HashMap<IMsoDataStateIf, UpdateMode>();
+    
 
     /**
-     * Dominant update mode, where LOCAL_UPDATE_MODE overwrites all other modes
+     * Loopback flag. Should only be <code>true</code> if all buffered
+     * update events registered, when client updates notifications are
+     * suspended, are loopbacks.
      */
-    private UpdateMode m_updateMode = null;
+    //private Map<IMsoDataStateIf,Integer> m_sIsLoopback = new HashMap<IMsoDataStateIf, Integer>();
 
     /**
-     * Loopback flag, should only be <code>true</code> if all registered
-     * updates are a result of change in SERVER VALUE that results in
-     * SERVER VALUE == LOCAL VALUE.
+     * Rollback flag. Should only be <code>true</code> if all buffered 
+     * update events registered, when client update notifications are
+     * suspended, are rollbacks.
      */
-    private boolean m_isLoopback = true;
-
+    //private Map<IMsoDataStateIf,Integer> m_sIsRollback = new HashMap<IMsoDataStateIf, Integer>();
+    
     /**
      * Mask for suspended derived update events for client
      */
@@ -146,7 +169,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     /**
      * Flag indicating that the object has been successfully deleted
      */
-    private boolean m_hasBeenDeleted;
+    private boolean m_isDeleted;
 
 	/*-------------------------------------------------------------------------------------------
 	 * Constructors
@@ -259,7 +282,95 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
         return m_MsoObjectId.isCreated();
     }
+    
+    @Override
+	public boolean isLocalState() {
+    	return isState(ModificationState.STATE_LOCAL);
+	}
 
+	@Override
+	public boolean isRemoteState() {
+		return isState(ModificationState.STATE_REMOTE);
+	}
+
+	@Override
+	public boolean isConflictState() {
+		return isState(ModificationState.STATE_CONFLICT);
+	}
+	
+	@Override
+	public boolean isLoopbackMode() {
+        for (AttributeImpl attr : m_attributeList)
+        {
+            if(!attr.isLoopbackMode()) return false;
+        }
+        for (MsoListImpl list : m_referenceLists.values())
+        {
+            if(!list.isLoopbackMode()) return false;
+        }
+
+        for (MsoReferenceImpl reference : m_referenceObjects.values())
+        {
+            if(!reference.isLoopbackMode()) return false;
+        }				
+        return true;
+	}
+	
+	@Override
+	public boolean isRollbackMode() {
+        for (AttributeImpl attr : m_attributeList)
+        {
+            if(!attr.isRollbackMode()) return false;
+        }
+        for (MsoListImpl list : m_referenceLists.values())
+        {
+            if(!list.isRollbackMode()) return false;
+        }
+
+        for (MsoReferenceImpl reference : m_referenceObjects.values())
+        {
+            if(!reference.isRollbackMode()) return false;
+        }				
+        return true;		
+	}
+	
+
+	@Override
+	public boolean isMixedState() {
+		int count = 0;
+		count = isLocalState()?count+1:count;
+		count = isRemoteState()?count+1:count;
+		count = isConflictState()?count+1:count;  
+		return count>1;
+	}
+	
+	private boolean isState(ModificationState state) {
+		
+        for (AttributeImpl attr : m_attributeList)
+        {
+            if(!attr.isLocalState()) return false;
+        }
+        for (MsoListImpl list : m_referenceLists.values())
+        {
+            if(!list.isLocalState()) return false;
+        }
+
+        for (MsoReferenceImpl reference : m_referenceObjects.values())
+        {
+            if(!reference.isLocalState()) return false;
+        }				
+        return true;
+	}
+	
+    public boolean isChanged() {
+    	return m_msoModel.getChanges(this)!=null;
+    }
+    
+    public boolean isChangedSince(int changeCount)
+    {
+        return (m_changeCount>=changeCount);
+    }
+    
     public int getChangeCount()
     {
         return m_changeCount;
@@ -275,7 +386,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return Internationalization.translate(getMsoClassCode()) + " " + m_MsoObjectId.getId();
     }
 
-    public void addDeleteListener(IMsoObjectHolderIf aHolder)
+    public void addMsoObjectHolder(IMsoObjectHolderIf aHolder)
     {
     	// only add once
     	if(!m_objectHolders.contains(aHolder))
@@ -284,7 +395,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         //System.out.println("Add delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
     }
 
-    public void removeDeleteListener(IMsoObjectHolderIf aHolder)
+    public void removeMsoObjectHolder(IMsoObjectHolderIf aHolder)
     {
     	// only remove if exists
     	if(m_objectHolders.contains(aHolder))
@@ -293,37 +404,17 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         //System.out.println("Remove delete listener from: " + this + " to: " + aHolder + ", count = " + m_objectHolders.size());
     }
 
-    public int listenerCount()
+    public int getMsoObjectHolderCount()
     {
         return m_objectHolders.size();
     }
 
-    public boolean delete()
+    public boolean isDeleted()
     {
-        if (canDelete())
-        {
-        	suspendClientUpdate();
-            for (MsoListImpl list : m_referenceLists.values())
-            {
-                list.deleteAll();
-            }
-
-            for (MsoReferenceImpl reference : m_referenceObjects.values())
-            {
-                if (reference.getReference() != null)
-                {
-                    System.out.println("Delete reference from " + this + " to " + reference.getReference());
-                    reference.setReference(null);
-                }
-            }
-            doDelete();
-            resumeClientUpdate(true);
-            return true;
-        }
-        return false;
+        return m_isDeleted;
     }
 
-    public boolean canDelete()
+    public boolean isDeletable()
     {
 
     	// In LOOPBACK and SERVER MODE, delete is always allowed. Only in
@@ -336,13 +427,95 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	// all object holders must allow their relation to this object to be deleted.
         for (IMsoObjectHolderIf holder : this.m_objectHolders)
         {
-            if(!holder.canDeleteReference(this)) return false;
+            if(!holder.isReferenceDeletable(this)) return false;
         }
         // all object holders allow a deletion
         return true;
     }
+    
+    public boolean delete()
+    {
+        if (isDeletable())
+        {
+        	suspendClientUpdate();
+            for (MsoListImpl list : m_referenceLists.values())
+            {
+                list.removeAll();
+            }
 
-    public List<IMsoObjectHolderIf<IMsoObjectIf>> deletePreventedBy()
+            for (MsoReferenceImpl reference : m_referenceObjects.values())
+            {
+                if (reference.getReference() != null)
+                {
+                    System.out.println("Delete reference from " + this + " to " + reference.getReference());
+                    reference.setReference(null);
+                }
+            }
+            destroy();
+            resumeClientUpdate(true);
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * <b>This method is intended for internal use only!</b></p>
+     *
+     * <b>IMPORTANT! </b> Use <code>delete()</code> to delete a object. </p>
+     * 
+     * The method only performs a delete on the object and
+     * notifies any object holders of this delete. It does not
+     * delete owned objects (in lists), or references from this object to
+     * other objects explicitly (recursive delete is not executed).
+     * If this method is called explicitly, the result is a memory leak
+     * because objects in lists and any object references may still point 
+     * to this object. Hence, the object will not be garbage collected.</p>
+     * 
+     */
+    @SuppressWarnings("unchecked")
+	public void destroy()
+    {
+        /* get dirty flag (requires server update notification 
+         * if true and update mode is LOCAL_UPDATE_MODE)*/
+        boolean isDirty = !m_isDeleted;
+        
+        /* Get loopback flag. This test is based on the assumption 
+         * that an invocation of destroy() only occurs once in 
+         * LOCAL_UPDATE_MODE, and once is REMOVE_UPDATE_MODE, when
+         * the object is deleted locally. It is implicitly assumed 
+         * that destroy is not called any more after this. */
+        boolean isLoopback = m_isDeleted && !m_msoModel.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+        
+        /* Get rollback flag. Delete results in a rollback 
+         * mode if, and only, the object is not created (the
+         * object does not exist remotely). */
+        boolean isRollback = !m_isDeleted && !m_MsoObjectId.isCreated() && m_msoModel.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+
+        // set as deleted
+        m_isDeleted = true;
+        
+        // suspend update notifications
+    	suspendClientUpdate();
+    	
+    	// notify object holders
+        System.out.println("Notify holders that references to " + this + " should be deleted");
+        while (m_objectHolders.size() > 0)
+        {
+            Iterator<IMsoObjectHolderIf> iterator = m_objectHolders.iterator();
+            IMsoObjectHolderIf myHolder = iterator.next();
+            myHolder.deleteReference(this);
+        }
+        
+        // notify client update listeners
+        registerDeletedObject(this,m_msoModel.getUpdateMode(),isDirty,isLoopback,isRollback);
+        
+        // resume update notifications
+    	resumeClientUpdate(true);
+    	
+    }
+    
+    public List<IMsoObjectHolderIf<IMsoObjectIf>> getUndeleteableReferenceHolders()
     {
     	// create list
     	List<IMsoObjectHolderIf<IMsoObjectIf>> list =
@@ -350,49 +523,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	// all object holders must allow their relation to this object to be deleted.
         for (IMsoObjectHolderIf holder : this.m_objectHolders)
         {
-            if(!holder.canDeleteReference(this)) list.add(holder);
+            if(!holder.isReferenceDeletable(this)) list.add(holder);
         }
 
         // finished
         return list;
-    }
-
-    public boolean hasBeenDeleted()
-    {
-        return m_hasBeenDeleted;
-    }
-
-    /**
-     * This method is intended for internal use only!<p>
-     *
-     * The method only performs a delete on the object and
-     * notifies any object holders (lists) of this delete. It does not
-     * delete owned objects (in lists), or references from this object to
-     * other objects explicitly (recursive delete is not executed).
-     * The result is a memory leak because objects in lists and
-     * and any object references may still point to this object. Hence,
-     * the object will not be garbage collected.<p>
-     * Use <code>delete()</code> to delete a object.
-     */
-    @SuppressWarnings("unchecked")
-	public void doDelete()
-    {
-    	suspendClientUpdate();
-        System.out.println("Deleting " + this);
-        while (m_objectHolders.size() > 0)
-        {
-            Iterator<IMsoObjectHolderIf> iterator = m_objectHolders.iterator();
-            IMsoObjectHolderIf myHolder = iterator.next();
-            myHolder.doDeleteReference(this);
-        }
-        // get flags
-        boolean isChanged = !m_hasBeenDeleted;
-        boolean isLoopback = m_hasBeenDeleted && !m_msoModel.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
-        // set as deleted
-        m_hasBeenDeleted = true;
-        // notify
-        registerDeletedObject(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
-    	resumeClientUpdate(true);
     }
 
     public boolean isSetup()
@@ -727,20 +862,34 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         attr.set(aValue);
     }
 
+	@Override
+	public IMsoObjectHolderIf<?> getObjectHolder(IMsoObjectIf msoObj) {
+		for(MsoReferenceImpl it : m_referenceObjects.values()) {
+			IMsoObjectIf refObj = it.getReference();
+			if(refObj!=null&&refObj.equals(msoObj)) return it;
+		}
+		for(MsoListImpl it : m_referenceLists.values()) {
+			if(it.contains(msoObj)) return it;
+		}
+		// not contained by this object
+		return null;
+	}
 
-	public Map<String, IMsoObjectIf> getObjectReferences()
-    {
-        return new LinkedHashMap(m_referenceObjects);
-    }
-    
-    /**
-     * Set or reset a relation between this and another 
-     * IMsoObjectIf (one-to-one relation) 
-     * @param anObject - the object set a relation to, or relation to set to <code>null</code>  
-     * @param aReferenceName - the name of the relation
-     * @throws InvalidReferenceException is thrown if the reference does not 
-     * exist, or if the relation is required (cardinality is greater than <code>0</code>) 
-     */
+	@Override
+	public boolean contains(IMsoObjectIf msoObj) {
+		return getObjectHolder(msoObj)!=null;
+	}
+	
+	@Override
+	public IMsoReferenceIf<?> getReference(IMsoObjectIf msoObj) {
+		IMsoObjectHolderIf<?> holder = getObjectHolder(msoObj);
+		if(holder instanceof IMsoReferenceIf<?>) {
+			return (IMsoReferenceIf<?>)holder;
+		}
+		return ((IMsoListIf)holder).getReference(msoObj);
+	}
+
+	@Override
 	public void setObjectReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException {
         IMsoReferenceIf refObj = m_referenceObjects.get(aReferenceName.toLowerCase());
         if (refObj == null)
@@ -753,6 +902,46 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 	}
 
+    public Map<String, List<IMsoObjectIf>> getObjects() {
+    	int size = m_referenceObjects.size()+m_referenceLists.size();
+    	Map<String, List<IMsoObjectIf>> map = new LinkedHashMap<String, List<IMsoObjectIf>>(size);
+    	for(String it : m_referenceObjects.keySet()) {
+    		List<IMsoObjectIf> list = new Vector<IMsoObjectIf>(1);
+    		list.add(m_referenceObjects.get(it).getReference());
+    		map.put(it, list);
+    	}
+    	for(String it : m_referenceLists.keySet()) {
+    		List<IMsoObjectIf> list = new Vector<IMsoObjectIf>(1);
+    		list.addAll(m_referenceLists.get(it).getObjects());
+    		map.put(it, list);
+    	}
+    	return map;
+    }
+	
+	public Map<String, IMsoReferenceIf<?>> getObjectReferences()
+    {
+        return new LinkedHashMap(m_referenceObjects);
+    }
+    
+	@Override
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException {
+    	IMsoListIf list = m_referenceLists.get(aReferenceListName);
+    	if(list==null) throw new InvalidReferenceException("List reference " + aReferenceListName + " does not exist");
+    	if(!list.getObjectClass().isInstance(anObject)) throw new InvalidReferenceException("The list object class and IMsoObjectIf object class does not match (" + anObject + ")");
+    	if(list.getCardinality()>=list.size()) throw new InvalidReferenceException("Relation can not be added because the number of items in the list size is equal to or greater than the cardinality");
+    	if(!list.add(anObject)) throw new InvalidReferenceException("An reference to object " + anObject + " already exist or the object is null or not properly initialized");
+    }
+
+    @Override
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException {
+    	IMsoListIf list = m_referenceLists.get(aReferenceListName);
+    	if(list==null) throw new InvalidReferenceException("List reference " + aReferenceListName + " does not exist");
+    	if(!list.getObjectClass().isInstance(anObject)) throw new InvalidReferenceException("The list object class and IMsoObjectIf object class does not match (" + anObject + ")");
+    	if(list.getCardinality()<=list.size()) throw new InvalidReferenceException("Relation can not be removed because the number of items in the list size equal to or is less than the cardinality");
+    	if(!list.remove(anObject)) throw new InvalidReferenceException("A reference to object " + anObject + " does not exist, or the reference is not deletable");   	
+    }    
+    
+    @Override
     public Map<String, IMsoListIf<IMsoObjectIf>> getListReferences()
     {
         return new LinkedHashMap(m_referenceLists);
@@ -783,48 +972,26 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	for(String it : m_referenceLists.keySet())
     	{
     		MsoListImpl<IMsoObjectIf> list = m_referenceLists.get(it);
-    		IMsoObjectIf msoObj = list.getItem();
+    		IMsoObjectIf msoObj = list.getHeadObject();
     		if(msoObj!=null && msoObj.getMsoClassCode().equals(c)) map.put(it,list);
     	}
         return map;
     }
-    
-    /**
-     * Add a reference to an one-to-many relation in this IMsoObjectIf object.
-     * 
-     * @param anObject The object to add a reference to
-     * @param aReferenceName The reference list
-     * @throws InvalidReferenceException is thrown if the list reference does not 
-     * exist, if the list object class and IMsoObjectIf object class does not 
-     * match, if the list size is less or equal to the cardinality, 
-     * or if an reference to the IMsoObjectIf object already exists, or the object is 
-     * null or not properly initialized 
-     */
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException {
-    	IMsoListIf list = m_referenceLists.get(aReferenceName);
-    	if(list==null) throw new InvalidReferenceException("List reference " + aReferenceName + " does not exist");
-    	if(!list.getObjectClass().isInstance(anObject)) throw new InvalidReferenceException("The list object class and IMsoObjectIf object class does not match (" + anObject + ")");
-    	if(list.getCardinality()>=list.size()) throw new InvalidReferenceException("Relation can not be added because the number of items in the list size is equal to or greater than the cardinality");
-    	if(!list.add(anObject)) throw new InvalidReferenceException("An reference to object " + anObject + " already exist or the object is null or not properly initialized");
-    }
 
     /**
-     * Remove a reference from a on-to-many relation in this IMsoObjectIf object.
      * 
-     * @param anObject The object to remove a reference from
-     * @param aReferenceName The reference list
-     * @throws InvalidReferenceException is thrown if the reference does not 
-     * exist, if the list object class and IMsoObjectIf object class does not 
-     * match, if the list size is less or equal to the cardinality, or if 
-     * an reference to IMsoObjectIf object does not exist, or is not deleteable 
+     * Perform commit on the attribute
+     *
+     * @return True if something has been done.
+     * @throws TransactionException
      */
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException {
-    	IMsoListIf list = m_referenceLists.get(aReferenceName);
-    	if(list==null) throw new InvalidReferenceException("List reference " + aReferenceName + " does not exist");
-    	if(!list.getObjectClass().isInstance(anObject)) throw new InvalidReferenceException("The list object class and IMsoObjectIf object class does not match (" + anObject + ")");
-    	if(list.getCardinality()<=list.size()) throw new InvalidReferenceException("Relation can not be removed because the number of items in the list size equal to or is less than the cardinality");
-    	if(!list.remove(anObject)) throw new InvalidReferenceException("A reference to object " + anObject + " does not exist, or the reference is not deletable");   	
-    }
+    public boolean commit() throws TransactionException {
+    	IChangeSourceIf changes = m_msoModel.getChanges(this);
+    	if(changes!=null) {
+    		m_msoModel.commit(changes);
+    	}
+    	return false;
+    }    
     
     /**
      * Rollback local changes. Generates client update event.
@@ -832,78 +999,81 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     @SuppressWarnings("unchecked")
     public void rollback()
     {
-        m_hasBeenDeleted = false;
-        boolean dataModified = false;
+    	// reset deleted mode
+        m_isDeleted = false;
+        
+        // loop over all attributes
         for (AttributeImpl attr : m_attributeList)
         {
-            dataModified |= attr.rollback();
+            attr.rollback();
         }
-        if (dataModified)
+        
+        // loop over all (one-to-one) object references
+        for (MsoReferenceImpl reference : m_referenceObjects.values())
         {
-            registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
+            reference.rollback();
         }
-
+        
+        // loop over all (one-to-many) list references
         for (MsoListImpl list : m_referenceLists.values())
         {
             list.rollback();
         }
 
-        for (MsoReferenceImpl reference : m_referenceObjects.values())
-        {
-            reference.rollback();
-        }
     }
     
-    /**
-     * Rollback changes in supplied attributes in this object. Generates a client update event.
-     * @param attrs - the attributes to rollback changes in
-     */    
-    public void rollback(List<IMsoAttributeIf<?>> attrs)
+    public void rollback(List<IChangeIf> objects)
     {
-        m_hasBeenDeleted = false;
-        boolean dataModified = false;
-        for (IMsoAttributeIf attr : attrs)
+    	// reset flags
+        m_isDeleted = false;
+        
+        // initialize residue lists
+        List<String> objectIds = new ArrayList<String>(objects.size());
+        List<IChangeReferenceIf> listRefs = new ArrayList<IChangeReferenceIf>(objects.size());
+        
+        //boolean dataModified = false;
+        for (IChangeIf it : objects)
         {
-        	if(m_attributeList.contains(attr)) {
-        		dataModified |= attr.rollback();
+        	// translate into objects
+        	if(it instanceof IChangeAttributeIf) 
+        	{
+        		IMsoAttributeIf<?> attr = ((IChangeAttributeIf)it).getMsoAttribute();
+	        	if(m_attributeList.contains(attr)) 
+	        	{
+	        		attr.rollback();
+	        	}
+        	} else if(it instanceof IChangeReferenceIf)
+        	{
+        		// get reference change object
+        		IChangeReferenceIf refObj = (IChangeReferenceIf)it;
+        		// get referred object 
+        		IMsoObjectIf msoObj = refObj.getReferredObject();
+        		// get referred object id
+        		String id = msoObj.getObjectId();
+        		// check for existence
+        		if(m_referenceObjects.containsKey(id)) {
+        			objectIds.add(id);
+        		} else {
+        			listRefs.add(refObj);
+        		}
         	}
         }
-        if (dataModified)
+        
+        // loop over found (one-to-one) object references
+        for (String id : objectIds)
         {
-            registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
+        	MsoReferenceImpl reference  = m_referenceObjects.get(id);
+            reference.rollback();
         }
-
-    }
-    
-
-    /**
-     * Post process commit of local changes.
-     * Generates client update event.
-     */
-    @SuppressWarnings("unchecked")
-    public void postProcessCommit()
-    {
-        boolean dataModified = false;
-        for (AttributeImpl attr : m_attributeList)
-        {
-            dataModified |= attr.postProcessCommit();
-        }
-        if (dataModified)
-        {
-            registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
-        }
-
+        
+        // loop over all (one-to-many) list references and forward list residue
         for (MsoListImpl list : m_referenceLists.values())
         {
-            list.postProcessCommit();
+            list.rollback(listRefs);
         }
-
-        for (MsoReferenceImpl reference : m_referenceObjects.values())
-        {
-            reference.postProcessCommit();
-        }
+        
     }
-
+   
     /**
      * Suspend update of client listeners.
      * <p/>
@@ -975,29 +1145,84 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     public IMsoModelIf getModel () {
     	return m_msoModel;
     }
-
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedAttributeReferences()
+    
+    public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes()
     {
-        Vector<IChangeIf.IChangeReferenceIf> retVal = new Vector<IChangeIf.IChangeReferenceIf>();
+        Vector<IChangeIf.IChangeAttributeIf> changes = new Vector<IChangeIf.IChangeAttributeIf>();
+        for (AttributeImpl<?> it : m_attributeList)
+        {
+        	if(it.isChanged()) 
+        	{
+        		changes.add(new ChangeImpl.ChangeAttribute(it,ChangeType.MODIFIED));
+        	}
+        }
+    	return changes;
+    }
+    
+    public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes(Collection<IChangeIf> partial)
+    {
+        Vector<IChangeIf.IChangeAttributeIf> changes = new Vector<IChangeIf.IChangeAttributeIf>();
+        for(IChangeIf it : partial) 
+        {
+        	if(it instanceof IChangeAttributeIf) 
+        	{
+        		IMsoAttributeIf<?> attr = ((IChangeAttributeIf)it).getMsoAttribute();
+        		attr = m_attributeMap.get(attr.getName().toLowerCase());
+        		if(attr.isChanged()) 
+        		{
+	        		changes.add(new ChangeImpl.ChangeAttribute(attr,ChangeType.MODIFIED));
+		        }
+        	}
+        }
+    	return changes;
+    }
+
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedObjectReferences()
+    {
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
         for (MsoReferenceImpl reference : m_referenceObjects.values())
         {
-            retVal.addAll(reference.getChangedReferences());
+            changes.addAll(reference.getChangedReferences());
         }
-        return retVal;
+        return changes;
     }
 
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedObjectReferences(Collection<IChangeIf> partial)
+    {
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
+        for (MsoReferenceImpl reference : m_referenceObjects.values())
+        {
+            changes.addAll(reference.getChangedReferences());
+        }
+        return changes;
+    }
+    
     public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences()
     {
-        Vector<IChangeIf.IChangeReferenceIf> retVal = new Vector<IChangeIf.IChangeReferenceIf>();
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
         for (MsoListImpl list : m_referenceLists.values())
         {
-            if (!list.isMain())
-            {
-                retVal.addAll(list.getCommittableRelations());
-            }
+            //if (!list.isMain())
+            //{
+            changes.addAll(list.getChangedReferences());
+            //}
         }
-        return retVal;
+        return changes;
     }
+    
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences(Collection<IChangeIf> partial)
+    {
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
+        for (MsoListImpl list : m_referenceLists.values())
+        {
+            //if (!list.isMain())
+            //{
+            changes.addAll(list.getChangedReferences(partial));
+            //}
+        }
+        return changes;
+    }
+    
 
 	/* =============================================================
 	 * Comparable implementation
@@ -1173,49 +1398,54 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
-
     protected void incrementChangeCount() {
     	m_changeCount++;
     }
 
-    protected void registerAddedReference(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    protected void registerAddedReference(IMsoDataStateIf source, 
+    		UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
     {
         System.out.println("Raise ADDED_REFERENCE_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.ADDED_REFERENCE_EVENT, updateServer, isLoopback);
+        registerUpdate(source, aMode, 
+        		MsoEventType.ADDED_REFERENCE_EVENT, notifyServer, isLoopback ,isRollback);
     }
 
-    protected void registerRemovedReference(Object source,
-    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    protected void registerRemovedReference(IMsoDataStateIf source,
+    		UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
     {
     	System.out.println("Raise REMOVED_REFERENCE_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.REMOVED_REFERENCE_EVENT, updateServer, isLoopback);
+        registerUpdate(source, aMode, 
+        		MsoEventType.REMOVED_REFERENCE_EVENT, notifyServer, isLoopback, isRollback);
     }
 
-    protected void registerModifiedReference(Object source,
-    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    protected void registerModifiedReference(IMsoDataStateIf source,
+    		UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
     {
     	System.out.println("Raise MODIFIED_REFERENCE_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.MODIFIED_REFERENCE_EVENT, updateServer, isLoopback);
+        registerUpdate(source, aMode, 
+        		MsoEventType.MODIFIED_REFERENCE_EVENT, notifyServer, isLoopback, isRollback);
     }
 
-    protected void registerCreatedObject(Object source, UpdateMode aMode)
+    protected void registerCreatedObject(IMsoDataStateIf source, UpdateMode aMode)
     {
     	System.out.println("Raise CREATED_OBJECT_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.CREATED_OBJECT_EVENT, true, false);
+        registerUpdate(source, aMode, MsoEventType.CREATED_OBJECT_EVENT, true, false, false);
     }
 
-    protected void registerDeletedObject(Object source,
-    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    protected void registerDeletedObject(IMsoDataStateIf source,
+    		UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
     {
         System.out.println("Raise DELETED_OBJECT_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.DELETED_OBJECT_EVENT, updateServer, isLoopback);
+        registerUpdate(source, aMode, 
+        		MsoEventType.DELETED_OBJECT_EVENT, notifyServer, isLoopback, isRollback);
     }
 
-    protected void registerModifiedData(Object source,
-    		UpdateMode aMode, boolean updateServer, boolean isLoopback)
+    protected void registerModifiedData(IMsoDataStateIf source,
+    		UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
     {
         System.out.println("Raise MODIFIED_DATA_EVENT in " + this);
-        registerUpdate(aMode, MsoEventType.MODIFIED_DATA_EVENT, updateServer, isLoopback);
+        registerUpdate(source, aMode, 
+        		MsoEventType.MODIFIED_DATA_EVENT, notifyServer, isLoopback, isRollback);
     }
 
     /**
@@ -1223,11 +1453,11 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
      *
      * @param anEventTypeMask Mask for Type of event for server
      */
-    protected void notifyServerUpdate(UpdateMode aMode, int anEventTypeMask)
+    protected void notifyServerUpdate(UpdateMode aMode, int anEventTypeMask,boolean isLoopbackMode, boolean isRollbackMode)
     {
         if (anEventTypeMask != 0)
         {
-            m_eventManager.notifyServerUpdate(this, aMode, anEventTypeMask);
+            m_eventManager.notifyServerUpdate(this, aMode, anEventTypeMask, isLoopbackMode, isRollbackMode);
         }
     }
 
@@ -1243,23 +1473,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
     }
 
-    /**
-     * Notify client listeners
-     */
-    protected void notifyClientUpdate()
-    {
-        if (m_clientUpdateMask != 0)
-        {
-            m_eventManager.notifyClientUpdate(this, m_updateMode, m_isLoopback, m_clientUpdateMask);
-            m_updateMode = null;
-            m_isLoopback = true;
-            m_clientUpdateMask = 0;
-        }
-    }
-    
-    public boolean isChanged() {
-    	return m_msoModel.getChanges(this)!=null;
-    }
 
     protected void suspendDerivedUpdate()
     {
@@ -1276,17 +1489,19 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	 * Helper methods
 	 *-------------------------------------------------------------------------------------------*/
 
-    private void registerUpdate(UpdateMode aMode, MsoEventType anEventType, boolean updateServer, boolean isLoopback)
+    private void registerUpdate(IMsoDataStateIf source, UpdateMode aUpdateMode, 
+    		MsoEventType anEventType, boolean notifyServer, boolean isLoopbackMode, boolean isRollbackMode)
     {
-
+    	
     	// track change
     	incrementChangeCount();
 
-    	// get update mode
-    	//UpdateMode anUpdateMode = m_msoModel.getUpdateMode();
+    	// get client update mask
         int clientEventTypeMask = anEventType.maskValue();
-        int serverEventTypeMask = (updateServer && aMode == UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
-
+        
+        // get server update mask
+        int serverEventTypeMask = ((notifyServer || isRollbackMode) && aUpdateMode == UpdateMode.LOCAL_UPDATE_MODE) ? clientEventTypeMask : 0;
+        
         // notify derived update listeners
         m_derivedUpdateMask |= clientEventTypeMask;
         if (!m_suspendDerivedUpdate)
@@ -1295,38 +1510,79 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
 
         /* =========================================
-         * Accumulate updates
+         * Create client updates object
          * ========================================= */
-        m_clientUpdateMask |= clientEventTypeMask;
-
-        /* =========================================
-         * Set dominant update mode. If any local
-         * updates occur, this should override any
-         * existing update mode.
-         * ========================================= */
-        m_updateMode = (m_updateMode==null
-        		|| !UpdateMode.LOCAL_UPDATE_MODE.equals(m_updateMode) ? aMode : m_updateMode);
-
-        /* =========================================
-         * Update loopback flag. Is loopback as long
-         * as all updates are loopbacks. Else, flag
-         * is reset.
-         * ========================================= */
-        m_isLoopback = isLoopback && m_isLoopback;
-
-        //if(!m_isLoopback)
-        //	System.out.println("!isLoopback::"+this);
+        // get current list of changes
+        List<ClientUpdate> list = m_clientUpdateBuffer.get(source);
+        if(list==null) 
+        {
+        	list = new ArrayList<ClientUpdate>();
+        	m_clientUpdateBuffer.put(source, list);
+        }
+        // is legal rollback mode?
+        if(isRollbackMode && UpdateMode.LOCAL_UPDATE_MODE.equals(aUpdateMode))
+        {
+        	/* clear current buffer (a valid rollback mode means that
+        	 * local changes made so far is discarded) */
+        	list.clear();        	
+        }
+        // buffer update
+        list.add(new ClientUpdate(source,aUpdateMode,clientEventTypeMask,isLoopbackMode,isRollbackMode));        	
+        
+        // notify server update listeners
+        notifyServerUpdate(aUpdateMode,serverEventTypeMask,isLoopbackMode,isRollbackMode);
 
         // notify client update listeners?
         if (!(m_suspendClientUpdate || m_msoModel.isUpdateSuspended()))
         {
             notifyClientUpdate();
-        }
-
-        // notify server update listeners
-        notifyServerUpdate(aMode,serverEventTypeMask);
+        }  
 
     }
+    
+    /**
+     * Notify client listeners
+     */
+    protected void notifyClientUpdate()
+    {
+    	// initialize
+    	ClientUpdate localUpdate = new ClientUpdate(this,null,0,false,true);
+    	ClientUpdate remoteUpdate = new ClientUpdate(this,null,0,true,false);
+    	
+    	// calculate remote and local client updates 
+    	for(IMsoDataStateIf it : m_clientUpdateBuffer.keySet()) 
+    	{
+    		for(ClientUpdate update : m_clientUpdateBuffer.get(it))
+    		{
+    			if(UpdateMode.REMOTE_UPDATE_MODE.equals(update.m_aUpdateMode)) 
+    			{
+    				remoteUpdate.m_aMask |= update.m_aMask;
+    				remoteUpdate.m_isLoopback &= update.m_isLoopback;
+    			}
+    			else {
+    				localUpdate.m_aMask |= update.m_aMask;
+    				localUpdate.m_isRollback &= update.m_isRollback;
+    			}    			
+    		}
+    	}
+    	
+    	// notify remote update?
+    	if(remoteUpdate.m_aMask!=0) 
+    	{
+	        m_eventManager.notifyClientUpdate(this, 
+	        		UpdateMode.REMOTE_UPDATE_MODE, remoteUpdate.m_aMask, 
+	        		remoteUpdate.m_isLoopback, remoteUpdate.m_isRollback);
+    	}
+    	// notify remote update?
+    	if(localUpdate.m_aMask!=0) 
+    	{
+	        m_eventManager.notifyClientUpdate(this, 
+	        		UpdateMode.LOCAL_UPDATE_MODE, localUpdate.m_aMask, 
+	        		localUpdate.m_isLoopback, localUpdate.m_isRollback);
+    	}
+    	// clear buffered client updates
+        m_clientUpdateBuffer.clear();
+    }    
 
     private boolean isTrue(Object value) {
     	if(value instanceof Boolean)
@@ -1511,6 +1767,22 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 
 	public MsoClassCode getClassCode() {
 		return getMsoClassCode();
+	}
+	
+	private class ClientUpdate {
+		IMsoDataStateIf m_source;
+		int m_aMask;
+		boolean m_isLoopback;
+		boolean m_isRollback;
+		UpdateMode m_aUpdateMode;
+		
+		public ClientUpdate(IMsoDataStateIf source, UpdateMode aUpdateMode, int aMask, boolean isLoopback, boolean isRollback) {
+			m_source = source;
+			m_aMask = aMask;
+			m_isLoopback = isLoopback;
+			m_isRollback = isRollback;
+			m_aUpdateMode = aUpdateMode;
+		}
 	}
 
 }

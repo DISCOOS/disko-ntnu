@@ -188,7 +188,7 @@ public class AssignmentTableModel extends AbstractDsTableModel<IAssignmentIf,Rou
 				}
 				else if (item instanceof IUnitIf) {
 					IUnitIf unit = (IUnitIf)item;
-					found.addAll(unit.getUnitAssignments().getItems());
+					found.addAll(unit.getUnitAssignments().getObjects());
 				}
 				else if (item instanceof IRouteIf) {
 					// cast to IRouteIf

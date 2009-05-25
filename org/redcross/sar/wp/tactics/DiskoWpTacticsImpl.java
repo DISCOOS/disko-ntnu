@@ -50,8 +50,8 @@ import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.WorkPool;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -307,12 +307,10 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// has work pending?
 		if(isChanged()) {
 
-			// loop over all changes
-			for(int i=0;i<m_changeStack.size();i++) {
-				// get mso object
-				IMsoObjectIf msoObj = m_changeStack.get(i).getMsoObject();
+			// loop over all MSO changed by this work process
+			for(IMsoObjectIf msoObj : getChangedMsoObjects()) {
 				// is not deleted
-				if(msoObj!=null && !msoObj.hasBeenDeleted()) {
+				if(msoObj!=null && !msoObj.isDeleted()) {
 					// dispatch current object type
 					if (msoObj instanceof IOperationAreaIf) {
 						// always OK
@@ -365,9 +363,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						}
 					}
 				}
-				// valid state
-				validCount++;
 			}
+			// valid state
+			validCount++;
 		}
 		else {
 			// notify
@@ -474,16 +472,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (missionTextDialog == null) {
 			missionTextDialog = new MissionTextDialog(this);
 			dialogs.add(missionTextDialog);
-			missionTextDialog.addWorkFlowListener(new IWorkFlowListener() {
+			missionTextDialog.addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 					if(e.isFinish() && inferNextElement)
 						getMap().getDrawAdapter().nextElement();
 				}
 
 			});
-			missionTextDialog.addWorkFlowListener(this);
+			missionTextDialog.addFlowListener(this);
 		}
 		return missionTextDialog;
 	}
@@ -492,16 +490,16 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (hypothesesDialog == null) {
 			hypothesesDialog = new HypothesisDialog(this);
 			dialogs.add(hypothesesDialog);
-			hypothesesDialog.addWorkFlowListener(new IWorkFlowListener() {
+			hypothesesDialog.addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 					if(e.isFinish() && inferNextElement)
 						getMap().getDrawAdapter().nextElement();
 				}
 
 			});
-			hypothesesDialog.addWorkFlowListener(this);
+			hypothesesDialog.addFlowListener(this);
 
 		}
 		return hypothesesDialog;
@@ -510,7 +508,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private PriorityDialog getPriorityDialog() {
 		if (priorityDialog == null) {
 			priorityDialog = new PriorityDialog(this);
-			priorityDialog.addWorkFlowListener(this);
+			priorityDialog.addFlowListener(this);
 			dialogs.add(priorityDialog);
 		}
 		return priorityDialog;
@@ -519,7 +517,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private RequirementDialog getRequirementDialog() {
 		if (requirementDialog == null) {
 			requirementDialog = new RequirementDialog(this);
-			requirementDialog.addWorkFlowListener(this);
+			requirementDialog.addFlowListener(this);
 			dialogs.add(requirementDialog);
 		}
 		return requirementDialog;
@@ -529,7 +527,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (estimateDialog == null) {
 			estimateDialog = new EstimateDialog(this);
 			dialogs.add(estimateDialog);
-			estimateDialog.addWorkFlowListener(this);
+			estimateDialog.addFlowListener(this);
 		}
 		return estimateDialog;
 	}
@@ -546,7 +544,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		if (unitSelectionDialog == null) {
 			unitSelectionDialog = new UnitAllocationDialog(this);
 			dialogs.add(unitSelectionDialog);
-			unitSelectionDialog.addWorkFlowListener(this);
+			unitSelectionDialog.addFlowListener(this);
 		}
 		return unitSelectionDialog;
 	}
@@ -554,7 +552,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	private ListDialog getListDialog() {
 		if (listDialog == null) {
 			listDialog = new ListDialog(this);
-			listDialog.addWorkFlowListener(this);
+			listDialog.addFlowListener(this);
 			dialogs.add(listDialog);
 		}
 		return listDialog;
@@ -1029,7 +1027,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		private void commit() {
         	if(isChanged()) {
                 try {
-                    getMsoModel().commit(getMsoModel().getChanges(getUncomittedChanges()));
+                    getMsoModel().commit(getMsoModel().getChanges(getChangedMsoObjects()));
         		} catch (TransactionException ex) {
         			m_logger.error("Failed to commit tactics data",ex);
         		}            
@@ -1039,7 +1037,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		private void rollback() {
         	if(isChanged()) {
                 try {
-                    getMsoModel().rollback(getMsoModel().getChanges(getUncomittedChanges()));
+                    getMsoModel().rollback(getMsoModel().getChanges(getChangedMsoObjects()));
         		} catch (TransactionException ex) {
         			m_logger.error("Failed to roll back tactics data",ex);
         		}            

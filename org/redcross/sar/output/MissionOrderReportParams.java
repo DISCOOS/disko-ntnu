@@ -16,6 +16,7 @@ import org.redcross.sar.util.mso.Position;
 
 import com.esri.arcgis.geometry.ISpatialReference;
 
+@SuppressWarnings("unchecked")
 public class MissionOrderReportParams {
 	public final static String MISSION_TITLE	= "Mission title";
 	public final static String PRIORITY_TEXT = "Priority text";
@@ -80,7 +81,7 @@ public class MissionOrderReportParams {
 	private void makePoiList(ISearchIf search, ISpatialReference srs){
 		IPOIListIf poiList = search.getPlannedArea().getAreaPOIs();
 		int poiCount = poiList.size();
-		Collection poiItems = poiList.getItems();
+		Collection poiItems = poiList.getObjects();
 		Iterator iter = poiItems.iterator();
 		int i = 1; 
 		String poiDesc = new String();

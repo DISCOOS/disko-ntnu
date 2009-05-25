@@ -15,7 +15,7 @@ import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.NumericField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -31,7 +31,7 @@ public class EstimateDialog extends DefaultDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	private FieldsPanel contentPanel = null;
+	private FieldPane contentPanel = null;
 	private NumericField attrEta = null;
 	private TrackDialog trackDialog = null;
 
@@ -81,10 +81,10 @@ public class EstimateDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private FieldsPanel getContentPanel() {
+	private FieldPane getContentPanel() {
 		if (contentPanel == null) {
 			try {
-				contentPanel = new FieldsPanel("Egenskaper",
+				contentPanel = new FieldPane("Egenskaper",
 						"Ingen egenskaper funnet",false,true) {
 
 					private static final long serialVersionUID = 1L;

@@ -12,8 +12,8 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * This interface provides access to properties and methods for
@@ -21,7 +21,7 @@ import org.redcross.sar.work.event.WorkFlowEvent;
  * @author geira
  *
  */
-public interface IDiskoWpModule extends IWorkFlowListener {
+public interface IDiskoWpModule extends IFlowListener {
 
 	/**
 	 * Get the name of this IDiskoWpModule. This name is used to identify
@@ -74,14 +74,13 @@ public interface IDiskoWpModule extends IWorkFlowListener {
 	 * @return true if work process data is changed
 	 */
 	public boolean isChanged();
-
 	
 	/**
-	 * Get list registered IMsoObjectIf changes
+	 * Get list of IMsoObjectIf changes made by this work process.
 	 *  
 	 * @return List of changed IMsoObjectIf objects
 	 */
-	public List<IMsoObjectIf> getUncomittedChanges();
+	public List<IMsoObjectIf> getChangedMsoObjects();
 	
 	/**
 	 * @return true if work process is active
@@ -110,11 +109,11 @@ public interface IDiskoWpModule extends IWorkFlowListener {
      */
     public boolean confirmDeactivate();
 
-	public void addWorkFlowListener(IWorkFlowListener listener);
+	public void addFlowListener(IFlowListener listener);
 	
-	public void onFlowPerformed(WorkFlowEvent e);
+    public void removeFlowListener(IFlowListener listener);
 
-    public void removeWorkFlowListener(IWorkFlowListener listener);
+	public void onFlowPerformed(FlowEvent e);
 
     public void showWarning(String msg);
 

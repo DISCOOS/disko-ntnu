@@ -33,6 +33,7 @@ import com.esri.arcgis.geometry.Point;
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class PositionField extends AbstractField<Position,JTextPane,JTextPane> {
 
 	private static final long serialVersionUID = 1L;
@@ -83,7 +84,7 @@ public class PositionField extends AbstractField<Position,JTextPane,JTextPane> {
 		initialize(null,DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionField(IMsoAttributeIf<?> attribute, String caption,
+	public PositionField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -91,7 +92,7 @@ public class PositionField extends AbstractField<Position,JTextPane,JTextPane> {
 		initialize(getValue(),DEFAULT_FORMAT,isEditable);
 	}
 
-	public PositionField(IMsoAttributeIf<?> attribute, String caption,
+	public PositionField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable, int width, int height, int format) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
@@ -153,14 +154,6 @@ public class PositionField extends AbstractField<Position,JTextPane,JTextPane> {
 			m_viewComponent = createTextPaneComponent("text/html",false);
 		}
 		return m_viewComponent;
-	}
-	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
 	}
 	
 	@Override

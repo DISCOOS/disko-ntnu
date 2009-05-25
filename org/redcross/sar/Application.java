@@ -26,6 +26,7 @@ import org.redcross.sar.mso.DispatcherAdapter;
 import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.SaraDispatcherImpl;
 import org.redcross.sar.output.DiskoReportManager;
+import org.redcross.sar.undo.EditManager;
 import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
@@ -404,6 +405,9 @@ public class Application implements IApplication
 		getKeyEventDispatcher().setEnabled(!(isLoading || isLocked()));
 	}
 
+	public EditManager getEditManager() {
+		return getModuleManager().getEditManager();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.redcross.sar.IApplication#getUIFactory()
@@ -825,6 +829,10 @@ public class Application implements IApplication
 	}
 
 	private void fireBeforeOperationChange() {
+		
+		// clear all changes
+		getEditManager().clearAll(getMsoModel());
+		
 		// notify current work processes?
 		if(m_currentRole!=null)
 			m_currentRole.fireBeforeOperationChange();
@@ -837,11 +845,13 @@ public class Application implements IApplication
 
 		// start executing all pending map work in the background
 		getMapManager().execute(false);
-
+		
 		// notify current work processes?
 		if(m_currentRole!=null) {
 			m_currentRole.fireAfterOperationChange();
 		}
+		
+		
 
 	}
 
@@ -878,7 +888,7 @@ public class Application implements IApplication
 		 */
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,"Henter aksjonsliste",0,true,true);
+			super(REALTIME_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Henter aksjonsliste",0,true,true);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -984,7 +994,7 @@ public class Application implements IApplication
 		 */
 		SetActiveOperation(String opId) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + IDHelper.formatOperationID(opId),0,true,true);
+			super(REALTIME_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + IDHelper.formatOperationID(opId),0,true,true);
 			// save
 			m_opID = opId;
 			// set loading bit
@@ -1096,7 +1106,7 @@ public class Application implements IApplication
 		SetActiveRoleWorker(Hashtable<String, IDiskoRole> roles,
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,"Aktiverer rolle",0,true,true);
+			super(REALTIME_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Aktiverer rolle",0,true,true);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;

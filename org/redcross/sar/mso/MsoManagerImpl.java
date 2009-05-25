@@ -99,7 +99,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     public IOperationIf createOperation(String aNumberPrefix, String aNumber, IMsoObjectIf.IObjectIdIf operationId)
     {
-        if (m_operation != null && !m_operation.hasBeenDeleted())
+        if (m_operation != null && !m_operation.isDeleted())
         {
             throw new DuplicateIdException("An operation already exists");
         }
@@ -123,7 +123,7 @@ public class MsoManagerImpl implements IMsoManagerIf
      * @return <code>true</code> if operation is deleted, <code>false</code> otherwise
      */
     public boolean isOperationDeleted() {
-    	return m_operation!=null && m_operation.hasBeenDeleted();
+    	return m_operation!=null && m_operation.isDeleted();
     }
 
     public IOperationIf getOperation()
@@ -135,7 +135,7 @@ public class MsoManagerImpl implements IMsoManagerIf
     {
     	if(m_operation==null)
         	throw new MsoRuntimeException("No Operation exists.");
-    	if(m_operation.hasBeenDeleted())
+    	if(m_operation.isDeleted())
         	throw new MsoRuntimeException("Operation is deleted.");
     	return m_operation;
     }
@@ -167,7 +167,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     private ICmdPostIf getExistingCmdPost()
     {
-        ICmdPostIf cmdPost = getExistingOperation().getCmdPostList().getItem();
+        ICmdPostIf cmdPost = getExistingOperation().getCmdPostList().getHeadObject();
         if (cmdPost == null)
         {
 
@@ -249,11 +249,6 @@ public class MsoManagerImpl implements IMsoManagerIf
     {
     	if(operationExists())
     		getExistingOperation().resumeClientUpdate(all);
-    }
-
-    protected void postProcessCommit()
-    {
-    	((OperationImpl)getExistingOperation()).postProcessCommit();
     }
 
     protected void rollback() throws TransactionException

@@ -261,7 +261,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL))
 			{
 				// consume loopback updates
-				if(!e.isLoopback())
+				if(!e.isLoopbackMode())
 				{
 					// get personnel reference
 					IPersonnelIf personnel = 

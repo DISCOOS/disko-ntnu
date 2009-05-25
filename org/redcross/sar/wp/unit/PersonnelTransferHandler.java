@@ -3,7 +3,7 @@ package org.redcross.sar.wp.unit;
 import org.apache.log4j.Logger;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.unit.UnitDetailsPanel.UnitPersonnelTableModel;
 
 import javax.swing.JComponent;
@@ -157,7 +157,7 @@ public class PersonnelTransferHandler extends TransferHandler
 						aUnit.addUnitPersonnel(personnel);
 
 						// notify
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,aUnit,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,aUnit,FlowEvent.EVENT_CHANGE));
 						
 					}
 					// refresh table
@@ -209,7 +209,7 @@ public class PersonnelTransferHandler extends TransferHandler
 						aUnit.removeUnitPersonnel(personnel);
 
 						// notify
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,aUnit,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,aUnit,FlowEvent.EVENT_CHANGE));
 
 					}
 					// refresh table

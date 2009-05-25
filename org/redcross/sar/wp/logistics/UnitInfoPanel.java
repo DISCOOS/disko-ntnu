@@ -12,10 +12,10 @@ import javax.swing.JPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.EnumField;
-import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.IField;
 import org.redcross.sar.gui.field.PositionField;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.gui.renderer.MsoListCellRenderer;
@@ -34,7 +34,7 @@ public class UnitInfoPanel extends JPanel
     public final static String UNIT_CHANGE = "UnitChange";
     public final static String UNIT_CENTERAT = "CenterAt";
 
-	private FieldsPanel m_infoPanel;
+	private FieldPane m_infoPanel;
 	private TogglePanel m_membersPanel;
 	private JList m_membersList;
 
@@ -125,9 +125,9 @@ public class UnitInfoPanel extends JPanel
 		add(getMembersPanel());
 	}
 
-	private FieldsPanel getInfoPanel() {
+	private FieldPane getInfoPanel() {
 		if(m_infoPanel==null) {
-			m_infoPanel = new FieldsPanel("","Ingen egenskaper",false,false);
+			m_infoPanel = new FieldPane("","Ingen egenskaper",false,false);
 			m_infoPanel.setColumns(2);
 			m_infoPanel.setPreferredExpandedHeight(200);
 			m_infoPanel.setButtonVisible("toggle", true);
@@ -174,22 +174,22 @@ public class UnitInfoPanel extends JPanel
 		return m_membersList;
 	}
 
-	private IDiskoField createTextField(String name, int index) {
-		IDiskoField attr = new TextField(name,
+	private IField<?> createTextField(String name, int index) {
+		IField<?> attr = new TextField(name,
 				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		return attr;
 	}
 
-	private IDiskoField createEnumField(String name, int index) {
-		IDiskoField attr = new EnumField(name,
+	private IField<?> createEnumField(String name, int index) {
+		IField<?> attr = new EnumField(name,
 				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),false,75,25);
 		attr.setToolTipText(m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".tooltip"));
 		attr.setButtonVisible(false);
 		return attr;
 	}
 
-	private IDiskoField createPositionField(String name, int index) {
+	private IField<?> createPositionField(String name, int index) {
 		PositionField attr = new PositionField(name,
 				m_wp.getBundleText("UnitInfoPanel_hdr_"+index+".text"),
 				false,75,25,1);

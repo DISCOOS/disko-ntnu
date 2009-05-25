@@ -12,6 +12,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoString;
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class TextAreaField extends AbstractField<String,JTextArea,JTextArea> {
 
 	private static final long serialVersionUID = 1L;
@@ -23,13 +24,13 @@ public class TextAreaField extends AbstractField<String,JTextArea,JTextArea> {
 	 *==================================================================
 	 */
 
-	public TextAreaField(IMsoAttributeIf<?> attribute, String caption,
+	public TextAreaField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
 	}
 
-	public TextAreaField(IMsoAttributeIf<?> attribute, String caption,
+	public TextAreaField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
@@ -67,14 +68,6 @@ public class TextAreaField extends AbstractField<String,JTextArea,JTextArea> {
 		return m_viewComponent;
 	}
 	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}
-
 	@Override
 	public String getEditValue() {
 		return getEditComponent().getText();

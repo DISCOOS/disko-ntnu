@@ -44,7 +44,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
     {
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPersonnelIf)
         {
@@ -52,7 +52,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPersonnelIf)
         {
@@ -102,7 +102,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 
 	public Collection<IPersonnelIf> getPersonnelListItems()
 	{
-		return m_personnel.getItems();
+		return m_personnel.getObjects();
 	}
 
     public IMsoManagerIf.MsoClassCode getMsoClassCode()

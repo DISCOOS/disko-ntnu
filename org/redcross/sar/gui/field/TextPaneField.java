@@ -12,6 +12,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoString;
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class TextPaneField extends AbstractField<String,JTextPane,JTextPane> {
 
 	private static final long serialVersionUID = 1L;
@@ -21,13 +22,13 @@ public class TextPaneField extends AbstractField<String,JTextPane,JTextPane> {
 	 *==================================================================
 	 */
 
-	public TextPaneField(IMsoAttributeIf<?> attribute, String caption,
+	public TextPaneField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, isEditable, width, height);
 	}
 
-	public TextPaneField(IMsoAttributeIf<?> attribute, String caption,
+	public TextPaneField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, isEditable);
@@ -64,14 +65,6 @@ public class TextPaneField extends AbstractField<String,JTextPane,JTextPane> {
 		return m_viewComponent;
 	}
 	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}
-
 	@Override
 	public String getEditValue() {
 		return getEditComponent().getText();

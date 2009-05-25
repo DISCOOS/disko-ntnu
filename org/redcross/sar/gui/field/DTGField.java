@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.redcross.sar.gui.field;
 
 import java.util.Calendar;
@@ -13,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.redcross.sar.gui.format.DTGFormatter;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoCalendar;
-import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
 import org.redcross.sar.util.mso.DTG;
 
@@ -88,21 +84,11 @@ public class DTGField extends AbstractField<Calendar,JFormattedTextField,JTextFi
 		}
 		return m_viewComponent;
 	}
-	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}
 
 	@Override
 	public Calendar getEditValue() {
 		// initialize to current attribute value
-		Calendar time = m_attribute!=null
-				? (Calendar)MsoUtils.getAttribValue(m_attribute) : null;
-		// try to get DTG from text field
+		Calendar time = m_model.getValue();
 		try {
 			Object value = getEditComponent().getValue();
 			time = DTG.DTGToCal(m_year,m_month,value!=null?value.toString():"000000");

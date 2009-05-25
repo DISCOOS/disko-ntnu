@@ -132,7 +132,7 @@ public abstract class AbstractMsoObjectLayer<I,E>
 			for(MsoEvent.Update e : events.getEvents(interests)) {
 
 				// consume loopback updates
-				if(!e.isLoopback()) {
+				if(!e.isLoopbackMode()) {
 
 					// get event flags
 					int mask = e.getEventTypeMask();

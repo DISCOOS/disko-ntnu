@@ -101,7 +101,7 @@ public class MsoFeatureBinder
 
 		public FeatureWork(Map<IMsoFeatureLayer, Collection<IMapData>> data) throws Exception {
 			// forward
-			super(m_isActive?1:0,true, false, ThreadType.WORK_ON_LOOP, "", 0, false, false);
+			super(m_isActive?HIGH_PRIORITY:NORMAL_PRIORITY,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false);
 			// prepare
 			m_data = data;
 		}
@@ -131,7 +131,7 @@ public class MsoFeatureBinder
 								// get MSO object
 								IMsoObjectIf msoObj = ((IMsoFeature)it).getMsoObject();
 								// only add features that has a valid MSO object
-								if(msoObj!=null && !msoObj.hasBeenDeleted() && !list.contains(it)) {
+								if(msoObj!=null && !msoObj.isDeleted() && !list.contains(it)) {
 									list.add((IMsoFeature)it);
 								}
 							}
@@ -157,7 +157,7 @@ public class MsoFeatureBinder
 					// get MSO object
 					IMsoObjectIf msoObj = ((IMsoFeature)it).getMsoObject();
 					// add?
-					if(msoObj!=null && msoObj.hasBeenDeleted()) {
+					if(msoObj!=null && msoObj.isDeleted()) {
 						delete.add(((IMsoFeature)it));
 					}
 				}
@@ -194,7 +194,7 @@ public class MsoFeatureBinder
 							// get current MSO object
 							IMsoObjectIf msoObj = ((IMsoFeature)it).getMsoObject();
 							// create?
-							if(msoObj!=null && !msoObj.hasBeenDeleted()) ((IMsoFeature)it).create();
+							if(msoObj!=null && !msoObj.isDeleted()) ((IMsoFeature)it).create();
 						}
 					}
 					// update dirty state

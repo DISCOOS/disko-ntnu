@@ -16,7 +16,7 @@ import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.field.ComboBoxField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
@@ -28,8 +28,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentPriority;
 import org.redcross.sar.mso.data.ISearchIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class RequirementDialog extends DefaultDialog {
@@ -40,7 +40,7 @@ public class RequirementDialog extends DefaultDialog {
 	private JPanel requirementPanel;
 	private BasePanel remarksPanel;
 	private JTextArea remarksTextArea;
-	private FieldsPanel attribsPanel;
+	private FieldPane attribsPanel;
 	private ComboBoxField accuracyCombo;
 	private ComboBoxField priorityCombo;
 	private ComboBoxField personnelCombo;
@@ -207,20 +207,20 @@ public class RequirementDialog extends DefaultDialog {
 	 *
 	 * @return javax.swing.JPanel
 	 */
-	private FieldsPanel getAttribsPanel() {
+	private FieldPane getAttribsPanel() {
 		if (attribsPanel == null) {
 			try {
-				attribsPanel = new FieldsPanel("Egenskaper","",false,false);
+				attribsPanel = new FieldPane("Egenskaper","",false,false);
 				attribsPanel.setScrollBarPolicies(BasePanel.VERTICAL_SCROLLBAR_NEVER,
 						BasePanel.HORIZONTAL_SCROLLBAR_NEVER);
 				attribsPanel.setPreferredSize(new Dimension(200,100));
 				attribsPanel.addField(getPriorityCombo());
 				attribsPanel.addField(getAccuracyCombo());
 				attribsPanel.addField(getPersonnelCombo());
-				attribsPanel.addWorkFlowListener(new IWorkFlowListener() {
+				attribsPanel.addFlowListener(new IFlowListener() {
 
 					@Override
-					public void onFlowPerformed(WorkFlowEvent e) {
+					public void onFlowPerformed(FlowEvent e) {
 						if(e.isChange() || e.isFinish())
 							setDirty(true);
 					}

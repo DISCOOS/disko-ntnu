@@ -5,6 +5,7 @@ import java.util.Comparator;
 
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.AbstractDataModel;
 import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.data.IData;
@@ -15,10 +16,12 @@ import org.redcross.sar.data.Selector;
 import org.redcross.sar.data.event.DataEvent;
 import org.redcross.sar.data.event.IDataListener;
 
-public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTableModel
-							implements IDataModel<S,T> {
+public abstract class AbstractDataTableModel<S,T extends IData> 
+				extends DiskoTableModel
+				implements IDataModel<S,T> {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger m_logger = Logger.getLogger(AbstractDataTableModel.class);
 
 	protected AbstractDataModel<S, T> impl;
 
@@ -387,9 +390,8 @@ public abstract class AbstractDataTableModel<S,T extends IData> extends DiskoTab
 				} catch (IndexOutOfBoundsException ex) {
 					// HACK: Consume errors from DefaultRowSorter
 					fireTableDataChanged();
-					//ex.printStackTrace();
 				} catch (RuntimeException ex) {
-					ex.printStackTrace();
+					m_logger.error("Failed to execute fireTableDataChanged()",ex);
 				}
 			} else {
 				SwingUtilities.invokeLater(new Runnable() {

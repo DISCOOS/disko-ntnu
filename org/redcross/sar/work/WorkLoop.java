@@ -10,7 +10,7 @@ public class WorkLoop extends AbstractWorkLoop {
 	/**
 	 * Current work
 	 */
-	private IWork m_work;
+	private FIFOEntry<IWork> m_current;
 
 	/* =======================================================
 	 * Constructors
@@ -94,8 +94,9 @@ public class WorkLoop extends AbstractWorkLoop {
 
   	public synchronized IWork findWork(long id) {
 		synchronized(m_queue) {
-	  		for(IWork it : m_queue) {
-	  			if(it.getID() == id) return it;
+	  		for(FIFOEntry<IWork> it : m_queue) {
+	  			IWork work = it.getEntry();
+	  			if(work.getID() == id) return work;
 	  		}
 		}
   		return null;
@@ -110,11 +111,11 @@ public class WorkLoop extends AbstractWorkLoop {
 	}
 
 	public synchronized boolean isExecuting(IWork work) {
-		return (m_work == work);
+		return (m_current!=null&&(m_current.getEntry() == work));
 	}
 
 	public boolean isIdle() {
-		return (m_work!=null);
+		return (m_current!=null);
 	}
 
 	public synchronized int doWork() {
@@ -122,16 +123,19 @@ public class WorkLoop extends AbstractWorkLoop {
 		// initialize
 		int count = 0;
 		long duration = 0;
-		Collection<IWork> loops = new Vector<IWork>(100);
+		Collection<FIFOEntry<IWork>> loops = new Vector<FIFOEntry<IWork>>(100);
 
 		// get cycle start time
 		long tic = System.currentTimeMillis();
-
+		
 		// loop until finished or timeout
 		while(duration < m_timeOut && m_queue.peek()!=null) {
 
 			// get head of queue;
-			m_work = m_queue.poll();
+			m_current = m_queue.poll();
+			
+			// get work
+			IWork work = m_current.getEntry();
 
 			try {
 
@@ -144,9 +148,9 @@ public class WorkLoop extends AbstractWorkLoop {
 				 * indicated safe is executed.
 				 *
 				 * ============================================= */
-				if(getThreadType().equals(ThreadType.WORK_ON_SAFE) || m_work.isSafe()) {
+				if(getThreadType().equals(ThreadType.WORK_ON_SAFE) || work.isSafe()) {
 					// do the work
-					m_work.run();
+					work.run();
 				}
 
 			} catch (RuntimeException e) {
@@ -170,7 +174,7 @@ public class WorkLoop extends AbstractWorkLoop {
 			 * ========================================================== */
 
 			// add to reschedule list?
-			if(m_work.isLoop()) loops.add(m_work);
+			if(work.isLoop()) loops.add(m_current);
 
 			// update duration of this cycle so far
 			duration = System.currentTimeMillis()-tic;
@@ -178,7 +182,7 @@ public class WorkLoop extends AbstractWorkLoop {
 		}
 
 		// reset
-		m_work = null;
+		m_current = null;
 
 		// reschedule work?
 		if(loops.size()>0)  m_queue.addAll(loops);
@@ -196,9 +200,9 @@ public class WorkLoop extends AbstractWorkLoop {
 	 * ======================================================= */
 
 	@Override
-    protected void add(IWork work) {
-		super.add(work);
-		m_queue.add(work);
+    protected void add(IWork work,boolean register) {
+		super.add(work,register);
+		m_queue.add(new FIFOEntry<IWork>(work));
     }
 
 	@Override

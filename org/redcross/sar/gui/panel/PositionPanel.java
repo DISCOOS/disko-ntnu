@@ -40,8 +40,8 @@ import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 import com.esri.arcgis.geometry.IPoint;
 import com.esri.arcgis.geometry.Point;
@@ -62,7 +62,7 @@ public class PositionPanel extends DefaultToolPanel {
 	private GotoPanel gotoPanel;
 	private DefaultPanel unitsPanel;
 	private JList unitList;
-	private FieldsPanel optionsPanel;
+	private FieldPane optionsPanel;
 	private DTGField dtgAttr;
 	
 	private TimePos logEntry;
@@ -142,9 +142,9 @@ public class PositionPanel extends DefaultToolPanel {
 	public GotoPanel getGotoPanel() {
 		if (gotoPanel == null) {
 			gotoPanel = new GotoPanel("Skriv inn posisjon",false);
-			gotoPanel.addWorkFlowListener(new IWorkFlowListener() {
+			gotoPanel.addFlowListener(new IFlowListener() {
 
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 					
 					// consume?
 					if(!isChangeable()) return;
@@ -240,18 +240,18 @@ public class PositionPanel extends DefaultToolPanel {
 	/**
 	 * This method initializes optionsPanel	
 	 * 	
-	 * @return {@link FieldsPanel}
+	 * @return {@link FieldPane}
 	 */
-	public FieldsPanel getOptionsPanel() {
+	public FieldPane getOptionsPanel() {
 		if (optionsPanel == null) {
 			try {
-				optionsPanel = new FieldsPanel("Egenskaper","Ingen egenskaper funnet",false,false);
+				optionsPanel = new FieldPane("Egenskaper","Ingen egenskaper funnet",false,false);
 				optionsPanel.setPreferredSize(new Dimension(200,25));	
 				optionsPanel.addField(getDTGAttr());
-				optionsPanel.addWorkFlowListener(new IWorkFlowListener() {
+				optionsPanel.addFlowListener(new IFlowListener() {
 
 					@Override
-					public void onFlowPerformed(WorkFlowEvent e) {
+					public void onFlowPerformed(FlowEvent e) {
 
 						// consume?
 						if(!isChangeable()) return;

@@ -50,7 +50,7 @@ public class HypothesisListModel extends AbstractListModel implements
 			for(MsoEvent.Update e : events.getEvents(myInterests)) {
 
 				// consume loopback updates
-				if(!e.isLoopback()) {
+				if(!e.isLoopbackMode()) {
 
 					int mask = e.getEventTypeMask();
 

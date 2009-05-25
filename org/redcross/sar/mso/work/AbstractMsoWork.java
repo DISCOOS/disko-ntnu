@@ -13,7 +13,7 @@ public abstract class AbstractMsoWork extends AbstractWork implements IMsoWork {
 			boolean suspend) throws Exception {
 
 		// forward
-		super(0, isSafe, isModal, ThreadType.WORK_ON_SAFE, message, millisToPopup, showProgress, suspend);
+		super(HIGH_PRIORITY, isSafe, isModal, ThreadType.WORK_ON_SAFE, message, millisToPopup, showProgress, suspend);
 
 	}
 

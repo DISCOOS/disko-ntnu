@@ -1010,7 +1010,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		 */
 		SelectMapWork(boolean autoselect) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,"Velger kart",500,true,false);
+			super(HIGH_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Velger kart",500,true,false);
 			// prepare
 			m_autoSelect = autoselect;
 		}
@@ -1125,10 +1125,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		}
 
 		@Override
-		public void merge(Map work) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void merge(Map work) { /*NOP*/ }
 
 	}
 

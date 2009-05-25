@@ -41,8 +41,8 @@ import org.redcross.sar.gui.panel.PanelManager;
 import org.redcross.sar.gui.util.AlignUtils;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.AppProps;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 public class DefaultDialog extends JDialog implements IDialog {
 
@@ -451,9 +451,9 @@ public class DefaultDialog extends JDialog implements IDialog {
             ((IPanel)getContentPane()).setChangeable(isChangeable);
     }
 
-    public int resetChangeable() {
+    public int clearChangeableCount() {
         if(isWorkSupported())
-            return ((IPanel)getContentPane()).resetChangeable();
+            return ((IPanel)getContentPane()).clearChangeableCount();
         return -1;
     }
     
@@ -489,14 +489,14 @@ public class DefaultDialog extends JDialog implements IDialog {
         return false;
     }
 
-    public void addWorkFlowListener(IWorkFlowListener listener) {
+    public void addFlowListener(IFlowListener listener) {
         if(isWorkSupported())
-            ((IPanel)getContentPane()).addWorkFlowListener(listener);
+            ((IPanel)getContentPane()).addFlowListener(listener);
     }
 
-    public void removeWorkFlowListener(IWorkFlowListener listener) {
+    public void removeFlowListener(IFlowListener listener) {
         if(isWorkSupported())
-            ((IPanel)getContentPane()).removeWorkFlowListener(listener);
+            ((IPanel)getContentPane()).removeFlowListener(listener);
     }
 
     /* ==========================================================
@@ -851,7 +851,7 @@ public class DefaultDialog extends JDialog implements IDialog {
     }
 
     protected void fireOnWorkFinish(Object source, Object data, UndoableEdit edit) {
-        fireOnWorkPerformed(new WorkFlowEvent(source,data,edit,WorkFlowEvent.EVENT_FINISH));
+        fireOnWorkPerformed(new FlowEvent(source,data,edit,FlowEvent.EVENT_FINISH));
     }
     
     protected void fireOnWorkCancel(Object source, Object data) {
@@ -859,18 +859,18 @@ public class DefaultDialog extends JDialog implements IDialog {
     }
 
     protected void fireOnWorkCancel(Object source, Object data, UndoableEdit edit) {
-        fireOnWorkPerformed(new WorkFlowEvent(source,data,edit,WorkFlowEvent.EVENT_CANCEL));
+        fireOnWorkPerformed(new FlowEvent(source,data,edit,FlowEvent.EVENT_CANCEL));
     }
     
     protected void fireOnWorkChange(Object data) {
-        fireOnWorkPerformed(new WorkFlowEvent(this,data,null,WorkFlowEvent.EVENT_CHANGE));
+        fireOnWorkPerformed(new FlowEvent(this,data,null,FlowEvent.EVENT_CHANGE));
     }
 
     protected void fireOnWorkChange(Object source, Object data, UndoableEdit edit) {
-        fireOnWorkPerformed(new WorkFlowEvent(source,data,edit,WorkFlowEvent.EVENT_CHANGE));
+        fireOnWorkPerformed(new FlowEvent(source,data,edit,FlowEvent.EVENT_CHANGE));
     }
 
-    protected void fireOnWorkPerformed(WorkFlowEvent e) {
+    protected void fireOnWorkPerformed(FlowEvent e) {
         if(isWorkSupported())
             ((IPanel)getContentPane()).onFlowPerformed(e);
     }

@@ -16,8 +16,8 @@ import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.tactics.IDiskoWpTactics.TacticsActionType;
 
@@ -99,7 +99,7 @@ public class PromptDialog extends DefaultDialog {
 					}
 
 				});
-				contentPanel.addWorkFlowListener((IWorkFlowListener)wp);
+				contentPanel.addFlowListener((IFlowListener)wp);
 
 
 			} catch (java.lang.Throwable e) {
@@ -174,7 +174,7 @@ public class PromptDialog extends DefaultDialog {
 					if(!assignment.getStatus().equals(IAssignmentIf.AssignmentStatus.READY)) {
 						changeCount++;
 						assignment.setStatus(IAssignmentIf.AssignmentStatus.READY);
-						WorkFlowEvent e = new WorkFlowEvent(assignment,AssignmentStatus.READY,WorkFlowEvent.EVENT_CHANGE);
+						FlowEvent e = new FlowEvent(assignment,AssignmentStatus.READY,FlowEvent.EVENT_CHANGE);
 						getContentPanel().onFlowPerformed(e);
 					}
 				}

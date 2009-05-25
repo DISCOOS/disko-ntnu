@@ -4,17 +4,17 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import org.redcross.sar.gui.field.IDiskoField;
+import org.redcross.sar.gui.field.IField;
 
-public class DiskoFieldEdit extends AbstractUndoableEdit {
+public class FieldEdit extends AbstractUndoableEdit {
 	
 	private static final long serialVersionUID = 1L;
 
 	private Object m_undoValue;
 	private Object m_redoValue;
-	private IDiskoField m_field;
+	private IField<?> m_field;
 	
-	public DiskoFieldEdit(IDiskoField field, Object undoValue, Object redoValue) {
+	public FieldEdit(IField<?> field, Object undoValue, Object redoValue) {
 		// prepare
 		m_field = field;
 		m_undoValue = undoValue;
@@ -41,6 +41,5 @@ public class DiskoFieldEdit extends AbstractUndoableEdit {
 		// undo
 		m_field.setValue(m_undoValue);
 	}
-	
 	
 }

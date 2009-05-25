@@ -12,8 +12,8 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * @author kennetgu
@@ -42,10 +42,10 @@ public class PositionSelectorDialog extends DefaultDialog {
 		initialize();
 
 		// add listener
-		addWorkFlowListener(new IWorkFlowListener() {
+		addFlowListener(new IFlowListener() {
 
 			@Override
-			public void onFlowPerformed(WorkFlowEvent e) {
+			public void onFlowPerformed(FlowEvent e) {
 				if(e.isCancel()) m_cancel = true;
 			}
 

@@ -42,7 +42,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     	addObject(m_system);
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ICmdPostIf)
         {
@@ -50,7 +50,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ICmdPostIf)
         {
@@ -152,7 +152,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
 
     public Collection<ICmdPostIf> getCmdPostListItems()
     {
-        return m_cmdPostList.getItems();
+        return m_cmdPostList.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------
@@ -168,8 +168,8 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     public boolean delete()
     {
         Application.getInstance().getMsoModel().suspendClientUpdate();
-        m_cmdPostList.deleteAll();
-        doDelete();
+        m_cmdPostList.removeAll();
+        destroy();
         Application.getInstance().getMsoModel().resumeClientUpdate(true);
         return true;
     }

@@ -63,7 +63,7 @@ public class FlankFeature extends AbstractMsoFeature {
 		if(geoList==null || list==null || !geoList.equals(list)) return true;
 		// check change counters
 		int i=0;
-		for(IMsoObjectIf it : list.getItems()) {
+		for(IMsoObjectIf it : list.getObjects()) {
 			// parse
 			if(it instanceof IRouteIf) {
 				return isGeodataChanged(((IRouteIf)it).getGeodata(),changeList,i);
@@ -106,7 +106,7 @@ public class FlankFeature extends AbstractMsoFeature {
 
     private void setChangeList() {
     	changeList = new ArrayList<Integer>(geoList.size());
-		for(IMsoObjectIf it : geoList.getItems()) {
+		for(IMsoObjectIf it : geoList.getObjects()) {
 			// parse
 			if(it instanceof IRouteIf) {
 				// get geodata

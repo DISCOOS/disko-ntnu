@@ -145,7 +145,7 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
 				// is item class supported?
 				if(isSupported(it.getObjectClass())) {
-					load((Collection<T>)it.getItems(),true);
+					load((Collection<T>)it.getObjects(),true);
 				}
 			}
 			bFlag = true;
@@ -159,7 +159,7 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 	}
 
 	public void load(IMsoListIf<T> list, boolean append) {
-		super.load(list.getItems(),append);
+		super.load(list.getObjects(),append);
 	}
 
 	/* =============================================================================

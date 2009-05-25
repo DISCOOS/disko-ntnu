@@ -21,7 +21,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.NumericField;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.CompassPanel;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.IDiskoMap;
@@ -31,8 +31,8 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 public class UnitStatusPanel extends TogglePanel {
@@ -53,7 +53,7 @@ public class UnitStatusPanel extends TogglePanel {
 	private CompassPanel m_compassPanel;
 	private NumericField m_bearingAttr;
 	private TextField m_activeAttr;
-	private FieldsPanel m_attribsPanel;
+	private FieldPane m_attribsPanel;
 
 	public UnitStatusPanel(IUnitIf unit) {
 		// forward
@@ -197,16 +197,16 @@ public class UnitStatusPanel extends TogglePanel {
         return m_activeAttr;
     }
 
-	private FieldsPanel getAttribsPanel()
+	private FieldPane getAttribsPanel()
     {
         if (m_attribsPanel == null)
         {
-        	m_attribsPanel = new FieldsPanel("","Ingen egenskaper funnet",false,false);
+        	m_attribsPanel = new FieldPane("","Ingen egenskaper funnet",false,false);
         	m_attribsPanel.setHeaderVisible(false);
         	m_attribsPanel.setBorderVisible(false);
         	m_attribsPanel.setNotScrollBars();
         	m_attribsPanel.setPreferredContainerSize(new Dimension(FIXED_WIDTH-90,FIXED_HEIGHT-37));
-        	m_attribsPanel.addWorkFlowListener(this);
+        	m_attribsPanel.addFlowListener(this);
         }
         return m_attribsPanel;
     }
@@ -291,12 +291,12 @@ public class UnitStatusPanel extends TogglePanel {
 
 		// connect to attributes
 		getAttribsPanel().create(unit, ATTRIBUTES, CAPTIONS, true, 100, 25, true);
-		getAttribsPanel().setBatchMode(false);
+		getAttribsPanel().setBufferMode(false);
 		getAttribsPanel().addField(getActiveAttr());
 
 		// listener for changes in position
 		getAttribsPanel().getField(
-				ATTRIBUTES[2]).addWorkFlowListener(m_positionListener);
+				ATTRIBUTES[2]).addFlowListener(m_positionListener);
 
 		// forward
 		update();
@@ -354,10 +354,10 @@ public class UnitStatusPanel extends TogglePanel {
 		return null;
 	}
 
-	private final IWorkFlowListener m_positionListener = new IWorkFlowListener() {
+	private final IFlowListener m_positionListener = new IFlowListener() {
 
 		@Override
-		public void onFlowPerformed(WorkFlowEvent e) {
+		public void onFlowPerformed(FlowEvent e) {
 			// is position changed?
 			if(e.isFinish()) {
 				// log position

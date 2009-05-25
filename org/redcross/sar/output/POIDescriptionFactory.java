@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import org.redcross.sar.mso.data.IPOIListIf;
 
+@SuppressWarnings("unchecked")
 public class POIDescriptionFactory {
 
 	private POIDescription[] data = null;

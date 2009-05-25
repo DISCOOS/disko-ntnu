@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 
 import javax.swing.table.JTableHeader;
 
@@ -58,7 +58,7 @@ import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * JPanel displaying unit details
@@ -78,7 +78,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 
     private IUnitIf m_currentUnit;
 
-    private FieldsPanel m_infoPanel;
+    private FieldPane m_infoPanel;
     private JToggleButton m_pauseToggleButton;
     private JToggleButton m_releaseToggleButton;
     private JButton m_showReportButton;
@@ -111,7 +111,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         wp.addTickEventListener(this);
         wp.getMsoEventManager().addClientUpdateListener(this);
         wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
-        getInfoPanel().addWorkFlowListener(wp);
+        getInfoPanel().addFlowListener(wp);
     }
 
     private void initialize()
@@ -126,11 +126,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         
     }
         
-    private FieldsPanel getInfoPanel() {
+    private FieldPane getInfoPanel() {
     	if(m_infoPanel==null) {
-    		m_infoPanel = new FieldsPanel(m_resources.getString("UnitInfo.text"),"",false,false);
+    		m_infoPanel = new FieldPane(m_resources.getString("UnitInfo.text"),"",false,false);
     		m_infoPanel.setColumns(2);
-			m_infoPanel.setBatchMode(false);
+			m_infoPanel.setBufferMode(false);
 			m_infoPanel.setPreferredExpandedHeight(400);
 			m_infoPanel.setMinimumSize(new Dimension(400,200));
     		m_infoPanel.addButton(getPauseButton(), "pause");
@@ -177,7 +177,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	                    		m_pauseToggleButton.setIcon(m_resumeIcon);
 	                    	}
 	                    	// notify
-	                    	m_wp.onFlowPerformed(new WorkFlowEvent(e.getSource(),m_currentUnit,WorkFlowEvent.EVENT_CHANGE));
+	                    	m_wp.onFlowPerformed(new FlowEvent(e.getSource(),m_currentUnit,FlowEvent.EVENT_CHANGE));
 	                    }
 	                    catch (IllegalOperationException ex)
 	                    {
@@ -210,7 +210,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 		                    ResourceUtils.releaseUnit(m_currentUnit);
 		
 	                    	// notify
-	                    	m_wp.onFlowPerformed(new WorkFlowEvent(e.getSource(),m_currentUnit,WorkFlowEvent.EVENT_CHANGE));
+	                    	m_wp.onFlowPerformed(new FlowEvent(e.getSource(),m_currentUnit,FlowEvent.EVENT_CHANGE));
 	                    	
 		                }
 		                catch (IllegalOperationException ex)
@@ -342,7 +342,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 						}
 						m_currentUnit.resumeClientUpdate(false);
 						m_associationTextField.setChangeable(true);
-						m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentUnit,WorkFlowEvent.EVENT_CHANGE));
+						m_wp.onFlowPerformed(new FlowEvent(this,m_currentUnit,FlowEvent.EVENT_CHANGE));
 					}
 				}
 				
@@ -355,7 +355,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 						AssociationDialog dlg = new AssociationDialog(Application.getFrameInstance());
 						dlg.setLocationRelativeTo(Application.getFrameInstance());
 						if(dlg.associate(getAssociationTextField().getValue(),m_currentUnit)) {
-							m_wp.onFlowPerformed(new WorkFlowEvent(this,m_currentUnit,WorkFlowEvent.EVENT_CHANGE));
+							m_wp.onFlowPerformed(new FlowEvent(this,m_currentUnit,FlowEvent.EVENT_CHANGE));
 						}
 					}
 				}
@@ -627,7 +627,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_UNIT))
 			{
 				// consume loopback updates
-				if(!e.isLoopback())
+				if(!e.isLoopbackMode())
 				{
 
 			        // get unit

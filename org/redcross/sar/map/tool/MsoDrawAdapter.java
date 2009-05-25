@@ -51,8 +51,8 @@ import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 import com.esri.arcgis.controls.IMapControlEvents2Adapter;
 import com.esri.arcgis.controls.IMapControlEvents2OnExtentUpdatedEvent;
@@ -67,7 +67,7 @@ import com.esri.arcgis.interop.AutomationException;
  *
  */
 public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener,
-									IElementEventListener , IWorkFlowListener {
+									IElementEventListener , IFlowListener {
 
 	private int consumeCount = 0;
 	private int selectionCount = 0;
@@ -103,7 +103,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	private KeyToWorkAdapter keyToWorkAdapter;
 
 	private ArrayList<IDrawAdapterListener> drawListeners;
-	private ArrayList<IWorkFlowListener> workListeners;
+	private ArrayList<IFlowListener> workListeners;
 
 	public MsoDrawAdapter() {
 		this(getSupport());
@@ -117,7 +117,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		this.layers = MsoUtils.translate(editable);
 		this.msoModel = app.getMsoModel();
 		this.drawListeners = new ArrayList<IDrawAdapterListener>();
-		this.workListeners = new ArrayList<IWorkFlowListener>();
+		this.workListeners = new ArrayList<IFlowListener>();
 		this.mapListener = new MapControlAdapter();
 		this.keyToWorkAdapter = new KeyToWorkAdapter();
 
@@ -243,11 +243,11 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		drawListeners.remove(listener);
 	}
 
-	public void addWorkFlowListener(IWorkFlowListener listener) {
+	public void addWorkFlowListener(IFlowListener listener) {
 		workListeners.add(listener);
 	}
 
-	public void removeWorkFlowListener(IWorkFlowListener listener) {
+	public void removeWorkFlowListener(IFlowListener listener) {
 		workListeners.remove(listener);
 	}
 
@@ -942,14 +942,14 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	private void fireOnWorkFinish(Object data) {
 
 		// create event
-		WorkFlowEvent e = new WorkFlowEvent(this,data,WorkFlowEvent.EVENT_FINISH);
+		FlowEvent e = new FlowEvent(this,data,FlowEvent.EVENT_FINISH);
 
 		// forward
 		fireOnWorkPerformed(e);
 
     }
 
-    private void fireOnWorkPerformed(WorkFlowEvent e)
+    private void fireOnWorkPerformed(FlowEvent e)
     {
 		// notify workListeners
 		for (int i = 0; i < workListeners.size(); i++) {
@@ -1007,7 +1007,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
 
 				// consume loopback updates
-				if(!e.isLoopback()) {
+				if(!e.isLoopbackMode()) {
 
 					// get mask
 					int mask = e.getEventTypeMask();
@@ -1870,7 +1870,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	 * IWorkListener interface
 	 * ========================================================== */
 
-	public void onFlowPerformed(WorkFlowEvent e) {
+	public void onFlowPerformed(FlowEvent e) {
 
 		// is selected tool?
 		if(e.getSource() == getSelectedDrawTool()) {

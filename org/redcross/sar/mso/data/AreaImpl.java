@@ -48,7 +48,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     {
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
@@ -56,18 +56,18 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
         if (anObject instanceof IPOIIf)
         {
-            if ("AreaPOIs".equals(aReferenceName))
+            if ("AreaPOIs".equals(aReferenceListName))
             {
                 m_areaPOIs.add((IPOIIf) anObject);
             }
-            if ("AreaGeodata".equals(aReferenceName))
+            if ("AreaGeodata".equals(aReferenceListName))
             {
                 m_areaGeodata.add(anObject);
             }
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
@@ -75,7 +75,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
         if (anObject instanceof IPOIIf)
         {
-            if ("AreaPOIs".equals(aReferenceName))
+            if ("AreaPOIs".equals(aReferenceListName))
             {
             	// remove area POIs?
             	if(m_hostile) {
@@ -87,7 +87,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
             	}
                 m_areaPOIs.remove((IPOIIf) anObject);
             }
-            if ("AreaGeodata".equals(aReferenceName))
+            if ("AreaGeodata".equals(aReferenceListName))
             {
             	// remove area POIs?
             	if(m_hostile) {
@@ -145,13 +145,13 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     @Override
     public boolean delete()
     {
-        if (canDelete())
+        if (isDeletable())
         {
         	suspendClientUpdate();
         	// is hostile?
         	if(m_hostile) {
 	        	// delete area POIs
-	        	for(IPOIIf it:m_areaPOIs.getItems()) {
+	        	for(IPOIIf it:m_areaPOIs.getObjects()) {
 	        		POIType type = it.getType();
 	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
@@ -159,7 +159,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		}
 	        	}
 	        	// delete geodata
-	        	for(IMsoObjectIf it:m_areaGeodata.getItems()) {
+	        	for(IMsoObjectIf it:m_areaGeodata.getObjects()) {
 	    			// delete object
 	        		it.delete();
 	        	}
@@ -192,7 +192,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 
     public Collection<IPOIIf> getAreaPOIsItems()
     {
-        return m_areaPOIs.getItems();
+        return m_areaPOIs.getObjects();
     }
 
 
@@ -217,7 +217,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         {
             m_areaGeodata.add(anMsoObjectIf);
         }
-        registerModifiedData(this,m_msoModel.getUpdateMode(),true,false); // in order to generate an event that the map draw tools recognize
+        registerModifiedData(this,m_msoModel.getUpdateMode(),true,false,false); // in order to generate an event that the map draw tools recognize
     }
 
     private boolean setAreaSequenceNumber(IMsoObjectIf anMsoObjectIf, int aNr)
@@ -252,7 +252,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 
     public Collection<IMsoObjectIf> getAreaGeodataItems()
     {
-        return m_areaGeodata.getItems();
+        return m_areaGeodata.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------
@@ -286,7 +286,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     private int getNextPOISequenceNumber()
     {
         int retVal = 0;
-        for (IPOIIf ml : m_areaPOIs.getItems())
+        for (IPOIIf ml : m_areaPOIs.getObjects())
         {
             if (ml.getAreaSequenceNumber() > retVal)
             {
@@ -299,7 +299,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     private int getNextGeodataSequenceNumber()
     {
         int retVal = -1;
-        for (IMsoObjectIf ml : m_areaGeodata.getItems())
+        for (IMsoObjectIf ml : m_areaGeodata.getObjects())
         {
             int i = getAreaSequenceNumber(ml);
 
@@ -334,7 +334,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     public IMsoObjectIf getGeodataAt(int anIndex)
     {
         int i = 0;
-        for (IMsoObjectIf ml : m_areaGeodata.getItems())
+        for (IMsoObjectIf ml : m_areaGeodata.getObjects())
         {
             if (getAreaSequenceNumber(ml) == anIndex)
             {

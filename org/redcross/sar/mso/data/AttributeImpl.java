@@ -3,9 +3,11 @@ package org.redcross.sar.mso.data;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.util.EnumHistory;
+import org.redcross.sar.mso.IChangeSourceIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.*;
 
 import java.awt.geom.Point2D;
@@ -24,8 +26,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     private final int m_cardinality;
 
     private int m_indexNo;
-    private boolean m_required = false;
     private int m_changeCount = 0;
+    private boolean m_isRequired = false;
+    private boolean m_isRollbackMode = false;
+    private boolean m_isLoopbackMode = false;
 
 	protected final Class m_class;
     protected final AbstractMsoObject m_owner;
@@ -82,12 +86,52 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     public boolean isState(ModificationState state) {
     	return (m_state==state);
     }
+    
+    @Override
+	public boolean isLocalState() {
+		return m_state==ModificationState.STATE_LOCAL;
+	}
 
-    Class getAttributeClass()
+	@Override
+	public boolean isRemoteState() {
+		return m_state==ModificationState.STATE_REMOTE;
+	}
+
+	@Override
+	public boolean isConflictState() {
+		return m_state==ModificationState.STATE_CONFLICT;
+	}
+	
+	@Override
+	public boolean isLoopbackMode() {
+		return m_isLoopbackMode;
+	}
+
+	@Override
+	public boolean isRollbackMode() {
+		return m_isRollbackMode;
+	}
+	
+	@Override
+	public boolean isMixedState() {
+		return false;
+	}
+
+	Class getAttributeClass()
     {
         return m_class;
     }
 
+    public boolean isChanged() {
+    	return m_state == ModificationState.STATE_LOCAL 
+    		|| m_state == ModificationState.STATE_CONFLICT;
+    }
+
+    public boolean isChangedSince(int changeCount)
+    {
+        return (m_changeCount>=changeCount);
+    }
+    
     public int getChangeCount()
     {
         return m_changeCount;
@@ -111,7 +155,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     	return m_localValue;
     }
     
-    public T getServerValue()
+    public T getRemoteValue()
     {
     	return m_serverValue;
     }
@@ -130,7 +174,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         setAttrValue(aValue, false);
     }
 
-    protected boolean equal(T v1, T v2)
+    protected boolean isEqual(T v1, T v2)
     {
         return v1 == v2 || (v1 != null && v1.equals(v2));
     }
@@ -139,19 +183,31 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     {
     	/* ========================================================
     	 * Setting a new attribute value is dependent on the
-    	 * update mode of the MSO model. If the model is in
-    	 * LOOPBACK_UPDATE_MODE, the attribute should reflect
-    	 * the server value without any conflict detection. If the
-    	 * model is in REMOTE_UPDATE_MODE, a change from the server
-    	 * is registered and the attribute value should be analyzed
-    	 * to detect any conflicts between local value (private) and
-    	 * the server value (shared). If the model is in
-    	 * LOCAL_UPDATE_MODE, the attribute value state should be
-    	 * updated according to the passed attribute value.
+    	 * update mode of the MSO model.
+    	 *  
+    	 * If the model is in REMOTE_UPDATE_MODE, a change from 
+    	 * the server is registered and the attribute value should 
+    	 * be analyzed to detect any conflicts between local value 
+    	 * (private) and the server value (shared). 
+    	 * 
+    	 * If the local value has been changed (isChanged() is true), 
+    	 * and the model is in REMOTE_UPDATE_MODE, this update may 
+    	 * be a loopback. Since loopback updates are just a ACK
+    	 * from the server, the attribute value is not changed. Hence,
+    	 * IMsoClientUpdateListener listeners is not required to fetch
+    	 * the attribute value. However, loopback updates may be used to
+    	 * indicate to the user that the commit was successful.
+    	 *  
+    	 * If the model is in LOCAL_UPDATE_MODE, the attribute 
+    	 * value state should be updated according to the passed 
+    	 * attribute value.
+    	 * 
+    	 * If a the local value after a change equals the remote 
+    	 * value, the change is a ROLLBACK.
     	 *
     	 * Server value and local value should only be present
     	 * concurrently during a local update sequence (between two
-    	 * commit() or rollback() invocations), or if a conflict has
+    	 * commit or rollback transactions), or if a conflict has
     	 * occurred (remote update during a local update sequence).
     	 * Hence, if the attribute is in a LOCAL or CONFLICTING,
     	 * both values will be present. Else, only server value will
@@ -159,86 +215,18 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     	 *
     	 * A commit() or rollback() will reset the local value
     	 * to null to ensure state consistency.
-    	 *
+    	 * 
     	 * ======================================================== */
 
         UpdateMode updateMode = m_msoModel.getUpdateMode();
         ModificationState newState;
-        boolean isChanged = false;
+        boolean isDirty = false;
         boolean isLoopback = false;
+        boolean isRollback = false;
 
         // translate
         switch (updateMode)
         {
-        /*
-            case LOOPBACK_UPDATE_MODE:
-            {
-            	/* ===========================================================
-            	 * Update to server value state without any conflict detection.
-            	 *
-            	 * After a commit, all changes are looped back to the model
-            	 * from the message queue. This ensures that only changes
-            	 * that are successfully committed to the global message
-            	 * queue becomes valid. If any errors occurred, the message queue
-            	 * is given precedence over local values.
-            	 *
-            	 * Because of limitations in SaraAPI, it is not possible to
-            	 * distinguish between messages committed by this model instance
-            	 * and other model instances. Hence, any change received from
-            	 * the message queue may be a novel change. Because
-            	 * LOOPBACK_UPDATE_MODE is only a proper update mode if the
-            	 * received update is a loop back from this model instance, the
-            	 * mode can not be used with the current SaraAPI. If used,
-            	 * local changes will be overwritten because conflict detection
-            	 * is disabled in this mode.
-            	 *
-            	 * The fix to this problem is to assume that if a commit is
-            	 * executed without any exception from the message queue, then all
-            	 * changes was posted and forwarded to all listeners. Hence, the
-            	 * attribute value can be put in server mode directly after a commit
-            	 * is executed.
-            	 *
-            	 * 		!!! The postProcessCommit() implements this fix !!!
-            	 *
-            	 * If the source of each change could be uniquely identified
-            	 * (at the model instance level), change messages received as a
-            	 * result of a commit by this model, could be group together and
-            	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would
-            	 * be the correct and intended usage of this mode.
-            	 *
-            	 * ================================================================
-            	 * IMPORTANT
-            	 * ================================================================
-            	 *
-            	 * This mode is by definition a violation of the SARA Protocol
-            	 * which is based on the assumption that any local changes is only
-            	 * valid when it equals the server value. Hence, REMOTE mode should
-            	 * only be resumed if local value equals server value, or a REMOTE
-            	 * update is explicitly received.
-            	 *
-            	 * The use of postProcessCommit() and LOOPBACK mode is therefore
-            	 * discarded.
-            	 *
-            	 * =========================================================== */
-        	/*
-                // only server value is kept
-                m_localValue = null;
-
-            	// set new state
-                newState = ModificationState.STATE_SERVER;
-
-                // any change?
-                if (!equal(m_serverValue, aValue))
-                {
-                    m_serverValue = aValue;
-                    isChanged = true;
-                    isLoopback = true;
-                }
-
-                break;
-
-            }
-            */
             case REMOTE_UPDATE_MODE:
             {
             	/* ===========================================================
@@ -258,40 +246,36 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             	 * to CONFLICTING. Methods for resolving conflicts are supplied
 				 * by this class. If the new server value and local value
             	 * are equal, the attribute state is changed to REMOTE.
-            	 *
+            	 * 
             	 * =========================================================== */
 
             	// check if a conflict has occurred?
             	boolean isConflict = (m_state == ModificationState.STATE_LOCAL
-            			|| m_state == ModificationState.STATE_CONFLICTING) ?
-            			!equal(m_localValue, aValue) : false;
-
-            	if(isConflict) {
-            		System.out.println("isConflict::"+this);
-            	}
+            			|| m_state == ModificationState.STATE_CONFLICT) ?
+            			!isEqual(m_localValue, aValue) : false;
 
             	// get next state
                 newState = isConflict ?
-                		  ModificationState.STATE_CONFLICTING
-                		: ModificationState.STATE_SERVER;
+                		  ModificationState.STATE_CONFLICT
+                		: ModificationState.STATE_REMOTE;
 
                 // any change?
-                if (!equal(m_serverValue, aValue))
+                if (!isEqual(m_serverValue, aValue))
                 {
                     m_serverValue = aValue;
-                    isChanged = true;
+                    isDirty = true;
                 }
 
-                // no conflict?
+                // no conflict found?
                 if(!isConflict)
                 {
+                    isLoopback = (isChanged() && isEqual(m_localValue, aValue));
                 	m_localValue = null;
-                    isLoopback = true;
                 }
 
                 // notify change
-                isChanged |= isConflict;
-
+                isDirty |= isConflict;
+                
                 break;
             }
             default: // LOCAL_UPDATE_MODE
@@ -310,31 +294,38 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             	 * set to local state.
             	 * =========================================================== */
 
-            	if (equal(m_serverValue, aValue))
+            	if (isEqual(m_serverValue, aValue))
                 {
-                    newState = ModificationState.STATE_SERVER;
-                    isChanged = equal(m_localValue, aValue);
+                    newState = ModificationState.STATE_REMOTE;
+                    isDirty = isEqual(m_localValue, aValue);
+                    isRollback = true;
                     m_localValue = null;
                 } else
                 {
                     newState = ModificationState.STATE_LOCAL;
-                    if (!equal(m_localValue, aValue))
+                    if (!isEqual(m_localValue, aValue))
                     {
                         m_localValue = aValue;
-                        isChanged = true;
+                        isDirty = true;
                     }
-                }
+                }            	
             }
+            break;
         }
         if (m_state != newState)
         {
             m_state = newState;
-            isChanged = true;
+            isDirty = true;
         }
-        if (!isCreating && (isChanged || isLoopback))
+        // set loopback mode
+        m_isLoopbackMode = isLoopback;
+        // set rollback mode
+        m_isRollbackMode = isRollback;
+        // notify change
+        if (!isCreating && (isDirty || isLoopback || isRollback))
         {
         	incrementChangeCount();
-            m_owner.registerModifiedData(this,updateMode,isChanged,isLoopback);
+            m_owner.registerModifiedData(this,updateMode,isDirty,isLoopback,isRollback);
         }
     }
 
@@ -360,7 +351,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 
     public Vector<T> getConflictingValues()
     {
-        if (m_state == ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICT)
         {
             Vector<T> retVal = new Vector<T>(2);
             retVal.add(m_serverValue);
@@ -370,38 +361,52 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         return null;
     }
     
-    public boolean isChanged() {
-    	return m_state == ModificationState.STATE_LOCAL 
-    		|| m_state == ModificationState.STATE_CONFLICTING;
+    public boolean commit() throws TransactionException
+    {
+    	// get dirty flag
+        boolean isDirty = isChanged();
+        // is changed?
+        if(isDirty)
+        {
+        	// get change source
+        	IChangeSourceIf changes = m_owner.getModel().getChanges(m_owner);
+        	// add this as partial commit
+        	changes.addPartial(m_name);
+	        // increment change count
+	        incrementChangeCount();
+	        // commit changes
+        	m_owner.getModel().commit(changes);
+        }
+        return isDirty;
     }
-
+    
     public boolean rollback()
     {
-        boolean isChanged = isChanged();
-        if(isChanged)
+    	// get dirty flag
+        boolean isDirty = isChanged();
+        // is changed?
+        if(isDirty)
         {
+        	// reset loopback mode
+            m_isLoopbackMode = false;
+            // set rollback mode
+            m_isRollbackMode = true;
+            // reset local value
 	        m_localValue = null;
-	        m_state = ModificationState.STATE_SERVER;
+	        // update state to REMOTE
+	        m_state = ModificationState.STATE_REMOTE;
+	        // increment change count
+	        incrementChangeCount();
+	        // notify owner
+            m_owner.registerModifiedData(this,m_msoModel.getUpdateMode(),true,false,true);
         }
-        return isChanged;
+        // finished
+        return isDirty;
     }
-
-    public boolean postProcessCommit()
-    {
-        boolean isChanged = isChanged();
-        if(isChanged)
-        {
-            m_serverValue = m_localValue;
-            m_localValue = null;
-            m_state = ModificationState.STATE_SERVER;
-        }
-        return isChanged;
-    }
-
 
     private boolean acceptConflicting(ModificationState aState)
     {
-        if (m_state == ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICT)
         {
             if (aState == ModificationState.STATE_LOCAL)
             {
@@ -430,20 +435,20 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             }
             m_state = aState;
         	incrementChangeCount();
-            m_owner.registerModifiedData(this,m_msoModel.getUpdateMode(),false,false);
+            m_owner.registerModifiedData(this,m_msoModel.getUpdateMode(),false,false,false);
             return true;
         }
         return false;
     }
 
-    public boolean acceptLocal()
+    public boolean acceptLocalValue()
     {
         return acceptConflicting(ModificationState.STATE_LOCAL);
     }
 
-    public boolean acceptServer()
+    public boolean acceptRemoteValue()
     {
-        return acceptConflicting(ModificationState.STATE_SERVER);
+        return acceptConflicting(ModificationState.STATE_REMOTE);
     }
 
     public boolean isUncommitted()
@@ -458,12 +463,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 
     public void setRequired(boolean aValue)
     {
-        m_required = aValue;
+        m_isRequired = aValue;
     }
 
     public boolean isRequired()
     {
-        return m_required;
+        return m_isRequired;
     }
 
     /*
@@ -1159,7 +1164,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return false;
         }
-        if (m_required != attribute.m_required)
+        if (m_isRequired != attribute.m_isRequired)
         {
             return false;
         }
@@ -1198,7 +1203,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         result = 31 * result + (m_owner != null ? m_owner.getObjectId().hashCode() : 0); // To avoid eternal loop
         result = 31 * result + (m_name != null ? m_name.hashCode() : 0);
         result = 31 * result + m_indexNo;
-        result = 31 * result + (m_required ? 1 : 0);
+        result = 31 * result + (m_isRequired ? 1 : 0);
         result = 31 * result + (m_localValue != null ? m_localValue.hashCode() : 0);
         result = 31 * result + (m_serverValue != null ? m_serverValue.hashCode() : 0);
         result = 31 * result + (m_state != null ? m_state.hashCode() : 0);

@@ -38,7 +38,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
     }
 
 	@Override
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IDataSourceIf)
         {
@@ -46,7 +46,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IDataSourceIf)
         {
@@ -80,7 +80,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
 
     public Collection<IDataSourceIf> getDataSourceListItems()
     {
-        return m_dataSourceList.getItems();
+        return m_dataSourceList.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------

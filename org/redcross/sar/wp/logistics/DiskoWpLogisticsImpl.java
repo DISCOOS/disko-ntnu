@@ -245,7 +245,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 	public boolean commit() {
     	if(isChanged()) {
             try {
-        		getMsoModel().commit(getMsoModel().getChanges(getUncomittedChanges()));
+        		getMsoModel().commit(getMsoModel().getChanges(getChangedMsoObjects()));
         		return super.commit();    		
     		} catch (TransactionException ex) {
     			m_logger.error("Failed to commit test data changes",ex);
@@ -258,7 +258,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 	public boolean rollback() {
     	if(isChanged()) {
             try {
-        		getMsoModel().rollback(getMsoModel().getChanges(getUncomittedChanges()));
+        		getMsoModel().rollback(getMsoModel().getChanges(getChangedMsoObjects()));
         		fireOnWorkCommit();
         		return super.commit();    		
     		} catch (TransactionException ex) {

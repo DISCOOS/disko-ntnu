@@ -1,8 +1,10 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.ChangeImpl;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IChangeIf.ChangeType;
+import org.redcross.sar.mso.IChangeIf.IChangeReferenceIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 
@@ -10,24 +12,52 @@ import java.util.Collection;
 import java.util.Vector;
 
 /**
- *
+ * <b>This class manages one-to-one references. </b></p>
+ * 
+ * The purpose of this class is to manage one-to-one references between 
+ * IMsoObjectIf instances. The class is an intermediate object between
+ * each object in the reference. </p>
+ * 
+ * The <code>setReference(IMsoObjectIf anObject)</code> 
+ * method maintains the reference from the owner object (also known as 
+ * "from object", must be an AbstractMsoObject instance) to the 
+ * referenced object (also known as the "to object"). Each time a 
+ * reference is set or reset, the owner is notified.</p> 
+ * 
+ * Referenced object may or may not be deleted, depending on the 
+ * type of relation. Class members <code>isDeletable()</code> and 
+ * <code>getCardinality()</code> is used to govern this. As long as 
+ * cardinality is greater than zero, referenced objects can not 
+ * deleted, nor set to null using <code>setReference(null)</code>. </p> 
+ * 
+ * This class implements IMsoObjectHolderIf. The IMsoObjectHolderIf 
+ * interface enables the referenced object to check if it can delete itself 
+ * (see <code>isReferenceDeletable(IMsoObjectIf anObject)</code> 
+ * and enables the referenced object to notify when it is deleted. 
+ * When a referenced object is deleted, the reference should be 
+ * deleted also (see <code>deleteReference(IMsoObjectIf anObject)</code>).</p> 
+ *  
+ * @author vinjar, kenneth
  */
 public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf<T>, IMsoObjectHolderIf<T>
 {
     private final AbstractMsoObject m_owner;
 
-    private boolean m_canDelete = true;
     protected T m_localValue = null;
-    protected T m_serverValue = null;
+    protected T m_remoteValue = null;
     protected int m_changeCount;
+
+    protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
 
     private final String m_name;
     private final int m_cardinality;
     protected final IMsoModelIf m_msoModel;
 
-    protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
-
-    public MsoReferenceImpl(AbstractMsoObject theOwner, String theName, int theCardinality, boolean canDelete)
+    private boolean m_isDeleteable = true;
+    private boolean m_isLoopbackMode = false;
+    private boolean m_isRollbackMode = false;
+    
+    protected MsoReferenceImpl(AbstractMsoObject theOwner, String theName, int theCardinality, boolean isDeletable)
     {
         m_owner = theOwner;
     	if(m_owner==null)
@@ -36,39 +66,54 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	}
         m_name = theName;
         m_msoModel = m_owner.getModel();
-        m_canDelete = canDelete;
         m_cardinality = theCardinality;
+        m_isDeleteable = isDeletable;
     }
 
     public String getName()
     {
         return m_name;
     }
+    
+    public IMsoObjectIf getOwner() {
+    	return m_owner;
+    }    
 
     public T getReference()
     {
-        return m_state == ModificationState.STATE_LOCAL ? m_localValue : m_serverValue;
+        return m_state == ModificationState.STATE_LOCAL ? m_localValue : m_remoteValue;
     }
 
-    public void setCanDelete(boolean canDelete)
+    public T getLocalReference()
     {
-        m_canDelete = canDelete;
+        return m_localValue;
     }
-
-    public boolean canDelete()
+    
+    public T getRemoteReference()
     {
-    	/* =======================================================
-    	 * In LOOPBACK and SERVER MODE, delete is always allowed.
-    	 * Only in LOCAL mode are delete operations validated.
-    	 * ======================================================= */
-    	if (!m_msoModel.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
-        {
-            return true;
-        }
-    	// query
-        return m_canDelete;
+        return m_remoteValue;
+    }
+ 
+    public void setDeletable(boolean isDeletable)
+    {
+    	m_isDeleteable = isDeletable;
     }
 
+    public boolean isDeletable()
+    {
+        return m_isDeleteable;
+    }
+
+    public boolean isChanged() {
+    	return m_state == ModificationState.STATE_LOCAL 
+    		|| m_state == ModificationState.STATE_CONFLICT;
+    }
+
+    public boolean isChangedSince(int changeCount)
+    {
+        return (m_changeCount>=changeCount);
+    }
+    
     public int getChangeCount()
     {
         return m_changeCount;
@@ -87,72 +132,63 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	return (m_state==state);
     }
 
+    @Override
+	public boolean isLocalState() {
+    	
+		return m_state==ModificationState.STATE_LOCAL;
+	}
 
-    private void registerAddedReference(T anObject, boolean add, boolean isChanged, boolean isLoopback)
-    {
-        if (anObject != null)
-        {
-        	if(add) ((AbstractMsoObject) anObject).addDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerAddedReference(this,
-        			m_msoModel.getUpdateMode(),isChanged,isLoopback);
-        }
-    }
+	@Override
+	public boolean isRemoteState() {
+		return m_state==ModificationState.STATE_REMOTE;
+	}
 
-    private void registerDeletedReference(T anObject, boolean remove, boolean isChanged, boolean isLoopback)
-    {
-        if (anObject != null)
-        {
-        	if(remove) ((AbstractMsoObject) anObject).removeDeleteListener(this);
-        	((AbstractMsoObject) anObject).registerRemovedReference(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
+	@Override
+	public boolean isConflictState() {
+		return m_state==ModificationState.STATE_CONFLICT;
+	}
+	
+	@Override
+	public boolean isLoopbackMode() {
+		return m_isLoopbackMode;
+	}
 
-        }
-    }
-    private void registerReferenceChange(T newRef, T oldRef, boolean isChanged, boolean isLoopback)
-    {
-        if (newRef != null || oldRef != null)
-        {
-            if (newRef != null && oldRef != null)
-            {
-            	if(isChanged)
-            	{
-            		incrementChangeCount();
-            	}
-            	m_owner.registerModifiedReference(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
-            } else if (newRef != null)
-            {
-            	if(isChanged)
-            	{
-	            	incrementChangeCount();
-	                m_owner.registerAddedReference(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
-            	}
-            } else
-            {
-            	if(isChanged)
-            	{
-	            	incrementChangeCount();
-	                m_owner.registerRemovedReference(this,m_msoModel.getUpdateMode(),isChanged,isLoopback);
-            	}
-            }
-        }
-    }
-
+	@Override
+	public boolean isRollbackMode() {
+		return m_isRollbackMode;
+	}
+	
+	@Override
+	public boolean isMixedState() {
+		return false;
+	}
+	
     public boolean setReference(T aReference)
     {
     	/* ========================================================
     	 * Setting a new reference value is dependent on the
-    	 * update mode of the MSO model. If the model is in
-    	 * LOOPBACK_UPDATE_MODE, the reference should reflect
-    	 * the server value without any conflict detection. If the
-    	 * model is in REMOTE_UPDATE_MODE, a change from the server
-    	 * is registered and the reference value should be analyzed
-    	 * to detect any conflicts between local value (private) and
-    	 * the server value (shared). If the model is in
-    	 * LOCAL_UPDATE_MODE, the reference value state should be
-    	 * updated according to the passed reference value.
+    	 * update mode of the MSO model. 
+    	 * 
+    	 * If the model is in REMOTE_UPDATE_MODE, a change from 
+    	 * the server is registered and the reference value 
+    	 * should be analyzed to detect any conflicts between 
+    	 * local value (private) and the server value (shared). 
+    	 * 
+    	 * If the reference been changed locally (isChanged() is true), 
+    	 * and the model is in REMOTE_UPDATE_MODE, this update may 
+    	 * be a loopback. Since loopback updates are just a ACK
+    	 * from the server, the attribute value is not changed. Hence,
+    	 * IMsoClientUpdateListener listeners is not required to fetch
+    	 * the attribute value. However, loopback updates may be used to
+    	 * indicate to the user that the commit was successful.
+    	 *  
+    	 * If the model is in LOCAL_UPDATE_MODE, the reference 
+    	 * value state should be updated according to the 
+    	 * passed reference value.
     	 *
     	 * Server value and local value should only be present
     	 * concurrently during a local update sequence (between two
-    	 * commit() or rollback() invocations), or if a conflict has
+    	 * commit or rollback transactions), or if a conflict has
     	 * occurred (remote update during a local update sequence).
     	 * Hence, if the reference value is in a LOCAL or
     	 * CONFLICTING, both values will be present. Else,
@@ -165,8 +201,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
         UpdateMode updateMode = m_msoModel.getUpdateMode();
         ModificationState newState;
-        boolean isChanged = false;
+        boolean isDirty = false;
         boolean isLoopback = false;
+        boolean isRollback = false;
 
         // get current reference
         T oldReference = getReference();
@@ -174,116 +211,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         // replace current relation
         switch (updateMode)
         {
-        	/*
-            case LOOPBACK_UPDATE_MODE:
-            {
-
-            	/* ===========================================================
-            	 * Update to server value state without any conflict detection.
-            	 *
-            	 * After a commit, all changes are looped back to the model
-            	 * from the message queue. This ensures that only changes
-            	 * that are successfully committed to the global message
-            	 * queue becomes valid. If any errors occurred, the message queue
-            	 * is given precedence over local values.
-            	 *
-            	 * Because of limitations in SaraAPI, it is not possible to
-            	 * distinguish between messages committed by this model instance
-            	 * and other model instances. Hence, any change received from
-            	 * the message queue may be a novel change. Because
-            	 * LOOPBACK_UPDATE_MODE is only a proper update mode if the
-            	 * received update is a loop back from this model instance, the
-            	 * mode can not be used with the current SaraAPI. If used,
-            	 * local changes will be overwritten by because conflict detection
-            	 * is disabled in this mode.
-            	 *
-            	 * The fix to this problem is to assume that if a commit is
-            	 * executed without any exception from the message queue, then all
-            	 * changes was posted and forwarded to all listeners. Hence, the
-            	 * attribute value can be put in server mode directly after a commit
-            	 * is executed.
-            	 *
-            	 * 		!!! The postProcessCommit() implements this fix !!!
-            	 *
-            	 * If the source of each change could be uniquely identified
-            	 * (at the model instance level), change messages received as a
-            	 * result of a commit by this model, could be group together and
-            	 * forwarded to the model using the LOOPBACK_UPDATE_MODE. This would
-            	 * be the correct and intended usage of this mode.
-            	 *
-            	 * ================================================================
-            	 * IMPORTANT 1
-            	 * ================================================================
-
-            	 * The local reference is only deleted from its
-            	 * object holder if local and server references are
-            	 * different because
-            	 *
-            	 * A)	The local references is no longer valid.
-            	 *
-            	 * B) 	When local and server references are equal,
-            	 * 		the reference to the object holder is already
-            	 * 		established.
-            	 *
-            	 * ================================================================
-            	 * IMPORTANT 2
-            	 * ================================================================
-            	 *
-            	 * This mode is by definition a violation of the SARA Protocol
-            	 * which is based on the assumption that any local changes is only
-            	 * valid when it equals the server value. Hence, REMOTE mode should
-            	 * only be resumed if local value equals server value, or a REMOTE
-            	 * update is explicitly received.
-            	 *
-            	 * The use of postProcessCommit() and LOOPBACK mode is therefore
-            	 * discarded.
-            	 *
-            	 * =========================================================== */
-        	/*
-            	// set state
-            	newState = ModificationState.STATE_SERVER;
-
-            	// is equal?
-            	boolean isConflict = !equal(m_localValue, aReference);
-
-                // only delete local reference from object holder
-                // if local reference is different from server reference
-                if(isConflict)
-                {
-                	// remove expired reference from object holder
-                	registerDeletedReference(m_localValue,true,false,true);
-                }
-
-                // only server value is kept
-                m_localValue = null;
-
-            	// any change?
-                if (!equal(m_serverValue, aReference))
-                {
-                	// remove server reference from object holder
-                	registerDeletedReference(m_serverValue,true,false,true);
-
-                    // prepare next
-                    m_serverValue = aReference;
-
-                    // register?
-                    if(isConflict)
-                    {
-                    	// add reference to object holder
-                    	registerAddedReference(m_serverValue,true,false,true);
-                    }
-
-                    // set flag
-                    isChanged = true;
-
-                }
-
-                // set loopback flag
-                isLoopback = true;
-
-                break;
-            }
-            */
             case REMOTE_UPDATE_MODE:
             {
 
@@ -319,39 +246,40 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
             	// check if a conflict has occurred?
             	boolean isConflict = (m_state == ModificationState.STATE_LOCAL
-            			|| m_state == ModificationState.STATE_CONFLICTING) ?
+            			|| m_state == ModificationState.STATE_CONFLICT) ?
             			!equal(m_localValue, aReference) : false;
 
             	// get next state
                 newState = isConflict ?
-                		  ModificationState.STATE_CONFLICTING
-                		: ModificationState.STATE_SERVER;
+                		  ModificationState.STATE_CONFLICT
+                		: ModificationState.STATE_REMOTE;
 
-                // set loop-back flag
-                isLoopback = !isConflict;
-
-                // only reset local value if no conflict is found,
-                if(isLoopback)
+                // no conflict found?
+                if(!isConflict)
                 {
-                    // prepare next
+                	/* If the reference is locally changed, and the 
+                	 * remote reference value equals the local reference 
+                	 * value, this is a loopback */
+                    isLoopback = (isChanged() && equal(m_localValue, aReference));
+                    // reset local value
                     m_localValue = null;
                 }
 
                 // any change?
-                if (!equal(m_serverValue, aReference))
+                if (!equal(m_remoteValue, aReference))
                 {
                 	// register
-                    registerDeletedReference(m_serverValue,true,false,isLoopback);
+                    registerDeletedReference(m_remoteValue,true,false,isLoopback,false);
                     // prepare next
-                    m_serverValue = aReference;
+                    m_remoteValue = aReference;
                     // register
-                    registerAddedReference(m_serverValue,true,false,isLoopback);
+                    registerAddedReference(aReference,true,false,isLoopback,false);
                     // set flag
-                    isChanged = true;
+                    isDirty = true;
                 }
 
                 // notify change on every conflict
-                isChanged |= isConflict;
+                isDirty |= isConflict;
 
                 break;
             }
@@ -389,28 +317,30 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	if(aReference==null && m_cardinality>0) return false;
 
             	// local and server values in sync?
-            	if (equal(m_serverValue, aReference))
+            	if (equal(m_remoteValue, aReference))
                 {
                 	// set server state
-                    newState = ModificationState.STATE_SERVER;
+                    newState = ModificationState.STATE_REMOTE;
                 	// register change
-                    registerDeletedReference(m_localValue,true,true,false);
+                    registerDeletedReference(m_localValue,true,true,false,true);
                     // set flag
-                    isChanged = (m_localValue!=null);
+                    isDirty = (m_localValue!=null);
                     // prepare next
                     m_localValue = null;
+                    // set flag
+                    isRollback = true;
                 } else
                 {
                 	// set local state
                     newState = ModificationState.STATE_LOCAL;
-                	// register
-                    registerDeletedReference(m_localValue,true,true,false);
+                	// register deletion of current local value
+                    registerDeletedReference(m_localValue,true,true,false,false);
                     // prepare next
                     m_localValue = aReference;
                     // register
-                    registerAddedReference(m_localValue,true,true,false);
+                    registerAddedReference(aReference,true,true,false,false);
                     // set flag
-                    isChanged = true;
+                    isDirty = true;
                 }
             }
         }
@@ -419,20 +349,89 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         if (m_state != newState)
         {
             m_state = newState;
-            isChanged = true;
+            isDirty = true;
         }
 
         // notify change?
-        if (isChanged || isLoopback)
+        if (isDirty || isLoopback)
         {
-            registerReferenceChange(aReference, oldReference, isChanged, isLoopback);
+            registerChangedReference(aReference, oldReference, isDirty, isLoopback, isRollback);
         }
+        
+        // set loopback mode
+        m_isLoopbackMode = isLoopback;
+        
+        // set rollback mode
+        m_isRollbackMode = isRollback;
         
         // success
         return true;
 
     }
 
+    public boolean isReferenceDeletable(T anObject)
+    {
+        return isDeletable()				// reference must be deleteable 
+        	&& anObject!=null 				// the object can not be null
+        	&& getReference() == anObject; 	// the object must equal the referenced object
+    }
+
+    public boolean deleteReference(T anObject)
+    {
+        if (isReferenceDeletable(anObject))
+        {
+            String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
+            System.out.println("Delete reference from " + s + " to " + anObject);
+
+        	// remove server reference?
+        	if (m_remoteValue!=null)
+            {
+            	// remove from object holder
+                registerDeletedReference(m_remoteValue,true,true,false,false);
+            }
+
+        	// remove local reference?
+        	if (m_localValue!=null)
+            {
+            	// register
+                registerDeletedReference(m_localValue,true,true,false,false);
+            }
+        	// success
+            return true;
+        }
+        // not allowed
+        return false;
+    }
+    
+    public boolean rollback()
+    {
+
+    	// prepare
+        T oldLocalValue = m_localValue;
+        m_localValue = null;
+
+        // get change flag
+        boolean isDirty = m_state == ModificationState.STATE_LOCAL
+        				 || m_state == ModificationState.STATE_CONFLICT;
+
+        // update state
+        m_state = ModificationState.STATE_REMOTE;
+
+        // notify?
+        if (isDirty)
+        {
+        	// reset loopback mode
+            m_isLoopbackMode = false;            
+            // set rollback mode
+            m_isRollbackMode = true;
+        	// notify
+            registerDeletedReference(oldLocalValue,true,false,false,true);
+            registerAddedReference(m_remoteValue,false,false,false,true);
+            registerChangedReference(m_remoteValue,oldLocalValue,false,false,true);
+        }
+        return isDirty;
+    }    
+    
     protected boolean equal(T v1, T v2)
     {
         return v1 == v2 || (v1 != null && v1.equals(v2));
@@ -440,10 +439,10 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public Vector<T> getConflictingValues()
     {
-        if (m_state == ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICT)
         {
             Vector<T> retVal = new Vector<T>(2);
-            retVal.add(m_serverValue);
+            retVal.add(m_remoteValue);
             retVal.add(m_localValue);
             return retVal;
         }
@@ -462,62 +461,9 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	return true;
     }
 
-    /**
-     * Perform rollback
-     */
-    public void rollback()
-    {
-
-    	// prepare
-        T oldLocalValue = m_localValue;
-        m_localValue = null;
-
-        // get change flag
-        boolean isChanged = m_state == ModificationState.STATE_LOCAL
-        				 || m_state == ModificationState.STATE_CONFLICTING;
-
-        // update state
-        m_state = ModificationState.STATE_SERVER;
-
-        // notify?
-        if (isChanged)
-        {
-        	// notify
-            registerDeletedReference(oldLocalValue,true,false,false);
-            registerAddedReference(m_serverValue,false,false,false);
-            registerReferenceChange(m_serverValue,oldLocalValue,false,false);
-        }
-    }
-
-    /**
-     * Perform local commit
-     * Change values without changing listeners etc.
-     */
-    public void postProcessCommit()
-    {
-
-    	// get change flag
-        boolean isChanged = m_state == ModificationState.STATE_LOCAL
-        				 || m_state == ModificationState.STATE_CONFLICTING;
-
-        // update state
-        m_state = ModificationState.STATE_SERVER;
-
-        // notify?
-        if (isChanged)
-        {
-            m_serverValue = m_localValue;
-            registerDeletedReference(m_localValue,true,false,false);
-            registerReferenceChange(m_localValue,m_serverValue,false, false);
-            m_localValue = null;
-        }
-    }
-
-
-
     private boolean acceptConflicting(ModificationState aState)
     {
-        if (m_state == ModificationState.STATE_CONFLICTING)
+        if (m_state == ModificationState.STATE_CONFLICT)
         {
             if (aState == ModificationState.STATE_LOCAL)
             {
@@ -528,8 +474,8 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * future conflict detection
             	 *
             	 * ========================================================== */
-                registerAddedReference(m_localValue,false,false,false);
-                registerDeletedReference(m_serverValue,false,false,false);
+                registerAddedReference(m_localValue,false,false,false,false);
+                registerDeletedReference(m_remoteValue,false,false,false,false);
             } else
             {
             	/* ==========================================================
@@ -539,77 +485,113 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	 * erased, together with any delete listener
             	 *
             	 * ========================================================== */
-            	registerAddedReference(m_serverValue,false,false,false);
-                registerDeletedReference(m_localValue,true,false,false);
+            	registerAddedReference(m_remoteValue,false,false,false,false);
+                registerDeletedReference(m_localValue,true,false,false,false);
                 m_localValue = null;
             }
             m_state = aState;
             // notify
-            m_owner.registerModifiedReference(this,m_msoModel.getUpdateMode(),false,false);
+            m_owner.registerModifiedReference(this,m_msoModel.getUpdateMode(),false,false,false);
             return true;
         }
         return false;
     }
-
+    
     public boolean acceptLocal()
     {
         return acceptConflicting(ModificationState.STATE_LOCAL);
     }
 
-    public boolean acceptServer()
+    public boolean acceptRemote()
     {
-        return acceptConflicting(ModificationState.STATE_SERVER);
+        return acceptConflicting(ModificationState.STATE_REMOTE);
     }
 
-    public boolean isUncommitted()
+	/**
+	 * Notify referenced object that a reference to it has been added
+	 * 
+	 * @param anObject - the object whom references is added to
+	 * @param add - this is added as delete listener in anObject if <code>true</code> 
+	 * @param updateServer - the reference change is forwarded to server if <code>true</code> and 
+	 * UpdateMode is LOCAL_UPDATE_MODE.
+	 * @param isLoopback - the registration is a loopback (ACK from server)
+	 */
+    private void registerAddedReference(T anObject, boolean add, boolean updateServer, boolean isLoopback, boolean isRollback)
     {
-        return m_state == ModificationState.STATE_LOCAL;
-    }
-
-    public boolean canDeleteReference(T anObject)
-    {
-        return (anObject!=null && getReference() == anObject && canDelete());
-    }
-
-    public boolean doDeleteReference(T anObject)
-    {
-        if (canDeleteReference(anObject))
+        if (anObject != null)
         {
-            String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
-            System.out.println("Delete reference from " + s + " to " + anObject);
-
-        	// remove server reference?
-        	if (m_serverValue!=null)
-            {
-            	// remove from object holder
-                registerDeletedReference(m_serverValue,true,true,false);
-            }
-
-        	// remove local reference?
-        	if (m_localValue!=null)
-            {
-            	// register
-                registerDeletedReference(m_localValue,true,true,false);
-            }
-        	// success
-            return true;
+        	if(add) ((AbstractMsoObject) anObject).addMsoObjectHolder(this);
+        	((AbstractMsoObject) anObject).registerAddedReference(this,
+        			m_msoModel.getUpdateMode(),updateServer,isLoopback,isRollback);
         }
-        // not allowed
-        return false;
     }
 
-    protected Collection<ChangeImpl.ChangeReference> getChangedReferences()
+    /**
+     * Notify referenced object that a reference to it has been deleted
+     * 
+     * @param anObject - the object whom references is removed from
+     * @param remove - this is removed as delete listener in anObject if <code>true</code> 
+     * @param updateServer - the reference change is forwarded to server if <code>true</code> and 
+	 * UpdateMode is LOCAL_UPDATE_MODE.
+     * @param isLoopback - the registration is a loopback (ACK from server)
+     */
+    private void registerDeletedReference(T anObject, boolean remove, boolean updateServer, boolean isLoopback, boolean isRollback)
+    {
+        if (anObject != null)
+        {
+        	if(remove) ((AbstractMsoObject) anObject).removeMsoObjectHolder(this);
+        	((AbstractMsoObject) anObject).registerRemovedReference(this,m_msoModel.getUpdateMode(),updateServer,isLoopback,isRollback);
+
+        }
+    }
+    
+    /**
+     * Notify reference owner that a reference has been changed
+     * 
+     * @param newRef - the reference object after update
+     * @param oldRef - the reference object before update
+     * @param updateServer -the reference change is forwarded to server if <code>true</code> and 
+	 * UpdateMode is LOCAL_UPDATE_MODE.
+     * @param isLoopback - the registration is a loopback (ACK from server)
+     * @param isRollback - the registration is a rollback of local value to remote value
+     */
+    private void registerChangedReference(T newRef, T oldRef, boolean updateServer, boolean isLoopback, boolean isRollback)
+    {
+        if (newRef != null || oldRef != null)
+        {
+            if (newRef != null && oldRef != null)
+            {
+        		incrementChangeCount();
+        		
+            	m_owner.registerModifiedReference(this,m_msoModel.getUpdateMode(),updateServer,isLoopback,isRollback);            	
+            } 
+            else if (newRef != null)
+            {
+            	incrementChangeCount();
+            	
+                m_owner.registerAddedReference(this,m_msoModel.getUpdateMode(),updateServer,isLoopback,isRollback);                
+            } 
+            else
+            {
+            	incrementChangeCount();
+            	
+                m_owner.registerRemovedReference(this,m_msoModel.getUpdateMode(),updateServer,isLoopback,isRollback);	                
+            }
+        }
+    }
+
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences()
     {
     	/* ==================================================================
     	 * Algorithm for committing reference
     	 * ================================================================== */
-        Vector<ChangeImpl.ChangeReference> changes = new Vector<ChangeImpl.ChangeReference>();
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
         if (m_state == ModificationState.STATE_LOCAL)
         {
         	// notify that current (server) reference should be deleted?
-            if (m_serverValue != null && !m_serverValue.hasBeenDeleted())
+            if (m_remoteValue != null && !m_remoteValue.isDeleted())
             {
-                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_serverValue, ChangeType.DELETED));
+                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_remoteValue, ChangeType.DELETED));
             }
             // notify that a new (server) reference should created?
             if (m_localValue != null)
@@ -619,5 +601,40 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         }
         return changes;
     }
-
+    
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences(Collection<IChangeIf> partial)
+    {
+    	/* ==================================================================
+    	 * Algorithm for conditionally committing a reference
+    	 * ================================================================== */
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
+        if (m_state == ModificationState.STATE_LOCAL) 
+        {
+        	// loop over all partial 
+        	for(IChangeIf it : partial) 
+	        {
+        		if(it instanceof IChangeReferenceIf) 
+        		{
+        			// get referred object
+        			IMsoObjectIf msoObj = ((IChangeReferenceIf)it).getReferredObject();
+        			// is the same as this?
+        			
+		        	// notify that current (server) reference should be deleted?
+		            if (m_remoteValue != null && msoObj == m_remoteValue && !m_remoteValue.isDeleted())
+		            {
+		                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_remoteValue, ChangeType.DELETED));
+		            }
+		            
+		            // notify that a new (server) reference should created?
+		            if (m_localValue != null && m_localValue == msoObj)
+		            {
+		                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_localValue, ChangeType.CREATED));
+		            }
+        		}
+	        }
+    	}
+        return changes;
+    }
+    
+    
 }

@@ -8,6 +8,9 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -22,6 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -34,22 +38,26 @@ import javax.swing.undo.UndoableEdit;
 
 import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
-import org.redcross.sar.gui.event.IMsoFieldListener;
-import org.redcross.sar.gui.event.MsoFieldEvent;
+import org.redcross.sar.gui.event.FieldModelEvent;
+import org.redcross.sar.gui.event.IFieldListener;
+import org.redcross.sar.gui.event.FieldEvent;
+import org.redcross.sar.gui.event.IFieldModelListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
+import org.redcross.sar.gui.field.IFieldModel.DataOrigin;
+import org.redcross.sar.gui.field.IFieldModel.DataState;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPolygon;
 import org.redcross.sar.mso.data.AttributeImpl.MsoRoute;
 import org.redcross.sar.mso.data.AttributeImpl.MsoTrack;
-import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.undo.DiskoFieldEdit;
+import org.redcross.sar.undo.FieldEdit;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.WorkPool;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 /**
@@ -60,15 +68,21 @@ import org.redcross.sar.wp.IDiskoWpModule;
  * @param E - edit component type
  * @param V - view component type
  */
-public abstract class AbstractField<O, E extends Component, V extends Component> extends JPanel implements IDiskoField {
+@SuppressWarnings("unchecked")
+public abstract class AbstractField<O, E extends Component, V extends Component> extends JPanel implements IField<O> {
 
-	private static final long serialVersionUID = 1L;
-	protected static final Logger m_logger = Logger.getLogger(AbstractField.class);
+	private static final long serialVersionUID = 1L;	
+	
+	private static final int SERVER_STATE_DURATION = 4000;
 
 	protected static final int MINIMUM_COMPONENT_WIDTH = 50;
 	protected static final int DEFAULT_CAPTION_WIDTH = 80;
 	protected static final int DEFAULT_MAXIMUM_HEIGHT = 25;
 
+	protected static final Logger m_logger = Logger.getLogger(AbstractField.class);
+	
+	protected static UpdateWork m_updateWork;
+	
 	protected JLabel m_valueLabel;
 	protected JLabel m_captionLabel;
 	protected E m_editComponent;
@@ -79,11 +93,11 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	
 	protected O m_oldEditValue;
 
-	protected IMsoAttributeIf<?> m_attribute;
+	protected IFieldModel<O> m_model;
 
 	protected int m_isMarked = 0;
 
-	protected boolean m_isBatchMode = true;
+	protected boolean m_isBufferMode = true;
 
 	private int m_editableCount = 0;
 	private int m_changeableCount = 0;
@@ -95,16 +109,16 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	private boolean m_isTrackingFocus = false;
 	private boolean m_isValueAdjusting = false;
 	
-	private Color m_vBg;					// no change view background 
-	private Color m_eBg;					// no change edit background 
-	private Color m_lBg = Color.YELLOW;		// local change background
-	private Color m_cBg = Color.RED;		// conflict change background
-	private Color m_sBg = Color.GREEN;		// server background
+	private Color m_vBg;					// remote data origin view background 
+	private Color m_eBg;					// remote data origin edit background 
+	private Color m_lBg = Color.YELLOW;		// remote data origin background
+	private Color m_cBg = Color.RED;		// conflict data origin change background
+	private Color m_sBg = Color.GREEN;		// change in remote data background
 	
-	private ModificationState m_state = ModificationState.STATE_UNDEFINED;
+	private DataOrigin m_origin = DataOrigin.ORIGIN_NOSOURCE;
 	
 	private final EventListenerList m_listeners = new EventListenerList();
-	
+
 	/*==================================================================
 	 * Anonymous classes
 	 *================================================================== */
@@ -126,11 +140,34 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	protected final DocumentListener m_documentListener = new DocumentListener() {
 
 		@Override
-		public void changedUpdate(DocumentEvent e) { /*onEditValueChanged();*/ }
+		public void changedUpdate(DocumentEvent e) { /*NOP*/ }
 		@Override
 		public void insertUpdate(DocumentEvent e) { onEditValueChanged(); }
 		@Override
 		public void removeUpdate(DocumentEvent e) { onEditValueChanged(); }
+		
+	};
+	
+	protected final IFieldModelListener m_modelListener = new IFieldModelListener() {
+
+		@Override
+		public void onFieldModelChanged(FieldModelEvent e) {
+			// update field value?
+			if(!isValueAdjusting() && e.isValueChanged()) {
+				// consume edit events
+				setValueAdjusting(true);
+				// update edit values
+				setNewEditValue(m_model.getValue());
+				setOldEditValue(getEditValue());
+				// resume handling of edit events
+				setValueAdjusting(false);
+			}
+			// update background?
+			if(e.isOriginChanged() || e.isStateChanged()) {
+				// forward
+				setFieldBackground();
+			}
+		}
 		
 	};
 
@@ -149,19 +186,21 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		setChangeable(false);
 		// initialize GUI
 		initialize(width, height);
+		// get default background colors
+		m_eBg = getEditComponent().getBackground();
+		m_vBg = getViewComponent().getBackground();
+		// initialize model
+		setModel(new DefaultFieldModel<O>());
 		// update
 		setName(name);
 		setCaptionText(caption);
 		setValue(value);
 		setEditable(isEditable);
-		// update backgrounds
-		m_eBg = getEditComponent().getBackground();
-		m_vBg = getViewComponent().getBackground();
 		// resume listeners
 		setChangeable(true);
 	}
 
-	protected AbstractField(IMsoAttributeIf<?> attribute, String caption, boolean isEditable) {
+	protected AbstractField(IMsoAttributeIf<O> attribute, String caption, boolean isEditable) {
 		// forward
 		this(attribute.getName(),caption,isEditable);
 		// set attribute
@@ -170,7 +209,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		reset();
 	}
 
-	protected AbstractField(IMsoAttributeIf<?> attribute,
+	protected AbstractField(IMsoAttributeIf<O> attribute,
 			String caption, boolean isEditable,
 			int width, int height) {
 		// forward
@@ -185,7 +224,18 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	/* ==================================================================
 	 *  Protected methods
 	 * ================================================================== */
-
+	
+	/**
+	 * This method checks if the given component implements the Scrollable
+	 * interface. The method is used to determine if view and edit components 
+	 * should be wrapped by a JScrollPane. Extenders of this class that have
+	 * view or edit components that implements Scrollable that should not be 
+	 * wrapped by a JScrollPane automatically, must override this method
+	 * and return false accordingly.
+	 * 
+	 * @param c - the component to check if scrollable
+	 * @return boolean
+	 */
 	protected boolean isScrollable(Component c) {
 		return (c instanceof Scrollable);
 	}
@@ -260,9 +310,12 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	 * Extending class should call this method when edit value is changed
 	 */
 	protected void onEditValueChanged() {
-		if(!isValueAdjusting() && isChangeable()) {
+		if(!isValueAdjusting()) {
+			// consume edit events
 			setValueAdjusting(true);
-			setValue(getEditValue());			
+			// update field value
+			setValue(getEditValue());
+			// resume handling of edit events 
 			setValueAdjusting(false);
 		}
 	}
@@ -280,25 +333,44 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 	
 	protected void setFieldBackground() {
-		if(isMsoField()) {
-			// set background
-			switch(m_attribute.getState()) {
-			case STATE_LOCAL: 
-				getComponent().setBackground(m_lBg);
-				break;
-			case STATE_SERVER:
+		// get data origin
+		DataOrigin origin = m_model.getOrigin();
+		// get flags
+		boolean bFlag = 
+			m_model.isState(DataState.STATE_LOOPBACK) ||
+			m_model.isState(DataState.STATE_ROLLBACK);
+		// set background
+		switch(origin) {
+		case ORIGIN_LOCAL: 
+			getComponent().setBackground(m_lBg);
+			break;
+		case ORIGIN_REMOTE:
+			// any change?
+			if(!(m_origin.equals(origin) || bFlag)) {
+				// set server change indication
+				getComponent().setBackground(m_sBg);
+				/* ==========================================
+				 * This adds the reset to default background
+				 * using the static UpdateWork instance 
+				 * m_updateWork. This method ensures that
+				 * every change of attribute state to SERVER 
+				 * is shown the duration SERVER_UPDATE_DURATION 
+				 * using the color m_sBg. 
+				 * ========================================== */
+				setUpdateState(this);
+			} else if(m_updateWork==null || !m_updateWork.contains(this)) {
 				getComponent().setBackground(isEditable()?m_eBg:m_vBg);
-				break;
-			case STATE_CONFLICTING:
-				getComponent().setBackground(m_cBg);
-				break;
 			}
-			m_state = m_attribute.getState();
-		} else {
+			break;
+		case ORIGIN_CONFLICT:
+			getComponent().setBackground(m_cBg);
+			break;
+		default:
 			getComponent().setBackground(isEditable()?m_eBg:m_vBg);			
-			m_state = ModificationState.STATE_UNDEFINED;
+			break;
 		}
-		
+		// update state
+		m_origin = origin;		
 	}
 	
 	protected abstract boolean setNewEditValue(Object value);
@@ -348,51 +420,54 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	
 	private void fireOnWorkChange(UndoableEdit edit) {
 
+		// initialize
+		FlowEvent e = null;
+		
 		// consume?
 		if(!isChangeable()) return;
 
 		// save change now?
-		if(!isBatchMode()) {
-			Application.getInstance().getMsoModel().suspendClientUpdate();
-			if(finish()) {
-				m_isDirty = false;
-				fireOnWorkChange(new WorkFlowEvent(this,getEditValue(),edit,WorkFlowEvent.EVENT_FINISH));
-			}
-			else {
-				// notify change instead
-				m_isDirty = true;
-				fireOnWorkChange(new WorkFlowEvent(this,getEditValue(),edit,WorkFlowEvent.EVENT_CHANGE));
-			}
-			Application.getInstance().getMsoModel().resumeClientUpdate(true);
+		if(isBufferMode()) {
+			m_isDirty = true;
+			e = new FlowEvent(this,getEditValue(),edit,FlowEvent.EVENT_CHANGE);
 		}
 		else {
-			m_isDirty = true;
-			fireOnWorkChange(new WorkFlowEvent(this,getEditValue(),edit,WorkFlowEvent.EVENT_CHANGE));
+			//Application.getInstance().getMsoModel().suspendClientUpdate();
+			if(finish()) {
+				m_isDirty = false;
+				e = new FlowEvent(this,getEditValue(),edit,FlowEvent.EVENT_FINISH);
+			}
+			else {
+				// buffer change
+				m_isDirty = true;
+				// notify change instead
+				e = new FlowEvent(this,getEditValue(),edit,FlowEvent.EVENT_CHANGE);
+			}
+			//Application.getInstance().getMsoModel().resumeClientUpdate(true);
 		}
-		// update background
-		setFieldBackground();
+		// notify
+		fireOnWorkChange(e);
 	}
 
-	private void fireOnWorkChange(WorkFlowEvent e) {
+	private void fireOnWorkChange(FlowEvent e) {
 		// get listeners
-		IWorkFlowListener[] list = m_listeners.getListeners(IWorkFlowListener.class);
+		IFlowListener[] list = m_listeners.getListeners(IFlowListener.class);
 		// forward
 		for(int i=0; i<list.length; i++) {
 			list[i].onFlowPerformed(e);
 		}
 	}
-	
-	private void fireOnMsoAttributeChanged() {
-		int type = (m_attribute==null?MsoFieldEvent.ATTRIBUTE_RESET:MsoFieldEvent.ATTRIBUTE_SET);
-		fireOnMsoFieldChange(new MsoFieldEvent(this,type));
+
+	private void fireFieldChanged(int type) {
+		fireFieldChange(new FieldEvent(this,type));
 	}
 	
-	private void fireOnMsoFieldChange(MsoFieldEvent e) {
+	private void fireFieldChange(FieldEvent e) {
 		// get listeners
-		IMsoFieldListener[] list = m_listeners.getListeners(IMsoFieldListener.class);
+		IFieldListener[] list = m_listeners.getListeners(IFieldListener.class);
 		// forward
 		for(int i=0; i<list.length; i++) {
-			list[i].onMsoFieldChanged(e);
+			list[i].onFieldChanged(e);
 		}
 		
 	}
@@ -436,27 +511,28 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 			m_changeableCount--;
 	}
 	
-	public int resetChangeable() {
+	public int clearChangeableCount() {
 		int count = m_changeableCount;
 		m_changeableCount = 0;
 		return count;
 	}	
 
 	public boolean isDirty() {
-		// editor value equal
-		if(isValueChanged(getEditValue(),getValue())) {
-			if(m_attribute!=null)
-				return m_attribute.isUncommitted();
-			else
-				return m_isDirty;
-		}
-		return true;
+		return m_isDirty;
 	}
-
-	public void setDirty(boolean isDirty) {
-		if(m_attribute==null) {
-			m_isDirty = isDirty;
+	
+	/*
+	public boolean isDirty() {
+		// compare editor value with model value
+		if(!isValueChanged(getEditValue(),getValue())) {
+			return m_model.isChanged();
 		}
+		return m_isDirty;
+	}
+	*/
+	
+	public void setDirty(boolean isDirty) {
+		m_isDirty = isDirty;
 	}
 
 	public int isMarked() {
@@ -464,7 +540,10 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 
 	public void setMarked(int isMarked) {
-		m_isMarked = isMarked;
+		if(m_isMarked != isMarked) {
+			m_isMarked = isMarked;
+			fireFieldChanged(FieldEvent.EVENT_FIELD_CHANGED);
+		}
 	}
 
 	public int getFixedCaptionWidth() {
@@ -525,7 +604,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		}
 	}
 
-	public int resetEditable() {
+	public int clearEditableCount() {
 		int count = m_editableCount;
 		m_editableCount = 0;
 		if(count>0) {
@@ -535,14 +614,16 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		return count;
 	}	
 	
-	public void setBatchMode(boolean isBatchMode) {
-		throw new IllegalArgumentException("AutoFinish not supported");
+	@Override
+	public void setBufferMode(boolean isBufferMode) {
+		m_isBufferMode = isBufferMode;
 	}
 
-	public boolean isBatchMode() {
-		throw new IllegalArgumentException("AutoFinish  not supported");
+	@Override
+	public boolean isBufferMode() {
+		return m_isBufferMode;
 	}
-
+	
 	@Override
 	public void setToolTipText(String text) {
 		// TODO Auto-generated method stub
@@ -571,126 +652,117 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		getCaption().setBackground(background);
 	}
 
-
 	public boolean fill(Object values) { return true; };
-
-	public boolean cancel() {
-
-		// consume?
-		if(!isChangeable()) return false;
-
-		// reset flag
-		m_isDirty = false;
-
-		// consume?
-		if(!isMsoField()) return false;
-
-		// initialize
-		boolean bFlag = false;
-
-		// consume changes
-		setChangeable(false);
-
-		// forward
-		bFlag = m_attribute.rollback();
-
-		// resume changes
-		setChangeable(true);
-
-		// finished
-		return bFlag;
-	}
 
 	public boolean finish() {
 
 		// consume?
-		if(!isChangeable()) return false;
+		if(!(isChangeable() || m_isDirty)) return false;
 
 		// reset flag
 		m_isDirty = false;
 
-		// consume?
-		if(!isMsoField()) return false;
-
-		// initialize
-		boolean bFlag = false;
-
-		// consume changes
+		// consume flow events
 		setChangeable(false);
 
-		try {
-			// forward
-			if(MsoUtils.setAttribValue(m_attribute,getEditValue())) {
-				// success
-				bFlag = true;
-				// update background
-				setFieldBackground();
-			}
-		} catch (Exception e) {
-			m_logger.error("Failed to set attribute value",e);
-		}
+		// forward
+		m_model.setLocalValue(getEditValue());
+		
+		// forward
+		m_model.parse();
 
-		// resume changes
+		// resume handling of flow events
 		setChangeable(true);
 
 		// finished
-		return bFlag;
+		return true;
 	}
 	
-	public void update() {
-		// update background
-		setFieldBackground();		
-	}
+	public boolean cancel() {
 
-	public void reset() {
 		// consume?
-		if(!isValueAdjusting()&&isChangeable()) 
-		{
-			// consume changes
-			setChangeable(false);
-			// load from MSO model?
-			if(isMsoField()) {
-				try {
-					// reset to attribute value
-					setNewEditValue(MsoUtils.getAttribValue(m_attribute));
-					setOldEditValue(getEditValue());
-				} catch (Exception e) {
-					m_logger.error("Failed to get attribute value",e);
-				}
-			}
-			else {
-				// reset to old edit value
-				setNewEditValue(m_oldEditValue);
-			}
-			// reset flag
-			m_isDirty = false;
-			// update background
-			setFieldBackground();
-			// resume change
-			setChangeable(true);
+		if(!(isChangeable() || m_isDirty)) return false;
+
+		// reset flag
+		m_isDirty = false;
+
+		// load old value
+		parse();
+		
+		// finished
+		return true;
+		
+	}
+
+	public void reset() {		
+		
+		// consume?
+		if(!isChangeable()) return;
+		
+		// reset model
+		m_model.reset();
+		
+		// reset flag
+		m_isDirty = false;
+		
+	}
+	
+	public void parse() {
+		// forward
+		m_model.parse();
+	}
+	
+	public boolean isChanged() {
+		return m_model.isChanged();
+	}
+	
+	@Override
+	public IFieldModel<O> getModel() {
+		return m_model;
+	}
+
+	@Override
+	public void setModel(IFieldModel<O> model) {
+		// not allowed?
+		if(model==null) 
+			throw new IllegalArgumentException("IFieldModel can not be null");
+		// unregister model listener?
+		if(m_model!=null) {
+			// remove listener
+			m_model.removeFieldModelListener(m_modelListener);
+			// notify listeners of model reset
+			fireFieldChanged(FieldEvent.EVENT_MODEL_RESET);
 		}
+		// replace model
+		m_model = model;
+		// add model listener
+		m_model.addFieldModelListener(m_modelListener);
+		// initialize states
+		m_origin = DataOrigin.ORIGIN_NOSOURCE; //= m_model.getOrigin();
+		// notify field of change
+		m_model.reset();
+		// notify listeners of model set
+		fireFieldChanged(FieldEvent.EVENT_MODEL_SET);
 	}
 
-	public boolean isMsoField() {
-		return m_attribute!=null;
+	public IMsoAttributeIf<O> getMsoAttribute() {
+		if(m_model instanceof MsoAttributeFieldModel) {
+			return ((MsoAttributeFieldModel)m_model).getMsoAttribute(); 
+		}
+		return null;
 	}
 
-	public IMsoAttributeIf<?> getMsoAttribute() {
-		return m_attribute;
-	}
-
-	public IMsoAttributeIf<?> clearMsoAttribute() {
-		IMsoAttributeIf<?> attr = m_attribute;
-		m_attribute = null;
-		// set backgrounds
-		getEditComponent().setBackground(m_eBg);
-		getViewComponent().setBackground(m_vBg);
+	public IMsoAttributeIf<O> clearMsoAttribute() {
+		IMsoAttributeIf<O> attr = getMsoAttribute();
+		if(attr!=null) {
+			setModel(new DefaultFieldModel<O>());
+		}
 		// finished
 		return attr;
 	}
 	
-	public IMsoAttributeIf<?> clearMsoAttribute(Object setValue) {
-		IMsoAttributeIf<?> attr = clearMsoAttribute();
+	public IMsoAttributeIf<O> clearMsoAttribute(Object setValue) {
+		IMsoAttributeIf<O> attr = clearMsoAttribute();
 		setValue(setValue);
 		return attr;		
 	}
@@ -706,22 +778,21 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 				attribute instanceof MsoTrack);
   	}
 
-	public void addWorkFlowListener(IWorkFlowListener listener) {
-		m_listeners.add(IWorkFlowListener.class,listener);
+	public void addFlowListener(IFlowListener listener) {
+		m_listeners.add(IFlowListener.class,listener);
 	}
 
-	public void removeWorkFlowListener(IWorkFlowListener listener) {
-		m_listeners.remove(IWorkFlowListener.class,listener);
+	public void removeFlowListener(IFlowListener listener) {
+		m_listeners.remove(IFlowListener.class,listener);
 
 	}
 
-	public void addMsoFieldListener(IMsoFieldListener listener) {
-		m_listeners.add(IMsoFieldListener.class,listener);
+	public void addFieldListener(IFieldListener listener) {
+		m_listeners.add(IFieldListener.class,listener);
 	}
 
-	public void removeMsoFieldListener(IMsoFieldListener listener) {
-		m_listeners.remove(IMsoFieldListener.class,listener);
-
+	public void removeFieldListener(IFieldListener listener) {
+		m_listeners.remove(IFieldListener.class,listener);
 	}
 	
 	public void installButton(AbstractButton button, boolean isVisible) {
@@ -827,24 +898,24 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 
 	public abstract String getFormattedText();
 	
-	@SuppressWarnings("unchecked")
 	public final O getValue() {
-		if(isMsoField()) {
-			return (O)MsoUtils.getAttribValue(getMsoAttribute());
+		if(m_isDirty) {
+			return getEditValue();
 		}
-		return getEditValue();
+		return m_model.getValue();
 	}
 	
 	public abstract O getEditValue();
 	
 	public final boolean setValue(Object value) {
 		O oldValue = getOldEditValue();
+		// if value is adjusting, calling setNewEditValue is not need.
 		if(isValueAdjusting() || setNewEditValue(value)) {
 			// notify change?
 			if(isValueChanged(oldValue, value)) {
-				fireOnWorkChange(new DiskoFieldEdit(this,oldValue,value));
+				fireOnWorkChange(new FieldEdit(this,oldValue,value));
 			}
-			// forward
+			// replace old edit value with current 
 			setOldEditValue(getEditValue());
 			// success
 			return true;
@@ -860,19 +931,15 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		return bFlag;
 	}
 	
-	public final boolean setMsoAttribute(IMsoAttributeIf<?> attribute) {
+	public final boolean setMsoAttribute(IMsoAttributeIf attribute) {
 		// is supported?
 		if(isMsoAttributeSupported(attribute)) {
 			// match component type and attribute
 			if(isMsoAttributeSettable(attribute)) {
-				// save attribute
-				m_attribute = attribute;
 				// update name
-				setName(m_attribute.getName());
-				// reset value
-				reset();
-				// notify
-				fireOnMsoAttributeChanged();
+				setName(attribute.getName());
+				// create model
+				setModel(new MsoAttributeFieldModel<O>(attribute));
 				// success
 				return true;
 			}
@@ -892,10 +959,10 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 	
 	protected static JFormattedTextField createDefaultComponent(boolean isEditable) {
-		return createDefaultComponent(isEditable,null,null);
+		return createDefaultComponent(isEditable,null);
 	}
 	
-	protected static JFormattedTextField createDefaultComponent(boolean isEditable, final JTextComponent coobject, final DocumentListener listener) {
+	protected static JFormattedTextField createDefaultComponent(boolean isEditable, final DocumentListener listener) {
 		JFormattedTextField textField = listener!=null ? new JFormattedTextField() {
 			
 			private static final long serialVersionUID = 1L;
@@ -907,7 +974,6 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 					super.getDocument().removeDocumentListener(listener);  
 				// replace 
 				super.setDocument(doc);
-				coobject.setDocument(doc);
 				// add listener?
 				if(doc!=null) doc.addDocumentListener(listener);
 			}
@@ -970,5 +1036,105 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
         return pane;
 	}
 	
+	private static final void setUpdateState(AbstractField field) {
+		// mark?
+		if(m_updateWork == null) {
+			try {
+				m_updateWork = new UpdateWork(field);
+				WorkPool.getInstance().schedule(m_updateWork);
+			} catch (Exception e) {
+				m_logger.error("Failed to create update work",e);
+			}
+		} else {
+			m_updateWork.add(field);
+		}
+	}
+	
+	private static final void resetUpdateState() {
+		// clear mark
+		m_updateWork = null;
+	}
+	/*==================================================================
+	 * inner classes
+	 *================================================================== */
+	
+	private static class UpdateWork extends AbstractWork {
+
+		private ConcurrentLinkedQueue<ServerUpdate> 
+			m_fields = new ConcurrentLinkedQueue<ServerUpdate>();
+		
+		public UpdateWork(AbstractField field) throws Exception {
+			// forward
+			super(NORMAL_PRIORITY, true, false, 
+					ThreadType.WORK_ON_UNSAFE, "",0
+					,false,false,false);
+			add(field);
+		}
+		
+		public void add(AbstractField field) {
+			// prepare
+			m_fields.add(new ServerUpdate(field));			
+		}
+		
+		public boolean contains(AbstractField field) {
+			return m_fields.contains(field);
+		}
+
+		@Override
+		public Object doWork() {
+			ServerUpdate it;
+			final List<AbstractField> update = new Vector<AbstractField>(m_fields.size());
+			List<ServerUpdate> reschedule = new Vector<ServerUpdate>(m_fields.size()); 
+			// loop over all
+			while((it=m_fields.poll())!=null) {
+				// update?
+				if(System.currentTimeMillis()-it.getTimeMillis()>SERVER_STATE_DURATION) {
+					update.add(it.getField());
+				} else {
+					reschedule.add(it);
+				}
+			}
+			// invoke on EDT
+			SwingUtilities.invokeLater(new Runnable() {
+
+				@Override
+				public void run() {
+					for(AbstractField it : update) {
+						it.parse();
+					}
+				}
+				
+			});
+			// reschedule?
+			m_isLoop = (reschedule.size()>0);
+			if(m_isLoop) {
+				m_fields.addAll(reschedule);
+			} else {
+				resetUpdateState();
+			}
+			// success
+			return true;
+		}
+		
+		private static class ServerUpdate {
+			
+			private AbstractField m_field;
+			private long m_tic = System.currentTimeMillis();
+			
+			public ServerUpdate(AbstractField field) {
+				m_field = field;
+			}
+			
+			public AbstractField getField() {
+				return m_field;
+			}
+			
+			public long getTimeMillis() {
+				return m_tic;
+			}
+		}
+		
+	}
+		
 	
 }

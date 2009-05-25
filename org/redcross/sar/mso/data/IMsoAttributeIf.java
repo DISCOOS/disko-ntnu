@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.*;
 
 import java.awt.geom.Point2D;
@@ -12,7 +13,7 @@ import java.util.Vector;
 /**
  * Base interface for MSO Attributes
  */
-public interface IMsoAttributeIf<T>
+public interface IMsoAttributeIf<T> extends IMsoDataStateIf
 {
     /**
      * Get name of attribute
@@ -22,11 +23,27 @@ public interface IMsoAttributeIf<T>
     public String getName();
 
     /**
-     * Gets change count since construction. Use this counter when tracking
-     * changes executed on a object. Each time the attributes is changed, the
-     * counter is incremented<p>
-     * This property enables MSO Update listeners to track changes
-     * without the need for local buffering of attribute states.
+     * Get change status
+     *
+     * @return <code>true</code> if local changes exists. 
+     */
+    public boolean isChanged();
+
+    /**
+     * Check is value has change since given change count
+     *
+     * @return <code>true</code> if any change has occurred 
+     */
+    public boolean isChangedSince(int changeCount);
+    
+    /**
+     * Gets change count since construction. </p>
+     * 
+     * Each time the attribute value is changed, the counter is incremented. 
+     * Use this counter when tracking changes executed on a object. </p>
+     * 
+     * This property enables IMsoClientUpdateListeners to track incremental 
+     * changes without the need for local buffering of attribute states.
      *
      * @return The number of changes performed on the object since the construction.
      */
@@ -47,19 +64,21 @@ public interface IMsoAttributeIf<T>
      */
     public int getIndexNo();
 
-    /**
-     * Get the {@link org.redcross.sar.mso.IMsoModelIf.ModificationState ModificationState} of the attribute
-     *
-     * @return The state
-     */
+	/**
+	 * Get modification state. </p>
+	 * 
+	 * @return ModificationState
+	 */
     public ModificationState getState();
 
     /**
-     * Check modification state
-     *
+     * Check modification state</p>
+     * 
+     * @param state
      * @return boolean
      */
     public boolean isState(ModificationState state);
+    
 
     /**
      * Get attribute value
@@ -76,11 +95,11 @@ public interface IMsoAttributeIf<T>
     public T getLocalValue();
     
     /**
-     * Get the server attribute value
+     * Get the remote attribute value
      * 
      * @return a value of type T
      */
-    public T getServerValue();
+    public T getRemoteValue();
     
     
     /**
@@ -97,6 +116,15 @@ public interface IMsoAttributeIf<T>
      */
     public Vector<T> getConflictingValues();
 
+    /**
+     * 
+     * Perform commit on the attribute
+     *
+     * @return True if something has been done.
+     * @throws TransactionException
+     */
+    public boolean commit() throws TransactionException;
+    
     /**
      * Perform rollback on the attribute
      *
@@ -119,26 +147,21 @@ public interface IMsoAttributeIf<T>
     public boolean validate();
     
     /**
-     * Test if local changes exists
-     */
-    public boolean isChanged();
-
-    /**
      * Accept local (client) value in case of conflict.
      *
      * @return True if something has been done.
      */
-    public boolean acceptLocal();
+    public boolean acceptLocalValue();
 
     /**
-     * Accept server value in case of conflict.
+     * Accept remote value in case of conflict.
      *
      * @return True if something has been done.
      */
-    public boolean acceptServer();
+    public boolean acceptRemoteValue();
 
     /**
-     * Tell if attrubute has been changed and not committed.
+     * Tell if attribute has been changed and not committed.
      *
      * @return True if not committed
      */

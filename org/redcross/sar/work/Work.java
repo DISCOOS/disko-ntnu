@@ -20,7 +20,7 @@ public class Work extends AbstractWork {
 			boolean showProgress, boolean suspend) throws Exception {
 
 		// forward
-		super(0,isSafe,isModal,thread,message,millisToPopup,showProgress,suspend);
+		super(NORMAL_PRIORITY,isSafe,isModal,thread,message,millisToPopup,showProgress,suspend);
 
 	}
 

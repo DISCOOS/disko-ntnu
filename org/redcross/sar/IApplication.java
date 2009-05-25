@@ -16,6 +16,7 @@ import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.output.DiskoReportManager;
+import org.redcross.sar.undo.EditManager;
 
 
 /**
@@ -93,7 +94,6 @@ public interface IApplication{
 	 * @return The SysMenu object
 	 */	
 	public SysMenu getSysMenu();
-
 	
 	/**
 	 * Get a reference to the model dispatcher.
@@ -109,6 +109,13 @@ public interface IApplication{
 	 */
 	public IDiskoMapManager getMapManager();
 
+	/**
+	 * Return a reference to the EditManager class. This class contains
+	 * methods to handle edits across work processes.
+	 * @return A reference to the EditManager
+	 */
+	public EditManager getEditManager();
+	
 	/**
 	 * Get a reference to the DiskoModuleManager. This class is responsible
 	 * for loading work process modules

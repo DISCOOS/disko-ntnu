@@ -17,6 +17,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoString;
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class TextField extends AbstractField<String,JFormattedTextField,JTextField> {
 	
 	private static final long serialVersionUID = 1L;
@@ -40,12 +41,12 @@ public class TextField extends AbstractField<String,JFormattedTextField,JTextFie
 		super(name, caption, isEditable, width, height, value);
 	}
 	
-	public TextField(IMsoAttributeIf<?> attribute, String caption,
+	public TextField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable, int width, int height) {
 		super(attribute, caption, isEditable, width, height);
 	}
 
-	public TextField(IMsoAttributeIf<?> attribute, String caption,
+	public TextField(IMsoAttributeIf attribute, String caption,
 			boolean isEditable) {
 		super(attribute, caption, isEditable);
 	}
@@ -57,8 +58,8 @@ public class TextField extends AbstractField<String,JFormattedTextField,JTextFie
 	public JFormattedTextField getEditComponent() {
 		if(m_editComponent==null) {
 			// create
-			m_editComponent = createDefaultComponent(true,getViewComponent(),m_documentListener);
-			m_editComponent.getDocument().addDocumentListener(m_documentListener);
+			m_editComponent = createDefaultComponent(true,m_documentListener);
+			//m_editComponent.getDocument().addDocumentListener(m_documentListener);
 		}
 		return m_editComponent;
 	}
@@ -70,14 +71,6 @@ public class TextField extends AbstractField<String,JFormattedTextField,JTextFie
 		}
 		return m_viewComponent;
 	}
-	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-	
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}	
 	
 	@Override
 	public String getEditValue() {

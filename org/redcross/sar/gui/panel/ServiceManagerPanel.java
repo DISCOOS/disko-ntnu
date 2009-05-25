@@ -422,7 +422,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 
 		private static final long serialVersionUID = 1L;
 		
-		FieldsPanel fieldsPanel;
+		FieldPane fieldsPanel;
 		TextField userNameField;
 		TextField passwordField;
 		TextField commandField;
@@ -456,9 +456,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 			
 		}
 		
-		private FieldsPanel getLoginPanel() {
+		private FieldPane getLoginPanel() {
 			if(fieldsPanel==null) {
-				fieldsPanel = new FieldsPanel("Login");
+				fieldsPanel = new FieldPane("Login");
 				fieldsPanel.setScrollBarPolicies(
 						DefaultPanel.VERTICAL_SCROLLBAR_NEVER,
 						DefaultPanel.HORIZONTAL_SCROLLBAR_NEVER);

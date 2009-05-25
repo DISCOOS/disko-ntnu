@@ -8,7 +8,7 @@ import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -104,7 +104,7 @@ public class UnitTypeDialog extends DefaultDialog
 		panel.setContainer(m_typeList);
 
 		// add work listener
-		panel.addWorkFlowListener((IWorkFlowListener)m_wpUnit);
+		panel.addFlowListener((IFlowListener)m_wpUnit);
 
 		// add content panel
 		this.setContentPane(panel);

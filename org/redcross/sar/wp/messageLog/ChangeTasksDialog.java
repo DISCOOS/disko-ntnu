@@ -341,7 +341,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	public void setMessage(IMessageIf message)
 	{
 		// Loop through all tasks in new/updated message
-		Collection<ITaskIf> messageTasks = message.getMessageTasks().getItems();
+		Collection<ITaskIf> messageTasks = message.getMessageTasks().getObjects();
 		List<TaskSubType> taskTypes = new LinkedList<TaskSubType>();
 		for(ITaskIf messageTask : messageTasks)
 		{

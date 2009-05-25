@@ -394,7 +394,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IAreaIf> getAreaListItems()
     {
-        return m_areaList.getItems();
+        return m_areaList.getObjects();
     }
 
     public IAssignmentListIf getAssignmentList()
@@ -409,7 +409,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IAssignmentIf> getAssignmentListItems()
     {
-        return m_assignmentList.getItems();
+        return m_assignmentList.getObjects();
     }
 
     public IPersonnelListIf getAttendanceList()
@@ -424,7 +424,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IPersonnelIf> getAttendanceListItems()
     {
-        return m_attendanceList.getItems();
+        return m_attendanceList.getObjects();
     }
 
     public IBriefingListIf getBriefingList()
@@ -439,7 +439,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IBriefingIf> getBriefingListItems()
     {
-        return m_briefingList.getItems();
+        return m_briefingList.getObjects();
     }
 
     public ICalloutListIf getCalloutList()
@@ -454,7 +454,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ICalloutIf> getCalloutListItems()
     {
-        return m_calloutList.getItems();
+        return m_calloutList.getObjects();
     }
 
     public ICheckpointListIf getCheckpointList()
@@ -469,7 +469,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ICheckpointIf> getCheckpointListItems()
     {
-        return m_checkpointList.getItems();
+        return m_checkpointList.getObjects();
     }
 
     public IEnvironmentListIf getEnvironmentList()
@@ -484,7 +484,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IEnvironmentIf> getEnvironmentListItems()
     {
-        return m_environmentList.getItems();
+        return m_environmentList.getObjects();
     }
 
     public IEquipmentListIf getEquipmentList()
@@ -499,7 +499,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IEquipmentIf> getEquipmentListItems()
     {
-        return m_equipmentList.getItems();
+        return m_equipmentList.getObjects();
     }
 
     public IEventLogIf getEventLog()
@@ -514,7 +514,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IEventIf> getEventLogItems()
     {
-        return m_eventLog.getItems();
+        return m_eventLog.getObjects();
     }
 
     public IForecastListIf getForecastList()
@@ -529,7 +529,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IForecastIf> getForecastListItems()
     {
-        return m_forecastList.getItems();
+        return m_forecastList.getObjects();
     }
 
     public IHypothesisListIf getHypothesisList()
@@ -544,7 +544,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IHypothesisIf> getHypothesisListItems()
     {
-        return m_hypothesisList.getItems();
+        return m_hypothesisList.getObjects();
     }
 
     public IIntelligenceListIf getIntelligenceList()
@@ -559,7 +559,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IIntelligenceIf> getIntelligenceListItems()
     {
-        return m_intelligenceList.getItems();
+        return m_intelligenceList.getObjects();
     }
 
     public IMessageLogIf getMessageLog()
@@ -574,7 +574,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IMessageIf> getMessageLogItems()
     {
-        return m_messageLog.getItems();
+        return m_messageLog.getObjects();
     }
 
 
@@ -590,7 +590,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IMessageLineIf> getMessageLineItems()
     {
-        return m_messageLineList.getItems();
+        return m_messageLineList.getObjects();
     }
 
     public IOperationAreaListIf getOperationAreaList()
@@ -605,7 +605,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IOperationAreaIf> getOperationAreaListItems()
     {
-        return m_operationAreaList.getItems();
+        return m_operationAreaList.getObjects();
     }
 
     public IPOIListIf getPOIList()
@@ -620,7 +620,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IPOIIf> getPOIListItems()
     {
-        return m_poiList.getItems();
+        return m_poiList.getObjects();
     }
 
     public IRouteListIf getRouteList()
@@ -635,7 +635,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IRouteIf> getRouteListItems()
     {
-        return m_routeList.getItems();
+        return m_routeList.getObjects();
     }
 
     public ISearchAreaListIf getSearchAreaList()
@@ -650,7 +650,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ISearchAreaIf> getSearchAreaListItems()
     {
-        return m_searchAreaList.getItems();
+        return m_searchAreaList.getObjects();
     }
 
     public ISketchListIf getSketchList()
@@ -665,7 +665,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ISketchIf> getSketchListItems()
     {
-        return m_sketchList.getItems();
+        return m_sketchList.getObjects();
     }
 
     public ISubjectListIf getSubjectList()
@@ -680,7 +680,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ISubjectIf> getSubjectListItems()
     {
-        return m_subjectList.getItems();
+        return m_subjectList.getObjects();
     }
 
     public ITaskListIf getTaskList()
@@ -695,7 +695,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ITaskIf> getTaskListItems()
     {
-        return m_taskList.getItems();
+        return m_taskList.getObjects();
     }
 
     public ITrackListIf getTrackList()
@@ -710,7 +710,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<ITrackIf> getTrackListItems()
     {
-        return m_trackList.getItems();
+        return m_trackList.getObjects();
     }
 
     public IUnitListIf getUnitList()
@@ -725,7 +725,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public Collection<IUnitIf> getUnitListItems()
     {
-        return m_unitList.getItems();
+        return m_unitList.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------

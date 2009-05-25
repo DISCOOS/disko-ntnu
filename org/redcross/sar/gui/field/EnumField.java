@@ -24,6 +24,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoEnum;
  * @author kennetgu
  *
  */
+@SuppressWarnings("unchecked")
 public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextField> {
 
 	private static final long serialVersionUID = 1L;
@@ -66,14 +67,14 @@ public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextFi
 		initialize(values,isEditable);
 	}
 
-	public EnumField(MsoEnum<?> attribute, String caption, boolean isEditable) {
+	public EnumField(MsoEnum attribute, String caption, boolean isEditable) {
 		// forward
 		super(attribute, caption, false);
 		// forward
 		initialize(getAllEnumValues(attribute),isEditable);
 	}
 
-	public EnumField(MsoEnum<?> attribute, String caption, Enum<?>[] values,
+	public EnumField(MsoEnum attribute, String caption, Enum<?>[] values,
 			boolean isEditable) {
 		// forward
 		super(attribute, caption, false);
@@ -81,7 +82,7 @@ public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextFi
 		initialize(values,isEditable);
 	}
 
-	public EnumField(MsoEnum<?> attribute, String caption,
+	public EnumField(MsoEnum attribute, String caption,
 			boolean isEditable, int width, int height) {
 		// forward
 		super(attribute, caption, false, width, height);
@@ -89,7 +90,7 @@ public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextFi
 		initialize(getAllEnumValues(attribute),isEditable);
 	}
 
-	public EnumField(MsoEnum<?> attribute, String caption,
+	public EnumField(MsoEnum attribute, String caption,
 			boolean isEditable, int width, int height, Enum<?>[] values) {
 		// forward
 		super(attribute, caption, false, width, height);
@@ -146,14 +147,6 @@ public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextFi
 		return m_viewComponent;
 	}
 	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}
-
 	public Enum<?> getEditValue() {
 		return m_value;
 	}

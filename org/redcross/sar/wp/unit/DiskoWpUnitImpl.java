@@ -42,14 +42,13 @@ import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
-import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.TransactionException;
-import org.redcross.sar.work.event.IWorkFlowListener;
+import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 /**
@@ -57,7 +56,7 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
  *
  * @author thomasl, kenneth
  */
-public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IWorkFlowListener
+public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUnit, IFlowListener
 {
 	private JPanel m_contentsPanel;
 
@@ -448,7 +447,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
     		    		
 			// try to commit changes
             try {
-                getMsoModel().commit(getMsoModel().getChanges(getUncomittedChanges()));
+                getMsoModel().commit(getMsoModel().getChanges(getChangedMsoObjects()));
                 return super.commit();
     		} catch (TransactionException ex) {
     			m_logger.error("Failed to commit changed unit data",ex);
@@ -465,7 +464,7 @@ public class DiskoWpUnitImpl extends AbstractDiskoWpModule implements IDiskoWpUn
     	if(isChanged()) {
     		
             try {
-                getMsoModel().rollback(getMsoModel().getChanges(getUncomittedChanges()));
+                getMsoModel().rollback(getMsoModel().getChanges(getChangedMsoObjects()));
                 return super.rollback();
     		} catch (TransactionException ex) {
     			m_logger.error("Failed to rollback changed unit data",ex);

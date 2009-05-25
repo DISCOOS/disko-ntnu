@@ -275,7 +275,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
     		for(MsoEvent.Update e : events.getEvents(m_interests)) {
 
     			// consume loopback updates
-    			if(!e.isLoopback()) {
+    			if(!e.isLoopbackMode()) {
 
 		            // get ICommunicatorIf object
 		    		ICommunicatorIf c = (ICommunicatorIf)e.getSource();

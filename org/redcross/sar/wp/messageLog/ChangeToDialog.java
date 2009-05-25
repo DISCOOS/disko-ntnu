@@ -38,8 +38,8 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * Provides a dialog for selecting broadcast or non-broadcast receiver.
@@ -437,10 +437,10 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 			m_contentPanel.addToContainer(getLeftPanel());
 			m_contentPanel.addToContainer(Box.createHorizontalStrut(5));
 			m_contentPanel.addToContainer(getReceiverPanel());
-			m_contentPanel.addWorkFlowListener(new IWorkFlowListener() {
+			m_contentPanel.addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 
 					// forward?
 					if(e.isFinish()) change();
@@ -543,12 +543,12 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 		if(m_typePanel==null) {
 			m_typePanel = new UnitTypeInputPanel("Type",3);
 			m_typePanel.setHeaderVisible(false);
-			m_typePanel.addWorkFlowListener(new IWorkFlowListener() {
+			m_typePanel.addFlowListener(new IFlowListener() {
 
 				/**
 				 * Updates the type filter based on which buttons are pressed in the unit type selection pad
 				 */
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 					// consume?
 					if(!isChangeable()) return;
 					// get type
@@ -568,10 +568,10 @@ public class ChangeToDialog extends DefaultDialog implements IEditorIf
 			m_numberPanel.setHeaderVisible(false);
 			m_numberPanel.setInputVisible(false);
 			m_numberPanel.setInputField(getUnitField(), false);
-			m_numberPanel.addWorkFlowListener(new IWorkFlowListener() {
+			m_numberPanel.addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 
 					// consume?
 					if(!isChangeable()) return;

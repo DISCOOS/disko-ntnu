@@ -100,7 +100,7 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
             //if deleted remove Sara object
         }
 
-        List<IChangeIf.IChangeReferenceIf> attrList = wrapper.getAttributeReferences();
+        List<IChangeIf.IChangeReferenceIf> attrList = wrapper.getObjectReferences();
         for (IChangeIf.IChangeReferenceIf ico : attrList)
         {
 			ChangeType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED

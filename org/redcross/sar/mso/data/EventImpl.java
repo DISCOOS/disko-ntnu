@@ -73,7 +73,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 
 
     @Override
-    public void addListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -82,7 +82,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
     }
 
     @Override
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceName)
+    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -248,7 +248,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 
     public Collection<ITaskIf> getEventTasksItems()
     {
-        return m_eventTasks.getItems();
+        return m_eventTasks.getObjects();
     }
 
     /*-------------------------------------------------------------------------------------------

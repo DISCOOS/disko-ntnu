@@ -25,7 +25,7 @@ import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextField;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.MapPanel;
 import org.redcross.sar.map.command.IMapCommand.MapCommandType;
@@ -36,8 +36,8 @@ import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.work.IWorkLoop.LoopState;
-import org.redcross.sar.work.event.IWorkFlowListener;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.IFlowListener;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -57,7 +57,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 	private MapPanel m_mapPanel;
 	private JPanel m_simulatorPanel;
 	private TogglePanel m_controlPanel;
-	private FieldsPanel m_simAttribsPanel;
+	private FieldPane m_simAttribsPanel;
 	private DTGField m_startedTimeAttr;
 	private TextField m_effortTimeAttr;
 	private TextField m_avgSimTimeAttr;
@@ -116,10 +116,10 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 			layoutComponent(getSplitPane());
 
 			// listen to work in this
-			addWorkFlowListener(new IWorkFlowListener() {
+			addFlowListener(new IFlowListener() {
 
 				@Override
-				public void onFlowPerformed(WorkFlowEvent e) {
+				public void onFlowPerformed(FlowEvent e) {
 					// auto update?
 					if(e.isFinish())
 						commit();
@@ -329,11 +329,11 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 		return m_suspendButton;
 	}
 
-	private FieldsPanel getSimAttribsPanel()
+	private FieldPane getSimAttribsPanel()
     {
         if (m_simAttribsPanel == null)
         {
-        	m_simAttribsPanel = new FieldsPanel("","",false,false);
+        	m_simAttribsPanel = new FieldPane("","",false,false);
         	m_simAttribsPanel.setHeaderVisible(false);
         	m_simAttribsPanel.setBorderVisible(false);
         	m_simAttribsPanel.setNotScrollBars();
@@ -451,7 +451,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_activeUnitsPanel == null)
         {
         	m_activeUnitsPanel = new UnitsPanel(false);
-        	m_activeUnitsPanel.addWorkFlowListener(this);
+        	m_activeUnitsPanel.addFlowListener(this);
         }
         return m_activeUnitsPanel;
     }
@@ -461,7 +461,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
         if (m_archivedUnitsPanel == null)
         {
         	m_archivedUnitsPanel = new UnitsPanel(true);
-        	m_archivedUnitsPanel.addWorkFlowListener(this);
+        	m_archivedUnitsPanel.addFlowListener(this);
         }
         return m_archivedUnitsPanel;
     }

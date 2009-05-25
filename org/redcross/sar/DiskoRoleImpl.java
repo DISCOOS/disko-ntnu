@@ -14,7 +14,7 @@ import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.menu.MainMenu;
 import org.redcross.sar.gui.menu.SubMenu;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -73,7 +73,7 @@ public class DiskoRoleImpl implements IDiskoRole {
 			final String id = module.getName();
 
 			// add role as disko work to module
-			module.addWorkFlowListener(this);
+			module.addFlowListener(this);
 
 			// get toggle button and icon
 			JToggleButton tbutton = DiskoButtonFactory.createToggleButton(ButtonSize.NORMAL, 0, 0);
@@ -258,7 +258,7 @@ public class DiskoRoleImpl implements IDiskoRole {
 		return app;
 	}
 
-	public void onFlowPerformed(WorkFlowEvent e) {
+	public void onFlowPerformed(FlowEvent e) {
 		// get module state
 		boolean bFlag = currentModule!=null ? currentModule.isChanged() : false;
 		// update icons to reflect state

@@ -149,12 +149,12 @@ public class TaskPanel extends DefaultPanel
 					updateTaskText();
 				}
 			});
-			m_typeCombo.addWorkFlowListener(this);
+			m_typeCombo.addFlowListener(this);
 			m_westPanel.add(m_typeCombo);
 
 			// Created date
 			m_createdField = new DTGField("created",m_resources.getString("TaskCreated.text"),false);
-			m_createdField.addWorkFlowListener(this);
+			m_createdField.addFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_createdField);
 
@@ -172,7 +172,7 @@ public class TaskPanel extends DefaultPanel
 					m_resources.getString("TaskResponsible.text"),false);
 			m_responsibleCombo.fill(responsible);
 			m_responsibleCombo.getEditComponent().setSelectedIndex(0);
-			m_responsibleCombo.addWorkFlowListener(this);
+			m_responsibleCombo.addFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_responsibleCombo);
 
@@ -201,7 +201,7 @@ public class TaskPanel extends DefaultPanel
 					updateFieldsEditable();
 				}
 			});
-			m_statusCombo.addWorkFlowListener(this);
+			m_statusCombo.addFlowListener(this);
 			m_westPanel.add(Box.createVerticalStrut(5));
 			m_westPanel.add(m_statusCombo);
 
@@ -222,7 +222,7 @@ public class TaskPanel extends DefaultPanel
 			m_priorityCombo.fill(TaskPriority.values());
 			m_priorityCombo.getEditComponent().setSelectedIndex(3);
 			m_priorityCombo.getEditComponent().setRenderer(new BundleListCellRenderer(m_resources));
-			m_priorityCombo.addWorkFlowListener(this);
+			m_priorityCombo.addFlowListener(this);
 			m_eastPanel.add(m_priorityCombo);
 
 			// Due (2,1)
@@ -232,7 +232,7 @@ public class TaskPanel extends DefaultPanel
 			JTextField field = (JTextField)m_dueCombo.getEditComponent()
 									.getEditor().getEditorComponent();
 			field.setDocument(new NumericDocument(6,0,false));
-			m_dueCombo.addWorkFlowListener(this);
+			m_dueCombo.addFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_dueCombo);
 
@@ -240,7 +240,7 @@ public class TaskPanel extends DefaultPanel
 			m_alertCombo = new ComboBoxField("alert",m_resources.getString("TaskAlert.text"),true);
 			updateAlertComboBox();
 			m_alertCombo.getEditComponent().setSelectedIndex(2);
-			m_alertCombo.addWorkFlowListener(this);
+			m_alertCombo.addFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_alertCombo);
 
@@ -249,7 +249,7 @@ public class TaskPanel extends DefaultPanel
 			m_progressCombo = new ComboBoxField("progress",m_resources.getString("TaskProgress.text"),false);
 			m_progressCombo.fill(progressItems);
 			m_progressCombo.getEditComponent().setSelectedIndex(0);
-			m_progressCombo.addWorkFlowListener(this);
+			m_progressCombo.addFlowListener(this);
 			m_eastPanel.add(Box.createVerticalStrut(5));
 			m_eastPanel.add(m_progressCombo);
 
@@ -294,7 +294,7 @@ public class TaskPanel extends DefaultPanel
 				}
 			});
 			m_descriptionArea.installButton(m_useSourceButton, true);
-			m_descriptionArea.addWorkFlowListener(this);
+			m_descriptionArea.addFlowListener(this);
 			m_bottomPanel.add(m_descriptionArea);
 
 
@@ -303,14 +303,14 @@ public class TaskPanel extends DefaultPanel
 					m_resources.getString("TaskSource.text"),false);
 			m_sourceArea.setFixedHeight(100);
 			m_sourceArea.getEditComponent().setRows(0);
-			m_sourceArea.addWorkFlowListener(this);
+			m_sourceArea.addFlowListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));
 			m_bottomPanel.add(m_sourceArea);
 
 			// Object
 			m_objectField = new TextField("object",
 					m_resources.getString("TaskObject.text"),false);
-			m_objectField.addWorkFlowListener(this);
+			m_objectField.addFlowListener(this);
 			m_bottomPanel.add(Box.createVerticalStrut(5));
 			m_bottomPanel.add(m_objectField);
 		}
@@ -405,14 +405,14 @@ public class TaskPanel extends DefaultPanel
 
 		m_statusCombo.setEnabled(canChangeStatus);
 		m_alertCombo.setEnabled(editable);
-		m_descriptionArea.resetEditable();
+		m_descriptionArea.clearEditableCount();
 		m_descriptionArea.setEditable(editable);
 		m_useSourceButton.setEnabled(editable);
 		m_dueCombo.setEnabled(editable);
 		m_priorityCombo.setEnabled(editable);
 		m_progressCombo.setEnabled(editable);
 		m_responsibleCombo.setEnabled(editable);
-		m_nameField.resetEditable();
+		m_nameField.clearEditableCount();
 		m_nameField.setEditable(editable);
 		m_typeCombo.setEnabled(editable);
 	}

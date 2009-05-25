@@ -302,8 +302,8 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	        	// delete all deleteable references
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoReferenceIf) {
-	        			if(msoObj.canDelete()) {
-	        				((AbstractMsoObject) msoObj).doDelete();
+	        			if(msoObj.isDeletable()) {
+	        				((AbstractMsoObject) msoObj).destroy();
 	        			}
 	        		}
 	        	}
@@ -311,15 +311,15 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	        	// delete all deleteable objects
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
-	        			if(msoObj.canDelete())
-	        			((AbstractMsoObject) msoObj).doDelete();
+	        			if(msoObj.isDeletable())
+	        			((AbstractMsoObject) msoObj).destroy();
 	        		}
 	        	}
 
 	        	// delete all undeleteable objects
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
-	        		if(msoObj!=null && !msoObj.hasBeenDeleted() && !(msoObj instanceof IOperationIf))
-	        			((AbstractMsoObject) msoObj).doDelete();
+	        		if(msoObj!=null && !msoObj.isDeleted() && !(msoObj instanceof IOperationIf))
+	        			((AbstractMsoObject) msoObj).destroy();
 	        	}
 
 		    	// delete operation?
@@ -562,13 +562,13 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         }
 
         // get commit wrapper
-        ITransactionIf wrapper = (ITransactionIf) e.getSource();
+        ITransactionIf transaction = (ITransactionIf) e.getSource();
 
         // get object list
-        List<IChangeObjectIf> objectList = wrapper.getObjects();
+        List<IChangeObjectIf> objectList = transaction.getObjects();
 
         // prepare changed objects
-        for (IChangeObjectIf it : wrapper.getObjects())
+        for (IChangeObjectIf it : transaction.getObjects())
         {
             //IF created, create SARA object
             if (it.getType().equals(ChangeType.CREATED))
@@ -584,13 +584,13 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         }
 
         // prepare list changes (1-to-N references)
-        for (IChangeIf.IChangeReferenceIf it : wrapper.getListReferences())
+        for (IChangeIf.IChangeReferenceIf it : transaction.getListReferences())
         {
             msoReferenceChanged(it, false);
         }
 
         // prepare object to object references (1-to-1, or named reference)
-        for (IChangeIf.IChangeReferenceIf it : wrapper.getAttributeReferences())
+        for (IChangeIf.IChangeReferenceIf it : transaction.getObjectReferences())
         {
         	// forward
             msoReferenceChanged(it, true);
@@ -662,9 +662,9 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         }
     }
 
-    private SarObject createSaraObject(IChangeObjectIf commitObject)
+    private SarObject createSaraObject(IChangeObjectIf changeObject)
     {
-        IMsoObjectIf msoObj = commitObject.getObject();
+        IMsoObjectIf msoObj = changeObject.getMsoObject();
         msoObj.getMsoClassCode();
         // get object type
         SarSession sarSess = sarSvc.getSession();
@@ -683,29 +683,29 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         // connect to operation
         sbo.setOperation(sarOperation);
         // update references and attributes
-        updateSaraObject(sbo, commitObject.getObject(), commitObject.getPartial(), false);
+        updateSaraObject(sbo, changeObject.getMsoObject(), changeObject, false);
         // finished
         return sbo;
     }
 
-    private void updateSaraObject(IChangeObjectIf commitObject)
+    private void updateSaraObject(IChangeObjectIf changeObject)
     {
         // get sara object
-    	SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());
+    	SarObject soi = sarOperation.getSarObject(changeObject.getMsoObject().getObjectId());
         // ensure that this change is submitted to all listeners before any references is updated
-        updateSaraObject(soi, commitObject.getObject(), commitObject.getPartial(), true);
+        updateSaraObject(soi, changeObject.getMsoObject(), changeObject, true);
     }
 
-    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, List<IMsoAttributeIf<?>> partial, boolean submitChanges)
+    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, IChangeObjectIf changeObject, boolean submitChanges)
     {
     	// initialize
-        SarSession sarSess = sarSvc.getSession();
-        Map<?,?> attrMap = msoObj.getAttributes();
-        Map<?,?> relMap = msoObj.getObjectReferences();
-        List<SarBaseObject> objs = sbo.getObjects();
+    	Map<String, IMsoAttributeIf<?>> attrMap = msoObj.getAttributes();
+        Map<String, IMsoReferenceIf<?>> objRefMap = msoObj.getObjectReferences();
+        List<SarBaseObject> sarObjs = sbo.getObjects();
+        boolean isComplete = changeObject==null || changeObject!=null&&!changeObject.isPartial();
 
         // loop over all objects in sara object
-        for (SarBaseObject so : objs)
+        for (SarBaseObject so : sarObjs)
         {
             try
             {
@@ -714,10 +714,10 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 {
                     // Map fact to attribute
                     String attrName = ((SarFact) so).getLabel();
-                    IMsoAttributeIf<?> msoAttr = (IMsoAttributeIf<?>) attrMap.get(attrName.toLowerCase());
+                    IMsoAttributeIf<?> msoAttr = attrMap.get(attrName.toLowerCase());
                     // only update fact if this is not a partial update, or if attribute
                     // is included in the partial update
-                    if(partial.size()==0 || partial.contains(msoAttr)) {
+                    if(isComplete || changeObject.containsPartial(msoAttr)) {
 	                    // found attribute?
 	                    if (msoAttr != null)
 	                    {
@@ -727,17 +727,20 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	                        Log.warning("Attribute " + attrName + " not found for " + sbo.getName());
 	                    }
                     }
-                // reference attributes (which is objects them selves) are
-                // only updated if this is a full update operation
-                } else if (partial.size()==0)
+                /* object references (which is objects them selves) are
+                 * only updated if this is a complete commit operation 
+                 * (the opposite of a partial commit). */
+                } else 
                 {
                     if(so instanceof SarObject) {
 	                	String objName = ((SarObject) so).getName();
-	                    IMsoObjectIf refAttr = (IMsoObjectIf) relMap.get(objName);
-	                    if (refAttr != null)
+	                    IMsoObjectIf refObj = objRefMap.get(objName).getReference();
+	                    // only update fact if this is not a partial update, or if object reference
+	                    // is included in the partial update	                    
+	                    if (refObj != null && (isComplete || changeObject.containsPartial(refObj)))
 	                    {
-	                    	// reuse partial list, it is empty anyway...
-	                        updateSaraObject((SarObject) so, refAttr, partial, submitChanges);
+	                    	// recurse on reference object
+	                        updateSaraObject((SarObject) so, refObj, null, submitChanges);
 	                    }
                     }
                 }
@@ -751,7 +754,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         if (submitChanges)
         {
         	// commit this change
-            sarSess.commit(sarOperation.getID());
+        	sarSvc.getSession().commit(sarOperation.getID());
         }
 
     }
@@ -759,7 +762,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     private void deleteSaraObject(IChangeObjectIf commitObject)
     {
         // get object from operation
-        SarObject soi = sarOperation.getSarObject(commitObject.getObject().getObjectId());
+        SarObject soi = sarOperation.getSarObject(commitObject.getMsoObject().getObjectId());
 
     	// forward
         soi.delete("DISKO");
@@ -1172,7 +1175,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
 		public SaraChangeWork(List<SaraChangeEvent> changes) throws Exception {
 			// forward
-			super(0,false,true,ThreadType.WORK_ON_SAFE,"Bearbeider",500,true,true);
+			super(HIGH_HIGH_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Bearbeider",500,true,true);
 			// save event
 			this.changes = changes;
  		}

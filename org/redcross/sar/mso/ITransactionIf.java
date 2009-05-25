@@ -31,7 +31,7 @@ public interface ITransactionIf
      * Get a list of committable one-to-one references.
      * @return The list
      */
-    public List<IChangeIf.IChangeReferenceIf> getAttributeReferences();
+    public List<IChangeIf.IChangeReferenceIf> getObjectReferences();
 
     /**
      * Get a list of committable one-to-many references.

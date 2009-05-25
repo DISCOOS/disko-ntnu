@@ -21,7 +21,7 @@ import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.model.FileTreeModel;
-import org.redcross.sar.gui.panel.FieldsPanel;
+import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.ds.mso.MsoAdvisor;
@@ -39,7 +39,7 @@ public class AdvisorPanel extends JPanel
 	private static final String CONTROL_CAPTION = "Rådgiver - <b>Kontrollpanel</b> (%s)";
 
 	private TogglePanel m_advisorPanel;
-	private FieldsPanel m_advisorPropPanel;
+	private FieldPane m_advisorPropPanel;
 	private DTGField m_startedTimeAttr;
 	private TextField m_effortTimeAttr;
 	private TextField m_avgEstTimeAttr;
@@ -187,11 +187,11 @@ public class AdvisorPanel extends JPanel
 		return m_stopButton;
 	}
 
-	private FieldsPanel getEtePropPanel()
+	private FieldPane getEtePropPanel()
     {
         if (m_advisorPropPanel == null)
         {
-        	m_advisorPropPanel = new FieldsPanel("","",false,false);
+        	m_advisorPropPanel = new FieldPane("","",false,false);
         	m_advisorPropPanel.setHeaderVisible(false);
         	m_advisorPropPanel.setBorderVisible(false);
         	m_advisorPropPanel.setNotScrollBars();

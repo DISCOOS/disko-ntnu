@@ -73,14 +73,6 @@ public class CheckBoxField extends AbstractField<Boolean,JCheckBox,JTextField> {
 		return m_viewComponent;
 	}
 	
-	public void setBatchMode(boolean isBatchMode) {
-		m_isBatchMode = isBatchMode;
-	}
-
-	public boolean isBatchMode() {
-		return m_isBatchMode;
-	}
-
 	@Override
 	public Boolean getEditValue() {
 		return ((JCheckBox)m_editComponent).isSelected();

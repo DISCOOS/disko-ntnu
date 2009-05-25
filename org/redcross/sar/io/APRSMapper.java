@@ -329,7 +329,7 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 					// cast entity to MSO name space
 					String objID = (String)station.getIdentity();
 					// get unit
-					IUnitIf unit = cmdPost.getUnitList().getItem(objID);
+					IUnitIf unit = cmdPost.getUnitList().getObject(objID);
 					// found?
 					if(unit!=null) {
 						unit.suspendClientUpdate();

@@ -188,7 +188,7 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 			// get assignment
 			IAssignmentIf assignment = getAssignment(msoRoute);
 			// has assignment registered?
-			if(assignment!=null && !assignment.hasBeenDeleted()) {
+			if(assignment!=null && !assignment.isDeleted()) {
 				// forward
 				if(setEstimate(assignment)) {
 					cost = getCost(assignment);

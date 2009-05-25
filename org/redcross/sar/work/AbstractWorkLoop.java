@@ -3,6 +3,7 @@ package org.redcross.sar.work;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.swing.event.EventListenerList;
 
@@ -69,7 +70,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	/**
 	 * Work queue
 	 */
-    protected final PriorityBlockingQueue<IWork> m_queue = new PriorityBlockingQueue<IWork>();
+    protected final PriorityBlockingQueue<FIFOEntry<IWork>> m_queue = new PriorityBlockingQueue<FIFOEntry<IWork>>();
 
 	/* =======================================================
 	 * Constructors
@@ -188,7 +189,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
   		// set id
   		work.setID(id);
 		// add to list
-		add(work);
+		add(work,true);
 		// ensure fast execution
 		resume();
 		// finished
@@ -416,8 +417,10 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
     	}
     }
 
-    protected void add(IWork work) {
-    	work.addWorkListener(m_workListener);
+    protected void add(IWork work, boolean register) {
+    	if(register) {
+    		work.addWorkListener(m_workListener);
+    	}
     }
 
     protected boolean remove(IWork work) {
@@ -480,7 +483,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 						// remove from queue
 						m_queue.remove(w);
 						// reschedule
-						m_queue.add(w);
+						m_queue.add(new FIFOEntry<IWork>(w));
 					}
 				}
 			}
@@ -489,5 +492,28 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 
     };
 
+    /* =======================================================
+	 * Inner classes
+	 * ======================================================= */
 
+    protected static class FIFOEntry<E extends Comparable<? super E>>
+    							implements Comparable<FIFOEntry<E>> {
+    	private final static AtomicLong seq = new AtomicLong();
+    	private final long seqNum;
+    	private final E entry;
+    	
+    	public FIFOEntry(E entry) {
+    		seqNum = seq.getAndIncrement();
+    		this.entry = entry;
+    	}
+    	
+    	public E getEntry() { return entry; }
+    	
+    	public int compareTo(FIFOEntry<E> other) {
+		    int res = entry.compareTo(other.entry);
+		    if (res == 0 && other.entry != this.entry)
+		    	res = (seqNum < other.seqNum ? -1 : 1);
+		    return res;
+    	}
+    }    
 }

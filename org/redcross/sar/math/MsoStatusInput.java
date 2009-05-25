@@ -47,12 +47,12 @@ public class MsoStatusInput<T extends IMsoObjectIf, E extends Enum<E>> extends A
 			// get status attribute
 			IMsoEnumIf<E> attr = getAttribute(it);
 			// only use server values
-			if(attr.isState(ModificationState.STATE_SERVER)) {
+			if(attr.isState(ModificationState.STATE_REMOTE)) {
 				// get status
 				E status = attr.getValue();
 				// get flags
 				boolean exists = m_count.contains(it);
-				boolean isReady = it.hasBeenDeleted() ? false : m_status.equals(status);
+				boolean isReady = it.isDeleted() ? false : m_status.equals(status);
 				// level increased?
 				if(!exists && isReady) {
 					// get time

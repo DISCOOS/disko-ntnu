@@ -37,7 +37,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.TimePos;
-import org.redcross.sar.work.event.WorkFlowEvent;
+import org.redcross.sar.work.event.FlowEvent;
 
 /**
  * Dialog used to update message position lines when editing the message log.
@@ -171,7 +171,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 			// create a new PositionPanel and register it with the tool
 			m_positionPanel = (PositionPanel)m_tool.addToolPanel();
 			// forward work to this
-			m_positionPanel.addWorkFlowListener(this);
+			m_positionPanel.addFlowListener(this);
 
 		}
 		return m_positionPanel;
@@ -179,7 +179,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 	}
 
 	@Override
-	public void onFlowPerformed(WorkFlowEvent e) {
+	public void onFlowPerformed(FlowEvent e) {
 
 		super.onFlowPerformed(e);
 

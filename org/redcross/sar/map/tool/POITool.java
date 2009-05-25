@@ -164,7 +164,7 @@ public class POITool extends BaseMsoDrawTool {
 							// check for START and STOP duplicates?
 							if(poiType != IPOIIf.POIType.VIA) {
 								// get poi list
-								ArrayList<IPOIIf> areaPOIs = new ArrayList<IPOIIf>(((IAreaIf)msoOwner).getAreaPOIs().getItems());
+								ArrayList<IPOIIf> areaPOIs = new ArrayList<IPOIIf>(((IAreaIf)msoOwner).getAreaPOIs().getObjects());
 								// search for duplicate
 								for(int i=0;i<areaPOIs.size();i++) {
 									// exists?
