@@ -1118,7 +1118,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 							}
 							if(line != null)
 							{
-								line.delete();
+								line.delete(true);
 							}
 							else
 								Utils.showWarning("Ingenting å slette");
@@ -1502,7 +1502,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			case ALLOCATED:
 			case STARTED:
 			case COMPLETED:
-				line.delete();
+				line.delete(true);
 				break;
 			default:
 				continue;
@@ -1633,7 +1633,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 
 	public static boolean isMessageDirty()
 	{
-		return m_messageDirty || m_wp.getMsoModel().hasUncommitedChanges();
+		return m_messageDirty || m_wp.getMsoModel().isChanged();
 	}
 
 	/**
@@ -1643,7 +1643,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	{
 		if(m_newMessage && m_currentMessage != null)
 		{
-			m_currentMessage.delete();
+			m_currentMessage.delete(true);
 		}
 
 		m_currentMessage = null;

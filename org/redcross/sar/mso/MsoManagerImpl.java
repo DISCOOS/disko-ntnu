@@ -207,7 +207,7 @@ public class MsoManagerImpl implements IMsoManagerIf
             throw new MsoException("Mso object of type IOperationIf can not be removed");
         }
 
-        return aMsoObject.delete();
+        return aMsoObject.delete(true);
 
     }
 
@@ -223,7 +223,7 @@ public class MsoManagerImpl implements IMsoManagerIf
                  * FIX: This methods fails if non-deleteable references exists in the
                  * model. This should not happen!
                  * ============================================================== */
-                m_operation.delete();
+                m_operation.delete(true);
 
             	// remove reference
                 m_operation = null;

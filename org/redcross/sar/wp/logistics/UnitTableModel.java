@@ -41,15 +41,15 @@ import java.util.Vector;
 
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupAdapter;
-import org.redcross.sar.gui.dnd.AssignmentTransferable;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
+import org.redcross.sar.gui.dnd.TransferableMsoObject;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
-import org.redcross.sar.gui.renderer.IconRenderer;
-import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
-import org.redcross.sar.gui.renderer.IconRenderer.IconActionHandler;
-import org.redcross.sar.gui.renderer.IconRenderer.UnitIcon;
+import org.redcross.sar.gui.renderer.ObjectIcon;
+import org.redcross.sar.gui.renderer.ObjectIcon.AssignmentIcon;
+import org.redcross.sar.gui.renderer.ObjectIcon.MsoIconActionHandler;
+import org.redcross.sar.gui.renderer.ObjectIcon.UnitIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -85,7 +85,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     private UnitTableRowSorter m_rowSorter;
     private EnumSet<IUnitIf.UnitType> m_unitTypeSelection;
     private IDiskoWpLogistics m_wpModule;
-    private IconActionHandler m_actionHandler;
+    private MsoIconActionHandler m_actionHandler;
     private boolean consume = false;
 
     /* ===========================================================
@@ -101,7 +101,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
      * @param anActionHandler The handler of icon actions.
      */
     @SuppressWarnings("unchecked")
-	public UnitTableModel(JTable aTable, IDiskoWpLogistics aWp, IconRenderer.IconActionHandler anActionHandler)
+	public UnitTableModel(JTable aTable, IDiskoWpLogistics aWp, ObjectIcon.MsoIconActionHandler anActionHandler)
     {
 
     	// forward
@@ -161,13 +161,13 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     {
         if (columnIndex == 0)
         {
-            return IconRenderer.UnitIcon.class;
+            return ObjectIcon.UnitIcon.class;
         } else if (columnIndex == 5)
         {
-            return IconRenderer.InfoIcon.class;
+            return ObjectIcon.InfoIcon.class;
         } else
         {
-            return IconRenderer.AssignmentIcon.class;
+            return ObjectIcon.AssignmentIcon.class;
         }
     }
 
@@ -268,7 +268,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
         }
     }
 
-    public static Collection<IAssignmentIf> getSelectedAssignments(IUnitIf aUnit, int aSelectorIndex)
+    public static Collection<IAssignmentIf> getSelectedAssignments1(IUnitIf aUnit, int aSelectorIndex)
     {
         switch (aSelectorIndex)
         {
@@ -293,21 +293,21 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     	// loop over all cells
     	for(int i=0;i<getRowCount();i++) {
     		for(int j=0;j<getColumnCount();j++) {
-    			IconRenderer icon = (IconRenderer)getValueAt(i, j);
+    			ObjectIcon icon = (ObjectIcon)getValueAt(i, j);
     			if(icon instanceof UnitIcon) {
     				UnitIcon unitIcon = (UnitIcon)icon;
-    				if(unitIcon.getUnit()==msoObject) {
+    				if(unitIcon.getMsoObject()==msoObject) {
     					setSelection(i,j);
         				return true;
     				}
     			}
     			else if(icon instanceof AssignmentIcon) {
     				AssignmentIcon assignmentIcon = (AssignmentIcon)icon;
-    				if(assignmentIcon.isSingleAssigmentIcon() && assignmentIcon.getAssignment()==msoObject) {
+    				if(assignmentIcon.isSingleAssigmentIcon() && assignmentIcon.getMsoObject()==msoObject) {
     					setSelection(i,j);
     					return true;
     				}
-    				if(assignmentIcon.getAssignmentList().contains(msoObject)) {
+    				if(assignmentIcon.getAssignments().contains(msoObject)) {
     					setSelection(i,j);
         				return true;
     				}
@@ -334,9 +334,9 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
                 m_selectedCol = col;
                 if(isSelected) {
 	                Object value = getValueAt(m_selectedRow, m_selectedCol);
-	                if (value instanceof IconRenderer)
+	                if (value instanceof ObjectIcon)
 	                {
-	                    ((IconRenderer) value).iconSelected();
+	                    ((ObjectIcon) value).iconSelected();
 	                }
                 }
             }
@@ -435,28 +435,28 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 
     private Icon[] updateIcons(int i, IUnitIf aUnit,Icon[] icons)
     {
-        ((IconRenderer.UnitIcon) icons[0]).setUnit(aUnit);
-        ((IconRenderer.AssignmentIcon) icons[1]).setAssignments(aUnit, 0);
-        ((IconRenderer.AssignmentIcon) icons[2]).setAssignments(aUnit, 1);
-        ((IconRenderer.AssignmentIcon) icons[3]).setAssignments(aUnit, 2);
-        ((IconRenderer.AssignmentIcon) icons[4]).setAssignments(aUnit, 3);
-        ((IconRenderer.InfoIcon) icons[5]).setInfo(aUnit.getRemarks());
+        ((ObjectIcon.UnitIcon) icons[0]).setMsoObject(aUnit);
+        ((ObjectIcon.AssignmentIcon) icons[1]).setAssignments(aUnit, 0);
+        ((ObjectIcon.AssignmentIcon) icons[2]).setAssignments(aUnit, 1);
+        ((ObjectIcon.AssignmentIcon) icons[3]).setAssignments(aUnit, 2);
+        ((ObjectIcon.AssignmentIcon) icons[4]).setAssignments(aUnit, 3);
+        ((ObjectIcon.InfoIcon) icons[5]).setInfo(aUnit.getRemarks());
         return icons;
     }
 
-    private IconRenderer.UnitIcon createUnitIcon(IUnitIf aUnit)
+    private ObjectIcon.UnitIcon createUnitIcon(IUnitIf aUnit)
     {
-        return new IconRenderer.UnitIcon(aUnit, false, m_actionHandler);
+        return new ObjectIcon.UnitIcon(aUnit, m_actionHandler, false);
     }
 
-    private IconRenderer.AssignmentIcon createAssignmentIcon(IUnitIf aUnit, int aSelectorIndex)
+    private ObjectIcon.AssignmentIcon createAssignmentIcon(IUnitIf aUnit, int aSelectorIndex)
     {
-        return new IconRenderer.AssignmentIcon(aUnit, aSelectorIndex, false, m_actionHandler);
+        return new ObjectIcon.AssignmentIcon(aUnit, m_actionHandler, aSelectorIndex, false);
     }
 
-    private IconRenderer.InfoIcon createInfoIcon(String anInfo)
+    private ObjectIcon.InfoIcon createInfoIcon(String anInfo)
     {
-        return new IconRenderer.InfoIcon(anInfo, false);
+        return new ObjectIcon.InfoIcon(anInfo, false);
     }
 
     private void setSelection(int row, int col) {
@@ -482,22 +482,22 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     	}
     };
 
-    public static final Comparator<IconRenderer.AssignmentIcon> LIST_LENGTH_COMPARATOR = new Comparator<IconRenderer.AssignmentIcon>()
+    public static final Comparator<ObjectIcon.AssignmentIcon> LIST_LENGTH_COMPARATOR = new Comparator<ObjectIcon.AssignmentIcon>()
     {
-        public int compare(IconRenderer.AssignmentIcon o1, IconRenderer.AssignmentIcon o2)
+        public int compare(ObjectIcon.AssignmentIcon o1, ObjectIcon.AssignmentIcon o2)
         {
-            int l1 = o1.getAssignmentList() != null ? o1.getAssignmentList().size() : 0;
-            int l2 = o2.getAssignmentList() != null ? o2.getAssignmentList().size() : 0;
+            int l1 = o1.getAssignments() != null ? o1.getAssignments().size() : 0;
+            int l2 = o2.getAssignments() != null ? o2.getAssignments().size() : 0;
             return l1 - l2;
         }
     };
 
-    public static final Comparator<IconRenderer.AssignmentIcon> PRIORITY_COMPARATOR = new Comparator<IconRenderer.AssignmentIcon>()
+    public static final Comparator<ObjectIcon.AssignmentIcon> PRIORITY_COMPARATOR = new Comparator<ObjectIcon.AssignmentIcon>()
     {
-        public int compare(IconRenderer.AssignmentIcon o1, IconRenderer.AssignmentIcon o2)
+        public int compare(ObjectIcon.AssignmentIcon o1, ObjectIcon.AssignmentIcon o2)
         {
-            IAssignmentIf.AssignmentPriority p1 = getHighestPriority(o1.getAssignmentList());
-            IAssignmentIf.AssignmentPriority p2 = getHighestPriority(o2.getAssignmentList());
+            IAssignmentIf.AssignmentPriority p1 = getHighestPriority(o1.getAssignments());
+            IAssignmentIf.AssignmentPriority p2 = getHighestPriority(o2.getAssignments());
             return p1.compareTo(p2);
         }
 
@@ -518,12 +518,12 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
         }
     };
 
-    public abstract static class TimeComparator implements Comparator<IconRenderer.AssignmentIcon>
+    public abstract static class TimeComparator implements Comparator<ObjectIcon.AssignmentIcon>
     {
-        public int compare(IconRenderer.AssignmentIcon o1, IconRenderer.AssignmentIcon o2)
+        public int compare(ObjectIcon.AssignmentIcon o1, ObjectIcon.AssignmentIcon o2)
         {
-            Calendar c1 = getCompareTime(o1.getAssignmentList());
-            Calendar c2 = getCompareTime(o2.getAssignmentList());
+            Calendar c1 = getCompareTime(o1.getAssignments());
+            Calendar c2 = getCompareTime(o2.getAssignments());
             if (c1 != null & c2 != null)
             {
                 return c1.compareTo(c2);
@@ -578,46 +578,46 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UNIT_TYPE_AND_NUMBER_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<ObjectIcon.UnitIcon> UNIT_TYPE_AND_NUMBER_COMPARATOR = new Comparator<ObjectIcon.UnitIcon>()
     {
-        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
+        public int compare(ObjectIcon.UnitIcon o1, ObjectIcon.UnitIcon o2)
         {
-            return IUnitIf.TYPE_AND_NUMBER_COMPARATOR.compare(o1.getUnit(), o2.getUnit());
+            return IUnitIf.TYPE_AND_NUMBER_COMPARATOR.compare(o1.getMsoObject(), o2.getMsoObject());
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UNIT_SPEED_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<ObjectIcon.UnitIcon> UNIT_SPEED_COMPARATOR = new Comparator<ObjectIcon.UnitIcon>()
     {
-        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
+        public int compare(ObjectIcon.UnitIcon o1, ObjectIcon.UnitIcon o2)
         {
-            return (int)(o1.getUnit().getSpeed() - o2.getUnit().getSpeed());
+            return (int)(o1.getMsoObject().getSpeed() - o2.getMsoObject().getSpeed());
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UNIT_PAUSE_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<ObjectIcon.UnitIcon> UNIT_PAUSE_COMPARATOR = new Comparator<ObjectIcon.UnitIcon>()
     {
-        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
+        public int compare(ObjectIcon.UnitIcon o1, ObjectIcon.UnitIcon o2)
         {
-            return Double.valueOf(o1.getUnit().getDuration(UnitStatus.PAUSED,true))
-            			.compareTo(Double.valueOf(o2.getUnit().getDuration(UnitStatus.PAUSED,true)));
+            return Double.valueOf(o1.getMsoObject().getDuration(UnitStatus.PAUSED,true))
+            			.compareTo(Double.valueOf(o2.getMsoObject().getDuration(UnitStatus.PAUSED,true)));
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UNIT_WORKTIME_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<ObjectIcon.UnitIcon> UNIT_WORKTIME_COMPARATOR = new Comparator<ObjectIcon.UnitIcon>()
     {
-        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
+        public int compare(ObjectIcon.UnitIcon o1, ObjectIcon.UnitIcon o2)
         {
-            return Double.valueOf(o1.getUnit().getDuration(UnitStatus.WORKING,true))
-						.compareTo(Double.valueOf(o2.getUnit().getDuration(UnitStatus.WORKING,true)));
+            return Double.valueOf(o1.getMsoObject().getDuration(UnitStatus.WORKING,true))
+						.compareTo(Double.valueOf(o2.getMsoObject().getDuration(UnitStatus.WORKING,true)));
         }
     };
 
-    public static final Comparator<IconRenderer.UnitIcon> UNIT_IDLETIME_COMPARATOR = new Comparator<IconRenderer.UnitIcon>()
+    public static final Comparator<ObjectIcon.UnitIcon> UNIT_IDLETIME_COMPARATOR = new Comparator<ObjectIcon.UnitIcon>()
     {
-        public int compare(IconRenderer.UnitIcon o1, IconRenderer.UnitIcon o2)
+        public int compare(ObjectIcon.UnitIcon o1, ObjectIcon.UnitIcon o2)
         {
-            return Double.valueOf(o1.getUnit().getDuration(UnitStatus.READY,true))
-						.compareTo(Double.valueOf(o2.getUnit().getDuration(UnitStatus.READY,true)));
+            return Double.valueOf(o1.getMsoObject().getDuration(UnitStatus.READY,true))
+						.compareTo(Double.valueOf(o2.getMsoObject().getDuration(UnitStatus.READY,true)));
         }
     };
 
@@ -918,9 +918,9 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 	            	// get icon
 	            	AssignmentIcon icon = (AssignmentIcon)value;
 	            	// return new object?
-	            	if(icon.getAssignment()!=null) {
+	            	if(icon.getMsoObject()!=null) {
 	            		// return data
-	            		return new AssignmentTransferable(icon.getAssignment());
+	            		return new TransferableMsoObject<IAssignmentIf>(icon.getMsoObject());
 	            	}
 	            }
 

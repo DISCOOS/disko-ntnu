@@ -421,8 +421,9 @@ public class FieldPane extends TogglePanel {
 			if(fields==null) {
 				fields=new ArrayList<IField<?>>();
 				m_boundFields.put(msoObj,fields);
-				m_msoInterests.add(msoObj.getMsoClassCode());				
 			}
+			// add interest
+			m_msoInterests.add(msoObj.getMsoClassCode());				
 			// add field to field list
 			fields.add(field);
 		}

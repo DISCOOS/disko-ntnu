@@ -12,7 +12,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.renderer.ObjectIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
@@ -672,7 +672,7 @@ public class DiskoButtonFactory
 		Dimension d = getButtonSize(size);
 
 		// apply icon
-		button.setIcon(new IconRenderer.AssignmentIcon(assignment, false, null,d.width,d.height));
+		button.setIcon(new ObjectIcon.AssignmentIcon(assignment, null, false, d.width,d.height));
 
 	}
 
@@ -685,7 +685,7 @@ public class DiskoButtonFactory
 		Dimension d = getButtonSize(size);
 
 		// apply icon
-		button.setIcon(new IconRenderer.AssignmentIcon(assignment, false, null, d.width,d.height));
+		button.setIcon(new ObjectIcon.AssignmentIcon(assignment, null, false, d.width,d.height));
 
 		// get assignment name
 		String name = MsoUtils.getAssignmentName(assignment, 1);

@@ -22,6 +22,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.redcross.sar.IApplication;
+import org.redcross.sar.gui.DiskoBorder;
 import org.redcross.sar.gui.dialog.DefaultDialog;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
@@ -200,6 +201,7 @@ public class ListDialog extends DefaultDialog {
 			BoxLayout bl = new BoxLayout(optionsPanel,BoxLayout.X_AXIS);
 			optionsPanel.setLayout(bl);
 			optionsPanel.setOpaque(false);
+			optionsPanel.setBorder(new DiskoBorder(0,0,1,0));
 			statusLabel = new JLabel();
 			statusLabel.setOpaque(false);
 			statusLabel.setText("Vis oppdrag");

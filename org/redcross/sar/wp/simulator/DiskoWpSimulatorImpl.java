@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
@@ -76,7 +77,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
     public DiskoWpSimulatorImpl() throws Exception
     {
 		// forward
-		super(getWpInterests(),getMapLayers());
+		super(Logger.getLogger(DiskoWpSimulatorImpl.class),getWpInterests(),getMapLayers());
 
 		// initialize GUI
 		initialize();

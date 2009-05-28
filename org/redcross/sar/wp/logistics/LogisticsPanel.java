@@ -28,11 +28,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.List;
 
+import org.redcross.sar.gui.dnd.MsoLabel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.renderer.ObjectIcon;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.gui.table.DiskoTableHeader;
 import org.redcross.sar.map.IDiskoMap;
@@ -89,10 +90,10 @@ public class LogisticsPanel implements IMsoLayerEventListener
     AssignmentDisplayModel m_assignmentDisplayModel;
     UnitTableModel m_unitTableModel;
 
-    private AssignmentLabel.AssignmentLabelActionHandler m_labelActionHandler;
-    private AssignmentLabel.AssignmentLabelActionHandler m_listPanelActionHandler;
+    private MsoLabel.MsoLabelActionHandler<IAssignmentIf> m_labelActionHandler;
+    private MsoLabel.MsoLabelActionHandler<IAssignmentIf> m_listPanelActionHandler;
 
-    private IconRenderer.IconActionHandler m_iconActionHandler;
+    private ObjectIcon.MsoIconActionHandler m_iconActionHandler;
 
     private boolean m_mapSelectedByButton = false;
 
@@ -142,7 +143,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
 
     private void defineSubpanelActionHandlers()
     {
-        m_labelActionHandler = new AssignmentLabel.AssignmentLabelActionHandler()
+        m_labelActionHandler = new MsoLabel.MsoLabelActionHandler<IAssignmentIf>()
         {
             public void handleClick(IAssignmentIf anAssignment)
             {
@@ -151,7 +152,7 @@ public class LogisticsPanel implements IMsoLayerEventListener
             }
         };
 
-        m_listPanelActionHandler = new AssignmentLabel.AssignmentLabelActionHandler()
+        m_listPanelActionHandler = new MsoLabel.MsoLabelActionHandler<IAssignmentIf>()
         {
             public void handleClick(IAssignmentIf anAssignment)
             {
@@ -159,22 +160,27 @@ public class LogisticsPanel implements IMsoLayerEventListener
             }
         };
 
-        m_iconActionHandler = new IconRenderer.IconActionHandler()
+        m_iconActionHandler = new ObjectIcon.MsoIconActionHandler()
         {
-            public void handleClick(IUnitIf aUnit)
+            public void handleClick(IMsoObjectIf anObject)
             {
-            	singelUnitClick(aUnit);
+            	if(anObject instanceof IUnitIf) 
+            	{
+            		singelUnitClick((IUnitIf)anObject);
+            	}
+            	else if(anObject instanceof IAssignmentIf) 
+            	{
+                    singelAssignmentClick((IAssignmentIf)anObject, false);            		
+            	}
             }
 
-            public void handleClick(IAssignmentIf anAssignment)
+            public void handleClick(IMsoObjectIf anObject, int anIndex)
             {
-                singelAssignmentClick(anAssignment, false);
-            }
-
-            public void handleClick(IUnitIf aUnit, int aSelectorIndex)
-            {
-            	setSelectedAssignmentInPanels(null);
-                getInfoPanelHandler().setUnitAssignmentSelection(aUnit, aSelectorIndex);
+            	if(anObject instanceof IUnitIf) 
+            	{
+	            	setSelectedAssignmentInPanels(null);
+	                getInfoPanelHandler().setUnitAssignmentSelection((IUnitIf)anObject, anIndex);
+            	}
             }
         };
     }
@@ -286,9 +292,9 @@ public class LogisticsPanel implements IMsoLayerEventListener
         m_unitTableModel.load(m_unitList);
         m_unitTable.setModel(m_unitTableModel);
         m_unitTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        m_unitTable.setDefaultRenderer(IconRenderer.UnitIcon.class, new LogisticsIconRenderer());
-        m_unitTable.setDefaultRenderer(IconRenderer.AssignmentIcon.class, new LogisticsIconRenderer());
-        m_unitTable.setDefaultRenderer(IconRenderer.InfoIcon.class, new LogisticsIconRenderer.InfoIconRenderer());
+        m_unitTable.setDefaultRenderer(ObjectIcon.UnitIcon.class, new LogisticsIconRenderer());
+        m_unitTable.setDefaultRenderer(ObjectIcon.AssignmentIcon.class, new LogisticsIconRenderer());
+        m_unitTable.setDefaultRenderer(ObjectIcon.InfoIcon.class, new LogisticsIconRenderer.InfoIconRenderer());
         m_unitTable.setShowHorizontalLines(false);
         m_unitTable.setShowVerticalLines(true);
         m_unitTable.setRowMargin(2);

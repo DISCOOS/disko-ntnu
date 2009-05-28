@@ -95,7 +95,7 @@ public class HypothesisDialog extends DefaultDialog {
 		try {
 			createlabels();
 			this.setContentPane(getContentPanel());
-            this.setPreferredSize(new Dimension(900, 300));
+            this.setPreferredSize(new Dimension(800, 300));
             this.pack();
 		}
 		catch (java.lang.Throwable e) {
@@ -464,7 +464,7 @@ public class HypothesisDialog extends DefaultDialog {
 	 */
 	private ComboBoxField getPriorityCombo() {
 		if (priorityCombo == null) {
-			priorityCombo = new ComboBoxField("priority", "Prioritet", false, 50, 25, null);
+			priorityCombo = new ComboBoxField("priority", "Prioritet", true, 50, 25, null);
 			DefaultComboBoxModel model = new DefaultComboBoxModel();
 			for (int i = 1; i < 6; i++) {
 				model.addElement(new Integer(i));
@@ -483,7 +483,7 @@ public class HypothesisDialog extends DefaultDialog {
 	private ComboBoxField getStatusCombo() {
 		if (statusCombo == null) {
 			try {
-				statusCombo = new ComboBoxField("status", "Status", false, 50, 25, null);
+				statusCombo = new ComboBoxField("status", "Status", true, 50, 25, null);
 				DefaultComboBoxModel model = new DefaultComboBoxModel();
 				HypothesisStatus[] values = HypothesisStatus.values();
 				for (int i = 0; i < values.length; i++) {

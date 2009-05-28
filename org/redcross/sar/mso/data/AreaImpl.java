@@ -82,7 +82,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		POIType type = ((IPOIIf)anObject).getType();
 	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
-	        			if(!anObject.delete()) throw new InvalidReferenceException("Reference can not be deleted");
+	        			if(!anObject.delete(true)) throw new InvalidReferenceException("Reference can not be deleted");
 	        		}
             	}
                 m_areaPOIs.remove((IPOIIf) anObject);
@@ -91,7 +91,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
             {
             	// remove area POIs?
             	if(m_hostile) {
-            		anObject.delete();
+            		anObject.delete(true);
             	}
             	else {
             		m_areaGeodata.remove(anObject);
@@ -143,7 +143,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
      *-------------------------------------------------------------------------------------------*/
 
     @Override
-    public boolean delete()
+    public boolean delete(boolean deep)
     {
         if (isDeletable())
         {
@@ -155,18 +155,18 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		POIType type = it.getType();
 	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
-	        			it.delete();
+	        			it.delete(true);
 	        		}
 	        	}
 	        	// delete geodata
 	        	for(IMsoObjectIf it:m_areaGeodata.getObjects()) {
 	    			// delete object
-	        		it.delete();
+	        		it.delete(true);
 	        	}
         	}
         	resumeClientUpdate(true);
         	// forward
-            return super.delete();
+            return super.delete(deep);
         }
         return false;
     }

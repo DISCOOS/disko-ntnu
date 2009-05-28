@@ -7,25 +7,25 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 
-import org.redcross.sar.mso.data.IAssignmentIf;
+import org.redcross.sar.mso.data.IMsoObjectIf;
 
 /**
  * @author kennetgu
  *
  */
-public class AssignmentTransferable implements Transferable
+public class TransferableMsoObject<M extends IMsoObjectIf> implements Transferable
 {
 	private static DataFlavor m_flavor = null;
 	
-	private IAssignmentIf m_assignment;
+	private M m_anObject;
 
-    public AssignmentTransferable(IAssignmentIf anAssignment)
+    public TransferableMsoObject(M anObject)
     {
     	try {
 	        // save assignment
-	    	m_assignment = anAssignment;    	
+	    	m_anObject = anObject;    	
 	    	// create flavor
-	    	m_flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=org.redcross.sar.mso.data.IAssignmentIf");
+	    	m_flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class="+anObject.getClass().getSimpleName());
     	}
     	catch(Exception e) {
     		e.printStackTrace();
@@ -38,7 +38,7 @@ public class AssignmentTransferable implements Transferable
         {
             throw new UnsupportedFlavorException(flavor);
         }
-        return m_assignment;
+        return m_anObject;
     }
 
     public DataFlavor[] getTransferDataFlavors()

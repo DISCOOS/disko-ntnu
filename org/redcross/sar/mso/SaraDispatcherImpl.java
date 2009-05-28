@@ -291,7 +291,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         try {
 
 	    	// get manager
-	        IMsoManagerIf msoManager = Application.getInstance().getMsoModel().getMsoManager();
+	        IMsoManagerIf msoManager = getMsoModel().getMsoManager();
 
 	        // get operation?
 	    	IOperationIf opr = msoManager.operationExists() ? msoManager.getOperation() : null;
@@ -299,11 +299,24 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	    	// has operation?
 	    	if(opr!=null) {
 
+	    		/* ==========================================================
+	    		 * The MSO model is cleared by deleting all objects
+	    		 * in reverse order (references first, then objects).
+	    		 *  
+	    		 * Because all objects are iterated, only a shallow
+	    		 * delete is required. Hence, calling delete(), which 
+	    		 * performs a deep delete (recursively 
+	    		 * deleting all owned objects also), should not be used. 
+	    		 * Instead, shallow delete is performed by calling the
+	    		 * destroy() method. 
+	    		 * 
+	    		 * ========================================================== */
+	    			    		
 	        	// delete all deleteable references
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoReferenceIf) {
 	        			if(msoObj.isDeletable()) {
-	        				((AbstractMsoObject) msoObj).destroy();
+	        				((AbstractMsoObject) msoObj).delete(false);
 	        			}
 	        		}
 	        	}
@@ -312,30 +325,33 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
 	        			if(msoObj.isDeletable())
-	        			((AbstractMsoObject) msoObj).destroy();
+	        			((AbstractMsoObject) msoObj).delete(false);
 	        		}
 	        	}
 
 	        	// delete all undeleteable objects
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
 	        		if(msoObj!=null && !msoObj.isDeleted() && !(msoObj instanceof IOperationIf))
-	        			((AbstractMsoObject) msoObj).destroy();
+	        			((AbstractMsoObject) msoObj).delete(false);
 	        	}
 
 		    	// delete operation?
-		    	if(opr!=null)  opr.delete();
+		    	if(opr!=null)  {
+		    		/* calling delete is now safe because all 
+		    		 * owned object are now deleted */
+		    		opr.delete(true);
+		    	}
 
-
-		    	// clear maps
+		    	// clear mapping
 		    	saraMsoMap.clear();
 		    	msoSaraMap.clear();
 
-		    	// do garbage collection
+		    	// do garbage collection now
 		    	Runtime.getRuntime().gc();
 
 	        	// notify all listeners?
 		    	if(opr!=null) {
-		    		Application.getInstance().getMsoModel().getEventManager().notifyClearAll(opr);
+		    		getMsoModel().getEventManager().notifyClearAll(opr);
 		    	}
 
 	    	}
@@ -619,7 +635,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         IMsoObjectIf ref = ico.getReferredObject();
         SarObject sourceObj = sarOperation.getSarObject(owner.getObjectId());
         SarObject relObj = sarOperation.getSarObject(ref.getObjectId());
-        String refName = ico.getReferenceName();
+        String refName = ico.getName();
         if (sourceObj == null)
         {
             sourceObj = commitObjects.get(owner.getObjectId());
@@ -702,7 +718,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     	Map<String, IMsoAttributeIf<?>> attrMap = msoObj.getAttributes();
         Map<String, IMsoReferenceIf<?>> objRefMap = msoObj.getObjectReferences();
         List<SarBaseObject> sarObjs = sbo.getObjects();
-        boolean isComplete = changeObject==null || changeObject!=null&&!changeObject.isPartial();
+        boolean isComplete = changeObject==null || changeObject!=null&&!changeObject.isFiltered();
 
         // loop over all objects in sara object
         for (SarBaseObject so : sarObjs)
@@ -717,7 +733,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                     IMsoAttributeIf<?> msoAttr = attrMap.get(attrName.toLowerCase());
                     // only update fact if this is not a partial update, or if attribute
                     // is included in the partial update
-                    if(isComplete || changeObject.containsPartial(msoAttr)) {
+                    if(isComplete || changeObject.containsFilter(msoAttr)) {
 	                    // found attribute?
 	                    if (msoAttr != null)
 	                    {
@@ -737,7 +753,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	                    IMsoObjectIf refObj = objRefMap.get(objName).getReference();
 	                    // only update fact if this is not a partial update, or if object reference
 	                    // is included in the partial update	                    
-	                    if (refObj != null && (isComplete || changeObject.containsPartial(refObj)))
+	                    if (refObj != null && (isComplete || changeObject.containsFilter(refObj)))
 	                    {
 	                    	// recurse on reference object
 	                        updateSaraObject((SarObject) so, refObj, null, submitChanges);

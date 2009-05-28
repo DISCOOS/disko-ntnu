@@ -13,31 +13,31 @@ public interface IMsoTransactionManagerIf {
      * Returns pending changes
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges();
+    public List<IChangeRecordIf> getChanges();
     
     /**
      * Returns pending updates of specific class
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges(MsoClassCode of);
+    public List<IChangeRecordIf> getChanges(MsoClassCode of);
     
     /**
      * Returns pending updates of specific classes
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges(Set<MsoClassCode> of);
+    public List<IChangeRecordIf> getChanges(Set<MsoClassCode> of);
     
     /**
      * Returns pending update holder for specific object
      * <p/>
      */
-    public IChangeSourceIf getChanges(IMsoObjectIf of);	
+    public IChangeRecordIf getChanges(IMsoObjectIf of);	
     
     /**
      * Returns pending updates of specific objects
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges(List<IMsoObjectIf> of);	
+    public List<IChangeRecordIf> getChanges(List<IMsoObjectIf> of);	
     
     /**
      * Perform a commit of all changes.
@@ -53,12 +53,12 @@ public interface IMsoTransactionManagerIf {
      * Note that partial commits (attributes only) is only possible to perform on objects 
      * that exists remotely (modified). If a IChangeSourceIf is marked for partial commit, object references 
      * and list references are not affected, only the marked attributes. See 
-     * {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
+     * {@link org.redcross.sar.mso.IChangeRecordIf} for more information.
      * 
      * @param UpdateHolder updates - holder for updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void commit(IChangeSourceIf changes) throws TransactionException;
+    public void commit(IChangeRecordIf changes) throws TransactionException;
     
     /**
      * Perform a commit on a subset of all changes<p/>
@@ -66,12 +66,12 @@ public interface IMsoTransactionManagerIf {
      * Note that partial commits (attributes only) is only possible to perform on objects 
      * that exists remotely (modified). If a IChangeSourceIf is marked for partial commit, object references 
      * and list references are not affected, only the marked attributes. See 
-     * {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
+     * {@link org.redcross.sar.mso.IChangeRecordIf} for more information.
      * 
      * @param List<UpdateHolder> updates - list of holders of updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void commit(List<IChangeSourceIf> changes) throws TransactionException;
+    public void commit(List<IChangeRecordIf> changes) throws TransactionException;
     
     /**
      * Performs a rollback of all changes. <p/>
@@ -86,7 +86,7 @@ public interface IMsoTransactionManagerIf {
      * @param UpdateHolder updates - holder for updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void rollback(IChangeSourceIf changes) throws TransactionException;    
+    public void rollback(IChangeRecordIf changes) throws TransactionException;    
 
     /**
      * Perform a rollback on a subset of all changes<p/>
@@ -94,27 +94,27 @@ public interface IMsoTransactionManagerIf {
      * @param List<UpdateHolder> updates - list of holders of updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void rollback(List<IChangeSourceIf> changes) throws TransactionException;    
+    public void rollback(List<IChangeRecordIf> changes) throws TransactionException;    
     
     /**
      * Tell if some uncommitted changes exist
      *
      * @return true if uncommitted changes exist
      */
-    public boolean hasUncommitedChanges();
+    public boolean isChanged();
     
     /**
      * Tell if some uncommitted changes exist for the given class code
      *
      * @return true if uncommitted changes exist
      */
-    public boolean hasUncommitedChanges(MsoClassCode code);
+    public boolean isChanged(MsoClassCode code);
     
     /**
      * Tell if some uncommitted changes exist for the given object
      *
      * @return true if uncommitted changes exist
      */
-    public boolean hasUncommitedChanges(IMsoObjectIf msoObj);
+    public boolean isChanged(IMsoObjectIf msoObj);
     
 }

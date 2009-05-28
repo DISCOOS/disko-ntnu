@@ -46,7 +46,7 @@ import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
 import org.redcross.sar.mso.util.MsoUtils;
 
-public class ElementPanel extends TogglePanel {
+public class ElementPanel extends DefaultPanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -94,7 +94,7 @@ public class ElementPanel extends TogglePanel {
 	public ElementPanel() {
 
 		// set caption
-		super("Elementer",false,true,ButtonSize.SMALL);
+		super("Elementer",true,false,ButtonSize.SMALL);
 
 		// prepare
 		this.msoModel = Application.getInstance().getMsoModel();
@@ -263,7 +263,7 @@ public class ElementPanel extends TogglePanel {
 			// create list
             objectList = new JList();
             objectList.setCellRenderer(new MsoListCellRenderer(1,false,true,
-            		"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
+            		"32x32",MsoListCellRenderer.MAP_ICON_TO_SUBTYPE));
             objectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // add selection listener
             objectList.addListSelectionListener(new ListSelectionListener() {
@@ -358,7 +358,7 @@ public class ElementPanel extends TogglePanel {
 			// create list
             partList = new JList();
             partList.setCellRenderer(new MsoListCellRenderer(1,false,true,
-            		"32x32",MsoListCellRenderer.MAP_ICON_TO_TYPE));
+            		"32x32",MsoListCellRenderer.MAP_ICON_TO_SUBTYPE));
             partList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // add listener
             partList.addListSelectionListener(new ListSelectionListener() {

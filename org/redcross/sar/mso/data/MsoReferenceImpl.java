@@ -1,12 +1,15 @@
 package org.redcross.sar.mso.data;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.mso.ChangeImpl;
 import org.redcross.sar.mso.IChangeIf;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.IChangeIf.IChangeReferenceIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.util.except.TransactionException;
 
 import java.util.Collection;
 import java.util.Vector;
@@ -41,21 +44,71 @@ import java.util.Vector;
  */
 public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf<T>, IMsoObjectHolderIf<T>
 {
+	/**
+	 * The logger object for all AbstractMsoObject objects
+	 */	
+    private static final Logger m_logger = Logger.getLogger(MsoReferenceImpl.class);
+
+    /**
+     * The reference owner (referring object)
+     */
     private final AbstractMsoObject m_owner;
 
+    /**
+     * The local object reference (referred object)
+     */
     protected T m_localValue = null;
+
+    /**
+     * The remote object reference (referred object)
+     */
     protected T m_remoteValue = null;
+    
+    /**
+     * The number of changes made since creation
+     */
+    
     protected int m_changeCount;
 
+    /**
+     * Current modification state
+     */
     protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
 
+    /**
+     * Reference name
+     */
     private final String m_name;
+    
+    /**
+     * Reference cardinality
+     */
     private final int m_cardinality;
+    
+    /**
+     * The model which objects belongs
+     */
     protected final IMsoModelIf m_msoModel;
 
+    /**
+     * The deleteable state flag.
+     */
     private boolean m_isDeleteable = true;
+    
+    /**
+     * The LOOPBACK mode flag
+     */
     private boolean m_isLoopbackMode = false;
+
+    /**
+     * The ROLLBACK mode flag
+     */
     private boolean m_isRollbackMode = false;
+    
+    
+    /* ================================================================
+     * Constructors
+     * ================================================================ */
     
     protected MsoReferenceImpl(AbstractMsoObject theOwner, String theName, int theCardinality, boolean isDeletable)
     {
@@ -70,6 +123,10 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         m_isDeleteable = isDeletable;
     }
 
+    /* ================================================================
+     * Public methods
+     * ================================================================ */
+    
     public String getName()
     {
         return m_name;
@@ -117,10 +174,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     public int getChangeCount()
     {
         return m_changeCount;
-    }
-
-    protected void incrementChangeCount() {
-    	m_changeCount++;
     }
 
     public ModificationState getState()
@@ -371,9 +424,10 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
 
     public boolean isReferenceDeletable(T anObject)
     {
-        return isDeletable()				// reference must be deleteable 
-        	&& anObject!=null 				// the object can not be null
-        	&& getReference() == anObject; 	// the object must equal the referenced object
+    	return anObject!=null && anObject.isDeleted() 	// is referenced object already deleted?
+	        || (isDeletable()							// reference must be deleteable 
+	        	&& anObject!=null 						// the object can not be null
+	        	&& getReference() == anObject); 		// the object must equal the referenced object
     }
 
     public boolean deleteReference(T anObject)
@@ -381,7 +435,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         if (isReferenceDeletable(anObject))
         {
             String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
-            System.out.println("Delete reference from " + s + " to " + anObject);
 
         	// remove server reference?
         	if (m_remoteValue!=null)
@@ -396,11 +449,33 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             	// register
                 registerDeletedReference(m_localValue,true,true,false,false);
             }
+        	
+            m_logger.info("Deleted reference from " + s + " to " + anObject + " in reference " + m_name);
+            
         	// success
             return true;
         }
         // not allowed
         return false;
+    }
+    
+    public boolean commit() throws TransactionException
+    {
+    	// get dirty flag
+        boolean isDirty = isChanged();
+        // is changed?
+        if(isDirty)
+        {
+        	// get change source
+        	IChangeRecordIf changes = m_owner.getModel().getChanges(m_owner);
+        	// add this as partial commit
+        	changes.addFilter(this);
+	        // increment change count
+	        incrementChangeCount();
+	        // commit changes
+        	m_owner.getModel().commit(changes);
+        }
+        return isDirty;
     }
     
     public boolean rollback()
@@ -431,11 +506,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         }
         return isDirty;
     }    
-    
-    protected boolean equal(T v1, T v2)
-    {
-        return v1 == v2 || (v1 != null && v1.equals(v2));
-    }
 
     public Vector<T> getConflictingValues()
     {
@@ -461,6 +531,90 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
     	return true;
     }
 
+    public boolean acceptLocal()
+    {
+        return acceptConflicting(ModificationState.STATE_LOCAL);
+    }
+
+    public boolean acceptRemote()
+    {
+        return acceptConflicting(ModificationState.STATE_REMOTE);
+    }
+
+
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences()
+    {
+    	/* ==================================================================
+    	 * Algorithm for committing reference
+    	 * ================================================================== */
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
+        if (m_state == ModificationState.STATE_LOCAL)
+        {
+        	// notify that current (server) reference should be deleted?
+            if (m_remoteValue != null && !m_remoteValue.isDeleted())
+            {
+                changes.add(new ChangeImpl.ChangeReference(this, m_remoteValue, ChangeType.DELETED));
+            }
+            // notify that a new (server) reference should created?
+            if (m_localValue != null)
+            {
+                changes.add(new ChangeImpl.ChangeReference(this, m_localValue, ChangeType.CREATED));
+            }
+        }
+        return changes;
+    }
+    
+    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences(Collection<IChangeIf> partial)
+    {
+    	/* ==================================================================
+    	 * Algorithm for conditionally committing a reference
+    	 * ================================================================== */
+        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
+        if (m_state == ModificationState.STATE_LOCAL) 
+        {
+        	// loop over all partial 
+        	for(IChangeIf it : partial) 
+	        {
+        		if(it instanceof IChangeReferenceIf) 
+        		{
+        			// get referred object
+        			IMsoObjectIf msoObj = ((IChangeReferenceIf)it).getReferredObject();
+        			// is the same as this?
+        			
+		        	// notify that current (server) reference should be deleted?
+		            if (m_remoteValue != null && msoObj == m_remoteValue && !m_remoteValue.isDeleted())
+		            {
+		                changes.add(new ChangeImpl.ChangeReference(this, m_remoteValue, ChangeType.DELETED));
+		            }
+		            
+		            // notify that a new (server) reference should created?
+		            if (m_localValue != null && m_localValue == msoObj)
+		            {
+		                changes.add(new ChangeImpl.ChangeReference(this, m_localValue, ChangeType.CREATED));
+		            }
+        		}
+	        }
+    	}
+        return changes;
+    }
+    
+    /* ================================================================
+     * Protected methods
+     * ================================================================ */
+    
+    protected void incrementChangeCount() {
+    	m_changeCount++;
+    }
+
+    protected boolean equal(T v1, T v2)
+    {
+        return v1 == v2 || (v1 != null && v1.equals(v2));
+    }
+    
+    /* ================================================================
+     * Private methods
+     * ================================================================ */
+    
     private boolean acceptConflicting(ModificationState aState)
     {
         if (m_state == ModificationState.STATE_CONFLICT)
@@ -497,16 +651,6 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
         return false;
     }
     
-    public boolean acceptLocal()
-    {
-        return acceptConflicting(ModificationState.STATE_LOCAL);
-    }
-
-    public boolean acceptRemote()
-    {
-        return acceptConflicting(ModificationState.STATE_REMOTE);
-    }
-
 	/**
 	 * Notify referenced object that a reference to it has been added
 	 * 
@@ -579,62 +723,5 @@ public class MsoReferenceImpl<T extends IMsoObjectIf> implements IMsoReferenceIf
             }
         }
     }
-
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences()
-    {
-    	/* ==================================================================
-    	 * Algorithm for committing reference
-    	 * ================================================================== */
-        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
-        if (m_state == ModificationState.STATE_LOCAL)
-        {
-        	// notify that current (server) reference should be deleted?
-            if (m_remoteValue != null && !m_remoteValue.isDeleted())
-            {
-                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_remoteValue, ChangeType.DELETED));
-            }
-            // notify that a new (server) reference should created?
-            if (m_localValue != null)
-            {
-                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_localValue, ChangeType.CREATED));
-            }
-        }
-        return changes;
-    }
-    
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences(Collection<IChangeIf> partial)
-    {
-    	/* ==================================================================
-    	 * Algorithm for conditionally committing a reference
-    	 * ================================================================== */
-        Vector<IChangeIf.IChangeReferenceIf> changes = new Vector<IChangeIf.IChangeReferenceIf>();
-        if (m_state == ModificationState.STATE_LOCAL) 
-        {
-        	// loop over all partial 
-        	for(IChangeIf it : partial) 
-	        {
-        		if(it instanceof IChangeReferenceIf) 
-        		{
-        			// get referred object
-        			IMsoObjectIf msoObj = ((IChangeReferenceIf)it).getReferredObject();
-        			// is the same as this?
-        			
-		        	// notify that current (server) reference should be deleted?
-		            if (m_remoteValue != null && msoObj == m_remoteValue && !m_remoteValue.isDeleted())
-		            {
-		                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_remoteValue, ChangeType.DELETED));
-		            }
-		            
-		            // notify that a new (server) reference should created?
-		            if (m_localValue != null && m_localValue == msoObj)
-		            {
-		                changes.add(new ChangeImpl.ChangeReference(m_name, m_owner, m_localValue, ChangeType.CREATED));
-		            }
-        		}
-	        }
-    	}
-        return changes;
-    }
-    
     
 }

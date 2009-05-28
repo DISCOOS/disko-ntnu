@@ -5,11 +5,11 @@ package org.redcross.sar.mso.data;
  */
 
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.ChangeImpl;
 import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IChangeIf.IChangeReferenceIf;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.data.IMsoObjectIf.IObjectIdIf;
+import org.redcross.sar.util.except.TransactionException;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -144,12 +144,25 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
     public void removeAll();    
     
     /**
-     * Rollback changes in this list. Generates a client update events if changes have been made
+     * 
+     * Commit changes to remote sources
+     *
+     * @return Returns <code>true</code> if changes was committed.
+     * @throws TransactionException
+     */
+    public boolean commit() throws TransactionException;
+    
+    /**
+     * Rollback changes in this list. 
+     * Generates a client update events if changes are rolled back.
      */    
     public void rollback();
     
     /**
-     * Rollback changes in references to the given items in this list. Generates a client update events if changes have been made
+     * Rollback changes in references to the given items in this list. 
+     * Generates a client update events if changes are rolled back.
+     * @param items - a sub-list of changes to commit. 
+     * @see See method <code>getChangedReferences()</code> for more information.
      */    
     public void rollback(List<IChangeReferenceIf> items);
     

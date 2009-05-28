@@ -203,7 +203,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
         	m_msoManager.resumeClientUpdate(all);
     }
 
-    public synchronized boolean isUpdateSuspended()
+    public synchronized boolean isClientUpdateSuspended()
     {
         return (m_suspendClientUpdate>0);
     }
@@ -225,36 +225,36 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
      * ICommitManagerIf Implementation
      * ==================================================================== */
 
-    public boolean hasUncommitedChanges()
+    public boolean isChanged()
     {
-        return m_msoTransactionManager.hasUncommitedChanges();
+        return m_msoTransactionManager.isChanged();
     }
 
-    public boolean hasUncommitedChanges(MsoClassCode code) {
-    	return m_msoTransactionManager.hasUncommitedChanges(code);
+    public boolean isChanged(MsoClassCode code) {
+    	return m_msoTransactionManager.isChanged(code);
     }
 
-    public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
-    	return m_msoTransactionManager.hasUncommitedChanges(msoObj);
+    public boolean isChanged(IMsoObjectIf msoObj) {
+    	return m_msoTransactionManager.isChanged(msoObj);
     }
 
-	public List<IChangeSourceIf> getChanges() {
+	public List<IChangeRecordIf> getChanges() {
 		return m_msoTransactionManager.getChanges();
 	}
 
-	public List<IChangeSourceIf> getChanges(MsoClassCode of) {
+	public List<IChangeRecordIf> getChanges(MsoClassCode of) {
 		return m_msoTransactionManager.getChanges(of);
 	}
 
-	public List<IChangeSourceIf> getChanges(Set<MsoClassCode> of) {
+	public List<IChangeRecordIf> getChanges(Set<MsoClassCode> of) {
 		return m_msoTransactionManager.getChanges(of);
 	}
 
-	public IChangeSourceIf getChanges(IMsoObjectIf of) {
+	public IChangeRecordIf getChanges(IMsoObjectIf of) {
 		return m_msoTransactionManager.getChanges(of);
 	}
 
-	public List<IChangeSourceIf> getChanges(List<IMsoObjectIf> of) {
+	public List<IChangeRecordIf> getChanges(List<IMsoObjectIf> of) {
 		return m_msoTransactionManager.getChanges(of);
 	}
 
@@ -285,12 +285,12 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
      * Note that partial commits (attributes only) is only possible to perform on objects 
      * that exists remotely (modified). If a IChangeSourceIf is marked for partial commit, object references 
      * and list references are not affected, only the marked attributes. See 
-     * {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
+     * {@link org.redcross.sar.mso.IChangeRecordIf} for more information.
      *
      * @param UpdateHolder updates - holder for updates.
      *
      */
-    public synchronized void commit(IChangeSourceIf changes)
+    public synchronized void commit(IChangeRecordIf changes)
     {
         try
         {
@@ -311,12 +311,12 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
      * Note that partial commits (attributes only) is only possible to perform on objects 
      * that exists remotely (modified). If a IChangeSourceIf is marked for partial commit, object references 
      * and list references are not affected, only the marked attributes. See 
-     * {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
+     * {@link org.redcross.sar.mso.IChangeRecordIf} for more information.
      * 
      * @param List<UpdateHolder> updates - list of holders of updates.
      *
      */
-    public synchronized void commit(List<IChangeSourceIf> changes)
+    public synchronized void commit(List<IChangeRecordIf> changes)
     {
         try
         {
@@ -353,7 +353,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
      * 
      * @param UpdateHolder updates - holder for updates
      */
-    public synchronized void rollback(IChangeSourceIf changes){
+    public synchronized void rollback(IChangeRecordIf changes){
         try
         {
             m_msoTransactionManager.rollback(changes);    	
@@ -370,7 +370,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
      * 
      * @param List<UpdateHolder> updates - list of holders of updates
      */
-    public synchronized void rollback(List<IChangeSourceIf> changes) {
+    public synchronized void rollback(List<IChangeRecordIf> changes) {
         try
         {
             m_msoTransactionManager.rollback(changes);    	    	

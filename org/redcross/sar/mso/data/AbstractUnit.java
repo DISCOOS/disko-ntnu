@@ -9,6 +9,7 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
+import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 /**
  * Search or rescue unit.
@@ -805,6 +807,19 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return true;
 
 	}
+	
+    public Collection<IAssignmentIf> getAssignments(AssignmentStatus status) {
+    	switch(status) {
+	    	case QUEUED: return getEnqueuedAssignments();
+	    	case ALLOCATED: return getAllocatedAssignments();
+	    	case EXECUTING: return getExecutingAssigments();
+	    	case FINISHED: return getEnqueuedAssignments();
+	    	//case ABORTED: return getAAssignments();
+	    	//case REPORTED: return getEnqueuedAssignments();
+    	}
+    	return new Vector<IAssignmentIf>(0);
+    }
+
 
 	public List<IAssignmentIf> getEnqueuedAssignments()
 	{

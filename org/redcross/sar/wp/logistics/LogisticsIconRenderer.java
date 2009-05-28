@@ -3,7 +3,7 @@ package org.redcross.sar.wp.logistics;
 import java.awt.Component;
 
 import org.redcross.sar.gui.DiskoRoundBorder;
-import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.renderer.ObjectIcon;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -24,9 +24,9 @@ public class LogisticsIconRenderer extends JLabel implements TableCellRenderer
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
     {
-        if (value instanceof IconRenderer)
+        if (value instanceof ObjectIcon)
         {
-            IconRenderer iconValue = (IconRenderer) value;
+            ObjectIcon iconValue = (ObjectIcon) value;
             if (isSelected && !iconValue.isSelectable())
             {
                 isSelected = false;

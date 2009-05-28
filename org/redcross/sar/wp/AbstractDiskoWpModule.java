@@ -29,7 +29,7 @@ import org.redcross.sar.gui.panel.MainPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.IDiskoMapManager;
 import org.redcross.sar.map.layer.IMsoFeatureLayer;
-import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -71,19 +71,18 @@ public abstract class AbstractDiskoWpModule
     private int m_isWorking = 0;
 
     protected Logger m_logger;
-    //protected final List<FlowEvent> m_changeStack = new ArrayList<FlowEvent>();
     protected final FlowEventRepeater m_repeater = new FlowEventRepeater();
 	protected final EnumSet<IMsoManagerIf.MsoClassCode> m_interests = EnumSet.noneOf(IMsoManagerIf.MsoClassCode.class);
 
     public AbstractDiskoWpModule(Logger logger) throws IllegalClassFormatException
     {
-    	// set logger
-    	m_logger = logger;
     	// valid package name?
     	if(Utils.getPackageName(getClass()) == null)
     		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
 
-
+    	// set logger
+    	m_logger = logger;
+    	
         // initialize layers
         this.m_mapLayers = getDefaultMapLayers();
 
@@ -97,6 +96,7 @@ public abstract class AbstractDiskoWpModule
      * @param m_role
      */
     public AbstractDiskoWpModule(
+    		Logger logger, 
     		EnumSet<MsoClassCode> interests,
     		List<Enum<?>> mapLayers) 
     throws IllegalClassFormatException
@@ -106,6 +106,9 @@ public abstract class AbstractDiskoWpModule
     	if(Utils.getPackageName(getClass()) == null)
     		throw new IllegalClassFormatException("Implementation of an IDiskoWpModule must be inside a unique package");
 
+    	// set logger
+    	m_logger = logger;
+    	
         // initialize objects
         this.m_mapLayers = mapLayers;
 
@@ -235,35 +238,12 @@ public abstract class AbstractDiskoWpModule
     {
     	m_repeater.removeFlowListener(listener);
     }
-
-    /*
-    public List<IMsoObjectIf> getUncomittedChanges() {
-    	List<IMsoObjectIf> changes = new Vector<IMsoObjectIf>();
-    	for(FlowEvent it : m_changeStack) {
-    		for(IMsoObjectIf msoObj : it.getMsoObjects()) {
-	    		if(msoObj!=null&&!changes.contains(msoObj)) {
-	    			changes.add(msoObj);
-	    		}
-    		}
-    	}
-    	return changes;
-    }
-    
-	public void onFlowPerformed(FlowEvent e) {
-    	// update change stack?
-		if(e.isChange() || e.isFinish())
-			m_changeStack.add(e);
-
-	    // forward
-		m_repeater.fireOnFlowPerformed(e);
-	}
-	*/
     
     public List<IMsoObjectIf> getChangedMsoObjects() {
     	List<IMsoObjectIf> changes = new Vector<IMsoObjectIf>();
-    	Map<IMsoModelIf,List<IChangeSourceIf>> map = getApplication().getEditManager().getUncomittedChanges(this);
-    	for(List<IChangeSourceIf> list : map.values()) {
-    		for(IChangeSourceIf it : list) {
+    	Map<IMsoModelIf,List<IChangeRecordIf>> map = getApplication().getEditManager().getUncomittedChanges(this);
+    	for(List<IChangeRecordIf> list : map.values()) {
+    		for(IChangeRecordIf it : list) {
 	    		IMsoObjectIf msoObj = it.getMsoObject();    		
 	    		if(msoObj!=null&&!changes.contains(msoObj)) {
 	    			changes.add(msoObj);
@@ -274,10 +254,14 @@ public abstract class AbstractDiskoWpModule
     }
     
 	public void onFlowPerformed(FlowEvent e) {
-		// forward
-		getApplication().getEditManager().onFlowPerformed(this, e);
-	    // forward
-		m_repeater.fireOnFlowPerformed(e);
+		// only add if work process is active
+		if(isActive())
+		{
+			// forward
+			getApplication().getEditManager().onFlowPerformed(this, e);
+		    // forward
+			m_repeater.fireOnFlowPerformed(e);
+		}
 	}
     
 
@@ -308,23 +292,6 @@ public abstract class AbstractDiskoWpModule
     	// forward
     	fireOnFlowPerformed(e);
     }
-
-    /*
-    protected void fireOnFlowPerformed(FlowEvent e)
-    {
-    	// update change stack?
-		if(e.isCommit() || e.isRollback())
-			m_changeStack.clear();
-
-		// forward
-		m_repeater.fireOnFlowPerformed(e);
-    }
-
-    public boolean isChanged()
-    {
-        return (m_changeStack.size()>0);
-    }
-    */
 
     protected void fireOnFlowPerformed(FlowEvent e)
     {
@@ -569,6 +536,7 @@ public abstract class AbstractDiskoWpModule
 		// resume map update
 		if(m_map!=null) {
 			try {
+				m_map.setInitMode(false);
 				m_map.setSupressDrawing(false);
 				m_map.refreshMsoLayers();
 				m_map.resumeNotify();

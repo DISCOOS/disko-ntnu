@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.data.IDataSource;
-import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoTransactionManagerIf;
 import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -422,7 +422,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			 * ======================================================== */
 
 			// initialize local list
-			List<IChangeSourceIf> updates = new ArrayList<IChangeSourceIf>(m_changes.size());
+			List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_changes.size());
 
 			// loop over all assignments
 			for(M it : m_changes.keySet()) {
@@ -453,13 +453,13 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 							// add to updates?
 							if(it.isCreated()) {
 								// get update holder set
-								IChangeSourceIf holder = m_comitter.getChanges(it);
+								IChangeRecordIf holder = m_comitter.getChanges(it);
 								// has updates?
 								if(holder!=null) {
 									// is modified?
 									if(!holder.isCreated() && holder.isModified()) {
 										// set partial update
-										holder.setPartial(name);
+										holder.setFilter(name);
 										// add to updates?
 										updates.add(holder);
 									}

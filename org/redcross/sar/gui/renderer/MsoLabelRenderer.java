@@ -17,10 +17,16 @@ import org.redcross.sar.mso.util.MsoUtils;
 public class MsoLabelRenderer implements IStringConverter, IIconConverter {
 
 	/**
-	 * Map
+	 * Map icon to IMsoObject type  
 	 */
 	public static final int MAP_ICON_TO_TYPE = 0;
+	/**
+	 * Map icon to IMsoObject sub type if exists. If no sub type exists, map to type instead   
+	 */
 	public static final int MAP_ICON_TO_SUBTYPE = 1;
+	/**
+	 * Map icon to IMsoObject status if exists
+	 */
 	public static final int MAP_ICON_TO_STATUS = 2;
 	
 	private static final long serialVersionUID = 1L;
@@ -53,7 +59,10 @@ public class MsoLabelRenderer implements IStringConverter, IIconConverter {
 
 		// update label
 		label.setText(toString(value));
-		if(showIcon) label.setIcon(toIcon(value));
+		if(showIcon) 
+		{
+			label.setIcon(toIcon(value));
+		}
 
 		// finished
 		return label;
@@ -104,7 +113,7 @@ public class MsoLabelRenderer implements IStringConverter, IIconConverter {
 		else if(value instanceof Enum) { 
 			e = (Enum<?>)value;
 		}
-		return selectIcon(e);
+		return selectIcon(e); //DiskoIconFactory.getIcon("MAP.POI", "32x32");//  
 	}
 	
 	private Icon selectIcon(Enum<?> e) {
@@ -127,7 +136,7 @@ public class MsoLabelRenderer implements IStringConverter, IIconConverter {
 				}
 			}
 		}
-		return icon;		
+		return icon; //DiskoIconFactory.getIcon("SEARCH.PATROL",iconCatalog); //icon //  //DiskoIconFactory.getIcon(DiskoEnumFactory.getIcon(e),iconCatalog);
 	}
 	
 }

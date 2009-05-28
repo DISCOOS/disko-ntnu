@@ -160,13 +160,14 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		}
 		else
 		{
-			String[] address = m_currentPersonnel.getAddress().split(";");
+			String address  = m_currentPersonnel.getAddress();
+			String[] fields = address != null ? address.split(";") : null;
 
-			if(address.length == 3)
+			if(fields!=null && fields.length == 3)
 			{
-				m_addressTextField.setValue(address[0]);
-				m_postAreaTextField.setValue(address[1]);
-				m_postNumberTextField.setValue(address[2]);
+				m_addressTextField.setValue(fields[0]);
+				m_postAreaTextField.setValue(fields[1]);
+				m_postNumberTextField.setValue(fields[2]);
 			}
 			else
 			{

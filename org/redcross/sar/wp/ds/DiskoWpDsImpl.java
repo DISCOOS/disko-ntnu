@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
@@ -51,7 +52,7 @@ public class DiskoWpDsImpl extends AbstractDiskoWpModule implements IDiskoWpDs
     public DiskoWpDsImpl() throws Exception
     {
 		// forward
-		super(getWpInterests(),getMapLayers());
+		super(Logger.getLogger(DiskoWpDsImpl.class),getWpInterests(),getMapLayers());
 
 		// initialize GUI
 		initialize();

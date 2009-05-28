@@ -15,7 +15,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
 
 import org.redcross.sar.gui.field.IField;
-import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -143,9 +143,9 @@ public class FlowEvent extends EventObject {
 		return (isUndoableEventCreateable()?new UndoableEditEvent(getSource(),edit):null);
 	}
 	
-	public Map<IMsoModelIf,List<IChangeSourceIf>> getUncommittedChanges() {
-		Map<IMsoModelIf,List<IChangeSourceIf>> 
-			changes = new HashMap<IMsoModelIf, List<IChangeSourceIf>>();
+	public Map<IMsoModelIf,List<IChangeRecordIf>> getUncommittedChanges() {
+		Map<IMsoModelIf,List<IChangeRecordIf>> 
+			changes = new HashMap<IMsoModelIf, List<IChangeRecordIf>>();
 		// add source
 		if(isSourceMsoObject()) {
 			addChangeSource(getSourceAsMsoObject(),changes);			
@@ -165,47 +165,47 @@ public class FlowEvent extends EventObject {
 		
 	}
 	
-	private void addChangeSource(IMsoObjectIf msoObj, Map<IMsoModelIf,List<IChangeSourceIf>> changes) {
+	private void addChangeSource(IMsoObjectIf msoObj, Map<IMsoModelIf,List<IChangeRecordIf>> changes) {
 		if(msoObj.isChanged()) {
 			IMsoModelIf model = msoObj.getModel();
-			List<IChangeSourceIf> list = changes.get(model);
+			List<IChangeRecordIf> list = changes.get(model);
 			if(list==null) {
-				list = new ArrayList<IChangeSourceIf>();
+				list = new ArrayList<IChangeRecordIf>();
 				changes.put(model, list);
 			}
 			addChangeSource(msoObj,list,true);
 		}
     }
 	
-	private void addChangeSource(IMsoAttributeIf<?> msoAttr, Map<IMsoModelIf,List<IChangeSourceIf>> changes) {
+	private void addChangeSource(IMsoAttributeIf<?> msoAttr, Map<IMsoModelIf,List<IChangeRecordIf>> changes) {
 		if(msoAttr.isChanged()) {
 			IMsoObjectIf msoObj = msoAttr.getOwner();
 			IMsoModelIf model = msoObj.getModel();
-			List<IChangeSourceIf> list = changes.get(model);
+			List<IChangeRecordIf> list = changes.get(model);
 			if(list==null) {
-				list = new ArrayList<IChangeSourceIf>();
+				list = new ArrayList<IChangeRecordIf>();
 				changes.put(model, list);
 			}			
 			// get flags
 			boolean bFlag = msoObj.isCreated();
 			// add change source to list
-			IChangeSourceIf change = addChangeSource(msoObj,list,!bFlag);
+			IChangeRecordIf change = addChangeSource(msoObj,list,!bFlag);
 			// add as partial?
-			if(bFlag) change.addPartial(msoAttr.getName());
+			if(bFlag) change.addFilter(msoAttr.getName());
 		}
     	
     }	
 	
-	private IChangeSourceIf addChangeSource(IMsoObjectIf msoObj, List<IChangeSourceIf> changes, boolean clearPartial) {
+	private IChangeRecordIf addChangeSource(IMsoObjectIf msoObj, List<IChangeRecordIf> changes, boolean clearPartial) {
 		// do not allow duplicates
-		for(IChangeSourceIf it : changes) {
+		for(IChangeRecordIf it : changes) {
 			if(it.getMsoObject()==msoObj) {
-				if(clearPartial) it.clearPartial();
+				if(clearPartial) it.clearFilters();
 				return it;
 			}
 		}
 		// no duplicate found, add to list
-		IChangeSourceIf change = msoObj.getModel().getChanges(msoObj);
+		IChangeRecordIf change = msoObj.getModel().getChanges(msoObj);
 		changes.add(change);
 		// finished
 		return change;

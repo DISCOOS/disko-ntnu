@@ -187,7 +187,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 				{
 					if(MessageTableModel.getSubType(task) == type)
 					{
-						if(!task.delete())
+						if(!task.delete(true))
 						{
 							Log.error("Error removing task " + task);
 						}

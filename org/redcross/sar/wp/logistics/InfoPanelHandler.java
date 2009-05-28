@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
 import org.redcross.sar.event.ITickEventListenerIf;
 import org.redcross.sar.event.TickEvent;
+import org.redcross.sar.gui.dnd.MsoLabel.MsoLabelActionHandler;
 import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
@@ -32,7 +33,6 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.wp.IDiskoWpModule;
-import org.redcross.sar.wp.logistics.AssignmentLabel.AssignmentLabelActionHandler;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
 
 public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, ITickEventListenerIf
@@ -64,7 +64,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     private IAssignmentIf m_displayedAssignment;
     private String m_displayedPanelName = "";
 
-    private final AssignmentLabelActionHandler m_assignmentLabelMouseListener;
+    private final MsoLabelActionHandler m_assignmentLabelMouseListener;
 
     private static final long m_timeInterval = 60 * 1000; // once every minute.
 
@@ -74,7 +74,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
     
     private Logger m_logger = Logger.getLogger(InfoPanelHandler.class);
 
-    public InfoPanelHandler(JPanel anInfoPanel, IDiskoWpLogistics aWpModule, AssignmentLabelActionHandler anActionHandler)
+    public InfoPanelHandler(JPanel anInfoPanel, IDiskoWpLogistics aWpModule, MsoLabelActionHandler anActionHandler)
     {
     	// prepare
         m_wp = aWpModule;
@@ -239,7 +239,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 
     private void renderAssignmentList()
     {
-        Collection<IAssignmentIf> assigments = UnitTableModel.getSelectedAssignments(m_displayedUnit, m_displayedUnitSelection);
+        Collection<IAssignmentIf> assigments = UnitTableModel.getSelectedAssignments1(m_displayedUnit, m_displayedUnitSelection);
         m_unitAssignmentsPanel.setAssignmentList(assigments);
         m_unitAssignmentsPanel.renderPanel();
     }

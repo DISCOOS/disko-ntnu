@@ -187,8 +187,8 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		// initialize GUI
 		initialize(width, height);
 		// get default background colors
+		m_vBg = getBackground();
 		m_eBg = getEditComponent().getBackground();
-		m_vBg = getViewComponent().getBackground();
 		// initialize model
 		setModel(new DefaultFieldModel<O>());
 		// update

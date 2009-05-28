@@ -104,7 +104,7 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
         for (IChangeIf.IChangeReferenceIf ico : attrList)
         {
 			ChangeType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
-            String attName = ico.getReferenceName();
+            String attName = ico.getName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf attribute = ico.getReferredObject();
         }
@@ -113,7 +113,7 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
         for (IChangeIf.IChangeReferenceIf ico : listList)
         {
             ChangeType ct = ico.getType(); 
-            String refName = ico.getReferenceName();
+            String refName = ico.getName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf ref = ico.getReferredObject();
         }

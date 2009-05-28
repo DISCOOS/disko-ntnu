@@ -10,14 +10,11 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-
-import com.esri.arcgis.interop.AutomationException;
 
 import org.apache.log4j.Logger;
 import org.redcross.sar.IDiskoRole;
@@ -57,14 +54,12 @@ import org.redcross.sar.wp.AbstractDiskoWpModule;
 /**
  * Implements the DiskoApTaktikk interface
  *
- * @author geira
+ * @author geira, kenneth
  *
  */
 public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		implements IDiskoWpTactics, IDrawAdapterListener {
 
-	private static final Logger m_logger = Logger.getLogger(DiskoWpTacticsImpl.class);	
-	
 	private JToggleButton elementToggleButton;
 	private JToggleButton listToggleButton;
 	private JToggleButton missionToggleButton;
@@ -95,7 +90,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	public DiskoWpTacticsImpl() throws IllegalClassFormatException {
 
 		// forward
-		super(getWpInterests(),getMapLayers());
+		super(Logger.getLogger(DiskoWpTacticsImpl.class),getWpInterests(),getMapLayers());
 
 		// initialize objects
 		dialogs = new ArrayList<DefaultDialog>();
@@ -263,7 +258,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				// allow deactive
 				return true;
 			case JOptionPane.NO_OPTION:
-				//schedule the cancel task to work pool
+				// schedule the rollback task to work pool
 				return doRollbackWork(false);
 			case JOptionPane.CANCEL_OPTION:
 				return false;
@@ -291,9 +286,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		// validate data
 		if(validate()) {
 			//schedule the commit task to work pool
-			if(doCommitWork(false)) {
-				return super.commit();
-			}
+			return (doCommitWork(false));
 		}
 		// failed
 		return false;
@@ -323,7 +316,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 							try {
 								getMap().setSelected(searchArea,true);
 							} catch (Exception e) {
-								e.printStackTrace();
+								m_logger.error("Failed to select search area in map",e);
 							}
 							HypothesisDialog dialog = getHypothesesDialog();
 							dialog.setSnapToLocation((DiskoMap)getMap(),DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
@@ -376,11 +369,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 	}
 
 	public boolean rollback() {
-		if(rollback(false)) {
-			// forward
-			return super.rollback();
-		}
-		return false;
+		return rollback(false);
 	}
 
 	/*
@@ -398,7 +387,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 						"Dette vil angre alle siste endringer. Vil du fortsette?",
 		                JOptionPane.YES_NO_OPTION);
 
-			// do a rollback
+			// do a rollback?
 			if(ans == JOptionPane.OK_OPTION) {
 				//schedule the finish task to work pool
 				return doRollbackWork(keep);
@@ -426,7 +415,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			if(getMap().getSelectionCount(false)==0) getMap().getDrawAdapter().nextElement();
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			m_logger.error("Failed to reset selection in map",e);
 		}
 	}
 
@@ -437,12 +426,8 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			getMap().clearSelected();
 			getMap().refreshMsoLayers();
 			map.resumeNotify();
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			m_logger.error("Failed to clear selection in map",e);
 		}
 	}
 
@@ -454,24 +439,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			}
 		}
 		((Component)getMap()).repaint();
-		/*
-		try {
-			// repaint map
-			getMap().refreshGraphics(null, getMap().getExtent());
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
 	}
 
 	private MissionTextDialog getMissionTextDialog() {
 		if (missionTextDialog == null) {
 			missionTextDialog = new MissionTextDialog(this);
 			dialogs.add(missionTextDialog);
+			missionTextDialog.addFlowListener(this);
 			missionTextDialog.addFlowListener(new IFlowListener() {
 
 				@Override
@@ -481,7 +455,6 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				}
 
 			});
-			missionTextDialog.addFlowListener(this);
 		}
 		return missionTextDialog;
 	}
@@ -605,262 +578,216 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 
 	private JToggleButton getElementToggleButton() {
 		if (elementToggleButton == null) {
-			try {
-				Enum<?> e = TacticsActionType.MANAGE_ELEMENTS;
-				elementToggleButton = DiskoButtonFactory.createToggleButton(e,ButtonSize.NORMAL,m_wpBundle);
-				elementToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						ElementDialog dialog = getMap().getElementDialog();
-						hideDialogs(dialog);
-						if (elementToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation(
-									elementToggleButton, ElementDialog.POS_WEST, 
-									ElementDialog.SIZE_TO_OFF,false,true);
-							dialog.setVisible(true);
-						}
+			Enum<?> e = TacticsActionType.MANAGE_ELEMENTS;
+			elementToggleButton = DiskoButtonFactory.createToggleButton(e,ButtonSize.NORMAL,m_wpBundle);
+			elementToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ElementDialog dialog = getMap().getElementDialog();
+					hideDialogs(dialog);
+					if (elementToggleButton.isSelected()) {
+						dialog.setSnapToLocation(
+								elementToggleButton, ElementDialog.POS_WEST, 
+								ElementDialog.SIZE_TO_OFF,false,true);
+						dialog.setVisible(true);
 					}
-				});
-
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else 
+					{
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return elementToggleButton;
 	}
 
 	private JToggleButton getDescriptionToggleButton() {
 		if (descriptionToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SHOW_DESCRIPTION;
-				descriptionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				descriptionToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						DescriptionDialog dialog = getDescriptionDialog();
-						hideDialogs(dialog);
-						if (descriptionToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						} else {
-							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SHOW_DESCRIPTION;
+			descriptionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			descriptionToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					DescriptionDialog dialog = getDescriptionDialog();
+					hideDialogs(dialog);
+					if (descriptionToggleButton.isSelected()) 
+					{
+						dialog.setSnapToLocation(
+								(JComponent) getMap(),
+								DefaultDialog.POS_SOUTH, 
+								DefaultDialog.SIZE_TO_COMPONENT, 
+								true, false);
+						dialog.setVisible(true);
+					} 
+					else 
+					{
+						dialog.setVisible(false);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				}
+			});
 		}
 		return descriptionToggleButton;
 	}
 
 	private JToggleButton getHypotheseToggleButton() {
 		if (hypotheseToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SET_HYPOTHESIS;
-				hypotheseToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				hypotheseToggleButton.setVisible(false);
-				hypotheseToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						HypothesisDialog dialog = getHypothesesDialog();
-						hideDialogs(dialog);
-						JComponent mapComp = (JComponent) getMap();
-						if (hypotheseToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-							hypotheseToggleButton.setSelected(false);
-						}
-						else {
-							dialog.setSnapToLocation(mapComp,DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SET_HYPOTHESIS;
+			hypotheseToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			hypotheseToggleButton.setVisible(false);
+			hypotheseToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					HypothesisDialog dialog = getHypothesesDialog();
+					hideDialogs(dialog);
+					JComponent mapComp = (JComponent) getMap();
+					if (hypotheseToggleButton.isSelected()) {
+						dialog.setSnapToLocation(
+								mapComp,DefaultDialog.POS_SOUTH, 
+								DefaultDialog.SIZE_TO_COMPONENT, true, false);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return hypotheseToggleButton;
 	}
 
 	private JToggleButton getListToggleButton() {
 		if (listToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SHOW_ASSIGNMENT_LIST;
-				listToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				listToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						ListDialog dialog = getListDialog();
-						hideDialogs(dialog);
-						JComponent mapComp = (JComponent) getMap();
-						if (listToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation(mapComp,DefaultDialog.POS_CENTER, 0, true, false);
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SHOW_ASSIGNMENT_LIST;
+			listToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			listToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ListDialog dialog = getListDialog();
+					hideDialogs(dialog);
+					JComponent mapComp = (JComponent) getMap();
+					if (listToggleButton.isSelected()) {
+						dialog.setSnapToLocation(mapComp,DefaultDialog.POS_CENTER, 0, true, false);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return listToggleButton;
 	}
 
 	private JToggleButton getMissionToggleButton() {
 		if (missionToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SHOW_MISSION;
-				missionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				missionToggleButton.setVisible(false);
-				missionToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						MissionTextDialog dialog = getMissionTextDialog();
-						hideDialogs(dialog);
-						if (missionToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SHOW_MISSION;
+			missionToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			missionToggleButton.setVisible(false);
+			missionToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MissionTextDialog dialog = getMissionTextDialog();
+					hideDialogs(dialog);
+					if (missionToggleButton.isSelected()) {
+						dialog.setSnapToLocation((JComponent) getMap(),
+								DefaultDialog.POS_SOUTH, 
+								DefaultDialog.SIZE_TO_COMPONENT, true, false);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return missionToggleButton;
 	}
 
 	private JToggleButton getPriorityToggleButton() {
 		if (priorityToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SET_PRIORITY;
-				priorityToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				priorityToggleButton.setVisible(false);
-				priorityToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						PriorityDialog dialog = getPriorityDialog();
-						hideDialogs(dialog);
-						if (priorityToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation(priorityToggleButton, 
-									DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_OFF,false,true);
-							
-							/*
-							java.awt.Point p = priorityToggleButton.getLocationOnScreen();
-							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
-							dialog.setLocation(p);
-							*/
-							
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SET_PRIORITY;
+			priorityToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			priorityToggleButton.setVisible(false);
+			priorityToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					PriorityDialog dialog = getPriorityDialog();
+					hideDialogs(dialog);
+					if (priorityToggleButton.isSelected()) {
+						dialog.setSnapToLocation(
+								priorityToggleButton, 
+								DefaultDialog.POS_WEST, 
+								DefaultDialog.SIZE_TO_OFF,false,true);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return priorityToggleButton;
 	}
 
 	private JToggleButton getRequirementToggleButton() {
 		if (requirementToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SET_REQUIREMENT;
-				requirementToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				requirementToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						RequirementDialog dialog = getRequirementDialog();
-						hideDialogs(dialog);
-						if (requirementToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation((JComponent) getMap(),
-									DefaultDialog.POS_SOUTH, DefaultDialog.SIZE_TO_COMPONENT, true, false);
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SET_REQUIREMENT;
+			requirementToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			requirementToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					RequirementDialog dialog = getRequirementDialog();
+					hideDialogs(dialog);
+					if (requirementToggleButton.isSelected()) {
+						dialog.setSnapToLocation((JComponent) getMap(),
+								DefaultDialog.POS_SOUTH, 
+								DefaultDialog.SIZE_TO_COMPONENT, true, false);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return requirementToggleButton;
 	}
 
 	private JToggleButton getEstimateToggleButton() {
 		if (estimateToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.SHOW_ESTIMATES;
-				estimateToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				estimateToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						EstimateDialog dialog = getEstimateDialog();
-						hideDialogs(dialog);
-						if (estimateToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation(estimateToggleButton, 
-									DefaultDialog.POS_WEST, DefaultDialog.SIZE_TO_OFF,false,true);
-							/*
-							java.awt.Point p = estimateToggleButton.getLocationOnScreen();
-							p.setLocation(p.x - dialog.getWidth() - 2, p.y);
-							dialog.setLocation(p);							
-							*/
-							
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.SHOW_ESTIMATES;
+			estimateToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			estimateToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					EstimateDialog dialog = getEstimateDialog();
+					hideDialogs(dialog);
+					if (estimateToggleButton.isSelected()) {
+						dialog.setSnapToLocation(estimateToggleButton, 
+								DefaultDialog.POS_WEST, 
+								DefaultDialog.SIZE_TO_OFF,false,true);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return estimateToggleButton;
 	}
 
 	JToggleButton getUnitToggleButton() {
 		if (unitToggleButton == null) {
-			try {
-				Enum<?> key = TacticsActionType.ENQUEUE_TO_UNIT;
-				unitToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
-				unitToggleButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						UnitAllocationDialog dialog = getUnitSelectionDialog();
-						hideDialogs(dialog);
-						if (unitToggleButton.isSelected() && dialog.isVisible()) {
-							dialog.setVisible(false);
-						}
-						else {
-							dialog.setSnapToLocation(
-									(JComponent) getMap(), DefaultDialog.POS_SOUTH, 
-									DefaultDialog.SIZE_TO_COMPONENT, true, false);
-							dialog.setVisible(true);
-						}
+			Enum<?> key = TacticsActionType.ENQUEUE_TO_UNIT;
+			unitToggleButton = DiskoButtonFactory.createToggleButton(key, ButtonSize.NORMAL, m_wpBundle);
+			unitToggleButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					UnitAllocationDialog dialog = getUnitSelectionDialog();
+					hideDialogs(dialog);
+					if (unitToggleButton.isSelected()) {
+						dialog.setSnapToLocation(
+								(JComponent) getMap(), DefaultDialog.POS_SOUTH, 
+								DefaultDialog.SIZE_TO_COMPONENT, true, false);
+						dialog.setVisible(true);
 					}
-				});
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+					else {
+						dialog.setVisible(false);
+					}
+				}
+			});
 		}
 		return unitToggleButton;
 	}
@@ -959,7 +886,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			return false;
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			m_logger.error("Failed to shedule commit work",e);
 		}
 		return false;
 	}
@@ -970,7 +897,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			return true;
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			m_logger.error("Failed to shedule rollback work",e);
 		}
 		return false;
 	}
@@ -1002,7 +929,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 				}
 			}
 			catch(Exception e) {
-				e.printStackTrace();
+				m_logger.error("Failed to execute tactics work",e);
 			}
 			return false;
 		}
@@ -1010,18 +937,13 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		@Override
 		public void beforeDone() {
 
-			try {
-				// dispatch task
-				switch(m_task) {
+			// dispatch task
+			switch(m_task) {
 				case 1: fireOnWorkCommit(); break;
 				case 2: fireOnWorkRollback(); break;
-				}
-				// cleanup
-				reset(m_keep);
 			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
+			// cleanup
+			reset(m_keep);
 		}
 
 		private void commit() {
@@ -1037,7 +959,9 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		private void rollback() {
         	if(isChanged()) {
                 try {
-                    getMsoModel().rollback(getMsoModel().getChanges(getChangedMsoObjects()));
+                	getMsoModel().rollback();
+                	//List<IMsoObjectIf> changes = getChangedMsoObjects();
+                    //getMsoModel().rollback(getMsoModel().getChanges(changes));
         		} catch (TransactionException ex) {
         			m_logger.error("Failed to roll back tactics data",ex);
         		}            

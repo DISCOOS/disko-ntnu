@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
@@ -342,6 +343,8 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
      */
     public boolean dequeueAssignment(IAssignmentIf anAssignment) throws IllegalOperationException;
 
+    public Collection<IAssignmentIf> getAssignments(AssignmentStatus status);
+    
     public List<IAssignmentIf> getEnqueuedAssignments();
 
     public IAssignmentIf allocateAssignment() throws IllegalOperationException;

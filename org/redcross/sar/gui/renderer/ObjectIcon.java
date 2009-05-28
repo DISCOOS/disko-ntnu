@@ -3,7 +3,7 @@ package org.redcross.sar.gui.renderer;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.wp.logistics.UnitTableModel;
+import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -27,7 +27,7 @@ import javax.swing.ImageIcon;
 /**
  *
  */
-public class IconRenderer implements Icon
+public class ObjectIcon implements Icon
 {
     // Fixed design parameters
     private final static int arcDiam = 8;
@@ -52,7 +52,7 @@ public class IconRenderer implements Icon
     // Selection flag
     private boolean m_isSelected;
 
-    public IconRenderer(Image anIconImage, boolean isLocatedLeft, String anIconText, int aWidth, int aHeight, float aResizeFactor, boolean isMultiple, boolean hasBorder, boolean isSelected)
+    public ObjectIcon(Image anIconImage, boolean isLocatedLeft, String anIconText, int aWidth, int aHeight, float aResizeFactor, boolean isMultiple, boolean hasBorder, boolean isSelected)
     {
         m_iconImage = anIconImage;
         m_isLocatedLeft = isLocatedLeft;
@@ -260,31 +260,50 @@ public class IconRenderer implements Icon
     public void iconSelected()
     {
     }
-
-    public static class UnitIcon extends IconRenderer
+    
+    public abstract static class MsoIcon<M extends IMsoObjectIf> extends ObjectIcon 
     {
-        private IUnitIf m_unit;
-    	private IconRenderer.IconActionHandler m_actionHandler;
-
-        private final HashMap<IUnitIf.UnitType, Image> m_images = new LinkedHashMap<IUnitIf.UnitType, Image>();
-
-        public UnitIcon(IUnitIf aUnit, boolean isSelected, IconActionHandler anActionHandler)
+		protected M m_msoObject;
+		protected ObjectIcon.MsoIconActionHandler m_actionHandler;
+        
+        protected MsoIcon(M msoObject, ObjectIcon.MsoIconActionHandler actionHandler, 
+        		Image anIconImage, boolean isLocatedLeft,
+				String anIconText, int width, int height, float resizeFactor,
+				boolean isMultiple, boolean hasBorder, boolean isSelected) {
+        	// forward
+			super(anIconImage, isLocatedLeft, anIconText, width, height, resizeFactor,
+					isMultiple, hasBorder, isSelected);
+			// prepare
+			m_msoObject = msoObject;
+			m_actionHandler = actionHandler;
+		}
+        
+        public M getMsoObject() {
+        	return m_msoObject;
+        }        
+        
+        public void setMsoObject(M msoObject)
         {
-        	this(aUnit, isSelected, anActionHandler, 50, 50);
+            m_msoObject = msoObject;
+            setIconImage(getIconImage());
+            setIconText(getIconText());
         }
+        
+        protected abstract String getIconText(); 
+        protected abstract Image getIconImage();         
+    	
+    }
 
-        public UnitIcon(IUnitIf aUnit, boolean isSelected, IconActionHandler anActionHandler, int width, int height)
-        {
-            super(null, true, null, width, height, 1F, false, false, isSelected);
-            if (m_images.size() == 0)
-            {
-                initImageMap();
-            }
-            m_actionHandler = anActionHandler;
-            setUnit(aUnit);
+    public static class UnitIcon extends MsoIcon<IUnitIf>
+    {
+
+        private static final HashMap<IUnitIf.UnitType, Image> m_images = new LinkedHashMap<IUnitIf.UnitType, Image>();
+
+        static {
+        	initImageMap();
         }
-
-        private void initImageMap()
+        
+        private static void initImageMap()
         {
             IUnitIf.UnitType[] unitTypes = new IUnitIf.UnitType[]{
                     IUnitIf.UnitType.CP,
@@ -311,18 +330,33 @@ public class IconRenderer implements Icon
                 }
             }
         }
-
-        public void setUnit(IUnitIf aUnit)
+        
+        public UnitIcon(IUnitIf aUnit, MsoIconActionHandler anActionHandler, boolean isSelected)
         {
-            m_unit = aUnit;
-            Image iconImage = m_images.get(aUnit.getType());
-            setIconImage(iconImage);
-            setIconText(Integer.toString(aUnit.getNumber()));
+        	this(aUnit, anActionHandler, isSelected, 50, 50);
         }
 
-        public IUnitIf getUnit()
+        public UnitIcon(IUnitIf aUnit, MsoIconActionHandler anActionHandler, boolean isSelected, int width, int height)
         {
-            return m_unit;
+        	// forward
+            super(aUnit, anActionHandler, null, true, null, width, height, 1F, false, false, isSelected);
+            
+            // prepare handler
+            m_actionHandler = anActionHandler;
+            
+            // set object
+            setMsoObject(aUnit);
+            
+        }
+
+        protected String getIconText() 
+        {
+        	return Integer.toString(getMsoObject().getNumber());
+        }
+        
+        protected Image getIconImage()
+        {
+        	return m_images.get(getMsoObject().getType());
         }
 
         @Override
@@ -338,53 +372,70 @@ public class IconRenderer implements Icon
             {
                 return;
             }
-            m_actionHandler.handleClick(m_unit);
+            m_actionHandler.handleClick(m_msoObject);
         }
     }
-
-    public static class AssignmentIcon extends IconRenderer
+    
+    public static class PersonnelIcon extends MsoIcon<IPersonnelIf>
     {
 
-        private IUnitIf m_actUnit;
-        private int m_selectorIndex;
-
-        private IAssignmentIf m_assignment;
-        private Collection<IAssignmentIf> m_assignments;
-        private IconRenderer.IconActionHandler m_actionHandler;
-
-        private final boolean m_singleAssigmentIcon;
-
-        private final HashMap<ISearchIf.SearchSubType, Image> m_searchImages = new LinkedHashMap<ISearchIf.SearchSubType, Image>();
-
-        public AssignmentIcon(IAssignmentIf anAssignment, boolean isSelected, IconActionHandler anActionHandler)
+        private static final Image m_image = DiskoIconFactory.getIcon("GENERAL.PERSONNEL", "48x48").getImage();
+        
+        public PersonnelIcon(IPersonnelIf aPersonnel, MsoIconActionHandler anActionHandler, boolean isSelected)
         {
-        	this(anAssignment, isSelected, anActionHandler, 50, 50);
+        	this(aPersonnel, anActionHandler, isSelected, 50, 50);
         }
 
-        public AssignmentIcon(IAssignmentIf anAssignment, boolean isSelected, IconActionHandler anActionHandler, int width, int height)
+        public PersonnelIcon(IPersonnelIf aPersonnel, MsoIconActionHandler anActionHandler, boolean isSelected, int width, int height)
         {
-            super(null, true, null, width, height, 1.0F, false, true, isSelected);
-            initImageMap();
-            m_singleAssigmentIcon = true;
+        	// forward
+            super(aPersonnel, anActionHandler, null, true, null, width, height, 1F, false, false, isSelected);
+            
+            // prepare handler
             m_actionHandler = anActionHandler;
-            setAssignment(anAssignment);
+            
+            // set object
+            setMsoObject(aPersonnel);
+            
         }
 
-        public AssignmentIcon(IUnitIf aUnit, int aSelectorIndex, boolean isSelected, IconActionHandler anActionHandler)
+        protected String getIconText() 
         {
-        	this(aUnit, aSelectorIndex, isSelected, anActionHandler, 50, 50);
+        	return "";
         }
-
-        public AssignmentIcon(IUnitIf aUnit, int aSelectorIndex, boolean isSelected, IconActionHandler anActionHandler, int width, int height)
+        
+        protected Image getIconImage()
         {
-            super(null, true, null, width, height, 1.0F, false, true, isSelected);
-            initImageMap();
-            m_singleAssigmentIcon = false;
-            m_actionHandler = anActionHandler;
-            setAssignments(aUnit, aSelectorIndex);
+        	return m_image;
         }
 
-        private void initImageMap()
+        @Override
+        public boolean isSelectable()
+        {
+            return true;
+        }
+
+        @Override
+        public void iconSelected()
+        {
+            if (m_actionHandler == null)
+            {
+                return;
+            }
+            m_actionHandler.handleClick(m_msoObject);
+        }
+    }    
+
+    public static class AssignmentIcon extends MsoIcon<IAssignmentIf>
+    {
+
+        private static final HashMap<ISearchIf.SearchSubType, Image> m_searchImages = new LinkedHashMap<ISearchIf.SearchSubType, Image>();
+
+        static {
+        	initImageMap();
+        }
+        
+        private static void initImageMap()
         {
 
             ISearchIf.SearchSubType[] assignmentTypes = new ISearchIf.SearchSubType[]{
@@ -405,42 +456,107 @@ public class IconRenderer implements Icon
                     m_searchImages.put(assignmentTypes[i], image);
                 }
             }
+        }        
+        
+        private IUnitIf m_owningUnit;
+        private int m_aSelectorIndex;
+
+        private final boolean m_singleAssigmentIcon;
+        
+        private Collection<IAssignmentIf> m_assignments;
+        
+        public AssignmentIcon(IAssignmentIf anAssignment, MsoIconActionHandler anActionHandler, boolean isSelected)
+        {
+        	this(anAssignment, anActionHandler, isSelected, 50, 50);
         }
 
-        private void setAssignmentIcon(IAssignmentIf anAssignment, boolean isMultiple)
+        public AssignmentIcon(IAssignmentIf anAssignment, MsoIconActionHandler anActionHandler, boolean isSelected, int width, int height)
         {
+        	// forward
+            super(anAssignment, anActionHandler, null, true, null, width, height, 1.0F, false, true, isSelected);
+            
+            // prepare
+            m_singleAssigmentIcon = true;
+
+            // set object
+            setMsoObject(anAssignment);
+            
+        }
+
+        public AssignmentIcon(IUnitIf aUnit, MsoIconActionHandler anActionHandler, int aSelectorIndex, boolean isSelected)
+        {
+        	this(aUnit, anActionHandler, aSelectorIndex, isSelected, 50, 50);
+        }
+
+        public AssignmentIcon(IUnitIf aUnit, MsoIconActionHandler anActionHandler, int aSelectorIndex, boolean isSelected, int width, int height)
+        {
+        	// forward
+            super(null, anActionHandler, null, true, null, width, height, 1.0F, false, true, isSelected);
+            // prepare
+            m_singleAssigmentIcon = false;
+            m_actionHandler = anActionHandler;
+            // set objects
+            setAssignments(aUnit, aSelectorIndex);
+        }
+
+        private Image getAssignmentIcon(IAssignmentIf anAssignment)
+        {
+        	Image image = null;
             if (anAssignment != null)
             {
                 if (anAssignment instanceof ISearchIf)
                 {
-                    setIconImage(m_searchImages.get(((ISearchIf) anAssignment).getSubType()));
+                	image = m_searchImages.get(((ISearchIf) anAssignment).getSubType());
                 } else
                 {
-                    setIconImage(m_searchImages.get(ISearchIf.SearchSubType.LINE));
+                	image = m_searchImages.get(ISearchIf.SearchSubType.LINE);
                 }
-            } else
-            {
-                setIconImage(null);
             }
-            setMultiple(isMultiple);
+            return image;
         }
 
         public boolean isSingleAssigmentIcon() {
         	return m_singleAssigmentIcon;
         }
-
-        public void setAssignment(IAssignmentIf anAssignment)
+        
+        @Override
+        public IAssignmentIf getMsoObject()
         {
-            m_assignment = anAssignment;
-            setIconText(Integer.toString(anAssignment.getNumber()));
-            setAssignmentIcon(anAssignment, false);
+            if (m_singleAssigmentIcon)
+            {
+                return m_msoObject;
+            }
+            if (m_assignments != null && m_assignments.size() > 0)
+            {
+                return m_assignments.iterator().next();
+            }
+            return null;
         }
 
-        public void setAssignments(IUnitIf aUnit, int aSelectorIndex)
+        public void setMsoObject(IAssignmentIf anAssignment)
         {
-            m_actUnit = aUnit;
-            m_selectorIndex = aSelectorIndex;
-            m_assignments = UnitTableModel.getSelectedAssignments(m_actUnit, m_selectorIndex);
+            m_msoObject = anAssignment;
+            setIconText(Integer.toString(anAssignment.getNumber()));
+            setIconImage(getAssignmentIcon(anAssignment));
+            setMultiple(false);
+        }
+        
+        @Override
+		protected Image getIconImage() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected String getIconText() {
+			return Integer.toString(getMsoObject().getNumber());
+		}
+
+		public void setAssignments(IUnitIf aUnit, int aSelectorIndex)
+        {
+            m_owningUnit = aUnit;
+            m_aSelectorIndex = aSelectorIndex;
+            m_assignments = m_owningUnit.getAssignments(getAssignmentStatus());
             if (m_assignments.size() == 0)
             {
                 setIconText("");
@@ -451,12 +567,22 @@ public class IconRenderer implements Icon
                 Iterator<IAssignmentIf> iterator = m_assignments.iterator();
                 IAssignmentIf asg = iterator.next();
                 setIconText(Integer.toString(asg.getNumber()));
-                setAssignmentIcon(asg, m_assignments.size() > 1);
+                setIconImage(getAssignmentIcon(asg));
+                setMultiple(m_assignments.size() > 1);
                 setHasBorder(true);
             }
         }
+		
+		private AssignmentStatus getAssignmentStatus() {
+			switch(m_aSelectorIndex) {
+		    	case 0: return AssignmentStatus.QUEUED;
+		    	case 1: return AssignmentStatus.ALLOCATED;
+		    	case 2: return AssignmentStatus.EXECUTING;
+		    	default: return AssignmentStatus.FINISHED;
+			}
+		}
 
-        public Collection<IAssignmentIf> getAssignmentList()
+        public Collection<IAssignmentIf> getAssignments()
         {
             return m_assignments;
         }
@@ -466,31 +592,19 @@ public class IconRenderer implements Icon
             return m_iconImage != null;
         }
 
-        public IAssignmentIf getAssignment()
-        {
-            if (m_singleAssigmentIcon)
-            {
-                return m_assignment;
-            }
-            if (m_assignments != null && m_assignments.size() > 0)
-            {
-                return m_assignments.iterator().next();
-            }
-            return null;
-        }
-
         @Override
         public void iconSelected()
         {
             if (m_actionHandler == null){
                 return;
             }
-            if (m_singleAssigmentIcon)            {
-                m_actionHandler.handleClick(m_assignment);
+            if (m_singleAssigmentIcon)            
+            {
+                m_actionHandler.handleClick(m_msoObject);
             }
             else {
             	// get selected assignments
-                m_assignments = UnitTableModel.getSelectedAssignments(m_actUnit, m_selectorIndex);
+                m_assignments = m_owningUnit.getAssignments(getAssignmentStatus());
                 // nothing selected?
                 if (m_assignments.size() == 0) {
                     return;
@@ -499,13 +613,13 @@ public class IconRenderer implements Icon
                     m_actionHandler.handleClick(m_assignments.iterator().next());
                 } else
                 {
-                    m_actionHandler.handleClick(m_actUnit, m_selectorIndex);
+                    m_actionHandler.handleClick(m_owningUnit, m_aSelectorIndex);
                 }
             }
         }
     }
 
-    public static class InfoIcon extends IconRenderer
+    public static class InfoIcon extends ObjectIcon
     {
 
         public InfoIcon(String anIconText, boolean isSelected)
@@ -537,13 +651,11 @@ public class IconRenderer implements Icon
         }
     }
 
-    public interface IconActionHandler
+    public interface MsoIconActionHandler
     {
-        public void handleClick(IUnitIf aUnit);
+        public void handleClick(IMsoObjectIf anObject);
 
-        public void handleClick(IAssignmentIf anAssignment);
-
-        public void handleClick(IUnitIf aUnit, int aSelectorIndex);
+        public void handleClick(IMsoObjectIf anObject, int anIndex);
     }
 
 }

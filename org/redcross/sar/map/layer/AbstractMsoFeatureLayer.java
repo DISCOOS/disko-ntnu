@@ -868,19 +868,19 @@ public abstract class AbstractMsoFeatureLayer
 									workList.add(msoFeature);
 								}
 							}
+							// delete object?
+							else if ((deletedObject) && msoFeature != null && isFeature) {
+								// remove from feature class
+								if(msoFC.removeFeature(msoFeature)) {
+									setDirty(true);
+								}
+							}
 							// is object modified?
-							if ( (addedReference || removedReference || modifiedObject)
+							else if ( (addedReference || removedReference || modifiedObject)
 									&& msoFeature != null && msoFeature.isMsoChanged()) {
 								// add load work?
 								if(!workList.contains(msoFeature)) {
 									workList.add(msoFeature);
-								}
-							}
-							// delete object?
-							if ((deletedObject) && msoFeature != null && isFeature) {
-								// remove from feature class
-								if(msoFC.removeFeature(msoFeature)) {
-									setDirty(true);
 								}
 							}
 						}

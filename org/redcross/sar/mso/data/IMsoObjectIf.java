@@ -4,6 +4,7 @@ import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.util.except.InvalidReferenceException;
 import org.redcross.sar.util.except.TransactionException;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface for MSO objects
@@ -157,10 +159,22 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
     
     /**
      * Delete this object from the data structures
+     * @param deep - if <code>true</code> this object and all objects 
+     * that is own is deleted (deep deletion). Otherwise, the method  
+     * performs a deletion on this object only and notifies any object 
+     * holders accordingly. It do not delete owned objects in lists, or 
+     * references from this object to other owned objects explicitly. 
+     * <b>IMPORTANT!</b> The result of an shallow deletion is a potential 
+     * memory leak, because owned objects may still point to this 
+     * object (see method <code>getOwningObjects()</code> for more 
+     * information). Hence, this object will not be garbage collected. 
+     * In most cases, a deep deletion is the right option. Shallow 
+     * deletion should only be used when the deletion process is 
+     * strictly controlled such that memory leaks are prevented.
      *
      * @return <code>true</code> if object has been deleted, <code>false</code> otherwise.
      */
-    public boolean delete();
+    public boolean delete(boolean deep);
 
     /**
      * Use this method to check if an object is deleteable. If the MSO model is in
@@ -193,6 +207,12 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      */
     public IMsoAttributeIf<?> getAttribute(String aAttributeName) throws UnknownAttributeException;
     
+    /**
+     * Get list of all objects owning this objects.
+     * 
+     * @return Returns a list of objects owning this object.
+     */
+    public Set<IMsoObjectHolderIf<?>> getOwningObjects();
     
     /**
      * Check if a given IMsoObject is referenced to by this IMsoObject
@@ -203,7 +223,7 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
     public boolean contains(IMsoObjectIf msoObj);
     
     /**
-     * Get the object holder for the given IMsoObject. It the reference to
+     * Get the object holder for the given IMsoObject. If the reference to
      * the given object is a one-to-one reference between this object
      * and the given object, a IMsoReferenceIf instance is returned. If the found 
      * reference is a one-to-many reference, a IMsoListIf instances is returned. 
@@ -211,7 +231,7 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * IMsoReferenceIf or IMsoListIf instances (they only hold the object reference
      * between objects).
      * 
-     * @param msoObj - the object to look for 
+     * @param msoObj - the referenced object to look for 
      * @return Returns the object holding the reference between this and the given object. 
      */
     public IMsoObjectHolderIf<?> getObjectHolder(IMsoObjectIf msoObj);
@@ -220,7 +240,9 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * Get the holder of the reference between this and the given object
      * 
      * @param msoObj - the referenced object to look for 
-     * @return Returns the holder of the reference between this and the given object
+     * @return Returns the holder of the reference between this and the given object. 
+     * Note that if more than one reference exists to the given object, the first one 
+     * found is returned (starting with one-to-one references).
      */
     public IMsoReferenceIf<?> getReference(IMsoObjectIf msoObj);
     
@@ -305,6 +327,13 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
     public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences(MsoClassCode c);
     
     /**
+     * Check if client updates are suspended.
+     *  
+     * @return Returns <code>true</code> if client updates are suspended.
+     */
+    public boolean isClientUpdateSuspended();
+    
+    /**
      * Suspend update notifications to listeners.
      * <p/>
      * Use this method to group all update notifications into one single event. This
@@ -317,9 +346,15 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * Resume pending update notification to listeners. <p/>
      *
      * @param boolean all - if <code>true</code>, resume is also forwarded to all
-     * referenced objects. Else, only this object is resumed.
+     * referenced objects. Else, only changes associated with object are resumed 
+     * (changed attributes, references from and to this object).
+     * 
+     * @return Returns <code>true</code> if suspended updates were resumed. 
+     * If no suspended client updates were resumed and notified to clients, or
+     * if client updates are suspended for all objects, this method returns 
+     * <code>false</code>.
      */
-    public void resumeClientUpdate(boolean all);
+    public boolean resumeClientUpdate(boolean all);
 
     /**
      * Validates object states (cardinality of attributes and relations)
@@ -579,7 +614,13 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
     public IMsoAttributeIf.IMsoEnumIf<?> getEnumAttribute(String aName) throws UnknownAttributeException;
 
     /**
-     * Get list changed attributes.
+     * Get all local changes in object
+     * @return Returns a object containing all local changes
+     */
+    public IChangeObjectIf getChange();
+    
+    /**
+     * Get list of changed attributes.
      * @return Return list of attributes changed locally
      */    
     public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes();

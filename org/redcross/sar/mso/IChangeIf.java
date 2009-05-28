@@ -3,8 +3,8 @@ package org.redcross.sar.mso;
 import java.util.List;
 
 import org.redcross.sar.mso.data.IMsoAttributeIf;
-import org.redcross.sar.mso.data.IMsoDataStateIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.data.IMsoReferenceIf;
 
 /**
  * The IChangeIf interface define methods that used by the transaction handler when 
@@ -50,27 +50,27 @@ public interface IChangeIf
         /**
          * Check if only some changes should be updated. 
          */
-        public boolean isPartial();
+        public boolean isFiltered();
         
         /**
-         * Returns partial list of changed data to commit
+         * Returns list of changed data to commit
          */
-		public List<IChangeIf> getPartial();
+		public List<IChangeIf> getChanges();
         
         /**
          * Check if partial change exists
          */
-		public boolean containsPartial(IChangeIf partial);
+		public boolean containsFilter(IChangeIf filter);
 		
         /**
          * Check if partial change exists
          */
-		public boolean containsPartial(IMsoAttributeIf<?> attribute);
+		public boolean containsFilter(IMsoAttributeIf<?> attribute);
 		
         /**
          * Check if partial change exists
          */
-		public boolean containsPartial(IMsoObjectIf reference);
+		public boolean containsFilter(IMsoObjectIf reference);
 		
     }
     
@@ -96,23 +96,34 @@ public interface IChangeIf
 
 	/**
 	 * Methods that used by the commit handler when committing references.
+	 * Note that a relation is defined by a relation name and two MSO objects.
+	 * The name is needed since some classes may have several types of relations 
+	 * to another class.
+	 * 
 	 */
     public interface IChangeReferenceIf extends IChangeIf
     {
         /**
         * Get name of reference.
         */
-        public String getReferenceName();
+        public String getName();
 
         /**
-        * Get referring object.
+        * Get referring object (owner).
         */
         public IMsoObjectIf getReferringObject();
 
         /**
-        * Get referred object.
+        * Get referred object (referenced object).
         */
-        public IMsoObjectIf getReferredObject();
+        public IMsoObjectIf getReferredObject();            
+        
+        /**
+         * Get reference object
+         * 
+         * @return Returns the object representing the reference between referring and referred objects
+         */
+        public IMsoReferenceIf<?> getReference();
         
     }
 

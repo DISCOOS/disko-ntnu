@@ -284,7 +284,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
     @Override
     public boolean confirmDeactivate()
     {
-    	if(getMsoModel().hasUncommitedChanges())
+    	if(getMsoModel().isChanged())
     	{
     		Object[] dialogOptions = {getBundleText("Yes.text"), getBundleText("No.text")};
     		int n = JOptionPane.showOptionDialog(this.getApplication().getFrame(),

@@ -164,8 +164,9 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         return null; /*TODO: Implementer*/
     }
 
+    /*
     @Override
-    public boolean delete()
+    public boolean delete(boolean deep)
     {
         Application.getInstance().getMsoModel().suspendClientUpdate();
         m_cmdPostList.removeAll();
@@ -173,6 +174,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         Application.getInstance().getMsoModel().resumeClientUpdate(true);
         return true;
     }
+    */
 
     public ISystemIf createSystem() {
     	IObjectIdIf id = Application.getInstance().getMsoModel().getDispatcher().makeObjectId();

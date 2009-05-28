@@ -152,7 +152,7 @@ public class MsoUtils {
 			}
 			else {
 				// forward 
-				return msoObject.delete();
+				return msoObject.delete(true);
 			}
 		}
 		// failure
@@ -166,7 +166,7 @@ public class MsoUtils {
 		
 			try {
 				// delete area
-				return area.delete();	
+				return area.delete(true);	
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -190,7 +190,7 @@ public class MsoUtils {
 				// delete planned area
 				if(deleteArea(area)) {
 					// delete assignment
-					return assignment.delete();
+					return assignment.delete(true);
 				}
 			}
 			catch(Exception e) {

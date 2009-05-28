@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.util.except.TransactionException;
 
 import java.util.Collection;
 import java.util.Vector;
@@ -11,6 +12,7 @@ import java.util.Vector;
  */
 public interface IMsoReferenceIf<T extends IMsoObjectIf> extends IMsoDataStateIf
 {
+	
 	/**
 	 * Get the unique reference name.
 	 *  
@@ -26,16 +28,16 @@ public interface IMsoReferenceIf<T extends IMsoObjectIf> extends IMsoDataStateIf
     public IMsoObjectIf getOwner();
 
     /**
-     * Set the deleteable state of this reference.
+     * Set the deleteable state of the reference to the referenced object.
      * 
      * @param isDeleteable - the new deleteable state
      */
     public void setDeletable(boolean isDeleteable);
 
     /**
-     * Get the deleteable state of this reference.
+     * Check if the reference to the referenced object can be deleted.
      * 
-     * @return Returns the deleteable state of this reference
+     * @return Returns <code>true</code> if reference can be deleted.
      */
     public boolean isDeletable();
 
@@ -62,6 +64,16 @@ public interface IMsoReferenceIf<T extends IMsoObjectIf> extends IMsoDataStateIf
      */
     public Vector<T> getConflictingValues();
 
+    
+    /**
+     * 
+     * Commit changes to remote sources
+     *
+     * @return Returns <code>true</code> if changes was committed.
+     * @throws TransactionException
+     */
+    public boolean commit() throws TransactionException;
+    
     /**
      * Perform a rollback on the reference
      *

@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
 
-import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.renderer.ObjectIcon;
 
 
 /**
@@ -68,8 +68,8 @@ public class IconDragGestureListener extends DragSourceAdapter implements
 				    	BufferedImage buff = new BufferedImage(m_icon.getIconWidth(),
 				    			m_icon.getIconHeight(),BufferedImage.TYPE_INT_ARGB);
 				    	// IconRenderer?
-				    	if(m_icon instanceof IconRenderer) {
-					    	IconRenderer icon = (IconRenderer)m_icon;
+				    	if(m_icon instanceof ObjectIcon) {
+					    	ObjectIcon icon = (ObjectIcon)m_icon;
 					    	// get flag
 					    	boolean isSelected = icon.isSelected();
 					    	// deselect

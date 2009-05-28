@@ -1,20 +1,22 @@
 package org.redcross.sar.wp.logistics;
 
+import org.redcross.sar.gui.dnd.AssignmentDragAndDropLabel;
+import org.redcross.sar.gui.dnd.MsoLabel;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IDiskoDropTarget;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
+import org.redcross.sar.gui.dnd.MsoLabel.MsoLabelActionHandler;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.DiskoTilesPanel;
-import org.redcross.sar.gui.renderer.IconRenderer;
-import org.redcross.sar.gui.renderer.IconRenderer.AssignmentIcon;
+import org.redcross.sar.gui.renderer.ObjectIcon;
+import org.redcross.sar.gui.renderer.ObjectIcon.AssignmentIcon;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.wp.logistics.AssignmentLabel.AssignmentLabelActionHandler;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -74,12 +76,12 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     /**
      * Pool of icons
      */
-    private final Vector<IconRenderer.AssignmentIcon> m_icons = new Vector<IconRenderer.AssignmentIcon>();
+    private final Vector<ObjectIcon.AssignmentIcon> m_icons = new Vector<ObjectIcon.AssignmentIcon>();
 
     /**
      * Pool of labels
      */
-    private final Vector<AssignmentDragDropLabel> m_labels = new Vector<AssignmentDragDropLabel>();
+    private final Vector<AssignmentDragAndDropLabel> m_labels = new Vector<AssignmentDragAndDropLabel>();
 
     /**
      * Set of (user) selected assignments.
@@ -109,7 +111,7 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
     /**
      * Action handler for the labels
      */
-    private final AssignmentLabelActionHandler m_actionHandler;
+    private final MsoLabelActionHandler<IAssignmentIf> m_actionHandler;
 
     /**
      * Icon sizr
@@ -122,11 +124,11 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
      * Define a panel with a given FlowLayout manager.
      *
      * @param aLayoutManager  The layout manager used by the panel.
-     * @param anActionHandler The {@link AssignmentLabel.AssignmentLabelActionHandler} that shall be used by te labels.
+     * @param anActionHandler The {@link MsoLabel.MsoLabelActionHandler} that shall be used by the labels.
      * @param showIcons       <code>true</code> if icons shall be shown in the labels, <code>false</code> otherwise.
      * @see DiskoTilesPanel
      */
-    public AssignmentTilesPanel(IDiskoWpLogistics wp, FlowLayout aLayoutManager, AssignmentLabelActionHandler anActionHandler, boolean showIcons)
+    public AssignmentTilesPanel(IDiskoWpLogistics wp, FlowLayout aLayoutManager, MsoLabelActionHandler<IAssignmentIf> anActionHandler, boolean showIcons)
     {
         super(aLayoutManager);
         m_showIcons = showIcons;
@@ -141,11 +143,11 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
      * Define a panel with a given GridLayout manager.
      *
      * @param aLayoutManager  The layout manager used by the panel.
-     * @param anActionHandler The {@link AssignmentLabel.AssignmentLabelActionHandler} that shall be used by the labels.
+     * @param anActionHandler The {@link MsoLabel.MsoLabelActionHandler<IAssignmentIf>} that shall be used by the labels.
      * @param showIcons       <code>true</code> if icons shall be shown in the labels, <code>false</code> otherwise.
      * @see DiskoTilesPanel
      */
-    public AssignmentTilesPanel(IDiskoWpLogistics wp, GridLayout aLayoutManager, AssignmentLabelActionHandler anActionHandler, boolean showIcons)
+    public AssignmentTilesPanel(IDiskoWpLogistics wp, GridLayout aLayoutManager, MsoLabelActionHandler<IAssignmentIf> anActionHandler, boolean showIcons)
     {
         super(aLayoutManager);
         m_showIcons = showIcons;
@@ -165,11 +167,11 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
      * @param aVgap            Vertical gap between labels.
      * @param isHorizontalFlow <code>true</code> if labels shall be displayed in horizontal rows, <code>false</code> if the
      *                         shall be shown in vertical columns.
-     * @param anActionHandler  The {@link AssignmentLabelActionHandler} that shall be used by te labels.
+     * @param anActionHandler  The {@link MsoLabelActionHandler<IAssignmentIf>} that shall be used by te labels.
      * @param showIcons        <code>true</code> if icons shall be shown in the labels, <code>false</code> otherwise.
      * @see DiskoTilesPanel
      */
-    public AssignmentTilesPanel(IDiskoWpLogistics wp, LayoutManager aLayoutManager, int aHgap, int aVgap, boolean isHorizontalFlow, AssignmentLabelActionHandler anActionHandler, boolean showIcons)
+    public AssignmentTilesPanel(IDiskoWpLogistics wp, LayoutManager aLayoutManager, int aHgap, int aVgap, boolean isHorizontalFlow, MsoLabelActionHandler<IAssignmentIf> anActionHandler, boolean showIcons)
     {
         super(aLayoutManager, aHgap, aVgap, isHorizontalFlow);
         m_showIcons = showIcons;
@@ -346,30 +348,30 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
 
             if (m_showIcons){
                 if (m_icons.size() == iv){
-                    icon = new AssignmentIcon(asg, m_selected.contains(asg), null);
+                    icon = new AssignmentIcon(asg, null, m_selected.contains(asg));
                     m_icons.ensureCapacity(lastIndex - firstIndex + 1);
                     m_icons.add(icon);
                 }
                 else {
                     icon = m_icons.get(iv);
-                    icon.setAssignment(asg);
+                    icon.setMsoObject(asg);
                     icon.setSelected(m_selected.contains(asg));
                 }
                 if (m_labels.size() == iv){
                     m_labels.ensureCapacity(lastIndex - firstIndex + 1);
-                    m_labels.add(new AssignmentDragDropLabel(icon, m_actionHandler));
+                    m_labels.add(new AssignmentDragAndDropLabel(icon, m_actionHandler));
                 }
                 else {
-                    m_labels.get(iv).setAssignmentIcon(icon);
+                    m_labels.get(iv).setMsoIcon(icon);
                 }
             }
             else {
                 if (m_labels.size() == iv){
                     m_labels.ensureCapacity(lastIndex - firstIndex + 1);
-                    m_labels.add(new AssignmentDragDropLabel(asg, m_actionHandler));
+                    m_labels.add(new AssignmentDragAndDropLabel(asg, m_actionHandler));
                 }
                 else {
-                    m_labels.get(iv).setAssignment(asg);
+                    m_labels.get(iv).setMsoObject(asg);
                 }
             }
             JLabel label = m_labels.get(iv);
@@ -391,9 +393,9 @@ public class AssignmentTilesPanel extends DiskoTilesPanel implements IDiskoDropT
 
     public void setSelectedAssignment(IAssignmentIf anAssignment)
     {
-        for (AssignmentDragDropLabel label : m_labels)
+        for (AssignmentDragAndDropLabel label : m_labels)
         {
-            if (label.getAssignment() == anAssignment)
+            if (label.getMsoObject() == anAssignment)
             {
                 label.setSelected(true);
             } else if (label.isSelected())

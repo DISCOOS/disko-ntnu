@@ -109,7 +109,7 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTrans
 
     public void resumeClientUpdate(boolean all);
 
-    public boolean isUpdateSuspended();
+    public boolean isClientUpdateSuspended();
 
     public long schedule(IMsoWork work);
     

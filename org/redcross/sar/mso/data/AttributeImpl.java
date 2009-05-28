@@ -1,9 +1,12 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IChangeIf.ChangeType;
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.util.EnumHistory;
-import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.ChangeImpl;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalMsoArgumentException;
@@ -369,9 +372,9 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         if(isDirty)
         {
         	// get change source
-        	IChangeSourceIf changes = m_owner.getModel().getChanges(m_owner);
+        	IChangeRecordIf changes = m_owner.getModel().getChanges(m_owner);
         	// add this as partial commit
-        	changes.addPartial(m_name);
+        	changes.addFilter(m_name);
 	        // increment change count
 	        incrementChangeCount();
 	        // commit changes
@@ -402,6 +405,14 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         }
         // finished
         return isDirty;
+    }
+    
+    public IChangeAttributeIf getChange() {
+    	if(isChanged()) 
+    	{
+    		return new ChangeImpl.ChangeAttribute(this,ChangeType.MODIFIED);
+    	}
+    	return null;
     }
 
     private boolean acceptConflicting(ModificationState aState)

@@ -40,7 +40,7 @@ import org.redcross.sar.gui.field.DTGField;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.BasePanel;
-import org.redcross.sar.gui.renderer.IconRenderer;
+import org.redcross.sar.gui.renderer.ObjectIcon;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
@@ -741,11 +741,11 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
             while (buttons.hasMoreElements())
             {
                 buttonIt = (JToggleButton) buttons.nextElement();
-                IconRenderer.AssignmentIcon icon = (IconRenderer.AssignmentIcon) buttonIt.getIcon();
+                ObjectIcon.AssignmentIcon icon = (ObjectIcon.AssignmentIcon) buttonIt.getIcon();
                 icon.setSelected(false);
             }
 
-            IconRenderer.AssignmentIcon icon = (IconRenderer.AssignmentIcon) button.getIcon();
+            ObjectIcon.AssignmentIcon icon = (ObjectIcon.AssignmentIcon) button.getIcon();
             icon.setSelected(true);
             repaint();
         }
@@ -949,13 +949,13 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
         {
         	if(delete) {
 	        	for(IMessageLineIf it: m_addedLines) {
-	        		it.delete();
+	        		it.delete(true);
 	        	}
         	}
             m_addedLines.clear();
         } else
         {
-        	if(delete) line.delete();
+        	if(delete) line.delete(true);
             m_addedLines.remove(line);
         }
     }
@@ -966,7 +966,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
         {
         	if(delete) {
 	        	for(IMessageLineIf it: m_addedLines) {
-	        		it.delete();
+	        		it.delete(true);
 	        	}
         	}
             m_addedLines.clear();
@@ -978,7 +978,7 @@ public abstract class AbstractAssignmentPanel extends JSplitPane implements IEdi
         			removed.add(it);
         	}
         	for(IMessageLineIf it: removed) {
-        		if(delete) it.delete();
+        		if(delete) it.delete(true);
         		m_addedLines.remove(it);
         	}
         }

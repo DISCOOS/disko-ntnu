@@ -6,12 +6,14 @@ import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.EventListenerList;
@@ -31,8 +33,10 @@ public class SubMenu extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private JPanel menuPanel;
-	private JButton rollbackButton;
-	private JButton commitButton;
+	private AbstractButton rollbackButton;
+	private AbstractButton commitButton;
+	private AbstractButton dummyToggleButton;
+	private AbstractButton selectedButton;
 	private JPanel rollbackPanel;
 	private JPanel commitPanel;
 
@@ -41,6 +45,7 @@ public class SubMenu extends JPanel {
 	private final ButtonGroup bgroup = new ButtonGroup();
 	private final EventListenerList listeners = new EventListenerList();
 	private final Hashtable<String, JPanel> panels = new Hashtable<String, JPanel>();
+	private final Map<AbstractButton,Boolean> toggleStates = new HashMap<AbstractButton, Boolean>();
 
 	public SubMenu() {
 		super();
@@ -59,6 +64,11 @@ public class SubMenu extends JPanel {
 		this.add(getCommitPanel(), BorderLayout.SOUTH);
 		Dimension size = DiskoButtonFactory.getButtonSize(ButtonSize.NORMAL);
 		this.setPreferredSize(size);
+		
+		// Add a not visible dummy JToggleButton, used to unselect all
+		// (visible) JToggleButtons. This is a hack suggested by Java dev forum
+		bgroup.add(getDummyToggleButton());
+		
 	}
 
 	public void setColored(boolean isColored) {
@@ -148,7 +158,7 @@ public class SubMenu extends JPanel {
 		return rollbackPanel;
 	}
 
-	private JButton getRollbackButton() {
+	private AbstractButton getRollbackButton() {
 		if (rollbackButton == null) {
 			rollbackButton = DiskoButtonFactory.createButton("SYSTEM.ROLLBACK",ButtonSize.NORMAL);
 			rollbackButton.setIcon(new DiskoIcon(rollbackButton.getIcon(),Color.RED,0.4f));
@@ -188,7 +198,7 @@ public class SubMenu extends JPanel {
 	 *
 	 * @return javax.swing.JToggleButton
 	 */
-	private JButton getCommitButton() {
+	private AbstractButton getCommitButton() {
 		if (commitButton == null) {
 			commitButton = DiskoButtonFactory.createButton("SYSTEM.COMMIT",ButtonSize.NORMAL);
 			commitButton.setIcon(new DiskoIcon(commitButton.getIcon(),Color.GREEN,0.4f));
@@ -204,7 +214,19 @@ public class SubMenu extends JPanel {
 		}
 		return commitButton;
 	}
+	
+	public void unselectAll() {
+		getDummyToggleButton().doClick(); // HACK: unselect all toggle buttons
+	}	
 
+	private AbstractButton getDummyToggleButton() {
+		if (dummyToggleButton == null) {
+			dummyToggleButton = new JToggleButton();
+			dummyToggleButton.setVisible(false);
+		}
+		return dummyToggleButton;
+	}
+	
 	public void addActionListener(ActionListener listener) {
 		listeners.add(ActionListener.class, listener);
 	}
@@ -265,7 +287,33 @@ public class SubMenu extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// forward
+			if(e.getSource() instanceof AbstractButton) 
+			{
+				AbstractButton button = (AbstractButton)e.getSource(); 
+				Enumeration<AbstractButton> buttons = bgroup.getElements();
+				while(buttons.hasMoreElements())
+				{
+					AbstractButton it = buttons.nextElement();
+					if(it == button) 
+					{
+						Boolean state = toggleStates.get(it);
+						if(state!=null) 
+						{
+							if(state && button.isSelected())
+							{
+								unselectAll();
+							}
+						}
+						toggleStates.put(button,button.isSelected());
+						if(selectedButton!=it)
+						{
+							toggleStates.remove(selectedButton);
+							selectedButton = it;
+						}
+						break;
+					}					
+				}
+			}
 			fireAction(e);
 		}
 

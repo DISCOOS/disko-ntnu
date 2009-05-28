@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.redcross.sar.mso.IChangeSourceIf;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -45,7 +45,7 @@ public class EditManager {
     	return false;
     }
     
-    public Map<IMsoModelIf,List<IChangeSourceIf>> getUncomittedChanges(IDiskoWpModule wp) {
+    public Map<IMsoModelIf,List<IChangeRecordIf>> getUncomittedChanges(IDiskoWpModule wp) {
     	return getUncomittedChanges(m_stacks.get(wp));
     }
     
@@ -89,27 +89,27 @@ public class EditManager {
     
     private int getChangeCount(List<FlowEvent> stack) {
     	// get uncommitted changes
-    	Map<IMsoModelIf,List<IChangeSourceIf>> changes = getUncomittedChanges(stack);
+    	Map<IMsoModelIf,List<IChangeRecordIf>> changes = getUncomittedChanges(stack);
     	// has changes?
     	return changes!=null?changes.size():0;
     }
     
-    private Map<IMsoModelIf,List<IChangeSourceIf>> getUncomittedChanges(List<FlowEvent> stack) {
+    private Map<IMsoModelIf,List<IChangeRecordIf>> getUncomittedChanges(List<FlowEvent> stack) {
 		// has stack?
 		if(stack!=null) {
 			// initialize map between changes 
-	    	Map<IMsoModelIf,List<IChangeSourceIf>> 
-	    		changes = new HashMap<IMsoModelIf,List<IChangeSourceIf>>();
+	    	Map<IMsoModelIf,List<IChangeRecordIf>> 
+	    		changes = new HashMap<IMsoModelIf,List<IChangeRecordIf>>();
 	    	// loop over all events in stack
 			for(FlowEvent it : stack) 
 			{
 				// get uncommitted changes from flow event
-				Map<IMsoModelIf,List<IChangeSourceIf>> map = it.getUncommittedChanges();
+				Map<IMsoModelIf,List<IChangeRecordIf>> map = it.getUncommittedChanges();
 				// append uncommitted changes gathered from flow event to map 
 				for(IMsoModelIf model : map.keySet()) {
-					List<IChangeSourceIf> list = changes.get(model);
+					List<IChangeRecordIf> list = changes.get(model);
 					if(list==null) {
-						list = new ArrayList<IChangeSourceIf>();
+						list = new ArrayList<IChangeRecordIf>();
 						changes.put(model,list);
 					}
 					list.addAll(map.get(model));

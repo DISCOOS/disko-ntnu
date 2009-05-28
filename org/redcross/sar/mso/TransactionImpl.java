@@ -1,10 +1,8 @@
 package org.redcross.sar.mso;
 
-import org.redcross.sar.mso.IChangeIf.ChangeType;
-import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -45,18 +43,31 @@ public class TransactionImpl implements ITransactionIf
     /**
      * Add an object to the transaction.
      *
-     * @param IChangeSourceIf holder - The holder of the update information
+     * @param IChangeRecordIf aRecord - The change record 
      */
-    protected void add(IChangeSourceIf anSource)
+    protected void add(IChangeRecordIf aRecord)
     {    	
-    	// get information
-    	IMsoObjectIf anObject = anSource.getMsoObject();
+    	// get change object
+    	IChangeObjectIf changeObj = aRecord.getChangedObject();
+    	
+    	// has change?
+    	if(changeObj!=null) 
+    	{
+    		// add changes
+    		m_changeObjects.add(changeObj);
+    		m_changeObjectReferences.addAll(aRecord.getChangedObjectReferences());
+    		m_changeListReferences.addAll(aRecord.getChangedListReferences());
+    		
+    	}
+    	
+    	/*
+    	IMsoObjectIf anObject = aRecord.getMsoObject();
     	
     	// is partial commit?
-    	if(anSource.isPartial()) 
+    	if(aRecord.isFiltered()) 
     	{
     		// get partial update list
-    		List<IChangeIf> partial = anSource.getPartial();
+    		List<IChangeIf> partial = aRecord.getChanges();
     		// add modified object
     		m_changeObjects.add(new ChangeImpl.ChangeObject(anObject,ChangeType.MODIFIED,partial));
     		// add sub-lists of changed object references
@@ -67,10 +78,10 @@ public class TransactionImpl implements ITransactionIf
     	{    	
     		
 	    	// full commit, get flags
-	        boolean createdObject = anSource.isCreated();
-	        boolean deletedObject = anSource.isDeleted();
-	        boolean modifiedObject = anSource.isModified();
-	        boolean modifiedReference = anSource.isReferenceChanged();
+	        boolean createdObject = aRecord.isCreated();
+	        boolean deletedObject = aRecord.isDeleted();
+	        boolean modifiedObject = aRecord.isModified();
+	        boolean modifiedReference = aRecord.isReferenceChanged();
 	
 	        // both a create AND delete action on a objects equals no change
 	        if (createdObject && deletedObject)
@@ -101,6 +112,7 @@ public class TransactionImpl implements ITransactionIf
 	            m_changeListReferences.addAll(anObject.getChangedListReferences());
 	        }
     	}	       
+    	*/
     }
     
 }

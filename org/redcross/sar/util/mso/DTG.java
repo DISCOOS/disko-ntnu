@@ -63,6 +63,9 @@ public class DTG
      */
     public static Calendar DTGToCal(int year, int month, long aDTG) throws IllegalMsoArgumentException
     {
+    	// null value found?
+    	if (aDTG == 0) return null;
+    	
         Calendar calendar = Calendar.getInstance();
         int day = (int) aDTG / 10000;
         int hour = (int) (aDTG % 10000) / 100;

@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
 import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.*;
@@ -118,9 +119,9 @@ public interface IMsoAttributeIf<T> extends IMsoDataStateIf
 
     /**
      * 
-     * Perform commit on the attribute
+     * Commit changes to remote sources
      *
-     * @return True if something has been done.
+     * @return Returns <code>true</code> if changes was committed.
      * @throws TransactionException
      */
     public boolean commit() throws TransactionException;
@@ -132,6 +133,14 @@ public interface IMsoAttributeIf<T> extends IMsoDataStateIf
      */
     public boolean rollback();
 
+    
+    /**
+     * Get attribute change 
+     *
+     * @return Returns a change object is local change exists, <code>null</code> otherwise.
+     */
+    public IChangeAttributeIf getChange();
+    
     /**
      * Get value cardinality
      *

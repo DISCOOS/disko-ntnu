@@ -52,26 +52,26 @@ public abstract class ChangeImpl implements IChangeIf
 		}
 
 		@Override
-		public List<IChangeIf> getPartial() {
+		public List<IChangeIf> getChanges() {
 			return m_partial;
 		}
 
 		@Override
-		public boolean isPartial() {
+		public boolean isFiltered() {
 			return (m_partial.size()>0);
 		}
 
 		@Override
-		public boolean containsPartial(IChangeIf partial) {
-			if(isPartial()) {
-				return m_partial.contains(partial);
+		public boolean containsFilter(IChangeIf filter) {
+			if(isFiltered()) {
+				return m_partial.contains(filter);
 			}
 			return false;
 		}
 
 		@Override
-		public boolean containsPartial(IMsoAttributeIf<?> attribute) {
-			if(isPartial()) {
+		public boolean containsFilter(IMsoAttributeIf<?> attribute) {
+			if(isFiltered()) {
 				for(IChangeIf it : m_partial) {
 					if(it instanceof IChangeAttributeIf) {
 						IChangeAttributeIf attr = (IChangeAttributeIf)it;
@@ -83,8 +83,8 @@ public abstract class ChangeImpl implements IChangeIf
 		}
 
 		@Override
-		public boolean containsPartial(IMsoObjectIf reference) {
-			if(isPartial()) {
+		public boolean containsFilter(IMsoObjectIf reference) {
+			if(isFiltered()) {
 				for(IChangeIf it : m_partial) {
 					if(it instanceof IChangeReferenceIf) {
 						IChangeReferenceIf refObj = (IChangeReferenceIf)it;
@@ -126,43 +126,80 @@ public abstract class ChangeImpl implements IChangeIf
 	}
 
 	/**
-	 * Class for changed relations.
+	 * Class for storing changed references.
 	 * A relation is defined by a relation name and two MsoObjects.
 	 * The name is needed since some classes may have several types of relations to another class.
 	 */
 	public static class ChangeReference extends ChangeImpl implements IChangeReferenceIf
 	{
-		private final String m_name;
-		private final IMsoObjectIf m_referringObject;
-		private final IMsoObjectIf m_referredObject;
+		private final IMsoObjectIf m_referredObj;
+		private final IMsoReferenceIf<?> m_refObj;
 
-		public ChangeReference(IMsoReferenceIf<?> theReference, ChangeType aChangeType)
-		{
-			this(theReference.getName(),theReference.getOwner(),theReference.getReference(),aChangeType);
-		}
-		
-		public ChangeReference(String aName, IMsoObjectIf theReferringObject, IMsoObjectIf theReferredObject, ChangeType aChangeType)
+		public ChangeReference(IMsoReferenceIf<?> aReference, IMsoObjectIf theReferredObj, ChangeType aChangeType)
 		{
 			super(aChangeType);
-			m_name = aName;
-			m_referringObject = theReferringObject;
-			m_referredObject = theReferredObject;
+			m_refObj = aReference;
+			m_referredObj = theReferredObj;
 		}
-
-		public String getReferenceName()
+		
+	    @Override
+		public String getName()
 		{
-			return m_name;
+			return m_refObj.getName();
 		}
 
+	    @Override
 		public IMsoObjectIf getReferringObject()
 		{
-			return m_referringObject;
+			return m_refObj.getOwner();
 		}
 
+	    @Override
 		public IMsoObjectIf getReferredObject()
 		{
-			return m_referredObject;
+			return m_referredObj;
+		}
+					
+	    @Override
+		public IMsoReferenceIf<?> getReference() {
+			return m_refObj;
 		}
 
+	    @Override
+		public boolean equals(Object o)
+	    {
+	        if (this == o)
+	        {
+	            return true;
+	        }
+	        if (o == null || getClass() != o.getClass())
+	        {
+	            return false;
+	        }
+
+	        ChangeReference refObj = (ChangeReference) o;
+
+	        if (getName() != null && !getName().equals(refObj.getName()))
+	        {
+	            return false;
+	        }
+	        if (getReferredObject() != null && getReferredObject().equals(refObj.getReferredObject()))
+	        {
+	            return false;
+	        }
+
+	        return true;
+	    }
+
+	    @Override
+	    public int hashCode()
+	    {
+	        int result = 7;
+	        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+	        result = 31 * result + (getReferredObject() != null ? getReferredObject().hashCode() : 0);
+	        result = 31 * result + (getReferringObject() != null ? getReferringObject().hashCode() : 0);
+	        return result;
+	    }		
+		
 	}
 }

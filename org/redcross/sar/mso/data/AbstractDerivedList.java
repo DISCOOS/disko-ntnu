@@ -12,7 +12,18 @@ import org.redcross.sar.mso.event.IMsoDerivedUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 /**
+ * This abstract class is a template that enables implementation
+ * of parallel book holding of items (a list) by 
+ * listening to create, delete and modify events using the
+ * interface IMsoDerivedUpdateListenerIf. 
+ * 
+ * 
+ * @author vinjar, kenneth
  *
+ * @param <M> - the item type
+ * 
+ * @see IMsoDerivedUpdateListenerIf for more information about 
+ * derived update events.
  */
 public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMsoDerivedListIf<M>, IMsoDerivedUpdateListenerIf
 {

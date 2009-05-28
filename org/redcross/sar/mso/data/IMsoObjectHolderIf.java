@@ -4,17 +4,17 @@ package org.redcross.sar.mso.data;
  * Interface for IMsoObjectIf holders.</p>
  * 
  * The purpose of this interface is to define functionality for managing
- * global deletion (remove all references) of MsoObject.
+ * global deletion (remove all references) of MsoObject. 
  * 
  * @author vinjar, kenneth
  */
 public interface IMsoObjectHolderIf<M extends IMsoObjectIf>
 {
     /**
-     * Check if a reference to the given IMsoObjectIf object can be deleted.
+     * Check if a reference to object can be deleted.
      *
      * @param anObject The object to delete a reference from
-     * @return <code>true</code> if reference can be deleted, <code>false</code> otherwise
+     * @return <code>true</code> if referenced object exists and can be deleted, <code>false</code> otherwise
      */
     public boolean isReferenceDeletable(M anObject);
 

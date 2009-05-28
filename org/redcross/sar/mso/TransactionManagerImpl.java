@@ -17,6 +17,7 @@ import org.redcross.sar.mso.event.MsoEvent.UpdateList;
 import org.redcross.sar.util.except.TransactionException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -50,9 +51,14 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     private final MsoEventManagerImpl m_msoEventManager;
     
     /**
-     * Vector for accumulating {@link ChangeSource} objects that is updated.
+     * Vector for accumulating {@link ChangeRecord} objects that is updated.
      */
-    private final Vector<IChangeSourceIf> m_changes = new Vector<IChangeSourceIf>(50);
+    private final Vector<IChangeRecordIf> m_changes = new Vector<IChangeRecordIf>(50);
+    
+    /**
+     * Set of all MSO objects types. Is used to indicate interests in all change notifications
+     */
+    private final static EnumSet<MsoClassCode> m_interests = EnumSet.allOf(MsoClassCode.class);
 
     /**
      * @param theModel Reference to the singleton MSO model object holding the MsoModel object.
@@ -67,7 +73,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 
 			public EnumSet<MsoClassCode> getInterests()
 			{
-				return EnumSet.allOf(MsoClassCode.class);
+				return m_interests;
 			}
 
 			public void handleMsoUpdateEvent(UpdateList events)
@@ -89,18 +95,18 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     	boolean isRollback = e.isRollbackMode();
 
     	// initialize remove action
-    	IChangeSourceIf remove = null;
+    	IChangeRecordIf remove = null;
     	
     	// append mask if object already exists
-        for (IChangeSourceIf it : m_changes)
+        for (IChangeRecordIf it : m_changes)
         {
             if (it.getMsoObject().getObjectId().equals(msoObj.getObjectId()))
             {
-            	if(it instanceof ChangeSource) 
+            	if(it instanceof ChangeRecord) 
             	{
             		if(aMask!=0 && !isRollback) 
             		{
-            			((ChangeSource)it).applyMask(aMask);
+            			((ChangeRecord)it).applyMask(aMask);
                         return;
             		}
             		else if (isRollback)
@@ -113,11 +119,11 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
         }
         if(remove==null && !isRollback)
         {
-        	m_changes.add(new ChangeSource(msoObj, aMask));
+        	m_changes.add(new ChangeRecord(msoObj, aMask));
         }
         else if(remove!=null)
         {
-        	m_changes.remove(remove);        	
+        	m_changes.remove(remove);
         }
     }
 
@@ -125,11 +131,11 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * Returns pending updates
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges()
+    public List<IChangeRecordIf> getChanges()
     {
-    	List<IChangeSourceIf> changes = new ArrayList<IChangeSourceIf>(m_changes.size());
-    	for(IChangeSourceIf it : m_changes) {
-    		changes.add(new ChangeSource(it));
+    	List<IChangeRecordIf> changes = new ArrayList<IChangeRecordIf>(m_changes.size());
+    	for(IChangeRecordIf it : m_changes) {
+    		changes.add(new ChangeRecord(it));
     	}
     	return changes;
     }
@@ -138,7 +144,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * Returns pending updates of specific class
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges(MsoClassCode of) {
+    public List<IChangeRecordIf> getChanges(MsoClassCode of) {
     	return getChanges(EnumSet.of(of));
     }
 
@@ -146,13 +152,13 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * Returns pending updates of specific classes
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges(Set<MsoClassCode> of) {
-    	List<IChangeSourceIf> updates = new ArrayList<IChangeSourceIf>(m_changes.size());
-    	for (IChangeSourceIf it : m_changes)
+    public List<IChangeRecordIf> getChanges(Set<MsoClassCode> of) {
+    	List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_changes.size());
+    	for (IChangeRecordIf it : m_changes)
         {
     		// add to updates?
     		if(of.contains(it.getMsoObject().getMsoClassCode())) {
-    			updates.add(new ChangeSource(it));
+    			updates.add(new ChangeRecord(it));
     		}
         }
         // finished
@@ -163,10 +169,10 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * Returns pending updates of specific object
      * <p/>
      */
-    public IChangeSourceIf getChanges(IMsoObjectIf of) {
+    public IChangeRecordIf getChanges(IMsoObjectIf of) {
     	List<IMsoObjectIf> list = new ArrayList<IMsoObjectIf>(1);
     	list.add(of);
-    	List<IChangeSourceIf> updates = getChanges(list);
+    	List<IChangeRecordIf> updates = getChanges(list);
     	return updates.size()>0 ? updates.get(0) : null;
     }
 
@@ -174,15 +180,15 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * Returns pending updates of specific objects
      * <p/>
      */
-    public List<IChangeSourceIf> getChanges(List<IMsoObjectIf> of)
+    public List<IChangeRecordIf> getChanges(List<IMsoObjectIf> of)
     {
-    	List<IChangeSourceIf> updates = new ArrayList<IChangeSourceIf>(m_changes.size());
-    	for (IChangeSourceIf it : m_changes)
+    	List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_changes.size());
+    	for (IChangeRecordIf it : m_changes)
         {
 
     		// add to updates?
     		if(of.contains(it.getMsoObject())) {
-    			updates.add(new ChangeSource(it));
+    			updates.add(new ChangeRecord(it));
     		}
 
         }
@@ -190,29 +196,29 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
         return updates;
     }
 
-    private ITransactionIf createCommit(List<IChangeSourceIf> changes)
+    private ITransactionIf createCommit(List<IChangeRecordIf> changes)
     {
     	List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(changes.size());
-    	List<IChangeSourceIf> deletable = new ArrayList<IChangeSourceIf>(changes.size());
-        TransactionImpl wrapper = new TransactionImpl(TransactionType.COMMIT);
-        for (IChangeSourceIf it : changes)
+    	List<IChangeRecordIf> deletable = new ArrayList<IChangeRecordIf>(changes.size());
+        TransactionImpl transaction = new TransactionImpl(TransactionType.COMMIT);
+        for (IChangeRecordIf it : changes)
         {
         	// get IMsoObjectIf
         	IMsoObjectIf msoObj = it.getMsoObject();
         	// only add one change object per MSO object
         	if(!objects.contains(msoObj)) {
-	        	// add to wrapper
-	    		wrapper.add(it);
+	        	// add to transaction
+	    		transaction.add(it);
 	    		// add to objects
 	    		objects.add(msoObj);
 	        	// can be deleted from buffer?
-	        	if(!it.isPartial()) deletable.add(it);
+	        	if(!it.isFiltered()) deletable.add(it);
         	}
         }
         // only remove full commit updates
         m_changes.removeAll(deletable);
         // ready to commit
-        return wrapper;
+        return transaction;
     }
 
     /**
@@ -232,14 +238,14 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * Note that partial commits is only possible to perform on objects 
      * that exists remotely (modified). 
 	 *
-     * @param ChangeSource updates - holder for updates
+     * @param ChangeRecord updates - holder for updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
-     * @see {@link org.redcross.sar.mso.IChangeSourceIf} for more information.
+     * @see {@link org.redcross.sar.mso.IChangeRecordIf} for more information.
      */
-    public void commit(IChangeSourceIf changes) throws TransactionException
+    public void commit(IChangeRecordIf changes) throws TransactionException
     {
     	if(changes!=null) {
-	    	List<IChangeSourceIf> list = new Vector<IChangeSourceIf>(1);
+	    	List<IChangeRecordIf> list = new Vector<IChangeRecordIf>(1);
 	    	list.add(changes);
 	    	commit(list);
     	}
@@ -254,17 +260,17 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * @param List<UpdateHolder> updates - list of holders of updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void commit(List<IChangeSourceIf> changes) throws TransactionException
+    public void commit(List<IChangeRecordIf> changes) throws TransactionException
     {
         m_msoEventManager.notifyCommit(createCommit(changes));
     }
 
-    private ITransactionIf createRollback(List<IChangeSourceIf> changes)
+    private ITransactionIf createRollback(List<IChangeRecordIf> changes)
     {
     	List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(changes.size());
-    	List<IChangeSourceIf> deletable = new ArrayList<IChangeSourceIf>(changes.size());
+    	List<IChangeRecordIf> deletable = new ArrayList<IChangeRecordIf>(changes.size());
         TransactionImpl transaction = new TransactionImpl(TransactionType.ROLLBACK);
-        for (IChangeSourceIf it : changes)
+        for (IChangeRecordIf it : changes)
         {
         	// get IMsoObjectIf
         	IMsoObjectIf msoObj = it.getMsoObject();
@@ -273,7 +279,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 	        	// add to wrapper
 	    		transaction.add(it);
 	        	// can be deleted from buffer?
-	        	if(!it.isPartial()) deletable.add(it);
+	        	if(!it.isFiltered()) deletable.add(it);
         	}
         }
         // only remove full commit updates
@@ -303,9 +309,9 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * @param UpdateHolder updates - holder for updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void rollback(IChangeSourceIf changes) throws TransactionException {
+    public void rollback(IChangeRecordIf changes) throws TransactionException {
     	if(changes!=null) {
-	    	List<IChangeSourceIf> list = new Vector<IChangeSourceIf>(1);
+	    	List<IChangeRecordIf> list = new Vector<IChangeRecordIf>(1);
 	    	list.add(changes);
 	    	rollback(changes);
     	}
@@ -317,14 +323,14 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * @param List<UpdateHolder> updates - list of holders of updates
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
-    public void rollback(List<IChangeSourceIf> changes) throws TransactionException {
+    public void rollback(List<IChangeRecordIf> changes) throws TransactionException {
     	ITransactionIf transaction = createRollback(changes);
         m_msoModel.suspendClientUpdate();
         m_msoModel.setLocalUpdateMode();
         // loop over all references first
         for(IChangeObjectIf it : transaction.getObjects()) {
-        	if(it.isPartial()) {
-        		it.getMsoObject().rollback(it.getPartial()); 
+        	if(it.isFiltered()) {
+        		it.getMsoObject().rollback(it.getChanges()); 
         	} else {
         		it.getMsoObject().rollback();
         	}        	
@@ -338,20 +344,20 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      *
      * @return true if uncommitted changes exist
      */
-    public boolean hasUncommitedChanges()
+    public boolean isChanged()
     {
         return m_changes.size() > 0;
     }
 
-    public boolean hasUncommitedChanges(MsoClassCode code) {
+    public boolean isChanged(MsoClassCode code) {
     	return getChanges(code).size()>0;
     }
 
-    public boolean hasUncommitedChanges(IMsoObjectIf msoObj) {
+    public boolean isChanged(IMsoObjectIf msoObj) {
     	return getChanges(msoObj)!=null;
     }
 
-    class ChangeSource implements IChangeSourceIf
+    class ChangeRecord implements IChangeRecordIf
     {
 
     	private final IMsoObjectIf m_object;
@@ -363,17 +369,17 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 	     * Constructors
 	     * =============================================== */
         
-        ChangeSource(IMsoObjectIf anObject, int aMask)
+        ChangeRecord(IMsoObjectIf anObject, int aMask)
         {
         	// prepare
             m_object = anObject;
             m_mask = aMask;
         }
         
-        ChangeSource(IChangeSourceIf changeSource)
+        ChangeRecord(IChangeRecordIf changeSource)
         {
         	m_object = changeSource.getMsoObject();
-        	m_partial.addAll(changeSource.getPartial());
+        	m_partial.addAll(changeSource.getChanges());
         }
         
 	    /* ===============================================
@@ -390,172 +396,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 			return m_object;
 		}
 
-        @Override
-        public boolean isPartial() {
-        	return m_partial!=null && m_partial.size()>0;
-        }
-
-        @Override
-        public List<IChangeIf> getPartial() {
-        	return m_partial;
-        }
-
-        @Override
-        public boolean addPartial(String attribute) {
-
-        	String name = attribute.toLowerCase();
-        	if(m_object.getAttributes().containsKey(name)) {
-        		return addPartial(m_object.getAttributes().get(name));
-        	}
-        	return false;
-        }
-        
-        @Override
-        public boolean addPartial(IMsoAttributeIf<?> attribute) {
-
-        	/* =======================================
-        	 * Only allowed for an object that is
-        	 * 	A) already created
-        	 * 	B) is modified 
-        	 *  C) attribute is changed (locally)
-        	 *  D) attribute not already added as partial update
-        	 *  E) attribute exists in object
-        	 * ======================================= */
-
-        	if(!isCreated() && isModified() 
-        			&& m_object.getAttributes().containsValue(attribute)) 
-        	{
-        		IChangeAttributeIf it = getChange(attribute);
-        		if(attribute.isChanged() && it==null) 
-        		{
-	        		// add attribute change to partial updates
-	    			return m_partial.add(new ChangeImpl.ChangeAttribute(attribute,ChangeType.MODIFIED));	    			
-        		} 
-        		else if(attribute.isRollbackMode() && it!=null) 
-        		{
-        			// attribute is not changed anymore, remove change 
-        			m_partial.remove(it);        			
-        		}
-        	}
-        	// failure
-        	return false;
-        }        
-        
-        @Override
-        public boolean addPartial(IMsoObjectIf referenced) {
-        	
-        	/* =======================================
-        	 * Only allowed for an object that is
-        	 * 	A) already created
-        	 * 	B) is modified 
-        	 *  C) the reference is changed (locally)
-        	 *  D) the reference not already added 
-        	 *  as partial update
-        	 * ======================================= */
-
-        	if(!isCreated() && isModified()) 
-        	{
-        		// get object holder
-        		IMsoReferenceIf<?> refObj = getMsoObject().getReference(referenced);
-        		
-        		// found object holder?
-        		if(refObj!=null) 
-        		{
-        			List<IChangeReferenceIf> list = getChange(referenced);
-        			if(refObj.isChanged() && list.size()==0) { 
-	        			// get remote object
-	        			IMsoObjectIf msoObj = refObj.getRemoteReference();        			        			
-	        			
-	                	// notify that current (remote) reference should be deleted?
-	                    if (msoObj != null && !msoObj.isDeleted())
-	                    {
-	                    	m_partial.add(new ChangeImpl.ChangeReference(refObj, ChangeType.DELETED));
-	                    }
-	        			
-	                    // get local object
-	        			msoObj = refObj.getRemoteReference();
-	        			
-	                    // notify that a new (remote) reference should created?
-	                    if (msoObj != null)
-	                    {
-	                    	m_partial.add(new ChangeImpl.ChangeReference(refObj, ChangeType.CREATED));
-	                    }
-        			}
-        			else if(refObj.isRollbackMode() && list.size()>0) 
-        			{
-        				m_partial.removeAll(list);
-        			}
-
-        		}
-        	}
-        	// failure
-        	return false;
-        	
-        }        
-        
-        @Override
-        public boolean removePartial(String attribute) {
-        	String name = attribute.toLowerCase();
-        	IChangeAttributeIf found = null;
-        	for(IChangeIf it : m_partial) {
-        		if(it instanceof IChangeAttributeIf) {
-        			
-        			IChangeAttributeIf attr = (IChangeAttributeIf)it;
-	        		if(attr.getName().equals(name)) {
-	        			found = attr;
-	        			break;
-	        		}
-        		}
-        	}
-        	if(found!=null) {
-        		return m_partial.remove(found);
-        	}
-        	return false;
-        }
-        
-        @Override
-        public boolean removePartial(IMsoAttributeIf<?> attribute) {
-        	return removePartial(attribute.getName().toLowerCase());
-        }
-        
-		@Override
-		public boolean removePartial(IMsoObjectIf referenced) {
-			List<IChangeIf> removeList = new Vector<IChangeIf>(2);
-        	for(IChangeIf it : m_partial) {
-        		if(it instanceof IChangeReferenceIf) {        			
-        			IChangeReferenceIf refObj = (IChangeReferenceIf)it;
-	        		if(refObj.getReferredObject()==referenced) {
-	        			removeList.add(refObj);
-	        		}
-        		}
-        	}
-    		return m_partial.removeAll(removeList);
-		}
-        
-        @Override
-        public void clearPartial() {
-        	m_partial.clear();
-        }
-
-        @Override
-        public boolean setPartial(String attribute)
-        {
-        	clearPartial();
-        	return addPartial(attribute);
-        }
-        
-		@Override
-		public boolean setPartial(IMsoAttributeIf<?> attribute) {
-        	clearPartial();
-        	return addPartial(attribute);
-		}
-
-		@Override
-		public boolean setPartial(IMsoObjectIf referenced) {
-        	clearPartial();
-        	return addPartial(referenced);
-		}
-
+		
         @Override
 	    public boolean isDeleted()
 	    {
@@ -582,12 +423,345 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 	                MsoEventType.ADDED_REFERENCE_EVENT.maskValue() |
 	                MsoEventType.REMOVED_REFERENCE_EVENT.maskValue())  != 0;
 	    }
+        
+        @Override
+        public boolean isFiltered() {
+        	return m_partial!=null && m_partial.size()>0;
+        }
+
+        @Override
+        public boolean addFilter(String attribute) {
+
+        	String name = attribute.toLowerCase();
+        	if(m_object.getAttributes().containsKey(name)) {
+        		return addFilter(m_object.getAttributes().get(name));
+        	}
+        	return false;
+        }
+        
+        @Override
+        public boolean addFilter(IMsoAttributeIf<?> attribute) {
+
+        	/* =======================================
+        	 * Only allowed for an object that is
+        	 * 	A) already created
+        	 * 	B) is modified 
+        	 *  C) attribute is changed (locally)
+        	 *  D) attribute not already added as partial update
+        	 *  E) attribute exists in object
+        	 * ======================================= */
+
+        	if(!isCreated() && isModified() 
+        			&& m_object.getAttributes().containsValue(attribute)) 
+        	{
+        		IChangeAttributeIf it = getChange(attribute);
+        		if(attribute.isChanged() && it==null) 
+        		{
+	        		// add attribute change to partial updates
+	    			return m_partial.add(attribute.getChange());
+        		} 
+        		else if(attribute.isRollbackMode() && it!=null) 
+        		{
+        			// attribute is not changed anymore, remove change 
+        			m_partial.remove(it);        			
+        		}
+        	}
+        	// failure
+        	return false;
+        }        
+        
+        @Override
+        public boolean addFilter(IMsoObjectIf referenced) {
+    		return addFilter(getMsoObject().getReference(referenced));        	
+        }
+        	
+        @Override
+        public boolean addFilter(IMsoReferenceIf<?> refObj) {
+        	
+        	/* =======================================
+        	 * Only allowed for an object that is
+        	 * 	A) already created
+        	 * 	B) is modified 
+        	 *  C) the reference is changed (locally)
+        	 *  D) the reference not already added 
+        	 *  as partial update
+        	 * ======================================= */
+
+        	if(!isCreated() && isModified()) 
+        	{
+        		// has reference?
+        		if(refObj!=null) 
+        		{
+        			List<IChangeReferenceIf> list = getChange(refObj);
+        			if(refObj.isChanged() && list.size()==0) {
+        				
+	        			// get remote object
+        				m_partial.addAll(refObj.getChangedReferences());
+
+        			}
+        			else if(refObj.isRollbackMode() && list.size()>0) 
+        			{
+        				m_partial.removeAll(list);
+        			}
+
+        		}
+        	}
+        	// failure
+        	return false;
+        	
+        }        
+        
+        @Override
+        public boolean removeFilter(String attribute) {
+        	String name = attribute.toLowerCase();
+        	IChangeAttributeIf found = null;
+        	for(IChangeIf it : m_partial) {
+        		if(it instanceof IChangeAttributeIf) {
+        			
+        			IChangeAttributeIf attr = (IChangeAttributeIf)it;
+	        		if(attr.getName().equals(name)) {
+	        			found = attr;
+	        			break;
+	        		}
+        		}
+        	}
+        	if(found!=null) {
+        		return m_partial.remove(found);
+        	}
+        	return false;
+        }
+        
+        @Override
+        public boolean removeFilter(IMsoAttributeIf<?> attribute) {
+        	return removeFilter(attribute.getName().toLowerCase());
+        }
+        
+		@Override
+		public boolean removeFilter(IMsoObjectIf referenced) {
+    		return removeFilter(getMsoObject().getReference(referenced));        	
+		}
+		
+		@Override
+		public boolean removeFilter(IMsoReferenceIf<?> refObj) {
+			List<IChangeIf> removeList = new Vector<IChangeIf>(2);
+        	for(IChangeIf it : m_partial) {
+        		if(it instanceof IChangeReferenceIf) {        			
+	        		if(((IChangeReferenceIf)it).equals(refObj)) {
+	        			removeList.add((IChangeReferenceIf)it);
+	        		}
+        		}
+        	}
+    		return m_partial.removeAll(removeList);
+		}
+        
+        @Override
+        public void clearFilters() {
+        	m_partial.clear();
+        }
+
+        @Override
+        public boolean setFilter(String attribute)
+        {
+        	clearFilters();
+        	return addFilter(attribute);
+        }
+        
+		@Override
+		public boolean setFilter(IMsoAttributeIf<?> attribute) {
+        	clearFilters();
+        	return addFilter(attribute);
+		}
+
+		@Override
+		public boolean setFilter(IMsoObjectIf referenced) {
+        	clearFilters();
+        	return addFilter(referenced);
+		}
+
+		@Override
+		public boolean setFilter(IMsoReferenceIf<?> reference) {
+        	clearFilters();
+        	return addFilter(reference);
+		}
+
+        @Override
+        public List<IChangeIf> getChanges() {
+        	
+        	// initialize 
+        	List<IChangeIf> changes = new Vector<IChangeIf>();
+        	
+	        // both a create AND delete action on a objects equals no change
+	        if (isCreated() && isDeleted())
+	        {
+	            return changes;
+	        }
+	        
+        	// add changes
+        	changes.add(getChangedObject());
+        	changes.addAll(getChangedObjectReferences());
+        	changes.addAll(getChangedListReferences());
+        	
+        	// finished
+        	return changes;
+        }
+
+        @Override
+    	public IChangeObjectIf getChangedObject() 
+    	{
+	    	
+        	// get flags
+	        boolean createdObject = isCreated();
+	        boolean deletedObject = isDeleted();
+	        boolean modifiedObject = isModified();
+	        boolean modifiedReference = isReferenceChanged();
+	
+	        // both a create AND delete action on a objects equals no change
+	        if (createdObject && deletedObject)
+	        {
+	            return null;
+	        }
+	        
+        	if(createdObject && isFiltered())
+        	{
+        		// add modified object
+        		return new ChangeImpl.ChangeObject(m_object,ChangeType.MODIFIED,m_partial);
+        	}
+        	else 
+        	{
+    	        
+    	        // is object created?
+    	        if (createdObject)
+    	        {
+    	        	return new ChangeImpl.ChangeObject(m_object, ChangeType.CREATED,null);
+    	        }
+    	        if (deletedObject)
+    	        {
+    	        	return new ChangeImpl.ChangeObject(m_object, ChangeType.DELETED,null);
+    	        }
+    	        if (modifiedObject && !modifiedReference)
+    	        {
+    	        	return new ChangeImpl.ChangeObject(m_object, ChangeType.MODIFIED,null);
+    	        }
+    	        if (modifiedReference)
+    	        {
+    	        	return new ChangeImpl.ChangeObject(m_object, ChangeType.MODIFIED,null);
+    	        }
+        	}
+        	return null;
+    	}
+    	
+        @Override
+		public Collection<IChangeAttributeIf> getChangedAttributes() {
+
+        	// initialize 
+        	List<IChangeAttributeIf> changes = new Vector<IChangeAttributeIf>();
+        	
+	    	// get flags
+	        boolean createdObject = isCreated();
+	        boolean deletedObject = isDeleted();
+	        boolean modifiedObject = isModified();
+	        
+	        // both a create AND delete action on a objects equals no change
+	        if (createdObject && deletedObject)
+	        {
+	            return changes;
+	        }
+	        
+        	if(createdObject && isFiltered())
+        	{
+        		// add sub-list of modified attributes
+        		changes.addAll(m_object.getChangedAttributes(m_partial));
+        	}
+        	else 
+        	{    	
+    	        if ((createdObject || modifiedObject) && !deletedObject)
+    	        {
+            		// add modified attributes
+            		changes.addAll(m_object.getChangedAttributes());
+    	        }
+        	}
+        	// finished
+        	return changes;
+        }
+
+		@Override
+		public Collection<IChangeReferenceIf> getChangedListReferences() {
+
+        	// initialize 
+        	List<IChangeReferenceIf> changes = new Vector<IChangeReferenceIf>();
+        	
+	    	// get flags
+	        boolean createdObject = isCreated();
+	        boolean deletedObject = isDeleted();
+	        boolean modifiedReference = isReferenceChanged();
+	
+	        // both a create AND delete action on a objects equals no change
+	        if (createdObject && deletedObject)
+	        {
+	            return changes;
+	        }
+	        
+        	if(createdObject && isFiltered())
+        	{
+        		// get changes references from object (m_partial may contain old changes) 
+        		changes.addAll(m_object.getChangedListReferences(m_partial));
+        	}
+        	else 
+        	{
+    	        
+    	        // is object created?
+    	        if ((createdObject || modifiedReference) && !deletedObject)
+    	        {
+    	        	changes.addAll(m_object.getChangedListReferences());
+    	        }
+    	        
+        	}
+        	// finished
+        	return changes;		
+        }
+
+		@Override
+		public Collection<IChangeReferenceIf> getChangedObjectReferences() {
+
+        	// initialize 
+        	List<IChangeReferenceIf> changes = new Vector<IChangeReferenceIf>();
+        	
+	    	// get flags
+	        boolean createdObject = isCreated();
+	        boolean deletedObject = isDeleted();
+	        boolean modifiedReference = isReferenceChanged();
+	
+	        // both a create AND delete action on a objects equals no change
+	        if (createdObject && deletedObject)
+	        {
+	            return changes;
+	        }
+	        
+        	if(createdObject && isFiltered())
+        	{
+        		// get changes references from object (m_partial may contain old changes) 
+        		changes.addAll(m_object.getChangedObjectReferences(m_partial));
+        	}
+        	else 
+        	{
+    	        
+    	        // is object created?
+    	        if ((createdObject || modifiedReference) && !deletedObject)
+    	        {
+    	        	changes.addAll(m_object.getChangedObjectReferences());
+    	        }
+    	        
+        	}
+        	// finished
+        	return changes;		
+        	
+		}
 
 	    /* ===============================================
 	     * Private methods
 	     * =============================================== */
         
-        private void applyMask(int aMask)
+		private void applyMask(int aMask)
         {
             m_mask |= aMask;
         }
@@ -602,15 +776,16 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
         	return null;
         }
 
-        private List<IChangeReferenceIf> getChange(IMsoObjectIf referenced) {
+        private List<IChangeReferenceIf> getChange(IMsoReferenceIf<?> refObj) {
         	List<IChangeReferenceIf> list = new Vector<IChangeReferenceIf>(2);
         	for(IChangeIf it : m_partial) {
         		if(it instanceof IChangeReferenceIf) {
-        			if(((IChangeReferenceIf)it).getReferredObject() == referenced) list.add((IChangeReferenceIf)it);
+        			if(((IChangeReferenceIf)it).equals(refObj)) list.add((IChangeReferenceIf)it);
         		}
         	}
         	return list;
         }
+
         
     }
 
